@@ -38,7 +38,7 @@ import org.openqa.selenium.support.ui.Select;
  */
 public class QTI21ConfigurationCEPage {
 	
-	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
+	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	
 	private final WebDriver browser;
 	
@@ -200,11 +200,12 @@ public class QTI21ConfigurationCEPage {
 	
 	public QTI21ConfigurationCEPage chooseTest(String resourceTitle, boolean closeWarning) {
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
-		fragment.chooseResource(chooseTestButton, resourceTitle);
+		fragment.chooseResourceModern(chooseTestButton, resourceTitle);
 		if(closeWarning) {
 			//close the warning
 			OOGraphene.closeWarningBox(browser);
 		}
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 }

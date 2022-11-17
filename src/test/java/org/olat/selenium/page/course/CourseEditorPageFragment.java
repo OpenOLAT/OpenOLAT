@@ -424,8 +424,18 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle) {
+		By landingBy = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
+		return chooseResource(chooseButton, resourceTitle, landingBy);
+	}
+	
+	public CourseEditorPageFragment chooseResourceModern(By chooseButton, String resourceTitle) {
+		By landingBy = By.xpath("//div[@class='o_re_reference']//header/h4[text()[contains(.,'" + resourceTitle + "')]]");
+		return chooseResource(chooseButton, resourceTitle, landingBy);
+	}
+	
+	private CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle, By landingBy) {
 		browser.findElement(chooseButton).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		//popup
 		By referenceableEntriesBy = By.className("o_sel_search_referenceable_entries");
 		OOGraphene.waitElement(referenceableEntriesBy, browser);
@@ -437,11 +447,10 @@ public class CourseEditorPageFragment {
 		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		
 		//double check that the resource is selected (search the preview link)
-		By previewLink = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElement(previewLink, browser);
+		OOGraphene.waitElement(landingBy, browser);
 		return this;
 	}
 	
