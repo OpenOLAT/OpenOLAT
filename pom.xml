@@ -62,26 +62,26 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>17</targetJdk>
-		<org.springframework.version>6.0.0-RC3</org.springframework.version>
+		<org.springframework.version>6.0.0</org.springframework.version>
 		<org.hibernate.version>6.1.5.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<apache.cxf>4.0.0-SNAPSHOT</apache.cxf>
 		<apache.pdfbox>2.0.27</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
 		<apache.log4j>2.19.0</apache.log4j>
-		<org.slf4j>1.7.36</org.slf4j>
+		<org.slf4j>2.0.4</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.0.Final</io.undertow>
 		<jackson.version>2.14.0</jackson.version>
-		<swagger.ui.version>4.15.0</swagger.ui.version>
+		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.31</com.mysql.version>
 		<org.postgresql.version>42.5.0</org.postgresql.version>
 		<org.infinispan.version>14.0.2.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.6.0</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
-		<activemq.artemis.version>2.26.0</activemq.artemis.version>
+		<activemq.artemis.version>2.27.0</activemq.artemis.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -367,7 +367,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.logging.log4j</groupId>
-					<artifactId>log4j-slf4j-impl</artifactId>
+					<artifactId>log4j-slf4j2-impl</artifactId>
 					<version>${apache.log4j}</version>
 				</dependency>
 				<!-- Apache CXF for tomcat -->
@@ -1345,19 +1345,6 @@
 				<updatePolicy>daily</updatePolicy>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>springio-snapshot</id>
-			<name>Spring IO Snapshot</name>
-			<url>https://repo.spring.io/milestone</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-			</snapshots>
-		</repository>
 	</repositories>
 	<build>
 		<!-- Useful maven commands: o mvn dependency:tree - check to see what other 
@@ -1816,7 +1803,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.6</version>
+			<version>3.2.7</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1831,7 +1818,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j-zoneinfo-outlook</artifactId>
-			<version>2.1.5</version>
+			<version>2.1.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -1899,7 +1886,7 @@
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
 		    <artifactId>scribejava-apis</artifactId>
-		    <version>8.3.2</version>
+		    <version>8.3.3</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
