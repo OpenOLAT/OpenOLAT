@@ -21,7 +21,9 @@ package org.olat.modules.catalog.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -41,6 +43,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.course.CorruptedCourseException;
 import org.olat.modules.catalog.CatalogRepositoryEntry;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
@@ -69,6 +72,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	private final VelocityContainer mainVC;
 	private Link titleLink;
 	
+	private final List<CatalogRepositoryEntry> entries;
 	private final CatalogRepositoryEntryState state;
 	private final MapperKey mapperThumbnailKey;
 
@@ -82,6 +86,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	public CatalogLauncherRepositoryEntriesController(UserRequest ureq, WindowControl wControl,
 			List<CatalogRepositoryEntry> entries, String title, boolean showMore, CatalogRepositoryEntryState state) {
 		super(ureq, wControl);
+		this.entries = entries;
 		this.state = state;
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
@@ -190,14 +195,37 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if ("select".equals(event.getCommand())) {
 			String key = ureq.getParameter("key");
-			fireEvent(ureq, new OpenSearchEvent(state, Long.valueOf(key)));
+			Long repositoryEntryKey = Long.valueOf(key);
+			launchOrOpen(ureq, repositoryEntryKey);
 		} else if (source == titleLink) {
 			fireEvent(ureq, new OpenSearchEvent(state, null));
 		} else if (source instanceof Link) {
 			Link link = (Link)source;
 			if ("open".equals(link.getCommand())) {
-				fireEvent(ureq, new OpenSearchEvent(state, (Long)link.getUserObject()));
+				Long repositoryEntryKey = (Long)link.getUserObject();
+				launchOrOpen(ureq, repositoryEntryKey);
 			}
+		}
+	}
+	
+	private void launchOrOpen(UserRequest ureq, Long repositoryEntryKey) {
+		Optional<CatalogRepositoryEntry> found = entries.stream().filter(re -> re.getKey().equals(repositoryEntryKey)).findFirst();
+		if (found.isPresent() && found.get().isMember()) {
+			boolean started = doStart(ureq, repositoryEntryKey);
+			if (started) {
+				return ;
+			}
+		}
+		fireEvent(ureq, new OpenSearchEvent(state, repositoryEntryKey));
+	}
+	
+	private boolean doStart(UserRequest ureq, Long repositoryEntryKey) {
+		try {
+			String businessPath = "[RepositoryEntry:" + repositoryEntryKey + "]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+			return true;
+		} catch (CorruptedCourseException e) {
+			return false;
 		}
 	}
 	
