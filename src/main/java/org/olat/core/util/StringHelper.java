@@ -558,6 +558,22 @@ public class StringHelper {
 		}
 		return sb.toString();
 	}
+
+	public static String cleanUTF8WithBom(String string) {
+		if (string == null) {
+			return null;
+		}
+
+		if (string.length() == 0) {
+			return string;
+		}
+
+		if (string.charAt(0) != 0xFEFF) {
+			return string;
+		}
+
+		return string.substring(1);
+	}
 	
 	public static String replaceAllCaseInsensitive(String expression, String name, String replacement) {
 		if(!StringHelper.containsNonWhitespace(expression)) {
