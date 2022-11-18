@@ -67,7 +67,7 @@
     		this._replaceImage();    		
     	}    	
     	// Start rotation process
-    	this.rotate();
+	    this.rotate();
 	}
 	
 	BgCarrousel.prototype.rotate = function() {
@@ -75,15 +75,19 @@
 	}
 	
 	BgCarrousel.prototype._hideCurrent = function() {
-		var el = $(this.settings.query);
-		if (el && el.length > 0) {	
-			el.transition({
-					opacity:0, 
-					duration: this.settings.durationout, 
-					easing: this.settings.easeout
-				}, $.proxy(this._showNext, this)
-			);
-		}
+		// Stop animating if user enabled reduces motion settings
+    	const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    	if (!mediaQuery || !mediaQuery.matches) {
+			var el = $(this.settings.query);
+			if (el && el.length > 0) {	
+				el.transition({
+						opacity:0, 
+						duration: this.settings.durationout, 
+						easing: this.settings.easeout
+					}, $.proxy(this._showNext, this)
+				);
+			}
+	    }
 	}	
 	
 	BgCarrousel.prototype._replaceImage = function(el) {

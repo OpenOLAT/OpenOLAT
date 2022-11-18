@@ -189,7 +189,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	//custom css
 	private CustomCSS customCSS;
 	// the window title
-	private String title;
+	private WindowTitle title;
 	
 	// wbackoffice reference
 	private final WindowBackOfficeImpl wbackofficeImpl;
@@ -209,6 +209,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		this.csrfToken = csrfToken;
 		this.wbackofficeImpl = wbackoffice;
 		jsAndCssAdder = wbackoffice.createJSAndCSSAdder();
+		title = new WindowTitle();
 		// set default theme
 		Theme myTheme = CoreSpringFactory.getImpl(GUISettings.class).getGuiTheme();
 		setGuiTheme(myTheme);
@@ -244,7 +245,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	/**
 	 * @return The current window title
 	 */
-	public String getTitle() {
+	public WindowTitle getTitle() {
 		return title;
 	}
 
@@ -253,15 +254,20 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	 * @param newTitle The new title of this window (for browser history)
 	 */
 	public void setTitle(Translator translator, String newTitle) {
-		this.title = translator.translate("page.appname") + " - " + newTitle;
-		StringBuilder sb = new StringBuilder();
-		sb.append("document.title = \"");
-		sb.append(StringHelper.escapeJavaScript(this.title));
-		sb.append("\";");
-		JSCommand jsc = new JSCommand(sb.toString());
-		if (getWindowBackOffice() != null) {
-			getWindowBackOffice().sendCommandTo(jsc);			
+		newTitle = StringHelper.escapeJavaScript(newTitle);
+		// When current title is null we don't need to update via JS, we are in initial
+		// page load
+		if (title.getValue() != null) {			
+			StringBuilder sb = new StringBuilder();
+			sb.append("document.title = \"");
+			sb.append(newTitle);
+			sb.append("\";");
+			JSCommand jsc = new JSCommand(sb.toString());
+			if (getWindowBackOffice() != null) {
+				getWindowBackOffice().sendCommandTo(jsc);			
+			}
 		}
+		title.setValue(newTitle);
 	}
 
 
@@ -966,7 +972,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			if (analyticsSPI != null) {
 				String serverUri = Settings.getServerContextPathURI();
 				if(url != null && url.startsWith(serverUri)) {
-					analyticsSPI.analyticsCountPageJavaScript(sb, getTitle(), url.substring(serverUri.length()));
+					analyticsSPI.analyticsCountPageJavaScript(sb, getTitle().getValue(), url.substring(serverUri.length()));
 				}
 			}			
 			sb.append(" } catch(e) { }");

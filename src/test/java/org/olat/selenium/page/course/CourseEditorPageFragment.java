@@ -45,24 +45,13 @@ public class CourseEditorPageFragment {
 	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
-	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
+	public static final By chooseTestButton = By.className("o_sel_re_reference_select");
 	public static final By chooseFeedButton = By.className("o_sel_feed_choose_repofile");
 	public static final By chooseScormButton = By.className("o_sel_scorm_choose_repofile");
 	public static final By choosePortfolioButton = By.className("o_sel_map_choose_repofile");
 	public static final By chooseSurveyButton = By.className("o_sel_survey_choose_repofile");
 	
 	public static final By tabNavTabsBy = By.cssSelector("ul.nav.nav-tabs");
-	
-	/*public static final List<By> chooseRepoEntriesButtonList = new ArrayList<>();
-	static {
-		chooseRepoEntriesButtonList.add(chooseCpButton);
-		chooseRepoEntriesButtonList.add(chooseWikiButton);
-		chooseRepoEntriesButtonList.add(chooseTestButton);
-		chooseRepoEntriesButtonList.add(chooseFeedButton);
-		chooseRepoEntriesButtonList.add(chooseScormButton);
-		chooseRepoEntriesButtonList.add(choosePortfolioButton);
-		chooseRepoEntriesButtonList.add(chooseSurveyButton);
-	}*/
 	
 	private WebDriver browser;
 	
@@ -424,8 +413,18 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle) {
+		By landingBy = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
+		return chooseResource(chooseButton, resourceTitle, landingBy);
+	}
+	
+	public CourseEditorPageFragment chooseResourceModern(By chooseButton, String resourceTitle) {
+		By landingBy = By.xpath("//div[@class='o_re_reference']//header/h4[text()[contains(.,'" + resourceTitle + "')]]");
+		return chooseResource(chooseButton, resourceTitle, landingBy);
+	}
+	
+	private CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle, By landingBy) {
 		browser.findElement(chooseButton).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		//popup
 		By referenceableEntriesBy = By.className("o_sel_search_referenceable_entries");
 		OOGraphene.waitElement(referenceableEntriesBy, browser);
@@ -437,11 +436,10 @@ public class CourseEditorPageFragment {
 		By rowBy = By.xpath("//div[contains(@class,'')]//div[contains(@class,'o_segments_content')]//table[contains(@class,'o_table')]//tr/td/a[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		
 		//double check that the resource is selected (search the preview link)
-		By previewLink = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
-		OOGraphene.waitElement(previewLink, browser);
+		OOGraphene.waitElement(landingBy, browser);
 		return this;
 	}
 	

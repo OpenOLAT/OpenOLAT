@@ -64,6 +64,12 @@
 		border-radius: $border-radius-base;
 		box-shadow: $o-editor-tools-box-shadow;
 		
+		button[disabled] {
+		    cursor: $cursor-disabled;
+    		pointer-events: none; // Future-proof disabling of clicks
+			@include opacity(.65);
+		}
+		
 		>button {
 			margin: 0;
 			border: none;

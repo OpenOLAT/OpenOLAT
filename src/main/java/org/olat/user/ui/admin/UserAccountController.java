@@ -26,7 +26,7 @@ package org.olat.user.ui.admin;
 
 import java.util.Date;
 
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.bulkChange.UserBulkChangeManager;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -120,7 +120,7 @@ public class UserAccountController extends FormBasicController {
 	 */
 	public UserAccountController(WindowControl wControl, UserRequest ureq, Identity identity) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
 		
@@ -228,18 +228,22 @@ public class UserAccountController extends FormBasicController {
 		Date reactivationDate = editedIdentity.getReactivationDate();
 		reactivationDateEl.setValue(formatter.formatDate(reactivationDate));
 		reactivationDateEl.setVisible(reactivationDate != null);
-		
-		Date now = new Date();
-		long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
-		daysInactivationEl.setValue(Long.toString(daysBeforeDeactivation));
+
 		daysInactivationEl.setVisible(userModule.isUserAutomaticDeactivation()
 				&& (editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
 						|| editedIdentity.getStatus().equals(Identity.STATUS_PENDING)
 						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED)));
-		
-		long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
-		daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
 		daysDeletionEl.setVisible(userModule.isUserAutomaticDeletion() && editedIdentity.getInactivationDate() != null);
+		
+		if(!editedRoles.isGuestOnly() || inactivationDate != null || reactivationDate != null
+				|| editedIdentity.getDeletionEmailDate() != null || editedIdentity.getExpirationDate() != null) {
+			Date now = new Date();
+			long daysBeforeDeactivation = userLifecycleManager.getDaysUntilDeactivation(editedIdentity, now);
+			daysInactivationEl.setValue(Long.toString(daysBeforeDeactivation));
+
+			long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
+			daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
+		}
 	}
 	
 	private void setStatus(Integer status) {

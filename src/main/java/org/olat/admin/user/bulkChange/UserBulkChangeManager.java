@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -325,7 +325,7 @@ public class UserBulkChangeManager implements InitializingBean {
 	public void sendLoginDeniedEmail(Identity identity) {
 		String lang = identity.getUser().getPreferences().getLanguage();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(lang);
-		Translator translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
+		Translator translator = Util.createPackageTranslator(UserAdminController.class, locale);
 
 		String gender = "";
 		UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);

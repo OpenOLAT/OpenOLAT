@@ -219,8 +219,8 @@ $r.render("jsCssRawHtmlHeader", "post-theme")
 ## deprecated - include any raw header
 $r.renderHeaderIncludes()
 
-## Page title taken from org.olat.core package
-<title>$r.translate("page.appname") - $r.translate("page.title")</title>
+## Page title
+<title>$windowTitle.getValue()</title>
 </head>
 
 <body onload="o_start();" id="o_body" class="#foreach($cssClass in $bodyCssClasses)$cssClass #end o_lang_$r.getLanguageCode() $pageSizeCss">
@@ -235,7 +235,9 @@ $r.renderForce("guidebug")
 $r.render("jsServer")
 <!-- END jsServer -->
 ## controller for development
+<div aria-hidden="true">
 $r.renderForce("development")
+</div>
 ## the content comes here
 <!-- START olatContentPanel -->
 

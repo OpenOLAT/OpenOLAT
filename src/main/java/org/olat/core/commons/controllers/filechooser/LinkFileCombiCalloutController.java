@@ -20,6 +20,7 @@
 package org.olat.core.commons.controllers.filechooser;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.IconPanel;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent;
+import org.olat.core.gui.components.panel.IconPanelLabelTextContent.LabelText;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,10 +57,12 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSAndFilter;
 import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSOrFilter;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 
@@ -79,7 +84,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 	private VelocityContainer contentVC;
 	private EmptyState fileNotAvailableCmp;
 	private IconPanel fileCmp;
-	private VelocityContainer fileCont;
+	private IconPanelLabelTextContent contentCmp;
 	private Link createLink;
 	private Link selectLink;
 	private Link importLink;
@@ -169,8 +174,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 		fileCmp.setIconCssClass("o_icon o_icon-fw o_filetype_html");
 		contentVC.put(fileCmp.getComponentName(), fileCmp);
 		
-		fileCont = createVelocityContainer("combi_file");
-		fileCmp.setContent(fileCont);
+		contentCmp = new IconPanelLabelTextContent("content");
+		fileCmp.setContent(contentCmp);
 		
 		editLink = LinkFactory.createButton("edit.page", contentVC, this);
 		editLink.setElementCssClass("o_sel_filechooser_edit");
@@ -313,9 +318,11 @@ public class LinkFileCombiCalloutController extends BasicController {
 	}
 	
 	private void doOpenSelect(UserRequest ureq) {
-		VFSItemFilter filter = new VFSOrFilter(List.of(
-				new VFSContainerFilter(),
-				new VFSItemSuffixFilter(new String[] { "html", "htm" })));
+		VFSItemFilter filter = new VFSAndFilter(List.of(
+				new VFSSystemItemFilter(),
+				new VFSOrFilter(List.of(
+						new VFSContainerFilter(),
+						new VFSItemSuffixFilter(new String[] { "html", "htm" })))));
 		FileChooserController fileChooserCtrl = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 		fileChooserCtrl.setShowTitle(true);
 		fileChooserCtrl.selectPath(relFilePath);
@@ -444,13 +451,15 @@ public class LinkFileCombiCalloutController extends BasicController {
 		}
 		fileCmp.setTitle(filename);
 		
-		fileCont.contextPut("fileName", relFilePath);
+		
 		if (fileAvailable) {
-			if (file.getMetaInfo() != null) {
-				fileCont.contextPut("fileLastModified", Formatter.getInstance(getLocale()).formatDateAndTime(file.getMetaInfo().getLastModified()));
-			} else {
-				fileCont.contextRemove("fileLastModified");
-			}
+			List<LabelText> labelTexts = new ArrayList<>(2);
+			labelTexts.add(new LabelText(translate("html.page"), relFilePath));
+			String lastModified = file.getMetaInfo() != null
+					? Formatter.getInstance(getLocale()).formatDateAndTime(file.getMetaInfo().getLastModified())
+					: null;
+			labelTexts.add(new LabelText(translate("file.last.modified"), lastModified));
+			contentCmp.setLabelTexts(labelTexts);
 		}
 		
 		// Enable edit link when file is editable 

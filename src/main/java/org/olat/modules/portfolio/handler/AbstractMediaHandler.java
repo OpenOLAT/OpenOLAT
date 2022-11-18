@@ -61,7 +61,6 @@ import org.olat.modules.portfolio.MediaInformations;
 import org.olat.modules.portfolio.MediaLight;
 import org.olat.modules.portfolio.MediaRenderingHints;
 import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.MediaMetadataController;
 
@@ -106,14 +105,7 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof Media) {
-			return getMediaController(ureq, wControl, (Media)element, new StandardMediaRenderingHints());
-		}
-		if(element instanceof MediaPart) {
-			MediaPart mediaPart = (MediaPart)element;
-			return getMediaController(ureq, wControl, mediaPart.getMedia(), new StandardMediaRenderingHints());
-		}
+	public final Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		return null;
 	}
 	

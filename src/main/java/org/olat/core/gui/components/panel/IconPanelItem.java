@@ -122,5 +122,9 @@ public class IconPanelItem extends FormItemImpl implements FormItemCollection {
 	public void setTitle(String title) {
 		iconPanel.setTitle(title);
 	}
+	
+	public void setTagline(String tagline) {
+		iconPanel.setTagline(tagline);
+	}
 
 }

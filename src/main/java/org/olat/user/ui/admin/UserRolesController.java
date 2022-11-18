@@ -33,7 +33,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.admin.user.SelectOrganisationController;
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -117,7 +117,7 @@ public class UserRolesController extends FormBasicController {
 	 */
 	public UserRolesController(WindowControl wControl, UserRequest ureq, Identity identity) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		setTranslator(Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale(), getTranslator()));
 		this.editedIdentity = identity;
 		
 		editedRoles = securityManager.getRoles(editedIdentity, false);

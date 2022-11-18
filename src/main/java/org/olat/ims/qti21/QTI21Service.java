@@ -390,6 +390,8 @@ public interface QTI21Service {
 	 */
 	public List<AssessmentTestSession> getAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
 	
+	public Long getAssessmentTestSessionsCount(RepositoryEntryRef courseEntry, String subIdent, RepositoryEntry testEntry);
+	
 
 	public List<Identity> getRunningAssessmentTestSessions(RepositoryEntryRef courseEntry, String subIdent,
 			Map<String, String> userPropertiesSearch, boolean userPropertiesAsIntersectionSearch);

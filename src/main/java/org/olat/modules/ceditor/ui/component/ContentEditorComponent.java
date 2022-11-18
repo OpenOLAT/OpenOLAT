@@ -219,14 +219,8 @@ public class ContentEditorComponent extends AbstractComponent implements Compone
 	
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
-		/*if(Settings.isDebuging()) {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/interactjs/interact.js");
-		} else {
-			vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/interactjs/interact.min.js");
-		}*/
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/jquery/openolat/jquery.contenteditor.v3.js");
 		vr.getJsAndCSSAdder().addRequiredStaticJsFile("js/dragula/dragula.js");
-
 		super.validate(ureq, vr);
 	}
 

@@ -21,7 +21,7 @@ package org.olat.user.ui.admin;
 
 import java.util.Locale;
 
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -46,7 +46,7 @@ public class IdentityStatusCellRenderer implements FlexiCellRenderer {
 	}
 	
 	public IdentityStatusCellRenderer(Locale  locale) {
-		translator = Util.createPackageTranslator(SystemRolesAndRightsController.class, locale);
+		translator = Util.createPackageTranslator(UserAdminController.class, locale);
 	}
 
 	@Override

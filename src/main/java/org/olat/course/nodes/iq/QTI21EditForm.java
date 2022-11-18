@@ -21,7 +21,6 @@ package org.olat.course.nodes.iq;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,7 +49,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
@@ -61,15 +59,10 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
-import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
-import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
 import org.olat.ims.qti21.QTI21Module;
-import org.olat.ims.qti21.QTI21Service;
-import org.olat.ims.qti21.model.xml.AssessmentTestBuilder;
-import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.grade.GradeModule;
@@ -80,9 +73,6 @@ import org.olat.modules.grade.ui.GradeScaleEditController;
 import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
-import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 
 /**
  * 
@@ -117,6 +107,7 @@ public class QTI21EditForm extends FormBasicController {
 	private static final String ASSESSMENT_MODE_NONE = "none";
 	private SelectionValues relativeToDatesKV;
 	
+	private FormLayoutContainer correctionLayout;
 	private SingleSelection correctionModeEl;
 	private SingleSelection scoreVisibilityAfterCorrectionEl;
 	private SingleSelection showResultsDateDependentEl;
@@ -129,15 +120,12 @@ public class QTI21EditForm extends FormBasicController {
 	private SingleSelection assessmentModeEl;
 	private IntegerElement leadTimeEl;
 	private IntegerElement followupTimeEl;
-	private StaticTextElement minScoreEl;
-	private StaticTextElement maxScoreEl;
 	private MultipleSelectionElement gradeEnabledEl;
 	private SingleSelection gradeAutoEl;
 	private StaticTextElement gradeScaleEl;
 	private FormLayoutContainer gradeScaleButtonsCont;
 	private FormLink gradeScaleEditLink;
 	private StaticTextElement passedGradeEl;
-	private StaticTextElement passedTypeEl;
 	private MultipleSelectionElement ignoreInCourseAssessmentEl;
 	private MultipleSelectionElement showResultsOnFinishEl;
 	private MultipleSelectionElement assessmentResultsOnFinishEl;
@@ -159,6 +147,8 @@ public class QTI21EditForm extends FormBasicController {
 	private final QTI21DeliveryOptions deliveryOptions;
 	private final boolean wizard;
 	private final IQTESTCourseNodeContext assessmentModeDefaults;
+	private final Float minValue;
+	private final Float maxValue;
 	private GradeScale gradeScale;
 	
 	private CloseableModalController cmc;
@@ -168,8 +158,6 @@ public class QTI21EditForm extends FormBasicController {
 
 	@Autowired
 	private QTI21Module qtiModule;
-	@Autowired
-	private QTI21Service qtiService;
 	@Autowired
 	private DueDateService dueDateService;
 	@Autowired
@@ -181,9 +169,9 @@ public class QTI21EditForm extends FormBasicController {
 	@Autowired
 	private AssessmentService assessmentService;
 	
-	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			CourseNode courseNode, NodeAccessType nodeAccessType,
-			QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection, boolean selfAssessment) {
+	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode,
+			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection,
+			boolean selfAssessment, Float minValue, Float maxValue) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
@@ -196,9 +184,12 @@ public class QTI21EditForm extends FormBasicController {
 		this.selfAssessment = selfAssessment;
 		this.wizard = false;
 		this.assessmentModeDefaults = null;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
 		initDateValues();
 		initRelativeToDateKV();
 		initForm(ureq);
+		updateCorrectionWarning();
 		updateShowResultsWarning();
 	}
 
@@ -216,9 +207,12 @@ public class QTI21EditForm extends FormBasicController {
 		this.needManualCorrection = needManualCorrection;
 		this.selfAssessment = selfAssessment;
 		this.wizard = true;
+		this.minValue = null;
+		this.maxValue = null;
 		initDateValues();
 		initRelativeToDateKV();
 		initForm(ureq);
+		updateCorrectionWarning();
 		updateShowResultsWarning();
 	}
 
@@ -244,7 +238,7 @@ public class QTI21EditForm extends FormBasicController {
 		formLayout.add(testLayout);
 		initFormAssessmentInfos(testLayout);
 
-		FormLayoutContainer correctionLayout = FormLayoutContainer.createDefaultFormLayout("correction", getTranslator());
+		correctionLayout = FormLayoutContainer.createDefaultFormLayout("correction", getTranslator());
 		correctionLayout.setElementCssClass("o_qti_21_correction");
 		correctionLayout.setFormTitle(translate("correction.config"));
 		correctionLayout.setRootForm(mainForm);
@@ -267,11 +261,6 @@ public class QTI21EditForm extends FormBasicController {
 	}
 	
 	protected void initFormAssessmentInfos(FormItemContainer formLayout) {
-		minScoreEl = uifactory.addStaticTextElement("score.min", "", formLayout);
-		minScoreEl.setVisible(false);
-		maxScoreEl = uifactory.addStaticTextElement("score.max", "", formLayout);
-		maxScoreEl.setVisible(false);
-		
 		if (gradeModule.isEnabled() && !wizard && !selfAssessment) {
 			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
@@ -294,9 +283,6 @@ public class QTI21EditForm extends FormBasicController {
 			
 			passedGradeEl = uifactory.addStaticTextElement("score.passed.grade", "score.passed", translate("score.passed.grade"), formLayout);
 		}
-		
-		passedTypeEl = uifactory.addStaticTextElement("score.passed", "", formLayout);
-		passedTypeEl.setVisible(!wizard);
 		
 		ignoreInCourseAssessmentEl = uifactory.addCheckboxesHorizontal("ignore.in.course.assessment", formLayout,
 				new String[] { "xx" }, new String[] { null });
@@ -364,9 +350,9 @@ public class QTI21EditForm extends FormBasicController {
 		
 		SelectionValues correctionKeyValues = new SelectionValues();
 		correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[0], translate("correction.auto")));
-		correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[1], translate("correction.manual")));
+		correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[1], translate("correction.config.manual")));
 		if(correctionModeKeys[2].equals(mode) || IQEditController.isGradingEnabled(modConfig)) {
-			correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[2], translate("correction.grading")));
+			correctionKeyValues.add(SelectionValues.entry(correctionModeKeys[2], translate("correction.config.grading")));
 		}
 		
 		correctionModeEl = uifactory.addRadiosVertical("correction.mode", "correction.mode", formLayout,
@@ -627,6 +613,7 @@ public class QTI21EditForm extends FormBasicController {
 				markDirty();
 			}
  		} else if(correctionModeEl == source) {
+ 			updateCorrectionWarning();
 			updateScoreVisibility();
 			updateShowResultsWarning();
 			markDirty();
@@ -645,6 +632,14 @@ public class QTI21EditForm extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void updateCorrectionWarning() {
+		if (needManualCorrection && correctionModeEl.isKeySelected(IQEditController.CORRECTION_AUTO)) {
+			correctionLayout.setFormWarning(translate("error.manual.auto"));
+		} else {
+			correctionLayout.setFormWarning(null);
+		}
+	}
+
 	private void updateShowResultsWarning() {
 		if(showResultsOnFinishEl.isAtLeastSelected(1)
 				&& assessmentResultsOnFinishEl.isAtLeastSelected(1)
@@ -774,54 +769,14 @@ public class QTI21EditForm extends FormBasicController {
 		}
 	}
 	
-	protected void update(RepositoryEntry testEntry) {
-		Double minValue = null;
-		Double maxValue = null;
-		Double cutValue = null;
-		
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File unzippedDirRoot = frm.unzipFileResource(testEntry.getOlatResource());
-		ResolvedAssessmentTest resolvedAssessmentTest = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, false);
-		AssessmentTest assessmentTest = resolvedAssessmentTest.getRootNodeLookup().extractIfSuccessful();
-		if(assessmentTest != null) {
-			AssessmentTestBuilder testBuilder = new AssessmentTestBuilder(assessmentTest);
-			maxValue = QtiMaxScoreEstimator.estimateMaxScore(resolvedAssessmentTest);
-			if(maxValue == null) {
-				maxValue = testBuilder.getMaxScore();
-			}
-			cutValue = testBuilder.getCutValue();
-			if(maxValue != null && "OpenOLAT".equals(assessmentTest.getToolName())) {
-				minValue = 0d;
-			}
-		}
-
-		minScoreEl.setValue(minValue == null ? "" : AssessmentHelper.getRoundedScore(minValue));
-		minScoreEl.setVisible(!wizard && minValue != null);
-		maxScoreEl.setValue(maxValue == null ? "" : AssessmentHelper.getRoundedScore(maxValue));
-		maxScoreEl.setVisible(!wizard && maxValue != null);
-		
-		PassedType passedType = deliveryOptions.getPassedType(cutValue);
-		String passedTypeValue;
-		switch (passedType) {
-		case cutValue:
-			passedTypeValue = translate("score.passed.cut.value", AssessmentHelper.getRoundedScore(cutValue));
-			break;
-		case manually:
-			passedTypeValue = translate("score.passed.manually");
-			break;
-		default:
-			passedTypeValue = translate("score.passed.none");
-			break;
-		}
-		passedTypeEl.setValue(passedTypeValue);
-		
+	protected void updateUI() {
 		updateGradeUI();
 		update();
 	}
 	
 	private void updateGradeUI() {
 		if (gradeEnabledEl != null) {
-			boolean hasScore = minScoreEl.isVisible();
+			boolean hasScore = minValue != null;
 			gradeEnabledEl.setVisible(hasScore);
 			gradeAutoEl.setVisible(gradeEnabledEl.isVisible() && gradeEnabledEl.isAtLeastSelected(1));
 			String gradeScaleText = gradeScale == null
@@ -835,8 +790,6 @@ public class QTI21EditForm extends FormBasicController {
 			GradeScoreRange minRange = gradeService.getMinPassedGradeScoreRange(gradeScale, getLocale());
 			passedGradeEl.setVisible(hasGrade && minRange != null);
 			passedGradeEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
-			
-			passedTypeEl.setVisible(!hasGrade);
 		}
 	}
 	
@@ -978,13 +931,13 @@ public class QTI21EditForm extends FormBasicController {
 	private void doEditGradeScale(UserRequest ureq) {
 		if (guardModalController(gradeScaleCtrl)) return;
 		
-		if (!minScoreEl.isVisible() || !maxScoreEl.isVisible()) {
+		if (minValue == null && maxValue == null) {
 			showWarning("error.no.grade.no.score");
 			return;
 		}
 		
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				Float.valueOf(minScoreEl.getValue()), Float.valueOf(maxScoreEl.getValue()), true);
+				minValue, maxValue, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

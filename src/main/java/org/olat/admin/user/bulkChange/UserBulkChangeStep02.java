@@ -27,7 +27,7 @@ import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.admin.user.groups.GroupSearchController;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -115,7 +115,7 @@ class UserBulkChangeStep02 extends BasicStep {
 			Translator pt1 = userManager.getPropertyHandlerTranslator(getTranslator());
 			Translator pt2 = Util.createPackageTranslator(BusinessGroupFormController.class, getLocale(), pt1);
 			Translator pt3 = Util.createPackageTranslator(GroupSearchController.class, getLocale(), pt2);
-			Translator pt4 = Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale(), pt3);
+			Translator pt4 = Util.createPackageTranslator(UserAdminController.class, getLocale(), pt3);
 			setTranslator(pt4);
 			flc.setTranslator(pt4);
 			boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());

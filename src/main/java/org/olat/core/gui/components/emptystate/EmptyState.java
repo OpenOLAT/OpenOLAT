@@ -48,6 +48,7 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 	private String indicatorIconCss;
 	private String messageI18nKey;
 	private String[] messageI18nArgs;
+	private String messageTranslated;
 	private String hintI18nKey;
 	private String[] hintI18nArgs;
 	private String buttonI18nKey;
@@ -94,6 +95,14 @@ public class EmptyState extends AbstractComponent implements ComponentCollection
 
 	public void setMessageI18nArgs(String[] messageI18nArgs) {
 		this.messageI18nArgs = messageI18nArgs;
+	}
+
+	public String getMessageTranslated() {
+		return messageTranslated;
+	}
+
+	public void setMessageTranslated(String messageTranslated) {
+		this.messageTranslated = messageTranslated;
 	}
 
 	public String getHintI18nKey() {

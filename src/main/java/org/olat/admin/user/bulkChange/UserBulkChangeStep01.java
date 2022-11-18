@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.admin.user.SystemRolesAndRightsController;
+import org.olat.admin.user.UserAdminController;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -251,7 +251,7 @@ class UserBulkChangeStep01 extends BasicStep {
 				// Pay attention: if status changes in Identity-statics this
 				// may lead to missing status
 				// implement methods in SystemRolesAndRightsController.java
-				setTranslator(Util.createPackageTranslator(SystemRolesAndRightsController.class, getLocale()));
+				setTranslator(Util.createPackageTranslator(UserAdminController.class, getLocale()));
 				String[] statusKeys = {
 						Integer.toString(Identity.STATUS_ACTIV),
 						Integer.toString(Identity.STATUS_PERMANENT),
