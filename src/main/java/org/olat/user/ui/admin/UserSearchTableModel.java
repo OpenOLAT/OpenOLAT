@@ -80,7 +80,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 			switch(UserCols.values()[col]) {
 				case id: return userRow.getIdentityKey();
 				case creationDate: return userRow.getCreationDate();
-				case lastLogin: return userRow.getLastLogin();
+				case lastLogin: return getLastLogin(userRow);
 				case status: return userRow.getStatus();
 				case expirationDate: return userRow.getExpirationDate();
 				case inactivationDate: return userRow.getInactivationDate();
@@ -94,6 +94,13 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 			return userRow.getIdentityProp(propPos);
 		}
 		return null;
+	}
+	
+	private Date getLastLogin(IdentityPropertiesRow userRow) {
+		if(guestsKeys.contains(userRow.getIdentityKey())) {
+			return null;
+		}
+		return userRow.getLastLogin();
 	}
 	
 	private Long getDaysToInactivation(IdentityPropertiesRow userRow) {

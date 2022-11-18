@@ -38,10 +38,13 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -77,6 +80,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserAccountController extends FormBasicController {
 
+	private FormSubmit saveButton;
+	private FormCancel cancelButton;
 	private StaticTextElement userTypeEl;
 	private StaticTextElement lastLoginEl;
 	private StaticTextElement creationDateEl;
@@ -84,6 +89,7 @@ public class UserAccountController extends FormBasicController {
 	private StaticTextElement reactivationDateEl;
 	private StaticTextElement daysInactivationEl;
 	private StaticTextElement daysDeletionEl;
+	private SpacerElement loginDateSpacerEl;
 	
 	private FormLink inviteeToUserButton;
 	
@@ -157,8 +163,8 @@ public class UserAccountController extends FormBasicController {
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
 		formLayout.add(buttonGroupLayout);
-		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		saveButton = uifactory.addFormSubmitButton("submit", buttonGroupLayout);
+		cancelButton = uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 	}
 	
 	private void initUserTypeForm(FormItemContainer formLayout) {
@@ -171,7 +177,7 @@ public class UserAccountController extends FormBasicController {
 	private void initFormStatus(FormItemContainer formLayout, boolean iAmAdmin, boolean iAmUserManager) {
 		creationDateEl = uifactory.addStaticTextElement("rightsForm.creation.date", "", formLayout);
 		lastLoginEl = uifactory.addStaticTextElement("rightsForm.last.login", "", formLayout);
-		uifactory.addSpacerElement("datesep", formLayout, false);
+		loginDateSpacerEl = uifactory.addSpacerElement("datesep", formLayout, false);
 		
 		// status
 		statusEl = uifactory.addRadiosVertical("status", "rightsForm.status", formLayout, statusKeys.keys(), statusKeys.values());
@@ -213,11 +219,13 @@ public class UserAccountController extends FormBasicController {
 		setStatus(editedIdentity.getStatus());
 
 		expirationDateEl.setDate(editedIdentity.getExpirationDate());
-		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator());
+		expirationDateEl.setVisible(!editedRoles.isSystemAdmin() && !editedRoles.isAdministrator()
+				&& !editedRoles.isGuestOnly());
 		
 		Formatter formatter = Formatter.getInstance(getLocale());
 		String lastLogin = formatter.formatDateAndTime(editedIdentity.getLastLogin());
 		lastLoginEl.setValue(lastLogin == null ? "" : lastLogin);
+		lastLoginEl.setVisible(!editedRoles.isGuestOnly());
 		String creationDate = formatter.formatDateAndTime(editedIdentity.getCreationDate());
 		creationDateEl.setValue(creationDate);
 		
@@ -232,8 +240,10 @@ public class UserAccountController extends FormBasicController {
 		daysInactivationEl.setVisible(userModule.isUserAutomaticDeactivation()
 				&& (editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
 						|| editedIdentity.getStatus().equals(Identity.STATUS_PENDING)
-						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED)));
+						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
+				&& !editedRoles.isGuestOnly());
 		daysDeletionEl.setVisible(userModule.isUserAutomaticDeletion() && editedIdentity.getInactivationDate() != null);
+		loginDateSpacerEl.setVisible(!editedRoles.isGuestOnly());
 		
 		if(!editedRoles.isGuestOnly() || inactivationDate != null || reactivationDate != null
 				|| editedIdentity.getDeletionEmailDate() != null || editedIdentity.getExpirationDate() != null) {
@@ -244,6 +254,9 @@ public class UserAccountController extends FormBasicController {
 			long daysBeforeDeletion = userLifecycleManager.getDaysUntilDeletion(editedIdentity, now);
 			daysDeletionEl.setValue(Long.toString(daysBeforeDeletion));
 		}
+		
+		saveButton.setVisible(!editedRoles.isGuestOnly());
+		cancelButton.setVisible(!editedRoles.isGuestOnly());
 	}
 	
 	private void setStatus(Integer status) {

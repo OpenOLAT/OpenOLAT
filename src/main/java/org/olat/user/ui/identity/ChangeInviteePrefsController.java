@@ -108,8 +108,8 @@ public class ChangeInviteePrefsController extends FormBasicController {
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		buttonLayout.setElementCssClass("o_sel_home_settings_prefs_buttons");
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("submit", buttonLayout);
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	@Override
