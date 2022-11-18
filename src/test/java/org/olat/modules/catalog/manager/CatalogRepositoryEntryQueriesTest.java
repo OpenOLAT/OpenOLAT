@@ -20,8 +20,10 @@
 package org.olat.modules.catalog.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.core.util.DateUtils.toDate;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +36,9 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -55,6 +60,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.OfferAccess;
@@ -90,6 +96,8 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private LicenseService licenseService;
 	
 	@Autowired
 	private CatalogRepositoryEntryQueries sut;
@@ -98,6 +106,94 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	@After
 	public void enableFreeAccessMethod() {
 		acService.enableMethod(FreeAccessMethod.class, true);
+	}
+	
+	@Test
+	public void shouldLoadMainLanguages() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, "Deutsch ", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, "italienisch, deutsch", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, " deutsch", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, "  ", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<String> mainLangauages = sut.loadMainLangauages(searchParams);
+		
+		assertThat(mainLangauages)
+				.containsExactlyInAnyOrder(
+					"deutsch",
+					"italienisch, deutsch"
+				);
+	}
+	
+	@Test
+	public void shouldLoadExpendituresOfWork() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, " 1 week", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, "Months and Weeks", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, "1 Week   ", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, "  ", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<String> expendituresOfWork = sut.loadExpendituresOfWork(searchParams);
+		
+		assertThat(expendituresOfWork)
+				.containsExactlyInAnyOrder(
+						"1 week",
+						"months and weeks"
+					);
+	}
+	
+	@Test
+	public void shouldLoadLocations() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, "Chur ", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, "Sargans oder Chur", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, "  chur", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, "  ", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<String> locations = sut.loadLocations(searchParams);
+		
+		assertThat(locations)
+				.containsExactlyInAnyOrder(
+						"chur",
+						"sargans oder chur"
+				);
+	}
+	
+	@Test
+	public void shouldLoadPublicLifecycles() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		RepositoryEntryLifecycle lifecycle1 = reLifecycleDao.create(random(), null, false, null, null);
+		RepositoryEntryLifecycle lifecycle2 = reLifecycleDao.create(random(), null, false, null, null);
+		reLifecycleDao.create(random(), null, true, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, lifecycle1, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, lifecycle1, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, lifecycle2, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, null, null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<RepositoryEntryLifecycle> lifecycles = sut.loadPublicLifecycles(searchParams);
+		assertThat(lifecycles)
+				.containsExactlyInAnyOrder(
+						lifecycle1,
+						lifecycle2
+				);
 	}
 	
 	@Test
@@ -694,6 +790,168 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 						catalogItem.getRepositoryEntry(0),
 						catalogItem.getRepositoryEntry(1),
 						catalogItem.getRepositoryEntry(2));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_MainLanguage() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, "Deutsch", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, "italienisch, deutsch", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, "de", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, "fr", null, null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, "english", null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setMainLanguages(List.of("de", "fr"));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_ExpenditureOfWork() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, "1 week", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, "Months and Weeks", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, "cheese", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, "hour", null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, "1 year", null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setExpendituresOfWork(List.of("ee", "hour"));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_Location() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, "Chur ", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, "Sargans oder Chur", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, "  chur", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, "Disentis", null, null, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, "Bergün", null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setLocations(List.of("Chur", "Disentis"));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_License() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		LicenseType licenseType1 = licenseService.createLicenseType(random());
+		licenseService.saveLicenseType(licenseType1);
+		LicenseType licenseType2 = licenseService.createLicenseType(random());
+		licenseService.saveLicenseType(licenseType2);
+		dbInstance.commitAndCloseSession();
+		ResourceLicense license0 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(0).getOlatResource());
+		license0.setLicenseType(licenseType1);
+		licenseService.update(license0);
+		ResourceLicense license1 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(1).getOlatResource());
+		license1.setLicenseType(licenseType1);
+		licenseService.update(license1);
+		ResourceLicense license2 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(2).getOlatResource());
+		license2.setLicenseType(licenseType2);
+		licenseService.update(license2);
+		licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(3).getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setLicenseTypeKeys(List.of(licenseType1.getKey(), licenseType2.getKey()));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_LifecyclePublic() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		RepositoryEntryLifecycle lifecycle1 = reLifecycleDao.create(random(), null, false, null, null);
+		RepositoryEntryLifecycle lifecycle2 = reLifecycleDao.create(random(), null, false, null, null);
+		RepositoryEntryLifecycle lifecycle3 = reLifecycleDao.create(random(), null, false, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, lifecycle1, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, lifecycle1, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, lifecycle2, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, lifecycle3, null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setLifecyclesPublicKeys(List.of(lifecycle1.getKey(), lifecycle2.getKey()));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(0),
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_LifecyclePublicFrom() {
+		TestCatalogItem catalogItem = createCatalogItem(6);
+		
+		LocalDateTime ldt = LocalDateTime.of(2020, 2, 3, 4, 5, 6);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, toDate(ldt.minusDays(1)), null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, toDate(ldt.minusHours(1)), null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, toDate(ldt), null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, toDate(ldt.plusDays(2)), null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, false, toDate(ldt.plusDays(2)), null), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(5), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setLifecyclesPrivateFrom(toDate(ldt));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
+	}
+	
+	@Test
+	public void shouldLoadRepositoryEntries_filterBy_LifecyclePublicTo() {
+		TestCatalogItem catalogItem = createCatalogItem(6);
+		
+		LocalDateTime ldt = LocalDateTime.of(2020, 2, 3, 4, 5, 6);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, null, toDate(ldt.plusDays(1))), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, null, toDate(ldt.plusHours(1))), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, null, toDate(ldt)), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, true, null, toDate(ldt.minusDays(2))), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(4), random(), null, null, null, null, null, null, null, null, null, null, reLifecycleDao.create(random(), null, false, null, toDate(ldt.minusDays(2))), null, null, null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(5), random(), null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		searchParams.setLifecyclesPrivateTo(toDate(ldt));
+		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
+				.containsExactlyInAnyOrder(
+						catalogItem.getRepositoryEntry(1),
+						catalogItem.getRepositoryEntry(2),
+						catalogItem.getRepositoryEntry(3));
 	}
 	
 	@Test

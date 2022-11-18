@@ -22,6 +22,7 @@ package org.olat.core.gui.components.util;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.olat.core.util.StringHelper;
 
@@ -31,7 +32,7 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SelectionValues {
+public class SelectionValues implements SelectionValuesSupplier {
 	
 	private static final Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareToIgnoreCase);
 	public static final Comparator<SelectionValue> VALUE_ASC = Comparator.comparing(SelectionValue::getValue, nullSafeStringComparator);
@@ -122,60 +123,38 @@ public class SelectionValues {
 		}
 	}
 	
-	public SelectionValue get(String key) {
-		return keyValues.stream().filter(kv -> key.equals(kv.getKey())).findFirst().orElse(null);
+	@Override
+	public String getValue(String key) {
+		Optional<SelectionValue> found = keyValues.stream().filter(kv -> key.equals(kv.getKey())).findFirst();
+		return found.isPresent()? found.get().getValue(): null;
 	}
 	
-	/**
-	 * Returns a array of all keys. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public String[] keys() {
 		return keyValues.stream().map(SelectionValue::getKey).toArray(String[]::new);
 	}
 	
-	/**
-	 * Returns a array of all values. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public String[] values() {
 		return keyValues.stream().map(SelectionValue::getValue).toArray(String[]::new);
 	}
 	
-	/**
-	 * Returns a array of all descriptions. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public String[] descriptions() {
 		return keyValues.stream().map(SelectionValue::getDescription).toArray(String[]::new);
 	}
 	
-	/**
-	 * Returns a array of all icons. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public String[] icons() {
 		return keyValues.stream().map(SelectionValue::getIcon).toArray(String[]::new);
 	}
 	
-	/**
-	 * Returns a array of all custom css classes. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public String[] cssClasses() {
 		return keyValues.stream().map(SelectionValue::getCssClass).toArray(String[]::new);
 	}
 	
-	/**
-	 * Returns a array of all enabled states. The method creates a new array every time it is invoked.
-	 *
-	 * @return
-	 */
+	@Override
 	public Boolean[] enabledStates() {
 		return keyValues.stream().map(SelectionValue::isEnabled).toArray(Boolean[]::new);
 	}

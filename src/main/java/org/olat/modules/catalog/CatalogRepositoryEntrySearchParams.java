@@ -87,6 +87,13 @@ public class CatalogRepositoryEntrySearchParams {
 	private Map<String, Collection<Long>> identToEducationalTypeKeys = new HashMap<>(2);
 	private Map<String, List<TaxonomyLevel>> identToTaxonomyLevels = new HashMap<>(2);
 	private boolean taxonomyLevelChildren = true;
+	private List<String> mainLanguages;
+	private List<String> expendituresOfWork;
+	private List<String> locations;
+	private Collection<Long> licenseTypeKeys;
+	private Collection<Long> lifecyclesPublicKeys;
+	private Date lifecyclesPrivateFrom;
+	private Date lifecyclesPrivateTo;
 	private Boolean openAccess;
 	private Boolean showAccessMethods;
 	private Collection<AccessMethod> accessMethods;
@@ -191,6 +198,62 @@ public class CatalogRepositoryEntrySearchParams {
 		this.taxonomyLevelChildren = taxonomyLevelChildren;
 	}
 
+	public List<String> getMainLanguages() {
+		return mainLanguages;
+	}
+
+	public void setMainLanguages(List<String> mainLanguages) {
+		this.mainLanguages = mainLanguages;
+	}
+
+	public List<String> getExpendituresOfWork() {
+		return expendituresOfWork;
+	}
+
+	public void setExpendituresOfWork(List<String> expendituresOfWork) {
+		this.expendituresOfWork = expendituresOfWork;
+	}
+
+	public List<String> getLocations() {
+		return locations;
+	}
+
+	public void setLocations(List<String> locations) {
+		this.locations = locations;
+	}
+
+	public Collection<Long> getLicenseTypeKeys() {
+		return licenseTypeKeys;
+	}
+
+	public void setLicenseTypeKeys(Collection<Long> licenseTypeKeys) {
+		this.licenseTypeKeys = licenseTypeKeys;
+	}
+
+	public Collection<Long> getLifecyclesPublicKeys() {
+		return lifecyclesPublicKeys;
+	}
+
+	public void setLifecyclesPublicKeys(Collection<Long> lifecyclesPublicKeys) {
+		this.lifecyclesPublicKeys = lifecyclesPublicKeys;
+	}
+
+	public Date getLifecyclesPrivateFrom() {
+		return lifecyclesPrivateFrom;
+	}
+
+	public void setLifecyclesPrivateFrom(Date lifecyclesPrivateFrom) {
+		this.lifecyclesPrivateFrom = lifecyclesPrivateFrom;
+	}
+
+	public Date getLifecyclesPrivateTo() {
+		return lifecyclesPrivateTo;
+	}
+
+	public void setLifecyclesPrivateTo(Date lifecyclesPrivateTo) {
+		this.lifecyclesPrivateTo = lifecyclesPrivateTo;
+	}
+
 	public Boolean getOpenAccess() {
 		return openAccess;
 	}
@@ -268,6 +331,27 @@ public class CatalogRepositoryEntrySearchParams {
 			copy.identToTaxonomyLevels.put(entry.getKey(), new ArrayList<>(entry.getValue()));
 		}
 		copy.taxonomyLevelChildren = this.taxonomyLevelChildren;
+		if (this.mainLanguages != null) {
+			copy.mainLanguages  = new ArrayList<>(this.mainLanguages);
+		}
+		if (this.expendituresOfWork != null) {
+			copy.expendituresOfWork = new ArrayList<>(this.expendituresOfWork);
+		}
+		if (this.locations != null) {
+			copy.locations = new ArrayList<>(this.locations);
+		}
+		if (this.licenseTypeKeys != null) {
+			copy.licenseTypeKeys = new ArrayList<>(this.licenseTypeKeys);
+		}
+		if (this.lifecyclesPublicKeys != null) {
+			copy.lifecyclesPublicKeys = new ArrayList<>(this.lifecyclesPublicKeys);
+		}
+		if (this.lifecyclesPrivateFrom != null) {
+			copy.lifecyclesPrivateFrom = new Date(lifecyclesPrivateFrom.getTime());
+		}
+		if (this.lifecyclesPrivateTo != null) {
+			copy.lifecyclesPrivateTo =  new Date(lifecyclesPrivateTo.getTime());
+		}
 		copy.openAccess = this.openAccess;
 		copy.showAccessMethods = this.showAccessMethods;
 		if (this.accessMethods != null) {

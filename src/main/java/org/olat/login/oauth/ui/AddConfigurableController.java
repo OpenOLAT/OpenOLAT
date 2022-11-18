@@ -84,7 +84,7 @@ public class AddConfigurableController extends FormBasicController {
 		List<String> possibleResponseTypes = getArray(configuration, "response_types_supported");
 		if(!possibleResponseTypes.isEmpty()) {
 			for(String responseType:possibleResponseTypes) {
-				if(responseTypes.get(responseType) != null) {
+				if(responseTypeEl.containsKey(responseType)) {
 					responseTypeEl.select(responseType, true);
 					break;
 				}

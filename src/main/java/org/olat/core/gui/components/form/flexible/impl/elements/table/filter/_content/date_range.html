@@ -1,0 +1,9 @@
+$r.render("dates")
+<div class="o_block">
+	#if($r.available("update"))
+		$r.render("update")
+	#end
+	#if($r.available("clear"))
+		$r.render("clear")
+	#end
+</div>

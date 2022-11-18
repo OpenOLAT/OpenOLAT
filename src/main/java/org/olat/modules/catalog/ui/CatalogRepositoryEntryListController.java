@@ -386,7 +386,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	public void search(UserRequest ureq, String searchString, boolean reset) {
 		if (StringHelper.containsNonWhitespace(searchString)) {
-			List<CatalogSearchTerm> searchTems = catalogService.getSearchTems(searchString, getLocale());
+			List<CatalogSearchTerm> searchTems = catalogService.getSearchTerms(searchString, getLocale());
 			searchParams.setSearchTerms(searchTems);
 		} else {
 			searchParams.setSearchTerms(null);

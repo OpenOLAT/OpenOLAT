@@ -104,7 +104,7 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if (withSearch) {
 			if (StringHelper.containsNonWhitespace(query)) {
-				List<CatalogSearchTerm> searchTems = catalogService.getSearchTems(query, locale);
+				List<CatalogSearchTerm> searchTems = catalogService.getSearchTerms(query, locale);
 				searchParams.setSearchTerms(searchTems);
 			} else {
 				searchParams.setSearchTerms(null);

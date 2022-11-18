@@ -46,6 +46,7 @@ import org.olat.modules.catalog.CatalogSearchTerm;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.AccessMethod;
@@ -67,68 +68,158 @@ public class CatalogRepositoryEntryQueries {
 	@Autowired
 	private AccessControlModule acModule;
 	
-	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams)  {
-		TypedQuery<Number> query = createMyViewQuery(searchParams, Number.class);
-		Number count = query
-				.setFlushMode(FlushModeType.COMMIT)
-				.getSingleResult();
-		return Integer.valueOf(count.intValue());
+	public List<String> loadMainLangauages(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct trim(lower(v.mainLanguage))");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		sb.and().append("v.mainLanguage != null");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, true);
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		List<String> resultList = query.getResultList();
+		resultList.removeIf(String::isBlank);
+		return resultList;
+	}
+	
+	public List<String> loadExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct trim(lower(v.expenditureOfWork))");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		sb.and().append("v.expenditureOfWork != null");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, true);
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		List<String> resultList = query.getResultList();
+		resultList.removeIf(String::isBlank);
+		return resultList;
+	}
+	
+	public List<String> loadLocations(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct trim(lower(v.location))");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		sb.and().append("v.location != null");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, true);
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		List<String> resultList = query.getResultList();
+		resultList.removeIf(String::isBlank);
+		return resultList;
+	}
+
+	public List<RepositoryEntryLifecycle> loadPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct lifecycle");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		sb.append(" inner join v.lifecycle as lifecycle");
+		sb.and().append("lifecycle.privateCycle = false");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, false);
+		
+		TypedQuery<RepositoryEntryLifecycle> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), RepositoryEntryLifecycle.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		return query.getResultList();
 	}
 	
 	public List<String> loadTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
-		TypedQuery<String> query = createMyViewQuery(searchParams, String.class);
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct reToTax.taxonomyLevel.materializedPathKeys");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join repositoryentrytotaxonomylevel as reToTax");
+		sb.append("         on reToTax.entry.key = v.key");
+		sb.append(" inner join v.olatResource as res");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, true, true);
+		
+		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), String.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
 		return query.getResultList();
+	}
+	
+	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams)  {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select count(v.key) ");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, true);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		Number count = query.getSingleResult();
+		return Integer.valueOf(count.intValue());
 	}
 
 	public List<RepositoryEntry> loadRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults) {
-		TypedQuery<Object[]> query = createMyViewQuery(searchParams, Object[].class);
-		query.setFlushMode(FlushModeType.COMMIT)
-			.setFirstResult(firstResult);
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select v");
+		if (OrderBy.popularCourses == searchParams.getOrderBy()) {
+			sb.append(", (select sum(stat.value) ");
+			sb.append("     from dailystat as stat ");
+			sb.append("    where stat.resId = v.key and stat.day > :statDay");
+			sb.append("  ) as popularCourses");
+		} else {
+			sb.append(", 0 as popularCourses");
+		}
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join fetch v.olatResource as res");
+		sb.append("  left join fetch v.lifecycle as lifecycle");
+		sb.append("  left join fetch v.educationalType as educationalType");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, false);
+		appendOrderBy(searchParams, sb);
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setFirstResult(firstResult);
 		if(maxResults > 0) {
 			query.setMaxResults(maxResults);
 		}
+		appendParams(searchParams, query, addParams, true);
 		
 		return query.getResultList().stream()
 				.map(result -> (RepositoryEntry)result[0])
 				.collect(Collectors.toList());
 	}
-
-	protected <T> TypedQuery<T> createMyViewQuery(CatalogRepositoryEntrySearchParams searchParams, Class<T> type) {
-		boolean count = Number.class.equals(type);
-		boolean countTaxonomyLevels= String.class.equals(type);
-		boolean selectRepositoryEntries = !count && !countTaxonomyLevels;
-		QueryBuilder sb = new QueryBuilder(2048);
-		
-		if(count) {
-			sb.append("select count(v.key) ");
-			sb.append(" from repositoryentry as v");
-			sb.append(" inner join v.olatResource as res");
+	
+	private void appendWhere(CatalogRepositoryEntrySearchParams searchParams, QueryBuilder sb, AddParams addParams,
+			boolean countTaxonomyLevels, boolean addFromLifecycle) {
+		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
+			sb.append(" inner join license as lic");
+			sb.append("    on lic.resId = res.resId");
+			sb.append("   and lic.resName = res.resName");
+		}
+		if (addFromLifecycle
+				&& ((searchParams.getLifecyclesPublicKeys() != null && searchParams.getLifecyclesPublicKeys().isEmpty())
+						|| searchParams.getLifecyclesPrivateFrom() != null
+						|| searchParams.getLifecyclesPrivateTo() != null)) {
 			sb.append(" left join v.lifecycle as lifecycle");
-		} else if (countTaxonomyLevels) {
-			sb.append("select reToTax.taxonomyLevel.materializedPathKeys");
-			sb.append(" from repositoryentry as v");
-			sb.append(" inner join repositoryentrytotaxonomylevel as reToTax");
-			sb.append("         on reToTax.entry.key = v.key");
-			sb.append(" inner join v.olatResource as res");
-			sb.append(" left join v.lifecycle as lifecycle");
-			sb.append(" left join v.educationalType as educationalType");
-		} else {
-			sb.append("select v");
-			if (OrderBy.popularCourses == searchParams.getOrderBy()) {
-				sb.append(", (select sum(stat.value) ");
-				sb.append("     from dailystat as stat ");
-				sb.append("    where stat.resId = v.key and stat.day > :statDay");
-				sb.append("  ) as popularCourses");
-			} else {
-				sb.append(", 0 as popularCourses");
-			}
-			sb.append(" from repositoryentry as v");
-			sb.append(" inner join fetch v.olatResource as res");
-			sb.append(" left join fetch v.lifecycle as lifecycle");
-			sb.append(" left join fetch v.educationalType as educationalType");
 		}
 		
-		AddParams addParams = appendMyViewAccessSubSelect(sb, searchParams.isGuestOnly(),
+		appendMyViewAccessSubSelect(sb, addParams, searchParams.isGuestOnly(),
 				searchParams.getOfferValidAt(), searchParams.getOfferOrganisations(), searchParams.getOpenAccess(),
 				searchParams.getShowAccessMethods(), searchParams.getAccessMethods());
 		
@@ -150,6 +241,7 @@ public class CatalogRepositoryEntryQueries {
 		// No check if is empty! retainAll() may have put all keys away, so no result must be found
 		if (resourceTypes != null) {
 			sb.and().append("res.resName in :resourceTypes");
+			addParams.setResourceTypes(resourceTypes);
 		}
 		
 		Set<Long> educationalTypeKeys = null;
@@ -163,6 +255,7 @@ public class CatalogRepositoryEntryQueries {
 		// No check if is empty! retainAll() may have put all keys away, so no result must be found
 		if (educationalTypeKeys != null) {
 			sb.and().append("v.educationalType.key in :educationalTypeKeys");
+			addParams.setEducationalTypeKeys(educationalTypeKeys);
 		}
 		
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
@@ -191,11 +284,95 @@ public class CatalogRepositoryEntryQueries {
 			}
 		}
 		
+		if (searchParams.getMainLanguages() != null && !searchParams.getMainLanguages().isEmpty()) {
+			Map<String, String> paramToMainLanguage = new HashMap<>(searchParams.getMainLanguages().size());
+			addParams.setParamToMainLanguage(paramToMainLanguage);
+			
+			sb.and().append(" (");
+			boolean or = false;
+			for (int i = 0; i < searchParams.getMainLanguages().size(); i++) {
+				if (or) {
+					sb.append(" or ");
+				}
+				or = true;
+				
+				String mainLanguage = searchParams.getMainLanguages().get(i);
+				mainLanguage = PersistenceHelper.makeFuzzyQueryString(mainLanguage);
+				
+				String param = "mainLanguage" + i;
+				PersistenceHelper.appendFuzzyLike(sb, "v.mainLanguage", param, dbInstance.getDbVendor());
+				paramToMainLanguage.put(param, mainLanguage);
+			}
+			sb.append(")");
+		}
+		
+		if (searchParams.getExpendituresOfWork() != null && !searchParams.getExpendituresOfWork().isEmpty()) {
+			Map<String, String> paramToExpenditureOfWork = new HashMap<>(searchParams.getExpendituresOfWork().size());
+			addParams.setParamToExpenditureOfWork(paramToExpenditureOfWork);
+			
+			sb.and().append(" (");
+			boolean or = false;
+			for (int i = 0; i < searchParams.getExpendituresOfWork().size(); i++) {
+				if (or) {
+					sb.append(" or ");
+				}
+				or = true;
+				
+				String expendituresOfWork = searchParams.getExpendituresOfWork().get(i);
+				expendituresOfWork = PersistenceHelper.makeFuzzyQueryString(expendituresOfWork);
+				
+				String param = "mainLanguage" + i;
+				PersistenceHelper.appendFuzzyLike(sb, "v.expenditureOfWork", param, dbInstance.getDbVendor());
+				paramToExpenditureOfWork.put(param, expendituresOfWork);
+			}
+			sb.append(")");
+		}
+		
+		if (searchParams.getLocations() != null && !searchParams.getLocations().isEmpty()) {
+			Map<String, String> paramToLocation = new HashMap<>(searchParams.getLocations().size());
+			addParams.setParamToLocation(paramToLocation);
+			
+			sb.and().append(" (");
+			boolean or = false;
+			for (int i = 0; i < searchParams.getLocations().size(); i++) {
+				if (or) {
+					sb.append(" or ");
+				}
+				or = true;
+				
+				String location = searchParams.getLocations().get(i);
+				location = PersistenceHelper.makeFuzzyQueryString(location);
+				
+				String param = "location" + i;
+				PersistenceHelper.appendFuzzyLike(sb, "v.location", param, dbInstance.getDbVendor());
+				paramToLocation.put(param, location);
+			}
+			sb.append(")");
+		}
+		
+		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
+			sb.and().append("lic.licenseType.key in :licenseTypeKeys");
+		}
+		
+		if (searchParams.getLifecyclesPublicKeys() != null && !searchParams.getLifecyclesPublicKeys().isEmpty()) {
+			sb.and().append("v.lifecycle.key in :lifecyclePublicKeys");
+		}
+		
+		if (searchParams.getLifecyclesPrivateFrom() != null) {
+			sb.and().append("lifecycle.privateCycle = true");
+			sb.and().append("date(lifecycle.validFrom) >= date(:lifecyclePrivateFrom)");
+		}
+		
+		if (searchParams.getLifecyclesPrivateTo() != null) {
+			sb.and().append("lifecycle.privateCycle = true");
+			sb.and().append("date(lifecycle.validTo) <= date(:lifecyclePrivateTo)");
+		}
+		
 		String author = searchParams.getAuthor();
 		if (StringHelper.containsNonWhitespace(author)) {
 			author = PersistenceHelper.makeFuzzyQueryString(author);
 
-			sb.append(" and (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ");
+			sb.and().append(" (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ");
 			sb.append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user");
 			sb.append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and user.identity.key=identity.key");
 			sb.append("      and membership.role='").append(GroupRoles.owner.name()).append("'");
@@ -208,6 +385,7 @@ public class CatalogRepositoryEntryQueries {
 			sb.append(" )) or");
 			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "author", dbInstance.getDbVendor());
 			sb.append(" )");
+			addParams.setAuthor(author);
 		}
 		
 		Map<String, String> paramToSearchText = null;
@@ -241,35 +419,34 @@ public class CatalogRepositoryEntryQueries {
 				sb.append(")");
 			}
 		}
+		addParams.setParamToSearchText(paramToSearchText);
+		addParams.setParamToTaxonomyLevelI18nSuffix(paramToTaxonomyLevelI18nSuffix);
 		
 		if(countTaxonomyLevels) {
 			sb.append(" group by reToTax.taxonomyLevel.materializedPathKeys");
 			sb.append(" having count(*) > 0");
 		}
-		if(selectRepositoryEntries) {
-			appendOrderBy(searchParams, sb);
-		}
-		
-		TypedQuery<T> dbQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), type);
+	}
+
+	private void appendParams(CatalogRepositoryEntrySearchParams searchParams, TypedQuery<?> query, AddParams addParams, boolean selectRepositoryEntries) {
 		if (addParams.isOfferValidAt() && searchParams.getOfferValidAt() != null) {
-			dbQuery.setParameter( "offerValidAt", searchParams.getOfferValidAt());
+			query.setParameter( "offerValidAt", searchParams.getOfferValidAt());
 		}
 		if (addParams.isOfferOrganisations() && searchParams.getOfferOrganisations() != null && !searchParams.getOfferOrganisations().isEmpty()) {
-			dbQuery.setParameter("offerOrganisationKeys", searchParams.getOfferOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
+			query.setParameter("offerOrganisationKeys", searchParams.getOfferOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toList()));
 		}
 		if (searchParams.getRepositoryEntryKeys() != null && !searchParams.getRepositoryEntryKeys().isEmpty()) {
-			dbQuery.setParameter("repositoryEntryKeys", searchParams.getRepositoryEntryKeys());
+			query.setParameter("repositoryEntryKeys", searchParams.getRepositoryEntryKeys());
 		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			Collection<String> status = searchParams.getStatus().stream().map(RepositoryEntryStatusEnum::name).collect(Collectors.toList());
-			dbQuery.setParameter("status", status);
+			query.setParameter("status", status);
 		}
-		if (resourceTypes != null) {
-			dbQuery.setParameter("resourceTypes", resourceTypes);
+		if (addParams.getResourceTypes() != null) {
+			query.setParameter("resourceTypes", addParams.getResourceTypes());
 		}
-		if (educationalTypeKeys != null) {
-			dbQuery.setParameter("educationalTypeKeys", educationalTypeKeys);
+		if (addParams.getEducationalTypeKeys() != null) {
+			query.setParameter("educationalTypeKeys", addParams.getEducationalTypeKeys());
 		}
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
 			if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
@@ -277,35 +454,60 @@ public class CatalogRepositoryEntryQueries {
 					for (int i = 0; i < identToTaxonomyLevels.getValue().size(); i++) {
 						String parameter = new StringBuilder().append("materializedPath").append(identToTaxonomyLevels.getKey()).append("_").append(i).toString();
 						String pathKeys = identToTaxonomyLevels.getValue().get(i).getMaterializedPathKeys();
-						dbQuery.setParameter(parameter, pathKeys + "%");
+						query.setParameter(parameter, pathKeys + "%");
 					}
 				} else {
 					Collection<Long> keys = identToTaxonomyLevels.getValue().stream().map(TaxonomyLevel::getKey).collect(Collectors.toList());
-					dbQuery.setParameter("taxonomyLevelKeys" + identToTaxonomyLevels.getKey(), keys );
+					query.setParameter("taxonomyLevelKeys" + identToTaxonomyLevels.getKey(), keys );
 				}
 			}
 		}
+		Map<String, String> paramToMainLanguage = addParams.getParamToMainLanguage();
+		if (paramToMainLanguage != null && !paramToMainLanguage.isEmpty()) {
+			paramToMainLanguage.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		}
+		Map<String,String> paramToExpenditureOfWork = addParams.getParamToExpenditureOfWork();
+		if (paramToExpenditureOfWork != null && !paramToExpenditureOfWork.isEmpty()) {
+			paramToExpenditureOfWork.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		}
+		Map<String,String> paramToLocation = addParams.getParamToLocation();
+		if (paramToLocation != null && !paramToLocation.isEmpty()) {
+			paramToLocation.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		}
+		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
+			query.setParameter("licenseTypeKeys", searchParams.getLicenseTypeKeys());
+		}
+		if (searchParams.getLifecyclesPublicKeys() != null && !searchParams.getLifecyclesPublicKeys().isEmpty()) {
+			query.setParameter("lifecyclePublicKeys", searchParams.getLifecyclesPublicKeys());
+		}
+		if (searchParams.getLifecyclesPrivateFrom() != null) {
+			query.setParameter("lifecyclePrivateFrom", searchParams.getLifecyclesPrivateFrom());
+		}
+		if (searchParams.getLifecyclesPrivateTo() != null) {
+			query.setParameter("lifecyclePrivateTo", searchParams.getLifecyclesPrivateTo());
+		}
 		if (addParams.isAccessMethods() && searchParams.getAccessMethods() != null && !searchParams.getAccessMethods().isEmpty()) {
-			dbQuery.setParameter("accessMethods", searchParams.getAccessMethods());
+			query.setParameter("accessMethods", searchParams.getAccessMethods());
 		}
-		if (StringHelper.containsNonWhitespace(author)) {
-			dbQuery.setParameter("author", author);
+		if (addParams.getAuthor() != null) {
+			query.setParameter("author", addParams.getAuthor());
 		}
+		Map<String, String> paramToSearchText = addParams.getParamToSearchText();
 		if (paramToSearchText != null && !paramToSearchText.isEmpty()) {
-			paramToSearchText.entrySet().stream().forEach(entrySet -> dbQuery.setParameter(entrySet.getKey(), entrySet.getValue()));
+			paramToSearchText.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
 		}
+		Map<String,Collection<String>> paramToTaxonomyLevelI18nSuffix = addParams.getParamToTaxonomyLevelI18nSuffix();
 		if (paramToTaxonomyLevelI18nSuffix!= null && !paramToTaxonomyLevelI18nSuffix.isEmpty()) {
-			paramToTaxonomyLevelI18nSuffix.entrySet().stream().forEach(entrySet -> dbQuery.setParameter(entrySet.getKey(), entrySet.getValue()));
+			paramToTaxonomyLevelI18nSuffix.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
 		}
 		if (selectRepositoryEntries && OrderBy.popularCourses == searchParams.getOrderBy()) {
-			dbQuery.setParameter("statDay", DateUtils.addDays(new Date(), -28));
+			query.setParameter("statDay", DateUtils.addDays(new Date(), -28));
 		}
-		return dbQuery;
 	}
 	
-	private AddParams appendMyViewAccessSubSelect(QueryBuilder sb, boolean isGuestOnly, Date offerValidAt,
-			List<? extends OrganisationRef> offerOrganisations, Boolean openAccess, Boolean showAccessMethods,
-			Collection<AccessMethod> accessMethods) {
+	private void appendMyViewAccessSubSelect(QueryBuilder sb, AddParams addParams, boolean isGuestOnly,
+			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations, Boolean openAccess,
+			Boolean showAccessMethods, Collection<AccessMethod> accessMethods) {
 		if (isGuestOnly) {
 			sb.and().append("v.publicVisible=true");
 			sb.and().append("v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
@@ -316,13 +518,10 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("    where offer.valid = true");
 			sb.append("      and offer.guestAccess = true");
 			sb.append(")");
-			return AddParams.ALL_FALSE;
+			return;
 		}
 		
 		boolean or = false;
-		boolean offerOrganisationsUsed = false;
-		boolean offerValidAtUsed = false;
-		boolean accessMethodsUsed = false;
 		
 		sb.and().append("(");
 		// Open access
@@ -342,7 +541,7 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("      and re2.status ").in(ACService.RESTATUS_ACTIVE_OPEN);
 			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
 				sb.append("      and oto.organisation.key in :offerOrganisationKeys");
-				offerOrganisationsUsed = true;
+				addParams.setOfferOrganisations(true);
 			}
 			sb.append(")"); // in
 		}
@@ -369,7 +568,7 @@ public class CatalogRepositoryEntryQueries {
 			sb.append("     and access.method.enabled = true");
 			if (offerOrganisations != null && !offerOrganisations.isEmpty()) {
 				sb.append("     and oto.organisation.key in :offerOrganisationKeys");
-				offerOrganisationsUsed = true;
+				addParams.setOfferOrganisations(true);
 			}
 			if (offerValidAt != null) {
 				sb.append(" and (");
@@ -381,19 +580,18 @@ public class CatalogRepositoryEntryQueries {
 				sb.append(" re2.status ").in(ACService.RESTATUS_ACTIVE_METHOD);
 				sb.append(" and offer.validFrom is null and offer.validTo is null");
 				sb.append(" )");
-				offerValidAtUsed = true;
+				addParams.setOfferValidAt(true);
 			}
 			if (accessMethods != null && !accessMethods.isEmpty()) {
 				sb.append(" and access.method in :accessMethods");
-				accessMethodsUsed = true;
+				addParams.setAccessMethods(true);
 			}
 			sb.append(")"); // in
 		}
 		
 		sb.append(")");
-		return new AddParams(offerValidAtUsed, offerOrganisationsUsed, accessMethodsUsed);
 	}
-	
+
 	private void appendOrderBy(CatalogRepositoryEntrySearchParams searchParams, QueryBuilder sb) {
 		OrderBy orderBy = searchParams.getOrderBy();
 		boolean asc = searchParams.isOrderByAsc();
@@ -479,28 +677,104 @@ public class CatalogRepositoryEntryQueries {
 	
 	private final static class AddParams {
 		
-		private static final AddParams ALL_FALSE = new AddParams(false, false, false);
-		
-		private final boolean offerValidAt;
-		private final boolean offerOrganisations;
-		private final boolean accessMethods;
-		
-		public AddParams(boolean offerValidAt, boolean offerOrganisations, boolean accessMethods) {
-			this.offerValidAt = offerValidAt;
-			this.offerOrganisations = offerOrganisations;
-			this.accessMethods = accessMethods;
-		}
+		private boolean offerValidAt;
+		private boolean offerOrganisations;
+		private boolean accessMethods;
+		private String author;
+		private Set<String> resourceTypes;
+		private Set<Long> educationalTypeKeys;
+		private Map<String, String> paramToSearchText;
+		private Map<String, Collection<String>> paramToTaxonomyLevelI18nSuffix;
+		private Map<String, String> paramToMainLanguage;
+		private Map<String, String> paramToExpenditureOfWork;
+		private Map<String, String> paramToLocation;
 		
 		public boolean isOfferValidAt() {
 			return offerValidAt;
 		}
 		
+		public void setOfferValidAt(boolean offerValidAt) {
+			this.offerValidAt = offerValidAt;
+		}
+		
 		public boolean isOfferOrganisations() {
 			return offerOrganisations;
 		}
-
+		
+		public void setOfferOrganisations(boolean offerOrganisations) {
+			this.offerOrganisations = offerOrganisations;
+		}
+		
 		public boolean isAccessMethods() {
 			return accessMethods;
+		}
+		
+		public void setAccessMethods(boolean accessMethods) {
+			this.accessMethods = accessMethods;
+		}
+
+		public String getAuthor() {
+			return author;
+		}
+
+		public void setAuthor(String author) {
+			this.author = author;
+		}
+
+		public Set<String> getResourceTypes() {
+			return resourceTypes;
+		}
+
+		public void setResourceTypes(Set<String> resourceTypes) {
+			this.resourceTypes = resourceTypes;
+		}
+
+		public Set<Long> getEducationalTypeKeys() {
+			return educationalTypeKeys;
+		}
+
+		public void setEducationalTypeKeys(Set<Long> educationalTypeKeys) {
+			this.educationalTypeKeys = educationalTypeKeys;
+		}
+
+		public Map<String, String> getParamToSearchText() {
+			return paramToSearchText;
+		}
+
+		public void setParamToSearchText(Map<String, String> paramToSearchText) {
+			this.paramToSearchText = paramToSearchText;
+		}
+
+		public Map<String, Collection<String>> getParamToTaxonomyLevelI18nSuffix() {
+			return paramToTaxonomyLevelI18nSuffix;
+		}
+
+		public void setParamToTaxonomyLevelI18nSuffix(Map<String, Collection<String>> paramToTaxonomyLevelI18nSuffix) {
+			this.paramToTaxonomyLevelI18nSuffix = paramToTaxonomyLevelI18nSuffix;
+		}
+
+		public Map<String, String> getParamToMainLanguage() {
+			return paramToMainLanguage;
+		}
+
+		public void setParamToMainLanguage(Map<String, String> paramToMainLanguage) {
+			this.paramToMainLanguage = paramToMainLanguage;
+		}
+
+		public Map<String, String> getParamToExpenditureOfWork() {
+			return paramToExpenditureOfWork;
+		}
+
+		public void setParamToExpenditureOfWork(Map<String, String> paramToExpenditureOfWork) {
+			this.paramToExpenditureOfWork = paramToExpenditureOfWork;
+		}
+
+		public Map<String, String> getParamToLocation() {
+			return paramToLocation;
+		}
+
+		public void setParamToLocation(Map<String, String> paramToLocation) {
+			this.paramToLocation = paramToLocation;
 		}
 		
 	}
