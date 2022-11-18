@@ -55,7 +55,7 @@ public class FlexiTableTextFilter extends FlexiTableFilter implements FlexiTable
 
 	@Override
 	public boolean isSelected() {
-		return value != null;
+		return StringHelper.containsNonWhitespace(value);
 	}
 
 	@Override

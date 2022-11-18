@@ -359,7 +359,6 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		}
 		
 		FormLink button = new FormLinkImpl(id, id, label, Link.BUTTON | Link.NONTRANSLATED);
-		button.setElementCssClass("o_table_filter");
 		button.setDomReplacementWrapperRequired(false);
 		button.setTranslator(translator);
 		button.setIconRightCSS("o_icon o_icon-fw o_icon_caret");
@@ -367,7 +366,9 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		button.setTitle(title);
 		components.put(id, button);
 		rootFormAvailable(button);
-		return new FlexiFilterButton(button, filter, enabled);
+		FlexiFilterButton filterButton = new FlexiFilterButton(button, filter, enabled);
+		setFilterButtonCssClass(filterButton, filter.isSelected());
+		return filterButton;
 	}
 
 	@Override
@@ -539,6 +540,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			if(resetFilter) {
 				filter.reset();
 				filterButton.getButton().getComponent().setCustomDisplayText(filter.getLabel());
+				setFilterButtonCssClass(filterButton, filter.isSelected());
 			}
 		}
 
@@ -577,6 +579,15 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		}
 		filterButton.getButton().getComponent().setCustomDisplayText(label);
 		filterButton.getButton().getComponent().setTitle(title);
+		setFilterButtonCssClass(filterButton, filter.isSelected());
+	}
+	
+	private void setFilterButtonCssClass(FlexiFilterButton filterButton, boolean active) {
+		if(active) {
+			filterButton.getButton().getComponent().setElementCssClass("o_table_filter o_filter_active");
+		} else {
+			filterButton.getButton().getComponent().setElementCssClass("o_table_filter");	
+		}
 	}
 	
 	private void doSaveFilter(UserRequest ureq) {
@@ -643,6 +654,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			filterButton.setEnabled(filter.isDefaultVisible());
 			filterButton.getButton().setVisible(filterButton.isEnabled());
 			filterButton.setChanged(false);
+			setFilterButtonCssClass(filterButton, filter.isSelected());
 		}
 		component.setDirty(true);
 	}
