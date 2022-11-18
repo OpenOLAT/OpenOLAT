@@ -241,6 +241,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 			softly.assertThat(assessmentMode.getLeadTime()).isEqualTo(3);
 			softly.assertThat(assessmentMode.getFollowupTime()).isEqualTo(5);
 			softly.assertThat(assessmentMode.isManualBeginEnd()).isFalse();
+			softly.assertThat(assessmentMode.getTargetAudience()).isEqualTo(AssessmentMode.Target.course);
 		}
 		softly.assertAll();
 	}
