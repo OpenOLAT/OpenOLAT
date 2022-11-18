@@ -158,8 +158,14 @@ public class VideoSubtitlesHelper {
 			while ((line = bufferedReader.readLine()) != null) {
 				switch (state) {
 					case waitingForSequenceNumber:
-						if (StringHelper.containsNonWhitespace(line)) {
-							sequenceNumber = Integer.parseInt(line);
+						String cleanedLine = StringHelper.cleanUTF8WithBom(line);
+						if (StringHelper.containsNonWhitespace(cleanedLine)) {
+							try {
+								sequenceNumber = Integer.parseInt(cleanedLine);
+							} catch (NumberFormatException e) {
+								log.error("Cannot parse sequence number: " + cleanedLine);
+								throw e;
+							}
 							if (sequenceNumber != checkSequenceNumber) {
 								throw new IllegalStateException("Sequence number error in SRT file");
 							}
