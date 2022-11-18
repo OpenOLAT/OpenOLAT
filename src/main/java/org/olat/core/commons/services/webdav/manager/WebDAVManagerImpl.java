@@ -261,12 +261,12 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 
 		if(proposeBasicAuthentication(request)) {
 			log.debug("Add basic authentication: {} {}", getHttpSessionId(request), ServletUtil.getUserAgent(request));
-			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
+			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\", charset=\"UTF-8\"");
 		}
 		if(webdavModule.isDigestAuthenticationEnabled()) {
 			log.debug("Add digest authentication: {}", getHttpSessionId(request));
 			String nonce = UUID.randomUUID().toString().replace("-", "");
-			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
+			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\", charset=\"UTF-8\"");
 		}
 		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 		return null;
