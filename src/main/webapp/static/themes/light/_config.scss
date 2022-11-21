@@ -1163,13 +1163,14 @@ $o-practice-rank-me-color					: $brand-primary;
 
 /* Swiper */
 $o-swiper-color								: $btn-primary-bg !default;
-$o-swiper-button-width						: 40px !default;
-$o-swiper-button-height						: 40px !default;
+$o-swiper-button-width						: 30px !default;
+$o-swiper-button-height						: 30px !default;
+$o-swiper-button-font-size					: 20px !default;
 $o-swiper-button-color						: $btn-default-color !default;
 $o-swiper-button-bg-color					: $btn-default-bg !default;
 $o-swiper-button-border						: 1px solid $btn-default-border !default;
 $o-swiper-button-border-radius				: $border-radius-base !default;
-$o-swiper-button-hover-color					: $brand-primary !default;
+$o-swiper-button-hover-color				: $brand-primary !default;
 $o-swiper-button-hover-box-shadow			: 0px 2px 4px rgba(0, 0, 0, 0.075) !default;
 $o-swiper-button-disabled-opacity			: .35 !default;
 

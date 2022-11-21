@@ -124,6 +124,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		}
 		mainVC.contextPut("items", items);
 		
+		mainVC.contextPut("launcherId", CodeHelper.getRAMUniqueID());
 		if (showMore) {
 			titleLink = LinkFactory.createLink("title", "title", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 			titleLink.setCustomDisplayText(title);

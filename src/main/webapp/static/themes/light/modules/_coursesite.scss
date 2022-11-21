@@ -445,7 +445,15 @@
 					width: 100%;
 				}
 			}
-			
+		}
+	}
+	
+	// place the bullet pagination
+	&.swiper {
+		.swiper-pagination {
+			&.swiper-pagination-bullets.swiper-pagination-horizontal {
+				bottom: 0px;
+			}
 		}
 	}
 }
@@ -768,6 +776,9 @@
 			margin: $o-cat2-launcher-title-margin;
 			h1, h2, h3 {
 				margin: 0;
+			}
+			&.o_flex_first_grow {
+				align-items: end;
 			}
 		}
 	}
