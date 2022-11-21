@@ -23,8 +23,6 @@ import static org.olat.modules.catalog.CatalogRepositoryEntrySearchParams.KEY_LA
 import static org.olat.modules.catalog.ui.CatalogMainController.ORES_TYPE_INFOS;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -45,10 +43,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -96,8 +92,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CatalogRepositoryEntryListController extends FormBasicController implements Activateable2, FlexiTableComponentDelegate, CatalogRepositoryEntryRowItemCreator {
-	
-	public static final String FILTER_SPECIAL_RE_KEYS = "filterspecialre";
 	
 	private BreadcrumbedStackedPanel stackPanel;
 	private FlexiTableElement tableEl;
@@ -238,19 +232,6 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 			tableEl.expandFilters(true);
 		}
 	}
-	
-	private void addSpecialFilter(String label, Collection<Long> repositoryEntryKeys) {
-		List<FlexiTableExtendedFilter> flexiTableFilters = tableEl.getExtendedFilters();
-		flexiTableFilters.removeIf(f -> f.getFilter().equals(FILTER_SPECIAL_RE_KEYS));
-		
-		SelectionValues specialKV = new SelectionValues();
-		specialKV.add(SelectionValues.entry("key", label));
-		FlexiTableMultiSelectionFilter filter = new FlexiTableMultiSelectionFilter(label, FILTER_SPECIAL_RE_KEYS, specialKV, true);
-		filter.setValues(Collections.singletonList("key"));
-		filter.setUserObject(repositoryEntryKeys);
-		flexiTableFilters.add(filter);
-		tableEl.setFilters(true, flexiTableFilters, false, false);
-	}
 
 	@Override
 	public void forgeSelectLink(CatalogRepositoryEntryRow row) {
@@ -351,14 +332,6 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if (state instanceof CatalogRepositoryEntryState) {
-			CatalogRepositoryEntryState catalogState = (CatalogRepositoryEntryState)state;
-			if (catalogState.getSpecialFilterRepositoryEntryKeys() != null) {
-				addSpecialFilter(catalogState.getSpecialFilterRepositoryEntryLabel(), catalogState.getSpecialFilterRepositoryEntryKeys());
-				tableEl.reset(true, true, true);
-			}
-		}
-		
 		if (entries == null || entries.isEmpty()) return;
 		
 		ContextEntry entry = entries.get(0);

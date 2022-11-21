@@ -445,7 +445,15 @@
 					width: 100%;
 				}
 			}
-			
+		}
+	}
+	
+	// place the bullet pagination
+	&.swiper {
+		.swiper-pagination {
+			&.swiper-pagination-bullets.swiper-pagination-horizontal {
+				bottom: 0px;
+			}
 		}
 	}
 }
@@ -713,7 +721,7 @@
 			margin: 0;
 		}
 	}
-	.o_catalog_search_header {
+	.o_catalog_search_header.o_catalog_search {
 		display: flex;
 		justify-content: center;
 		align-items: center;
@@ -725,9 +733,26 @@
 			border-radius: $o-coursesite-rowelem-border-radius;
 			background-color: $input-bg;
 			padding: 1px 20px 20px 20px;
+			.o_search_row {
+				.form-group {
+					margin-bottom: $o-cat2-search-row-margin-bottom;
+				}
+			}
 		}
 		.o_search_box:is(.o_header_bg_image *) {
 			background-color: $o-cat2-header-box-bg-color;
+		}
+		.o_catalog_search_button {
+			span {
+				display: none
+			}
+		}
+		@media (min-width: $screen-sm-min) {
+			.o_catalog_search_button {
+				span {
+					display: inline;
+				}
+			}
 		}
 	}
 	.o_catalog_taxonomy_header {
@@ -764,10 +789,29 @@
 	
 	.o_catalog_launcher {
 		margin-top: $o-cat2-launcher-margin-top;
+		@media (min-width: $screen-xs-min) { 
+			margin-top: $o-cat2-launcher-margin-top-xs;
+		}
+		@media (min-width: $screen-md-min) { 
+			margin-top: $o-cat2-launcher-margin-top-md;
+		}
+		&:first-child {
+			margin-top: 0;
+		}
+	
 		.o_launcher_title {
 			margin: $o-cat2-launcher-title-margin;
 			h1, h2, h3 {
 				margin: 0;
+			}
+			&.o_flex_first_grow {
+				align-items: end;
+			}
+			.o_repo_title {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: baseline;
+				gap: 10px;
 			}
 		}
 	}

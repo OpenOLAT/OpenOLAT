@@ -19,6 +19,8 @@
  */
 package org.olat.modules.catalog.ui;
 
+import java.util.Objects;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -53,8 +55,11 @@ public class CatalogSearchHeaderController extends FormBasicController {
 	private FormLink taxonomyEditLink;
 	private TextElement searchEl;
 	private FormLink searchLink;
+	private FormLink exploreLink;
 	
 	private final CatalogSecurityCallback secCallback;
+	private String header;
+	private Integer totalRespositoryEntries;
 
 	@Autowired
 	private CatalogV2Module catalogModule;
@@ -64,6 +69,7 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		this.secCallback = secCallback;
 		
 		initForm(ureq);
+		setTotalRepositoryEntries(Integer.valueOf(0));
 	}
 
 	@Override
@@ -93,9 +99,13 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		searchEl.setFocus(true);
 		
 		searchLink = uifactory.addFormLink("rightAddOn", "", "", searchCont, Link.NONTRANSLATED);
+		searchLink.setCustomEnabledLinkCSS("o_catalog_search_button o_undecorated");
 		searchLink.setIconLeftCSS("o_icon o_icon-fw o_icon_search o_icon-lg");
 		String searchLabel = getTranslator().translate("search");
 		searchLink.setLinkTitle(searchLabel);
+		searchLink.setI18nKey(searchLabel);
+		
+		exploreLink = uifactory.addFormLink("explore", "", "", formLayout, Link.NONTRANSLATED);
 		
 		if (catalogModule.hasHeaderBgImage()) {
 			String mapperUri = registerMapper(ureq, new VFSMediaMapper(catalogModule.getHeaderBgImage()));
@@ -105,6 +115,21 @@ public class CatalogSearchHeaderController extends FormBasicController {
 	
 	public void setSearchString(String searchString) {
 		searchEl.setValue(searchString);
+	}
+	
+	public void setTotalRepositoryEntries(Integer totalRespositoryEntries) {
+		if (!Objects.equals(this.totalRespositoryEntries, totalRespositoryEntries)) {
+			this.totalRespositoryEntries = totalRespositoryEntries;
+			String explore = translate("search.explore", String.valueOf(totalRespositoryEntries));
+			exploreLink.setI18nKey(explore);
+		}
+	}
+	
+	public void setHeaderOnly(String header) {
+		if (!Objects.equals(this.header, header)) {
+			this.header = header;
+			flc.contextPut("header", header);
+		}
 	}
 
 	@Override

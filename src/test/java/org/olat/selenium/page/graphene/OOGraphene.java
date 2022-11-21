@@ -97,9 +97,9 @@ public class OOGraphene {
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
-	public static void waitModalDialog(WebDriver browser, String fieldsetClass) {
+	public static void waitModalDialog(WebDriver browser, String additionalCssSelector) {
 		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body fieldset." + fieldsetClass);
+		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body " + additionalCssSelector);
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(timeout).pollingEvery(poolingSlow)
 			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));

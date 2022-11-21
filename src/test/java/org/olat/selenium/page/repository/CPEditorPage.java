@@ -60,35 +60,33 @@ public class CPEditorPage {
 	public CPEditorPage deletePage() {
 		By deleteBy = By.cssSelector("a.o_sel_cp_delete_link");
 		browser.findElement(deleteBy).click();
-		OOGraphene.waitBusy(browser);
 		
 		//confirm
-		By popup = By.cssSelector("div.modal-dialog");
-		OOGraphene.waitElement(popup, 2, browser);
+		OOGraphene.waitModalDialog(browser);
 		By deleteMenuAndFileBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(deleteMenuAndFileBy).click();
-		OOGraphene.waitBusy(browser);	
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public CPEditorPage newPage(String title) {
 		By newBy = By.cssSelector("a.o_sel_cp_new_link");
 		browser.findElement(newBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return fillMetadataForm(title);
 	}
 	
 	public CPEditorPage editMetadata(String title) {
 		By metadataBy = By.cssSelector("a.o_sel_cp_edit_metadata");
 		browser.findElement(metadataBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		return fillMetadataForm(title);
 	}
 	
 	public CPEditorPage importPage(File page) {
 		By metadataBy = By.cssSelector("a.o_sel_cp_import_link");
 		browser.findElement(metadataBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		//wait popup
 		By metadataPopupBy = By.cssSelector("fieldset.o_sel_cp_import");
@@ -110,12 +108,12 @@ public class CPEditorPage {
 	public CPEditorPage closeMetadataForm() {
 		//wait popup
 		By metadataPopupBy = By.cssSelector("fieldset.o_sel_cp_metadata");
-		OOGraphene.waitElement(metadataPopupBy, 2, browser);
+		OOGraphene.waitElement(metadataPopupBy, browser);
 		
 		//ok save
 		By saveBy = By.cssSelector("fieldset.o_sel_cp_metadata button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 		
@@ -133,7 +131,7 @@ public class CPEditorPage {
 		//ok save
 		By saveBy = By.cssSelector("fieldset.o_sel_cp_metadata button.btn-primary");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

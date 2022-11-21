@@ -197,8 +197,7 @@ public class AuthoringEnvPage {
 		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@class,'o_sel_wizard_simple.course')]");
 		browser.findElement(simpleCourseWizardBy).click();
 		// wait the wizard
-		By elementsBy = By.xpath("//div[contains(@class,'modal-dialog')]//div[@class='o_sel_course_elements']");
-		OOGraphene.waitElement(elementsBy, browser);
+		OOGraphene.waitModalDialog(browser, "div.o_sel_course_elements");
 		return new CourseWizardPage(browser);
 	}
 	

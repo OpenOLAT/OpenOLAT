@@ -71,6 +71,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 
 	private final VelocityContainer mainVC;
 	private Link titleLink;
+	private Link showAllLink;
 	
 	private final List<CatalogRepositoryEntry> entries;
 	private final CatalogRepositoryEntryState state;
@@ -124,11 +125,14 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		}
 		mainVC.contextPut("items", items);
 		
+		mainVC.contextPut("launcherId", CodeHelper.getRAMUniqueID());
 		if (showMore) {
 			titleLink = LinkFactory.createLink("title", "title", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 			titleLink.setCustomDisplayText(title);
 			titleLink.setElementCssClass("o_link_plain");
-			titleLink.setIconRightCSS("o_icon o_icon_start");
+			
+			showAllLink = LinkFactory.createLink("show.all", mainVC, this);
+			showAllLink.setIconRightCSS("o_icon o_icon_start");
 		} else {
 			mainVC.contextPut("title", title);
 		}
@@ -198,6 +202,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			Long repositoryEntryKey = Long.valueOf(key);
 			launchOrOpen(ureq, repositoryEntryKey);
 		} else if (source == titleLink) {
+			fireEvent(ureq, new OpenSearchEvent(state, null));
+		} else if (source == showAllLink) {
 			fireEvent(ureq, new OpenSearchEvent(state, null));
 		} else if (source instanceof Link) {
 			Link link = (Link)source;

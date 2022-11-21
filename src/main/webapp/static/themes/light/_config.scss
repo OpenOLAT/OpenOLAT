@@ -401,7 +401,10 @@ $o-cat2-header-height			: 240px !default;
 $o-cat2-header-noimage-bg				: linear-gradient(190deg, lighten($brand-primary, 80%) 10%, $brand-primary 100%), linear-gradient(40deg, lighten($brand-primary, 55%) 0%, adjust-hue($brand-primary, 5deg)60%) !default;
 $o-cat2-header-noimage-bg-blend-mode		: screen, normal !default;
 $o-cat2-header-box-bg-color				: rgba(255,255,255,.7) !default;
-$o-cat2-launcher-margin-top				: 80px !default;
+$o-cat2-search-row-margin-bottom		: 5px !default;
+$o-cat2-launcher-margin-top				: 30px !default;
+$o-cat2-launcher-margin-top-xs			: 40px !default;
+$o-cat2-launcher-margin-top-md			: 55px !default;
 $o-cat2-launcher-title-margin			: 20px 0px !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;
 
@@ -1166,13 +1169,14 @@ $o-practice-rank-me-color					: $brand-primary;
 
 /* Swiper */
 $o-swiper-color								: $btn-primary-bg !default;
-$o-swiper-button-width						: 40px !default;
-$o-swiper-button-height						: 40px !default;
+$o-swiper-button-width						: 30px !default;
+$o-swiper-button-height						: 30px !default;
+$o-swiper-button-font-size					: 20px !default;
 $o-swiper-button-color						: $btn-default-color !default;
 $o-swiper-button-bg-color					: $btn-default-bg !default;
 $o-swiper-button-border						: 1px solid $btn-default-border !default;
 $o-swiper-button-border-radius				: $border-radius-base !default;
-$o-swiper-button-hover-color					: $brand-primary !default;
+$o-swiper-button-hover-color				: $brand-primary !default;
 $o-swiper-button-hover-box-shadow			: 0px 2px 4px rgba(0, 0, 0, 0.075) !default;
 $o-swiper-button-disabled-opacity			: .35 !default;
 
