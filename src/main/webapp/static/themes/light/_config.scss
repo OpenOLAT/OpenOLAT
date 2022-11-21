@@ -395,6 +395,7 @@ $o-cat2-header-height			: 240px !default;
 $o-cat2-header-noimage-bg				: linear-gradient(190deg, lighten($brand-primary, 80%) 10%, $brand-primary 100%), linear-gradient(40deg, lighten($brand-primary, 55%) 0%, adjust-hue($brand-primary, 5deg)60%) !default;
 $o-cat2-header-noimage-bg-blend-mode		: screen, normal !default;
 $o-cat2-header-box-bg-color				: rgba(255,255,255,.7) !default;
+$o-cat2-search-row-margin-bottom		: 5px !default;
 $o-cat2-launcher-margin-top				: 80px !default;
 $o-cat2-launcher-title-margin			: 20px 0px !default;
 $o-cat2-tax-launcher-square-font-size	: 14px !default;

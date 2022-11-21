@@ -733,9 +733,26 @@
 			border-radius: $o-coursesite-rowelem-border-radius;
 			background-color: $input-bg;
 			padding: 1px 20px 20px 20px;
+			.o_search_row {
+				.form-group {
+					margin-bottom: $o-cat2-search-row-margin-bottom;
+				}
+			}
 		}
 		.o_search_box:is(.o_header_bg_image *) {
 			background-color: $o-cat2-header-box-bg-color;
+		}
+		.o_catalog_search_button {
+			span {
+				display: none
+			}
+		}
+		@media (min-width: $screen-sm-min) {
+			.o_catalog_search_button {
+				span {
+					display: inline;
+				}
+			}
 		}
 	}
 	.o_catalog_taxonomy_header {

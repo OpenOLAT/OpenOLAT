@@ -46,6 +46,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
+import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Levels;
 import org.olat.modules.catalog.ui.admin.CatalogTaxonomyEditController;
@@ -80,6 +81,8 @@ public class CatalogMainController extends BasicController implements Activateab
 	private final CatalogRepositoryEntrySearchParams defaultSearchParams;
 	
 	@Autowired
+	private CatalogV2Service catalogService;
+	@Autowired
 	private ACService acService;
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -96,6 +99,8 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback);
 		listenTo(headerSearchCtrl);
+		Integer totalRespositoryEntries = catalogService.countRepositoryEntries(defaultSearchParams);
+		headerSearchCtrl.setTotalRepositoryEntries(totalRespositoryEntries);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
