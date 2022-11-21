@@ -249,7 +249,7 @@ public class SelectBusinessGroupController extends AbstractBusinessGroupListCont
 	@Override
 	protected void applyFiltersToQueryParams(String quickSearch, List<FlexiTableFilter> filters, BusinessGroupQueryParams params) {
 		super.applyFiltersToQueryParams(quickSearch, filters, params);
-		
+
 		if(restrictToRole != null) {
 			params.setAttendee(GroupRoles.participant == restrictToRole);
 			params.setOwner(GroupRoles.owner == restrictToRole || GroupRoles.coach == restrictToRole);
