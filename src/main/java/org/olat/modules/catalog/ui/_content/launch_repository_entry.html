@@ -1,6 +1,6 @@
 <div class="o_catalog_re_launcher">
 	<div class="o_launcher_title o_flex_first_grow">
-		<div>
+		<div class="o_repo_title">
 			<h3>
 				#if($title)
 					$title
@@ -8,6 +8,9 @@
 					$r.render("title")
 				#end
 			</h3>
+			#if($r.available("show.all"))
+				$r.render("show.all")
+			#end
 		</div>
 		<div id="o_swiper_button_prev_$launcherId" class="swiper-button-prev"></div>
 		<div id="o_swiper_button_next_$launcherId" class="swiper-button-next"></div>
@@ -85,6 +88,7 @@
 ## cardMinWidth: see .o_taxonomy_launchers
 var bp = document.querySelector('body.o_width_full')
 		? {
+			426: { slidesPerView: 2, slidesPerGroup: 2 },
 			644: { slidesPerView: 3, slidesPerGroup: 3 },
 			862: { slidesPerView: 4, slidesPerGroup: 4 },
 			1080: { slidesPerView: 5, slidesPerGroup: 5 },
@@ -99,14 +103,15 @@ var bp = document.querySelector('body.o_width_full')
 			3042: { slidesPerView: 14, slidesPerGroup: 14 }
 		}
 		: {
+			426: { slidesPerView: 2, slidesPerGroup: 2 },
 			644: { slidesPerView: 3, slidesPerGroup: 3 },
 			862: { slidesPerView: 4, slidesPerGroup: 4 },
 			1080: { slidesPerView: 5, slidesPerGroup: 5 }
 		}
 	;
 new Swiper('#o_swiper_$launcherId', {
-	slidesPerView: 2,
-	slidesPerGroup: 2,
+	slidesPerView: 1,
+	slidesPerGroup: 1,
 	spaceBetween: 10,
 	breakpoints: bp,
 	breakpointsBase: 'container',

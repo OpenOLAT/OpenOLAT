@@ -789,6 +789,16 @@
 	
 	.o_catalog_launcher {
 		margin-top: $o-cat2-launcher-margin-top;
+		@media (min-width: $screen-xs-min) { 
+			margin-top: $o-cat2-launcher-margin-top-xs;
+		}
+		@media (min-width: $screen-md-min) { 
+			margin-top: $o-cat2-launcher-margin-top-md;
+		}
+		&:first-child {
+			margin-top: 0;
+		}
+	
 		.o_launcher_title {
 			margin: $o-cat2-launcher-title-margin;
 			h1, h2, h3 {
@@ -796,6 +806,12 @@
 			}
 			&.o_flex_first_grow {
 				align-items: end;
+			}
+			.o_repo_title {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: baseline;
+				gap: 10px;
 			}
 		}
 	}
