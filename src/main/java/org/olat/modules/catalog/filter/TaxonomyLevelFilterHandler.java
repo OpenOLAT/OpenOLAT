@@ -25,6 +25,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -126,15 +127,32 @@ public class TaxonomyLevelFilterHandler implements CatalogFilterHandler {
 		if (!StringHelper.isLong(catalogFilter.getConfig())) {
 			return null;
 		}
-		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> Long.valueOf(catalogFilter.getConfig()));
+		
+		// No filter if taxonomy level does not exist (anymore).
+		Long configTaxonomyLevelKey = Long.valueOf(catalogFilter.getConfig());
+		TaxonomyLevel taxonomyLevel = taxonomyService.getTaxonomyLevel(() -> configTaxonomyLevelKey);
 		if (taxonomyLevel == null) {
 			return null;
 		}
 		
-		List<TaxonomyLevel> descendants = taxonomyLevelDao.getDescendants(taxonomyLevel, taxonomyLevel.getTaxonomy());
+		// No filter if taxonomy level if the same es the parent of the launcher taxonomy level
 		List<TaxonomyLevel> launcherTaxonomyLevels = searchParams.getIdentToTaxonomyLevels().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
-		if (launcherTaxonomyLevels != null && launcherTaxonomyLevels.size() == 1) {
-			Long launcherTaxonomyLevelKey = launcherTaxonomyLevels.get(0).getKey();
+		Long launcherTaxonomyLevelKey = launcherTaxonomyLevels != null && launcherTaxonomyLevels.size() == 1
+				? launcherTaxonomyLevels.get(0).getKey()
+				: null;
+		Long launcherParentTaxonomyLevelKey = null;
+		if (launcherTaxonomyLevelKey != null) {
+			TaxonomyLevel launcherParentTaxonomyLevel = taxonomyService.getTaxonomyLevel(() -> launcherTaxonomyLevelKey);
+			if (launcherParentTaxonomyLevel != null && launcherParentTaxonomyLevel.getParent() != null) {
+				launcherParentTaxonomyLevelKey = launcherParentTaxonomyLevel.getParent().getKey();
+			}
+		}
+		if (Objects.equals(configTaxonomyLevelKey, launcherParentTaxonomyLevelKey)) {
+			return null;
+		}
+		
+		List<TaxonomyLevel> descendants = taxonomyLevelDao.getDescendants(taxonomyLevel, taxonomyLevel.getTaxonomy());
+		if (launcherTaxonomyLevelKey != null) {
 			descendants.removeIf(level -> launcherTaxonomyLevelKey.equals(level.getKey()));
 		}
 		if (descendants.isEmpty()) {

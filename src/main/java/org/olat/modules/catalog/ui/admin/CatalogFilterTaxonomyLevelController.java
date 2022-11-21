@@ -19,17 +19,29 @@
  */
 package org.olat.modules.catalog.ui.admin;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
+import org.olat.modules.catalog.CatalogLauncher;
+import org.olat.modules.catalog.CatalogLauncherHandler;
+import org.olat.modules.catalog.CatalogLauncherSearchParams;
+import org.olat.modules.catalog.CatalogV2Service;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
+import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Config;
+import org.olat.modules.catalog.ui.CatalogV2UIFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -49,6 +61,8 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 	private SingleSelection taxonomyLevelEl;
 	
 	@Autowired
+	private CatalogV2Service catalogService;
+	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private RepositoryModule repositoryModule;
@@ -58,6 +72,7 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		
 		initForm(ureq);
+		validateTaxonomyLevelInLauncher();
 	}
 
 	@Override
@@ -69,20 +84,32 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 			taxonomyLevelEl = uifactory.addDropdownSingleselect("taxonomyLevels", "admin.taxonomy.levels", formLayout,
 					keyValues.keys(), keyValues.values());
 			taxonomyLevelEl.setMandatory(true);
+			taxonomyLevelEl.addActionListener(FormEvent.ONCHANGE);
 			String key = getCatalogFilter() != null? getCatalogFilter().getConfig(): null;
 			if (StringHelper.containsNonWhitespace(key) && taxonomyLevelEl.containsKey(key)) {
 				taxonomyLevelEl.select(key, true);
 			}
 		}
 	}
-	
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == taxonomyLevelEl) {
+			validateTaxonomyLevelInLauncher();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		taxonomyLevelEl.clearError();
 		if (taxonomyLevelEl != null && !taxonomyLevelEl.isOneSelected()) {
 			taxonomyLevelEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else {
+			validateTaxonomyLevelInLauncher();
 		}
 		
 		return allOk;
@@ -91,6 +118,37 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 	@Override
 	protected String getConfig() {
 		return taxonomyLevelEl.getSelectedKey();
+	}
+	
+	private void validateTaxonomyLevelInLauncher() {
+		taxonomyLevelEl.clearError();
+		if (!taxonomyLevelEl.isOneSelected()) {
+			return;
+		}
+		
+		Long selectedKey = Long.valueOf(taxonomyLevelEl.getSelectedKey());
+		List<String> launcherNames = new ArrayList<>(1);
+		
+		List<CatalogLauncher> catalogLaunchers = catalogService.getCatalogLaunchers(new CatalogLauncherSearchParams());
+		Collections.sort(catalogLaunchers);
+		for (CatalogLauncher catalogLauncher : catalogLaunchers) {
+			CatalogLauncherHandler handler = catalogService.getCatalogLauncherHandler(catalogLauncher.getType());
+			if (handler instanceof TaxonomyLevelLauncherHandler) {
+				TaxonomyLevelLauncherHandler taxonomyLevelLauncherHandler = (TaxonomyLevelLauncherHandler)handler;
+				Config launcherConfig = taxonomyLevelLauncherHandler.fromXML(catalogLauncher.getConfig());
+				if (launcherConfig != null && launcherConfig.getTaxonomyLevelKey() != null) {
+					if (selectedKey.equals(launcherConfig.getTaxonomyLevelKey())) {
+						String launcherName = CatalogV2UIFactory.translateLauncherName(getTranslator(), handler, catalogLauncher);
+						launcherNames.add(launcherName);
+					}
+				}
+			}
+		}
+		
+		if (!launcherNames.isEmpty()) {
+			String names = launcherNames.stream().collect(Collectors.joining(", "));
+			taxonomyLevelEl.setErrorKey("error.taxonomy.level.filter.hidden", true, names);
+		}
 	}
 
 }
