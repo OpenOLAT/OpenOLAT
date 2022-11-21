@@ -1,17 +1,21 @@
-<div class="o_catalog_search_header o_catalog_header_item #if($bgImageUrl)o_header_bg_image#end o_block_offcanvas_no_padding" #if($bgImageUrl) style="background-image:url($bgImageUrl)" #end>
+<div class="o_catalog_search_header o_catalog_header_item #if($r.isEmpty($header))o_catalog_search#end #if($bgImageUrl)o_header_bg_image#end o_block_offcanvas_no_padding" #if($bgImageUrl) style="background-image:url($bgImageUrl)" #end>
 	<div class="o_block_offcanvas_padding">
-		<div class="o_search_box">
-			<div class="o_catalog_title o_flex_first_grow">
-				<div>
-					<h2>$r.translate("header.search.title")</h2>
+		#if ($r.isNotEmpty($header))
+			<h3 class="o_flex_item_max">$header</h3>
+		#else
+			<div class="o_search_box">
+				<div class="o_catalog_title o_flex_first_grow">
+					<div>
+						<h2>$r.translate("header.search.title")</h2>
+					</div>
+					#if($r.visible("tools"))
+						$r.render("tools")
+					#end
 				</div>
-				#if($r.visible("tools"))
-					$r.render("tools")
-				#end
+				<div class="o_search_row">
+					$r.render("searchWrapper")
+				</div>
 			</div>
-			<div class="o_search_row">
-				$r.render("searchWrapper")
-			</div>
-		</div>
+		#end
 	</div>
 </div>
