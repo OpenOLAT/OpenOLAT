@@ -48,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -334,7 +335,9 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 	protected void doSelectGroups(UserRequest ureq) {
 		removeAsListenerAndDispose(selectController);
 		BusinessGroupViewFilter filter = new UnmanagedGroupFilter(BusinessGroupManagedFlag.resources);
-		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter, GroupRoles.coach, null);
+		Roles roles = ureq.getUserSession().getRoles();
+		GroupRoles restrictToRole = (roles.isGroupManager() || roles.isAdministrator()) ? null : GroupRoles.coach;
+		selectController = new SelectBusinessGroupController(ureq, getWindowControl(), filter, restrictToRole, null);
 		listenTo(selectController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
