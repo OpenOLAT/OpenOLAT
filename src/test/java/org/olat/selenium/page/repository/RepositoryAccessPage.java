@@ -103,7 +103,7 @@ public class RepositoryAccessPage {
 		browser.findElement(saveBy).click();
 		
 		// wait second popup
-		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_open_form");
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_open_form");
 		// configure method
 		new BookingPage(browser)
 			.configureOpenMethod(description);
@@ -124,7 +124,7 @@ public class RepositoryAccessPage {
 		browser.findElement(saveBy).click();
 		
 		// wait second popup
-		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_free_form");
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_free_form");
 		// configure method
 		new BookingPage(browser)
 			.configureFreeBooking(message);
@@ -145,7 +145,7 @@ public class RepositoryAccessPage {
 		browser.findElement(saveBy).click();
 		
 		// wait second popup
-		OOGraphene.waitModalDialog(browser, "o_sel_accesscontrol_token_form");
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_accesscontrol_token_form");
 		// configure method
 		new BookingPage(browser)
 			.configureTokenMethod(token, message);
