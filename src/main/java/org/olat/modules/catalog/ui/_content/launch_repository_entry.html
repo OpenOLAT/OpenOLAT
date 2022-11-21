@@ -15,7 +15,7 @@
 	#if($r.available("emptyState"))
 		$r.render("emptyState")
 	#end
-	<div class="swiper o_entry_cards">
+	<div id="o_swiper_$launcherId" class="swiper o_entry_cards">
 		<div class="swiper-wrapper">
 			#foreach($row in $items)
 				<div class="swiper-slide">
@@ -104,7 +104,7 @@ var bp = document.querySelector('body.o_width_full')
 			1080: { slidesPerView: 5, slidesPerGroup: 5 }
 		}
 	;
-new Swiper('.swiper', {
+new Swiper('#o_swiper_$launcherId', {
 	slidesPerView: 2,
 	slidesPerGroup: 2,
 	spaceBetween: 10,
