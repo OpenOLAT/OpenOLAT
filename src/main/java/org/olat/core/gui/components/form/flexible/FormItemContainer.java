@@ -25,10 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible;
 
-import java.util.Collection;
 import java.util.Map;
-
-import org.olat.core.gui.components.form.flexible.impl.Form;
 
 /**
  * Description:<br>
@@ -88,22 +85,4 @@ public interface FormItemContainer extends FormItem, FormItemCollection {
 	 */
 	public boolean hasFormComponent(FormItem item);
 	
-	/**
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public FormItem getFormComponent(String name);
-	
-	/**
-	 * the getter is defined on FormItem
-	 * @param rootForm
-	 */
-	public void setRootForm(Form rootForm);
-
-	/**
-	 * @param string
-	 * @param stepTitleLinks
-	 */
-	public void add(String string, Collection<FormItem> stepTitleLinks);
 }

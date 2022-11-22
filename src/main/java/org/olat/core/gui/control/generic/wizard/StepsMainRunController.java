@@ -298,12 +298,14 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		Step tmp = startStep;
 		do {
 			FormItem title = tmp.getStepTitle();
+			flc.add(title);
 			stepTitleLinks.add(title);
 			StepCollection stepCollection = tmp.getStepCollection();
 			if (stepCollection == null) {
 				mainStepTitles.add(title);
 			} else {
 				FormItem collectionTitle = stepCollection.getTitle();
+				flc.add(collectionTitle);
 				stepToParentTitle.put(title, collectionTitle);
 				List<FormItem> childrenTitles = parentToChildrenTitle.get(collectionTitle);
 				if (childrenTitles == null) {
@@ -315,9 +317,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			}
 			tmp = tmp.nextStep();
 		} while (tmp != Step.NOSTEP);
-		
-		flc.add("stepLinks", stepTitleLinks);
-		flc.add("parentLinks", mainStepTitles);
 	}
 	
 	private void updateButtons() {

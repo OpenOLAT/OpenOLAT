@@ -26,7 +26,6 @@
 package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,32 +201,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		// Check for multipart data, add upload limit to form
 		if (formComp instanceof FormMultipartItem) {
 			getRootForm().setMultipartEnabled(true);
-		}
-	}
-	
-	@Override
-	public void add(String name, Collection<FormItem> foItems){
-		
-		//remove if already in
-		if(formLayoutContainer.getContext().containsKey(name)){
-			//remove existing collection
-			formLayoutContainer.contextRemove(name);
-			//remove all associated form items
-			for (FormItem formItem : foItems) {
-				remove(formItem);
-			}
-		}
-		
-		//make collection accessible with <name> in the container.
-		//collection contains then only the names.
-		List<String> foItemsCollectionAsNames = new ArrayList<>();
-		formLayoutContainer.contextPut(name, foItemsCollectionAsNames);
-
-		//add all items as form items to the container
-		for (FormItem formItem : foItems) {
-			String foName = formItem.getName();
-			add(foName, formItem);
-			foItemsCollectionAsNames.add(foName);
 		}
 	}
 	
