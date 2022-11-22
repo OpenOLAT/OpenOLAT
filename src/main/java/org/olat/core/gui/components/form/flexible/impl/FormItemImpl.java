@@ -25,7 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
@@ -42,7 +41,6 @@ import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * <h2>Description:</h2>
@@ -600,18 +598,12 @@ public abstract class FormItemImpl implements InlineElement {
 				//nothing to do, default is handled
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.api.FormItem#getUserObject()
-	 */
+
 	@Override
 	public Object getUserObject() {
 		return userObject;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.api.FormItem#setUserObject(java.lang.Object)
-	 */
 	@Override
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
@@ -627,7 +619,6 @@ public abstract class FormItemImpl implements InlineElement {
 			return DISPPREFIX.concat(comp.getDispatchID());
 		}
 	}
-
 	
 	/**
 	 * override to implement your behaviour
@@ -638,8 +629,8 @@ public abstract class FormItemImpl implements InlineElement {
 	}
 	
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		//
+	public boolean validate() {
+		return true;
 	}
 	
 	@Override

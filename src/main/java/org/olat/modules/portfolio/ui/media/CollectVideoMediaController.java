@@ -44,7 +44,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.ceditor.PageElement;
@@ -180,9 +179,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 			fileEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else {
-			List<ValidationStatus> status = new ArrayList<>();
-			fileEl.validate(status);
-			allOk &= status.isEmpty();
+			allOk &= fileEl.validate();
 		}
 		
 		titleEl.clearError();

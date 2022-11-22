@@ -20,9 +20,7 @@
 package org.olat.modules.teams.ui;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -31,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.modules.teams.TeamsDispatcher;
 import org.olat.modules.teams.TeamsMeeting;
 import org.olat.modules.teams.TeamsService;
@@ -98,9 +95,7 @@ public class TeamsUIHelper {
 	}
 	
 	private static boolean revalidateDates(DateChooser dateEl) {
-		List<ValidationStatus> validationResults = new ArrayList<>();
-		dateEl.validate(validationResults);
-		return validationResults.isEmpty();
+		return dateEl.validate();
 	}
 	
 	public static boolean validateDates(DateChooser startDateEl, DateChooser endDateEl) {

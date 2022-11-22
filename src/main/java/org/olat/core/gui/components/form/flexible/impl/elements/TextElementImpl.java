@@ -25,8 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.ArrayList;
-
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -42,11 +41,9 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * <P>
@@ -268,7 +265,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			//validate the inline element to check for error
 			transientValue = getValue();
 			setValue(paramVal);
-			validate(new ArrayList<ValidationStatus>());
+			validate();
 			if(hasError()){
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);

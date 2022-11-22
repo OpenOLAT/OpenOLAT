@@ -25,8 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
@@ -36,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Initial Date: 24.11.2006 <br>
@@ -100,11 +97,6 @@ public class FormSubmit extends FormButton implements Submit{
 				&& ("undefined".equals(dispatchuri) || dispatchuri.equals(getFormDispatchId()))) {
 			getComponent().setDirty(true);
 		}
-	}
-
-	@Override
-	public void validate(List<ValidationStatus> statusDescriptinons) {
-		// submit is not validating itself
 	}
 
 	@Override

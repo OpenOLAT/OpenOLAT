@@ -20,7 +20,6 @@
 package org.olat.course.nodes.form.ui;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
@@ -43,7 +42,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
@@ -269,12 +267,7 @@ public class FormConfigController extends FormBasicController {
 			}
 		}
 		
-		participationDeadlineEl.clearError();
-		List<ValidationStatus> assignmentDeadlineValidation = new ArrayList<>(1);
-		participationDeadlineEl.validate(assignmentDeadlineValidation);
-		if (!assignmentDeadlineValidation.isEmpty()) {
-			allOk &= false;
-		}
+		allOk &= participationDeadlineEl.validate();
 
 		return allOk;
 	}

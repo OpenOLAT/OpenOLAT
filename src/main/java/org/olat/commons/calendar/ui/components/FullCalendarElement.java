@@ -42,7 +42,6 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 
 
 /**
@@ -325,11 +324,6 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 			}
 		}
 		return null;
-	}
-
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		//static text must not validate
 	}
 
 	@Override

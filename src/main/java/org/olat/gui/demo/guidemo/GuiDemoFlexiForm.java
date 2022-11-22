@@ -129,7 +129,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 
 		firstName = uifactory.addTextElement("firstname", "guidemo.flexi.form.firstname", 256, personData.getFirstName(), formLayout);
 		firstName.setDisplaySize(defaultDisplaySize);
-		firstName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
+		//firstName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
 		firstName.setMandatory(true);
 		firstName.setEnabled(inputMode);
 		firstName.setPlaceholderText("Hans");

@@ -58,7 +58,7 @@ import org.olat.core.util.event.GenericEventListener;
  */
 public class StepsMainRunController extends FormBasicController implements GenericEventListener {
 
-	public final static Step DONE_UNCHANGED = new Step(){
+	public static final Step DONE_UNCHANGED = new Step(){
 	
 		@Override
 		public Step nextStep() {
@@ -91,7 +91,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 	
 	};
-	public final static Step DONE_MODIFIED = new Step(){
+	public static final Step DONE_MODIFIED = new Step(){
 		
 		@Override
 		public Step nextStep() {
@@ -184,6 +184,12 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	protected void doDispose() {
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
         super.doDispose();
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		// Validation is done by every steps controller
+		return true;
 	}
 
 	@Override

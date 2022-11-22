@@ -23,10 +23,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -51,7 +49,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -218,9 +215,7 @@ public class LayoutAdminController extends FormBasicController {
 		if(logoUpload == source) {
 			if (logoUpload.isUploadSuccess()) {
 				logoUpload.clearError();
-				List<ValidationStatus> validationResults = new ArrayList<>();
-				logoUpload.validate(validationResults);
-				if (validationResults.isEmpty()) {
+				if (logoUpload.validate()) {
 					layoutModule.removeLogo();
 					File destinationDir = layoutModule.getLogoDirectory();
 					File newLogo = logoUpload.moveUploadFileTo(destinationDir);					

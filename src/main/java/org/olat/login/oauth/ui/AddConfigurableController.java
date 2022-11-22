@@ -35,7 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,9 +163,6 @@ public class AddConfigurableController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validate(nameEl);
-		List<ValidationStatus> nameValidation = new ArrayList<>();
-		nameEl.validate(nameValidation);
-		allOk &= nameValidation.isEmpty();  
 		allOk &= validate(displayNameEl);
 		allOk &= validate(apiKeyEl);
 		allOk &= validate(apiSecretEl);
@@ -191,6 +187,8 @@ public class AddConfigurableController extends FormBasicController {
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
 			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!el.validate()) {
 			allOk &= false;
 		}
 		return allOk;

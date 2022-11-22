@@ -93,7 +93,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.resource.OresHelper;
 
@@ -2275,12 +2274,24 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		if(searchFieldEl != null) searchFieldEl.validate(validationResults);
-		if(searchButton != null) searchButton.validate(validationResults);
-		if(customButton != null) customButton.validate(validationResults);
-		if(settingsButton != null) settingsButton.validate(validationResults);
-		if(extendedSearchButton != null) extendedSearchButton.validate(validationResults);
+	public boolean validate() {
+		boolean allOk = true;
+		if(searchFieldEl != null) {
+			allOk &= searchFieldEl.validate();
+		}
+		if(searchButton != null) {
+			allOk &= searchButton.validate();
+		}
+		if(customButton != null) {
+			allOk &= customButton.validate();
+		}
+		if(settingsButton != null) {
+			allOk &= settingsButton.validate();
+		}
+		if(extendedSearchButton != null) {
+			allOk &= extendedSearchButton.validate();
+		}
+		return allOk;
 	}
 
 	@Override

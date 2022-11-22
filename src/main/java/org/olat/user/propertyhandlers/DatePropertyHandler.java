@@ -22,9 +22,7 @@ package org.olat.user.propertyhandlers;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -39,7 +37,6 @@ import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
@@ -125,22 +122,12 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 
 	@Override
 	public boolean isValid(User user, FormItem formItem, Map<String,String> formContext) {
-		
 		DateChooser dateElem = (DateChooser) formItem;
-		
 		if (dateElem.isEmpty()) {
 			return !dateElem.isMandatory() || !dateElem.isEmpty("new.form.mandatory");
 		}
-		List<ValidationStatus> validation = new ArrayList<>();
-		dateElem.validate(validation);
-		if (validation.isEmpty()){
-			return true;
-		} else {
-			// errorkey should be set by dateElem.validate formItem.setErrorKey(i18nFormElementLabelKey()+ ".error", null);		
-			return false;			
-		}
+		return dateElem.validate();
 	}
-
 
 	/**
 	 * Helper to encode the date as a String

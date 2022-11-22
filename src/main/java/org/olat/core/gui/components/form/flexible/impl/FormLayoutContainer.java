@@ -44,7 +44,6 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -134,8 +133,22 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		// form layouter is not validating
+	public boolean validate() {
+		boolean allOk = true;
+		
+		for(String formComponentName:formComponentsNames) {
+			FormItem item = formComponents.get(formComponentName);
+			if(item == null) {
+				continue;
+			}
+			if(item.isVisible() && item.isEnabled()) {
+				allOk &= item.validate();
+			} else if(item.hasError()) {
+				item.clearError();
+			}
+		}
+
+		return allOk;
 	}
 
 	@Override

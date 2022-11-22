@@ -25,8 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Container;
@@ -34,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * <h2>Summary:</h2>
@@ -146,14 +143,12 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void evalFormRequest(UserRequest ureq);
 
 	/**
-	 * validate the data in the field, create error messages or update any
+	 * Validate the data in the field, create error messages or update any
 	 * component.
-	 * <p>
-	 * This method must be implemented by a specialised form item provider.
 	 * 
-	 * @return
+	 * @return true if the data can be safely saved
 	 */
-	public void validate(List<ValidationStatus> validationResults);
+	public boolean validate();
 
 	/**
 	 * reset the data in the field to a initial/predefined value. This method is 

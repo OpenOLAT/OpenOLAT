@@ -52,7 +52,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -810,9 +809,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 	}
 	
 	private void doUploadSlide(File file, String filename) {
-		List<ValidationStatus> validationResults = new ArrayList<>();
-		uploadSlidesEl.validate(validationResults);
-		if(validationResults.isEmpty()) {
+		if(uploadSlidesEl.validate()) {
 			VFSLeaf newSlide = VFSManager.resolveOrCreateLeafFromPath(temporaryContainer, filename);
 			VFSManager.copyContent(file, newSlide, getIdentity());
 			

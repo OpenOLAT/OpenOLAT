@@ -81,8 +81,15 @@ public interface TextElement extends FormItem{
 	public void setNewOriginalValue(String value);
 
 	/**
-	 * @param errorKey
-	 * @return
+	 * The field cannot be empty, and will be as mandatory set. Error message is the
+	 * default one.
+	 */
+	public void setNotEmptyCheck();
+	
+	/**
+	 * The field cannot be empty, and will be as mandatory set.
+	 * 
+	 * @param errorKey The i18n key for the error message
 	 */
 	public void setNotEmptyCheck(String errorKey);
 

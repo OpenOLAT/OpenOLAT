@@ -39,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
@@ -93,9 +92,7 @@ public class ImmunityProofUploadCertificateController extends FormBasicControlle
 			if (uploadElement.getUploadFile() != null) {
 				if (validateFormLogic(ureq)) {
 					// To check mime types
-					List<ValidationStatus> fileStatus = new ArrayList<>();
-					uploadElement.validate(fileStatus);
-
+					uploadElement.validate();
 					if (!uploadElement.hasError()) {
 						// Create temp folder
 						if (tempUploadFolder == null) {
