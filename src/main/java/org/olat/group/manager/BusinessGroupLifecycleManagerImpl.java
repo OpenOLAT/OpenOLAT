@@ -293,9 +293,9 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<BusinessGroup> businessGroups;
 		if(sendMailBeforeDeactivation) {
 			Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-			businessGroups = getBusinessGroupsToInactivate(lastLoginDate, emailBeforeDate, reactivationDatebefore);
+			businessGroups = getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, reactivationDatebefore);
 		} else {
-			businessGroups = getBusinessGroupsToInactivate(lastLoginDate, null, reactivationDatebefore);
+			businessGroups = getBusinessGroupsToInactivate(lastLoginDate, reactivationDatebefore);
 		}
 		
 		inactivateBusinessGroups(businessGroups, vetoed);
@@ -309,13 +309,11 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			return;
 		}
 		
-		int numOfDaysBeforeDeactivation = businessGroupModule.getNumberOfInactiveDayBeforeDeactivation();
-		Date lastLoginDate = getDate(numOfDaysBeforeDeactivation);
 		int numOfDaysReactivation = businessGroupModule.getNumberOfDayReactivationPeriod();
 		Date reactivationDatebefore = getDate(numOfDaysReactivation);
 
 		Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-		List<BusinessGroup> businessGroups = getBusinessGroupsToInactivate(lastLoginDate, emailBeforeDate, reactivationDatebefore);
+		List<BusinessGroup> businessGroups = getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, reactivationDatebefore);
 		
 		inactivateBusinessGroups(businessGroups, vetoed);
 		dbInstance.commitAndCloseSession();
@@ -489,31 +487,45 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	 * @param reactivationDateLimit
 	 * @return A list of groups to inactivate
 	 */
-	public List<BusinessGroup> getBusinessGroupsToInactivate(Date usageDate, Date emailBeforeDate, Date reactivationDateLimit) {
+	public List<BusinessGroup> getBusinessGroupsToInactivate(Date usageDate, Date reactivationDateLimit) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select bgi from businessgroup as bgi")
+		  .where().append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
+		  .and().append("((bgi.lastUsage is null and bgi.creationDate<:lastUsage) or bgi.lastUsage<:lastUsage)")
+		  .and().append(" (bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
+		appendBusinessGroupTypesRestrictions(sb);
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("status", BusinessGroupStatusEnum.active.name())
+				.setParameter("reactivationDateLimit", reactivationDateLimit)
+				.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
+	/**
+	 * The business groups are inactivated if they are excluded too. The first step
+	 * of the process can be manual but after the process is triggered, the next step
+	 * is automatic.
+	 * 
+	 * @param emailBeforeDate The limit for email date
+	 * @param reactivationDateLimit The limit for reactivation
+	 * @return A list of business groups to inactivate
+	 */
+	public List<BusinessGroup> getBusinessGroupsToInactivateAfterResponseTime(Date emailBeforeDate, Date reactivationDateLimit) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
 		  .where()
 		  .append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
-		  .and(); 
-		if(emailBeforeDate != null) {
-			sb.append("(bgi.inactivationEmailDate<:emailDate)");	
-		} else {
-			sb.append("((bgi.lastUsage is null and bgi.creationDate<:lastUsage) or bgi.lastUsage<:lastUsage)");
-		}
-		sb.and().append(" (bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
-		appendBusinessGroupTypesRestrictions(sb);
-
-		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
+		  .and().append("(bgi.inactivationEmailDate<:emailDate)")
+		  .and().append("(bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
+		
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("status", BusinessGroupStatusEnum.active.name())
-				.setParameter("reactivationDateLimit", reactivationDateLimit);
-		if(emailBeforeDate != null) {
-			query.setParameter("emailDate", emailBeforeDate);	
-		} else {
-			query.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP);	
-			
-		}
-		return query.getResultList();
+				.setParameter("reactivationDateLimit", reactivationDateLimit)
+				.setParameter("emailDate", emailBeforeDate)
+				.getResultList();
 	}
 	
 	private void appendBusinessGroupTypesRestrictions(QueryBuilder sb) {

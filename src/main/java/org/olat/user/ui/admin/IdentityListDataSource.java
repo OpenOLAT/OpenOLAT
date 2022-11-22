@@ -22,7 +22,6 @@ package org.olat.user.ui.admin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.model.IdentityPropertiesRow;
@@ -32,9 +31,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -47,11 +44,8 @@ public class IdentityListDataSource implements FlexiTableDataSourceDelegate<Iden
 	private List<IdentityPropertiesRow> userRows;
 	private final List<IdentityPropertiesRow> allUserRows;
 	
-	public IdentityListDataSource(List<Identity> identities, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
-		allUserRows = new ArrayList<>(identities.size());
-		for(Identity identity:identities) {
-			allUserRows.add(new IdentityPropertiesRow(identity, userPropertyHandlers, locale));
-		}
+	public IdentityListDataSource(List<IdentityPropertiesRow> rows) {
+		allUserRows = new ArrayList<>(rows);
 		userRows = allUserRows;
 	}
 
