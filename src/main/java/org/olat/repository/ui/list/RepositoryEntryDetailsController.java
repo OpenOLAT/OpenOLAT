@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
@@ -101,9 +102,15 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		listenTo(linkCtrl);
 		mainVC.put("link", linkCtrl.getInitialComponent());
 		
-		technicalDetailsCtrl = new RepositoryEntryDetailsTechnicalController(ureq, wControl, entry, isOwner);
-		listenTo(technicalDetailsCtrl);
-		mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
+		// show technical data only for administrative users or owners, hide from normal users
+		Roles roles = ureq.getUserSession().getRoles();
+		if (isOwner || roles.isAdministrator() || roles.isManager()) {
+			technicalDetailsCtrl = new RepositoryEntryDetailsTechnicalController(ureq, wControl, entry, isOwner);
+			listenTo(technicalDetailsCtrl);
+			mainVC.put("technical", technicalDetailsCtrl.getInitialComponent());
+		} else {
+			technicalDetailsCtrl = null;
+		}
 		
 		if (entry.getEducationalType() != null) {
 			mainVC.contextPut("educationalTypeClass", entry.getEducationalType().getCssClass());	
