@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,9 +80,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * The addXXX method adds elements -> 
 	 * The register method register an element only -> used for setErrorComponent / setLabelComponent.
 	 */
-	private Map<String,FormItem> formComponents;
-	private List<String> formComponentsNames;
-	private Map<String,FormItem> listeningOnlyFormComponents;
+	private final Map<String,FormItem> formComponents;
+	private final List<String> formComponentsNames;
 	private boolean hasRootForm=false;
 
 
@@ -128,7 +126,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formComponentsNames = new ArrayList<>(5);
 		formLayoutContainer.contextPut("formitemnames", formComponentsNames);
 		formComponents = new HashMap<>();
-		listeningOnlyFormComponents = new HashMap<>();
 	}
 
 	@Override
@@ -219,33 +216,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 			add(foName, formItem);
 			foItemsCollectionAsNames.add(foName);
 		}
-	}
-	
-	/**
-	 * register only, does not addsubcomponents, does not expose formItem in the velocity.
-	 * In 99% of the cases you should use an addXX method instead.
-	 * @param formComp
-	 */
-	public void register(FormItem formComp) {
-		if(!hasRootForm){
-			throw new AssertionError("first ensure that the layout container knows about its rootform!!");
-		}
-		// set the formtranslator, and parent
-		Translator itemTranslator = formComp.getTranslator();
-		if(formComp.getTranslator() != null && !formComp.getTranslator().equals(translator)
-				&& itemTranslator instanceof PackageTranslator) {
-			//let the FormItem provide a more specialized translator
-			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
-			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
-		}else{
-			itemTranslator = translator;
-		}
-		formComp.setTranslator(itemTranslator);
-		formComp.setRootForm(getRootForm());
-
-		String formCompName = formComp.getName();
-		// book keeping of FormComponent order
-		listeningOnlyFormComponents.put(formCompName, formComp);
 	}
 	
 	@Override
@@ -343,30 +313,22 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		List<FormItem> merged = new ArrayList<>(formComponents.values());
-		merged.addAll(listeningOnlyFormComponents.values());
-		return merged;
+		return new ArrayList<>(formComponents.values());
 	}
 
 	@Override
 	public Map<String, FormItem> getFormComponents() {
-		Map<String,FormItem> merged = new HashMap<>(formComponents);
-		merged.putAll(listeningOnlyFormComponents);
-		return Collections.unmodifiableMap(merged);
+		return Map.copyOf(formComponents);
 	}
 
 	@Override
 	public boolean hasFormComponent(FormItem item) {
-		return formComponents.containsValue(item)
-				||  listeningOnlyFormComponents.containsValue(item);
+		return formComponents.containsValue(item);
 	}
 
 	@Override
 	public FormItem getFormComponent(String name){
-		if(formComponents.containsKey(name)) {
-			return formComponents.get(name);
-		}
-		return listeningOnlyFormComponents.get(name);
+		return formComponents.get(name);
 	}
 	
 	public Context getContext() {

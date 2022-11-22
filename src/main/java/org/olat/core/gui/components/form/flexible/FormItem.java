@@ -30,7 +30,6 @@ import java.util.List;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Container;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormDecorator;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -300,19 +299,6 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param params
 	 */
 	public void setErrorKey(String errorKey, boolean isWarning, String... params);
-	
-	/**
-	 * a complex "error" message, or a helper wizard to fix the error.<br>
-	 * It must be a form item itself, that starting the fixing workflow let the
-	 * surrounding form evaluate (intermediate save values).<br>
-	 * Typically a {@link FormLink} is used here to start a workflow in a modal
-	 * dialog.<br />
-	 * Use showError(true) for the visibility of the error.
-	 * 
-	 * @param errorFormItem
-	 * @param container the container containing the form item which has the error
-	 */
-	public void setErrorComponent(FormItem errorFormItem, FormItemContainer container);
 
 	/**
 	 * a complex "error" message, or a helper wizard to fix the error may be

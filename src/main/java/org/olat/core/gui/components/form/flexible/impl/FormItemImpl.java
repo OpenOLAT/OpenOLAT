@@ -34,7 +34,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
 import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
@@ -443,20 +442,6 @@ public abstract class FormItemImpl implements InlineElement {
 			retVal = translator.translate(key);
 		}
 		return retVal;
-	}
-
-	@Override
-	public void setErrorComponent(FormItem errorFormItem, FormItemContainer container) {
-		if(errorFormItem == null){
-			throw new AssertException("do not clear error by setting null, instead use showError(false).");
-		}
-		//initialize root form of form item
-		FormLayoutContainer flc = (FormLayoutContainer)container;
-		flc.register(errorFormItem);//errorFormItem must be part of the composite chain, that it gets dispatched
-		
-		hasError = true;
-		errorComponent = errorFormItem.getComponent();
-		errorPanel.setContent(errorComponent);
 	}
 
 	@Override

@@ -25,7 +25,6 @@
 package org.olat.course.condition;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -43,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -106,8 +104,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private MultipleSelectionElement groupSwitch;
 	private GroupSelectionController groupChooseC;
 	private AreaSelectionController areaChooseC;
-	private FormLink fixGroupError;
-	private FormLink fixAreaError;
 	private MultipleSelectionElement assessmentSwitch;
 	private SingleSelection assessmentTypeSwitch;
 	private SingleSelection nodePassed;
@@ -614,10 +610,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			doChooseArea(ureq);
 		} else if (source == createAreasLink) {
 			doCreateArea(ureq);
-		} else if (source == fixGroupError) {
-			doFixGroupError(ureq);
-		} else if (source == fixAreaError) {
-			doFixArea(ureq);
 		} else {
 			if(coachExclusive == source && coachExclusive.isAtLeastSelected(1)) {
 				setBlockedForLearner();
@@ -668,7 +660,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		}
 		
 		if (shibbolethModule.isEnableShibbolethCourseEasyConfig()) {
-			retVal=validateAttibuteFields()&&retVal;	
+			retVal &= validateAttibuteFields();	
 		}
 		//
 		return retVal;
@@ -746,41 +738,14 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					missingGroups.add(activeGroupKey);
 				}
 
-				if (!missingGroups.isEmpty()) {
-					retVal = false;
+				if (missingGroups.isEmpty()) {
+					easyGroupList.clearError();
+				} else {
+					// Only show a message, don't block save
 					String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 					String csvMissGrps = toString(missingGroups);
 					String[] params = new String[] { "-", csvMissGrps };
-					// create error with link to fix it
-					String vcErrorPage = velocity_root + "/erroritem.html";
-					FormLayoutContainer errorGroupItemLayout = FormLayoutContainer
-							.createCustomFormLayout("errorgroupitem", getTranslator(), vcErrorPage);
-
-					groupChooseSubContainer.setErrorComponent(errorGroupItemLayout, this.flc);
-					// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
-					fixGroupError = new FormLinkImpl("error.fix", "create");
-					// link
-					fixGroupError.setCustomEnabledLinkCSS("btn btn-default");
-					errorGroupItemLayout.add(fixGroupError);
-
-					fixGroupError.setErrorKey(labelKey, params);
-					fixGroupError.showError(true);
-					fixGroupError.showLabel(false);
-					// hinty to pass the information if one group is
-					// missing or if 2 or more groups are missing
-					// (see fixGroupErrer.getUserObject to understand)
-					// e.g. if userobject String[].lenght == 1 -> one group only
-					// String[].lenght > 1 -> show bulkmode creation group
-					if (missingGroups.size() > 1) {
-						fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
-					} else {
-						fixGroupError.setUserObject(new String[] { csvMissGrps });
-					}
-
-					groupChooseSubContainer.showError(true);
-				} else {
-					// no more errors
-					groupChooseSubContainer.clearError();
+					easyGroupList.setErrorKey(labelKey, true, params);
 				}
 			}
 			areaChooseSubContainer.clearError();
@@ -800,41 +765,14 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					missingAreas.add(activeAreaKey);
 				}
 				
-				if (!missingAreas.isEmpty()) {
+				if (missingAreas.isEmpty()) {
+					easyAreaList.clearError();
+				} else {
 					retVal = false;
 					String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 					String csvMissAreas = toString(missingAreas);
 					String[] params = new String[] { "-", csvMissAreas };
-
-					// create error with link to fix it
-					String vcErrorPage = velocity_root + "/erroritem.html";
-					FormLayoutContainer errorAreaItemLayout = FormLayoutContainer
-							.createCustomFormLayout("errorareaitem", getTranslator(), vcErrorPage);
-
-					areaChooseSubContainer.setErrorComponent(errorAreaItemLayout, this.flc);
-					// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
-					fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
-					// link
-					fixAreaError.setCustomEnabledLinkCSS("btn btn-default");
-					errorAreaItemLayout.add(fixAreaError);
-
-					fixAreaError.setErrorKey(labelKey, params);
-					fixAreaError.showError(true);
-					fixAreaError.showLabel(false);
-					// hint to pass the information if one area is
-					// missing or if 2 or more areas are missing
-					// (see fixGroupErrer.getUserObject to understand)
-					// e.g. if userobject String[].lenght == 1 -> one group only
-					// String[].lenght > 1 -> show bulkmode creation group
-					if (missingAreas.size() > 1) {
-						fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
-					} else {
-						fixAreaError.setUserObject(new String[] { csvMissAreas });
-					}
-
-					areaChooseSubContainer.showError(true);
-				} else {
-					areaChooseSubContainer.clearError();
+					easyAreaList.setErrorKey(labelKey, true, params);
 				}
 			}
 
@@ -848,7 +786,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				groupSubContainer.setErrorKey("form.easy.error.group", null);
 				retVal = false;
 			}
-
 		}
 		return retVal;
 	}
@@ -1049,9 +986,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private void doGroupCreated(UserRequest ureq, Collection<Long> groupKeys) {
 		List<Long> c = new ArrayList<>();
 		c.addAll(getKeys(easyGroupList));
-		if (fixGroupError != null && fixGroupError.getUserObject() != null) {
-			c.removeAll(Arrays.asList((String[])fixGroupError.getUserObject()));
-		}
 		c.addAll(groupKeys);
 		easyGroupList.setValue(getGroupNames(c));
 		easyGroupList.setUserObject(c);
@@ -1061,25 +995,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		if (!groupKeys.isEmpty()) {
 			singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 		}
-	}
-	
-	/**
-	 * user wants to fix problem with fixing group error link e.g. create on
-	 * or more group at once.
-	 * @param ureq
-	 */
-	private void doFixGroupError(UserRequest ureq) {
-		String[] csvGroupName = (String[]) fixGroupError.getUserObject();
-		OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-		removeAsListenerAndDispose(groupCreateCtlr);
-		groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseRe, true, csvGroupName[0]);
-		listenTo(groupCreateCtlr);
-		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();	
 	}
 	
 	private void doChooseArea(UserRequest ureq) {
@@ -1119,9 +1034,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private void doAreaCreated(UserRequest ureq, Collection<Long> createdAreaKeys) {
 		List<Long> c = new ArrayList<>();
 		c.addAll(getKeys(easyAreaList));
-		if (fixAreaError!= null && fixAreaError.getUserObject() != null) {
-			c.removeAll(Arrays.asList((String[])fixAreaError.getUserObject()));
-		}
 		c.addAll(createdAreaKeys);
 		
 		easyAreaList.setValue(getAreaNames(c));
@@ -1132,25 +1044,6 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		if (!createdAreaKeys.isEmpty())  {
 			singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 		}
-	}
-	
-	/**
-	 * User wants to fix problem with fixing area error link e.g. create one
-	 * or more areas at once.
-	 * 
-	 * @param The user request
-	 */
-	private void doFixArea(UserRequest ureq) {
-		String[] csvAreaName = (String[]) fixAreaError.getUserObject();
-		OLATResource courseResource = courseEditorEnv.getCourseGroupManager().getCourseResource();
-		removeAsListenerAndDispose(areaCreateCtlr);
-		areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
-		listenTo(areaCreateCtlr);
-		
-		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCtlr.getInitialComponent());
-		listenTo(cmc);
-		cmc.activate();
 	}
 			
 	/**
