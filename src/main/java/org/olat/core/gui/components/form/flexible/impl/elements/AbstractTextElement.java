@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -289,7 +290,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 				if (value.length() > notLongerLength) {
 					lengthError = true;
 				}
-			} else if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
+			} else if (value.length() > notLongerLength
+					|| (DBFactory.getInstance().isOracle() &&  value.getBytes("UTF-8").length > notLongerLength)) {
 				// fancy UTF-8 check due to Oracle handling of characters
 				lengthError = true;
 			} 
