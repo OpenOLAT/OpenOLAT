@@ -670,7 +670,7 @@ public class VFSVersioningTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void rename_leaf() throws IOException {
+	public void renameLeaf() throws IOException {
 		//create a file
 		VFSContainer rootTest = VFSManager.olatRootContainer("/ver" + UUID.randomUUID(), null);
 		String filename = UUID.randomUUID().toString() + ".txt";

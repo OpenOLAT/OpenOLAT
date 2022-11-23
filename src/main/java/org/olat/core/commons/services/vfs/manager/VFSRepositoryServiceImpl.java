@@ -656,6 +656,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			metadata.copyValues(currentMetadata, false);
 			deleteThumbnailsOfMetadata(currentMetadata);
 			deleteRevisionsOfMetadata(currentMetadata);
+			currentMetadata = dbInstance.getCurrentEntityManager()
+				.getReference(VFSMetadataImpl.class, currentMetadata.getKey());
 			metadataDao.removeMetadata(currentMetadata);
 		}
 		
