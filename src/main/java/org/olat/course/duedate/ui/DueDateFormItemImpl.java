@@ -19,7 +19,6 @@
  */
 package org.olat.course.duedate.ui;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,8 +37,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.TextElementImpl;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 import org.olat.course.duedate.DueDateConfig;
 
 /**
@@ -135,19 +132,20 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		super.validate(validationResults);
+	public boolean validate() {
+		super.validate();
 		if (hasError()) {
-			return;
+			return false ;
 		}
 		
 		if (!validateIntegerOrEmpty(numOfDaysEl)) {
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
+			return false;
 		}
 		if (!validateAbsoluteDate()) {
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
+			return false;
 		}
-		
+		clearError();
+		return true;
 	}
 
 	private boolean validateIntegerOrEmpty(TextElement textEl) {
@@ -162,9 +160,7 @@ public class DueDateFormItemImpl extends FormItemImpl implements DueDateConfigFo
 	}
 	
 	private boolean validateAbsoluteDate() {
-		List<ValidationStatus> validationResults = new ArrayList<>(1);
-		absoluteDateEl.validate(validationResults);
-		if (!validationResults.isEmpty()) {
+		if (!absoluteDateEl.validate()) {
 			setErrorKey("form.error.date", null);
 			return false;
 		}

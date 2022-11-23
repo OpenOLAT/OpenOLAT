@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -74,7 +73,6 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -901,12 +899,7 @@ public class FileUploadController extends FormBasicController {
 	
 	private boolean validateFilename(FileElement itemEl) {
 		boolean allOk = true;
-		// validate clean the errors
-		List<ValidationStatus> fileStatus = new ArrayList<>();
-		// revalidate
-		itemEl.validate(fileStatus);
-
-		if(fileStatus.isEmpty()) {
+		if(itemEl.validate()) {
 			String filename = itemEl.getUploadFileName();
 			if (!StringHelper.containsNonWhitespace(filename)) {
 				itemEl.setErrorKey("NoFileChosen", null);

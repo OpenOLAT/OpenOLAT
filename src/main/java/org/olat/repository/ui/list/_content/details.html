@@ -19,7 +19,9 @@
 	</div>	
 	<div class="o_repo_footer #if($hasDescription) o_repo_column #end">
 		$r.render("link")
-		$r.render("technical")
+		#if($r.available("technical"))
+			$r.render("technical")
+		#end
 	</div>
 </div>
 	

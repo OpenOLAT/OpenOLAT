@@ -54,7 +54,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.config.CompletionType;
@@ -504,22 +503,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		allOk &= validateInteger(durationEl, 1, 10000, isDurationMandatory(), "error.positiv.int");
 		allOk &= validateInteger(scoreCutEl, 0, 10000, true, "error.positiv.int");
 		
-		startDateEl.clearError();
-		List<ValidationStatus> startDateValidation = new ArrayList<>(1);
-		startDateEl.validate(startDateValidation);
-		if (!startDateValidation.isEmpty()) {
-			allOk &= false;
-		}
+		allOk &= startDateEl.validate();
 		
 		endDateEl.clearError();
 		if (endDateEl.isVisible()) {
-			List<ValidationStatus> endDateValidation = new ArrayList<>(1);
-			endDateEl.validate(endDateValidation);
-			if (!endDateValidation.isEmpty()) {
-				allOk &= false;
-			}
-			
-			if (startDateValidation.isEmpty() && endDateValidation.isEmpty()) {
+			allOk &= endDateEl.validate();
+			if (allOk) {
 				DueDateConfig startDateConfig = startDateEl.getDueDateConfig();
 				DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
 				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {

@@ -315,7 +315,7 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		
 		Date beforeDate = DateUtils.addDays(new Date(), -900);
 		Date reactivationDatebefore = DateUtils.addDays(new Date(), -30);
-		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivate(beforeDate, null, reactivationDatebefore);
+		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivate(beforeDate, reactivationDatebefore);
 		Assert.assertNotNull(businessGroupsToInactivate);
 		Assert.assertTrue(businessGroupsToInactivate.contains(group1));
 		Assert.assertFalse(businessGroupsToInactivate.contains(group2));
@@ -351,14 +351,57 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		group3 = setLastUsage(group3,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -50));
 		dbInstance.commitAndCloseSession();
 		
-		Date beforeDate = DateUtils.addDays(new Date(), -900);
 		Date emailBeforeDate = DateUtils.addDays(new Date(), -30);
 		Date reactivationDatebefore = DateUtils.addDays(new Date(), -30);
-		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivate(beforeDate, emailBeforeDate, reactivationDatebefore);
+		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, reactivationDatebefore);
 		Assert.assertNotNull(businessGroupsToInactivate);
 		Assert.assertFalse(businessGroupsToInactivate.contains(group1));
 		Assert.assertTrue(businessGroupsToInactivate.contains(group2));
 		Assert.assertTrue(businessGroupsToInactivate.contains(group3));
+		
+		for(BusinessGroup businessGroupToInactivate:businessGroupsToInactivate) {
+			Date emailDate = businessGroupToInactivate.getInactivationEmailDate();
+			Assert.assertNotNull(emailDate);
+			Assert.assertTrue(emailDate.before(emailBeforeDate));
+			assertThat(businessGroupToInactivate.getGroupStatus())
+				.isIn(BusinessGroupStatusEnum.active);
+		}
+	}
+	
+	@Test
+	public void getBusinessGroupsToInactivateAfterResponseTime() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-2");
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(id, "Group cycle alt 25.1", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		setLastUsage(group1, BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -95));
+		
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(id, "Group cycle alt 25.2", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		((BusinessGroupImpl)group2).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		group2 = setLastUsage(group2,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -98));
+		
+		// typically manually start inactivation
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(id, "Group cycle alt 25.3", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		((BusinessGroupImpl)group3).setInactivationEmailDate(DateUtils.addDays(new Date(), -31));
+		group3 = setLastUsage(group3,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -20));
+		dbInstance.commitAndCloseSession();
+		
+		// typically manually start inactivation
+		BusinessGroup group4 = businessGroupService.createBusinessGroup(id, "Group cycle alt 25.4", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		((BusinessGroupImpl)group4).setInactivationEmailDate(DateUtils.addDays(new Date(), -15));
+		group4 = setLastUsage(group4,  BusinessGroupStatusEnum.active, DateUtils.addDays(new Date(), -900));
+		dbInstance.commitAndCloseSession();
+		
+		Date emailBeforeDate = DateUtils.addDays(new Date(), -30);
+		Date reactivationDatebefore = DateUtils.addDays(new Date(), -30);
+		List<BusinessGroup> businessGroupsToInactivate = lifecycleManager.getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, reactivationDatebefore);
+		Assert.assertNotNull(businessGroupsToInactivate);
+		Assert.assertFalse(businessGroupsToInactivate.contains(group1));
+		Assert.assertTrue(businessGroupsToInactivate.contains(group2));
+		Assert.assertTrue(businessGroupsToInactivate.contains(group3));
+		Assert.assertFalse(businessGroupsToInactivate.contains(group4));
 		
 		for(BusinessGroup businessGroupToInactivate:businessGroupsToInactivate) {
 			Date emailDate = businessGroupToInactivate.getInactivationEmailDate();

@@ -19,7 +19,6 @@
  */
 package org.olat.modules.catalog.ui;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -31,7 +30,6 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -104,7 +102,7 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			int firstResult, int maxResults, SortKey... orderBy) {
 		if (withSearch) {
 			if (StringHelper.containsNonWhitespace(query)) {
-				List<CatalogSearchTerm> searchTems = catalogService.getSearchTems(query, locale);
+				List<CatalogSearchTerm> searchTems = catalogService.getSearchTerms(query, locale);
 				searchParams.setSearchTerms(searchTems);
 			} else {
 				searchParams.setSearchTerms(null);
@@ -116,15 +114,6 @@ public class CatalogRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				CatalogFilterHandler handler = catalogService.getCatalogFilterHandler(filter.getFilter());
 				if (handler != null) {
 					handler.enrichSearchParams(searchParams, filter);
-				} else if (filter.getFilter().equals(CatalogRepositoryEntryListController.FILTER_SPECIAL_RE_KEYS)) {
-					List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-					if (values == null || values.isEmpty()) {
-						searchParams.setRepositoryEntryKeys(null);
-					} else {
-						@SuppressWarnings("unchecked")
-						Collection<Long> keys = (Collection<Long>)filter.getUserObject();
-						searchParams.setRepositoryEntryKeys(keys);
-					}
 				}
 			}
 		}

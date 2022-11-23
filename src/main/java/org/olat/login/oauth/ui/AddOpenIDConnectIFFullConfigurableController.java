@@ -19,9 +19,6 @@
  */
 package org.olat.login.oauth.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -33,7 +30,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,16 +71,22 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 		openIdConnectIFName = uifactory.addTextElement("openidconnectif.name", "openidconnectif.name", 256, "", formLayout);
 		openIdConnectIFName.setMaxLength(8);
 		openIdConnectIFName.setRegexMatchCheck("[a-zA-Z0-9._-]{3,8}", "openidconnectif.name.error");
+		openIdConnectIFName.setNotEmptyCheck();
 		openIdConnectIFDisplayName = uifactory.addTextElement("openidconnectif.displayname", "openidconnectif.displayname", 256, "", formLayout);
+		openIdConnectIFDisplayName.setNotEmptyCheck();
 
 		openIdConnectIFApiKeyEl = uifactory.addTextElement("openidconnectif.id", "openidconnectif.api.id", 256, "", formLayout);
+		openIdConnectIFApiKeyEl.setNotEmptyCheck("form.legende.mandatory");
 		openIdConnectIFApiSecretEl = uifactory.addTextElement("openidconnectif.secret", "openidconnectif.api.secret", 256, "", formLayout);
+		openIdConnectIFApiSecretEl.setNotEmptyCheck();
 		
 		openIdConnectIFIssuerEl = uifactory.addTextElement("openidconnectif.issuer", "openidconnectif.issuer", 256, "", formLayout);
 		openIdConnectIFIssuerEl.setExampleKey("openidconnectif.issuer.example", null);
+		openIdConnectIFIssuerEl.setNotEmptyCheck();
 
 		openIdConnectIFAuthorizationEndPointEl = uifactory.addTextElement("openidconnectif.authorization.endpoint", "openidconnectif.authorization.endpoint", 256, "", formLayout);
 		openIdConnectIFAuthorizationEndPointEl.setExampleKey("openidconnectif.authorization.endpoint.example", null);
+		openIdConnectIFAuthorizationEndPointEl.setNotEmptyCheck();
 	
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
@@ -95,16 +97,7 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		allOk &= validate(openIdConnectIFName);
-		List<ValidationStatus> nameValidation = new ArrayList<>();
-		openIdConnectIFName.validate(nameValidation);
-		allOk &= nameValidation.isEmpty();  
-		allOk &= validate(openIdConnectIFDisplayName);
-		allOk &= validate(openIdConnectIFApiKeyEl);
-		allOk &= validate(openIdConnectIFApiSecretEl);
-		allOk &= validate(openIdConnectIFIssuerEl);
-		allOk &= validate(openIdConnectIFAuthorizationEndPointEl);
-		
+
 		String providerName = openIdConnectIFName.getValue();
 		if(StringHelper.containsNonWhitespace(providerName)) {
 			OAuthSPI existingSpi = oauthModule.getProvider(providerName);
@@ -114,16 +107,6 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 			}
 		}
 
-		return allOk;
-	}
-	
-	private boolean validate(TextElement el) {
-		boolean allOk = true;
-		el.clearError();
-		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
 		return allOk;
 	}
 

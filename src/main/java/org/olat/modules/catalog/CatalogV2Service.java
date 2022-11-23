@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.id.Organisation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 
 /**
  * 
@@ -42,7 +43,15 @@ public interface CatalogV2Service {
 
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults);
 	
-	public List<CatalogSearchTerm> getSearchTems(String queryString, Locale locale);
+	public List<CatalogSearchTerm> getSearchTerms(String queryString, Locale locale);
+	
+	public List<String> getMainLangauages(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams);
 	
 	public List<CatalogLauncherHandler> getCatalogLauncherHandlers();
 

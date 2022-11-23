@@ -40,7 +40,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Initial Date: 04.01.2007 <br>
@@ -364,11 +363,6 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		if(dispatchuri != null && dispatchuri.equals(component.getFormDispatchId()) && !dropDownHiddenReq) {
 			formRequestEval = new ConsumableBoolean(true);
 		}
-	}
-
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		// no constraint to be checked	
 	}
 
 	@Override

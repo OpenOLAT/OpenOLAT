@@ -20,9 +20,7 @@
 package org.olat.modules.reminder.ui;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -35,7 +33,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.modules.reminder.ReminderRule;
 import org.olat.modules.reminder.RuleEditorFragment;
 import org.olat.modules.reminder.model.ReminderRuleImpl;
@@ -86,10 +83,7 @@ public class DateRuleEditor extends RuleEditorFragment {
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		afterEl.clearError();
-		List<ValidationStatus> validationResults = new ArrayList<>();
-		afterEl.validate(validationResults);
-		if(!validationResults.isEmpty()) {
+		if(!afterEl.validate()) {
 			allOk &= false;
 		} else if(afterEl.getDate() == null) {
 			afterEl.setErrorKey("form.mandatory.hover", null);

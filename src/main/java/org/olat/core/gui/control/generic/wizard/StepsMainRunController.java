@@ -58,7 +58,7 @@ import org.olat.core.util.event.GenericEventListener;
  */
 public class StepsMainRunController extends FormBasicController implements GenericEventListener {
 
-	public final static Step DONE_UNCHANGED = new Step(){
+	public static final Step DONE_UNCHANGED = new Step(){
 	
 		@Override
 		public Step nextStep() {
@@ -91,7 +91,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 	
 	};
-	public final static Step DONE_MODIFIED = new Step(){
+	public static final Step DONE_MODIFIED = new Step(){
 		
 		@Override
 		public Step nextStep() {
@@ -184,6 +184,12 @@ public class StepsMainRunController extends FormBasicController implements Gener
 	protected void doDispose() {
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
         super.doDispose();
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		// Validation is done by every steps controller
+		return true;
 	}
 
 	@Override
@@ -292,12 +298,14 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		Step tmp = startStep;
 		do {
 			FormItem title = tmp.getStepTitle();
+			flc.add(title);
 			stepTitleLinks.add(title);
 			StepCollection stepCollection = tmp.getStepCollection();
 			if (stepCollection == null) {
 				mainStepTitles.add(title);
 			} else {
 				FormItem collectionTitle = stepCollection.getTitle();
+				flc.add(collectionTitle);
 				stepToParentTitle.put(title, collectionTitle);
 				List<FormItem> childrenTitles = parentToChildrenTitle.get(collectionTitle);
 				if (childrenTitles == null) {
@@ -309,9 +317,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 			}
 			tmp = tmp.nextStep();
 		} while (tmp != Step.NOSTEP);
-		
-		flc.add("stepLinks", stepTitleLinks);
-		flc.add("parentLinks", mainStepTitles);
 	}
 	
 	private void updateButtons() {

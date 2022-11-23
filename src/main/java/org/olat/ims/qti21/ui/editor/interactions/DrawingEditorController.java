@@ -46,7 +46,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -192,9 +191,7 @@ public class DrawingEditorController extends FormBasicController {
 			backgroundEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else {
-			List<ValidationStatus> status = new ArrayList<>();
-			backgroundEl.validate(status);
-			allOk &= status.isEmpty();
+			allOk &= backgroundEl.validate();
 		}
 
 		return allOk;
@@ -220,9 +217,7 @@ public class DrawingEditorController extends FormBasicController {
 				}
 				flc.setDirty(true);
 			} else if (backgroundEl.isUploadSuccess()) {
-				List<ValidationStatus> status = new ArrayList<>();
-				backgroundEl.validate(status);
-				if(status.isEmpty()) {
+				if(backgroundEl.validate()) {
 					flc.setDirty(true);
 					String uniqueFilename = itemBuilder
 							.checkFilename(backgroundEl.getUploadFileName(), itemBuilder.getBackground(), itemFile.getParentFile());

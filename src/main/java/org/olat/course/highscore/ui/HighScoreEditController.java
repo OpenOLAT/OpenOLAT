@@ -18,7 +18,6 @@
  * <p>
  */
 package org.olat.course.highscore.ui;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -36,7 +35,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
@@ -287,9 +285,7 @@ public class HighScoreEditController extends FormBasicController {
 		}
 		
 		dateStart.clearError();
-		List<ValidationStatus> dateStartValidation = new ArrayList<>(1);
-		dateStart.validate(dateStartValidation);
-		if (!dateStartValidation.isEmpty()) {
+		if (!dateStart.validate()) {
 			allOK &= false;
 		}
 		

@@ -62,6 +62,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -235,7 +236,7 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	}
 	
 	@Override
-	public List<CatalogSearchTerm> getSearchTems(String queryString, Locale locale) {
+	public List<CatalogSearchTerm> getSearchTerms(String queryString, Locale locale) {
 		List<CatalogSearchTerm> searchTerms = null;
 		
 		if (StringHelper.containsNonWhitespace(queryString)) {
@@ -257,6 +258,26 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 		}
 		
 		return searchTerms;
+	}
+	
+	@Override
+	public List<String> getMainLangauages(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadMainLangauages(searchParams);
+	}
+	
+	@Override
+	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadExpendituresOfWork(searchParams);
+	}
+	
+	@Override
+	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadLocations(searchParams);
+	}
+	
+	@Override
+	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadPublicLifecycles(searchParams);
 	}
 
 	@Override

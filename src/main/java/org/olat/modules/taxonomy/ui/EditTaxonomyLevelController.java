@@ -49,7 +49,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.I18nItem;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -439,13 +438,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			}
 		}
 		
-		teaserImageEl.clearError();
-		List<ValidationStatus> teaserResults = new ArrayList<>();
-		teaserImageEl.validate(teaserResults);
-		
-		teaserImageEl.clearError();
-		List<ValidationStatus> backgroundResults = new ArrayList<>();
-		teaserImageEl.validate(backgroundResults);
+		teaserImageEl.validate();
 
 		if(!StringHelper.containsNonWhitespace(defaultLocaleDisplayNameEl.getValue())) {
 			defaultLocaleDisplayNameEl.setErrorKey("form.legende.mandatory", null);

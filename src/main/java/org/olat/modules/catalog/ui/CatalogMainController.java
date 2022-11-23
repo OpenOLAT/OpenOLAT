@@ -46,6 +46,7 @@ import org.olat.modules.catalog.CatalogLauncher;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogSecurityCallback;
 import org.olat.modules.catalog.CatalogSecurityCallbackFactory;
+import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler;
 import org.olat.modules.catalog.launcher.TaxonomyLevelLauncherHandler.Levels;
 import org.olat.modules.catalog.ui.admin.CatalogTaxonomyEditController;
@@ -80,6 +81,8 @@ public class CatalogMainController extends BasicController implements Activateab
 	private final CatalogRepositoryEntrySearchParams defaultSearchParams;
 	
 	@Autowired
+	private CatalogV2Service catalogService;
+	@Autowired
 	private ACService acService;
 	@Autowired
 	private TaxonomyService taxonomyService;
@@ -96,6 +99,8 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		headerSearchCtrl = new CatalogSearchHeaderController(ureq, wControl, secCallback);
 		listenTo(headerSearchCtrl);
+		Integer totalRespositoryEntries = catalogService.countRepositoryEntries(defaultSearchParams);
+		headerSearchCtrl.setTotalRepositoryEntries(totalRespositoryEntries);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
@@ -126,7 +131,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if (ORES_TYPE_SEARCH.equalsIgnoreCase(type)) {
 				headerSearchCtrl.setSearchString(null);
-				doSearch(ureq, null, true);
+				doSearch(ureq, null, true, null);
 				entries = entries.subList(1, entries.size());
 				catalogRepositoryEntryListCtrl.activate(ureq, entries, state);
 			} else if (ORES_TYPE_TAXONOMY.equalsIgnoreCase(type)) {
@@ -145,7 +150,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		if (source == headerSearchCtrl) {
 			if (event instanceof CatalogSearchEvent) {
 				CatalogSearchEvent cse = (CatalogSearchEvent)event;
-				doSearch(ureq, cse.getSearchString(), false);
+				doSearch(ureq, cse.getSearchString(), false, null);
 			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
 				doOpenAdmin(ureq);
 			} else if (event == CatalogSearchHeaderController.TAXONOMY_ADMIN_EVENT) {
@@ -155,13 +160,15 @@ public class CatalogMainController extends BasicController implements Activateab
 			if (event instanceof OpenSearchEvent) {
 				OpenSearchEvent ose = (OpenSearchEvent)event;
 				headerSearchCtrl.setSearchString(null);
-				doSearch(ureq, null, true);
+				String header = ose.getState() != null? ose.getState().getSpecialFilterRepositoryEntryLabel(): null;
+				headerSearchCtrl.setHeaderOnly(header);
+				doSearch(ureq, null, true, ose.getState());
 				List<ContextEntry> entries = null;
 				if (ose.getInfoRepositoryEntryKey() != null) {
 					OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TYPE_INFOS, ose.getInfoRepositoryEntryKey());
 					entries = BusinessControlFactory.getInstance().createCEListFromString(ores);
 				}
-				catalogRepositoryEntryListCtrl.activate(ureq, entries, ose.getState());
+				catalogRepositoryEntryListCtrl.activate(ureq, entries, null);
 			} else if (event instanceof OpenTaxonomyEvent) {
 				OpenTaxonomyEvent ote = (OpenTaxonomyEvent)event;
 				doOpenTaxonomy(ureq, ote.getTaxonomyLevelKey(), ote.getEducationalTypeKeys(), ote.getResourceTypes());
@@ -209,10 +216,11 @@ public class CatalogMainController extends BasicController implements Activateab
 	private void doOpenSearchHeader() {
 		removeAsListenerAndDispose(headerTaxonomyCtrl);
 		headerTaxonomyCtrl = null;
+		headerSearchCtrl.setHeaderOnly(null);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 	}
 
-	private void doSearch(UserRequest ureq, String searchString, boolean reset) {
+	private void doSearch(UserRequest ureq, String searchString, boolean reset, CatalogRepositoryEntryState catalogRepositoryEntryState) {
 		if (stackPanel.getLastController() != catalogRepositoryEntryListCtrl) {
 			if (stackPanel.hasController(catalogRepositoryEntryListCtrl)) {
 				// User is on Infos or Offers
@@ -225,9 +233,16 @@ public class CatalogMainController extends BasicController implements Activateab
 				
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_SEARCH), null);
 				CatalogRepositoryEntrySearchParams searchParams = defaultSearchParams.copy();
-				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, false);
+				if (catalogRepositoryEntryState != null) {
+					searchParams.setRepositoryEntryKeys(catalogRepositoryEntryState.getSpecialFilterRepositoryEntryKeys());
+				}
+				boolean withSearch = catalogRepositoryEntryState != null;
+				catalogRepositoryEntryListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, withSearch);
 				listenTo(catalogRepositoryEntryListCtrl);
-				stackPanel.pushController(translate("search.results"), catalogRepositoryEntryListCtrl);
+				String crumbName = catalogRepositoryEntryState != null
+						? catalogRepositoryEntryState.getSpecialFilterRepositoryEntryLabel()
+						: translate("search.results");
+				stackPanel.pushController(crumbName, catalogRepositoryEntryListCtrl);
 				resetStackPanelCssClass();
 			}
 		}

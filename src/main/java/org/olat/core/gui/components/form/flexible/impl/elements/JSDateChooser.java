@@ -28,7 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
@@ -38,8 +37,6 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 
 /**
  * <P>
@@ -145,21 +142,23 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
+	public boolean validate() {
 		// checks of the textelement
-		super.validate(validationResults);
+		super.validate();
 		/*
 		 * postcondition: .......................................................
 		 * hasError -> TRUE if error found, do not check further, errormsg is set
 		 * hasError -> FALSE clearError() was called, check valid date
 		 */
-		if(hasError){
-			return;
+		if(hasError()) {
+			return false;
 		}
 		// check valid date
 		if (checkForValidDate && (!checkValidDate() || !validateHoursAndMinutes())) {
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
+			return false;
 		}
+		clearError();
+		return true;
 	}
 
 	@Override

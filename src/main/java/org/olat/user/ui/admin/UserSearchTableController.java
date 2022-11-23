@@ -35,6 +35,7 @@ import org.olat.admin.user.bulkChange.UserBulkChangeStep00;
 import org.olat.admin.user.bulkChange.UserBulkChanges;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -179,6 +180,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private OrganisationModule organisationModule;
+	@Autowired
+	private IdentityPowerSearchQueries searchQuery;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -396,8 +399,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		tableEl.setSelectedFilterKeys(statusList);
 		
 		currentSearchParams = null;
-		IdentityListDataSource dataSource = new IdentityListDataSource(identityList, userPropertyHandlers, getLocale());
-		tableModel.setSource(dataSource);
+		
+		List<IdentityPropertiesRow> rows = identityList.stream().map(identity
+				-> new IdentityPropertiesRow(identity, this.userPropertyHandlers, getLocale()))
+				.collect(Collectors.toList());
+		searchQuery.appendOrganisations(rows);
+		tableModel.setSource(new IdentityListDataSource(rows));
 		tableEl.reset(true, true, true);
 		bulkMovebutton.setVisible(false);
 	}

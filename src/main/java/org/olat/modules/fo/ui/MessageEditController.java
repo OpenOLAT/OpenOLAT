@@ -100,7 +100,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MessageEditController extends FormBasicController {
 
 	private static final String CMD_DELETE_ATTACHMENT = "delete.attachment.";
-	protected static final Integer MAX_BODY_LENGTH = 32000;
+	protected static final int MAX_BODY_LENGTH = 32000;
 
 	// see OLAT-4182/OLAT-4219 and OLAT-4259
 	// the filtering of .nfs is sort of temporary until we make sure that we no longer reference

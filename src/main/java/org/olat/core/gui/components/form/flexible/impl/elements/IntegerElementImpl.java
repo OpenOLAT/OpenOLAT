@@ -25,16 +25,11 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineIntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.logging.AssertException;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 
 /**
  * Initial Date: 22.06.2007 <br>
@@ -105,13 +100,10 @@ public class IntegerElementImpl extends TextElementImpl implements
 	public boolean validateIntValue() {
 		boolean allOk = true;
 		if(intValueCheck()) {
-			List<ValidationStatus> v = new ArrayList<>(1);
-			validate(v);
-			if(v.size() > 0) {
+			if(!validate()) {
 				setErrorKey(intValueErrorKey, null);
 				allOk &= false;
 			}
-			
 		} else {
 			allOk &= false;//intValueCheck() set an error message
 		}
@@ -166,7 +158,7 @@ public class IntegerElementImpl extends TextElementImpl implements
 			//validate the inline element to check for error
 			transientValue = getValue();
 			super.setValue(paramVal);
-			validate(new ArrayList<ValidationStatus>());
+			validate();
 			if(hasError()){
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);
@@ -209,37 +201,30 @@ public class IntegerElementImpl extends TextElementImpl implements
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
+	public boolean validate() {
 		//
-		super.validate(validationResults);
+		super.validate();
 		if (hasError()) {
-			return; // stop if super found already an error
+			return false; // stop if super found already an error
 		}
 		// go further with specialized checks
 
 		if (!intValueCheck()) {
 			// int check is always done
-			validationResults.add(new ValidationStatusImpl(
-					ValidationStatus.ERROR));
-			return;
+			return false;
 		}
 		if (hasEqualCheck && !isEqualCheck()) {
-			validationResults.add(new ValidationStatusImpl(
-					ValidationStatus.ERROR));
-			return;
+			return false;
 		}
 		if(!isMaxValueCheck()) {
-			validationResults.add(new ValidationStatusImpl(
-					ValidationStatus.ERROR));
-			return;
+			return false;
 		}
 		if(!isMinValueCheck()) {
-			validationResults.add(new ValidationStatusImpl(
-					ValidationStatus.ERROR));
-			return;
+			return false;
 		}		
 		// else no error
 		clearError();
+		return true;
 	}
 
 	/**

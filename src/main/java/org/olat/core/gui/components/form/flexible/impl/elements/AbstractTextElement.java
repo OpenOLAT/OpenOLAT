@@ -26,16 +26,14 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.filter.Filter;
 
 import com.google.common.base.Objects;
@@ -93,29 +91,25 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	
 	
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		if(checkForNotEmpty && !notEmpty()){
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+	public boolean validate() {
+		if(checkForNotEmpty && !notEmpty()) {
+			return false;
 		}
-		if(checkForLength && !notLongerThan()){
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+		if(checkForLength && !notLongerThan()) {
+			return false;
 		}
-		if(checkForEquals && !checkForIsEqual()){
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+		if(checkForEquals && !checkForIsEqual()) {
+			return false;
 		}
-		if(checkForMatchRegexp && !checkRegexMatch()){
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+		if(checkForMatchRegexp && !checkRegexMatch()) {
+			return false;
 		}
-		if (checkForCustomItemValidator && !checkItemValidatorIsValid()){
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+		if (checkForCustomItemValidator && !checkItemValidatorIsValid()) {
+			return false;
 		}
 		//else no error
 		clearError();
+		return true;
 	}
 	
 	@Override
@@ -244,12 +238,18 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		this.checkVisibleLength = checkVisibleLength;
 	}
 
+	@Override
+	public void setNotEmptyCheck() {
+		setNotEmptyCheck("form.legende.mandatory");
+	}
+
 	/**
 	 * @param errorKey
 	 * @return
 	 */
 	@Override
 	public void setNotEmptyCheck(String errorKey) {
+		setMandatory(true);
 		checkForNotEmpty = true;
 		notEmptyErrorKey = errorKey;
 	}
@@ -289,7 +289,8 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 				if (value.length() > notLongerLength) {
 					lengthError = true;
 				}
-			} else if (value.length() > notLongerLength || value.getBytes("UTF-8").length > notLongerLength) {
+			} else if (value.length() > notLongerLength
+					|| (DBFactory.getInstance().isOracle() &&  value.getBytes("UTF-8").length > notLongerLength)) {
 				// fancy UTF-8 check due to Oracle handling of characters
 				lengthError = true;
 			} 

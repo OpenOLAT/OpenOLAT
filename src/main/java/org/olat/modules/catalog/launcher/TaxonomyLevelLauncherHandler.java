@@ -271,7 +271,7 @@ public class TaxonomyLevelLauncherHandler implements CatalogLauncherHandler {
 		}
 	}
 	
-	public Config getConfigFromString(String configStr) {
+	private Config getConfigFromString(String configStr) {
 		if (StringHelper.containsNonWhitespace(configStr)) {
 			if (configStr.startsWith("Taxonomy::")) {
 				String taxonomyKeyStr = configStr.substring("Taxonomy::".length());

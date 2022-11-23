@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
+import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -59,11 +60,11 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 	private MultipleSelectionElement listEl;
 	
 	private final Collection<String> preselectedKeys;
-	private final SelectionValues availableValues;
+	private final SelectionValuesSupplier availableValues;
 	
 	private final Set<String> selectedKeys = new HashSet<>();
 
-	public AbstractMultiSelectionController(UserRequest ureq, WindowControl wControl, SelectionValues availableValues, Collection<String> preselectedKeys) {
+	public AbstractMultiSelectionController(UserRequest ureq, WindowControl wControl, SelectionValuesSupplier availableValues, Collection<String> preselectedKeys) {
 		super(ureq, wControl, "field_list", Util.createPackageTranslator(FlexiTableElementImpl.class, ureq.getLocale()));
 		this.availableValues = availableValues;
 		this.preselectedKeys = preselectedKeys;
@@ -99,7 +100,7 @@ public abstract class AbstractMultiSelectionController extends FormBasicControll
 		
 		if(preselectedKeys != null && !preselectedKeys.isEmpty()) {
 			for(String selectedKey:preselectedKeys) {
-				if(availableValues.containsKey(selectedKey)) {
+				if(listEl.getKeys().contains(selectedKey)) {
 					listEl.select(selectedKey, true);
 				}
 			}

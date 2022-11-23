@@ -25,7 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -34,8 +33,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 
 /**
  * Initial Date: 27.12.2006 <br>
@@ -282,12 +279,13 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 	}
 	
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
+	public boolean validate() {
 		if (!allowNoSelection && isVisible() && !isOneSelected()) {
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+			setErrorKey("form.legende.mandatory", null);
+			return false;
 		}
-		clearError();			
+		clearError();
+		return true;
 	}
 
 	@Override

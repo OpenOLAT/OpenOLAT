@@ -27,7 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -59,8 +58,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
-import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -274,33 +271,29 @@ public class FileElementImpl extends FormItemImpl
 	}
 
 	@Override
-	public void validate(List<ValidationStatus> validationResults) {
+	public boolean validate() {
 		int lastFormError = getRootForm().getLastRequestError();
 		if (lastFormError == Form.REQUEST_ERROR_UPLOAD_LIMIT_EXCEEDED) {
 			// check if total upload limit is exceeded (e.g. sum of files)
 			setErrorKey(i18nErrMaxSize, i18nErrMaxSizeArgs);
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+			return false;
 
 			// check for a general error
 		} else if (lastFormError == Form.REQUEST_ERROR_GENERAL) {
 			setErrorKey("file.element.error.general", null);
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+			return false;
 
 			// check if uploaded at all
 		} else if (isMandatory() && ((initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
 				|| (initialFile != null && tempUploadFile != null && !tempUploadFile.exists()))) {
 			setErrorKey(i18nErrMandatory, null);
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+			return false;
 
 			// check for file size of current file
 		} else if (checkForMaxFileSize && tempUploadFile != null && tempUploadFile.exists()
 				&& tempUploadFile.length() > maxUploadSizeKB * 1024l) {
 			setErrorKey(i18nErrMaxSize, i18nErrMaxSizeArgs);
-			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
+			return false;
 
 			// check for mime types
 		} else if (checkForMimeTypes && tempUploadFile != null && tempUploadFile.exists()) {
@@ -310,12 +303,12 @@ public class FileElementImpl extends FormItemImpl
 			}
 			if (!found) {
 				setErrorKey(i18nErrMimeType, i18nErrMimeTypeArgs);
-				validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-				return;
+				return false;
 			}
 		}
 		// No error, clear errors from previous attempts
 		clearError();
+		return true;
 	}
 	
 	private boolean isMimeTypeAllowed(String mimeType) {

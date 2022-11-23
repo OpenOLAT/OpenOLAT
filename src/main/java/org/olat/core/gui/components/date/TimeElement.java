@@ -20,13 +20,11 @@
 package org.olat.core.gui.components.date;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * 
@@ -63,11 +61,6 @@ public class TimeElement extends FormItemImpl {
 	
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
-		//
-	}
-	
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
 		//
 	}
 	

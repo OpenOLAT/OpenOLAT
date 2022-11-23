@@ -43,7 +43,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.AreaSelectionController;
@@ -402,23 +401,17 @@ public class GTAWorkflowEditController extends FormBasicController {
 		}
 		
 		assignmentDeadlineEl.clearError();
-		List<ValidationStatus> assignmentDeadlineValidation = new ArrayList<>(1);
-		assignmentDeadlineEl.validate(assignmentDeadlineValidation);
-		if (!assignmentDeadlineValidation.isEmpty()) {
+		if (!assignmentDeadlineEl.validate()) {
 			allOk &= false;
 		}
 		
 		submissionDeadlineEl.clearError();
-		List<ValidationStatus> submissionDeadlineValidation = new ArrayList<>(1);
-		submissionDeadlineEl.validate(submissionDeadlineValidation);
-		if (!submissionDeadlineValidation.isEmpty()) {
+		if (!submissionDeadlineEl.validate()) {
 			allOk &= false;
 		}
 		
 		solutionVisibleAfterEl.clearError();
-		List<ValidationStatus> solutionVisibleAftereValidation = new ArrayList<>(1);
-		solutionVisibleAfterEl.validate(solutionVisibleAftereValidation);
-		if (!solutionVisibleAftereValidation.isEmpty()) {
+		if (!solutionVisibleAfterEl.validate()) {
 			allOk &= false;
 		}
 		

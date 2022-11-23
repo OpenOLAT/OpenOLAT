@@ -41,5 +41,13 @@ public interface IdentityPowerSearchQueries {
 	
 	public List<IdentityPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, SortKey orderBy, int firstResult, int maxResults);
+	
+	/**
+	 * An helper method to decorate a list of identities with their
+	 * organisations.
+	 * 
+	 * @param rows The list of identities
+	 */
+	public void appendOrganisations(List<IdentityPropertiesRow> rows);
 
 }

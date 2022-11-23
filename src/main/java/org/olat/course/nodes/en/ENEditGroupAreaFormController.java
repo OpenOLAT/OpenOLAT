@@ -44,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -114,8 +113,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 	private boolean hasGroups;
 
 	private FormSubmit subm;
-	private FormLink fixGroupError;
-	private FormLink fixAreaError;
 
 	private NewAreaController areaCreateCntrllr;
 	private NewBGController groupCreateCntrllr;
@@ -391,51 +388,24 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			Set<Long> missingGroups = new HashSet<>();
 			List<BusinessGroupShort> existingGroups =  businessGroupService.loadShortBusinessGroups(activeGroupSelection);
 			a_a:
-				for(Long activeGroupKey:activeGroupSelection) {
-					for(BusinessGroupShort group:existingGroups) {
-						if(group.getKey().equals(activeGroupKey)) {
-							continue a_a;
-						}
+			for(Long activeGroupKey:activeGroupSelection) {
+				for(BusinessGroupShort group:existingGroups) {
+					if(group.getKey().equals(activeGroupKey)) {
+						continue a_a;
 					}
-					missingGroups.add(activeGroupKey);
 				}
+				missingGroups.add(activeGroupKey);
+			}
 
-			if (missingGroups.size() > 0) {
-				retVal = false;
+			if (missingGroups.isEmpty()) {
+				easyGroupTableElement.clearError();
+			} else {
 				String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 				String csvMissGrps = toString(missingGroups);
 				String[] params = new String[] { "-", csvMissGrps };
-
-				// create error with link to fix it
-				String vc_errorPage = velocity_root + "/erroritem.html";
-				FormLayoutContainer errorGroupItemLayout = FormLayoutContainer.createCustomFormLayout(
-						"errorgroupitem", getTranslator(), vc_errorPage);
-
-				easyGroupTableElement.setErrorComponent(errorGroupItemLayout, this.flc);
-				// FIXING LINK ONLY IF A DEFAULTCONTEXT EXISTS
-				fixGroupError = new FormLinkImpl("error.fix", "create");
-				// link
-				fixGroupError.setCustomEnabledLinkCSS("btn btn-default");
-				errorGroupItemLayout.add(fixGroupError);
-
-				fixGroupError.setErrorKey(labelKey, params);
-				fixGroupError.showError(true);
-				fixGroupError.showLabel(false);
-				// hinty to pass the information if one group is
-				// missing or if 2 or more groups are missing
-				// (see fixGroupErrer.getUserObject to understand)
-				// e.g. if userobject String[].lenght == 1 -> one group only
-				// String[].lenght > 1 -> show bulkmode creation group
-				if (missingGroups.size() > 1) {
-					fixGroupError.setUserObject(new String[] { csvMissGrps, "dummy" });
-				} else {
-					fixGroupError.setUserObject(new String[] { csvMissGrps });
-				}
-
-				easyGroupTableElement.showError(true);
+				easyGroupTableElement.setErrorKey(labelKey, true, params);
 			}
 		}
-
 
 		if (!isEmpty(easyAreaList)) {
 			// check whether areas exist
@@ -444,54 +414,28 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			List<Long> missingAreas = new ArrayList<>();
 			List<BGArea> cnt = areaManager.loadAreas(activeAreaSelection);
 			a_a:
-				for(Long activeAreaKey:activeAreaSelection) {
-					for (BGArea element : cnt) {
-						if (element.getKey().equals(activeAreaKey)) { 
-							continue a_a;
-						}
+			for(Long activeAreaKey:activeAreaSelection) {
+				for (BGArea element : cnt) {
+					if (element.getKey().equals(activeAreaKey)) { 
+						continue a_a;
 					}
-					missingAreas.add(activeAreaKey);
 				}
+				missingAreas.add(activeAreaKey);
+			}
 
-			if (missingAreas.size() > 0) {
+			if (missingAreas.isEmpty()) {
+				easyAreaList.clearError();
+			} else {
 				retVal = false;
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 				String csvMissAreas = toString(missingAreas);
 				String[] params = new String[] { "-", csvMissAreas };
-
-				// create error with link to fix it
-				String vc_errorPage = velocity_root + "/erroritem.html";
-				FormLayoutContainer errorAreaItemLayout = FormLayoutContainer.createCustomFormLayout(
-						"errorareaitem", getTranslator(), vc_errorPage);
-
-				easyAreaList.setErrorComponent(errorAreaItemLayout, this.flc);
-				// FXINGIN LINK ONLY IF DEFAULT CONTEXT EXISTS
-				fixAreaError = new FormLinkImpl("error.fix", "create");// erstellen
-				// link
-				fixAreaError.setCustomEnabledLinkCSS("btn btn-default");
-				errorAreaItemLayout.add(fixAreaError);
-
-				fixAreaError.setErrorKey(labelKey, params);
-				fixAreaError.showError(true);
-				fixAreaError.showLabel(false);
-
-				// hint to pass the information if one area is
-				// missing or if 2 or more areas are missing
-				// (see fixGroupErrer.getUserObject to understand)
-				// e.g. if userobject String[].lenght == 1 -> one group only
-				// String[].lenght > 1 -> show bulkmode creation group
-				if (missingAreas.size() > 1) {
-					fixAreaError.setUserObject(new String[] { csvMissAreas, "dummy" });
-				} else {
-					fixAreaError.setUserObject(new String[] { csvMissAreas });
-				}
-
-				easyAreaList.showError(true);
+				easyAreaList.setErrorKey(labelKey, true, params);
 			}
 		}
 
-		boolean easyGroupOK = activeGroupSelection != null && activeGroupSelection.size() > 0;
-		boolean easyAreaOK = activeAreaSelection != null && activeAreaSelection.size() > 0;
+		boolean easyGroupOK = activeGroupSelection != null && !activeGroupSelection.isEmpty();
+		boolean easyAreaOK = activeAreaSelection != null && !activeAreaSelection.isEmpty();
 		if (!easyGroupOK && !easyAreaOK) {
 			// error concerns both fields -> set it as switch error
 			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas", null);
@@ -563,53 +507,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			listenTo(cmc);
 			cmc.activate();
 			subm.setEnabled(false);
-		} else if (source == fixGroupError) {
-			/*
-			 * user wants to fix problem with fixing group error link e.g. create one
-			 * or more group at once.
-			 */
-			String[] csvGroupName = (String[]) fixGroupError.getUserObject();
-
-			easyGroupTableElement.setEnabled(false);
-			removeAsListenerAndDispose(groupCreateCntrllr);
-			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
-			RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
-			groupCreateCntrllr = new NewBGController(ureq, getWindowControl(), courseRe, true, csvGroupName[0]);
-			listenTo(groupCreateCntrllr);
-
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					groupCreateCntrllr.getInitialComponent()
-					);
-			listenTo(cmc);
-
-			cmc.activate();
-			subm.setEnabled(false);
-
-		} else if (source == fixAreaError) {
-			/*
-			 * user wants to fix problem with fixing area error link e.g. create one
-			 * or more areas at once.
-			 */
-			String[] csvAreaName = (String[]) fixAreaError.getUserObject();
-
-			easyAreaList.setEnabled(false);
-			removeAsListenerAndDispose(areaCreateCntrllr);
-			OLATResource courseResource = this.cev.getCourseGroupManager().getCourseResource();
-			areaCreateCntrllr = new NewAreaController(ureq, getWindowControl(), courseResource, true, csvAreaName[0]);
-			listenTo(areaCreateCntrllr);
-
-			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(
-					getWindowControl(), "close",
-					areaCreateCntrllr.getInitialComponent()
-					);
-			listenTo(cmc);
-
-			cmc.activate();
-			subm.setEnabled(false);
-
 		} else if(source == easyGroupTableElement) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -655,18 +552,11 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			if (event == Event.DONE_EVENT) {
 				List<Long> c = new ArrayList<>();
 				c.addAll(easyGroupTableModel.getKeys());
-				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
-					String[] keyArr = (String[])fixGroupError.getUserObject();
-					if(keyArr != null && keyArr.length > 0) {
-						List<Long> fixedKeys = toKeys(keyArr[0]);
-						c.removeAll(fixedKeys);
-					}
-				}
 				c.addAll(groupCreateCntrllr.getCreatedGroupKeys());
 
 				updateModel(c);
 
-				if (groupCreateCntrllr.getCreatedGroupNames().size() > 0 && !hasGroups) {
+				if (!groupCreateCntrllr.getCreatedGroupNames().isEmpty() && !hasGroups) {
 					chooseGroupsLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
@@ -679,20 +569,13 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			if (event == Event.DONE_EVENT) {
 				List<Long> c = new ArrayList<>();
 				c.addAll(getKeys(easyAreaList));
-				if (fixAreaError != null && fixAreaError.getUserObject() != null) {
-					String[] keyArr = (String[])fixAreaError.getUserObject();
-					if(keyArr != null && keyArr.length > 0) {
-						List<Long> fixedKeys = toKeys(keyArr[0]);
-						c.removeAll(fixedKeys);
-					}
-				}
 				c.addAll(areaCreateCntrllr.getCreatedAreaKeys());
 
 				KeysAndNames keysAndNames = getAreaKeysAndNames(c);
 				easyAreaList.setValue(keysAndNames.getDecoratedNames());
 				easyAreaList.setUserObject(keysAndNames);
 
-				if (areaCreateCntrllr.getCreatedAreaNames().size() > 0 && !hasAreas) {
+				if (!areaCreateCntrllr.getCreatedAreaNames().isEmpty() && !hasAreas) {
 					chooseAreasLink.setLinkTitle("select");
 					singleUserEventCenter.fireEventToListenersOf(new MultiUserEvent("changed"), groupConfigChangeEventOres);
 				}
@@ -755,19 +638,12 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 
 	private boolean isEmpty(StaticTextElement element) {
 		List<Long> keys = getKeys(element);
-		if(keys == null || keys.isEmpty()) {
-			return true;
-		}
-	
-		return false;
+		return keys == null || keys.isEmpty();
 	}
 
 	private boolean isEmpty(ENEditGroupTableModel element) {
 		List<Long> keys = element.getKeys();
-		if(keys == null || keys.isEmpty()) {
-			return true;
-		}
-		return false;
+		return keys == null || keys.isEmpty();
 	}
 
 	private List<Long> getKeys(StaticTextElement element) {
@@ -786,19 +662,6 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			sb.append(key);
 		}
 		return sb.toString();
-	}
-
-	private List<Long> toKeys(String keysString) {
-		List<Long> keyList = new ArrayList<>();
-		String[] keys = keysString.split(",");
-		for(String key:keys) {
-			try {
-				keyList.add(Long.parseLong(key));
-			} catch (NumberFormatException e) {
-				logWarn("Cannot parse this key: " + key, e);
-			}
-		}
-		return keyList;
 	}
 
 	private KeysAndNames getAreaKeysAndNames(List<Long> keys) {

@@ -357,7 +357,7 @@ class NewUserForm extends FormBasicController {
 		String email = emailTextElement.getValue();
 		emailTextElement.clearError();
 		if(emailTextElement.isVisible() && emailTextElement.isEnabled()) {
-			emailTextElement.validate(new ArrayList<>());
+			allOk &= emailTextElement.validate();
 		}
 		if (!userManager.isEmailAllowed(email)) {
 			if (registrationManager.isRegistrationPending(email)) {

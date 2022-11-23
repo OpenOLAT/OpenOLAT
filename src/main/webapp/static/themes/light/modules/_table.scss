@@ -216,8 +216,12 @@
 				padding-right: 15px;
 				white-space: nowrap;
 				overflow: hidden;
-				text-overflow: ellipsis;		
-			}	
+				text-overflow: ellipsis;
+				
+				&.o_filter_active {
+					background-color: $o-table-filter-active-bg;
+				}
+			}
 		}
 		>ul.o_table_filters_config {
 			margin-left: 1em;

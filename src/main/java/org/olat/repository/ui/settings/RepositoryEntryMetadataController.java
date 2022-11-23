@@ -86,6 +86,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryEntryMetadataController extends FormBasicController {
+	
+	private static final int MAX_LENGTH_AUTHORS = 2000;
+	private static final int MAX_LENGTH_LANGUAGE = 16;
+	private static final int MAX_LENGTH_EXPENDITURE_OF_WORK = 255;
 
 	private final boolean readOnly;
 	private final boolean showHeading;
@@ -215,7 +219,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			uifactory.addSpacerElement("spacer1", formLayout, false);
 		}
 
-		authors = uifactory.addTextElement("cif.authors", "cif.authors", 255, repositoryEntry.getAuthors(), formLayout);
+		authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), formLayout);
 		authors.setDisplaySize(60);
 		authors.setEnabled(!readOnly);
 		
@@ -249,10 +253,10 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		}
 		
 		if (!usedInWizard) {
-			language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", 16, repositoryEntry.getMainLanguage(), formLayout);
+			language = uifactory.addTextElement("cif.mainLanguage", "cif.mainLanguage", MAX_LENGTH_LANGUAGE, repositoryEntry.getMainLanguage(), formLayout);
 			language.setEnabled(!readOnly);
 		
-			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", 100, repositoryEntry.getExpenditureOfWork(), formLayout);
+			expenditureOfWork = uifactory.addTextElement("cif.expenditureOfWork", "cif.expenditureOfWork", MAX_LENGTH_EXPENDITURE_OF_WORK, repositoryEntry.getExpenditureOfWork(), formLayout);
 			expenditureOfWork.setExampleKey("details.expenditureOfWork.example", null);
 			expenditureOfWork.setEnabled(!readOnly);
 			
@@ -327,9 +331,9 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		allOk &= RepositoyUIFactory.validateTextElement(language, false, 255);
-		allOk &= RepositoyUIFactory.validateTextElement(expenditureOfWork, false, 225);
-		allOk &= RepositoyUIFactory.validateTextElement(authors, false, 2000);
+		allOk &= RepositoyUIFactory.validateTextElement(language, false, MAX_LENGTH_LANGUAGE);
+		allOk &= RepositoyUIFactory.validateTextElement(expenditureOfWork, false, MAX_LENGTH_EXPENDITURE_OF_WORK);
+		allOk &= RepositoyUIFactory.validateTextElement(authors, false, MAX_LENGTH_AUTHORS);
 
 		if (licenseEl != null) {
 			licenseEl.clearError();

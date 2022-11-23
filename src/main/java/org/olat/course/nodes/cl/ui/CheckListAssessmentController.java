@@ -696,9 +696,9 @@ public class CheckListAssessmentController extends FormBasicController implement
 				if(filterValues != null) {
 					List<String> groupNames = new ArrayList<>(filterValues.size());
 					for(String filterValue:filterValues) {
-						SelectionValue groupValue = filter.getSelectionValues().get(filterValue);
+						String groupValue = filter.getSelectionValues().getValue(filterValue);
 						if (groupValue != null) {
-							groupNames.add(groupValue.getValue());
+							groupNames.add(groupValue);
 						}
 					}
 					if (!groupNames.isEmpty()) {

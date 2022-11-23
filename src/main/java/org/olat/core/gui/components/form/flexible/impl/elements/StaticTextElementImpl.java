@@ -25,14 +25,11 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.render.DomWrapperElement;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Initial Date:  02.02.2007 <br>
@@ -53,11 +50,6 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// static text must not evaluate
-	}
-	
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		//static text must not validate
 	}
 
 	@Override

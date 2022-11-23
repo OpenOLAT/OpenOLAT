@@ -114,7 +114,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -691,11 +690,6 @@ public class FormUIFactory {
 			}
 		
 			@Override
-			public void validate(List<ValidationStatus> validationResults) {
-				//nothing to do
-			}
-		
-			@Override
 			protected void rootFormAvailable() {
 			 //nothing to do		
 			}
@@ -1119,11 +1113,6 @@ public class FormUIFactory {
 	public FormItem createSimpleErrorText(final String name, final String translatedText) {
 		FormItem wrapper = new FormItemImpl(name) {
 			SimpleFormErrorText mySimpleErrorTextC = new SimpleFormErrorText(name, translatedText);
-			
-			@Override
-			public void validate(List<ValidationStatus> validationResults) {
-				// nothing to do 
-			}
 		
 			@Override
 			protected void rootFormAvailable() {

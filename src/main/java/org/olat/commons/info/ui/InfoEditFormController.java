@@ -51,7 +51,6 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.co.ContactForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -262,11 +261,7 @@ public class InfoEditFormController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		List<ValidationStatus> validation = new ArrayList<>();
-		attachmentEl.validate(validation);
-		if(validation.size() > 0) {
-			allOk &= false;
-		}
+		allOk &= attachmentEl.validate();
 		return allOk;
 	}
 	

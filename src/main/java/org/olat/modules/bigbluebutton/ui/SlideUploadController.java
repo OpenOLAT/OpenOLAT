@@ -19,7 +19,6 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -32,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -87,10 +85,7 @@ public class SlideUploadController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		fileEl.clearError();
-		List<ValidationStatus> validationResults = new ArrayList<>();
-		fileEl.validate(validationResults);
-		if(validationResults.isEmpty()) {
+		if(fileEl.validate()) {
 			Integer maxSizeInMb = bigBlueButtonModule.getMaxUploadSize();
 			if(maxSizeInMb != null && maxSizeInMb.intValue() > 0) {
 				long total = fileEl.getUploadSize();

@@ -21,7 +21,6 @@ package org.olat.course.nodes.iq;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,7 +47,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.DueDateService;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
@@ -547,26 +545,16 @@ public class QTI21EditForm extends FormBasicController {
 	private boolean validateDueDateConfig(DueDateConfigFormItem startEl, DueDateConfigFormItem endEl) {
 		boolean allOk = true;
 		
-		List<ValidationStatus> validation = new ArrayList<>(1);
 		startEl.clearError();
 		endEl.clearError();
 		if(startEl.isVisible()) {
-			startEl.validate(validation);
-			if (!validation.isEmpty()) {
-				allOk &= false;
-			}
+			allOk &= startEl.validate();
 			if (startEl.isMandatory() && !startEl.hasError() && !DueDateConfig.isDueDate(startEl.getDueDateConfig())) {
 				startEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;
 			}
 			
-			
-			validation = new ArrayList<>(1);
-			endEl.validate(validation);
-			if (!validation.isEmpty()) {
-				allOk &= false;
-			}
-			
+			allOk &= endEl.validate();
 			if (endEl.isMandatory() && !endEl.hasError() && !DueDateConfig.isDueDate(endEl.getDueDateConfig())) {
 				endEl.setErrorKey("form.legende.mandatory", null);
 				allOk &= false;

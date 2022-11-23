@@ -20,8 +20,6 @@
 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,7 +34,6 @@ import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -112,14 +109,6 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 	 */
 	@Override
 	protected void rootFormAvailable() {
-		// nothing to do
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#validate(java.util.List)
-	 */
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
 		// nothing to do
 	}
 

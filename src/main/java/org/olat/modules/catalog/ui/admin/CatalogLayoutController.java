@@ -25,8 +25,6 @@ import static org.olat.modules.catalog.CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_S
 import static org.olat.modules.catalog.CatalogV2Module.TAXONOMY_LEVEL_LAUNCHER_STYLE_SQUARE;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,7 +46,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.CatalogV2Module.CatalogCardView;
@@ -147,10 +144,7 @@ public class CatalogLayoutController extends FormBasicController {
 					}
 				}
 			} else if (headerBgImageEl.isUploadSuccess()) {
-				headerBgImageEl.clearError();
-				List<ValidationStatus> validationResults = new ArrayList<>();
-				headerBgImageEl.validate(validationResults);
-				if (validationResults.isEmpty()) {
+				if (headerBgImageEl.validate()) {
 					catalogModule.deleteHeaderBgImage();
 					File headerBgImage = headerBgImageEl.moveUploadFileTo(catalogModule.getHeaderBgDirectory());
 					catalogModule.setHeaderBgImageFilename(headerBgImage.getName());

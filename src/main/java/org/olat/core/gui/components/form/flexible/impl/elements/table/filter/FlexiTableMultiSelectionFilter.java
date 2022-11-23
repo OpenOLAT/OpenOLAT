@@ -26,8 +26,7 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
+import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
@@ -43,18 +42,18 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 
 	private static final int MAX_EXPLANATION_LENGTH = 32;
 	
-	private final SelectionValues availableValues;
+	private final SelectionValuesSupplier availableValues;
 	
 	private List<String> value;
 	
-	public FlexiTableMultiSelectionFilter(String label, String filter, SelectionValues availableValues,
+	public FlexiTableMultiSelectionFilter(String label, String filter, SelectionValuesSupplier availableValues,
 			boolean defaultVisible) {
 		super(label, filter, defaultVisible);
 		setDefaultVisible(defaultVisible);
 		this.availableValues = availableValues;
 	}
 	
-	public SelectionValues getSelectionValues() {
+	public SelectionValuesSupplier getSelectionValues() {
 		return availableValues;
 	}
 
@@ -142,8 +141,8 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 		List<String> hrValues = new ArrayList<>();
 		if(value != null && !value.isEmpty()) {
 			for(String val:value) {
-				SelectionValue selectionValue = getSelectionValue(val);
-				String valForLabel = selectionValue == null ? val : selectionValue.getValue();
+				String selectionValue = availableValues.getValue(val);
+				String valForLabel = selectionValue == null ? val : selectionValue;
 				if(StringHelper.containsNonWhitespace(valForLabel)) {
 					hrValues.add(StringHelper.unescapeHtml(valForLabel));
 				}
@@ -159,8 +158,8 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 		if(list != null && !list.isEmpty()) {
 			int currentLength = 0;
 			for(String val:list) {
-				SelectionValue selectionValue = getSelectionValue(val);
-				String valForLabel = selectionValue == null ? val : selectionValue.getValue();
+				String selectionValue = availableValues.getValue(val);
+				String valForLabel = selectionValue == null ? val : selectionValue;
 				if(valForLabel != null) {
 					if(currentLength == 0) {
 						label.append(": ");
@@ -189,16 +188,6 @@ public class FlexiTableMultiSelectionFilter extends FlexiTableFilter implements 
 			}
 		}
 		return label.toString();
-	}
-	
-	private SelectionValue getSelectionValue(String key) {
-		List<SelectionValue> selectionValues = availableValues.keyValues();
-		for(SelectionValue val:selectionValues) {
-			if(key.equals(val.getKey())) {
-				return val;
-			}
-		}
-		return null;
 	}
 
 	@Override

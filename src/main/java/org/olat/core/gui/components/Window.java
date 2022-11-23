@@ -189,7 +189,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	//custom css
 	private CustomCSS customCSS;
 	// the window title
-	private WindowTitle title;
+	private final WindowTitle title;
 	
 	// wbackoffice reference
 	private final WindowBackOfficeImpl wbackofficeImpl;

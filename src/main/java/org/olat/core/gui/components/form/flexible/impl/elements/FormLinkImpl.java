@@ -25,8 +25,6 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -37,7 +35,6 @@ import org.olat.core.gui.components.link.LinkPopupSettings;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * Description:<br>
@@ -294,11 +291,6 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// a link has no data to remember
-	}
-
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		// typically a link does not validate its data
 	}
 	
 	@Override

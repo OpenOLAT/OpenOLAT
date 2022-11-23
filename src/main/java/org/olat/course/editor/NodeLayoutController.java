@@ -25,7 +25,6 @@ import static org.olat.course.style.CourseStyleService.IMAGE_LIMIT_KB;
 import static org.olat.course.style.CourseStyleService.IMAGE_MIME_TYPES;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,7 +47,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.util.Util;
-import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
@@ -358,15 +356,10 @@ public class NodeLayoutController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		teaserImageUploadEl.clearError();
-		if (teaserImageUploadEl.isVisible()) {
-			List<ValidationStatus> fileStatus = new ArrayList<>();
-			teaserImageUploadEl.validate(fileStatus);
-			if (fileStatus.isEmpty()) {
-				if (teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
-					teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
-					allOk &= false;
-				}
-			}
+		if (teaserImageUploadEl.isVisible() && teaserImageUploadEl.validate()
+				&& teaserImageUploadEl.getUploadFile() == null && teaserImageUploadEl.getInitialFile() == null) {
+			teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
 		}
 		
 		return allOk;

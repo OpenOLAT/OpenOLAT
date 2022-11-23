@@ -151,6 +151,20 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			rowsKeys.add(identityKey);
 		}
 		
+		appendOrganisations(rows, rowsKeys);
+		return rows;
+	}
+
+	@Override
+	public void appendOrganisations(List<IdentityPropertiesRow> rows) {
+		List<Long> rowKeys = rows.stream()
+				.map(IdentityPropertiesRow::getIdentityKey)
+				.collect(Collectors.toList());
+		appendOrganisations(rows, rowKeys);
+	}
+	
+	private void appendOrganisations(List<IdentityPropertiesRow> rows, List<Long> rowsKeys) {
+		
 		List<OrganisationWithParents> organisations = organisationTree.getOrderedOrganisationsWithParents();
 		Map<Long,OrganisationWithParents> organisationsMap = organisations.stream()
 				.collect(Collectors.toMap(OrganisationWithParents::getKey, org -> org, (u,v) -> u));
@@ -172,11 +186,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 			row.setOrganisations(orgs);
 		}
-
-		return rows;
+		
 	}
 	
-	public Map<Long,List<Long>> getOrganisations(List<Long> identityKeys) {
+	private Map<Long,List<Long>> getOrganisations(List<Long> identityKeys) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership.identity.key, org.key from organisation org")
 		  .append(" inner join org.group baseGroup")

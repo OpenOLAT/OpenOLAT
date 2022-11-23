@@ -25,11 +25,8 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import java.util.List;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.util.ValidationStatus;
 
 /**
  * @author patrickb
@@ -80,21 +77,10 @@ abstract class FormButton extends FormItemImpl {
 	public void setNewWindowAfterDispatchUrl(boolean newWindowAfterDispatchUrl) {
 		this.newWindowAfterDispatchUrl = newWindowAfterDispatchUrl;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
+
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// Buttons do not evaluate
-	}
-
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#validate(java.util.List)
-	 */
-	@Override
-	public void validate(List<ValidationStatus> validationResults) {
-		// Buttons do not validate
 	}
 
 	@Override

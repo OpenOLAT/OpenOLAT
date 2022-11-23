@@ -208,6 +208,7 @@
 	
 	.swiper-button-next,
 	.swiper-button-prev {
+		position: unset;
 		width: $o-swiper-button-width;
 		height: $o-swiper-button-height;
 		color: $o-swiper-button-color;
@@ -215,7 +216,7 @@
 		border: $o-swiper-button-border;
 		border-radius: $o-swiper-button-border-radius;
 		&::after {
-			font-size: 24px;
+			font-size: $o-swiper-button-font-size;
 			font-weight: bold;
 		}
 		&:hover {
@@ -224,6 +225,16 @@
 		}
 		&.o_swiper_button_disabled {
 			opacity: $o-swiper-button-disabled-opacity;
+		}
+		+.swiper-button-next {
+			margin-left: 5px;
+		}
+	}
+	
+	.swiper {
+		.swiper-button-next,
+		.swiper-button-prev {
+			display: none;
 		}
 	}
  }
