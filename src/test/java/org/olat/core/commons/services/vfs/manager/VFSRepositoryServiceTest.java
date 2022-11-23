@@ -24,6 +24,7 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
@@ -45,6 +46,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -331,6 +333,27 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		VFSItem noExpiration = testContainer.resolve(noExpirationFilename);
 		Assert.assertNotNull(noExpiration);
 		Assert.assertTrue(noExpiration.exists());
+	}
+	
+	@Test
+	public void renameFolder() throws IOException {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		
+		// Create the container
+		String containerName = UUID.randomUUID().toString();
+		VFSContainer container = testContainer.createChildContainer(containerName);
+		VFSLeaf image = container.createChildLeaf("Image.jpg");
+		copyTestTxt(image, "IMG_1491.jpg");
+		VFSLeaf thumbnail = vfsRepositoryService.getThumbnail(image, 20, 20, true);
+		Assert.assertNotNull(thumbnail);
+		
+		// Delete it
+		container.delete();
+		
+		//create a file
+		VFSContainer newContainer = testContainer.createChildContainer("MyName_" + CodeHelper.getForeverUniqueID());
+		newContainer.rename(containerName);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private VFSLeaf createFile() {
