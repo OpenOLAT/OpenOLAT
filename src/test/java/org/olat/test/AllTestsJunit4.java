@@ -473,6 +473,7 @@ import org.junit.runners.Suite;
 	org.olat.login.oauth.OAuthDispatcherTest.class,
 	org.olat.login.oauth.ADFSProviderTest.class,
 	org.olat.ldap.LDAPLoginTest.class,
+	org.olat.ldap.manager.LDAPDAOTest.class,
 	org.olat.ldap.manager.LDAPLoginManagerTest.class,
 	org.olat.core.commons.services.mark.MarksTest.class,
 	org.olat.test.SpringInitDestroyVerficationTest.class,
