@@ -123,6 +123,8 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 				}
 				return identifier;
 			}
+			case beginDate: return curriculum.getCurriculumElementBeginDate();
+			case endDate: return curriculum.getCurriculumElementEndDate();
 			case mark: return curriculum.getMarkLink();
 			case select: return curriculum.getSelectLink();
 			case details: return curriculum.getDetailsLink();
@@ -142,7 +144,9 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		completion("table.header.completion"),
 		details("table.header.details"),
 		start("table.header.start"),
-		calendars("table.header.calendars");
+		calendars("table.header.calendars"),
+		beginDate("table.header.begin.date"),
+		endDate("table.header.end.date");
 		
 		private final String i18nHeaderKey;
 		
