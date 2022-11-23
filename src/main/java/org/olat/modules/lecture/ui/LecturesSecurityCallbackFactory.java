@@ -132,6 +132,26 @@ public class LecturesSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canSeeAbsencesInDailyOverview() {
+			return viewAs != LectureRoles.participant;
+		}
+
+		@Override
+		public boolean canSelectCoursesInDailyOverview() {
+			return viewAs == LectureRoles.participant;
+		}
+
+		@Override
+		public boolean canSeeStatisticsInDailyOverview() {
+			return viewAs != LectureRoles.participant;
+		}
+
+		@Override
+		public boolean canSeeWarningsAndAlertsInDailyOverview() {
+			return viewAs != LectureRoles.participant;
+		}
+
+		@Override
 		public boolean canApproveAppeal() {
 			if(isReadOnly()) return false;
 			

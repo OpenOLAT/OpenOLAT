@@ -45,6 +45,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
@@ -184,6 +185,10 @@ public class CurriculumElementListController extends FormBasicController impleme
 		DefaultFlexiColumnModel elementIdentifierCol = new DefaultFlexiColumnModel(ElementViewCols.identifier, "select");
 		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(elementIdentifierCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.beginDate,
+				new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.endDate,
+				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
 		if(assessedIdentity.equals(getIdentity())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
@@ -212,7 +217,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v3-"
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v4-"
 					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 	}
 	

@@ -35,6 +35,14 @@ public interface LecturesSecurityCallback {
 	
 	public boolean canSeeAppeals();
 	
+	public boolean canSeeAbsencesInDailyOverview();
+	
+	public boolean canSelectCoursesInDailyOverview();
+	
+	public boolean canSeeStatisticsInDailyOverview();
+	
+	public boolean canSeeWarningsAndAlertsInDailyOverview();
+	
 	public boolean canApproveAppeal();
 	
 	public boolean canEditConfiguration();

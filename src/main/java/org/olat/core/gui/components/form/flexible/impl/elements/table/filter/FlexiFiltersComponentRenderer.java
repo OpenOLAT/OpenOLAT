@@ -99,7 +99,10 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderFormItem(Renderer renderer, StringOutput sb, FormItem item, String cssClass, String[] args) {
-		if(!item.isVisible()) return;
+		if(!item.isVisible()) {
+			item.getComponent().setDirty(false);
+			return;
+		}
 		
 		sb.append("<li role='presentation' class='").append(cssClass).append("'>");
 		renderer.render(item.getComponent(), sb, args);
