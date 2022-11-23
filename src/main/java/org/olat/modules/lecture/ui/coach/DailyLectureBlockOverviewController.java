@@ -170,21 +170,27 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.entry, select));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
-		DefaultFlexiColumnModel participantsCol = new DefaultFlexiColumnModel(BlockCols.numOfParticipants);
-		participantsCol.setIconHeader("o_icon o_icon_number_of");
-		columnsModel.addFlexiColumnModel(participantsCol);
-		DefaultFlexiColumnModel presenceCol = new DefaultFlexiColumnModel(BlockCols.numOfPresences);
-		presenceCol.setIconHeader("o_icon o_icon_presence");
-		columnsModel.addFlexiColumnModel(presenceCol);
-		DefaultFlexiColumnModel absenceCol = new DefaultFlexiColumnModel(BlockCols.numOfAbsences);
-		absenceCol.setIconHeader("o_icon o_icon_absence");
-		columnsModel.addFlexiColumnModel(absenceCol);
-		DefaultFlexiColumnModel warningCol = new DefaultFlexiColumnModel(BlockCols.warnings, new LectureBlockAbsenceWarningCellRenderer(getTranslator()));
-		warningCol.setIconHeader("o_icon o_absences_col_warning");
-		columnsModel.addFlexiColumnModel(warningCol);
-		DefaultFlexiColumnModel alertCol = new DefaultFlexiColumnModel(BlockCols.alerts, new LectureBlockAbsenceAlertCellRenderer());
-		alertCol.setIconHeader("o_icon o_absences_col_alert");
-		columnsModel.addFlexiColumnModel(alertCol);
+		
+		if(secCallback.canSeeStatisticsInDailyOverview()) {
+			DefaultFlexiColumnModel participantsCol = new DefaultFlexiColumnModel(BlockCols.numOfParticipants);
+			participantsCol.setIconHeader("o_icon o_icon_number_of");
+			columnsModel.addFlexiColumnModel(participantsCol);
+			DefaultFlexiColumnModel presenceCol = new DefaultFlexiColumnModel(BlockCols.numOfPresences);
+			presenceCol.setIconHeader("o_icon o_icon_presence");
+			columnsModel.addFlexiColumnModel(presenceCol);
+			DefaultFlexiColumnModel absenceCol = new DefaultFlexiColumnModel(BlockCols.numOfAbsences);
+			absenceCol.setIconHeader("o_icon o_icon_absence");
+			columnsModel.addFlexiColumnModel(absenceCol);
+		}
+		
+		if(secCallback.canSeeWarningsAndAlertsInDailyOverview()) {
+			DefaultFlexiColumnModel warningCol = new DefaultFlexiColumnModel(BlockCols.warnings, new LectureBlockAbsenceWarningCellRenderer(getTranslator()));
+			warningCol.setIconHeader("o_icon o_absences_col_warning");
+			columnsModel.addFlexiColumnModel(warningCol);
+			DefaultFlexiColumnModel alertCol = new DefaultFlexiColumnModel(BlockCols.alerts, new LectureBlockAbsenceAlertCellRenderer());
+			alertCol.setIconHeader("o_icon o_absences_col_alert");
+			columnsModel.addFlexiColumnModel(alertCol);
+		}
 		
 		if(rollCallSecCallback.canViewDetails() && withSelect) {
 			DefaultFlexiColumnModel detailsCol = new DefaultFlexiColumnModel(BlockCols.details.i18nHeaderKey(), BlockCols.details.ordinal(), "details",
