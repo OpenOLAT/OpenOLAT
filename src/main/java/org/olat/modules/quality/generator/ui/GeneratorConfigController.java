@@ -191,6 +191,7 @@ public class GeneratorConfigController extends FormBasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				formEntry = formSearchCtrl.getSelectedEntry();
 				updateUI();
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();

@@ -48,7 +48,6 @@ public class QualityJob extends JobWithDB {
 		Date until = new Date();
 		QualityGeneratorService generatorService = CoreSpringFactory.getImpl(QualityGeneratorService.class);
 		generatorService.generateDataCollections();
-		DBFactory.getInstance().commitAndCloseSession();
 		
 		QualityService qualityService = CoreSpringFactory.getImpl(QualityService.class);
 		qualityService.startDataCollection(until);
