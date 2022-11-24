@@ -121,11 +121,6 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	}
 	
 	@Override
-	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
-		return queries.loadTaxonomyLevelPathKeysWithOffers(searchParams);
-	}
-	
-	@Override
 	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams) {
 		if (taxonomyLevels == null) return;
 		
@@ -278,6 +273,16 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	@Override
 	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams) {
 		return queries.loadPublicLifecycles(searchParams);
+	}
+	
+	@Override
+	public List<Long> getTaxonomyLevelsWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadTaxonomyLevelKeysWithOffers(searchParams);
+	}
+	
+	@Override
+	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadTaxonomyLevelPathKeysWithOffers(searchParams);
 	}
 
 	@Override

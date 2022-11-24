@@ -124,8 +124,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		assertThat(mainLangauages)
 				.containsExactlyInAnyOrder(
-					"deutsch",
-					"italienisch, deutsch"
+					"Deutsch ",
+					"italienisch, deutsch",
+					" deutsch"
 				);
 	}
 	
@@ -145,8 +146,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		assertThat(expendituresOfWork)
 				.containsExactlyInAnyOrder(
-						"1 week",
-						"months and weeks"
+						" 1 week",
+						"Months and Weeks",
+						"1 Week   "
 					);
 	}
 	
@@ -166,8 +168,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		
 		assertThat(locations)
 				.containsExactlyInAnyOrder(
-						"chur",
-						"sargans oder chur"
+						"Chur ",
+						"Sargans oder Chur",
+						"  chur"
 				);
 	}
 	
@@ -204,7 +207,34 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
 		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
-		TaxonomyLevel taxonomyLevel4 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(2), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel3), null);
+		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(3), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel2), null);
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<Long> taxonomyLevelsWithOffers = sut.loadTaxonomyLevelKeysWithOffers(searchParams);
+		
+		assertThat(taxonomyLevelsWithOffers)
+				.containsExactlyInAnyOrder(
+						taxonomyLevel1.getKey(),
+						taxonomyLevel2.getKey(),
+						taxonomyLevel3.getKey()
+				);
+	}
+	
+	@Test
+	public void shouldLoadTaxonomyLevelPathKeysWithOffers() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		Taxonomy taxonomy = taxonomyService.getTaxonomyList().get(0);
+		TaxonomyLevel taxonomyLevel1 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		TaxonomyLevel taxonomyLevel2 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, taxonomyLevel1, taxonomy);
+		TaxonomyLevel taxonomyLevel3 = taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
+		taxonomyService.createTaxonomyLevel(random(), random(), null, null, null, taxonomy);
 		
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(0), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1), null);
 		repositoryManager.setDescriptionAndName(catalogItem.getRepositoryEntry(1), random(), null, null, null, null, null, null, null, null, null, null, null, null, Set.of(taxonomyLevel1, taxonomyLevel2), null);
@@ -220,10 +250,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 						taxonomyLevel1.getMaterializedPathKeys(),
 						taxonomyLevel2.getMaterializedPathKeys(),
 						taxonomyLevel3.getMaterializedPathKeys()
-						)
-				.doesNotContain(
-						taxonomyLevel4.getMaterializedPathKeys()
-						);
+				);
 	}
 	
 	@Test
@@ -807,8 +834,6 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		searchParams.setMainLanguages(List.of("de", "fr"));
 		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
 				.containsExactlyInAnyOrder(
-						catalogItem.getRepositoryEntry(0),
-						catalogItem.getRepositoryEntry(1),
 						catalogItem.getRepositoryEntry(2),
 						catalogItem.getRepositoryEntry(3));
 	}
@@ -825,11 +850,9 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
-		searchParams.setExpendituresOfWork(List.of("ee", "hour"));
+		searchParams.setExpendituresOfWork(List.of("ee", "hour", "cheese"));
 		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
 				.containsExactlyInAnyOrder(
-						catalogItem.getRepositoryEntry(0),
-						catalogItem.getRepositoryEntry(1),
 						catalogItem.getRepositoryEntry(2),
 						catalogItem.getRepositoryEntry(3));
 	}
@@ -850,8 +873,6 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
-						catalogItem.getRepositoryEntry(1),
-						catalogItem.getRepositoryEntry(2),
 						catalogItem.getRepositoryEntry(3));
 	}
 	
@@ -911,7 +932,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadRepositoryEntries_filterBy_LifecyclePublicFrom() {
+	public void shouldLoadRepositoryEntries_filterBy_LifecyclePrivateFrom() {
 		TestCatalogItem catalogItem = createCatalogItem(6);
 		
 		LocalDateTime ldt = LocalDateTime.of(2020, 2, 3, 4, 5, 6);
@@ -933,7 +954,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoadRepositoryEntries_filterBy_LifecyclePublicTo() {
+	public void shouldLoadRepositoryEntries_filterBy_LifecyclePrivateTo() {
 		TestCatalogItem catalogItem = createCatalogItem(6);
 		
 		LocalDateTime ldt = LocalDateTime.of(2020, 2, 3, 4, 5, 6);
