@@ -96,5 +96,30 @@ public class LDAPDAOTest extends OlatTestCase {
 			.map(LDAPGroup::getCommonName)
 			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat");
 	}
+	
+	@Test
+	public void searchGroupsWithSpecificMember() {	
+		LdapContext ctx = ldapManager.bindSystem();
+		List<String> bases = List.of("ou=groups,dc=olattest,dc=org");
+		String filter = "(&(objectClass=groupOfNames)(member=uid=dforster,ou=person,dc=olattest,dc=org))";
+		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
+		assertThat(onlyGroups)
+			.isNotNull()
+			.hasSize(2)
+			.map(LDAPGroup::getCommonName)
+			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat");
+	}
 
+	@Test
+	public void searchGroupsWithSpecificMemberAndExcludeGroups() {	
+		LdapContext ctx = ldapManager.bindSystem();
+		List<String> bases = List.of("ou=groups,dc=olattest,dc=org");
+		String filter = "(&(objectClass=groupOfNames)(!(cn=ldapteaching))(!(cn=ldapcoaching))(member=uid=dforster,ou=person,dc=olattest,dc=org))";
+		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
+		assertThat(onlyGroups)
+			.isNotNull()
+			.hasSize(1)
+			.map(LDAPGroup::getCommonName)
+			.containsExactlyInAnyOrder("ldapopenolat");
+	}
 }
