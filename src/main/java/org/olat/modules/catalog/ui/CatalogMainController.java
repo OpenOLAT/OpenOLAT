@@ -150,6 +150,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		if (source == headerSearchCtrl) {
 			if (event instanceof CatalogSearchEvent) {
 				CatalogSearchEvent cse = (CatalogSearchEvent)event;
+				headerSearchCtrl.setExploreLinkVisibile(false);
 				doSearch(ureq, cse.getSearchString(), false, null);
 			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
 				doOpenAdmin(ureq);
@@ -216,6 +217,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	private void doOpenSearchHeader() {
 		removeAsListenerAndDispose(headerTaxonomyCtrl);
 		headerTaxonomyCtrl = null;
+		headerSearchCtrl.setExploreLinkVisibile(true);
 		headerSearchCtrl.setHeaderOnly(null);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 	}
