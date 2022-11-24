@@ -11,11 +11,11 @@
 				#end
 			#elseif($helpPlugins.size() > 1) 
 				<li id="o_navbar_help_opener" class="o_navbar_tool dropdown">
-					<a id="o_help_tool_toggler" href="javascript:;" class="dropdown-toggle" data-toggle="dropdown" title="$r.translate("topnav.help.alt")" aria-label="$r.translate("topnav.help")">
+					<a id="o_help_tool_toggler" href="javascript:;" class="dropdown-toggle" aria-expanded="false" data-toggle="dropdown" title="$r.translate("topnav.help.alt")" aria-label="$r.translate("topnav.help")" aria-controls="$r.getCId()_help">
 						<i class="o_icon o_icon_help o_icon-lg"> </i>
 						<span>$r.translate("topnav.help")</span>
 					</a>
-					<ul class="dropdown-menu dropdown-menu-right">          
+					<ul class="dropdown-menu dropdown-menu-right" id="$r.getCId()_help">          
 						#foreach($helpPlugin in $helpPlugins)
 			 				<li #if($helpPlugin.shortCutCssId) id="$helpPlugin.shortCutCssId" #end class="o_navbar_tool #if($helpPlugin.shortCutCssClass) $helpPlugin.shortCutCssClass #end">$r.render($helpPlugin.shortCutComponentName)</li>
 						#end
