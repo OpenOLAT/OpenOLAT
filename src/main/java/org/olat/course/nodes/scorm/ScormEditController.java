@@ -578,16 +578,20 @@ class VarForm extends FormBasicController {
 		
 		return allOk;
 	}
+	
+	private String decorateDescription(String i18nKey) {
+		return "<ul class='o_list_narrow'>" + translate(i18nKey) + "</ul>";
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("headerform");
 
 		SelectionValues windowValues = new SelectionValues();
-		windowValues.add(new SelectionValue("none", translate("mode.window.none"), translate("mode.window.none.desc")));
-		windowValues.add(new SelectionValue("fullwindow", translate("mode.window.fullwindow"), translate("mode.window.fullwindow.desc")));
-		windowValues.add(new SelectionValue("fullwidthheightwithback", translate("mode.window.fullscreen.with.back"), translate("mode.window.fullscreen.with.back.desc")));
-		windowValues.add(new SelectionValue("fullwidthheight", translate("mode.window.fullscreen"), translate("mode.window.fullscreen.desc")));
+		windowValues.add(new SelectionValue("none", translate("mode.window.none"), decorateDescription("mode.window.none.desc")));
+		windowValues.add(new SelectionValue("fullwindow", translate("mode.window.fullwindow"), decorateDescription("mode.window.fullwindow.desc")));
+		windowValues.add(new SelectionValue("fullwidthheightwithback", translate("mode.window.fullscreen.with.back"), decorateDescription("mode.window.fullscreen.with.back.desc")));
+		windowValues.add(new SelectionValue("fullwidthheight", translate("mode.window.fullscreen"), decorateDescription("mode.window.fullscreen.desc")));
 		fullWindowEl = uifactory.addCardSingleSelectHorizontal("mode.window", formLayout,
 				windowValues.keys(), windowValues.values(), windowValues.descriptions(), null);
 		fullWindowEl.setElementCssClass("o_radio_cards_lg");
