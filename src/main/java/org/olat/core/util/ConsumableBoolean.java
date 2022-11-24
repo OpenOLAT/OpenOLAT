@@ -54,4 +54,13 @@ public class ConsumableBoolean {
 		}
 		return false;			
 	}
+
+
+	/**
+	 * Reset the value of the consumable boolean. 
+	 * @param value
+	 */
+	public void setTrue(boolean value) {
+		isTrue = value;		
+	}
 }

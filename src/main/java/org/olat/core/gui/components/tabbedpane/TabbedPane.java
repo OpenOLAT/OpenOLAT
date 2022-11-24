@@ -45,6 +45,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 
@@ -68,6 +69,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	private final List<TabPane> tabPanes = new ArrayList<>(5);
 	private Translator compTrans;
 	private final TabbedPaneItem item;
+	private ConsumableBoolean panelFocus = new ConsumableBoolean(false);
 	
 	/**
 	 * @param name
@@ -127,6 +129,8 @@ public class TabbedPane extends Container implements Activateable2 {
 			setSelectedPane(ureq, newTaid);
 			TabPane newPane = getTabPaneAt(selectedPane);
 			fireEvent(ureq, new TabbedPaneChangedEvent(pane.getComponent(), newPane.getComponent(), newPane.getController()));
+			// set focus to content area
+			panelFocus.setTrue(true);
 		}
 	}
 	
@@ -393,6 +397,15 @@ public class TabbedPane extends Container implements Activateable2 {
 	
 	protected String getElementCssAt(int position) {
 		return tabPanes.get(position).getElementCssClass();
+	}
+	
+	/**
+	 * @return true if the focus must be set to the content panel, false otherwise.
+	 *         Note that this can be called only once, it will reset to false after
+	 *         reading.
+	 */
+	protected boolean isPanelFocus() {
+		return panelFocus.isTrue();
 	}
 
 	/**
