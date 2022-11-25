@@ -36,12 +36,12 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -117,6 +117,8 @@ public class I18nModule extends AbstractSpringModule {
 	private final Map<Locale, Locale> overlayLocales = new HashMap<>();
 	private final Set<String> overlayLanguagesKeys = new HashSet<>();
 	private final Set<String> enabledLanguagesKeys = new HashSet<>();
+	// keys: String language code, values: gender strategy
+	private final Map<String, GenderStrategy> genderStrategies = new HashMap<String,GenderStrategy>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
@@ -248,7 +250,10 @@ public class I18nModule extends AbstractSpringModule {
 		// B) Initialize default language and the list of enabled languages from
 		// the persisted system configuration
 		doInitLanguageConfiguration();
-
+		
+		// Initialize how gendering shall be done
+		doInitGenderStrategies();
+		
 		log.info("Configured i18nModule with default language::" + getDefaultLocale().toString() + " and the reference languages '"
 				+ referenceLanguages + "' and the following enabled languages: " + enabledLanguagesKeys.toString());
 	}
@@ -587,6 +592,22 @@ public class I18nModule extends AbstractSpringModule {
 			log.warn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang);
 		}
 	}
+	
+	private void doInitGenderStrategies() {
+		for (String language : availableLanguages) {
+			// only use first part of language without country etc
+			String langKey = language.split("_")[0];
+			String configValue = getStringPropertyValue("genderStrategy." + langKey, null);
+			GenderStrategy genderStrategy = null;
+			if (StringHelper.containsNonWhitespace(configValue)) {
+				genderStrategy = GenderStrategy.valueOf(configValue.trim());
+			}
+			if (genderStrategy == null) {
+				genderStrategy = GenderStrategy.star; // default;
+			}
+			genderStrategies.put(langKey, genderStrategy);
+		}		
+	}
 
 	//
 	// Getters and Setters
@@ -742,6 +763,24 @@ public class I18nModule extends AbstractSpringModule {
 	public String getApplicationFallbackBundle() {
 		return applicationFallbackBundle;
 	}
+	
+	public GenderStrategy getGenderStrategy(Locale locale) {
+		String langKey = locale.getLanguage();
+		GenderStrategy strategy = genderStrategies.get(langKey);
+		if (strategy == null) {
+			strategy = GenderStrategy.star; // default;
+		}
+		return strategy;
+	}
+	
+	public void setGenderStrategy(Locale locale, GenderStrategy genderStrategy) {
+		String langKey = locale.getLanguage();
+		genderStrategies.put(langKey, genderStrategy);
+		// persist in module config
+		setStringProperty("genderStrategy." + langKey, genderStrategy.name(), true);
+		I18nManager.getInstance().clearCaches();
+	}
+	
 
 	/**
 	 * Checks if the overlay mechanism is enabled. The overlay is similar to the
@@ -877,6 +916,7 @@ public class I18nModule extends AbstractSpringModule {
 			overlayLocales.clear();
 			enabledLanguagesKeys.clear();
 			transToolReferenceLanguages.clear();
+			genderStrategies.clear();
 			I18nManager.getInstance().clearCaches();
 			// Now rebuild everything from scratch
 			doInit();
@@ -919,4 +959,24 @@ public class I18nModule extends AbstractSpringModule {
 	public File getTransToolApplicationOptLanguagesSrcDir() {
 		return transToolApplicationOptLanguagesSrcDir;
 	}
+
+	/**
+	 * Config parameter to define the gender strategy used for words with a combined
+	 * female and male word ending.
+	 * In the i18n files the second ending is writen in curly brackets. 
+	 * E.g. strategy "star": "Benutzer{in}" => "Benutzer*in"
+	 * 
+	 * @author gnaegi
+	 *
+	 */
+	public enum GenderStrategy {
+		star, // default;
+		colon,
+		middleDot,
+		dot,
+		slash,
+		slashDash,
+		camelCase
+	}
 }
+

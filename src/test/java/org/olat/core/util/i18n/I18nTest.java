@@ -48,6 +48,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.i18n.I18nModule.GenderStrategy;
 import org.olat.core.util.i18n.devtools.TranslationDevManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -639,4 +640,54 @@ public class I18nTest extends OlatTestCase {
 		
 		i18nMgr.setCachingEnabled(true);
 	}
+	
+	
+	/**
+	 * Test method i18nManager.testGenderStrategy()
+	 */
+	@Test
+	public void testGenderStrategy() {
+		String bundleName = "org.olat.core.util.i18n.junittestdata";
+		Locale locale = Locale.GERMAN;
+		i18nMgr.setCachingEnabled(true);
+		// Sanity check: if there is nothing, don't change anything
+		assertEquals("Guten Tag", i18nMgr.getLocalizedString(bundleName, "gender.none", null, locale, false, true));
+
+		// Test everything with default strategy
+		i18nModule.setGenderStrategy(locale, GenderStrategy.star);
+		assertEquals("Guten Tag liebe*r Benutzer*in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer*innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+		
+		// Edge cases
+		assertEquals("Die Teilnehmer{innen sind da", i18nMgr.getLocalizedString(bundleName, "gender.broken", null, locale, false, true));
+		assertEquals("Die Teilnehmer{} sind da", i18nMgr.getLocalizedString(bundleName, "gender.broken2", null, locale, false, true));
+		assertEquals("Es sind {0} Teilnehmer*innen da", i18nMgr.getLocalizedString(bundleName, "gender.expand", null, locale, false, true));
+		assertEquals("Die Namen der Teilnehmer*innen lauten ${firstname}", i18nMgr.getLocalizedString(bundleName, "gender.expand2", null, locale, false, true));
+		
+		// Test other strategies
+		i18nModule.setGenderStrategy(locale, GenderStrategy.colon);
+		assertEquals("Guten Tag liebe:r Benutzer:in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer:innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.middleDot);
+		assertEquals("Guten Tag liebe⸱r Benutzer⸱in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer⸱innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.dot);
+		assertEquals("Guten Tag liebe.r Benutzer.in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer.innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.slash);
+		assertEquals("Guten Tag liebe/r Benutzer/in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer/innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.slashDash);
+		assertEquals("Guten Tag liebe/-r Benutzer/-in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer/-innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.camelCase);
+		assertEquals("Guten Tag liebeR BenutzerIn", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die TeilnehmerInnenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+	}
+
 }
