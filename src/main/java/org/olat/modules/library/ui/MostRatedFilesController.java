@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.model.OLATResourceableRating;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,8 +33,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.StringHelper;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFileEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,21 +102,12 @@ public class MostRatedFilesController extends BasicController {
 			return;
 		}
 		
-		List<OLATResourceableRating> ratings = commentAndRatingService.getMostRatedResourceables(libraryOres, 15);
-
+		List<CatalogItem> items = libraryManager.getMostRatedCatalogItems(5, getIdentity());
 		List<ItemAndRating> securedRatings = new ArrayList<>();
-		for(OLATResourceableRating rating:ratings) {
-			String resSubPath = rating.getResSubPath();
-			if(StringHelper.containsNonWhitespace(resSubPath)) {
-				CatalogItem item = libraryManager.getCatalogItemByUUID(resSubPath, locale);
-				if(item != null) {
-					securedRatings.add(new ItemAndRating(item, rating.getRating()));
-					if(securedRatings.size() >= 5) {
-						break;
-					}
-				} else {
-					commentAndRatingService.deleteAll(libraryOres, resSubPath);
-				}
+		for(CatalogItem item:items) {
+			float rating = item.getRatings().getAverageOfRatings();
+			if(rating > 0.0f) {
+				securedRatings.add(new ItemAndRating(item, item.getRatings().getAverageOfRatings()));
 			}
 		}
 		
@@ -145,9 +135,9 @@ public class MostRatedFilesController extends BasicController {
 	
 	private static class ItemAndRating {
 		private final CatalogItem item;
-		private final Double rating;
+		private final float rating;
 		
-		public ItemAndRating(CatalogItem item, Double rating) {
+		public ItemAndRating(CatalogItem item, float rating) {
 			this.item = item;
 			this.rating = rating;
 		}
@@ -160,7 +150,7 @@ public class MostRatedFilesController extends BasicController {
 			return item.getCssClass();
 		}
 
-		public Double getRating() {
+		public float getRating() {
 			return rating;
 		}
 		

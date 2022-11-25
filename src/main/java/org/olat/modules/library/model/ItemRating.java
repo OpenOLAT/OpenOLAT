@@ -17,32 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.library.ui.event;
-
-import org.olat.core.gui.control.Event;
-import org.olat.modules.library.model.CatalogItem;
+package org.olat.modules.library.model;
 
 /**
  * 
- * Description:<br>
- * Event to open a folder
- * 
- * <P>
- * Initial Date:  4 sept. 2009 <br>
- *
+ * Initial date: 25 nov. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ *
  */
-public class OpenFolderEvent extends Event {
+public class ItemRating {
+	
+	private final long numOfRatings;
+	private final float averageOfRatings;
+	private final int myRating;
+	
+	public ItemRating(long numOfRatings, float averageOfRatings, int myRating) {
+		this.numOfRatings = numOfRatings;
+		this.averageOfRatings = averageOfRatings;
+		this.myRating = myRating;
+	}
 
-	private static final long serialVersionUID = 6172254139172899023L;
-	private final CatalogItem item;
-
-	public OpenFolderEvent(String cmd, CatalogItem item) {
-		super(cmd);
-		this.item = item;
+	public float getAverageOfRatings() {
+		return averageOfRatings;
 	}
 	
-	public CatalogItem getItem() {
-		return item;
+	public long getNumOfRatings() {
+		return numOfRatings;
+	}
+
+	public int getMyRating() {
+		return myRating;
 	}
 }

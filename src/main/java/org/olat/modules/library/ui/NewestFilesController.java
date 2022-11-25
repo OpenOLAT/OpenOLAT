@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFileEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,7 +86,7 @@ public class NewestFilesController extends BasicController {
 	 *          localization
 	 */
 	public void updateView(Locale locale) {
-		List<CatalogItem> items = libraryManager.getNewestCatalogItems(locale, 3);
+		List<CatalogItem> items = libraryManager.getNewestCatalogItems(3, getIdentity());
 
 		int i = 0;
 		links = new ArrayList<>();

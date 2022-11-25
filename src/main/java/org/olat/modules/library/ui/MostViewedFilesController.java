@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFileEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -85,7 +86,7 @@ public class MostViewedFilesController extends BasicController {
 	 *          localization
 	 */
 	public void updateView(Locale locale) {
-		List<CatalogItem> items = libraryManager.getMostViewedCatalogItems(locale, 3);
+		List<CatalogItem> items = libraryManager.getMostViewedCatalogItems(3, getIdentity());
 		if(links != null && links.size() == items.size()) {
 			for(int i=0;i<items.size(); i++) {
 				Link link = links.get(i);

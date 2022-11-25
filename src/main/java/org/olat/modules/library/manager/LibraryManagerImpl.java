@@ -21,14 +21,13 @@ package org.olat.modules.library.manager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -37,7 +36,6 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -57,8 +55,8 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.library.LibraryEvent;
 import org.olat.modules.library.LibraryManager;
 import org.olat.modules.library.LibraryModule;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.site.LibrarySite;
-import org.olat.modules.library.ui.CatalogItem;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -105,7 +103,7 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	private boolean autoSubscribe = false;
 	
 	@Autowired
-	private VFSMetadataDAO metadataDao;
+	private LibraryDAO libraryDao;
 	@Autowired
 	private LibraryModule libraryModule;
 	@Autowired
@@ -140,6 +138,18 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 			repoEntry = repositoryEntryDao.loadByKey(Long.valueOf(libraryEntryKey));
 		}
 		return repoEntry;
+	}
+	
+	@Override
+	public OLATResourceable getLibraryResourceable() {
+		if(StringHelper.containsNonWhitespace(libraryModule.getLibraryEntryKey())) {
+			RepositoryEntry repoEntry = getCatalogRepoEntry();
+			if (repoEntry != null) {
+				Long resId = repoEntry.getOlatResource().getResourceableId();
+				return OresHelper.createOLATResourceableInstance(LibrarySite.class, resId);
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -207,69 +217,58 @@ public class LibraryManagerImpl implements LibraryManager, InitializingBean, Gen
 	}
 	
 	@Override
-	public CatalogItem getCatalogItemByUUID(String uuid, Locale locale) {
+	public CatalogItem getCatalogItemByUUID(String uuid, IdentityRef identity) {
 		if(!StringHelper.containsNonWhitespace(uuid)) return null;
+		return libraryDao.getCatalogItemByUUID(uuid, identity);
+	}
+
+	@Override
+	public CatalogItem getCatalogItemsByUrl(String businessPath, IdentityRef identity) {
+		String path = businessPath.substring(URL_PREFIX.length(), businessPath.length() - 1);
+		String libraryRelativePath = toMetadataRelativePath(getSharedFolder());
+		String pathInLibrary = libraryRelativePath + path;
 		
-		VFSMetadata metadata = vfsRepositoryService.getMetadataByUUID(uuid);
-		VFSItem item = vfsRepositoryService.getItemFor(metadata);
-		if(item instanceof VFSLeaf) {
-			boolean thumbnailAvaliable = vfsRepositoryService.isThumbnailAvailable(item, metadata);
-			return new CatalogItem((VFSLeaf)item, metadata, thumbnailAvaliable, locale);
-		}
-		return null;
+		int lastSegment = pathInLibrary.lastIndexOf('/');
+		String filename = pathInLibrary.substring(lastSegment + 1, pathInLibrary.length());
+		String relativePath = pathInLibrary.substring(0, lastSegment);
+		return libraryDao.getCatalogItemByPath(relativePath, filename, identity);
 	}
 
 	/**
 	 * @return The newest catalog items
 	 */
 	@Override
-	public List<CatalogItem> getNewestCatalogItems(Locale locale, int maxResult) {
-		VFSContainer container = getSharedFolder();
-		List<VFSMetadata> newestData = metadataDao.getNewest(toMetadataRelativePath(container), maxResult);
-		
-		List<CatalogItem> items = new ArrayList<>(maxResult);
-		for(VFSMetadata metadata:newestData) {
-			VFSItem item = vfsRepositoryService.getItemFor(metadata);
-			if(item instanceof VFSLeaf) {
-				items.add(new CatalogItem((VFSLeaf)item, metadata, false, locale));
-			}
-		}
-		return items;
+	public List<CatalogItem> getNewestCatalogItems(int maxResult, IdentityRef identity) {
+		String relativePath = toMetadataRelativePath(getSharedFolder());
+		return libraryDao.getNewestCatalogItems(relativePath, maxResult, identity);
 	}
 	
 	@Override
-	public List<CatalogItem> getNewCatalogItems(Date from, Locale locale) {
-		VFSContainer container = getSharedFolder();
-		List<VFSMetadata> newestData = metadataDao.getNewest(toMetadataRelativePath(container), from);
-		
-		List<CatalogItem> items = new ArrayList<>();
-		for(VFSMetadata metadata:newestData) {
-			VFSItem item = vfsRepositoryService.getItemFor(metadata);
-			if(item instanceof VFSLeaf) {
-				items.add(new CatalogItem((VFSLeaf)item, metadata, false, locale));
-			}
-		}
-		return items;
+	public List<CatalogItem> getNewCatalogItems(Date from, IdentityRef identity) {
+		String relativePath = toMetadataRelativePath(getSharedFolder());
+		return libraryDao.getNewCatalogItem(relativePath, from, identity);
 	}
 
 	/**
 	 * @return The most viewed catalog items
 	 */
 	@Override
-	public List<CatalogItem> getMostViewedCatalogItems(Locale locale, int maxResult) {
-		VFSContainer container = getSharedFolder();
-		List<VFSMetadata> mostDownloadedData = metadataDao.getMostDownloaded(toMetadataRelativePath(container), maxResult);
-		
-		List<CatalogItem> items = new ArrayList<>(maxResult);
-		for(VFSMetadata metadata:mostDownloadedData) {
-			VFSItem item = vfsRepositoryService.getItemFor(metadata);
-			if(item instanceof VFSLeaf) {
-				items.add(new CatalogItem((VFSLeaf)item, metadata, false, locale));
-			}
-		}
-		return items;
+	public List<CatalogItem> getMostViewedCatalogItems(int maxResult, IdentityRef identity) {
+		String relativePath = toMetadataRelativePath(getSharedFolder());
+		return libraryDao.getMostDownloadedCatalogItems(relativePath, maxResult, identity);
+	}	
+	
+	@Override
+	public List<CatalogItem> getCatalogItems(VFSMetadata parentMetadata, IdentityRef identity) {
+		return libraryDao.getCatalogItems(parentMetadata, identity);
 	}
 	
+	@Override
+	public List<CatalogItem> getMostRatedCatalogItems(int numOfItems, IdentityRef identity) {
+		String relativePath = toMetadataRelativePath(getSharedFolder());
+		return libraryDao.getMostRatedCatalogItemByUUID(relativePath, numOfItems, identity);
+	}
+
 	private String toMetadataRelativePath(VFSItem item) {
 		String relPath = null;
 		if(item instanceof VFSContainer) {

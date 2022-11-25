@@ -66,6 +66,10 @@ public class ThumbnailServiceImpl implements ThumbnailService {
 	@Override
 	public boolean isThumbnailPossible(VFSLeaf file) {
 		String extension = FileUtils.getFileSuffix(file.getName());
+		return isThumbnailPossible(extension);
+	}
+	
+	public boolean isThumbnailPossible(String extension) {
 		if(StringHelper.containsNonWhitespace(extension)) {
 			for(ThumbnailSPI thumbnailSPI : thumbnailSPIes) {
 				if(thumbnailSPI.getExtensions().contains(extension)) {

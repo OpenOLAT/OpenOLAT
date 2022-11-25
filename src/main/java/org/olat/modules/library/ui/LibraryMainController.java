@@ -38,6 +38,7 @@ import org.olat.core.commons.modules.bc.commands.FolderCommand;
 import org.olat.core.commons.modules.bc.comparators.TitleComparator;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.commentAndRating.ui.UserRatingChangedEvent;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -73,13 +74,14 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSContainerFilter;
 import org.olat.modules.library.LibraryEvent;
 import org.olat.modules.library.LibraryManager;
 import org.olat.modules.library.LibraryModule;
-import org.olat.modules.library.site.LibrarySite;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFileEvent;
 import org.olat.modules.library.ui.event.OpenFolderEvent;
 import org.olat.repository.RepositoryEntry;
@@ -154,7 +156,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		if (catalogEntry != null) {
 			Long resId = catalogEntry.getOlatResource().getResourceableId();
 			basePath = "/repository/" + resId + "/" + libraryManager.getSharedFolder().getName();
-			libraryOres = OresHelper.createOLATResourceableInstance(LibrarySite.class, resId);
+			libraryOres = libraryManager.getLibraryResourceable();
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), libraryOres);
 		}
 
@@ -364,13 +366,15 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		File selectedFilePath = new File(FolderConfig.getCanonicalRoot(), selectedPath);
 		if (selectedFilePath.exists()) {
 			currentFolder = VFSManager.olatRootContainer(selectedPath, sharedFolder);
-			if(fileName != null && currentFolder.resolve(fileName) instanceof VFSContainer) {
-				currentFolder = (LocalFolderImpl)currentFolder.resolve(fileName);
+			
+			VFSItem file = currentFolder.resolve(fileName);
+			if(fileName != null && file instanceof VFSContainer) {
+				currentFolder = (VFSContainer)file;
 				selectedPath += (selectedPath.endsWith("/") ? "" : "/") + fileName;
 				fileName = null;
 			}
 			
-			catalogCtr.display(currentFolder, fileName, ureq);
+			catalogCtr.display(currentFolder, fileName);
 			columnLayoutCtr.setCol3(catalogCtr.getInitialComponent());
 
 			if (selectedPath.endsWith("/")) {
@@ -498,12 +502,10 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		}
 	}
 	
-	private void openFile(UserRequest ureq, OpenFileEvent openFolderEvent) {
-		CatalogItem item = openFolderEvent.getItem();
-		String fileName = item.getName();
-		String relativePath = item.getRelativePath();
-		String dirPath = relativePath.substring(0, relativePath.length() - fileName.length());
-		activateDirectory(ureq, dirPath, fileName);
+	private void openFile(UserRequest ureq, OpenFileEvent openEvent) {
+		VFSMetadata metadata = openEvent.getItem().getMetaInfo();
+		String dirPath = "/" + metadata.getRelativePath();
+		activateDirectory(ureq, dirPath, metadata.getFilename());
 	}
 	
 	private void openFolder(UserRequest ureq, OpenFolderEvent openFolderEvent) {
@@ -532,7 +534,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	private void displayCurrentFolder(UserRequest ureq) {
 		if (currentFolder != null && currentFolder.exists()) {
 			// the current folder still exists, display it
-			catalogCtr.display(currentFolder, null, ureq);
+			catalogCtr.display(currentFolder, null);
 			String relPath = currentFolder.getRelPath();
 			// reselect the node in the menu tree
 			TreeNode node = treeModel.findNodeByUserObject(relPath);

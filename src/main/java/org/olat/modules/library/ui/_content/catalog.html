@@ -35,40 +35,42 @@
 			</div>
 		#end
 		<div class="o_library_extra">
-			#if($r.available($item.sendMailLink.componentName)) $r.render($item.sendMailLink.componentName) #end
+			#if($r.available("mail_$item.id")) $r.render("mail_$item.id") #end
 			<a href="$item.getAbsolutePathUUID()" target="_blank" class="btn btn-default" download="$item.getName()">
 				<i class="o_icon o_icon-fw o_icon_download"> </i>
 				<span>$r.translate("library.catalog.download")</span>
 				#if ($info.getFormattedSize())<small class="text-muted">$info.getFormattedSize()</small> #end
 			</a>
 			
+			#if($r.available("ratings_$item.id"))
+				$r.render("ratings_$item.id")
+			#end
 			#if($r.available("comments_$item.id"))
-				<div class="o_item_ratings">$r.render("comments_$item.id")</div>
+				$r.render("comments_$item.id")
 			#end
 			<p class="o_library_show_more">
 				<a id="toggle_item_$foreach.count" href="javascript:void(0);" onclick="toggleMeta('o_library_item_$foreach.count')"><i class="o_icon o_icon_move_up"> </i> $showText</a>
 			</p>
 		</div>
 		<div class="o_library_meta">
-			#if ($info.getComment() && $info.getComment() != "")<div class="o_library_desc">$info.getComment()</div>#end
-			#if ($info.getCreator())<small class="text-muted"><b>$metaTrans.translate("mf.creator")</b> $info.getCreator()</small>#end
-			#if ($item.getPublicationDate())<small class="text-muted"><b>$metaTrans.translate("mf.publishDate")</b> $item.getPublicationDate()</small>#end
+			#if ($r.isNotEmpty($item.comment))<div class="o_library_desc">$item.comment</div>#end
+			#if ($info.getCreator())<small class="text-muted"><strong>$metaTrans.translate("mf.creator")</strong> $info.getCreator()</small>#end
+			#if ($item.getPublicationDate())<small class="text-muted"><strong>$metaTrans.translate("mf.publishDate")</strong> $item.getPublicationDate()</small>#end
 		</div>
 		<div class="o_library_more clearfix">
 			<table class="table table-condensed">
-				#if ($info.getCreator())<tr><th>$metaTrans.translate("mf.creator")</th><td>$info.getCreator()</td></tr>#end
-				#if ($item.getPublicationDate())<tr><th>$metaTrans.translate("mf.publishDate")</th><td>$item.getPublicationDate()</td></tr>#end
-				<tr><th>$metaTrans.translate("mf.filename")</th><td><a href="$item.getAbsolutePathUUID()" target="_blank">$item.getName()</a></td></tr>
-				#if ($linkToFolder)<tr><th>$r.translate("library.catalog.folderUrl")</th><td><a href="$r.commandURI("cmd.openFolder$index")">$item.getFolder()</a></td></tr>#end
-<!-- 				#if ($info.getComment())<tr><th>$metaTrans.translate("mf.comment")</th><td>$info.getComment()</td></tr>#end -->
-				#if ($info.getPublisher())<tr><th>$metaTrans.translate("mf.publisher")</th><td>$info.getPublisher()</td></tr>#end
-				#if ($info.getSource())<tr><th>$metaTrans.translate("mf.source")</th><td>$info.getSource()</td></tr>#end
-				#if ($info.getCity())<tr><th>$metaTrans.translate("mf.city")</th><td>$info.getCity()</td></tr>#end
-				#if ($info.getPages())<tr><th>$metaTrans.translate("mf.pages")</th><td>$info.getPages()</td></tr>#end
-				#if ($info.getLanguage())<tr><th>$metaTrans.translate("mf.language")</th><td>$info.getLanguage()</td></tr>#end
-				#if ($info.getUrl())<tr><th>$metaTrans.translate("mf.url")</th><td>$info.getUrl()</td></tr>#end
-				#if ($item.getLocalizedLastModified())<tr><th>$metaTrans.translate("mf.lastModified")</th><td>$item.getLocalizedLastModified()</td></tr>#end
-				#if ($info.getFormattedSize())<tr><th>$metaTrans.translate("mf.size")</th><td>$info.getFormattedSize()</td></tr>#end
+				#if($info.getCreator())<tr><th scope="row">$metaTrans.translate("mf.creator")</th><td>$info.getCreator()</td></tr>#end
+				#if($item.getPublicationDate())<tr><th scope="row">$metaTrans.translate("mf.publishDate")</th><td>$item.getPublicationDate()</td></tr>#end
+				<tr><th scope="row">$metaTrans.translate("mf.filename")</th><td><a href="$item.getAbsolutePathUUID()" target="_blank">$item.getName()</a></td></tr>
+				#if($linkToFolder)<tr><th scope="row">$r.translate("library.catalog.folderUrl")</th><td><a href="$r.commandURI("cmd.openFolder$index")">$item.getFolder()</a></td></tr>#end
+				#if($info.getPublisher())<tr><th scope="row">$metaTrans.translate("mf.publisher")</th><td>$info.getPublisher()</td></tr>#end
+				#if($info.getSource())<tr><th scope="row">$metaTrans.translate("mf.source")</th><td>$info.getSource()</td></tr>#end
+				#if($info.getCity())<tr><th scope="row">$metaTrans.translate("mf.city")</th><td>$info.getCity()</td></tr>#end
+				#if($info.getPages())<tr><th scope="row">$metaTrans.translate("mf.pages")</th><td>$info.getPages()</td></tr>#end
+				#if($info.getLanguage())<tr><th scope="row">$metaTrans.translate("mf.language")</th><td>$info.getLanguage()</td></tr>#end
+				#if($info.getUrl())<tr><th scope="row">$metaTrans.translate("mf.url")</th><td>$info.getUrl()</td></tr>#end
+				#if($item.getLocalizedLastModified())<tr><th scope="row">$metaTrans.translate("mf.lastModified")</th><td>$r.formatDateLong($item.getLocalizedLastModified())</td></tr>#end
+				#if($info.getFormattedSize())<tr><th scope="row">$metaTrans.translate("mf.size")</th><td>$info.getFormattedSize()</td></tr>#end
 			</table>
 		</div>
 	</div>
@@ -79,7 +81,7 @@
 	$r.render("autoDownloadComp")
 #end
 <script>
-/* <![CDATA[ */
+"use strict";
 function toggleMeta(itemId) {
 	jQuery('#' + itemId + " .o_library_more").each(function(index, el) {
 		var meta = jQuery(el);
@@ -90,5 +92,4 @@ function toggleMeta(itemId) {
 		}
 	});
 }
-/* ]]> */
 </script>

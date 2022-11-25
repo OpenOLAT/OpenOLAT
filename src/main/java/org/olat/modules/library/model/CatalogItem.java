@@ -17,22 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.library.ui;
+package org.olat.modules.library.model;
 
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
-import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.library.LibraryManager;
 
 /**
@@ -49,36 +43,35 @@ public class CatalogItem {
 	
 	private final VFSMetadata metadata;
 	
-	private Date publicationDate;
+	private final String uuid;
+	private final String filename;
+	private final String relativePath;
+	private final Date publicationDate;
+	private final Date localizedLastModified;
 	
-	private String relativePath;
-	private String localizedLastModified;
-	private String localizedLastModifiedShort;
-	private String cssClass;
+	private final String cssClass;
 	private boolean selected;
-	private Boolean thumbnailAvailable;
 	
-	private Link sendMailLink;
-	private CommentAndRatingService commentAndRatingService;
-	private UserCommentsAndRatingsController commentsAndRatingCtr;
-
+	private final long numOfComments;
+	private final ItemRating ratings;
+	private final boolean thumbnailAvailable;
+	
 	/**
 	 * Creates a catalog item based on a file
 	 * 
 	 * @param file The file of the catalog
 	 */
-	public CatalogItem(VFSLeaf file, VFSMetadata metadata, boolean thumbnailAvailable, Locale locale) {
+	public CatalogItem(VFSMetadata metadata, long numOfComments, ItemRating ratings, boolean thumbnailAvailable) {
 		this.metadata = metadata;
-		this.thumbnailAvailable = Boolean.valueOf(thumbnailAvailable);
-		if (metadata != null) {
-			localizedLastModified = DateFormat.getDateInstance(DateFormat.FULL, locale).format(metadata.getLastModified());
-			localizedLastModifiedShort = DateFormat.getDateInstance(DateFormat.SHORT, locale).format(metadata.getLastModified());
-			relativePath = file.getRelPath();
-			cssClass = metadata.getIconCssClass();
-			publicationDate = calculateDateFromPublicationDateArray(metadata.getPublicationDate());
-		} else {
-			log.warn("Unable to create meta information for file \"" + metadata + "\".");
-		}
+		this.ratings = ratings;
+		this.numOfComments = numOfComments;
+		this.thumbnailAvailable = thumbnailAvailable;
+		uuid = metadata.getUuid();
+		localizedLastModified = metadata.getLastModified();
+		filename = metadata.getFilename();
+		relativePath = metadata.getRelativePath() + "/" + filename;
+		cssClass = metadata.getIconCssClass();
+		publicationDate = calculateDateFromPublicationDateArray(metadata.getPublicationDate());
 	}
 	
 	private Date calculateDateFromPublicationDateArray(String[] pubDateArray) {
@@ -113,6 +106,18 @@ public class CatalogItem {
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
+	
+	public long getNumOfComments() {
+		return numOfComments;
+	}
+	
+	public ItemRating getRatings() {
+		return ratings;
+	}
+	
+	public String getFilename() {
+		return filename;
+	}
 
 	/**
 	 * Relative path getter. The path starts with /
@@ -130,7 +135,7 @@ public class CatalogItem {
 				.append("/library/")
 				.append(metadata.getUuid())
 				.append("/")
-				.append(metadata.getFilename());
+				.append(filename);
 			return sb.toString();
 		} catch (Exception e) {
 			log.error("", e);
@@ -166,6 +171,10 @@ public class CatalogItem {
 		return metadata.getFilename();
 	}
 	
+	public String getComment() {
+		return metadata.getComment();
+	}
+	
 	public Date getPubDate() {
 		return publicationDate;
 	}
@@ -187,15 +196,8 @@ public class CatalogItem {
 	/**
 	 * @return Returns the localizedLastModified in full format.
 	 */
-	public String getLocalizedLastModified() {
+	public Date getLocalizedLastModified() {
 		return localizedLastModified;
-	}
-	
-	/**
-	 * @return Returns the localizedLastModified in short format.
-	 */
-	public String getLocalizedLastModifiedShort() {
-		return localizedLastModifiedShort;
 	}
 
 	/**
@@ -234,36 +236,28 @@ public class CatalogItem {
 		String title = metadata.getTitle();
 		if (title != null && !title.isEmpty()) {
 			return title;
-		} else {
-			return getName();
 		}
+		return getName();
 	}
 	
 	public boolean isThumbnailAvailable() {
-		return thumbnailAvailable.booleanValue();
+		return thumbnailAvailable;
 	}
 
-	public Link getSendMailLink() {
-		return sendMailLink;
+	@Override
+	public int hashCode() {
+		return uuid == null ? 283498 : uuid.hashCode();
 	}
 
-	public void setSendMailLink(Link sendMailLink) {
-		this.sendMailLink = sendMailLink;
-	}
-
-	public CommentAndRatingService getCommentAndRatingService() {
-		return commentAndRatingService;
-	}
-
-	public void setCommentAndRatingService(CommentAndRatingService commentAndRatingService) {
-		this.commentAndRatingService = commentAndRatingService;
-	}
-
-	public UserCommentsAndRatingsController getCommentsAndRatingCtr() {
-		return commentsAndRatingCtr;
-	}
-
-	public void setCommentsAndRatingCtr(UserCommentsAndRatingsController commentsAndRatingCtr) {
-		this.commentsAndRatingCtr = commentsAndRatingCtr;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof CatalogItem) {
+			CatalogItem item = (CatalogItem)obj;
+			return uuid != null && uuid.equals(item.uuid);
+		}
+		return false;
 	}
 }

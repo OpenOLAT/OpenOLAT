@@ -44,6 +44,14 @@ public class RatingFormItem extends FormItemImpl {
 	public void setCurrentRating(float currentRating) {
 		component.setCurrentRating(currentRating);
 	}
+	
+	public void setShowRatingAsText(boolean showRatingAsText) {
+		component.setShowRatingAsText(showRatingAsText);
+	}
+	
+	public void setCssClass(String cssClass) {
+		component.setCssClass(cssClass);
+	}
 
 	@Override
 	protected RatingComponent getFormItemComponent() {

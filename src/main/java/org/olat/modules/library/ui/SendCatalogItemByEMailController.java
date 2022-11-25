@@ -31,6 +31,7 @@ import org.olat.core.util.mail.ui.SendDocumentsByEMailController;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

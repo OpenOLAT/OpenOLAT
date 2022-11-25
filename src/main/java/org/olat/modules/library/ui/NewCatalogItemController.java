@@ -38,6 +38,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.event.OpenFolderEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -126,8 +127,8 @@ public class NewCatalogItemController extends BasicController {
 			mainVC.contextPut("hasSubscriptions", "false");
 		} else {
 			mainVC.contextPut("hasSubscriptions", "true");
-			List<CatalogItem> items = libraryManager.getNewCatalogItems(compareDate, getLocale());
-			catalogController.display(items, ureq);
+			List<CatalogItem> items = libraryManager.getNewCatalogItems(compareDate, getIdentity());
+			catalogController.display(items);
 			mainVC.put("notifications", catalogController.getInitialComponent());
 			
 			if(!items.isEmpty()) {
