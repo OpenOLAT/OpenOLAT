@@ -39,22 +39,27 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	private float initialUserRating;
 	private float lastUserRating;
 	private long numOfRatings;
-	private float averageRating;
-	private int maxRating;
-	
-	private RatingFormItem userComponent;
-	private RatingFormItem averageComponent;
+
+	private final RatingFormItem userComponent;
+	private final RatingFormItem averageComponent;
 	private final RatingWithAverageComponent component;
 	
 	public RatingWithAverageFormItem(String name, float userRating, float averageRating, int maxRating, long numOfRatings) {
 		super(name);
 
-		this.maxRating = maxRating;
 		this.initialUserRating = userRating;
 		this.lastUserRating = userRating;
 		this.numOfRatings = numOfRatings;
-		this.averageRating = averageRating;
 		component = new RatingWithAverageComponent(name, this);
+		
+		averageComponent = new RatingFormItem("ravg_".concat(getName()), averageRating, maxRating, false);
+		averageComponent.setCssClass("o_rating_average");
+
+		userComponent = new RatingFormItem("rusr_".concat(getName()), initialUserRating, maxRating, true);
+		userComponent.getFormItemComponent().setTranslateExplanation(true);
+		userComponent.getFormItemComponent().setTranslateRatingLabels(true);
+		userComponent.getFormItemComponent().addListener(component);
+		userComponent.setCssClass("o_rating_personal");
 	}
 	
 	protected Component getUserComponent() {
@@ -73,17 +78,28 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		super.setEnabled(isEnabled);
-		if(userComponent != null) {
-			userComponent.setEnabled(isEnabled);
-		}
-		if(averageComponent != null) {
-			averageComponent.setEnabled(isEnabled);
-		}
+		userComponent.setEnabled(isEnabled);
+		averageComponent.setEnabled(isEnabled);
+	}
+	
+	public void setShowRatingAsText(boolean showRatingAsText) {
+		userComponent.setShowRatingAsText(showRatingAsText);
+		averageComponent.setShowRatingAsText(showRatingAsText);
+	}
+	
+	public void setUserRating(float userRating) {
+		userComponent.setCurrentRating(userRating);
+		component.setDirty(true);
+	}
+	
+	public void setAverageRating(float averageRating) {
+		averageComponent.setCurrentRating(averageRating);
+		component.setDirty(true);
 	}
 
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		List<FormItem> items = new ArrayList<>();
+		List<FormItem> items = new ArrayList<>(3);
 		items.add(userComponent);
 		items.add(averageComponent);
 		return items;
@@ -93,7 +109,8 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 	public FormItem getFormComponent(String name) {
 		if(userComponent.getName().equals(name)) {
 			return userComponent;
-		} else if(averageComponent.getName().equals(name)) {
+		}
+		if(averageComponent.getName().equals(name)) {
 			return averageComponent;
 		}
 		return null;
@@ -101,23 +118,16 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 
 	@Override
 	protected void rootFormAvailable() {
-		if(userComponent == null) {
-			userComponent = new RatingFormItem("rusr_" + getName(), initialUserRating, maxRating, true);
+		if(userComponent.getRootForm() == null) {
 			userComponent.setRootForm(getRootForm());
 			userComponent.rootFormAvailable();
-			userComponent.setEnabled(isEnabled());
-			userComponent.getComponent().addListener(component);
+		}
 
-			userComponent.getFormItemComponent().setTranslateExplanation(true);
-			userComponent.getFormItemComponent().setTranslateRatingLabels(true);
-			
-			averageComponent = new RatingFormItem("ravg_" + getName(), averageRating, maxRating, false);
+		if(averageComponent.getRootForm() == null) {	
 			averageComponent.setRootForm(getRootForm());
 			averageComponent.rootFormAvailable();
-			averageComponent.setEnabled(isEnabled());
-
-			String[] args = new String[]{ Long.toString(numOfRatings)};
-			String explanation = translator.translate("rating.average.explanation", args);
+			
+			String explanation = translator.translate("rating.average.explanation", Long.toString(numOfRatings));
 			averageComponent.getFormItemComponent().setExplanation(explanation);
 			averageComponent.getFormItemComponent().setTranslateExplanation(false);
 			averageComponent.getFormItemComponent().setTranslateRatingLabels(true);

@@ -101,6 +101,7 @@ import org.olat.core.gui.components.math.MathLiveElement;
 import org.olat.core.gui.components.math.MathLiveElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.tabbedpane.TabbedPaneItem;
 import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.components.tree.MenuTreeItem;
@@ -1487,8 +1488,22 @@ public class FormUIFactory {
 		return dropdown;
 	}
 	
-	public RatingFormItem addRatingItem(String name, String i18nLabel, float initialRating, int maxRating, boolean allowUserInput, FormItemContainer formLayout) {
+	public RatingFormItem addRatingItem(String name, String i18nLabel, float initialRating, int maxRating,
+			boolean allowUserInput, FormItemContainer formLayout) {
 		RatingFormItem ratingCmp = new RatingFormItem(name, initialRating, maxRating, allowUserInput);
+		setLabelIfNotNull(i18nLabel, ratingCmp);
+		if(i18nLabel != null) {
+			ratingCmp.showLabel(true);
+		}
+		if(formLayout != null) {
+			formLayout.add(ratingCmp);
+		}
+		return ratingCmp;
+	}
+	
+	public RatingWithAverageFormItem addRatingItemWithAverage(String name, String i18nLabel, float myRating, float averageRating, int numOfRatings,
+			int maxRating, FormItemContainer formLayout) {
+		RatingWithAverageFormItem ratingCmp = new RatingWithAverageFormItem(name, myRating, averageRating, maxRating, numOfRatings);
 		setLabelIfNotNull(i18nLabel, ratingCmp);
 		if(i18nLabel != null) {
 			ratingCmp.showLabel(true);

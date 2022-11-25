@@ -41,6 +41,12 @@ public interface ThumbnailService {
 	public boolean isThumbnailPossible(VFSLeaf file);
 	
 	/**
+	 * @param extension The file extension
+	 * @return true if the service is able to generate a thumbnail from this type of file
+	 */
+	public boolean isThumbnailPossible(String extension);
+	
+	/**
 	 * Generate the thumbnail
 	 * @param file to thumbnail
 	 * @param thumbnailFile where the thumbnail will be saved

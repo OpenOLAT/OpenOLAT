@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 
 /**
  * 

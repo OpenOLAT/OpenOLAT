@@ -43,7 +43,7 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		RatingWithAverageFormItem item = ratingCmp.getFormItem();
 		
 		String viewIdent = item.getFormDispatchId();
-		sb.append("<div id=").append(viewIdent).append(" class='o_ratings_and_comments'>")
+		sb.append("<div id='").append(viewIdent).append("' class='o_ratings_and_comments'>")
 		  .append("<div id='o_rating_wrapper_").append(viewIdent).append("' class='o_rating_wrapper'>")
 		  .append("<div id='o_rating_").append(viewIdent).append("' style='display:none;'>");
 		
@@ -57,15 +57,15 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		averageCmp.setDirty(false);
 		sb.append("</div>")
 		  .append("</div>")
-		  .append("</div>")
 		  .append("<script>\n")
+		  .append("\"use strict\";\n")
 		  .append("jQuery(function(){\n")
 		  .append("  jQuery('#o_rating_wrapper_").append(viewIdent).append("')\n")
-		  .append("    .hover(\n")
-		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').show(); jQuery('#o_rating_avg_").append(viewIdent).append("').hide(); }, \n")
-		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').hide(); jQuery('#o_rating_avg_").append(viewIdent).append("').show(); }\n")  
+		  .append("    .hover(function(){ console.log('ho'); jQuery('#o_rating_").append(viewIdent).append("').show(); jQuery('#o_rating_avg_").append(viewIdent).append("').hide(); },\n")
+		  .append("      function(){ console.log('ver'); jQuery('#o_rating_").append(viewIdent).append("').hide(); jQuery('#o_rating_avg_").append(viewIdent).append("').show(); }\n")  
 		  .append("    );\n")
 		  .append("});\n")
-		  .append("</script>\n");
+		  .append("</script>\n")
+		  .append("</div>");
 	}
 }

@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -36,10 +34,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.comparator.PublicationDateComparator;
 import org.olat.modules.library.ui.comparator.TitleComparator;
 import org.olat.modules.library.ui.event.OpenFolderEvent;
@@ -71,7 +67,6 @@ public class SearchCatalogItemController extends BasicController {
 	private final Link orderByTitleLink;
 	private final Link orderByRelevanceLink;
 	private final Link orderByPublicationDateLink;
-	private static final String URL_PREFIX = "[LibrarySite:0][path=";
 	
 	private final String queryString;
 	
@@ -79,8 +74,6 @@ public class SearchCatalogItemController extends BasicController {
 	private SearchClient searchClient;
 	@Autowired
 	private LibraryManager libraryManager;
-	@Autowired
-	private VFSRepositoryService vfsRepositoryService;
 	
 	public SearchCatalogItemController(UserRequest ureq, WindowControl control, String queryString,
 			String mapperBaseURL, String thumbnailMapperBaseURL, OLATResourceable libraryOres) {
@@ -100,7 +93,7 @@ public class SearchCatalogItemController extends BasicController {
 		orderByPublicationDateLink = LinkFactory.createButton("order.publication", mainVC, this);
 		mainVC.put("orderByPublicationDateLink", orderByPublicationDateLink);
 
-		String title = getTranslator().translate("search.results.title", new String[]{queryString});
+		String title = getTranslator().translate("search.results.title", queryString);
 		catalogController = new CatalogController(ureq, getWindowControl(), mapperBaseURL, thumbnailMapperBaseURL, true, false, title, libraryOres);
 		listenTo(catalogController);
 		mainVC.put("results", catalogController.getInitialComponent());
@@ -152,20 +145,19 @@ public class SearchCatalogItemController extends BasicController {
 			SearchResults searchResults = searchClient.doSearch(queryString, condQueries, getIdentity(), ureq.getUserSession().getRoles(), getLocale(), 0, 50, false);
 			List<ResultDocument> documents = searchResults.getList();
 			List<CatalogItem> items = new ArrayList<>(documents.size());
-			VFSContainer sharedFolder = libraryManager.getSharedFolder();
 			for(ResultDocument doc:documents) {
 				String url = doc.getResourceUrl();
-				if(url.startsWith(URL_PREFIX)) {
-					String relPath = url.substring(URL_PREFIX.length(), url.length() - 1);
-					VFSItem item = sharedFolder.resolve(relPath);
-					if(item instanceof VFSLeaf) {
-						VFSMetadata metadata = vfsRepositoryService.getMetadataFor(item);
-						boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(item, metadata);
-						items.add(new CatalogItem((VFSLeaf)item, metadata, thumbnailAvailable, getLocale()));
+				if(url.startsWith(LibraryManager.URL_PREFIX)) {
+					CatalogItem item = libraryManager.getCatalogItemsByUrl(url, getIdentity());
+					if(item != null
+							&& !item.getFilename().equals(".noFolderIndexing")
+							&& !item.getFilename().equals(".DS_Store")) {
+						items.add(item);
 					}
 				}
 			}
-			catalogController.display(items, ureq);
+
+			catalogController.display(items);
 			if(items.isEmpty()) {
 				mainVC.contextPut("empty", getTranslator().translate("search.results.empty"));
 			}

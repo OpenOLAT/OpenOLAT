@@ -20,7 +20,7 @@
 package org.olat.modules.library.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 
 /**
  * 

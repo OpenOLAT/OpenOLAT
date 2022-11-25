@@ -23,7 +23,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 
 /**
  * 

@@ -25,7 +25,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.modules.bc.comparators.MetaTitleComparator;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 
 /**
  * Compares the title of two meta tagged objects.
