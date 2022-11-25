@@ -104,6 +104,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
+		stackPanel.setCssClass("o_catalog_breadcrumb");
 		stackPanel.setInvisibleCrumb(0);
 		mainVC.put("stack", stackPanel);
 		
