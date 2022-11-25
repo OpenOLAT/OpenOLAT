@@ -43,7 +43,9 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
@@ -65,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class I18nTest extends OlatTestCase { 
 	
 	private static final Logger log = Tracing.createLoggerFor(I18nTest.class);
@@ -554,6 +557,7 @@ public class I18nTest extends OlatTestCase {
 	
 	@Test
 	public void testFindI18nKeysByOverlayValue_fuzzyMatch() {
+		i18nMgr.setCachingEnabled(true);
 		assertTrue(Locale.GERMAN.equals(I18nModule.getDefaultLocale()));
 		
 		String bundleName = "org.olat.core.util.i18n.junittestdata.findinoverlay";
@@ -643,10 +647,11 @@ public class I18nTest extends OlatTestCase {
 	
 	
 	/**
-	 * Test method i18nManager.testGenderStrategy()
+	 * Test method i18nManager.aatestGenderStrategy()
+	 * Named aa to run testcase first
 	 */
 	@Test
-	public void testGenderStrategy() {
+	public void aatestGenderStrategy() {		
 		String bundleName = "org.olat.core.util.i18n.junittestdata";
 		Locale locale = Locale.GERMAN;
 		i18nMgr.setCachingEnabled(true);
