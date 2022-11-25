@@ -869,7 +869,7 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
-		searchParams.setLocations(List.of("Chur", "Disentis"));
+		searchParams.setLocations(List.of("Chur ", "Disentis"));
 		assertThat(sut.loadRepositoryEntries(searchParams, 0, -1))
 				.containsExactlyInAnyOrder(
 						catalogItem.getRepositoryEntry(0),
