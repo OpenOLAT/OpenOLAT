@@ -71,12 +71,12 @@ public class CatalogRepositoryEntryQueries {
 	
 	public List<String> loadMainLangauages(CatalogRepositoryEntrySearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select distinct trim(lower(v.mainLanguage))");
+		sb.append("select distinct v.mainLanguage");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.mainLanguage != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, true);
+		appendWhere(searchParams, sb, addParams, true);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -89,12 +89,12 @@ public class CatalogRepositoryEntryQueries {
 	
 	public List<String> loadExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select distinct trim(lower(v.expenditureOfWork))");
+		sb.append("select distinct v.expenditureOfWork");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.expenditureOfWork != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, true);
+		appendWhere(searchParams, sb, addParams, true);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -107,12 +107,12 @@ public class CatalogRepositoryEntryQueries {
 	
 	public List<String> loadLocations(CatalogRepositoryEntrySearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
-		sb.append("select distinct trim(lower(v.location))");
+		sb.append("select distinct v.location");
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.location != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, true);
+		appendWhere(searchParams, sb, addParams, true);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -131,10 +131,30 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.lifecycle as lifecycle");
 		sb.and().append("lifecycle.privateCycle = false");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, false);
+		appendWhere(searchParams, sb, addParams, false);
 		
 		TypedQuery<RepositoryEntryLifecycle> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryLifecycle.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		return query.getResultList();
+	}
+	
+	public List<Long> loadTaxonomyLevelKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct reToTax.taxonomyLevel.key");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join repositoryentrytotaxonomylevel as reToTax");
+		sb.append("         on reToTax.entry.key = v.key");
+		sb.append(" inner join v.olatResource as res");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, true);
+		sb.and().append(" reToTax.taxonomyLevel.key != null");
+		sb.append(" group by reToTax.taxonomyLevel.key");
+		sb.append(" having count(*) > 0");
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setFlushMode(FlushModeType.COMMIT);
 		appendParams(searchParams, query, addParams, false);
 		return query.getResultList();
@@ -148,7 +168,9 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("         on reToTax.entry.key = v.key");
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true, true);
+		appendWhere(searchParams, sb, addParams, true);
+		sb.append(" group by reToTax.taxonomyLevel.materializedPathKeys");
+		sb.append(" having count(*) > 0");
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -163,7 +185,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, true);
+		appendWhere(searchParams, sb, addParams, true);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -189,7 +211,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("  left join fetch v.lifecycle as lifecycle");
 		sb.append("  left join fetch v.educationalType as educationalType");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false, false);
+		appendWhere(searchParams, sb, addParams, false);
 		appendOrderBy(searchParams, sb);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -207,7 +229,7 @@ public class CatalogRepositoryEntryQueries {
 	}
 	
 	private void appendWhere(CatalogRepositoryEntrySearchParams searchParams, QueryBuilder sb, AddParams addParams,
-			boolean countTaxonomyLevels, boolean addFromLifecycle) {
+			boolean addFromLifecycle) {
 		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
 			sb.append(" inner join license as lic");
 			sb.append("    on lic.resId = res.resId");
@@ -260,7 +282,10 @@ public class CatalogRepositoryEntryQueries {
 		}
 		
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
-			if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
+			if (CatalogRepositoryEntrySearchParams.KEY_LAUNCHER.equals(identToTaxonomyLevels.getKey())
+					&& searchParams.getIdentToTaxonomyLevels().keySet().contains(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER_OVERRIDE)) {
+				// To not apply the launcher key if it is overridden by a filter
+			} else if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
 				if (searchParams.isTaxonomyLevelChildren()) {
 					sb.and().append(" exists (select reToTax.key from repositoryentrytotaxonomylevel as reToTax");
 					sb.append("  where reToTax.entry.key=v.key");
@@ -286,69 +311,15 @@ public class CatalogRepositoryEntryQueries {
 		}
 		
 		if (searchParams.getMainLanguages() != null && !searchParams.getMainLanguages().isEmpty()) {
-			Map<String, String> paramToMainLanguage = new HashMap<>(searchParams.getMainLanguages().size());
-			addParams.setParamToMainLanguage(paramToMainLanguage);
-			
-			sb.and().append(" (");
-			boolean or = false;
-			for (int i = 0; i < searchParams.getMainLanguages().size(); i++) {
-				if (or) {
-					sb.append(" or ");
-				}
-				or = true;
-				
-				String mainLanguage = searchParams.getMainLanguages().get(i);
-				mainLanguage = PersistenceHelper.makeFuzzyQueryString(mainLanguage);
-				
-				String param = "mainLanguage" + i;
-				PersistenceHelper.appendFuzzyLike(sb, "v.mainLanguage", param, dbInstance.getDbVendor());
-				paramToMainLanguage.put(param, mainLanguage);
-			}
-			sb.append(")");
+			sb.and().append("v.mainLanguage in :mainLangauges");
 		}
 		
 		if (searchParams.getExpendituresOfWork() != null && !searchParams.getExpendituresOfWork().isEmpty()) {
-			Map<String, String> paramToExpenditureOfWork = new HashMap<>(searchParams.getExpendituresOfWork().size());
-			addParams.setParamToExpenditureOfWork(paramToExpenditureOfWork);
-			
-			sb.and().append(" (");
-			boolean or = false;
-			for (int i = 0; i < searchParams.getExpendituresOfWork().size(); i++) {
-				if (or) {
-					sb.append(" or ");
-				}
-				or = true;
-				
-				String expendituresOfWork = searchParams.getExpendituresOfWork().get(i);
-				expendituresOfWork = PersistenceHelper.makeFuzzyQueryString(expendituresOfWork);
-				
-				String param = "mainLanguage" + i;
-				PersistenceHelper.appendFuzzyLike(sb, "v.expenditureOfWork", param, dbInstance.getDbVendor());
-				paramToExpenditureOfWork.put(param, expendituresOfWork);
-			}
-			sb.append(")");
+			sb.and().append("v.expenditureOfWork in :expenditureOfWorks");
 		}
 		
 		if (searchParams.getLocations() != null && !searchParams.getLocations().isEmpty()) {
-			Map<String, String> paramToLocation = new HashMap<>(searchParams.getLocations().size());
-			addParams.setParamToLocation(paramToLocation);
-			
-			sb.and().append(" (");
-			boolean or = false;
-			for (int i = 0; i < searchParams.getLocations().size(); i++) {
-				if (or) {
-					sb.append(" or ");
-				}
-				or = true;
-				
-				String location = searchParams.getLocations().get(i);
-				location = PersistenceHelper.makeFuzzyQueryString(location);
-				
-				String param = "location" + i;
-				PersistenceHelper.appendFuzzyLike(sb, "v.location", param, dbInstance.getDbVendor());
-				paramToLocation.put(param, location);
-			}
-			sb.append(")");
+			sb.and().append("v.location in :locations");
 		}
 		
 		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
@@ -422,11 +393,6 @@ public class CatalogRepositoryEntryQueries {
 		}
 		addParams.setParamToSearchText(paramToSearchText);
 		addParams.setParamToTaxonomyLevelI18nSuffix(paramToTaxonomyLevelI18nSuffix);
-		
-		if(countTaxonomyLevels) {
-			sb.append(" group by reToTax.taxonomyLevel.materializedPathKeys");
-			sb.append(" having count(*) > 0");
-		}
 	}
 
 	private void appendParams(CatalogRepositoryEntrySearchParams searchParams, TypedQuery<?> query, AddParams addParams, boolean selectRepositoryEntries) {
@@ -450,7 +416,10 @@ public class CatalogRepositoryEntryQueries {
 			query.setParameter("educationalTypeKeys", addParams.getEducationalTypeKeys());
 		}
 		for (Entry<String, List<TaxonomyLevel>> identToTaxonomyLevels : searchParams.getIdentToTaxonomyLevels().entrySet()) {
-			if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
+			if (CatalogRepositoryEntrySearchParams.KEY_LAUNCHER.equals(identToTaxonomyLevels.getKey())
+					&& searchParams.getIdentToTaxonomyLevels().keySet().contains(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER_OVERRIDE)) {
+				// To not apply the launcher key if it is overridden by a filter
+			} else if (identToTaxonomyLevels.getValue() != null && !identToTaxonomyLevels.getValue().isEmpty()) {
 				if (searchParams.isTaxonomyLevelChildren()) {
 					for (int i = 0; i < identToTaxonomyLevels.getValue().size(); i++) {
 						String parameter = new StringBuilder().append("materializedPath").append(identToTaxonomyLevels.getKey()).append("_").append(i).toString();
@@ -463,17 +432,14 @@ public class CatalogRepositoryEntryQueries {
 				}
 			}
 		}
-		Map<String, String> paramToMainLanguage = addParams.getParamToMainLanguage();
-		if (paramToMainLanguage != null && !paramToMainLanguage.isEmpty()) {
-			paramToMainLanguage.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		if (searchParams.getMainLanguages() != null && !searchParams.getMainLanguages().isEmpty()) {
+			query.setParameter("mainLangauges", searchParams.getMainLanguages());
 		}
-		Map<String,String> paramToExpenditureOfWork = addParams.getParamToExpenditureOfWork();
-		if (paramToExpenditureOfWork != null && !paramToExpenditureOfWork.isEmpty()) {
-			paramToExpenditureOfWork.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		if (searchParams.getExpendituresOfWork() != null && !searchParams.getExpendituresOfWork().isEmpty()) {
+			query.setParameter("expenditureOfWorks", searchParams.getExpendituresOfWork());
 		}
-		Map<String,String> paramToLocation = addParams.getParamToLocation();
-		if (paramToLocation != null && !paramToLocation.isEmpty()) {
-			paramToLocation.entrySet().stream().forEach(entrySet -> query.setParameter(entrySet.getKey(), entrySet.getValue()));
+		if (searchParams.getLocations() != null && !searchParams.getLocations().isEmpty()) {
+			query.setParameter("locations", searchParams.getLocations());
 		}
 		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
 			query.setParameter("licenseTypeKeys", searchParams.getLicenseTypeKeys());
@@ -686,9 +652,6 @@ public class CatalogRepositoryEntryQueries {
 		private Set<Long> educationalTypeKeys;
 		private Map<String, String> paramToSearchText;
 		private Map<String, Collection<String>> paramToTaxonomyLevelI18nSuffix;
-		private Map<String, String> paramToMainLanguage;
-		private Map<String, String> paramToExpenditureOfWork;
-		private Map<String, String> paramToLocation;
 		
 		public boolean isOfferValidAt() {
 			return offerValidAt;
@@ -752,30 +715,6 @@ public class CatalogRepositoryEntryQueries {
 
 		public void setParamToTaxonomyLevelI18nSuffix(Map<String, Collection<String>> paramToTaxonomyLevelI18nSuffix) {
 			this.paramToTaxonomyLevelI18nSuffix = paramToTaxonomyLevelI18nSuffix;
-		}
-
-		public Map<String, String> getParamToMainLanguage() {
-			return paramToMainLanguage;
-		}
-
-		public void setParamToMainLanguage(Map<String, String> paramToMainLanguage) {
-			this.paramToMainLanguage = paramToMainLanguage;
-		}
-
-		public Map<String, String> getParamToExpenditureOfWork() {
-			return paramToExpenditureOfWork;
-		}
-
-		public void setParamToExpenditureOfWork(Map<String, String> paramToExpenditureOfWork) {
-			this.paramToExpenditureOfWork = paramToExpenditureOfWork;
-		}
-
-		public Map<String, String> getParamToLocation() {
-			return paramToLocation;
-		}
-
-		public void setParamToLocation(Map<String, String> paramToLocation) {
-			this.paramToLocation = paramToLocation;
 		}
 		
 	}

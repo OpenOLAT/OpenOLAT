@@ -37,8 +37,6 @@ public interface CatalogV2Service {
 
 	public Integer countRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams);
 	
-	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams);
-	
 	public void excludeLevelsWithoutOffers(List<TaxonomyLevel> taxonomyLevels, CatalogRepositoryEntrySearchParams searchParams);
 
 	public List<CatalogRepositoryEntry> getRepositoryEntries(CatalogRepositoryEntrySearchParams searchParams, int firstResult, int maxResults);
@@ -50,6 +48,10 @@ public interface CatalogV2Service {
 	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams);
 	
 	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams);
+
+	public List<Long> getTaxonomyLevelsWithOffers(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<String> getTaxonomyLevelPathKeysWithOffers(CatalogRepositoryEntrySearchParams searchParams);
 	
 	public List<RepositoryEntryLifecycle> getPublicLifecycles(CatalogRepositoryEntrySearchParams searchParams);
 	

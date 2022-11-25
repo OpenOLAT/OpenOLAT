@@ -39,6 +39,7 @@ import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
 import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,6 +52,9 @@ import org.springframework.stereotype.Service;
 public class ExpenditureOfWorkHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "expenditure.of.work";
+	
+	@Autowired
+	private CatalogV2Service catalogService;
 	
 	@Override
 	public String getType() {
@@ -101,8 +105,17 @@ public class ExpenditureOfWorkHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.expenditureOfWork"), TYPE,
-				new ExpenditureOfWorkSupplier(searchParams), catalogFilter.isDefaultVisible());
+		List<String> expendituresOfWork = catalogService.getExpendituresOfWork(searchParams);
+		if (expendituresOfWork == null || expendituresOfWork.isEmpty()) {
+			return null;
+		}
+		
+		SelectionValues filterKV = new SelectionValues();
+		expendituresOfWork.forEach(expenditureOfWork -> filterKV.add(new SelectionValue(expenditureOfWork, expenditureOfWork)));
+		filterKV.sort(SelectionValues.VALUE_ASC);
+		
+		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.expenditureOfWork"), TYPE, filterKV,
+				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
@@ -111,6 +124,10 @@ public class ExpenditureOfWorkHandler implements CatalogFilterHandler {
 		searchParams.setExpendituresOfWork(expenditureOfWork);
 	}
 	
+	/**
+	 * We remove (but keep) the lady loading supplier until performance problems occur.
+	 */
+	@SuppressWarnings("unused")
 	private static final class ExpenditureOfWorkSupplier implements SelectionValuesSupplier {
 		
 		private final CatalogRepositoryEntrySearchParams searchParams;

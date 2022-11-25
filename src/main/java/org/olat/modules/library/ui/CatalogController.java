@@ -20,7 +20,6 @@
 package org.olat.modules.library.ui;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -29,31 +28,45 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
+import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
+import org.olat.core.commons.services.commentAndRating.ui.UserCommentsCountChangedEvent;
+import org.olat.core.commons.services.commentAndRating.ui.UserRatingChangedEvent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.components.rating.RatingFormEvent;
+import org.olat.core.gui.components.rating.RatingFormItem;
+import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSLeafButSystemFilter;
+import org.olat.modules.library.LibraryManager;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.comparator.CatalogItemComparator;
 import org.olat.modules.library.ui.event.OpenFolderEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,24 +83,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gwassmann
  */
-public class CatalogController extends BasicController {
+public class CatalogController extends FormBasicController implements GenericEventListener {
 	private static final String COMMAND_OPEN_FOLDER = "cmd.openFolder";
 
+	private FormLink thumbnailSwitch;
+	
 	private DisplayOrDownloadComponent autoDownloadComp;
-	private final VelocityContainer contentVC;
-	private final String mapperBaseURL;
-	private String basePath = "";
 
+	private final boolean guestOnly;
+	private String basePath = "";
+	private final String mapperBaseURL;
+	private String thumbnailMapperBaseURL;
+	private boolean linkToFolder;
+	private boolean showFolderInfo;
+	private String title;
+	private OLATResourceable libraryOres;
 	private List<CatalogItem> catalogItems;
-	private boolean linkToFolder = false;
-	private Link thumbnailSwitch;
+	
 	private UserCommentsAndRatingsController commentsController;
 	private CloseableModalController commentsModalController;
 	private SendCatalogItemByEMailController sendDocController;
 	private CloseableModalController sendMailModalController;
-	
-	private OLATResourceable libraryOres;
-	
+
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private UserRatingsDAO userRatingsDao;
+	@Autowired
+	private LibraryManager libraryManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
@@ -109,30 +132,51 @@ public class CatalogController extends BasicController {
 	
 	protected CatalogController(UserRequest ureq, WindowControl control, String mapperBaseURL, String thumbnailMapperBaseURL,
 			boolean linkToFolder, boolean showFolderInfo, String title, OLATResourceable libraryOres) {
-		super(ureq, control);
+		super(ureq, control, "catalog", Util.createPackageTranslator(UserCommentsAndRatingsController.class, ureq.getLocale()));
+		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		this.mapperBaseURL = mapperBaseURL;
+		this.thumbnailMapperBaseURL = thumbnailMapperBaseURL;
 		this.linkToFolder = linkToFolder;
 		this.libraryOres = libraryOres;
+		this.showFolderInfo = showFolderInfo;
+		this.title = title;
+
+		initForm(ureq);
 		
-		contentVC = createVelocityContainer("catalog");
-		Translator metaTranslator = Util.createPackageTranslator(MetaInfoController.class, getLocale());
-		contentVC.contextPut("metaTrans", metaTranslator);
-		contentVC.contextPut("mapperBaseURL", mapperBaseURL);
-		contentVC.contextPut("thumbnailMapperBaseURL", thumbnailMapperBaseURL);
-		contentVC.contextPut("linkToFolder", Boolean.valueOf(linkToFolder));
-		if(title != null) {
-			contentVC.contextPut("customTitle", title);
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.registerFor(this, getIdentity(), libraryManager.getLibraryResourceable());
+	}
+	
+	@Override
+	protected void doDispose() {
+		// Remove event listener
+		CoordinatorManager.getInstance().getCoordinator().getEventBus()
+			.deregisterFor(this, libraryManager.getLibraryResourceable());
+        super.doDispose();
+	}
+	
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer) {
+			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			
+			Translator metaTranslator = Util.createPackageTranslator(MetaInfoController.class, getLocale());
+			layoutCont.contextPut("metaTrans", metaTranslator);
+			layoutCont.contextPut("mapperBaseURL", mapperBaseURL);
+			layoutCont.contextPut("thumbnailMapperBaseURL", thumbnailMapperBaseURL);
+			layoutCont.contextPut("linkToFolder", Boolean.valueOf(linkToFolder));
+			if(title != null) {
+				layoutCont.contextPut("customTitle", title);
+			}
+			layoutCont.contextPut("showFolderInfo", Boolean.valueOf(showFolderInfo));
+			layoutCont.contextPut("thumbnails", Boolean.TRUE);
+			layoutCont.contextPut("thumbnailHelper", new ThumbnailHelper(getTranslator(), thumbnailMapperBaseURL));
 		}
-		contentVC.contextPut("showFolderInfo", Boolean.valueOf(showFolderInfo));
-		thumbnailSwitch = LinkFactory.createLink("thumbnails.on", contentVC, this);
+		
+		thumbnailSwitch = uifactory.addFormLink("thumbnails.on", formLayout);
 		thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle o_on");
 		thumbnailSwitch.setIconLeftCSS(null);
 		thumbnailSwitch.setIconRightCSS("o_icon o_icon_toggle");
-		
-		contentVC.contextPut("thumbnails", Boolean.TRUE);
-		contentVC.contextPut("thumbnailHelper", new ThumbnailHelper(getTranslator(), thumbnailMapperBaseURL));
-		
-		putInitialPanel(contentVC);
 	}
 	
 	protected void updateRepositoryEntry(OLATResourceable ores) {
@@ -140,8 +184,32 @@ public class CatalogController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == contentVC) {
+	protected void formOK(UserRequest ureq) {
+		//
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof UserCommentsCountChangedEvent) {
+			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent)event;	
+			processUserChangeEvent(changedEvent.getOresSubPath());
+		} else if (event instanceof UserRatingChangedEvent) {
+			UserRatingChangedEvent changedEvent = (UserRatingChangedEvent) event;
+			processUserChangeEvent(changedEvent.getOresSubPath());
+		}
+	}
+	
+	private void processUserChangeEvent(String oresSubPath) {
+		String id = "comments_".concat(oresSubPath);
+		FormItem commentsItem = flc.getFormComponent(id);
+		if(commentsItem != null) {
+			updateCatalogItem(oresSubPath);
+		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == flc.getComponent()) {
 			String command = event.getCommand();
 			if (command != null && command.startsWith(COMMAND_OPEN_FOLDER)) {
 				int index = Integer.parseInt(command.substring(COMMAND_OPEN_FOLDER.length()));
@@ -150,26 +218,27 @@ public class CatalogController extends BasicController {
 					fireEvent(ureq, new OpenFolderEvent(command, item));
 				}
 			}
-		} else if (source == thumbnailSwitch) {
-			if(Boolean.TRUE.equals(contentVC.getContext().get("thumbnails"))) {
-				thumbnailSwitch.setCustomDisplayText(translate("thumbnails.off"));
-				thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle");
-				thumbnailSwitch.setIconLeftCSS("o_icon o_icon_toggle");
-				thumbnailSwitch.setIconRightCSS(null);
-				
-				contentVC.contextPut("thumbnails", Boolean.FALSE);
-			} else {
-				thumbnailSwitch.setCustomDisplayText(translate("thumbnails.on"));
-				thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle o_on");
-				thumbnailSwitch.setIconLeftCSS(null);
-				thumbnailSwitch.setIconRightCSS("o_icon o_icon_toggle");
-				
-				contentVC.contextPut("thumbnails", Boolean.TRUE);
-			}
-		} else if (source.getComponentName().startsWith("mail.")) {
-			CatalogItem item = (CatalogItem)((Link)source).getUserObject();
-			displaySendMailController(ureq, item);
 		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(source == thumbnailSwitch) {
+			toggleThumbnail();
+		} else if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent
+				&& ((RatingWithAverageFormItem)source).getUserObject() instanceof CatalogItem) {
+			CatalogItem item = (CatalogItem)((RatingWithAverageFormItem)source).getUserObject();
+			doRating(item, ((RatingFormEvent)event).getRating());
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if("comments".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem) {
+				displayCommentsController(ureq, (CatalogItem)link.getUserObject());
+			} else if("mail".equals(link.getCmd()) && link.getUserObject() instanceof CatalogItem) {
+				displaySendMailController(ureq, (CatalogItem)link.getUserObject());
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -195,17 +264,34 @@ public class CatalogController extends BasicController {
 			commentsModalController = null;			
 		} else if (source == sendDocController) {
 			sendMailModalController.deactivate();
-			removeAsListenerAndDispose(sendDocController);
-			removeAsListenerAndDispose(sendMailModalController);
-			sendDocController = null;
-			sendMailModalController = null;
+			cleanUp();
 		} else if (source == sendMailModalController) {
-			removeAsListenerAndDispose(sendDocController);
-			removeAsListenerAndDispose(sendMailModalController);
-			sendDocController = null;
-			sendMailModalController = null;
+			cleanUp();
 		} else {
 			super.event(ureq, source, event);
+		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(sendDocController);
+		removeAsListenerAndDispose(sendMailModalController);
+		sendDocController = null;
+		sendMailModalController = null;
+	}
+	
+	private void toggleThumbnail() {
+		if(Boolean.TRUE.equals(flc.contextGet("thumbnails"))) {
+			thumbnailSwitch.getComponent().setCustomDisplayText(translate("thumbnails.off"));
+			thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle");
+			thumbnailSwitch.setIconLeftCSS("o_icon o_icon_toggle");
+			thumbnailSwitch.setIconRightCSS(null);
+			flc.contextPut("thumbnails", Boolean.FALSE);
+		} else {
+			thumbnailSwitch.getComponent().setCustomDisplayText(translate("thumbnails.on"));
+			thumbnailSwitch.setCustomEnabledLinkCSS("o_button_toggle o_on");
+			thumbnailSwitch.setIconLeftCSS(null);
+			thumbnailSwitch.setIconRightCSS("o_icon o_icon_toggle");
+			flc.contextPut("thumbnails", Boolean.TRUE);
 		}
 	}
 	
@@ -247,6 +333,14 @@ public class CatalogController extends BasicController {
 		listenTo(commentsModalController);
 		commentsModalController.activate();
 	}
+	
+	protected void doRating(CatalogItem item, float rating) {
+		userRatingsDao.updateRating(getIdentity(), libraryOres, item.getMetaInfo().getUuid(), Math.round(rating));
+		dbInstance.commitAndCloseSession();
+		updateCatalogItem(item.getMetaInfo().getUuid());
+		UserRatingChangedEvent changedEvent = new UserRatingChangedEvent(this, item.getMetaInfo().getUuid());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(changedEvent, libraryOres);
+	}
 
 	/**
 	 * Displays the container metadata and all its leafs.
@@ -256,33 +350,31 @@ public class CatalogController extends BasicController {
 	 *          NULL, a download of this will will be triggered automatically
 	 * @param locale the users locale
 	 */
-	public void display(VFSContainer container, String fileName, UserRequest ureq) {
+	public void display(VFSContainer container, String fileName) {
 		VFSMetadata folderInfo = vfsRepositoryService.getMetadataFor(container);
-		contentVC.contextPut("folderInfo", folderInfo);
+		flc.contextPut("folderInfo", folderInfo);
 		String whenTheFolderWasLastModified = DateFormat.getDateInstance(DateFormat.FULL, getLocale()).format(folderInfo.getLastModified());
-		contentVC.contextPut("whenTheFolderWasLastModified", whenTheFolderWasLastModified);
+		flc.contextPut("whenTheFolderWasLastModified", whenTheFolderWasLastModified);
 		
-		List<VFSMetadata> metadata = vfsRepositoryService.getChildren(folderInfo);
-		Map<String,VFSMetadata> filenameToMetadata = metadata.stream()
-				.collect(Collectors.toMap(VFSMetadata::getFilename, m -> m, (u,v) -> u));
-		
-		catalogItems = new ArrayList<>();
-		int count = 0;
+		catalogItems = libraryManager.getCatalogItems(folderInfo, getIdentity());
+		Map<String,CatalogItem> filenameToItems = catalogItems.stream()
+				.collect(Collectors.toMap(CatalogItem::getFilename, m -> m, (u,v) -> u));
+
 		for (VFSItem vfsItem : container.getItems(new VFSLeafButSystemFilter())) {
 			if(vfsItem instanceof VFSLeaf) {
 				String name = vfsItem.getName();
-				VFSMetadata meta = filenameToMetadata.get(name);
-				boolean thumbnailAvailable = vfsRepositoryService.isThumbnailAvailable(vfsItem, meta);
-				CatalogItem item = new CatalogItem((VFSLeaf)vfsItem, meta, thumbnailAvailable, getLocale());
+				CatalogItem item = filenameToItems.get(name);
 				item.setSelected(fileName != null && fileName.equals(name));
-				catalogItems.add(item);
-				addSendMailLink(item, count++);
-				addCommentsController(ureq, item);
+				forgeSendMailLink(item);
+				forgeComment(item);
+				forgeRating(item);
 			}
 		}
+		
 		// Sort items
 		Collections.sort(catalogItems, new CatalogItemComparator(getLocale()));
-		contentVC.contextPut("items", catalogItems);
+		flc.contextPut("items", catalogItems);
+		
 		// Trigger automatic file download if available
 		if (fileName != null) {
 			if (container.resolve(fileName) != null) {
@@ -290,7 +382,7 @@ public class CatalogController extends BasicController {
 				if (autoDownloadComp == null) {
 					// create on demand, only used when coming from the fulltext search
 					autoDownloadComp = new DisplayOrDownloadComponent("autoDownloadComp", url);
-					contentVC.put("autoDownloadComp", autoDownloadComp);
+					flc.put("autoDownloadComp", autoDownloadComp);
 				} else {
 					autoDownloadComp.triggerFileDownload(url);					
 				}
@@ -300,52 +392,97 @@ public class CatalogController extends BasicController {
 		}
 	}
 
-	public void display(List<CatalogItem> items, UserRequest ureq) {
+	public void display(List<CatalogItem> items) {
 		catalogItems = items;
-		contentVC.contextPut("items", catalogItems);
-		contentVC.contextPut("folderInfo", "");
+		flc.contextPut("items", catalogItems);
+		flc.contextPut("folderInfo", "");
 
-		int count = 0;
 		Date lastModified = null;
 		for (CatalogItem item : catalogItems) {
 			if (lastModified == null || lastModified.compareTo(item.getMetaInfo().getLastModified()) > 0) {
 				lastModified = item.getMetaInfo().getLastModified();
 			}
-			addSendMailLink(item, count++);
-			addCommentsController(ureq, item);
+			forgeSendMailLink(item);
+			forgeComment(item);
+			forgeRating(item);
 		}
 
 		String whenTheFolderWasLastModified = Formatter.getInstance(getLocale()).formatDateAndTimeLong(lastModified);
-		contentVC.contextPut("whenTheFolderWasLastModified", whenTheFolderWasLastModified);
+		flc.contextPut("whenTheFolderWasLastModified", whenTheFolderWasLastModified);
+	}
+	
+	private void forgeRating(CatalogItem item) {
+		String id = "ratings_".concat(item.getId());
+		float averageRating = item.getRatings().getAverageOfRatings();
+
+		if(guestOnly) {
+			RatingFormItem ratingItem = uifactory.addRatingItem(id, null, averageRating, 5, false, flc);
+			ratingItem.setShowRatingAsText(true);
+			ratingItem.setUserObject(item);
+		} else {
+			int myRating = item.getRatings().getMyRating();
+			int numOfRatings = (int)item.getRatings().getNumOfRatings();
+			RatingWithAverageFormItem ratingItem = uifactory.addRatingItemWithAverage(id, null, myRating,
+					averageRating, numOfRatings, 5, flc);
+			ratingItem.setShowRatingAsText(true);
+			ratingItem.setUserObject(item);
+		}
+	}
+	
+	private void forgeComment(CatalogItem item) {
+		long numOfComments = item.getNumOfComments();
+		String id = "comments_".concat(item.getId());
+		String commentLabel = translate("comments.count", Long.toString(numOfComments));
+		FormLink commentsLink = uifactory.addFormLink(id, "comments", commentLabel, null, flc, Link.NONTRANSLATED);
+		String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+		commentsLink.setCustomEnabledLinkCSS("o_comments");
+		commentsLink.setUserObject(item);
+		commentsLink.setIconLeftCSS(css);
+	}
+	
+	private void updateCatalogItem(String uuid) {
+		try {
+			CatalogItem updatedItem = libraryManager.getCatalogItemByUUID(uuid, getIdentity());
+			
+			int index = catalogItems.indexOf(updatedItem);
+			if(index >= 0) {
+				catalogItems.set(index, updatedItem);
+			}
+			
+			FormItem commentsItem = flc.getFormComponent("comments_" + uuid);
+			if(commentsItem instanceof FormLink) {
+				FormLink commentsLink = (FormLink)commentsItem;
+				String commentLabel = translate("comments.count", Long.toString(updatedItem.getNumOfComments()));
+				commentsLink.setI18nKey(commentLabel);
+				commentsLink.setUserObject(updatedItem);
+			}
+
+			FormItem ratingsItem = flc.getFormComponent("ratings_" + uuid);
+			if(ratingsItem instanceof RatingWithAverageFormItem) {
+				RatingWithAverageFormItem rwa = (RatingWithAverageFormItem)ratingsItem;
+				rwa.setUserRating(updatedItem.getRatings().getMyRating());
+				rwa.setAverageRating(updatedItem.getRatings().getAverageOfRatings());
+			} else if(ratingsItem instanceof RatingFormItem) {
+				RatingFormItem rfi = (RatingFormItem)ratingsItem;
+				rfi.setCurrentRating(updatedItem.getRatings().getAverageOfRatings());
+			}
+		} catch (Exception e) {
+			getLogger().error("Cannot update a catalog item: {}", uuid, e);
+		}
+	}
+	
+	private void forgeSendMailLink(CatalogItem item) {
+		String id = "mail_".concat(item.getId());
+		FormLink sendMail = uifactory.addFormLink(id, "mail", "library.catalog.send.mail", null, flc, Link.BUTTON);
+		sendMail.setUserObject(item);
+		sendMail.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 	}
 	
 	public void sort(Comparator<CatalogItem> comparator) {
 		if(catalogItems != null && catalogItems.size() > 1) {
 			Collections.sort(catalogItems, comparator);
-			contentVC.contextPut("items", catalogItems);
+			flc.contextPut("items", catalogItems);
 		}
-	}
-	
-	private void addSendMailLink(CatalogItem item, int count) {
-		Link sendMail = LinkFactory.createButton("mail." + count, contentVC, this);
-		sendMail.setCustomDisplayText(translate("library.catalog.send.mail"));
-		sendMail.setUserObject(item);
-		sendMail.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
-		item.setSendMailLink(sendMail);
-	}
-	
-	private void addCommentsController(UserRequest ureq, CatalogItem item) {
-		removeAsListenerAndDispose(item.getCommentsAndRatingCtr());	
-
-		Roles roles = ureq.getUserSession().getRoles();
-		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), roles.isAdministrator(), roles.isGuestOnly());
-		UserCommentsAndRatingsController commentsAndRatingCtr =
-				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, null, true, true, false);
-		commentsAndRatingCtr.setUserObject(item);
-		listenTo(commentsAndRatingCtr);
-		contentVC.put("comments_" + item.getId(), commentsAndRatingCtr.getInitialComponent());
-		
-		item.setCommentsAndRatingCtr(commentsAndRatingCtr);
 	}
 
 	public String getBasePath() {

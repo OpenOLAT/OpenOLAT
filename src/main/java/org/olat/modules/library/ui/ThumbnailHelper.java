@@ -24,6 +24,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.library.model.CatalogItem;
 
 /**
  * 
@@ -60,7 +61,7 @@ public class ThumbnailHelper {
 		StringBuilder sb = new StringBuilder();
 		if(metaInfo != null && item.isThumbnailAvailable()) {
 			sb.append("width:200px; height:200px; float:left; background-image:url('"); 
-			sb.append(thumbnailMapperBaseURL).append(item.getRelativePath()).append("?thumbnail=true");
+			sb.append(thumbnailMapperBaseURL).append("/").append(item.getRelativePath()).append("?thumbnail=true");
 			sb.append("'); background-repeat:no-repeat; background-position:50% 50%;");
 		}
 		return sb.toString();
@@ -79,7 +80,7 @@ public class ThumbnailHelper {
 			}
 			if(item.isThumbnailAvailable()) {
 				sb.append("<div class='b_briefcase_preview' style='width:200px; height:200px; background-image:url('"); 
-				sb.append(thumbnailMapperBaseURL).append(item.getRelativePath()).append("?thumbnail=true");
+				sb.append(thumbnailMapperBaseURL).append("/").append(item.getRelativePath()).append("?thumbnail=true");
 				sb.append("'); background-repeat:no-repeat; background-position:50% 50%;'>&nbsp;</div>");
 			}
 			Identity author = metaInfo.getFileInitializedBy();

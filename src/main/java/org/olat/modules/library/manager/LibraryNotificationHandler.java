@@ -37,7 +37,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
 import org.olat.modules.library.LibraryManager;
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.modules.library.ui.LibraryMainController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -70,7 +70,7 @@ public class LibraryNotificationHandler implements NotificationsHandler {
 		// there could be news for me, investigate deeper
 		if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
 			
-			List<CatalogItem> items = libraryManager.getNewCatalogItems(compareDate, locale);
+			List<CatalogItem> items = libraryManager.getNewCatalogItems(compareDate, subscriber.getIdentity());
 			if (items.isEmpty()) {
 				si = notificationsManager.getNoSubscriptionInfo();
 			} else {

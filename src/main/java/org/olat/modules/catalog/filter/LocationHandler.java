@@ -39,6 +39,8 @@ import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntryLifecycle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -51,6 +53,9 @@ import org.springframework.stereotype.Service;
 public class LocationHandler implements CatalogFilterHandler {
 	
 	private static final String TYPE = "location";
+	
+	@Autowired
+	private CatalogV2Service catalogService;
 	
 	@Override
 	public String getType() {
@@ -101,8 +106,17 @@ public class LocationHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.location"), TYPE,
-				new LocationSupplier(searchParams), catalogFilter.isDefaultVisible());
+		List<RepositoryEntryLifecycle> publicLifecycles = catalogService.getPublicLifecycles(searchParams);
+		if (publicLifecycles == null || publicLifecycles.isEmpty()) {
+			return null;
+		}
+		
+		SelectionValues filterKV = new SelectionValues();
+		publicLifecycles.forEach(lifecycle -> filterKV.add(new SelectionValue(lifecycle.getKey().toString(), lifecycle.getLabel())));
+		filterKV.sort(SelectionValues.VALUE_ASC);
+		
+		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.public.dates"), TYPE, filterKV,
+				catalogFilter.isDefaultVisible());
 	}
 
 	@Override
@@ -111,6 +125,10 @@ public class LocationHandler implements CatalogFilterHandler {
 		searchParams.setLocations(locations);
 	}
 	
+	/**
+	 * We remove (but keep) the lady loading supplier until performance problems occur.
+	 */
+	@SuppressWarnings("unused")
 	private static final class LocationSupplier implements SelectionValuesSupplier {
 		
 		private final CatalogRepositoryEntrySearchParams searchParams;

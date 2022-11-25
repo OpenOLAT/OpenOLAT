@@ -7,8 +7,10 @@
 		<h4>$r.translate("cockpit.lectures")</h4>
 		$r.render("lectureBlocks")
 	</div>
+	#if($r.visible("absences"))
 	<div class="clearfix">
 		<h4>$r.translate("cockpit.absences")</h4>
 		$r.render("absences")
 	</div>
+	#end
 </fieldset>

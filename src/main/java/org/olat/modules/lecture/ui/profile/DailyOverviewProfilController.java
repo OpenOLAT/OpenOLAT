@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.profile;
 
 import java.util.Date;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -32,11 +33,14 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.DailyAbsenceNoticesController;
 import org.olat.modules.lecture.ui.coach.DailyLectureBlockOverviewController;
 import org.olat.modules.lecture.ui.coach.DayChooserController;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
+import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -47,6 +51,8 @@ import org.olat.modules.lecture.ui.event.ChangeDayEvent;
 public class DailyOverviewProfilController extends BasicController {
 
 	private final VelocityContainer mainVC;
+
+	private final LecturesSecurityCallback secCallback;
 	
 	private final DayChooserController dayChooserCtrl;
 	private final DailyAbsenceNoticesController absencesListCtrl;
@@ -55,18 +61,21 @@ public class DailyOverviewProfilController extends BasicController {
 	public DailyOverviewProfilController(UserRequest ureq, WindowControl wControl,
 			Identity profiledIdentity, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
+		this.secCallback = secCallback;
 
 		mainVC = createVelocityContainer("daily_overview");
 		
 		dayChooserCtrl = new DayChooserController(ureq, getWindowControl());
 		listenTo(dayChooserCtrl);
 		mainVC.put("day.chooser", dayChooserCtrl.getInitialComponent());
+		boolean withSelectCourses = secCallback.canSelectCoursesInDailyOverview();
 		lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(),
-				profiledIdentity, secCallback, false);
+				profiledIdentity, secCallback, withSelectCourses);
 		listenTo(lectureBlocksCtrl);
 		mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		
 		absencesListCtrl = new DailyAbsenceNoticesController(ureq, getWindowControl(), getCurrentDate(), profiledIdentity, secCallback);
+		absencesListCtrl.getInitialComponent().setVisible(secCallback.canSeeAbsencesInDailyOverview());
 		listenTo(absencesListCtrl);
 		mainVC.put("absences", absencesListCtrl.getInitialComponent());
 
@@ -103,7 +112,22 @@ public class DailyOverviewProfilController extends BasicController {
 			if(event instanceof ChangeDayEvent) {
 				updateCurrentDate();
 			}
+		} else if(source == lectureBlocksCtrl) {
+			if(event instanceof OpenRepositoryEntryEvent) {
+				OpenRepositoryEntryEvent oree = (OpenRepositoryEntryEvent)event;
+				doOpenEntryLectures(ureq, oree.getEntry());
+			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doOpenEntryLectures(UserRequest ureq, RepositoryEntry entry) {
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
+		if(secCallback.viewAs() == LectureRoles.teacher || secCallback.viewAs() == LectureRoles.mastercoach) {
+			businessPath += "[Lectures:0]";
+		} else if(secCallback.viewAs() == LectureRoles.lecturemanager) {
+			businessPath += "[LecturesAdmin:0][Participants:0]";
+		}
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 }

@@ -19,7 +19,13 @@
  */
 package org.olat.modules.catalog.filter;
 
+import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
@@ -32,8 +38,12 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.admin.CatalogFilterTaxonomyChildrenController;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +62,11 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 	public static final String TYPE = "taxonomy.level.children";
 	
 	@Autowired
+	private CatalogV2Service catalogService;
+	@Autowired
 	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private RepositoryModule repositoryModule;
 
@@ -105,19 +119,91 @@ public class TaxonomyLevelChildrenHandler implements CatalogFilterHandler {
 
 	@Override
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
-		SelectionValues childrenSV = new SelectionValues();
-		childrenSV.add(SelectionValues.entry(KEY_SHOW, translator.translate("filter.taxonomy.children.show")));
+		CatalogRepositoryEntrySearchParams searchParamsCopy = searchParams.copy();
+		searchParamsCopy.setTaxonomyLevelChildren(true);
+		
+		// This filter is only useful in microsites
+		List<TaxonomyLevel> launcherTaxonomyLevels = searchParams.getIdentToTaxonomyLevels().get(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER);
+		if (launcherTaxonomyLevels == null || launcherTaxonomyLevels.isEmpty()) {
+			return null;
+		}
+
+		List<Long> taxonomyLevelKeys = catalogService.getTaxonomyLevelsWithOffers(searchParamsCopy);
+		if (taxonomyLevelKeys == null || taxonomyLevelKeys.isEmpty()) {
+			return null;
+		}
+		
+		TaxonomyLevel launcherTaxonomyLevel = launcherTaxonomyLevels.get(0);
+		List<TaxonomyLevel> descendants = taxonomyLevelDao.getDescendants(launcherTaxonomyLevel, launcherTaxonomyLevel.getTaxonomy());
+		descendants.removeIf(level -> !taxonomyLevelKeys.contains(level.getKey()));
+		descendants.add(launcherTaxonomyLevel);
+		
+		SelectionValues taxonomyValues = getTaxonomyLevelsSV(translator, launcherTaxonomyLevel, descendants);
 		FlexiTableMultiSelectionFilter flexiTableFilter = new FlexiTableMultiSelectionFilter(
-				translator.translate("filter.taxonomy.children.label"), TYPE, childrenSV, catalogFilter.isDefaultVisible());
-		if (KEY_SHOW.equals(catalogFilter.getConfig())) {
-			flexiTableFilter.setValues(List.of(KEY_SHOW));
+				translator.translate("filter.taxonomy.children.label"), TYPE, taxonomyValues, catalogFilter.isDefaultVisible());
+		flexiTableFilter.setUserObject(new TaxonomyLevelUserObject(catalogFilter.getKey().toString(), descendants));
+		if (KEY_HIDE.equals(catalogFilter.getConfig())) {
+			flexiTableFilter.setValues(List.of(launcherTaxonomyLevel.getKey().toString()));
 		}
 		return flexiTableFilter;
+	}
+	
+	private SelectionValues getTaxonomyLevelsSV(Translator translator, TaxonomyLevel topTaxonomyLevel, List<TaxonomyLevel> taxonomyLevels) {
+		SelectionValues keyValues = new SelectionValues();
+		for (TaxonomyLevel level: taxonomyLevels) {
+			List<String> names = new ArrayList<>();
+			addParentNames(translator, names, level, topTaxonomyLevel);
+			Collections.reverse(names);
+			String value = String.join(" / ", names);
+			keyValues.add(entry(level.getKey().toString(), value));
+		}
+		keyValues.sort(VALUE_ASC);
+		return keyValues;
+	}
+	
+	private void addParentNames(Translator translator, List<String> names, TaxonomyLevel level, TaxonomyLevel topLevel) {
+		names.add(TaxonomyUIFactory.translateDisplayName(translator, level));
+		if (!level.equals(topLevel)) {
+			TaxonomyLevel parent = level.getParent();
+			if (parent != null) {
+				addParentNames(translator, names, parent, topLevel);
+			}
+		}
 	}
 
 	@Override
 	public void enrichSearchParams(CatalogRepositoryEntrySearchParams searchParams, FlexiTableFilter flexiTableFilter) {
 		List<String> taxonomyLevelKeys = ((FlexiTableMultiSelectionFilter)flexiTableFilter).getValues();
-		searchParams.setTaxonomyLevelChildren(taxonomyLevelKeys != null && taxonomyLevelKeys.contains(KEY_SHOW));
+		TaxonomyLevelUserObject taxonomyLevelUserObject = (TaxonomyLevelUserObject)flexiTableFilter.getUserObject();
+		if (taxonomyLevelKeys != null && !taxonomyLevelKeys.isEmpty()) {
+			List<TaxonomyLevel> taxonomyLevels = taxonomyLevelUserObject.getTaxonomyLevels().stream()
+					.filter(level -> taxonomyLevelKeys.contains(level.getKey().toString()))
+					.collect(Collectors.toList());
+			searchParams.getIdentToTaxonomyLevels().put(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER_OVERRIDE, taxonomyLevels);
+			searchParams.setTaxonomyLevelChildren(false);
+		} else {
+			searchParams.getIdentToTaxonomyLevels().remove(CatalogRepositoryEntrySearchParams.KEY_LAUNCHER_OVERRIDE);
+			searchParams.setTaxonomyLevelChildren(true);
+		}
+	}
+	
+	public static final class TaxonomyLevelUserObject {
+		
+		private final String ident;
+		private final List<TaxonomyLevel> taxonomyLevels;
+		
+		public TaxonomyLevelUserObject(String ident, List<TaxonomyLevel> taxonomyLevels) {
+			this.ident = ident;
+			this.taxonomyLevels = taxonomyLevels;
+		}
+		
+		public String getIdent() {
+			return ident;
+		}
+		
+		public List<TaxonomyLevel> getTaxonomyLevels() {
+			return taxonomyLevels;
+		}
+		
 	}
 }

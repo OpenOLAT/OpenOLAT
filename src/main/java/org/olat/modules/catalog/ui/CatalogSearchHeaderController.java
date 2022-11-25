@@ -125,6 +125,12 @@ public class CatalogSearchHeaderController extends FormBasicController {
 		}
 	}
 	
+	public void setExploreLinkVisibile(boolean visible) {
+		if (visible != exploreLink.isVisible()) {
+			exploreLink.setVisible(visible);
+		}
+	}
+	
 	public void setHeaderOnly(String header) {
 		if (!Objects.equals(this.header, header)) {
 			this.header = header;
@@ -140,6 +146,8 @@ public class CatalogSearchHeaderController extends FormBasicController {
 			fireEvent(ureq, TAXONOMY_ADMIN_EVENT);
 		} else if (source == searchLink) {
 			fireEvent(ureq, new CatalogSearchEvent(searchEl.getValue()));
+		} else if (source == exploreLink) {
+			fireEvent(ureq, new CatalogSearchEvent(null));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

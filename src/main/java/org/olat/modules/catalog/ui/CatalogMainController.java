@@ -104,6 +104,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 		
 		stackPanel = new BreadcrumbedStackedPanel("catalogstack", getTranslator(), this);
+		stackPanel.setCssClass("o_catalog_breadcrumb");
 		stackPanel.setInvisibleCrumb(0);
 		mainVC.put("stack", stackPanel);
 		
@@ -150,6 +151,7 @@ public class CatalogMainController extends BasicController implements Activateab
 		if (source == headerSearchCtrl) {
 			if (event instanceof CatalogSearchEvent) {
 				CatalogSearchEvent cse = (CatalogSearchEvent)event;
+				headerSearchCtrl.setExploreLinkVisibile(false);
 				doSearch(ureq, cse.getSearchString(), false, null);
 			} else if (event == CatalogSearchHeaderController.OPEN_ADMIN_EVENT) {
 				doOpenAdmin(ureq);
@@ -193,7 +195,6 @@ public class CatalogMainController extends BasicController implements Activateab
 				if (stackPanel.getLastController() == stackPanel.getRootController()) {
 					// Clicked on root breadcrumb
 					doOpenSearchHeader();
-					resetStackPanelCssClass();
 				} else if (stackPanel.getLastController() instanceof CatalogRepositoryEntryListController) {
 					// Clicked on taxonomy level in breadcrumb
 					TaxonomyLevel taxonomyLevel = ((CatalogRepositoryEntryListController)stackPanel.getLastController()).getTaxonomyLevel();
@@ -216,6 +217,7 @@ public class CatalogMainController extends BasicController implements Activateab
 	private void doOpenSearchHeader() {
 		removeAsListenerAndDispose(headerTaxonomyCtrl);
 		headerTaxonomyCtrl = null;
+		headerSearchCtrl.setExploreLinkVisibile(true);
 		headerSearchCtrl.setHeaderOnly(null);
 		mainVC.put("header", headerSearchCtrl.getInitialComponent());
 	}
@@ -243,7 +245,6 @@ public class CatalogMainController extends BasicController implements Activateab
 						? catalogRepositoryEntryState.getSpecialFilterRepositoryEntryLabel()
 						: translate("search.results");
 				stackPanel.pushController(crumbName, catalogRepositoryEntryListCtrl);
-				resetStackPanelCssClass();
 			}
 		}
 		catalogRepositoryEntryListCtrl.search(ureq, searchString, reset);
@@ -308,7 +309,6 @@ public class CatalogMainController extends BasicController implements Activateab
 		if (resourceTypes != null && !resourceTypes.isEmpty()) {
 			searchParams.getIdentToResourceTypes().put(KEY_LAUNCHER, resourceTypes);
 		}
-		resetStackPanelCssClass();
 		CatalogRepositoryEntryListController taxonomyListCtrl = new CatalogRepositoryEntryListController(ureq, swControl, stackPanel, searchParams, true);
 		listenTo(taxonomyListCtrl);
 		stackPanel.pushController(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel), taxonomyListCtrl);
@@ -320,15 +320,10 @@ public class CatalogMainController extends BasicController implements Activateab
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_TAXONOMY_ADMIN),
 				null);
-		stackPanel.setCssClass("o_catalog_breadcrumb");
 		taxonomyAdminCtrl = new CatalogTaxonomyEditController(ureq, swControl, secCallback);
 		listenTo(taxonomyAdminCtrl);
 		
 		getWindowControl().pushToMainArea(taxonomyAdminCtrl.getInitialComponent());
-	}
-
-	private void resetStackPanelCssClass() {
-		stackPanel.setCssClass("o_catalog_breadcrumb");
 	}
 
 	private void doOpenAdmin(UserRequest ureq) {

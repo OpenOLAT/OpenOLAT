@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -67,6 +68,8 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
 	private static final Logger log = Tracing.createLoggerFor(QualityGeneratorServiceImpl.class);
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private QualityGeneratorDAO generatorDao;
 	@Autowired
@@ -216,7 +219,9 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
 	private void tryToGenerateDataCollection(QualityGenerator generator) {
 		if (generator.isEnabled()) {
-			if (providerFactory.isAvailable(generator)) {
+			if (generator.getFormEntry() == null) {
+				log.warn("Evaluation form of quality data generator is not available: " + generator);
+			} else if (providerFactory.isAvailable(generator)) {
 				QualityGeneratorProvider provider = providerFactory.getProvider(generator.getType());
 				QualityGeneratorConfigsImpl configs = new QualityGeneratorConfigsImpl(generator);
 				Date now = new Date();
@@ -225,6 +230,7 @@ public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 				QualityGenerator reloadedGenerator = generatorDao.loadByKey(generator);
 				reloadedGenerator.setLastRun(now);
 				generatorDao.save(reloadedGenerator);
+				dbInstance.commit();
 				if (!dataCollections.isEmpty()) {
 					log.info(dataCollections.size() + " data collections created by generator " + generator.toString());
 				}

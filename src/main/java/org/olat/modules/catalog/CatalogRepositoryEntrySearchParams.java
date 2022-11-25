@@ -43,6 +43,7 @@ import org.olat.resource.accesscontrol.model.AccessMethod;
 public class CatalogRepositoryEntrySearchParams {
 	
 	public static final String KEY_LAUNCHER = "launcher";
+	public static final String KEY_LAUNCHER_OVERRIDE = "launcherOverride";
 	
 	public enum OrderBy {
 		key,

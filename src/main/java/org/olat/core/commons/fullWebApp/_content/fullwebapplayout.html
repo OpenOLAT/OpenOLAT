@@ -32,7 +32,6 @@ o_info.drop = true;
 o_info.o_baseURI = "$r.staticLink("")";
 o_info.i18n_noresponse_title = "$r.escapeDoubleQuotes($r.translate("server.no.response.title"))";
 o_info.i18n_noresponse = "$r.escapeDoubleQuotes($r.translate("server.no.response"))";
-o_info.i18n_topnav_more = "$r.escapeDoubleQuotes($r.translate("header.topnav.more"))";
 o_info.oo_noresponse_title = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.title"))";
 o_info.oo_noresponse = "$r.escapeJavaScript($r.translateWithPackage("org.olat.login","timeout.message"))";
 ## edu-sharing
@@ -282,12 +281,19 @@ $r.renderForce("development")
 <div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")">
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
-		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer"></a>
+		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer" aria-hidden="true"></a>
 		
 		<div class="o_collapse o_navbar-collapse">
 			## sites and tabs
 			$r.render("sitesComponent")
 			$r.render("tabsComponent")
+			## Empty more menu, filled dynamically by jquery.navbar.js if sites or tabs don't fit into navbar
+			<ul id="o_navbar_more" class="nav o_navbar-nav o_dropdown_toggle" style="display: none" role="presentation" >
+				<li>
+				<a class="dropdown-toggle" data-toggle="dropdown" href="#">$r.escapeDoubleQuotes($r.translate("header.topnav.more"))<b class="caret"></b></a>
+				<ul class="dropdown-menu dropdown-menu-right"></ul>
+				</li>
+			</ul>
 			## tools
 			#if($r.available("topnavComponent"))
 				$r.render("topnavComponent")

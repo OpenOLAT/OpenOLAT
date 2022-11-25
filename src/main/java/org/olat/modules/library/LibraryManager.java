@@ -21,15 +21,17 @@ package org.olat.modules.library;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.library.ui.CatalogItem;
+import org.olat.modules.library.model.CatalogItem;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -40,9 +42,13 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface LibraryManager {
 	
+	public static final String URL_PREFIX = "[LibrarySite:0][path=";
+	
 	public String getDirectoryPath();
 	
 	public VFSContainer getSharedFolder();
+
+	public OLATResourceable getLibraryResourceable();
 	
 	public void removeExistingLockFile();
 	
@@ -56,14 +62,19 @@ public interface LibraryManager {
 	
 	public VFSLeaf getFileByUUID(String uuid);
 	
-	public CatalogItem getCatalogItemByUUID(String uuid, Locale locale);
+	public CatalogItem getCatalogItemByUUID(String uuid, IdentityRef identity);
+
+	public List<CatalogItem> getCatalogItems(VFSMetadata parentMetadata, IdentityRef identity);
 	
+	public CatalogItem getCatalogItemsByUrl(String businessPath, IdentityRef identity);
 	
-	public List<CatalogItem> getNewCatalogItems(Date from, Locale locale);
+	public List<CatalogItem> getMostRatedCatalogItems(int numOfItems, IdentityRef identity);
 	
-	public List<CatalogItem> getNewestCatalogItems(Locale locale, int maxResult);
+	public List<CatalogItem> getNewCatalogItems(Date from, IdentityRef identity);
 	
-	public List<CatalogItem> getMostViewedCatalogItems(Locale locale, int maxResult);
+	public List<CatalogItem> getNewestCatalogItems(int maxResult, IdentityRef identity);
+	
+	public List<CatalogItem> getMostViewedCatalogItems(int maxResult, IdentityRef identity);
 	
 	
 	public PublisherData getPublisherData();

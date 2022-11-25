@@ -60,7 +60,7 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 		if (tbi != null &&  TabIndentation.defaultFormLayout == tbi.getTabIndentation()) {
 			sb.append("<div class='col-sm-offset-3'>");
 		}
-		sb.append("<ul class='nav nav-tabs");
+		sb.append("<ul role='tablist' class='nav nav-tabs");
 		String css = tb.getElementCssClass();
 		if (StringHelper.containsNonWhitespace(css)) {
 			sb.append(" ").append(css);
@@ -74,13 +74,13 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 			String tabName = tb.getDisplayNameAt(i);
 			String elementCssClass = tb.getElementCssAt(i);
 			// Render active tab as non clickable, passive tabs with link
-			sb.append("<li class='");
+			sb.append("<li role='presentation' class='");
 			if(elementCssClass != null) {
 				sb.append(elementCssClass);
 			}
 			if (i != selPane && cnt > 1) {
 				if (tb.isEnabled(i)) {
-					sb.append("'><a ");
+					sb.append("'><a role='tab' aria-selected='false' aria-controls='o_c").append(tb.getDispatchID()).append("_c' ");
 					if(tbi == null) {
 						ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, tb.isDirtyCheck(), true, new NameValuePair(TabbedPane.PARAM_PANE_ID, String.valueOf(i)));
 					} else {
@@ -97,7 +97,7 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 					  .append(StringHelper.escapeHtml(tb.getCompTrans().translate("disabled"))).append("'>");
 				}
 			} else {
-				sb.append(" active' ><a href='javascript:;'>");
+				sb.append(" active' ><a role='tab' aria-selected='true' aria-controls='o_c").append(tb.getDispatchID()).append("_c' id='o_c").append(tb.getDispatchID()).append("_a' href='javascript:;'>");
 			}
 			sb.append(tabName).append("</a></li>");
 		}
@@ -108,11 +108,15 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 
 		// now let the selected component render itself
 		Component paneToRender = tb.getTabAt(selPane);
-		sb.append("<div class='o_tabbed_pane_content'>");
+		sb.append("<div role='tabpanel' tabindex='-1' class='o_tabbed_pane_content' id='o_c").append(tb.getDispatchID()).append("_c' aria-labelledby='o_c").append(tb.getDispatchID()).append("_a'>");
 		if (paneToRender != null) {
 			renderer.render(sb, paneToRender, null);
 		}
 		sb.append("</div></div>");
+		
+		if (tb.isPanelFocus()) {
+			sb.append("<script>try {jQuery('#o_c").append(tb.getDispatchID()).append("_c').focus(); } catch(e){if(console){console.log(e);}};</script>");
+		}
 	}
 	
 	@Override
