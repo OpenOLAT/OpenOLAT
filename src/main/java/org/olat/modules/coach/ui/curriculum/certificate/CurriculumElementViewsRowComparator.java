@@ -59,7 +59,6 @@ public class CurriculumElementViewsRowComparator extends FlexiTreeNodeComparator
 		} else if(parentKey1 != null && parentKey1.equals(parentKey2)) {
 			c = compareSameParent(c1, c2);
 		} else if(parentKey1 != null && !parentKey1.equals(parentKey2)) {
-			System.out.println(parentKey1 + " " + parentKey2);
 			c = compareCurricula(c1, c2);
 		} else if(parentKey1 != null && parentKey2 != null) {
 			// This case is usually not possible
