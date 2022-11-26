@@ -197,12 +197,15 @@ public class LibraryAdminController extends FormBasicController {
 			if(sharedFolder == null) {
 				libraryModule.setLibraryEntryKey(null);
 				libraryManager.removeExistingLockFile();
+				libraryManager.setCatalogRepoEntry(null);
 			} else if(!sharedFolder.getKey().toString().equals(libraryModule.getLibraryEntryKey())) {
 				libraryManager.removeExistingLockFile();
 				libraryModule.setLibraryEntryKey(sharedFolder.getKey().toString());
+				libraryManager.setCatalogRepoEntry(sharedFolder);
 				libraryManager.lockFolderAndPreventDoubleIndexing();
 			}	
 		} else {
+			libraryManager.setCatalogRepoEntry(null);
 			libraryManager.removeExistingLockFile();
 		}
 	}

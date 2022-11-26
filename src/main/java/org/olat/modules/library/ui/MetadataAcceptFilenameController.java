@@ -59,9 +59,11 @@ public class MetadataAcceptFilenameController extends FormBasicController {
 		
 		initialFilename = item.getName();
 		filename = uifactory.addTextElement("filename", "mf.filename", -1, initialFilename, formLayout);
+		filename.setElementCssClass("o_sel_filename");
 		filename.setEnabled(false);
 		
 		newFilename = uifactory.addTextElement("newFilename", "mf.newFilename", -1, initialFilename, formLayout);
+		newFilename.setElementCssClass("o_sel_new_filename");
 		if(!validateFilename(initialFilename)) {
 			newFilename.setErrorKey("mf.newFilename.error", null);
 		}

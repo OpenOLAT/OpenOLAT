@@ -178,6 +178,7 @@ public class NotificationAcceptStepController extends StepFormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener,  UserRequest ureq) {
 		subjectTextElement = uifactory.addTextElement("acceptstep.notification.ui.subject", "acceptstep.notification.ui.subject", -1, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_SUBJECT_KEY) : "", formLayout);
 		bodyTextElement = uifactory.addTextAreaElement("acceptstep.notification.ui.body", "acceptstep.notification.ui.body", -1, 10, 30, false, false, containsRunContextKey(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) ? (String) getFromRunContext(STEPS_RUN_CONTEXT_NOTIFICATION_BODY_KEY) : "", formLayout);
+		bodyTextElement.setElementCssClass("o_sel_notification_body");
 	}
 	
 	@Override
