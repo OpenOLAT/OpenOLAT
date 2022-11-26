@@ -53,7 +53,8 @@ public class SendCatalogItemByEMailController extends SendDocumentsByEMailContro
 	
 	public SendCatalogItemByEMailController(UserRequest ureq, WindowControl wControl, CatalogItem catalogItem) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale()));
+		setTranslator(Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(SendDocumentsByEMailController.class, getLocale(), getTranslator()));
 		this.catalogItem = catalogItem;
 		
 		VFSContainer container = libraryManager.getSharedFolder();

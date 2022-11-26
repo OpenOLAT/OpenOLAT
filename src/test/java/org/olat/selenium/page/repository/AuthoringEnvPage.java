@@ -109,6 +109,13 @@ public class AuthoringEnvPage {
 			.assertOnInfos();
 	}
 	
+	public RepositoryEditDescriptionPage createSharedFolder(String title) {
+		return openCreateDropDown()
+			.clickCreate(ResourceType.sharedFolder)
+			.fillCreateForm(title)
+			.assertOnInfos();
+	}
+	
 	/**
 	 * Open the drop-down to create a new resource.
 	 * @return
@@ -360,7 +367,8 @@ public class AuthoringEnvPage {
 		wiki("FileResource.WIKI"),
 		portfolio("BinderTemplate"),
 		qti21Test("FileResource.IMSQTI21"),
-		survey("FileResource.FORM");
+		survey("FileResource.FORM"),
+		sharedFolder("FileResource.SHAREDFOLDER");
 		
 		private final String type;
 		

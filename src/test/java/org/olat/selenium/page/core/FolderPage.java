@@ -52,9 +52,7 @@ public class FolderPage {
 	
 	public FolderPage assertOnFolderCmp() {
 		By folderCmpBy = By.className("o_briefcase_foldercomp");
-		OOGraphene.waitElement(folderCmpBy, 5, browser);
-		List<WebElement> folderCmpEl = browser.findElements(folderCmpBy);
-		Assert.assertFalse(folderCmpEl.isEmpty());
+		OOGraphene.waitElement(folderCmpBy, browser);
 		return this;
 	}
 	
@@ -146,6 +144,23 @@ public class FolderPage {
 			OOGraphene.takeScreenshot("uploadFile", browser);
 			throw e;
 		}
+		return this;
+	}
+	
+	public FolderPage unzipFile(String filename) {
+		By unzipBy = By.xpath("//button[contains(@onclick,'o_TableMultiActionEvent') and contains(@onclick,'actionunzip')]");
+		browser.findElement(unzipBy).click();
+		
+		String folderName = filename.replace(".zip", "");
+		By unzippedFolderBy = By.xpath("//div[@class='o_briefcase_folder']//tr/td/a[text()[contains(.,'" + folderName + "')]][i[contains(@class,'o_filetype_folder')]]");
+		OOGraphene.waitElement(unzippedFolderBy, browser);
+		return this;
+	}
+	
+	public FolderPage selectFile(String filename) {
+		By selectBy = By.xpath("//div[@class='o_briefcase_folder']//tr[td/a[text()[contains(.,'" + filename + "')]]]/td/input[@type='checkbox']");
+		WebElement selectEl = browser.findElement(selectBy);
+		OOGraphene.check(selectEl, Boolean.TRUE);
 		return this;
 	}
 	
