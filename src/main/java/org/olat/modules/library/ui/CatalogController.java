@@ -191,11 +191,15 @@ public class CatalogController extends FormBasicController implements GenericEve
 	@Override
 	public void event(Event event) {
 		if (event instanceof UserCommentsCountChangedEvent) {
-			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent)event;	
-			processUserChangeEvent(changedEvent.getOresSubPath());
+			UserCommentsCountChangedEvent changedEvent = (UserCommentsCountChangedEvent)event;
+			if(!changedEvent.isSentByMyself(this)) {
+				processUserChangeEvent(changedEvent.getOresSubPath());
+			}
 		} else if (event instanceof UserRatingChangedEvent) {
 			UserRatingChangedEvent changedEvent = (UserRatingChangedEvent) event;
-			processUserChangeEvent(changedEvent.getOresSubPath());
+			if(!changedEvent.isSentByMyself(this)) {
+				processUserChangeEvent(changedEvent.getOresSubPath());
+			}
 		}
 	}
 	
@@ -243,25 +247,13 @@ public class CatalogController extends FormBasicController implements GenericEve
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(event == UserCommentsAndRatingsController.EVENT_COMMENT_LINK_CLICKED) {
-			//popup comments
-			UserCommentsAndRatingsController cController = (UserCommentsAndRatingsController)source;
-			CatalogItem item = (CatalogItem)cController.getUserObject();
-			if (item != null) {
-				// item is null when triggered from within the modal dialog
-				displayCommentsController(ureq, item);				
-			}
-		} else if (source == commentsModalController) {
-			removeAsListenerAndDispose(commentsController);
-			removeAsListenerAndDispose(commentsModalController);
-			commentsController = null;
-			commentsModalController = null;
-		} else if (source instanceof UserCommentsAndRatingsController && event == Event.CANCELLED_EVENT) {
+		if (source == commentsModalController) {
+			cleanUp();
+		} else if (source == commentsController && event == Event.CANCELLED_EVENT) {
 			commentsModalController.deactivate();
-			removeAsListenerAndDispose(commentsController);
-			removeAsListenerAndDispose(commentsModalController);
-			commentsController = null;
-			commentsModalController = null;			
+			CatalogItem item = (CatalogItem)commentsController.getUserObject();
+			updateCatalogItem(item.getMetaInfo().getUuid());
+			cleanUp();
 		} else if (source == sendDocController) {
 			sendMailModalController.deactivate();
 			cleanUp();
@@ -274,9 +266,13 @@ public class CatalogController extends FormBasicController implements GenericEve
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(sendDocController);
+		removeAsListenerAndDispose(commentsController);
 		removeAsListenerAndDispose(sendMailModalController);
+		removeAsListenerAndDispose(commentsModalController);
 		sendDocController = null;
+		commentsController = null;
 		sendMailModalController = null;
+		commentsModalController = null;	
 	}
 	
 	private void toggleThumbnail() {
@@ -327,9 +323,11 @@ public class CatalogController extends FormBasicController implements GenericEve
 		commentsController =
 				new UserCommentsAndRatingsController(ureq, getWindowControl(), libraryOres, item.getId(), secCallback, null, true, true, true);
 		commentsController.expandComments(ureq);
+		commentsController.setUserObject(item);
 		listenTo(commentsController);
 
-		commentsModalController = new CloseableModalController(getWindowControl(), translate("close"), commentsController.getInitialComponent());
+		String title = translate("comment.title", item.getName());
+		commentsModalController = new CloseableModalController(getWindowControl(), translate("close"), commentsController.getInitialComponent(), true, title);
 		listenTo(commentsModalController);
 		commentsModalController.activate();
 	}

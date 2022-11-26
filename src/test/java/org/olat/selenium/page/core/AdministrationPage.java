@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
+import org.olat.selenium.page.library.LibraryAdminPage;
 import org.olat.selenium.page.qpool.QuestionPoolAdminPage;
 import org.olat.selenium.page.taxonomy.TaxonomyAdminPage;
 import org.olat.selenium.page.tracing.ContactTracingAdminPage;
@@ -134,6 +135,15 @@ public class AdministrationPage {
 		By configurationFormBy = By.cssSelector("fieldset.o_sel_lectures_configuration_form");
 		OOGraphene.waitElement(configurationFormBy, browser);
 		return new LectureAdminSettingsPage(browser);
+	}
+	
+	public LibraryAdminPage openLibrarySettings() {
+		selectModules();
+		openSubMenu("o_sel_library");
+		
+		By configurationFormBy = By.cssSelector("fieldset.o_sel_library_configuration");
+		OOGraphene.waitElement(configurationFormBy, browser);
+		return new LibraryAdminPage(browser);
 	}
 	
 	public AdministrationPage openGroupSettings() {

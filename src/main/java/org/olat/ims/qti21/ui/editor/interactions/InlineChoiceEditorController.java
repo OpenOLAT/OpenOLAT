@@ -127,7 +127,6 @@ public class InlineChoiceEditorController extends FormBasicController implements
 		VFSContainer itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		String question = itemBuilder.getQuestion();
-		System.out.println(question);
 		textEl = uifactory.addRichTextElementForQTI21("desc", "form.imd.descr", question, 8, -1, itemContainer,
 				formLayout, ureq.getUserSession(),  getWindowControl());
 		textEl.addActionListener(FormEvent.ONCLICK);
