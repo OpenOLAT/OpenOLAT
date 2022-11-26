@@ -193,7 +193,6 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		menuTree.setExpandSelectedNode(false);
 		menuTree.addListener(this);
 		initializeMenuTreeAndCatalog(ureq);
-		menuTree.setOpenNodeIds(Collections.singleton(menuTree.getTreeModel().getRootNode().getIdent()));
 
 		overviewVC = createVelocityContainer("overview");
 		overviewVC.contextPut("cssIconClass", ICON_CSS_CLASS);
@@ -226,6 +225,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 		}
 		uploadLink = LinkFactory.createButton("library.toolbox.upload", overviewVC, this);
 		uploadLink.setCustomEnabledLinkCSS("btn btn-primary");
+		uploadLink.setElementCssClass("o_sel_upload_document");
 		
 		//search
 		searchCtr = new SearchQueryController(ureq, getWindowControl());
@@ -405,53 +405,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			}
 		} else if (source == uploadController) {
 			if (event == Event.DONE_EVENT) {
-				String newFileName = uploadController.getNewFileName();
-				uploadModalController.deactivate();
-				cleanUpUploadController();
-				if (sharedFolder != null) {
-					// notify user
-					showInfo("library.uploadnotification.success", newFileName);
-					// create an e-mailer
-					String contact = libraryModule.getEmailContactsToNotifyAfterUpload();
-					if(StringHelper.containsNonWhitespace(contact)) {
-						// create an e-mailer and send the mail.
-						try {
-							MailBundle bundle = new MailBundle();
-							bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
-							bundle.setContent(translate("library.uploadnotification.subject"),
-									translate("library.uploadnotification.body", newFileName));
-							bundle.setTo(contact);
-							mailManager.sendMessage(bundle);
-						} catch (Exception e) {
-							logWarn("Could not send mail to owner group of library shared folder.", e);
-						}
-						
-					} else {
-						// Retrieve a list of the shared folder's owners.
-						RepositoryEntry re = libraryManager.getCatalogRepoEntry();
-						List<Identity> sharedFolderOwners = repositoryService
-								.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
-						
-						// Put these owners into a list of ContactLists.
-						List<ContactList> recipients = new ArrayList<>();
-						for (Identity identity : sharedFolderOwners) {
-							ContactList contactList = new ContactList(identity.getName());
-							contactList.add(identity);
-							recipients.add(contactList);
-						}
-						try {
-							MailBundle bundle = new MailBundle();
-							bundle.setContent(translate("library.uploadnotification.subject"),
-									translate("library.uploadnotification.body", newFileName));
-							bundle.setContactLists(recipients);
-							mailManager.sendMessage(bundle);
-						} catch (Exception e) {
-							logWarn("Could not send mail to owner group of library shared folder.", e);
-						}
-					}
-				} else {
-					logWarn("Could not send mail to owner group of library shared folder.", null);
-				}
+				doUploadDocument();
 			} else if (event == Event.CANCELLED_EVENT) {
 				uploadModalController.deactivate();
 				cleanUpUploadController();
@@ -577,25 +531,21 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	 * Displays the catalog based on the shared folder.
 	 */
 	private void initializeMenuTreeAndCatalog(UserRequest ureq) {
+		removeAsListenerAndDispose(catalogCtr);
 		sharedFolder = libraryManager.getSharedFolder();
 		if (sharedFolder != null) {
-			// Build Catalog controller
-			if (catalogCtr == null) {
-				catalogCtr = new CatalogController(ureq, getWindowControl(), mapperBaseURL, thumbnailMapperBaseURL, libraryOres);
-				listenTo(catalogCtr);
-			}
+			// Rebuild Catalog controller
+			catalogCtr = new CatalogController(ureq, getWindowControl(), mapperBaseURL, thumbnailMapperBaseURL, libraryOres);
+			listenTo(catalogCtr);
 
 			// build a tree model
 			treeModel = new LibraryTreeModel(sharedFolder, new VFSContainerFilter(), new TitleComparator(getLocale()), getLocale(), true);
 			treeModel.getRootNode().setTitle(translate("main.menu.title"));
 			menuTree.setTreeModel(treeModel);
-
 		} else {
 			// remove catalog controller
-			if (catalogCtr != null) {
-				removeAsListenerAndDispose(catalogCtr);
-				catalogCtr = null;
-			}
+			catalogCtr = null;
+
 			// dummy model (empty)
 			GenericTreeNode rootNode = new GenericTreeNode();
 			rootNode.setTitle(translate("main.menu.title"));
@@ -604,6 +554,8 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			gtm.setRootNode(rootNode);
 			menuTree.setTreeModel(gtm);
 		}
+
+		menuTree.setOpenNodeIds(Collections.singleton(menuTree.getTreeModel().getRootNode().getIdent()));
 	}
 	
 	@Override
@@ -697,6 +649,56 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 			reviewLayoutController.activate();
 		} else {
 			showError("library.review.error");
+		}
+	}
+	
+	private void doUploadDocument() {
+		String newFileName = uploadController.getNewFileName();
+		uploadModalController.deactivate();
+		cleanUpUploadController();
+		if (sharedFolder != null) {
+			// notify user
+			showInfo("library.uploadnotification.success", newFileName);
+			// create an e-mailer
+			String contact = libraryModule.getEmailContactsToNotifyAfterUpload();
+			if(StringHelper.containsNonWhitespace(contact)) {
+				// create an e-mailer and send the mail.
+				try {
+					MailBundle bundle = new MailBundle();
+					bundle.setFrom(WebappHelper.getMailConfig("mailReplyTo"));
+					bundle.setContent(translate("library.uploadnotification.subject"),
+							translate("library.uploadnotification.body", newFileName));
+					bundle.setTo(contact);
+					mailManager.sendMessage(bundle);
+				} catch (Exception e) {
+					logWarn("Could not send mail to owner group of library shared folder.", e);
+				}
+				
+			} else {
+				// Retrieve a list of the shared folder's owners.
+				RepositoryEntry re = libraryManager.getCatalogRepoEntry();
+				List<Identity> sharedFolderOwners = repositoryService
+						.getMembers(re, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+				
+				// Put these owners into a list of ContactLists.
+				List<ContactList> recipients = new ArrayList<>();
+				for (Identity identity : sharedFolderOwners) {
+					ContactList contactList = new ContactList(identity.getName());
+					contactList.add(identity);
+					recipients.add(contactList);
+				}
+				try {
+					MailBundle bundle = new MailBundle();
+					bundle.setContent(translate("library.uploadnotification.subject"),
+							translate("library.uploadnotification.body", newFileName));
+					bundle.setContactLists(recipients);
+					mailManager.sendMessage(bundle);
+				} catch (Exception e) {
+					logWarn("Could not send mail to owner group of library shared folder.", e);
+				}
+			}
+		} else {
+			logWarn("Could not send mail to owner group of library shared folder.", null);
 		}
 	}
 }
