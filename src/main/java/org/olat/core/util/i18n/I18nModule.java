@@ -118,7 +118,7 @@ public class I18nModule extends AbstractSpringModule {
 	private final Set<String> overlayLanguagesKeys = new HashSet<>();
 	private final Set<String> enabledLanguagesKeys = new HashSet<>();
 	// keys: String language code, values: gender strategy
-	private final Map<String, GenderStrategy> genderStrategies = new HashMap<String,GenderStrategy>();
+	private final Map<Locale, GenderStrategy> genderStrategies = new HashMap<Locale,GenderStrategy>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
@@ -595,17 +595,21 @@ public class I18nModule extends AbstractSpringModule {
 	
 	private void doInitGenderStrategies() {
 		for (String language : availableLanguages) {
-			// only use first part of language without country etc
-			String langKey = language.split("_")[0];
-			String configValue = getStringPropertyValue("genderStrategy." + langKey, null);
-			GenderStrategy genderStrategy = null;
-			if (StringHelper.containsNonWhitespace(configValue)) {
-				genderStrategy = GenderStrategy.valueOf(configValue.trim());
+			String langKey = language;
+			Locale locale = getAllLocales().get(langKey);
+			if (locale != null) {				
+				String configValue = getStringPropertyValue("genderStrategy." + langKey, null);
+				GenderStrategy genderStrategy = null;
+				if (StringHelper.containsNonWhitespace(configValue)) {
+					genderStrategy = GenderStrategy.valueOf(configValue.trim());
+				}
+				if (genderStrategy == null) {
+					genderStrategy = GenderStrategy.star; // default;
+				}				
+				genderStrategies.put(locale, genderStrategy);
+			} else {
+				log.error("Locale for key::" + langKey + " not found in allLocales.");
 			}
-			if (genderStrategy == null) {
-				genderStrategy = GenderStrategy.star; // default;
-			}
-			genderStrategies.put(langKey, genderStrategy);
 		}		
 	}
 
@@ -765,8 +769,7 @@ public class I18nModule extends AbstractSpringModule {
 	}
 	
 	public GenderStrategy getGenderStrategy(Locale locale) {
-		String langKey = locale.getLanguage();
-		GenderStrategy strategy = genderStrategies.get(langKey);
+		GenderStrategy strategy = genderStrategies.get(locale);
 		if (strategy == null) {
 			strategy = GenderStrategy.star; // default;
 		}
@@ -774,11 +777,12 @@ public class I18nModule extends AbstractSpringModule {
 	}
 	
 	public void setGenderStrategy(Locale locale, GenderStrategy genderStrategy) {
-		String langKey = locale.getLanguage();
-		genderStrategies.put(langKey, genderStrategy);
+		genderStrategies.put(locale, genderStrategy);
 		// persist in module config
+		String langKey = getLocaleKey(locale);
+		langKey = langKey.split("__")[0]; // remove overlay
 		setStringProperty("genderStrategy." + langKey, genderStrategy.name(), true);
-		I18nManager.getInstance().clearCaches();
+		reInitializeAndFlushCache();
 	}
 	
 
@@ -976,6 +980,7 @@ public class I18nModule extends AbstractSpringModule {
 		dot,
 		slash,
 		slashDash,
+		dash,
 		camelCase
 	}
 }

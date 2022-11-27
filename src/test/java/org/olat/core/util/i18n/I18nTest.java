@@ -557,7 +557,6 @@ public class I18nTest extends OlatTestCase {
 	
 	@Test
 	public void testFindI18nKeysByOverlayValue_fuzzyMatch() {
-		i18nMgr.setCachingEnabled(true);
 		assertTrue(Locale.GERMAN.equals(I18nModule.getDefaultLocale()));
 		
 		String bundleName = "org.olat.core.util.i18n.junittestdata.findinoverlay";
@@ -611,9 +610,10 @@ public class I18nTest extends OlatTestCase {
 	
 	/**
 	 * Test method i18nManager.getLocalizedString() with resolvePropertiesInternalKeys()
+	 * Named xx to run testcase last
 	 */
 	@Test
-	public void testResolvePropertiesInternalKeys() {
+	public void xxtestResolvePropertiesInternalKeys() {
 		String bundleName = "org.olat.core.util.i18n.junittestdata.subtest";
 		Locale locale = Locale.GERMAN;
 		// first tests with cache enabled
@@ -649,9 +649,10 @@ public class I18nTest extends OlatTestCase {
 	/**
 	 * Test method i18nManager.aatestGenderStrategy()
 	 * Named aa to run testcase first
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void aatestGenderStrategy() {		
+	public void aatestGenderStrategy() throws InterruptedException {		
 		String bundleName = "org.olat.core.util.i18n.junittestdata";
 		Locale locale = Locale.GERMAN;
 		i18nMgr.setCachingEnabled(true);
@@ -671,26 +672,44 @@ public class I18nTest extends OlatTestCase {
 		
 		// Test other strategies
 		i18nModule.setGenderStrategy(locale, GenderStrategy.colon);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebe:r Benutzer:in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die Teilnehmer:innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 
 		i18nModule.setGenderStrategy(locale, GenderStrategy.middleDot);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebe⸱r Benutzer⸱in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die Teilnehmer⸱innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 
 		i18nModule.setGenderStrategy(locale, GenderStrategy.dot);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebe.r Benutzer.in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die Teilnehmer.innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 
 		i18nModule.setGenderStrategy(locale, GenderStrategy.slash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebe/r Benutzer/in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die Teilnehmer/innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 
 		i18nModule.setGenderStrategy(locale, GenderStrategy.slashDash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebe/-r Benutzer/-in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die Teilnehmer/-innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 
+		i18nModule.setGenderStrategy(locale, GenderStrategy.dash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe-r Benutzer-in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer-innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
 		i18nModule.setGenderStrategy(locale, GenderStrategy.camelCase);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
 		assertEquals("Guten Tag liebeR BenutzerIn", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
 		assertEquals("Die TeilnehmerInnenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
 	}

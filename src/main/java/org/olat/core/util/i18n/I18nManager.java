@@ -1120,6 +1120,9 @@ public class I18nManager {
 		case slash:
 			// Old-school slash-separator without dash
 			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1/$3");
+		case dash:
+			// Old-school dash-separator
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1-$3");
 		case camelCase:	{	
 			// camelCase: no separator and second ending starting with upper-case (aka Binnen-I)
 			Matcher m = GENDER_ENDING_PATTERN.matcher(msg);
