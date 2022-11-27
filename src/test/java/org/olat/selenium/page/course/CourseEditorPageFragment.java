@@ -440,7 +440,7 @@ public class CourseEditorPageFragment {
 		OOGraphene.waitBusy(browser);
 		
 		//double check that the resource is selected (search the preview link)
-		By previewLink = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
+		By previewLink = By.xpath("//div[@class='o_tabbed_pane_content']//a/span[text()[contains(.,'" + resourceTitle + "')]]");
 		OOGraphene.waitElement(previewLink, browser);
 		return this;
 	}
