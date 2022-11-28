@@ -448,8 +448,10 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public void setFullyAssessed(Boolean fullyAssessed) {
 		Boolean previousFullyAssessed = getFullyAssessed();
-		if (fullyAssessed != null && fullyAssessed.booleanValue() && !Objects.equals(fullyAssessed, previousFullyAssessed)) {
-			fullyAssessedDate = new Date();
+		if (fullyAssessed != null && fullyAssessed.booleanValue()) {
+			if (!Objects.equals(fullyAssessed, previousFullyAssessed)) {
+				fullyAssessedDate = new Date();
+			}
 		} else {
 			fullyAssessedDate = null;
 		}
