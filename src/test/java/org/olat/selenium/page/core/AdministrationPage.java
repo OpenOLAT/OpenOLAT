@@ -131,6 +131,7 @@ public class AdministrationPage {
 	public LectureAdminSettingsPage openLecturesSettings() {
 		selectModules();
 		openSubMenu("o_sel_lectures");
+		OOGraphene.waitBusyAndScrollTop(browser);
 		
 		By configurationFormBy = By.cssSelector("fieldset.o_sel_lectures_configuration_form");
 		OOGraphene.waitElement(configurationFormBy, browser);
@@ -140,6 +141,7 @@ public class AdministrationPage {
 	public LibraryAdminPage openLibrarySettings() {
 		selectModules();
 		openSubMenu("o_sel_library");
+		OOGraphene.waitBusyAndScrollTop(browser);
 		
 		By configurationFormBy = By.cssSelector("fieldset.o_sel_library_configuration");
 		OOGraphene.waitElement(configurationFormBy, browser);

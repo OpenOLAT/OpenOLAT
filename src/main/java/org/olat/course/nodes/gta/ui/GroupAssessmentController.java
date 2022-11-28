@@ -367,10 +367,13 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			if(groupDocsLayoutCont != null) {
 				groupDocsLayoutCont.setVisible(true);
-				for (File assessmentDoc : modelInfos.getAssessmentDocs()) {
-					File targetFile = new File(assessmentDocsTmpDir, assessmentDoc.getName());
-					FileUtils.copyFileToFile(assessmentDoc, targetFile, false);
-					updateAssessmentDocsUI();
+				List<File> assessmentDocs = modelInfos.getAssessmentDocs();
+				if(assessmentDocs != null) {
+					for (File assessmentDoc : modelInfos.getAssessmentDocs()) {
+						File targetFile = new File(assessmentDocsTmpDir, assessmentDoc.getName());
+						FileUtils.copyFileToFile(assessmentDoc, targetFile, false);
+						updateAssessmentDocsUI();
+					}
 				}
 			}
 			if(groupUploadDocsEl != null) {
