@@ -802,6 +802,41 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getBusinessGroupsToSoftDeleteWithEmailAfterResponseTime() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-22");
+		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 22.1", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		group1 = setInactivationDate(group1, BusinessGroupStatusEnum.inactive, DateUtils.addDays(new Date(), -210));
+		((BusinessGroupImpl)group1).setSoftDeleteEmailDate(DateUtils.addDays(new Date(), -60));
+		group1 = businessGroupDao.merge(group1);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(coach, "Group cycle 22.2", "", LTI13Service.LTI_GROUP_TYPE,
+				-1, -1, false, false, null);
+		group2 = setInactivationDate(group2, BusinessGroupStatusEnum.inactive, DateUtils.addDays(new Date(), -210));
+		((BusinessGroupImpl)group2).setSoftDeleteEmailDate(DateUtils.addDays(new Date(), -10));
+		group2 = businessGroupDao.merge(group2);
+		dbInstance.commitAndCloseSession();
+
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(coach, "Group cycle 22.3", "", LTI13Service.LTI_GROUP_TYPE,
+				-1, -1, false, false, null);
+		group3 = setInactivationDate(group3, BusinessGroupStatusEnum.inactive, DateUtils.addDays(new Date(), -210));
+		dbInstance.commitAndCloseSession();
+		
+		Date emailDate = DateUtils.addDays(new Date(), -30);
+		List<BusinessGroup> businessGroupsToSoftDelete = lifecycleManager.getBusinessGroupsToSoftDeleteAfterResponseTime(emailDate);
+		Assert.assertNotNull(businessGroupsToSoftDelete);
+		Assert.assertTrue(businessGroupsToSoftDelete.contains(group1));
+		Assert.assertFalse(businessGroupsToSoftDelete.contains(group2));
+		Assert.assertFalse(businessGroupsToSoftDelete.contains(group3));
+		
+		for(BusinessGroup businessGroupToInactivate:businessGroupsToSoftDelete) {
+			assertThat(businessGroupToInactivate.getGroupStatus())
+				.isIn(BusinessGroupStatusEnum.inactive);
+		}
+	}
+	
+	@Test
 	public void softDeleteASingleInformedBusinessGroupWithCopyEmail() {
 		businessGroupModule.setAutomaticGroupSoftDeleteEnabled("enabled");
 		businessGroupModule.setMailBeforeSoftDelete(true);

@@ -516,7 +516,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select bgi from businessgroup as bgi")
 		  .where()
-		  .append(" bgi.status=:status and bgi.excludeFromAutoLifecycle=false")
+		  .append(" bgi.status=:status")
 		  .and().append("(bgi.inactivationEmailDate<:emailDate)")
 		  .and().append("(bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
 		
@@ -601,7 +601,7 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		List<BusinessGroup> businessGroups;
 		if(sendMailBeforeDeactivation) {
 			Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-			businessGroups = getBusinessGroupsToSoftDelete(lastUsageDate, emailBeforeDate);
+			businessGroups = getBusinessGroupsToSoftDeleteAfterResponseTime(emailBeforeDate);
 		} else {
 			businessGroups = getBusinessGroupsToSoftDelete(lastUsageDate, null);
 		}
@@ -611,12 +611,10 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 	@Override
 	public void softDeleteBusinessGroupsAfterResponseTime(Set<BusinessGroup> vetoed) {
-		int numOfDaysBeforeSoftDelete = businessGroupModule.getNumberOfInactiveDayBeforeSoftDelete();
 		int numOfDaysBeforeEmail = businessGroupModule.getNumberOfDayBeforeSoftDeleteMail();
-		
-		Date lastUsageDate = getDate(numOfDaysBeforeSoftDelete);
+
 		Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-		List<BusinessGroup> businessGroups = getBusinessGroupsToSoftDelete(lastUsageDate, emailBeforeDate);
+		List<BusinessGroup> businessGroups = getBusinessGroupsToSoftDeleteAfterResponseTime(emailBeforeDate);
 	
 		softDeleteBusinessGroups(businessGroups, vetoed);
 		dbInstance.commitAndCloseSession();
@@ -752,6 +750,18 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			query.setParameter("lastUsage", usageDate, TemporalType.TIMESTAMP);
 		}
 		return query.getResultList();
+	}
+	
+	public List<BusinessGroup> getBusinessGroupsToSoftDeleteAfterResponseTime(Date emailBeforeDate) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select bgi from businessgroup as bgi")
+		  .where().append(" bgi.status=:status and bgi.softDeleteEmailDate<:emailDate");	
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), BusinessGroup.class)
+				.setParameter("status", BusinessGroupStatusEnum.inactive.name())
+				.setParameter("emailDate", emailBeforeDate, TemporalType.TIMESTAMP)
+				.getResultList();
 	}
 	
 	public List<BusinessGroup> getBusinessGroupsToDefinitivelyDelete(Date usageDate) {
