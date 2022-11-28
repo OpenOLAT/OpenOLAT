@@ -396,6 +396,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		targetArea.clearError();
 		try {
 			String val = targetArea.getValue();
+			// first resolve any gender */: or whatever thing before checking for {0} style input
+			val = i18nMgr.applyGenderStrategy(currentItem.getLocale(), val);
 			MessageFormat.format(val, "1", "2", "3");
 		} catch (IllegalArgumentException e) {
 			targetArea.setErrorKey("edit.error.invalid.item", new String[] { e.getLocalizedMessage() });

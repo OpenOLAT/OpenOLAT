@@ -315,7 +315,7 @@ public class I18nManager {
 		// file
 		if (resolveRecursively && (!cachingEnabled || properties != null)) {
 			msg = resolveValuesInternalKeys(locale, bundleName, key, properties, overlayEnabled, recursionLevel, msg);
-			msg = applyGenderEnding(locale, msg);
+			msg = applyGenderStrategy(locale, msg);
 		}
 
 		// Add markup code to identify translated strings
@@ -1002,7 +1002,7 @@ public class I18nManager {
 			String key = (String) keyObj;
 			String value = properties.getProperty(key);
 			String resolvedValue = resolveValuesInternalKeys(locale, bundleName, key, properties, overlayEnabled, recursionLevel, value);
-			resolvedValue = applyGenderEnding(locale, resolvedValue);
+			resolvedValue = applyGenderStrategy(locale, resolvedValue);
 			// Set new value
 			properties.setProperty(key, resolvedValue);
 		}
@@ -1099,7 +1099,7 @@ public class I18nManager {
 	 * @param msg The raw message
 	 * @return converted message
 	 */
-	private String applyGenderEnding(Locale locale, String msg) {
+	public String applyGenderStrategy(Locale locale, String msg) {
 		GenderStrategy strategy = i18nModule.getGenderStrategy(locale);
 		switch (strategy) {
 		case star:
