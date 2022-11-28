@@ -1987,7 +1987,7 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void survey()
+	public void courseWithSurvey()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("Maximilien");

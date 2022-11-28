@@ -27,6 +27,7 @@ import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.MyCoursesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
+import org.olat.selenium.page.library.LibraryPage;
 import org.olat.selenium.page.qpool.QuestionPoolPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.CatalogAdminPage;
@@ -57,6 +58,7 @@ public class NavigationPage {
 	private static final By catalogBy = By.cssSelector("li.o_site_catalog > a");
 	private static final By catalogAdministrationBy = By.cssSelector("li.o_site_catalog_admin > a");
 	private	static final By groupsBy = By.cssSelector("li.o_site_groups > a");
+	private	static final By libraryBy = By.cssSelector("li.f_site_library > a");
 	
 	public static final By myCoursesAssertBy = By.xpath("//div[contains(@class,'o_segments')]//a[contains(@onclick,'search.mycourses.student')]");
 	public static final By portalAssertBy = By.className("o_portal");
@@ -142,6 +144,11 @@ public class NavigationPage {
 		return GroupsPage.getPage(currentBrowser);
 	}
 	
+	public LibraryPage openLibrary(WebDriver currentBrowser) {
+		navigate(libraryBy);
+		return LibraryPage.getPage(currentBrowser);
+	}
+
 	private void navigate(By linkBy) {
 		OOGraphene.waitElementPresence(linkBy, 5, browser);
 		List<WebElement> links = browser.findElements(linkBy);

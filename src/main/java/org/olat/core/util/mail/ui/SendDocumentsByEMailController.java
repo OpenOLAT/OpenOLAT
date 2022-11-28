@@ -171,6 +171,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		return translate("send.mail.title");
 	}
 
+	@Override
 	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		VFSContainer rootContainer = folderComponent.getRootContainer();
@@ -513,8 +514,6 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		fireEvent(ureq, FolderCommand.FOLDERCOMMAND_FINISHED);
 	}
 	
-	
-	
 	protected void doAddEmail(UserRequest ureq) {
 		String title = translate("add.email");
 		removeAsListenerAndDispose(emailCalloutCtrl);
@@ -550,7 +549,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		MailHelper.printErrorsAndWarnings(result, getWindowControl(), detailedErrorOutput, ureq.getLocale());
 	}
 
-	public class FileInfo {
+	public static class FileInfo {
 		private final String filename;
 		private final String sizeInMB;
 		private final String cssClass;

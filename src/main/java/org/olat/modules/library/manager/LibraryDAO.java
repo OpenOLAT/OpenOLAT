@@ -182,7 +182,7 @@ public class LibraryDAO {
 		  .append("   thumb.owner.key=metadata.key")
 		  .append(" ) as numOfThumbnails")
 		  .append(" from filemetadata metadata")
-		  .where().append("metadata.filename<>'.noFolderIndexing' and metadata.filename<>'.DS_Store'");
+		  .where().append("metadata.filename<>'.noFolderIndexing' and metadata.filename<>'.DS_Store' and metadata.directory=false");
 		return sb;
 	}
 	

@@ -96,6 +96,7 @@ public class LibraryAdminController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("library.configuration.title");
+		formLayout.setElementCssClass("o_sel_library_configuration");
 		
 		boolean enabled = libraryModule.isEnabled();
 		String[] onValues = new String[] { translate("on") };
@@ -105,11 +106,13 @@ public class LibraryAdminController extends FormBasicController {
 		
 		sharedFolderNameEl = uifactory.addStaticTextElement("library.shared.folder", "library.shared.folder",
 				translate("library.no.sharedfolder"), formLayout);
+		sharedFolderNameEl.setElementCssClass("o_sel_selected_shared_folder");
 		
 		sharedFolderCont = FormLayoutContainer.createButtonLayout("sharedButtons", getTranslator());
 		formLayout.add(sharedFolderCont);
 		removeSharedFolderButton = uifactory.addFormLink("remove.shared.folder", sharedFolderCont, Link.BUTTON);
 		addSharedFolderButton = uifactory.addFormLink("add.shared.folder", sharedFolderCont, Link.BUTTON);
+		addSharedFolderButton.setElementCssClass("o_sel_add_shared_folder");
 		
 		String mailAfterUpload = libraryModule.getEmailContactsToNotifyAfterUpload();
 		mailAfterUploadEl = uifactory.addTextElement("library.configuration.mail.after.upload", 256, mailAfterUpload, formLayout);
@@ -194,12 +197,15 @@ public class LibraryAdminController extends FormBasicController {
 			if(sharedFolder == null) {
 				libraryModule.setLibraryEntryKey(null);
 				libraryManager.removeExistingLockFile();
+				libraryManager.setCatalogRepoEntry(null);
 			} else if(!sharedFolder.getKey().toString().equals(libraryModule.getLibraryEntryKey())) {
 				libraryManager.removeExistingLockFile();
 				libraryModule.setLibraryEntryKey(sharedFolder.getKey().toString());
+				libraryManager.setCatalogRepoEntry(sharedFolder);
 				libraryManager.lockFolderAndPreventDoubleIndexing();
 			}	
 		} else {
+			libraryManager.setCatalogRepoEntry(null);
 			libraryManager.removeExistingLockFile();
 		}
 	}

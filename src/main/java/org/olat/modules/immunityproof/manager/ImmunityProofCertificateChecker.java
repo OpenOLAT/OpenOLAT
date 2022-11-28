@@ -150,8 +150,8 @@ public class ImmunityProofCertificateChecker extends Thread {
 
 			if (exitValue != 0 || !signaturAndKeyAreValid) {
 				context.setCertificateFound(false);
-				System.out.println(output);
-				System.out.println(error);
+				log.debug(output);
+				log.error(error);
 				return;
 			}
 
