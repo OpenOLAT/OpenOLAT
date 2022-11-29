@@ -309,12 +309,8 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 			return;
 		}
 		
-		int numOfDaysReactivation = businessGroupModule.getNumberOfDayReactivationPeriod();
-		Date reactivationDatebefore = getDate(numOfDaysReactivation);
-
 		Date emailBeforeDate = getDate(numOfDaysBeforeEmail);
-		List<BusinessGroup> businessGroups = getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, reactivationDatebefore);
-		
+		List<BusinessGroup> businessGroups = getBusinessGroupsToInactivateAfterResponseTime(emailBeforeDate, null);
 		inactivateBusinessGroups(businessGroups, vetoed);
 		dbInstance.commitAndCloseSession();
 	}
@@ -517,15 +513,20 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 		sb.append("select bgi from businessgroup as bgi")
 		  .where()
 		  .append(" bgi.status=:status")
-		  .and().append("(bgi.inactivationEmailDate<:emailDate)")
-		  .and().append("(bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
+		  .and().append("(bgi.inactivationEmailDate<:emailDate)");
 		
-		return dbInstance.getCurrentEntityManager()
+		if(reactivationDateLimit != null) {
+			sb.and().append("(bgi.reactivationDate is null or bgi.reactivationDate<:reactivationDateLimit)");
+		}
+		
+		TypedQuery<BusinessGroup> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("status", BusinessGroupStatusEnum.active.name())
-				.setParameter("reactivationDateLimit", reactivationDateLimit)
-				.setParameter("emailDate", emailBeforeDate)
-				.getResultList();
+				.setParameter("emailDate", emailBeforeDate);
+		if(reactivationDateLimit != null) {
+			query.setParameter("reactivationDateLimit", reactivationDateLimit);
+		}
+		return query.getResultList();
 	}
 	
 	private void appendBusinessGroupTypesRestrictions(QueryBuilder sb) {

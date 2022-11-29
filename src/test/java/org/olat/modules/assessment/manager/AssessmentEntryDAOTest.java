@@ -553,14 +553,17 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
 				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
-		
 		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
 		
 		nodeAssessment.setFullyAssessed(Boolean.TRUE);
 		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
 		dbInstance.commitAndCloseSession();
-		
 		Assert.assertNotNull(nodeAssessment.getFullyAssessedDate());
+		
+		nodeAssessment.setFullyAssessed(Boolean.FALSE);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
 		
 		nodeAssessment.setFullyAssessed(Boolean.FALSE);
 		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
@@ -570,7 +573,11 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment.setFullyAssessed(Boolean.TRUE);
 		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
 		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(nodeAssessment.getFullyAssessedDate());
 		
+		nodeAssessment.setFullyAssessed(Boolean.TRUE);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(nodeAssessment.getFullyAssessedDate());
 		
 		nodeAssessment.setFullyAssessed(null);

@@ -62,7 +62,7 @@ public interface BusinessGroupLifecycleManager {
 	 * The business group need to meet several conditions to be inactivated, last usage
 	 * must be greater than the number of days without a visit of one of its members,
 	 * the email must have been sent the number of days specified by the configuration,
-	 * not be in the reactivation period and not be in the veto list.
+	 * not be in the veto list, reactivation is ignored.
 	 * 
 	 * @param vetoed A list of business group which are excluded of the inactivation
 	 */
