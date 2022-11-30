@@ -29,6 +29,7 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
+import org.olat.commons.calendar.ui.components.FullCalendarComponent.CalendarEventId;
 import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIFormEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
@@ -231,7 +232,7 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		}
 		
 		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
+			CalendarEventId uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
 			getRootForm().fireFormEvent(ureq, new CalendarGUIMoveEvent(this, rEvent, cal, day, minute, allDay));
@@ -256,7 +257,7 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		}
 		
 		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
+			CalendarEventId uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent rEvent = getCurrenceKalendarEvent(cal, eventId);
 			getRootForm().fireFormEvent(ureq, new CalendarGUIResizeEvent(this, rEvent, cal, minute, allDay));
@@ -294,7 +295,7 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		KalendarEvent event = component.getCalendarEvent(eventId);
 		
 		if(component.isOccurenceOfCalendarEvent(eventId) || component.isReccurenceOfCalendarEvent(eventId)) {
-			String uid = component.getCalendarEventUid(eventId);
+			CalendarEventId uid = component.getCalendarEventUid(eventId);
 			KalendarRenderWrapper cal = component.getCalendarById(uid);
 			KalendarRecurEvent recurEvent = getCurrenceKalendarEvent(cal, eventId);
 			getRootForm().fireFormEvent(ureq, new CalendarGUISelectEvent(this, recurEvent, cal, targetDomId));
@@ -319,7 +320,7 @@ public class FullCalendarElement extends FormItemImpl implements Disposable {
 		for(KalendarEvent event:events) {
 			if(event instanceof KalendarRecurEvent) {
 				KalendarRecurEvent kEvent = (KalendarRecurEvent)event;
-				if(eventId.equals(FullCalendarComponent.normalizeId(event))) {
+				if(eventId.equals(FullCalendarComponent.normalizeId(cal, event))) {
 					return kEvent;
 				}
 			}
