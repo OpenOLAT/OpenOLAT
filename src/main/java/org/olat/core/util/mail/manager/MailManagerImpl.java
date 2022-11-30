@@ -745,9 +745,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		String body = content.getBody();
 		boolean htmlContent =  StringHelper.isHtml(body);
 		if(htmlTemplate && !htmlContent) {
-			body = body.replace("&", "&amp;");
-			body = body.replace("<", "&lt;");
-			body = body.replace("\n", "<br />");
+			body = cleanHtmlBodyText(body);
 		}
 		VelocityContext context = new VelocityContext();
 		context.put("content", body);
@@ -795,9 +793,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		}
 		boolean htmlContent =  StringHelper.isHtml(body);
 		if(htmlTemplate && !htmlContent) {
-			body = body.replace("&", "&amp;");
-			body = body.replace("<", "&lt;");
-			body = body.replace("\n", "<br />");
+			body = cleanHtmlBodyText(body);
 		}
 		VelocityContext context = new VelocityContext();
 		context.put("content", body);
@@ -815,6 +811,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			decoratedBody =body;
 		}
 		return decoratedBody;
+	}
+	
+	private String cleanHtmlBodyText(String body) {
+		return body.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace("\r\n", "<br>")
+				.replace("\n", "<br>");
 	}
 	
 	private String decorateStyle(String template) {
