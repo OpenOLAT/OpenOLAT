@@ -557,7 +557,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				String description = "";
 
 				if (columns.length > 3) {
-					for (int j = 4; j < columns.length - 2; j += 3) {
+					for (int j = 4; j < columns.length - (columns.length % 3); j += 3) {
 						language = StringHelper.xssScan(columns[j]).trim();
 						displayName = columns.length > j + 1 ? StringHelper.xssScan(columns[j+1]).trim() : "";
 						description = columns.length > j + 2 ? StringHelper.xssScan(columns[j+2]).trim() : "";
