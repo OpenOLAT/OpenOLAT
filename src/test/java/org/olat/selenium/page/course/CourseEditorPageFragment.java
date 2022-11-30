@@ -413,7 +413,7 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment chooseResource(By chooseButton, String resourceTitle) {
-		By landingBy = By.xpath("//a/span[text()[contains(.,'" + resourceTitle + "')]]");
+		By landingBy = By.xpath("//div[@class='o_course_editor']//a/span[text()[contains(.,'" + resourceTitle + "')]]");
 		return chooseResource(chooseButton, resourceTitle, landingBy);
 	}
 	
