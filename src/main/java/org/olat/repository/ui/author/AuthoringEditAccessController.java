@@ -19,12 +19,7 @@
  */
 package org.olat.repository.ui.author;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -36,29 +31,21 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Organisation;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.MultiUserEvent;
 import org.olat.ims.lti13.LTI13Module;
 import org.olat.ims.lti13.ui.LTI13ResourceAccessController;
-import org.olat.modules.catalog.CatalogV2Module;
-import org.olat.modules.taxonomy.model.TaxonomyLevelNamePath;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
-import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.manager.CatalogManager;
 import org.olat.repository.ui.settings.AccessOverviewController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
-import org.olat.resource.accesscontrol.CatalogInfo;
-import org.olat.resource.accesscontrol.Offer;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationController;
 import org.olat.resource.accesscontrol.ui.AccessConfigurationDisabledController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,17 +75,11 @@ public class AuthoringEditAccessController extends BasicController {
 	@Autowired
 	private LTI13Module lti13Module;
 	@Autowired
-	private RepositoryModule repositoryModule;
-	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryHandlerFactory handlerFactory;
-	@Autowired
-	private CatalogV2Module catalogModule;
-	@Autowired
-	private CatalogManager cataloogManager;
 	
 	public AuthoringEditAccessController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
@@ -218,7 +199,7 @@ public class AuthoringEditAccessController extends BasicController {
 			boolean managedBookings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.bookings);
 			accessOffersCtrl = new AccessConfigurationController(ureq, getWindowControl(), entry.getOlatResource(),
 					entry.getDisplayname(), true, true, guestSupported, true, defaultOfferOrganisations,
-					createCatalogInfo(), readOnly, managedBookings,
+					RepositoryCatalogInfoFactory.createCatalogInfo(entry, getLocale(), true), readOnly, managedBookings,
 					"manual_user/course_create/Access_configuration#offer");
 			accessOffersCtrl.setReStatus(entry.getEntryStatus());
 			listenTo(accessOffersCtrl);
@@ -230,68 +211,6 @@ public class AuthoringEditAccessController extends BasicController {
 		}
 	}
 	
-	private CatalogInfo createCatalogInfo() {
-		if (catalogModule.isEnabled()) {
-			String details = null;
-			String editBusinessPath = null;
-			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(getTranslator(), repositoryService.getTaxonomy(entry));
-			if (taxonomyLevels.isEmpty()) {
-				details = translate("access.no.taxonomy.level");
-				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Metadata:0]";
-			} else {
-				StringBuilder sb = new StringBuilder();
-				sb.append("<div class=\"o_taxonomy_tags\">");
-				for (TaxonomyLevelNamePath taxonomyLevel : taxonomyLevels) {
-					sb.append("<span class=\"o_tag o_taxonomy\" title=\"");
-					sb.append(StringHelper.escapeHtml(taxonomyLevel.getMaterializedPathIdentifiersWithoutSlash()));
-					sb.append("\">");
-					sb.append(taxonomyLevel.getDisplayName());
-					sb.append("</span>");
-				}
-				sb.append("</div>");
-				details = sb.toString();
-			}
-			Predicate<Offer> catalogVisibility = offer -> offer.isGuestAccess() || offer.isOpenAccess() || offer.isCatalogPublish();
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translate("access.open.metadata"));
-		} else if (repositoryModule.isCatalogEnabled()) {
-			String details = null;
-			Predicate<Offer> catalogVisibility = null;
-			String editBusinessPath = null;
-			List<CatalogEntry> catalogEntries = cataloogManager.getCatalogCategoriesFor(entry);
-			if (catalogEntries.isEmpty()) {
-				details = translate("access.no.catalog.entry");
-				catalogVisibility = offer -> false;
-				editBusinessPath = "[RepositoryEntry:" + entry.getKey() + "][Settings:0][Catalog:0]";
-			} else {
-				List<String> catalogEntryPaths = new ArrayList<>(catalogEntries.size());
-				for (CatalogEntry catalogEntry : catalogEntries) {
-					List<String> names = new ArrayList<>();
-					addParentNames(names, catalogEntry);
-					Collections.reverse(names);
-					String path = names.stream().collect(Collectors.joining("/"));
-					path = "/" + path;
-					catalogEntryPaths.add(path);
-				}
-				details = catalogEntryPaths.stream()
-						.sorted()
-						.collect(Collectors.joining(", "));
-				catalogVisibility = offer -> true;
-			}
-			return new CatalogInfo(true, true, details, catalogVisibility, editBusinessPath, translate("access.open.catalog"));
-		}
-		return CatalogInfo.UNSUPPORTED;
-	}
-
-	private void addParentNames(List<String> names, CatalogEntry catalogEntry) {
-		String name = StringHelper.containsNonWhitespace(catalogEntry.getShortTitle())
-				? catalogEntry.getShortTitle()
-				: catalogEntry.getName();
-		names.add(name);
-		if (catalogEntry.getParent() != null) {
-			addParentNames(names, catalogEntry.getParent());
-		}
-	}
-
 	private void initLTI13Access(UserRequest ureq) {
 		removeAsListenerAndDispose(lti13AccessCtrl);
 		
