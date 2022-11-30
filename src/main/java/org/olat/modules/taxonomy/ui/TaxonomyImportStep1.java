@@ -214,12 +214,15 @@ public class TaxonomyImportStep1 extends BasicStep {
 				String description;
 
 				while (zipEntry != null) {
-					String uploadFileName = zipEntry.getName().replaceAll("/media.*", "");
-					if (zipEntry.getName().matches(uploadFileName + "/media/.+")) {
+					// Checking uploadFileName so unneccessary pre-folders are getting skipped
+					String uploadFileName = zipEntry.getName().replaceAll("media.+", "");
+					if (zipEntry.getName().matches(uploadFileName + "media/.+")
+							&& !zipEntry.getName().startsWith("__MACOSX")
+							&& !zipEntry.getName().contains(".DS_Store")) {
 						TaxonomyLevel matchedLevel = null;
 
 						String finalZipEntry = zipEntry.getName()
-								.replaceAll(".+media", "")
+								.replaceAll(".*media", "")
 								.replaceAll("background/.*", "")
 								.replaceAll("teaser/.*", "");
 

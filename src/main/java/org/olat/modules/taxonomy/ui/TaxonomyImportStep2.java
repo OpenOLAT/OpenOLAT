@@ -114,7 +114,7 @@ public class TaxonomyImportStep2 extends BasicStep {
 			
 			// Legend to table
 	        uifactory.addStaticTextElement("import.taxonomy.review.legend.label", translate("import.taxonomy.review.legend"), formLayout);
-		}		
+		}
 		
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {

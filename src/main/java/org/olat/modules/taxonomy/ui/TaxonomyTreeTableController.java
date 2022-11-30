@@ -488,7 +488,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 					}
 
 					TaxonomyLevel createdLevel = taxonomyService.createTaxonomyLevel(newLevel.getIdentifier(), taxonomyService.createI18nSuffix(), null, null, parent, context.getTaxonomy());
-					if (newLevel instanceof TaxonomyLevelImpl) {
+					if (newLevel instanceof TaxonomyLevelImpl && context.getNameDescriptionByLanguage() != null) {
 						saveOrUpdateI18nItemForTaxonomyLevel(createdLevel, context);
 					}
 
@@ -510,7 +510,9 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 						updateLevel.setType(getLevelType(updateLevel, createdTypes));
 		        	}
 					taxonomyService.updateTaxonomyLevel(updateLevel);
-					saveOrUpdateI18nItemForTaxonomyLevel(updateLevel, context);
+					if (context.getNameDescriptionByLanguage() != null) {
+						saveOrUpdateI18nItemForTaxonomyLevel(updateLevel, context);
+					}
 		        }
 
 				if (context.getTaxonomyLevelToImageMap() != null) {
