@@ -498,7 +498,7 @@ public class InstantMessagingMainController extends BasicController implements G
 		link.registerForMousePositionEvent(true);
 		link.setIconLeftCSS("o_icon o_icon_message o_icon-lg");
 		String buddyName = StringHelper.escapeHtml(buddy.getName());
-		link.setTooltip(translate("im.new.message", buddyName));
+		link.setTooltip(translate("im.new.message", buddyName), "bottom");
 		link.setUserObject(buddy);
 		newMsgIcon.put(buddy.getIdentityKey().toString(), link);
 		return link;

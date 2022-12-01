@@ -117,6 +117,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private int offsetY = 0;
 
 	private boolean hasTooltip;
+	private String tooltipPosition;
 	private boolean suppressDirtyFormWarning = false;
 	private boolean forceFlexiDirtyFormWarning = false;
 
@@ -331,6 +332,10 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 */
 	public String getTitle() {
 		return title;
+	}
+	
+	public String getTooltipPosition() {
+		return tooltipPosition == null ? "top" : tooltipPosition;
 	}
 	
 	public String getAriaLabel() {
@@ -699,8 +704,13 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 * @param sticky: sets the tooltip sticky, which means the user has to click the tip to disappear
 	 */
 	public void setTooltip(String tooltipI18nKey) {
+		setTooltip(tooltipI18nKey, "top");
+	}
+	
+	public void setTooltip(String tooltipI18nKey, String position) {
 		setTitle(tooltipI18nKey);
 		this.hasTooltip = true;
+		this.tooltipPosition = position;
 		setDirty(true);
 	}
 
