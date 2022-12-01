@@ -53,7 +53,8 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	private static final Logger log = Tracing.createLoggerFor(FullCalendarComponent.class);
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
 	private static final SimpleDateFormat occurenceDateFormat = new SimpleDateFormat("yyyyMMdd'T'hhmmss");
-	
+
+	public static final String CALENDAR_ID_SEP = "_xCalOOlaCx_";
 	public static final String RECURRENCE_ID_SEP = "_xRecOOceRx_";
 	public static final String OCCURRENCE_ID_SEP = "_xOccOOccOx_";
 
@@ -206,16 +207,8 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		return eventId != null && eventId.indexOf(RECURRENCE_ID_SEP) > 0;
 	}
 	
-	public String getCalendarEventUid(String eventId) {
-		int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
-		if(occIndex > 0) {
-			return eventId.substring(0, occIndex);
-		}
-		int recIndex = eventId.indexOf(RECURRENCE_ID_SEP);
-		if(recIndex > 0) {
-			return eventId.substring(0, recIndex);
-		}
-		return eventId;
+	public CalendarEventId getCalendarEventUid(String eventId) {
+		return CalendarEventId.valueOf(eventId);
 	}
 	
 	public Date getCalendarEventOccurenceDate(String eventId) {
@@ -245,7 +238,7 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	public KalendarEvent getCalendarEvent(String id) {
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(normalizeId(event))) {
+				if(id.equals(normalizeId(cal, event))) {
 					return event;
 				}
 			}
@@ -256,7 +249,7 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 	public KalendarRenderWrapper getCalendarByNormalizedId(String id) {
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(normalizeId(event))) {
+				if(id.equals(normalizeId(cal, event))) {
 					return cal;
 				}
 			}
@@ -264,10 +257,20 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		return null;
 	}
 	
-	public KalendarRenderWrapper getCalendarById(String id) {
+	public KalendarRenderWrapper getCalendarById(CalendarEventId id) {
+		String calendarId = id.getCalendarId();
+		if(id.getCalendarId() != null) {
+			for(KalendarRenderWrapper cal:calendars) {
+				if(calendarId.equals(normalizeId(cal))) {
+					return cal;
+				}
+			}
+		}
+		
+		String eventId = id.getEventId();
 		for(KalendarRenderWrapper cal:calendars) {
 			for(KalendarEvent event:cal.getKalendar().getEvents()) {
-				if(id.equals(normalizeId(event.getID()))) {
+				if(eventId.equals(normalizeId(event.getID()))) {
 					return cal;
 				}
 			}
@@ -316,9 +319,11 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		setDirty(true);
 	}
 	
-	protected static final String normalizeId(KalendarEvent kEvent) {
+	protected static final String normalizeId(KalendarRenderWrapper calendarWrapper, KalendarEvent kEvent) {
 		StringBuilder sb = new StringBuilder(64);
-		sb.append(normalizeId(kEvent.getID()));
+		sb.append(calendarWrapper.getCalendarKey().getType()).append(calendarWrapper.getCalendarKey().getCalendarId())
+		  .append(CALENDAR_ID_SEP)
+		  .append(normalizeId(kEvent.getID()));
 		if(kEvent.getRecurrenceID() != null) {
 			sb.append(RECURRENCE_ID_SEP);
 			sb.append(normalizeId(kEvent.getRecurrenceID()));
@@ -333,9 +338,53 @@ public class FullCalendarComponent extends AbstractComponent implements Disposab
 		return sb.toString();
 	}
 	
+	protected static final String normalizeId(KalendarRenderWrapper calendarWrapper) {
+		return calendarWrapper.getCalendarKey().getType().concat(calendarWrapper.getCalendarKey().getCalendarId());
+	}
+	
 	protected static final String normalizeId(String id) {
 		return Normalizer.normalize(id, Normalizer.Form.NFD)
 				.replaceAll("\\p{InCombiningDiacriticalMarks}+","")
 				.replaceAll("\\W+", "");
+	}
+	
+	public static class CalendarEventId {
+		
+		private final String calendarId;
+		private final String eventId;
+		
+		public CalendarEventId(String calendarId, String eventId) {
+			this.calendarId = calendarId;
+			this.eventId = eventId;
+		}
+		
+		public static CalendarEventId valueOf(String eventId) {
+			int occIndex = eventId.indexOf(OCCURRENCE_ID_SEP);
+			if(occIndex > 0) {
+				eventId = eventId.substring(0, occIndex);
+			} else {
+				int recIndex = eventId.indexOf(RECURRENCE_ID_SEP);
+				if(recIndex > 0) {
+					eventId = eventId.substring(0, recIndex);
+				}
+			}
+			
+			String calendarId = null;
+			int calIndex = eventId.indexOf(CALENDAR_ID_SEP);
+			if(calIndex > 0) {
+				calendarId = eventId.substring(0, calIndex);
+				eventId = eventId.substring(calIndex + CALENDAR_ID_SEP.length());
+			}
+			
+			return new CalendarEventId(calendarId, eventId);
+		}
+
+		public String getCalendarId() {
+			return calendarId;
+		}
+
+		public String getEventId() {
+			return eventId;
+		}
 	}
 }

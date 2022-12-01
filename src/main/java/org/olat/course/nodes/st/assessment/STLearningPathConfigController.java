@@ -52,6 +52,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -116,7 +117,8 @@ public class STLearningPathConfigController extends FormBasicController {
 		this.courseNode = courseNode;
 		this.moduleConfig = courseNode.getModuleConfiguration();
 		CourseEditorTreeNode editorTreeNode = CourseFactory.loadCourse(courseEntry).getEditorTreeModel().getCourseEditorNodeById(courseNode.getIdent());
-		this.learningPathConfigs = learningPathService.getConfigs(courseNode, editorTreeNode.getParent());
+		INode parent = editorTreeNode!= null? editorTreeNode.getParent(): null;
+		this.learningPathConfigs = learningPathService.getConfigs(courseNode, parent);
 		this.selectedObligation = learningPathConfigs.getObligation() != null
 				? learningPathConfigs.getObligation()
 				: AssessmentObligation.evaluated;

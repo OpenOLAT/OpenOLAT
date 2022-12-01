@@ -116,7 +116,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		String[] yesNoValues = new String[]{ translate("yes"), translate("no") };
 		canOverrideStandardConfigEl = uifactory.addRadiosHorizontal("lecture.can.override.standard.configuration", courseCont, yesNoKeys, yesNoValues);
-
+		canOverrideStandardConfigEl.setElementCssClass("o_sel_lecture_override_standard_config");
+		
 		// roll call enabled
 		rollCallEnableEl = uifactory.addCheckboxesHorizontal("lecture.rollcall.default.enabled", courseCont, onKeys, onValues);
 

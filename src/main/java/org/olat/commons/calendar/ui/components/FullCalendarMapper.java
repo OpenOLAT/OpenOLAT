@@ -143,7 +143,7 @@ public class FullCalendarMapper implements Mapper {
 	private JSONObject getJSONEvent(KalendarEvent event, KalendarRenderWrapper cal, boolean timeOnly)
 	throws JSONException {
 		JSONObject jsonEvent = new JSONObject();
-		String id = FullCalendarComponent.normalizeId(event);
+		String id = FullCalendarComponent.normalizeId(cal, event);
 		jsonEvent.put("id", id);
 		if(timeOnly) {
 			jsonEvent.put("title", "");
