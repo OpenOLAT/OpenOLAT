@@ -2108,6 +2108,9 @@ function o_ffSetFocus(formId, formItemId) {
 				jLastEl.datepicker('option', 'showOn', 'focus');
 				focusApplied = true;
 			} else {
+				if(tagName == "INPUT") {
+					jLastEl.select();
+				}
 				setTimeout(function(){
 					jLastEl.focus();
 				},0);
