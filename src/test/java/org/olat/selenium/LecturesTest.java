@@ -91,7 +91,7 @@ public class LecturesTest extends Deployments {
 		 NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, true, false)
+			.configure(true, true, true, true, false)
 			.save()
 			.configurePermissions(false)
 			.savePermissions();
@@ -235,7 +235,7 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, true, false)
+			.configure(true, true, true, true, false)
 			.save()
 			.configurePermissions(false)
 			.savePermissions();
@@ -378,7 +378,7 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, false, false)
+			.configure(true, true, true, false, false)
 			.save();
 		
 		//start
@@ -500,7 +500,7 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(false, false, true, true)
+			.configure(true, false, false, true, true)
 			.save()
 			.configurePermissions(true)
 			.savePermissions();

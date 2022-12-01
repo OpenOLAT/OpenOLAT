@@ -44,7 +44,6 @@ public class LectureRepositorySettingsPage {
 		
 		WebElement checkboxEl = browser.findElement(enableBy);
 		OOGraphene.check(checkboxEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
 		
 		By overrideBy = By.cssSelector("div.o_sel_repo_lecture_override input[type=radio]");
 		OOGraphene.waitElement(overrideBy, browser);
@@ -55,13 +54,14 @@ public class LectureRepositorySettingsPage {
 		By overrideBy = By.xpath("//label[input[@name='config.override' and @value='yes']]");
 		OOGraphene.waitElement(overrideBy, browser);
 		browser.findElement(overrideBy).click();
-		OOGraphene.waitBusy(browser);
+		By rollcallEnabledBy = By.xpath("//label/input[@name='config.rollcall.enabled' and not(@disabled='disabled')]");
+		OOGraphene.waitElement(rollcallEnabledBy, browser);
 		return this;
 	}
 	
 	public LectureRepositorySettingsPage saveSettings() {
 		By saveBy = By.cssSelector("fieldset.o_sel_repo_lecture_settings_form button.btn-primary");
-		browser.findElement(saveBy).click();
+		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
