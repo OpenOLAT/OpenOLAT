@@ -138,6 +138,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setSelection(boolean enabled, boolean multiSelection, boolean rowSelection);
 	
 	/**
+	 * The function is only available on tree table.
+	 * 
+	 * @param row The row to focus on
+	 */
+	public void focus(FlexiTreeTableNode node);
+	
+	/**
 	 * 
 	 * @return true if the user can customize the columns of the table
 	 */

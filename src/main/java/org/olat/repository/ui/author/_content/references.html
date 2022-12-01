@@ -1,11 +1,27 @@
 #if(!$referenceLinks.isEmpty())
-	$r.translate("details.referenceinfo.txt")
+	<strong>$r.translate("details.referenceinfo.txt")</strong>
 	<ul class="list-unstyled">
 	#foreach($referenceLink in $referenceLinks)
 		<li>$r.render($referenceLink)</li>
 	#end
 	</ul>
 #end
+
+#if(!$curriculumElementsLinks.isEmpty())
+	<strong>$r.translate("details.curriculuminfo.txt")</strong>
+	<ul class="list-unstyled">
+	#foreach($curriculumElementLink in $curriculumElementsLinks)
+		<li>
+		<small class="text-muted">$curriculumElementLink.userObject.curriculumDisplayName
+		#if($r.isNotEmpty($curriculumElementLink.userObject.parentLine))
+			${curriculumElementLink.userObject.parentLine}
+		#end</small><br>
+		$r.render($curriculumElementLink)
+		</li>
+	#end
+	</ul>
+#end
+
 <div class="o_block_small_top">
 	#if($r.isNotNull($qualityDataCollections))
 		$qualityDataCollections

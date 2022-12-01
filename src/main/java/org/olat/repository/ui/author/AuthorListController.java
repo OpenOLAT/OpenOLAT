@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
@@ -134,6 +133,9 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.ui.UnsupportedCourseNodesController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.login.LoginModule;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementWithParents;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
@@ -237,7 +239,7 @@ public class AuthorListController extends FormBasicController implements Activat
 
 	private LockResult lockResult;
 	private final boolean taxonomyEnabled;
-	private final AtomicInteger counter = new AtomicInteger();
+	private int counter = 0;
 	//only used as marker for dirty, model cannot load specific rows
 	private final List<Long> dirtyRows = new ArrayList<>();
 	
@@ -1846,31 +1848,38 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 
+	private void launch(UserRequest ureq, CurriculumElement element) {
+		String businessPath = "[CurriculumAdmin:0][Curriculum:" + element.getCurriculum().getKey() + "][Zoom:" + element.getKey() + "]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+	}
+
 	@Override
 	public void forgeLinks(AuthoringEntryRow row) {
+		String count = Integer.toString(++counter);
+		
 		//mark
-		FormLink markLink = uifactory.addFormLink("mark_" + counter.incrementAndGet(), "mark", "", null, null, Link.NONTRANSLATED);
+		FormLink markLink = uifactory.addFormLink("mark_".concat(count), "mark", "", null, null, Link.NONTRANSLATED);
 		markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 		markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 		markLink.setUserObject(row);
 		row.setMarkLink(markLink);
 		//tools
 		if(configuration.isTools()) {
-			FormLink toolsLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "tools", "", null, null, Link.NONTRANSLATED);
+			FormLink toolsLink = uifactory.addFormLink("tools_".concat(count), "tools", "", null, null, Link.NONTRANSLATED);
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			toolsLink.setUserObject(row);
 			row.setToolsLink(toolsLink);
 		}
 		if(configuration.isInfos()) {
-			FormLink infosLink = uifactory.addFormLink("infos_" + counter.incrementAndGet(), "infos", "", null, null, Link.NONTRANSLATED);
+			FormLink infosLink = uifactory.addFormLink("infos_".concat(count), "infos", "", null, null, Link.NONTRANSLATED);
 			infosLink.setIconLeftCSS("o_icon o_icon_info_resource o_icon-fws o_icon-lg");
 			infosLink.setUserObject(row);
 			row.setInfosLink(infosLink);
 		}
 		//references
-		if(row.getNumOfReferences() > 0) {
-			String numOfReferences = Integer.toString(row.getNumOfReferences());
-			FormLink referencesLink = uifactory.addFormLink("tools_" + counter.incrementAndGet(), "references", numOfReferences, null, null, Link.NONTRANSLATED);
+		if(row.getNumOfReferences() > 0 || row.getNumOfCurriculumElements() > 0) {
+			String numOfReferences = Integer.toString(row.getNumOfReferences() + row.getNumOfCurriculumElements());
+			FormLink referencesLink = uifactory.addFormLink("refs_".concat(count), "references", numOfReferences, null, null, Link.NONTRANSLATED);
 			referencesLink.setUserObject(row);
 			row.setReferencesLink(referencesLink);
 		}
@@ -1946,6 +1955,8 @@ public class AuthorListController extends FormBasicController implements Activat
 		private PortfolioService portfolioService;
 		@Autowired
 		private ReferenceManager referenceManager;
+		@Autowired
+		private CurriculumService curriculumService;
 		
 		public ReferencesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 			super(ureq, wControl);
@@ -1956,8 +1967,8 @@ public class AuthorListController extends FormBasicController implements Activat
 
 			List<String> refLinks = new ArrayList<>(refs.size());
 			for(RepositoryEntry ref:refs) {
-				String name = "ref-" + counter.incrementAndGet();
-				Link refLink = LinkFactory.createLink(name, "reference", getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				String name = "ref-" + (++counter);
+				Link refLink = LinkFactory.createLink(name, "reference", this.getTranslator(), mainVC, this, Link.NONTRANSLATED);
 				refLink.setCustomDisplayText(StringHelper.escapeHtml(ref.getDisplayname()));
 				refLink.setUserObject(ref);
 				refLink.setIconLeftCSS("o_icon o_icon-fw " + RepositoyUIFactory.getIconCssClass(ref));
@@ -1965,7 +1976,6 @@ public class AuthorListController extends FormBasicController implements Activat
 				String businessPath = "[RepositoryEntry:" + ref.getKey() + "]";
 				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
 				refLink.setUrl(url);
-				
 				refLinks.add(name);
 			}
 			mainVC.contextPut("referenceLinks", refLinks);
@@ -1974,14 +1984,30 @@ public class AuthorListController extends FormBasicController implements Activat
 					QualityDataCollectionLight.RESOURCEABLE_TYPE_NAME);
 			if (!references.isEmpty()) {
 				mainVC.contextPut("qualityDataCollections", translate("details.referenceinfo.data.collections",
-						new String[] { String.valueOf(references.size()) }));
+						String.valueOf(references.size())));
 			}
+
+			List<CurriculumElementWithParents> curriculumElements = curriculumService.getOrderedCurriculumElementsTree(entry);
+			List<Link> curriculumElementsLinks = new ArrayList<>(curriculumElements.size());
+			for(CurriculumElementWithParents curriculumElement:curriculumElements) {
+				String name = "curel-" + (++counter);
+				Link elementLink = LinkFactory.createLink(name, "curriculum-element", this.getTranslator(), mainVC, this, Link.NONTRANSLATED);
+				elementLink.setCustomDisplayText(StringHelper.escapeHtml(curriculumElement.getDisplayName()));
+				elementLink.setUserObject(curriculumElement);
+				
+				String businessPath = "[CurriculumAdmin:0][Curriculum:" + curriculumElement.getCurriculum().getKey() + "][Zoom:" + curriculumElement.getKey() + "]";
+				String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(businessPath);
+				elementLink.setUrl(url);
+				
+				curriculumElementsLinks.add(elementLink);
+			}
+			mainVC.contextPut("curriculumElementsLinks", curriculumElementsLinks);
 			
 			if(BinderTemplateResource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName())) {
 				int usage = portfolioService.getTemplateUsage(entry);
 				if(usage > 0) {
 					mainVC.contextPut("binderTemplateUsage", translate("details.referenceinfo.binder.template",
-							new String[] { String.valueOf(usage) }));
+							String.valueOf(usage)));
 				}
 			}
 			
@@ -1996,6 +2022,9 @@ public class AuthorListController extends FormBasicController implements Activat
 				if("reference".equals(link.getCommand())) {
 					RepositoryEntryRef uobject = (RepositoryEntryRef)link.getUserObject();
 					launch(ureq, uobject);
+				} else if("curriculum-element".equals(link.getCommand())) {
+					CurriculumElementWithParents uobject = (CurriculumElementWithParents)link.getUserObject();
+					launch(ureq, uobject.getCurriculumElement());
 				}
 			}
 		}
@@ -2211,7 +2240,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 		
 		private void addLink(String name, String cmd, String iconCSS, List<String> links) {
-			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			Link link = LinkFactory.createLink(name, cmd, this.getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
 			}
