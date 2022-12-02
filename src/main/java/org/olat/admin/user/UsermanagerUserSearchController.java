@@ -27,7 +27,6 @@ package org.olat.admin.user;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -301,13 +300,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete,
 						showStatusFilters, showOrganisationsFilters, true));
 		listenTo(tableCtr);
-
-		List<Long> identityKeys = identities.stream()
-				.map(Identity::getKey)
-				.collect(Collectors.toList());
-		identityQueryParams = new SearchIdentityParams();
-		identityQueryParams.setIdentityKeys(identityKeys);
-		tableCtr.loadModel(identityQueryParams);
+		
+		tableCtr.loadModel(identities);
 		stackedPanel.pushController("Results", tableCtr);
 	}
 	
