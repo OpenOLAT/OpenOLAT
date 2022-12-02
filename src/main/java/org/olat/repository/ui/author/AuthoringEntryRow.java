@@ -72,6 +72,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	private Date lifecycleEnd;
 	
 	private final int numOfReferences;
+	private final int numOfCurriculumElements;
 	
 	private final boolean lectureEnabled;
 	private final boolean rollCallEnabled;
@@ -134,6 +135,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		}
 		
 		numOfReferences = view.getNumOfReferences();
+		numOfCurriculumElements = view.getNumOfCurriculumElements();
 		lectureEnabled = view.isLectureEnabled();
 		rollCallEnabled = view.isRollCallEnabled();
 		
@@ -224,6 +226,10 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	
 	public int getNumOfReferences() {
 		return numOfReferences;
+	}
+	
+	public int getNumOfCurriculumElements() {
+		return numOfCurriculumElements;
 	}
 
 	public boolean isLectureEnabled() {

@@ -580,6 +580,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			
 			Date assignmentDeadline = config.getDateValue(GTASK_ASSIGNMENT_DEADLINE);
 			Date submissionDeadline = config.getDateValue(GTASK_SUBMIT_DEADLINE);
+			Date lateSubmitDeadline = config.getDateValue(GTASK_LATE_SUBMIT_DEADLINE);
 			Date visibleAfter = config.getDateValue(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER);
 			
 			if (assignmentDeadline != null) {
@@ -590,6 +591,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			if (submissionDeadline != null) {
 				submissionDeadline.setTime(submissionDeadline.getTime() + context.getDateDifference(getIdent()));
 				config.setDateValue(GTASK_SUBMIT_DEADLINE, submissionDeadline);
+			}
+			
+			if (lateSubmitDeadline != null) {
+				lateSubmitDeadline.setTime(lateSubmitDeadline.getTime() + context.getDateDifference(getIdent()));
+				config.setDateValue(GTASK_LATE_SUBMIT_DEADLINE, lateSubmitDeadline);
 			}
 			
 			if (visibleAfter != null) {
@@ -1020,6 +1026,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		return List.of(
 				Map.entry("gtask.assignment.deadline", getDueDateConfig(GTASK_ASSIGNMENT_DEADLINE)),
 				Map.entry("gtask.submission.deadline", getDueDateConfig(GTASK_SUBMIT_DEADLINE)),
+				Map.entry("gtask.late.submit.deadline", getDueDateConfig(GTASK_LATE_SUBMIT_DEADLINE)),
 				Map.entry("gtask.submission.visibility", getDueDateConfig(GTASK_SAMPLE_SOLUTION_VISIBLE_AFTER))
 			);
 	}

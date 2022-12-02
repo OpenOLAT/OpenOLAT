@@ -40,6 +40,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -76,6 +77,8 @@ public class RepositoryEntryAuthorQueries {
 	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	
 	public int countViews(SearchAuthorRepositoryEntryViewParams params) {
 		if(params.getIdentity() == null) {
@@ -107,20 +110,19 @@ public class RepositoryEntryAuthorQueries {
 			
 			Number numOfMarks = (Number)object[1];
 			boolean hasMarks = numOfMarks != null && numOfMarks.longValue() > 0;
-			Number numOffers = (Number)object[2];
-			long offers = numOffers == null ? 0l : numOffers.longValue();
+
+			long offers = PersistenceHelper.extractPrimitiveLong(object, 2);
+			int references = PersistenceHelper.extractPrimitiveInt(object, 3);
+			int curriculumElements = PersistenceHelper.extractPrimitiveInt(object, 4);
 			
-			Number numOfReferences = (Number)object[3];
-			int references = numOfReferences == null ? 0 : numOfReferences.intValue();
-			
-			Number numOfBinders = (Number)object[4];
+			Number numOfBinders = (Number)object[5];
 			references += numOfBinders == null ? 0 : numOfBinders.intValue();
 
 			boolean lectureEnabled = false;
 			boolean rollCallEnabled = false;
 			if(object.length > 5) {
-				lectureEnabled = PersistenceHelper.extractBoolean(object, 5, false);
-				rollCallEnabled = PersistenceHelper.extractBoolean(object, 6, false);
+				lectureEnabled = PersistenceHelper.extractBoolean(object, 6, false);
+				rollCallEnabled = PersistenceHelper.extractBoolean(object, 7, false);
 			}
 			
 			String deletedByName = null;
@@ -131,7 +133,9 @@ public class RepositoryEntryAuthorQueries {
 				}
 			}
 			
-			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers, references, deletedByName, lectureEnabled, rollCallEnabled));
+			views.add(new RepositoryEntryAuthorImpl(re, hasMarks, offers,
+					references, curriculumElements, deletedByName,
+					lectureEnabled, rollCallEnabled));
 		}
 		return new RepositoryEntryAuthorViewResults(views, maxResults <= 0);
 	}
@@ -166,6 +170,17 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" (select count(ref.key) from references as ref ")
 			  .append("   where ref.target.key=res.key")
 			  .append(" ) as references,");
+			
+			if(curriculumModule.isEnabled()) {
+				sb.append(" (select count(curel.key) from curriculumelement as curel")
+				  .append("   inner join curel.group as curElGroup")
+				  .append("   inner join repoentrytogroup as reToCurElGroup on (curElGroup.key=reToCurElGroup.group.key)")
+				  .append("   where reToCurElGroup.entry.key=v.key")
+				  .append(" ) as curriculumElements,");
+			} else {
+				sb.append(" 0 as curriculumElements,");
+			}
+			
 			if(params.includeResourceType("BinderTemplate")) {
 				sb.append(" (select count(binder.key) from pfbinder as binder")
 				  .append("   inner join binder.template as template")

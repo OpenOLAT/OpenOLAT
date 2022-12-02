@@ -70,7 +70,7 @@ public class TaxonomyImportTreeTableModel extends DefaultFlexiTableDataModel<Tax
         updateWarning("table.header.taxonomy.update.warning", "o_icon o_icon_fw o_icon_warn"),
         path("table.header.taxonomy.level.path"),
         background("table.header.taxonomy.level.background"),
-        teaser("table.header.taxonomy.level.background");
+        teaser("table.header.taxonomy.level.teaser");
 
         private final String i18nKey;
         private final String iconHeader;

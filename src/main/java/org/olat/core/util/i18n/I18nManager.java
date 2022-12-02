@@ -84,6 +84,7 @@ import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nModule.GenderStrategy;
 import org.olat.core.util.session.UserSessionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -125,6 +126,10 @@ public class I18nManager {
 	private static final Pattern resolvingKeyPattern = Pattern.compile("\\$\\{?([\\w\\.\\-]*):([\\w\\.\\-]*[\\w\\-])\\}?");
 	public static final int DEFAULT_BUNDLE_PRIORITY = 500;
 	public static final int DEFAULT_KEY_PRIORITY = 500;
+
+	// Pattern to detect word ending that represents a second gender (see gender-star)
+	// In oo properties files the second ending is written in curly brackets, e.g. "Benutzer{in}"
+	private static final Pattern GENDER_ENDING_PATTERN = Pattern.compile("([^\\$])(\\{((\\D)([^\\}]*))\\})");
 
 	/**
 	 * Per-thread singleton holding the currently used Locale for translated
@@ -310,6 +315,7 @@ public class I18nManager {
 		// file
 		if (resolveRecursively && (!cachingEnabled || properties != null)) {
 			msg = resolveValuesInternalKeys(locale, bundleName, key, properties, overlayEnabled, recursionLevel, msg);
+			msg = applyGenderStrategy(locale, msg);
 		}
 
 		// Add markup code to identify translated strings
@@ -996,6 +1002,7 @@ public class I18nManager {
 			String key = (String) keyObj;
 			String value = properties.getProperty(key);
 			String resolvedValue = resolveValuesInternalKeys(locale, bundleName, key, properties, overlayEnabled, recursionLevel, value);
+			resolvedValue = applyGenderStrategy(locale, resolvedValue);
 			// Set new value
 			properties.setProperty(key, resolvedValue);
 		}
@@ -1079,6 +1086,64 @@ public class I18nManager {
 		return resolvedValue.toString();
 	}
 
+	/**
+	 * Gender language (specially in german language) sometimes uses a short form
+	 * for female and male words combined in a single word by adding a second gender
+	 * word ending to the first gender word. Normally a separator is used for this
+	 * E.g Benutzer*in, Benutzer:in, Benutzer_in, BenutzerIn
+	 * 
+	 * In OO translation files this is written as "Benutzer{in}" and converted to
+	 * the configured style
+	 * 
+	 * @param locale
+	 * @param msg The raw message
+	 * @return converted message
+	 */
+	public String applyGenderStrategy(Locale locale, String msg) {
+		GenderStrategy strategy = i18nModule.getGenderStrategy(locale);
+		switch (strategy) {
+		case star:
+			// Gender-Star
+			return GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1*$3");			
+		case colon:
+			// Gender-Colon
+			return GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1:$3");
+		case middleDot:
+			// Gender-Middle-Dot (Point médian)
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1⸱$3");
+		case dot:
+			// Gender-Dot (point bas)
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1.$3");
+		case slashDash:
+			// Old-school slash-separator with dash
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1/-$3");
+		case slash:
+			// Old-school slash-separator without dash
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1/$3");
+		case dash:
+			// Old-school dash-separator
+			return	GENDER_ENDING_PATTERN.matcher(msg).replaceAll("$1-$3");
+		case camelCase:	{	
+			// camelCase: no separator and second ending starting with upper-case (aka Binnen-I)
+			Matcher m = GENDER_ENDING_PATTERN.matcher(msg);
+			StringBuilder sb = new StringBuilder();
+			int last = 0;
+			while (m.find()) {
+				sb.append(msg.substring(last, m.start()));
+				sb.append(m.group(1));
+				sb.append(m.group(4).toUpperCase());
+				sb.append(m.group(5));
+				last = m.end();
+			}
+			sb.append(msg.substring(last));
+			return sb.toString();
+		}
+		default:
+			// not found - do nothing
+			return msg;
+		}
+	}
+	
 	/**
 	 * Create a new property file or update an existing property file form the
 	 * given propeties object

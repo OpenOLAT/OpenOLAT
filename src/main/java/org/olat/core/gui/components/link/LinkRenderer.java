@@ -328,9 +328,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		
 		if (elementId != null && link.hasTooltip() && StringHelper.containsNonWhitespace(link.getTitle())) {
 			sb.append("<script>")
+			  .append("\"use strict\";\n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#").append(elementId).append("').tooltip({\n")
 			  .append("    html: true,\n")
+			  .append("    placement: '").append(link.getTooltipPosition()).append("',\n")
 			  .append("    container: 'body',\n")
 			  .append("    title: '").appendHtmlEscaped(link.getTitle()).append("' \n")
 			  .append("  });\n")

@@ -48,8 +48,9 @@ public class LectureAdminSettingsPage {
 	 * @param teacherCanAutorizeAbsence Enable or not the option "Coaches can authorize absences"
 	 * @return
 	 */
-	public LectureAdminSettingsPage configure(boolean holdPartialLectures, boolean cancelStatus,
-			boolean authorizedAbsence, boolean defaultAuthorized) {
+	public LectureAdminSettingsPage configure(boolean overrideStandardConfiguration, boolean holdPartialLectures,
+			boolean cancelStatus, boolean authorizedAbsence, boolean defaultAuthorized) {
+		setOverrideStandardConfiguration(overrideStandardConfiguration);
 		setHoldPartialLectures(holdPartialLectures);
 		setCancelStatus(cancelStatus);
 		setAuthorizedAbsence(authorizedAbsence);
@@ -68,6 +69,13 @@ public class LectureAdminSettingsPage {
 		OOGraphene.waitElement(paneBy, browser);
 		
 		setTeacherCanAuthorizeAbsence(teacherCanAutorizeAbsence);
+		return this;
+	}
+	
+	public LectureAdminSettingsPage setOverrideStandardConfiguration(boolean enabled) {
+		String val = enabled ? "yes" : "no";
+		By overrideBy = By.xpath("//input[@name='lecture.can.override.standard.configuration'][@value='" + val + "']");
+		browser.findElement(overrideBy).click();
 		return this;
 	}
 	

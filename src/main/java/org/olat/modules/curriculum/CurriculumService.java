@@ -36,6 +36,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
+import org.olat.modules.curriculum.model.CurriculumElementWithParents;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumMemberStats;
@@ -306,6 +307,9 @@ public interface CurriculumService {
 	 * @return A list of curriculum elements 
 	 */
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry);
+	
+	
+	public List<CurriculumElementWithParents> getOrderedCurriculumElementsTree(RepositoryEntryRef entry);
 	
 	/**
 	 * Return the curriculum elements linked to the specified repository entry and a

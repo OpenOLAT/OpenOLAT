@@ -21,8 +21,11 @@
 package org.olat.core.util.i18n.ui;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -40,6 +43,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.i18n.I18nModule.GenderStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,6 +73,7 @@ class I18nConfigController extends FormBasicController {
 	private FormLink createLanguageLink, deleteLanguageLink, importPackageLink, exportPackageLink, deletePackageLink;
 	private CloseableModalController cmc;
 	private Controller subCtr;
+	private Map<String, SingleSelection> genderStrategies;
 	
 	@Autowired
 	private I18nManager i18nMgr;
@@ -141,6 +146,35 @@ class I18nConfigController extends FormBasicController {
 		for (String langKey : i18nModule.getEnabledLanguageKeys()) {
 			enabledLangSelection.select(langKey, true);
 		}
+		
+		// Add gender configuration
+		genderStrategies = new HashMap<String, SingleSelection>();
+		Map translatedLanguages = new HashMap<String, String>();
+		String[] genderStrategyKeys = Stream.of(GenderStrategy.values()).map(GenderStrategy::name)
+				.toArray(String[]::new);
+		String[] genderStrategyValues = new String[genderStrategyKeys.length];
+		for (int i = 0; i < genderStrategyKeys.length; i++) {
+			String strategy = genderStrategyKeys[i];
+			String translated = translate("genderStrategy." + strategy);
+			genderStrategyValues[i] = translated;
+		}
+				
+		for (int i = 0; i < availablelangKeys.length; i++) {
+			String langKey = availablelangKeys[i];
+			Locale locale = i18nMgr.getLocaleOrDefault(langKey);
+			SingleSelection dropDown = uifactory.addDropdownSingleselect("gender." + langKey, formLayout, genderStrategyKeys, genderStrategyValues);
+			GenderStrategy strategy = i18nModule.getGenderStrategy(locale);
+			dropDown.select(strategy.name(), true);
+			dropDown.setVisible(enabledLangSelection.getSelectedKeys().contains(langKey));
+			dropDown.addActionListener(FormEvent.ONCHANGE);
+			dropDown.setUserObject(langKey);
+			genderStrategies.put(langKey, dropDown);
+			// label
+			translatedLanguages.put(langKey, i18nMgr.getLanguageInEnglish(langKey, i18nModule.isOverlayEnabled()));
+		}
+		flc.contextPut("translatedLanguages", translatedLanguages);
+		flc.contextPut("availablelangKeys", availablelangKeys);
+		
 		//
 		// Add create / delete links, but only when translation tool is configured
 		if (i18nModule.isTransToolEnabled()) {
@@ -189,6 +223,14 @@ class I18nConfigController extends FormBasicController {
 				enabledLangKeys.add(defaultLocale.toString());
 				showWarning("configuration.default.lang.must.be.enabed", defaultLocale.toString());
 			}
+			// update visibility of gender strategy
+			for (int i = 0; i < enabledLangSelection.getSize(); i++) {
+				String langKey = enabledLangSelection.getKey(i);
+				SingleSelection genderStrategyDropDown = genderStrategies.get(langKey);
+				genderStrategyDropDown.setVisible(enabledLangSelection.getSelectedKeys().contains(langKey));
+				// force window reload to reflect change 
+				getWindowControl().getWindowBackOffice().getWindow().setDirty(true);
+			}
 			
 // fxdiff FXOLAT-40 don't force fallback language to be enabled in the GUI, 
 // conflict with languages with country/variant information
@@ -201,7 +243,21 @@ class I18nConfigController extends FormBasicController {
 //			}
 
 			i18nModule.setEnabledLanguageKeys(enabledLangKeys);
-
+		} else if (source instanceof SingleSelection) {
+			SingleSelection genderDropDown = (SingleSelection) source;
+			String userObject = (String) genderDropDown.getUserObject();
+			if (userObject != null) {
+				// Persist new strategy
+				Locale locale = i18nMgr.getLocaleOrDefault(userObject);
+				GenderStrategy strategy = GenderStrategy.valueOf(genderDropDown.getSelectedKey());
+				i18nModule.setGenderStrategy(locale, strategy);
+				try {
+					// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+					Thread.sleep(1000); 
+				} catch (InterruptedException e) {
+					logError("", e);
+				}
+			}
 		} else if (source == createLanguageLink) {
 			doNewLanguage(ureq);
 		} else if (source == deleteLanguageLink) {

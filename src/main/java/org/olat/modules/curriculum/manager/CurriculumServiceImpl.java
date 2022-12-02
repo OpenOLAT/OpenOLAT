@@ -30,10 +30,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -51,6 +53,8 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.mail.MailPackage;
@@ -85,6 +89,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
+import org.olat.modules.curriculum.model.CurriculumElementWithParents;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
@@ -118,6 +123,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CurriculumServiceImpl implements CurriculumService, OrganisationDataDeletable {
+	
+	private static final Logger log = Tracing.createLoggerFor(CurriculumServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -550,6 +557,35 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntry entry) {
 		return curriculumElementDao.loadElements(entry);
+	}
+
+	@Override
+	public List<CurriculumElementWithParents> getOrderedCurriculumElementsTree(RepositoryEntryRef entry) {
+		List<CurriculumElement> elementsList = curriculumElementDao.loadElements(entry);
+		Set<CurriculumElement> elements = new HashSet<>(elementsList);
+		
+		List<CurriculumElementWithParents> withParents = new ArrayList<>(elements.size() + 2);
+		for(CurriculumElement element:elements) {
+			int numOfSlashes = StringHelper.count(element.getMaterializedPathKeys(), '/');
+			
+			List<CurriculumElement> parentLine;
+			if(numOfSlashes <= 2) {
+				parentLine = List.of();
+			} else if(numOfSlashes <= 3 && element.getParent() != null) {
+				parentLine = List.of(element.getParent());
+			} else {
+				parentLine = curriculumElementDao.getParentLine(element);
+			}
+			withParents.add(new CurriculumElementWithParents(element, parentLine, 0));
+		}
+		
+		try {
+			Collections.sort(withParents, new CurriculumElementWithParentsComparator(Locale.GERMAN));
+		} catch (Exception e) {
+			log.error("", e);
+		}
+
+		return withParents;
 	}
 
 	@Override

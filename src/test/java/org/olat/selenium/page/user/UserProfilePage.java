@@ -21,6 +21,7 @@ package org.olat.selenium.page.user;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import jakarta.mail.internet.MimeUtility;
 
@@ -125,9 +126,9 @@ public class UserProfilePage {
 	
 	public String extractConfirmationLink(SmtpMessage message) {
 		String body = message.getBody();
-		byte[] bytes = message.toString().getBytes();
+		byte[] bytes = body.getBytes();
 		try(InputStream in = new ByteArrayInputStream(bytes)) {
-			body = IOUtils.toString(MimeUtility.decode(in, "quoted-printable"), "UTF-8");
+			body = IOUtils.toString(MimeUtility.decode(in, "quoted-printable"), StandardCharsets.UTF_8);
 		} catch(Exception e) {
 			log.error("", e);
 		}
@@ -135,11 +136,21 @@ public class UserProfilePage {
 		int index = body.indexOf("text/html");
 		index = body.indexOf("http", index);
 		if(index >= 0) {
-			int lastIndex = body.indexOf('\n', index + 1);
-			String link = body.substring(index, lastIndex);
+			String subBody = body.substring(index);
+			int lastIndex = subBody.indexOf('\r');
+			if(lastIndex > 128 || lastIndex == -1) {
+				lastIndex = subBody.indexOf("\n");
+			}
+			if(lastIndex > 128 || lastIndex == -1) {
+				lastIndex = subBody.indexOf("<br");
+			}
+			
+			String link = subBody.substring(0, lastIndex);
 			// hack
 			link = link.replace("&amp;", "&")
-					.replace("em=change", "emchange");
+					.replace("em=change", "emchange")
+					.replace("emchan=ge", "emchange")
+					.trim();
 			return link;
 		}
 		return null;

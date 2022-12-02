@@ -370,6 +370,12 @@ public class CurriculumComposerController extends FormBasicController implements
 			if(row != null) {
 				doEditCurriculumElement(ureq, row, subEntries);
 			}
+		} else if("Zoom".equalsIgnoreCase(type)) {
+			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
+			CurriculumElementRow row = tableModel.getCurriculumElementRowByKey(elementKey);
+			if(row != null) {
+				tableEl.focus(row);
+			}
 		} else if("Members".equalsIgnoreCase(type)) {
 			Long elementKey = entries.get(0).getOLATResourceable().getResourceableId();
 			CurriculumMembersManagementController mgmtCtrl = null;
@@ -751,7 +757,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		listenTo(confirmDeleteCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true,
-				translate("confirmation.delete.element.title", new String[] { row.getDisplayName() }));
+				translate("confirmation.delete.element.title", row.getDisplayName()));
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -1548,6 +1548,25 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				getQuickSearchString(), getFilters(), FormEvent.ONCLICK));
 	}
 	
+	@Override
+	public void focus(FlexiTreeTableNode node) {
+		if(node == null) return;
+
+		int row = -1;
+		int numOfRows = dataModel.getRowCount();
+		for(int i=0; i<numOfRows; i++) {
+			Object obj = dataModel.getObject(i);
+			if(node.equals(obj)) {
+				row = i;
+				break;
+			}
+		}
+		
+		if(row >= 0) {
+			doTreeFocus(row);
+		}
+	}
+	
 	private void doTreeFocus(int row) {
 		if(dataModel instanceof FlexiTreeTableDataModel) {
 			FlexiTreeTableNode node = ((FlexiTreeTableDataModel<?>)dataModel).getObject(row);

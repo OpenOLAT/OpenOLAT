@@ -1,5 +1,5 @@
 <div class="o_translation_config">
-	<fieldset>
+	<fieldset class="o_block">
 		<legend>$r.translate("configuration.defaultLangSelection")</legend>
 		<p>$r.translate("configuration.defaultLangSelection.intro")</p>
 		<div class="input-group">
@@ -8,13 +8,32 @@
 		</div>
 	</fieldset>
 
-	<fieldset>
+	<fieldset class="o_block">
 		<legend>$r.translate("configuration.enabledLangSelection")</legend>
 		<p>$r.translate("configuration.enabledLangSelection.intro")</p>
 		$r.render("configuration.enabledLangSelection")
 	</fieldset>
 
-	<fieldset>
+	<fieldset class="o_block">
+		<legend>$r.translate("configuration.genderStrategy")</legend>	
+		<p>$r.translate("configuration.genderStrategy.intro")</p>		
+			<div class="row">
+		#foreach($langKey in $availablelangKeys)
+			#if ($r.visible("gender.$langKey"))
+			<div class="form-group clearfix">
+			<div class="control-label col-sm-3">
+				$translatedLanguages.get("$langKey")
+			</div>
+			<div class="col-sm-9 ">
+				$r.render("gender.$langKey")
+			</div>
+			</div>
+			#end
+		#end
+		</div>
+	</fieldset>
+
+	<fieldset class="o_block">
 		<legend>$r.translate("configuration.management")</legend>
 		<p>$r.translate("configuration.management.intro")</p>
 		<div class="row">

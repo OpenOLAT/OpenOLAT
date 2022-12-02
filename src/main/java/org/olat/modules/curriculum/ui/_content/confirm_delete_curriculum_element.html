@@ -1,7 +1,19 @@
-<div class="o_warning">
-	<p>$r.translate("confirmation.delete.element", ${element.getDisplayName()})</p>
+<p>$msg</p>
+#if($r.isNotEmpty($resources))
+<div class="pull-right">
+	$r.render("additional.references.download")
 </div>
-<div class="o_button_group">
-	$r.render("cancel")
+<p>$referenceMsg</p>
+<ul>
+	#foreach($resource in $resources)
+	<li>$r.escapeHtml($resource)</li>
+	#end
+	#if($r.visible("additional.references"))
+	<li>$r.render("additional.references")</li>
+	#end
+</ul>
+#end
+<div class="o_button_group o_button_group_right o_button_group_bottom">
 	$r.render("delete")
+	$r.render("cancel")
 </div>

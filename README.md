@@ -118,6 +118,13 @@ Write the OpenOlat database schema to the OpenOlat database:
 \i src/main/resources/database/postgresql/setupDatabase.sql
 ```
 
+Set the DB connection port to 5432 (or the port on which your
+Postgres DB is running) in your `olat.local.properties` file:
+
+```
+db.host.port=5432
+```
+
 _Optional:_ if you want to run the jUnit tests, make sure you also create and initialize the
 test database that you configured in `src/test/profile/postgresql/olat.local.properties`.
 
@@ -134,7 +141,13 @@ Double click the newly created server and increase the timeout to something like
 
 Open the generated `server.xml` file and manually set the following parameters:
 
-- In the `Context` element set parameter `reloadable="false"` 
+- In the `Context` element set parameter `reloadable="false"`
+- Add a child element `Resources` and set the maximum cache size to 100000:
+```
+  <Context docBase="OpenOLAT" path="/olat" reloadable="false" source="org.eclipse.jst.jee.server:OpenOLAT">
+    <Resources allowLinking="true" cacheMaxSize="100000" cachingAllowed="true"/>
+  </Context>
+```
 
 You can now start the server and open the following URL
 [http://localhost:8080/olat](http://localhost:8080/olat) in your favorite browser. You can

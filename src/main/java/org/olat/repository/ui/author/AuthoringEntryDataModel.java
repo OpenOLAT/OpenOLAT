@@ -143,7 +143,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case deletionDate: return item.getDeletionDate();
 			case mark: return item.getMarkLink();
 			case references: {
-				if(item.getNumOfReferences() <= 0) {
+				if(item.getNumOfReferences() <= 0 && item.getNumOfCurriculumElements() <= 0) {
 					return null;
 				}
 				return item.getReferencesLink();

@@ -59,6 +59,8 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	
 	public int getNumOfReferences();
 	
+	public int getNumOfCurriculumElements();
+	
 	public boolean isLectureEnabled();
 	
 	public boolean isRollCallEnabled();

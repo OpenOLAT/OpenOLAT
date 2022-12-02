@@ -43,11 +43,14 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.i18n.I18nModule.GenderStrategy;
 import org.olat.core.util.i18n.devtools.TranslationDevManager;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class I18nTest extends OlatTestCase { 
 	
 	private static final Logger log = Tracing.createLoggerFor(I18nTest.class);
@@ -606,9 +610,10 @@ public class I18nTest extends OlatTestCase {
 	
 	/**
 	 * Test method i18nManager.getLocalizedString() with resolvePropertiesInternalKeys()
+	 * Named xx to run testcase last
 	 */
 	@Test
-	public void testResolvePropertiesInternalKeys() {
+	public void xxtestResolvePropertiesInternalKeys() {
 		String bundleName = "org.olat.core.util.i18n.junittestdata.subtest";
 		Locale locale = Locale.GERMAN;
 		// first tests with cache enabled
@@ -639,4 +644,74 @@ public class I18nTest extends OlatTestCase {
 		
 		i18nMgr.setCachingEnabled(true);
 	}
+	
+	
+	/**
+	 * Test method i18nManager.aatestGenderStrategy()
+	 * Named aa to run testcase first
+	 * @throws InterruptedException 
+	 */
+	@Test
+	public void aatestGenderStrategy() throws InterruptedException {		
+		String bundleName = "org.olat.core.util.i18n.junittestdata";
+		Locale locale = Locale.GERMAN;
+		i18nMgr.setCachingEnabled(true);
+		// Sanity check: if there is nothing, don't change anything
+		assertEquals("Guten Tag", i18nMgr.getLocalizedString(bundleName, "gender.none", null, locale, false, true));
+
+		// Test everything with default strategy
+		i18nModule.setGenderStrategy(locale, GenderStrategy.star);
+		assertEquals("Guten Tag liebe*r Benutzer*in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer*innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+		
+		// Edge cases
+		assertEquals("Die Teilnehmer{innen sind da", i18nMgr.getLocalizedString(bundleName, "gender.broken", null, locale, false, true));
+		assertEquals("Die Teilnehmer{} sind da", i18nMgr.getLocalizedString(bundleName, "gender.broken2", null, locale, false, true));
+		assertEquals("Es sind {0} Teilnehmer*innen da", i18nMgr.getLocalizedString(bundleName, "gender.expand", null, locale, false, true));
+		assertEquals("Die Namen der Teilnehmer*innen lauten ${firstname}", i18nMgr.getLocalizedString(bundleName, "gender.expand2", null, locale, false, true));
+		
+		// Test other strategies
+		i18nModule.setGenderStrategy(locale, GenderStrategy.colon);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe:r Benutzer:in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer:innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.middleDot);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe⸱r Benutzer⸱in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer⸱innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.dot);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe.r Benutzer.in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer.innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.slash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe/r Benutzer/in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer/innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.slashDash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe/-r Benutzer/-in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer/-innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.dash);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebe-r Benutzer-in", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die Teilnehmer-innenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+
+		i18nModule.setGenderStrategy(locale, GenderStrategy.camelCase);
+		// Wait a second to let asynchronous called I18nModule.initFromChangedProperties() do it's job
+		Thread.sleep(1000); 
+		assertEquals("Guten Tag liebeR BenutzerIn", i18nMgr.getLocalizedString(bundleName, "gender.simple", null, locale, false, true));
+		assertEquals("Die TeilnehmerInnenordner sind wunderbar", i18nMgr.getLocalizedString(bundleName, "gender.complex", null, locale, false, true));
+	}
+
 }

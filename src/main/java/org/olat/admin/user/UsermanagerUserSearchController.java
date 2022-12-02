@@ -300,6 +300,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 				UserSearchTableSettings.withVCard(showEmailButton, showOrganisationMove, showDelete,
 						showStatusFilters, showOrganisationsFilters, true));
 		listenTo(tableCtr);
+		
 		tableCtr.loadModel(identities);
 		stackedPanel.pushController("Results", tableCtr);
 	}
