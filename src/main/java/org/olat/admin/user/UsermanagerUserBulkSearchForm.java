@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,9 +109,30 @@ public class UsermanagerUserBulkSearchForm extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		searchEl.clearError();
+		if(!StringHelper.containsNonWhitespace(searchEl.getValue())) {
+			searchEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else {
+			List<String> lines =  getLines(searchEl.getValue());
+			if(lines.size() > 16000) {
+				searchEl.setErrorKey("error.search.too.much.lines", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(searchButton == source) {
-			fireEvent (ureq, Event.DONE_EVENT);
+			if(validateFormLogic(ureq)) {
+				fireEvent (ureq, Event.DONE_EVENT);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
