@@ -26,8 +26,6 @@
 
 package org.olat.core.id;
 
-import java.util.Date;
-
 import org.olat.basesecurity.IdentityRef;
 
 
@@ -70,18 +68,5 @@ public interface Identity extends CreateInfo, IdentityRef, IdentityLifecycle, Pe
 	 * encapsulates the user data (profile and preferences)
 	 */
 	public User getUser();
-	
-
-	/**
-	 * @return Current identity status 
-	 */
-	@Override
-	public Integer getStatus();
-	
-	/**
-	 * @return Last date when the user logged in.
-	 */
-	@Override
-	public Date getLastLogin();
 	
 }

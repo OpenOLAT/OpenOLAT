@@ -1,8 +1,11 @@
 <h2>$r.translate("admin.title")</h2>
 <fieldset>
-	<legend>$r.translate("admin.deleteUser.title")</legend>
-	<div class="o_info">$r.translate("admin.deleteUser.intro")</div>
-	<div class="o_button_group">$r.render("delete.button.start")</div>
+	<legend>$r.translate("admin.removal.user.title")</legend>
+	<div class="o_info">$r.translate("admin.removal.user.intro")</div>
+	<div class="o_button_group">
+		$r.render("inactivate.button.start")
+		$r.render("delete.button.start")
+	</div>
 </fieldset>
 <fieldset>
 	<legend>$r.translate("admin.synchronize.title")</legend>

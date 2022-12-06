@@ -28,7 +28,6 @@ import java.util.Map;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
@@ -58,39 +57,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author mrohrer
  */
-public class DeletStep01 extends BasicStep {
+public class RemovalStep01 extends BasicStep {
+	
+	private final boolean delete;
 
-	public DeletStep01(UserRequest ureq) {
+	public RemovalStep01(UserRequest ureq, boolean delete) {
 		super(ureq);
+		this.delete = delete;
 		setI18nTitleAndDescr("delete.step1.description", null);
 		setNextStep(Step.NOSTEP);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getInitialPrevNextFinishConfig()
-	 */
+	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return PrevNextFinishConfig.BACK_FINISH;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.control.generic.wizard.StepsRunContext,
-	 *      org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
+	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new DeletStepForm01(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new StepForm01(ureq, windowControl, form, stepsRunContext);
 	}
 
-	private final class DeletStepForm01 extends StepFormBasicController {
+	private final class StepForm01 extends StepFormBasicController {
 		
 		@Autowired
 		private LDAPSyncConfiguration syncConfiguration;
 
-		public DeletStepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
-			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
+		public StepForm01(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
+			super(ureq, control, rootForm, runContext, LAYOUT_CUSTOM, "step");
 			UserManager um = UserManager.getInstance();
 			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
 			initForm(ureq);
@@ -103,14 +97,8 @@ public class DeletStep01 extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			Boolean hasIdentitesToDelete = (Boolean) getFromRunContext("hasIdentitiesToDelete");
-			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/delet_step01.html");
-			formLayout.add(textContainer);
-			textContainer.contextPut("hasIdentitesToDelete", hasIdentitesToDelete);
-			if (hasIdentitesToDelete != null && !hasIdentitesToDelete.booleanValue()) {
-				setNextStep(Step.NOSTEP);
-				return;
-			}
+			String i18nDesc = delete ? "delete.step1.content" : "inactivate.step1.content";
+			setFormDescription(i18nDesc);
 
 			Map<String, String> reqProbertyMap = new HashMap<>(syncConfiguration.getUserAttributeMap());
 			Collection<String> reqProberty = reqProbertyMap.values();
@@ -140,7 +128,7 @@ public class DeletStep01 extends BasicStep {
 			}
 
 			FlexiTableDataModel<Identity> tableDataModel = new IdentityFlexiTableModel(identitiesToDelete, tableColumnModel, handlers, getLocale());
-			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayout);
+			uifactory.addTableElement(getWindowControl(), "table", tableDataModel, getTranslator(), formLayout);
 		}
 	}
 }

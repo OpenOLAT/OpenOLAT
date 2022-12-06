@@ -469,11 +469,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			ctx.close();
 			return true;
 		} catch (NamingException e) {
-			log.error("NamingException when trying to change password with username::" + uid, e);
+			log.error("NamingException when trying to change password with username::{}", uid, e);
 			errors.insert("Cannot change the password");
 			return false;
 		} catch(Exception e) {
-			log.error("Unexpected exception when trying to change password with username::" + uid, e);
+			log.error("Unexpected exception when trying to change password with username::{}", uid, e);
 			errors.insert("Cannot change the password");
 			return false;
 		}
@@ -493,6 +493,19 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			}
 			
 			userLifecycleManager.deleteIdentity(identity, doer);
+		}
+	}
+	
+	@Override
+	public void inactivateIdentities(List<Identity> identityList, Identity doer) {
+		for (Identity identity:  identityList) {
+			if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
+				log.info(Tracing.M_AUDIT, "{} was not deactivated because is status is permanent.", identity.getKey());
+			} else if(Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
+				// already inactive
+			} else {
+				securityManager.saveIdentityStatus(identity, Identity.STATUS_INACTIVE, doer);
+			}
 		}
 	}
 
@@ -1076,7 +1089,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			//check server capabilities
 			// Get time before sync to have a save sync time when sync is successful
 			String sinceSentence = (lastSyncDate == null ? "" : " since last sync from " + lastSyncDate);
-			if (ldapLoginModule.isDeleteRemovedLDAPUsersOnSync()) {
+			if (ldapLoginModule.isRemoveLDAPUsersOnSyncEnabled()) {
 				doBatchSyncDeletedUsers(ctx, sinceSentence);
 				// bind again to use an initial unmodified context. lookup of server-properties might fail otherwise!
 				ctx.close();
@@ -1293,7 +1306,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			log.info("LDAP batch sync: no users to delete {}", sinceSentence);
 		} else {
 			int deletedUserListSize = deletedUserList.size();
-			if (ldapLoginModule.isDeleteRemovedLDAPUsersOnSync()) {
+			if (ldapLoginModule.isRemoveLDAPUsersOnSyncEnabled()) {
 				// check if more not more than the defined percentages of
 				// users managed in LDAP should be deleted
 				// if they are over the percentage, they will not be deleted
@@ -1304,12 +1317,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				} else {
 					int prozente = (int) (((float)deletedUserListSize / (float)olatListIdentitySize) * 100.0);
 					int cutValue = ldapLoginModule.getDeleteRemovedLDAPUsersPercentage();
+					String removeOption = ldapLoginModule.getRemoveLDAPUsersOnSyncOption();
 					if (prozente >= cutValue) {
 						log.info("LDAP batch sync: more than {}% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. {}% tried to delete.", cutValue, prozente);
-					} else {
+					} else if("true".equals(removeOption)){
 						// delete users
 						deleteIdentities(deletedUserList, null);
 						log.info("LDAP batch sync: {} users deleted {}", deletedUserListSize, sinceSentence);
+					} else if("deactivate".equals(removeOption)) {
+						// delete users
+						inactivateIdentities(deletedUserList, null);
+						log.info("LDAP batch sync: {} users deactivated {}", deletedUserListSize, sinceSentence);
 					}
 				}
 			} else {
