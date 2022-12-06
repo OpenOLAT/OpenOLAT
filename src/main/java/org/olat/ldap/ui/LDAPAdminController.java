@@ -30,7 +30,6 @@ import javax.naming.ldap.LdapContext;
 import org.apache.logging.log4j.Level;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -69,10 +68,8 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private DateFormat dateFormatter;
 	private Link syncStartLink;
 	private Link deleteStartLink;
-	private StepsMainRunController deleteStepController;
-	private boolean hasIdentitiesToDeleteAfterRun;
-	private Integer amountUsersToDelete;
-	private LDAPLoginManager ldapLoginManager;
+	private Link inactivateStartLink;
+	private StepsMainRunController removeStepController;
 
 	private UserSearchController userSearchCtrl;
 	private CloseableCalloutWindowController calloutCtr;
@@ -81,11 +78,12 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
+	@Autowired
+	private LDAPLoginManager ldapLoginManager;
 
 	public LDAPAdminController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		
-		ldapLoginManager = (LDAPLoginManager) CoreSpringFactory.getBean(LDAPLoginManager.class);
 		ldapAdminVC = createVelocityContainer("ldapadmin");
 		dateFormatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, getLocale());
 		updateLastSyncDateInVC();
@@ -95,8 +93,9 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
 			removeFallBackAuthsLink = LinkFactory.createButton("remove.fallback.auth", ldapAdminVC, this);
 		}
-		// Create start delete User link
+		// Create start removal links
 		deleteStartLink = LinkFactory.createButton("delete.button.start", ldapAdminVC, this);
+		inactivateStartLink = LinkFactory.createButton("inactivate.button.start", ldapAdminVC, this);
 		// Create real-time log viewer
 		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, control, "org.olat.ldap", Level.DEBUG, false);
 		listenTo(logViewController);
@@ -141,7 +140,9 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			calloutCtr.activate();
 			listenTo(calloutCtr);
 		} else if (source == deleteStartLink) {
-			doStartDeleteProcess(ureq);
+			doStartRemovalProcess(ureq, true);
+		} else if (source == inactivateStartLink) {
+			doStartRemovalProcess(ureq, false);
 		} else if (source == removeFallBackAuthsLink){
 			removeFallBackAuthsLink.setEnabled(false);
 			ldapLoginManager.removeFallBackAuthentications();		
@@ -151,30 +152,37 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == deleteStepController) {
+		if (source == removeStepController) {
 			if (event == Event.CANCELLED_EVENT || event == Event.FAILED_EVENT) {
 				getWindowControl().pop();
-				removeAsListenerAndDispose(deleteStepController);
+				removeAsListenerAndDispose(removeStepController);
 				showInfo("delete.step.cancel");
 				deleteStartLink.setEnabled(true);
+				inactivateStartLink.setEnabled(true);
 			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				getWindowControl().pop();
-				removeAsListenerAndDispose(deleteStepController);
-				if(hasIdentitiesToDeleteAfterRun){
-					showInfo("delete.step.finish.users", amountUsersToDelete.toString());
-				} else{
+				removeAsListenerAndDispose(removeStepController);
+				
+				Integer identitiesDeleted = (Integer)removeStepController.getRunContext().get("identitiesDeleted");
+				Integer identitiesInactivated = (Integer)removeStepController.getRunContext().get("identitiesInactivated");
+				if (identitiesDeleted != null ) {
+					showInfo("delete.step.finish.users", identitiesDeleted.toString());
+				} else if (identitiesInactivated != null ) {
+					showInfo("inactivate.step.finish.users", identitiesInactivated.toString());
+				} else {
 					showInfo("delete.step.finish.noUsers");
 				}
 				deleteStartLink.setEnabled(true);
-			}	else if (source == userSearchCtrl) {
-				calloutCtr.deactivate();
-				Identity choosenIdent = ((SingleIdentityChosenEvent)event).getChosenIdentity();
-				ldapLoginManager.doSyncSingleUserWithLoginAttribute(choosenIdent);
+				inactivateStartLink.setEnabled(true);
 			}
+		} else if (source == userSearchCtrl) {
+			calloutCtr.deactivate();
+			Identity choosenIdent = ((SingleIdentityChosenEvent)event).getChosenIdentity();
+			ldapLoginManager.doSyncSingleUserWithLoginAttribute(choosenIdent);
 		}
 	}
 	
-	private void doStartDeleteProcess(UserRequest ureq) {
+	private void doStartRemovalProcess(UserRequest ureq, final boolean delete) {
 		// cancel if some one else is making sync or delete job
 		if (!ldapLoginManager.acquireSyncLock()) {
 			showError("delete.error.lock");
@@ -188,54 +196,66 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			}
 
 			deleteStartLink.setEnabled(false);
-			// get deleted users
-			List<Identity> identitiesToDelete = null;
-			try {
-				identitiesToDelete = ldapLoginManager.getIdentitiesDeletedInLdap(ctx);
-				ctx.close();
-			} catch (NamingException e) {
-				showError("delete.error.connection.close");
-				logError("Could not close LDAP connection on manual delete sync", e);
-			} finally {
-				ldapLoginManager.freeSyncLock();
-			}
-
-			if (identitiesToDelete != null) {
-				for(Iterator<Identity> it=identitiesToDelete.iterator(); it.hasNext(); ) {
-					if(Identity.STATUS_PERMANENT.equals(it.next().getStatus())) {
-						it.remove();
-					}
-				}
-			}
+			inactivateStartLink.setEnabled(false);
 			
-			if (identitiesToDelete != null && !identitiesToDelete.isEmpty()) {
-				// start step which spawns the whole wizard
-				Step start = new DeletStep00(ureq, true, identitiesToDelete);
-				// wizard finish callback called after "finish" is called
-				StepRunnerCallback finishCallback = (uureq, control, runContext) -> {
-					hasIdentitiesToDeleteAfterRun = ((Boolean) runContext.get("hasIdentitiesToDelete")).booleanValue();
-					if (hasIdentitiesToDeleteAfterRun) {
-						@SuppressWarnings("unchecked")
-						List<Identity> idToDelete = (List<Identity>) runContext.get("identitiesToDelete");
-						amountUsersToDelete = idToDelete.size();
-						// Delete all identities now and tell everybody that
-						// we are finished
-						ldapLoginManager.deleteIdentities(idToDelete, getIdentity());
-						return StepsMainRunController.DONE_MODIFIED;
-					} else {
-						// otherwise return without deleting anything
-						return StepsMainRunController.DONE_UNCHANGED;
-					}
-				};
-				deleteStepController = new StepsMainRunController(ureq, getWindowControl(), start, finishCallback, null,
-						translate("admin.deleteUser.title"), "o_sel_ldap_delete_user_wizard");
-				listenTo(deleteStepController);
-				getWindowControl().pushAsModalDialog(deleteStepController.getInitialComponent());
-			} else {
+			final List<Identity> identitiesForRemoval = getIdentitiesForRemoval(ctx, delete);
+			if (identitiesForRemoval == null || identitiesForRemoval.isEmpty()) {
 				showInfo("delete.step.noUsers");
 				deleteStartLink.setEnabled(true);
+			} else {
+				// start step which spawns the whole wizard
+				Step start = new RemovalStep00(ureq, delete, identitiesForRemoval);
+				// wizard finish callback called after "finish" is called
+				StepRunnerCallback finishCallback = (uureq, control, runContext) -> {
+					@SuppressWarnings("unchecked")
+					final List<Identity> identities = (List<Identity>) runContext.get("identitiesToDelete");
+					if (identities != null && !identities.isEmpty()) {
+						if(delete) {
+							runContext.put("identitiesDeleted", Integer.valueOf(identities.size()));
+							ldapLoginManager.deleteIdentities(identities, getIdentity());
+						} else {
+							runContext.put("identitiesInactivated", Integer.valueOf(identities.size()));
+							ldapLoginManager.inactivateIdentities(identities, getIdentity());
+						}
+						return StepsMainRunController.DONE_MODIFIED;
+					}
+					// otherwise return without deleting anything
+					return StepsMainRunController.DONE_UNCHANGED;
+				};
+				
+				String i18nTitle = delete ? "wizard.title.delete" : "wizard.title.inactivate";
+				removeStepController = new StepsMainRunController(ureq, getWindowControl(), start, finishCallback, null,
+						translate(i18nTitle), "o_sel_ldap_delete_user_wizard");
+				listenTo(removeStepController);
+				getWindowControl().pushAsModalDialog(removeStepController.getInitialComponent());
 			}
 		}
+	}
+	
+	private List<Identity> getIdentitiesForRemoval(LdapContext ctx, boolean delete) {
+		// get deleted users
+		List<Identity> identitiesForRemoval = null;
+		try {
+			identitiesForRemoval = ldapLoginManager.getIdentitiesDeletedInLdap(ctx);
+			ctx.close();
+		} catch (NamingException e) {
+			showError("delete.error.connection.close");
+			logError("Could not close LDAP connection on manual delete sync", e);
+		} finally {
+			ldapLoginManager.freeSyncLock();
+		}
+
+		if (identitiesForRemoval != null) {
+			for(Iterator<Identity> it=identitiesForRemoval.iterator(); it.hasNext(); ) {
+				Integer identityStatus = it.next().getStatus();
+				if(Identity.STATUS_PERMANENT.equals(identityStatus)
+						|| (!delete && Identity.STATUS_INACTIVE.equals(identityStatus))) {
+					it.remove();
+				}
+			}
+		}
+		
+		return identitiesForRemoval;
 	}
 	
 	

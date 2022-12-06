@@ -28,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -53,17 +52,17 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * @author mrohrer
  */
-public class DeletStep00 extends BasicStep{
+public class RemovalStep00 extends BasicStep{
 
-	private List<Identity> identitiesToDelete;
-	private boolean hasIdentitesToDelete;
+	private List<Identity> identitiesForRemoval;
+	private boolean delete;
 	
-	public DeletStep00(UserRequest ureq, boolean hasIDToDelete, List<Identity> iDToDelete){
+	public RemovalStep00(UserRequest ureq, boolean delete, List<Identity> identities){
 		super(ureq);
 		setI18nTitleAndDescr("delete.step0.description", null);
-		setNextStep(new DeletStep01(ureq));
-		identitiesToDelete = iDToDelete;
-		hasIdentitesToDelete = hasIDToDelete;
+		setNextStep(new RemovalStep01(ureq, delete));
+		identitiesForRemoval = identities;
+		this.delete = delete;
 	}
 
 	@Override
@@ -73,21 +72,20 @@ public class DeletStep00 extends BasicStep{
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new DeletStepForm00(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new StepForm00(ureq, windowControl, form, stepsRunContext);
 	}
 	
-	private final class DeletStepForm00 extends StepFormBasicController{
+	private final class StepForm00 extends StepFormBasicController{
 		private FlexiTableElement tableEl;
 		private IdentityFlexiTableModel tableModel;
 
-		public DeletStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
-			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
+		public StepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
+			super(ureq, control, rootForm, runContext, LAYOUT_CUSTOM, "step");
 			UserManager um = UserManager.getInstance();
 			setTranslator(um.getPropertyHandlerTranslator(getTranslator()));
 			initForm(ureq);
-			addToRunContext("hasIdentitiesToDelete", hasIdentitesToDelete);
-			addToRunContext("identitiesToDelete", identitiesToDelete);
+			addToRunContext("hasIdentitiesToDelete", !identitiesForRemoval.isEmpty());
+			addToRunContext("identitiesToDelete", identitiesForRemoval);
 		}
 
 		@Override
@@ -104,12 +102,10 @@ public class DeletStep00 extends BasicStep{
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("index", getTranslator(), velocity_root + "/delet_step00.html");
-			formLayout.add(textContainer);
-			// Create selection tree and model
-			// Note: since the flexi table is not finished, we have to use the tree here as alternative
-			//identitiesToDelete = (List<Identity>) getFromRunContext("identitiesToDelete");
-			// use the user short description and not an own identifyer
+			String i18nDesc = delete ? "delete.step0.content" : "inactivate.step0.content";
+			setFormDescription(i18nDesc);
+
+			// use the user short description and not an own identifier
 			String usageIdentifyer = UserShortDescription.class.getCanonicalName();
 			List<UserPropertyHandler> handlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
 			
@@ -119,8 +115,8 @@ public class DeletStep00 extends BasicStep{
 				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userProperty.i18nColumnDescriptorLabelKey(), colPos++));
 			}
 
-			tableModel = new IdentityFlexiTableModel(identitiesToDelete, tableColumnModel, handlers, getLocale());
-			tableEl = uifactory.addTableElement(getWindowControl(), "newUsers", tableModel, getTranslator(), formLayout);
+			tableModel = new IdentityFlexiTableModel(identitiesForRemoval, tableColumnModel, handlers, getLocale());
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 			tableEl.setMultiSelect(true);
 			tableEl.setPageSize(10000);
 			tableEl.setSelectAllEnable(true);
