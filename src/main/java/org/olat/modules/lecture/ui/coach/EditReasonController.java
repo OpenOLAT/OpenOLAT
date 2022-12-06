@@ -60,6 +60,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNoticeType;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
@@ -100,6 +101,8 @@ public class EditReasonController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private LectureService lectureService;
 	
 	public EditReasonController(UserRequest ureq, WindowControl wControl, Form rootForm,
@@ -139,7 +142,7 @@ public class EditReasonController extends FormBasicController {
 		}
 		String[] authorizedValues = new String[] { translate("noticed.autorized.yes") };
 		authorizedEl = uifactory.addCheckboxesHorizontal("noticed.autorized", null, formLayout, authorizedKeys, authorizedValues);
-		authorizedEl.setVisible(secCallback.viewAs() != LectureRoles.participant);
+		authorizedEl.setVisible(secCallback.viewAs() != LectureRoles.participant && lectureModule.isAuthorizedAbsenceEnabled());
 		if(noticeWrapper.getAuthorized() != null && noticeWrapper.getAuthorized().booleanValue()) {
 			authorizedEl.select(authorizedKeys[0], true);
 		}
@@ -304,8 +307,6 @@ public class EditReasonController extends FormBasicController {
 		noticeWrapper.setAbsenceCategory(getAbsenceCategory());
 		if(authorizedEl.isVisible()) {
 			noticeWrapper.setAuthorized(authorizedEl.isAtLeastSelected(1));
-		} else {
-			noticeWrapper.setAuthorized(null);
 		}
 		if(typeEl.isVisible()) {
 			noticeWrapper.setAbsenceNoticeType(AbsenceNoticeType.valueOf(typeEl.getSelectedKey()));
