@@ -215,6 +215,7 @@ public class MSEditFormController extends FormBasicController {
 			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
 			
 			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, new String[]{"xx"}, new String[]{null});
+			gradeEnabledEl.setElementCssClass("o_sel_course_ms_grade");
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = modConfig.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 			gradeEnabledEl.select("xx", gradeEnabled);
@@ -232,6 +233,7 @@ public class MSEditFormController extends FormBasicController {
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 		}

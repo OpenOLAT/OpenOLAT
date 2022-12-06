@@ -459,11 +459,11 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
+		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), "o_sel_st_config", configvc);
 		if (score != null) {
-			tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
+			tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), "o_sel_st_score", score);
 		}
-		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 
 		if(editorEnabled) {

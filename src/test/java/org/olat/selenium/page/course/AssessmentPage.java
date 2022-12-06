@@ -19,50 +19,47 @@
  */
 package org.olat.selenium.page.course;
 
+import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
- * Initial date: 9 mars 2020<br>
+ * Initial date: 6 déc. 2022<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class STConfigurationPage {
-	
+public class AssessmentPage {
+
 	private final WebDriver browser;
 	
-	public STConfigurationPage(WebDriver browser) {
+	public AssessmentPage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public STConfigurationPage selectOverview() {
-		By tabBy = By.cssSelector("ul.o_node_config li.o_sel_st_config>a");
-		OOGraphene.waitElement(tabBy, browser);
-		browser.findElement(tabBy).click();
-		By configBy = By.cssSelector("fieldset.o_sel_st_overview_settings");
-		OOGraphene.waitElement(configBy, browser);
+	public AssessmentPage assertOnFailed() {
+		By failedBy = By.cssSelector("div.o_state.o_failed");
+		OOGraphene.waitElement(failedBy, browser);
+		WebElement failedEl = browser.findElement(failedBy);
+		Assert.assertTrue(failedEl.isDisplayed());
 		return this;
 	}
 	
-	public STConfigurationPage setDisplay(DisplayType type) {
-		By displayTypeBy = By.xpath("//fieldset[contains(@class,'o_sel_st_overview_settings')]//div[contains(@class,'o_sel_st_display_type')]//input[@type='radio'][@value='" + type + "']");
-		OOGraphene.click(displayTypeBy, browser);
-
-		if(type == DisplayType.system || type == DisplayType.peekview) {
-			By displayTwoColumnsBy = By.xpath("//fieldset[contains(@class,'o_sel_st_overview_settings')]//input[@type='checkbox'][@name='displayTwoColumns']");
-			OOGraphene.waitElement(displayTwoColumnsBy, browser);	
-		} else {
-			OOGraphene.waitBusy(browser);
-		}
+	public AssessmentPage assertOnPassed() {
+		By passedBy = By.cssSelector("div.o_state.o_passed");
+		OOGraphene.waitElement(passedBy, browser);
+		WebElement passedEl = browser.findElement(passedBy);
+		Assert.assertTrue(passedEl.isDisplayed());
 		return this;
 	}
 	
-	public enum DisplayType {
-		system,
-		peekview,
-		file,
-		delegate
+	public AssessmentPage assertOnSwissGrade(String grade) {
+		By gradeBy = By.xpath("//div[contains(@class,'o_personal')]//span[@class='o_grs_oo_grades_ch'][text()[contains(.,'" + grade + "')]]");
+		OOGraphene.waitElement(gradeBy, browser);
+		return this;
 	}
+	
+	
 }

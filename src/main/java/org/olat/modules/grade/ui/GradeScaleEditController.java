@@ -224,6 +224,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
+		generalCont.setElementCssClass("o_sel_grade_scale_general");
 		formLayout.add(generalCont);
 		
 		gradeSystemCont = FormLayoutContainer.createButtonLayout("gradeCont", getTranslator());
@@ -234,6 +235,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		
 		gradeSystemEl = uifactory.addStaticTextElement("grade.system", "", gradeSystemCont);
 		gradeSystemEditLink = uifactory.addFormLink("grade.system.selection.button", gradeSystemCont, Link.BUTTON);
+		gradeSystemEditLink.setElementCssClass("o_sel_grade_system_select");
 		
 		resolutionEl = uifactory.addStaticTextElement("grade.system.resolution", "", generalCont);
 		roundingEl = uifactory.addStaticTextElement("grade.system.rounding", "", generalCont);
@@ -381,6 +383,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 			buttonsCont.setElementCssClass("o_button_group o_button_group_right o_button_group_bottom");
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			submitButton = uifactory.addFormSubmitButton("save", buttonsCont);
+			submitButton.setElementCssClass("o_sel_grade_scale_save");
 		}
 	}
 

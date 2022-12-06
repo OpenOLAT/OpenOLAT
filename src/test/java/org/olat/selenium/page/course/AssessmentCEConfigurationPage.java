@@ -94,7 +94,7 @@ public class AssessmentCEConfigurationPage {
 	 * @param cutVal
 	 * @return
 	 */
-	public AssessmentCEConfigurationPage setRubricScore(float minVal, float maxVal, float cutVal) {
+	public AssessmentCEConfigurationPage setScore(float minVal, float maxVal, float cutVal) {
 		By scoreBy = By.id("o_fioform_score_SELBOX");
 		OOGraphene.waitElement(scoreBy, browser);
 		WebElement scoreEl = browser.findElement(scoreBy);
@@ -121,11 +121,35 @@ public class AssessmentCEConfigurationPage {
 		WebElement cutValEl = browser.findElement(cutValBy);
 		cutValEl.clear();
 		cutValEl.sendKeys(Float.toString(cutVal));
+		return this;
+	}
+	
+	public AssessmentCEConfigurationPage enableGrade(boolean auto) {
+		By enableBy = By.xpath("//div[contains(@class,'o_sel_course_ms_grade')]//input[@name='node.grade.enabled'][@type='checkbox']");
+		WebElement enableEl = browser.findElement(enableBy);
+		OOGraphene.check(enableEl, Boolean.TRUE);
 		
+		By editBy = By.cssSelector("a.o_sel_grade_edit_scale");
+		OOGraphene.waitElement(editBy, browser);
+		
+		By modeBy = By.xpath("//div[contains(@class,'o_sel_course_ms_grade_mode')]//input[@name='node.grade.auto'][@value='" + auto + "']");
+		browser.findElement(modeBy).click();
+		return this;
+	}
+	
+	public AssessmentCEConfigurationPage save() {
 		By saveBy = By.cssSelector(".o_sel_course_ms button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);
 		return this;
+	}
+	
+	public GradeConfigurationPage editGradingScale() {
+		By editScaleBy = By.cssSelector("fieldset.o_sel_course_ms a.o_sel_grade_edit_scale");
+		OOGraphene.click(editScaleBy, browser);
+		OOGraphene.waitModalDialog(browser);
+		return new GradeConfigurationPage(browser)
+				.assertOnConfiguration();
 	}
 }
