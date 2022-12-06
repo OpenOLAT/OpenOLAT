@@ -72,7 +72,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		MenuTree tree = (MenuTree) source;
 		if(tree.getMenuTreeItem() != null) {

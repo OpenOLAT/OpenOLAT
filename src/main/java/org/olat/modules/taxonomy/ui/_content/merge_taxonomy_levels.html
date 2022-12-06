@@ -3,20 +3,15 @@
 		<div class="o_error">$errorMsg</div>
 	#else
 		<div class="o_block">
-			<div class="form-group clearfix">
-				$r.render("mergeto_LABEL", "mergeto", "col-sm-3")
-				<div class='col-sm-9'>
-					$r.render("mergeto", "form")
-				</div>
-			</div>
+			$r.render("mergeto", "3_9", "form")
 		</div>
 	#end
 	<div class="form-group clearfix">
 		<div class="col-sm-offset-3 col-sm-9 ">
-			$r.render("cancel")
 			#if($r.available("merge.taxonomy.level"))
 				$r.render("merge.taxonomy.level")
 			#end
+			$r.render("cancel")
 		</div>
 	</div>
 </div>

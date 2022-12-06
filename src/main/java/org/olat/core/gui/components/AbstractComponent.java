@@ -55,6 +55,7 @@ public abstract class AbstractComponent implements Component {
 	private final String name;
 	private final String dispatchID;
 	private String elementCssClass;
+	private String layout;
 
 	private long timestamp = 1l;
 	private String timestampID = "1";
@@ -85,7 +86,7 @@ public abstract class AbstractComponent implements Component {
 	 * 
 	 * @param name the name of this component
 	 */
-	public AbstractComponent(String name) {
+	protected AbstractComponent(String name) {
 		this(null, name, null);
 	}
 	
@@ -93,7 +94,7 @@ public abstract class AbstractComponent implements Component {
 	 * @param id The id of the component, must be unique
 	 * @param name The name of this component
 	 */
-	public AbstractComponent(String id, String name) {
+	protected AbstractComponent(String id, String name) {
 		this(id, name, null);
 	}
 
@@ -102,7 +103,7 @@ public abstract class AbstractComponent implements Component {
 	 * @param name the name of this component
 	 * @param translator the translator
 	 */
-	public AbstractComponent(String name, Translator translator) {
+	protected AbstractComponent(String name, Translator translator) {
 		this(null, name, translator);
 		staticCmp = false;
 	}
@@ -113,7 +114,7 @@ public abstract class AbstractComponent implements Component {
 	 * @param name The name of this component
 	 * @param translator The translator
 	 */
-	public AbstractComponent(String id, String name, Translator translator) {
+	protected AbstractComponent(String id, String name, Translator translator) {
 		if(id == null) {
 			dispatchID = Long.toString(CodeHelper.getRAMUniqueID());
 			staticCmp = false;
@@ -161,12 +162,23 @@ public abstract class AbstractComponent implements Component {
 		return name;
 	}
 
+	@Override
 	public String getElementCssClass() {
 		return elementCssClass;
 	}
 
 	public void setElementCssClass(String elementCssClass) {
 		this.elementCssClass = elementCssClass;
+	}
+
+	@Override
+	public String getLayout() {
+		return layout;
+	}
+
+	@Override
+	public void setLayout(String layout) {
+		this.layout = layout;
 	}
 
 	/**
@@ -199,8 +211,6 @@ public abstract class AbstractComponent implements Component {
 	
 	protected abstract void doDispatchRequest(UserRequest ureq);
 
-	public abstract ComponentRenderer getHTMLRendererSingleton();
-
 	/**
 	 * called just before the rendering of the -whole tree- takes place, so e.g.
 	 * lazy fetching can be implemented, or issueing a request for a new moduleUri
@@ -209,11 +219,9 @@ public abstract class AbstractComponent implements Component {
 	 */
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
-		if (this.dirty) {
-			if(!staticCmp) {
-				timestamp++;
-				timestampID = Long.toString(timestamp);
-			}
+		if (dirty && !staticCmp) {
+			timestamp++;
+			timestampID = Long.toString(timestamp);
 		}
 	}
 	
@@ -239,13 +247,9 @@ public abstract class AbstractComponent implements Component {
 					// still continue
 				}
 
-				ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(new Runnable() {
-					@Override
-					public void run() {
-						listener.dispatchEvent(ureq, AbstractComponent.this, event);
-					}
-					
-				}, listener.getUserActivityLogger());
+				ThreadLocalUserActivityLoggerInstaller
+					.runWithUserActivityLogger(() -> listener.dispatchEvent(ureq, AbstractComponent.this, event)
+							,listener.getUserActivityLogger());
 			} else {
 				listenerA.dispatchEvent(ureq, AbstractComponent.this, event);
 			}
@@ -433,7 +437,7 @@ public abstract class AbstractComponent implements Component {
 	
 	@Override
 	public boolean getSpanAsDomReplaceable(){
-		return this.spanReplaceable;
+		return spanReplaceable;
 	}
 	
 	/**
@@ -443,8 +447,10 @@ public abstract class AbstractComponent implements Component {
 	 */
 	@Override
 	public boolean isDomReplacementWrapperRequired() {
-		return this.domReplacementWrapperRequired;
+		return domReplacementWrapperRequired;
 	}
+
+	@Override
 	public void setDomReplacementWrapperRequired(boolean domReplacementWrapperRequired) {
 		this.domReplacementWrapperRequired = domReplacementWrapperRequired;
 	}

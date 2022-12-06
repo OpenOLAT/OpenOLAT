@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -22,6 +23,7 @@ package org.olat.course.duedate.ui;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -38,24 +40,24 @@ import org.olat.core.gui.translator.Translator;
 public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		DueDateConfigComponent dueDateCmp = (DueDateConfigComponent)source;
 		DueDateFormItemImpl dueDateItem = dueDateCmp.getFormItem();
 
 		sb.append("<div class='form-inline'>");
 		if (dueDateItem.isRelative()) {
-			FormItem numOfDaysEl = dueDateItem.getNumOfDaysEl();
+			TextElement numOfDaysEl = dueDateItem.getNumOfDaysEl();
 			if(numOfDaysEl != null && numOfDaysEl.isVisible()) {
 				Component cmp = numOfDaysEl.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
 				cmp.setDirty(false);
 			}
 			sb.append(" <span class=\"form-control-static\">").append(translator.translate("days.after")).append("</span> ");
 			FormItem relativeToEl = dueDateItem.getRealtiveToDateEl();
 			if(relativeToEl != null && relativeToEl.isVisible()) {
 				Component cmp = relativeToEl.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
 				cmp.setDirty(false);
 			}
 		} else {
@@ -69,7 +71,7 @@ public class DueDateConfigComponentRenderer extends DefaultComponentRenderer {
 				}
 				
 				Component cmp = absoluteDateEl.getComponent();
-				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, new String[] { "form" });
 				cmp.setDirty(false);
 			}
 		}

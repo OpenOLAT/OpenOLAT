@@ -43,7 +43,7 @@ public class FlowComponentRenderer extends AssessmentObjectComponentRenderer {
 	private static final Logger log = Tracing.createLoggerFor(FlowComponentRenderer.class);
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		FlowComponent avc = (FlowComponent)source;
 		AssessmentRenderer aRenderer = new AssessmentRenderer(renderer);

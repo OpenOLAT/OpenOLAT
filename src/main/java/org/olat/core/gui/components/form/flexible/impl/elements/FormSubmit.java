@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -100,10 +99,9 @@ public class FormSubmit extends FormButton implements Submit{
 	}
 
 	@Override
-	protected Component getFormItemComponent() {
+	protected FormButtonComponent getFormItemComponent() {
 		return component;
 	}
-	
 	
 	/**
 	 * for submit renderer only

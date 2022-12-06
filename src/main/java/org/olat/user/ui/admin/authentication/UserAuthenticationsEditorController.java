@@ -105,6 +105,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		
 		nickNameEl = uifactory.addStaticTextElement("username", "", formLayout);
 		nickNameEl.getComponent().setSpanAsDomReplaceable(true);
 		editNickNameLink =  uifactory.addFormLink("edit", formLayout);

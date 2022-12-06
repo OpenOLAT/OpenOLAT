@@ -1,8 +1,5 @@
-$r.render("taxonomy")
-#if($f.hasError("taxonomy"))
-<div class="">$r.render("taxonomy_ERROR")</div>
-#end
+$r.render("taxonomy","minimal")
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("move.taxonomy.level")
+	$r.render("cancel")
 </div>

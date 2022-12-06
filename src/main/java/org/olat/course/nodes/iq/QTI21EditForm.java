@@ -491,6 +491,7 @@ public class QTI21EditForm extends FormBasicController {
 				testDateDependentEl.uncheckAll();
 			}
 			updateAssessmentModeVisibility();
+			markDirty();
 		} else if (confirmGradeCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
 				markDirty();
@@ -534,7 +535,7 @@ public class QTI21EditForm extends FormBasicController {
 		if (assessmentModeNameEl != null) {
 			assessmentModeNameEl.clearError();
 			if (assessmentModeNameEl.isVisible() && !StringHelper.containsNonWhitespace(assessmentModeNameEl.getValue())) {
-				assessmentModeNameEl.setErrorKey("form.legende.mandatory", null);
+				assessmentModeNameEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -550,13 +551,13 @@ public class QTI21EditForm extends FormBasicController {
 		if(startEl.isVisible()) {
 			allOk &= startEl.validate();
 			if (startEl.isMandatory() && !startEl.hasError() && !DueDateConfig.isDueDate(startEl.getDueDateConfig())) {
-				startEl.setErrorKey("form.legende.mandatory", null);
+				startEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			allOk &= endEl.validate();
 			if (endEl.isMandatory() && !endEl.hasError() && !DueDateConfig.isDueDate(endEl.getDueDateConfig())) {
-				endEl.setErrorKey("form.legende.mandatory", null);
+				endEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
@@ -565,10 +566,10 @@ public class QTI21EditForm extends FormBasicController {
 				DueDateConfig endDateConfig = endEl.getDueDateConfig();
 				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
 					if (endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
-						endEl.setErrorKey("error.begin.after.end", null);
+						endEl.setErrorKey("error.begin.after.end");
 						allOk &= false;
 					} else if (endDateConfig.getAbsoluteDate().equals(startDateConfig.getAbsoluteDate())) {
-						endEl.setErrorKey("error.begin.end.same", null);
+						endEl.setErrorKey("error.begin.end.same");
 						allOk &= false;
 					}
 				}

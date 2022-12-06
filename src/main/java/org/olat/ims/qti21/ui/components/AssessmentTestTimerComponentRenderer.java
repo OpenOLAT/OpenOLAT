@@ -38,7 +38,7 @@ import org.olat.ims.qti21.ui.AssessmentTestDisplayController.QtiWorksStatus;
 public class AssessmentTestTimerComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		AssessmentTestTimerComponent cmp = (AssessmentTestTimerComponent)source;
@@ -53,7 +53,7 @@ public class AssessmentTestTimerComponentRenderer extends DefaultComponentRender
 			  .append(" <span class='o_qti_timer_minute'></span> <span class='o_qti_timer_label_minute'>").append(translator.translate("timelimit.short.minute")).append("</span>")
 			  .append(" <span class='o_qti_timer_second'></span> <span class='o_qti_timer_label_second'>").append(translator.translate("timelimit.short.second")).append("</span>")
 			  .append("</strong> \u007C ")
-			  .append(translator.translate("timelimit.ending.at", new String[] { qtiWorksStatus.getAssessmentTestEndTime() }))
+			  .append(translator.translate("timelimit.ending.at", qtiWorksStatus.getAssessmentTestEndTime()))
 			  .append("<span class='o_qti_times_up' style='display:none;'>").append(translator.translate("timelimit.finished")).append("</span>")
 			  .append("<span class='o_qti_times_message o_5_minutes' style='display:none;'><i class='o_icon o_icon_warning'> </i> ").append(translator.translate("timelimit.5.minutes.message")).append("</span>")
 			  .append("</div>")

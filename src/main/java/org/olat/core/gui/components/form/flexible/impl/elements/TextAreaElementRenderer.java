@@ -47,7 +47,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		//
 		TextAreaElementComponent teC = (TextAreaElementComponent) source;
@@ -87,11 +87,6 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 				sb.append(" o_original_line_breaks");
 			}
 			sb.append("' style='");
-			/* we do not add the width, not applied to text areas in oo despite configurable 
-			if (teC.getCols() != -1) {
-				sb.append(" width:").append(teC.getCols()).append("em;");
-			}
-			*/
 			if (rows != -1) {
 				sb.append(" height:").append(rows * 1.45).append("em;"); // line-height is about 1.5
 			}

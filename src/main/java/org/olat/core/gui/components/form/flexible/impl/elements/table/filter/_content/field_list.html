@@ -5,11 +5,8 @@
 	</div>
 	#end
 	<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end">
-	$r.render("list")
+	$r.render("list","minimal")
 	</div>
-	#if($f.hasError("list"))
-		<br>$r.render("list_ERROR")
-	#end
 #else 
 	$r.translate("no.values.available")
 #end

@@ -1,8 +1,5 @@
-$r.render("elements")
-#if($f.hasError("elements"))
-<div class="">$r.render("elements_ERROR")</div>
-#end
+$r.render("elements", "minimal")
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("move.element")
+	$r.render("cancel")
 </div>

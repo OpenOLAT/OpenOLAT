@@ -8,13 +8,11 @@
 	#foreach($checkpoint in $checkpoints)
 		#set( $iter = $foreach.count - 1)
 		#set( $title = $titleInputList.get($iter).getName() )
-		#set( $titleErr =	$title + "_ERROR" )
 		#set( $descr =	$descriptionInputList.get($iter).getName() )
-		#set( $descrErr = $descr + "_ERROR" )
 		#set( $hasError = "false" )
 		#if($titleInputList.get($iter).visible)
 			<tr>
-				<td>$r.render($titleErr)</td>
+				<td>$r.render($title, "error")</td>
 				<td>$r.render($titleInputList.get($iter).getName())</td>
 				<td>$r.render($descriptionInputList.get($iter).getName())</td>
 				<td>$r.render($modeInputList.get($iter).getName())</td>

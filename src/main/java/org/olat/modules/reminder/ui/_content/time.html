@@ -1,7 +1,2 @@
 <div class='form-inline'>$r.render("hours") <span class="form-control-static">:</span> $r.render("minutes") $r.render("timezone")</div>
-#if($f.hasError("hours"))
-	<br/>$r.render("hours_ERROR")
-#end
-#if($f.hasError("minutes"))
-	<br/>$r.render("minutes_ERROR")
-#end
+$r.render("errors")

@@ -164,9 +164,9 @@ class UserBulkChangeStep01 extends BasicStep {
 				RoleChange change = (RoleChange)actionEl.getUserObject();
 				if(OrganisationRoles.user.equals(change.getRole())) {
 					if(actionEl.isOneSelected() && "remove".equals(actionEl.getSelectedKey())) {
-						actionEl.setErrorKey("warning.remove.user", true);
+						actionEl.setWarningKey("warning.remove.user");
 					} else {
-						actionEl.setErrorKey(null, true);
+						actionEl.setWarningKey(null);
 					}
 				}
 			}

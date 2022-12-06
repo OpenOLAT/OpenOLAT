@@ -261,35 +261,35 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		startRecurringDateEl.clearError();
 		if(startRecurringDateEl.getDate() == null) {
-			startRecurringDateEl.setErrorKey("form.legende.mandatory", null);
+			startRecurringDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		endRecurringDateEl.clearError();
 		if(endRecurringDateEl.getDate() == null) {
-			endRecurringDateEl.setErrorKey("form.legende.mandatory", null);
+			endRecurringDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(startRecurringDateEl.getDate() != null && endRecurringDateEl.getDate() != null
 				&& endRecurringDateEl.getDate().before(startRecurringDateEl.getDate())) {
-			endRecurringDateEl.setErrorKey("error.start.after.end", null);
+			endRecurringDateEl.setErrorKey("error.start.after.end");
 			allOk &= false;
 		}
 
 		startTimeEl.clearError();
 		if(startTimeEl.getDate() == null) {
-			startTimeEl.setErrorKey("form.legende.mandatory", null);
+			startTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!validateFormItem(startTimeEl)) {
+		} else if(!validateFormItem(ureq, startTimeEl)) {
 			allOk &= false;
 		}
 		
 		endTimeEl.clearError();
 		if(endTimeEl.getDate() == null) {
-			endTimeEl.setErrorKey("form.legende.mandatory", null);
+			endTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!validateFormItem(endTimeEl)) {
+		} else if(!validateFormItem(ureq, endTimeEl)) {
 			allOk &= false;
 		}
 		
@@ -297,7 +297,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 			long start = startTimeEl.getDate().getTime();
 			long end = endTimeEl.getDate().getTime();
 			if(start > end) {
-				endTimeEl.setErrorKey("error.start.after.end", null);
+				endTimeEl.setErrorKey("error.start.after.end");
 				allOk &= false;
 			}
 		}
@@ -305,7 +305,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		if(allOk) {
 			Date firstDate = getFirstDateTime();
 			if(firstDate != null && firstDate.before(new Date())) {
-				startRecurringDateEl.setErrorKey("error.first.date.in.past", null);
+				startRecurringDateEl.setErrorKey("error.first.date.in.past");
 				allOk &= false;
 			}
 		}
@@ -323,10 +323,10 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (nameEl.getValue().contains("&")) {
-			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			nameEl.setErrorKey("form.invalidchar.noamp");
 			allOk &= false;
 		}
 		return allOk;
@@ -337,7 +337,7 @@ public class BigBlugButtonMeetingConfigurationController extends StepFormBasicCo
 		
 		el.clearError();
 		if(!el.isOneSelected()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

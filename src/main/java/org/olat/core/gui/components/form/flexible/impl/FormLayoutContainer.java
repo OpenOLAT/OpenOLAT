@@ -1,4 +1,5 @@
 /**
+
 * OLAT - Online Learning and Training<br>
 * http://www.olat.org
 * <p>
@@ -29,18 +30,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.context.Context;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormMultipartItem;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -53,24 +56,53 @@ import org.olat.core.util.Util;
  * @author patrickb
  */
 public class FormLayoutContainer extends FormItemImpl implements FormItemContainer, Disposable {
+	
+	private static final Logger log = Tracing.createLoggerFor(FormLayoutContainer.class);
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(FormLayoutContainer.class);
-	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
-	private static final String LAYOUT_DEFAULT_6_6 = VELOCITY_ROOT + "/form_default_6_6.html";
-	private static final String LAYOUT_DEFAULT_9_3 = VELOCITY_ROOT + "/form_default_9_3.html";
-	private static final String LAYOUT_TABLE_CONDENSED = VELOCITY_ROOT + "/form_table_condensed.html";
-	private static final String LAYOUT_DEFAULT_2_10 = VELOCITY_ROOT + "/form_default_2_10.html";
-	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
-	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
-	private static final String LAYOUT_BAREBONE = VELOCITY_ROOT + "/form_barebone.html";
-	private static final String LAYOUT_BUTTONGROUP = VELOCITY_ROOT + "/form_buttongroup.html";
-	private static final String LAYOUT_INPUTGROUP = VELOCITY_ROOT + "/form_inputgroup.html";
-	private static final String LAYOUT_PANEL = VELOCITY_ROOT + "/form_panel.html";
+
+	public enum FormLayout {
+		
+		LAYOUT_DEFAULT("3_9", false, VELOCITY_ROOT + "/form_default.html"),
+		LAYOUT_DEFAULT_6_6("6_6", false, VELOCITY_ROOT + "/form_default_6_6.html"),
+		LAYOUT_DEFAULT_9_3("9_3", false, VELOCITY_ROOT + "/form_default_9_3.html"),
+		LAYOUT_DEFAULT_2_10("2_10", false, VELOCITY_ROOT + "/form_default_2_10.html"),
+		LAYOUT_TABLE_CONDENSED("tr", false, VELOCITY_ROOT + "/form_table_condensed.html"),
+		LAYOUT_HORIZONTAL("horizontal", false, VELOCITY_ROOT + "/form_horizontal.html"),
+		LAYOUT_VERTICAL("vertical", false, VELOCITY_ROOT + "/form_vertical.html"),
+		LAYOUT_BAREBONE("barebone", true, VELOCITY_ROOT + "/form_barebone.html"),
+		LAYOUT_BUTTONGROUP("buttongroup", false, VELOCITY_ROOT + "/form_buttongroup.html"),
+		LAYOUT_INPUTGROUP("inputgroup", false, VELOCITY_ROOT + "/form_inputgroup.html"),
+		LAYOUT_PANEL("panel", false, VELOCITY_ROOT + "/form_panel.html"),
+		LAYOUT_INLINE("inline", false, VELOCITY_ROOT + "/form_inline.html");
+		
+		private final String page;
+		private final String layout;
+		private final boolean domWrapperRequired;
+		
+		private FormLayout(String layout, boolean domWrapperRequired, String page) {
+			this.layout = layout;
+			this.page = page;
+			this.domWrapperRequired = domWrapperRequired;
+		}
+		
+		public String page() {
+			return page;
+		}
+		
+		public String layout() {
+			return layout;
+		}
+
+		public boolean domWrapperRequired() {
+			return domWrapperRequired;
+		}
+	}
 
 	/**
 	 * manage the form components of this form container
 	 */
-	private final VelocityContainer formLayoutContainer;
+	private final FormVelocityContainer formLayoutContainer;
 	/**
 	 * formComponents and formComponentNames are managed together, change something here needs a change there.
 	 * formComponents contain the FormItem based on their name
@@ -80,7 +112,22 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 */
 	private final Map<String,FormItem> formComponents;
 	private final List<String> formComponentsNames;
-	private boolean hasRootForm=false;
+	
+	private boolean hasRootForm = false;
+	private final String layout;
+	private final Consumer<FormItem> postAddFormItem;
+	
+	private static final Consumer<FormItem> DOM_REQUIRED_FALSE = (FormItem item) -> {
+		if(item.getComponent() != null) {
+			item.getComponent().setDomReplacementWrapperRequired(false);
+		}
+	};
+	
+	private static final Consumer<FormItem> SPAN_WRAPPER = (FormItem item) -> {
+		if(item.getComponent() != null) {
+			item.getComponent().setSpanAsDomReplaceable(true);
+		}
+	};
 
 
 	/**
@@ -103,19 +150,18 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @param name
 	 * @param translator
 	 */
-	private FormLayoutContainer(String name, Translator formTranslator, String page) {
-		this(null, name, formTranslator, page);
-		
+	private FormLayoutContainer(String name, Translator formTranslator, FormLayout layout, Consumer<FormItem> postAddFormItem) {
+		this(null, name, formTranslator, layout.layout(), layout.page(), layout.domWrapperRequired(), postAddFormItem);
 	}
 
-	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
+	private FormLayoutContainer(String id, String name, Translator formTranslator, String layout, String page, boolean domWrapperRequired, Consumer<FormItem> postAddFormItem) {
 		super(id, name, false);
-		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
-		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL)
-				|| page.equals(LAYOUT_BUTTONGROUP) || page.equals(LAYOUT_INPUTGROUP) || page.equals(LAYOUT_TABLE_CONDENSED)) {
-			// optimize for lower DOM element count - provides its own DOM ID in velocity template
-			formLayoutContainer.setDomReplacementWrapperRequired(false);
-		}
+		this.layout = layout;
+		this.postAddFormItem = postAddFormItem;
+		
+		formLayoutContainer = new FormVelocityContainer(id == null ? null : id + "_VC", name, page, this, formTranslator);
+		formLayoutContainer.setDomReplacementWrapperRequired(domWrapperRequired);
+
 		translator = formTranslator;
 		// add the form decorator for the $f.hasError("ddd") etc.
 		formLayoutContainer.contextPut("f", new FormDecorator(this));
@@ -141,13 +187,29 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 				continue;
 			}
 			if(item.isVisible() && item.isEnabled()) {
-				allOk &= item.validate();
+				if(!item.isValidationDeferred()) {
+					boolean valid = item.validate();
+					log.debug("Validate {} of {}", valid, formComponentName);
+					allOk &= valid;
+				}
 			} else if(item.hasError()) {
+				log.debug("Clear error of {}", formComponentName);
 				item.clearError();
 			}
 		}
 
 		return allOk;
+	}
+	
+	public void validateDeferred() {	
+		for(String formComponentName:formComponentsNames) {
+			FormItem item = formComponents.get(formComponentName);
+			if(item instanceof FormLayoutContainer) {
+				((FormLayoutContainer)item).validateDeferred();
+			} else if(item.isValidationDeferred()) {
+				item.validate();
+			}
+		}
 	}
 
 	@Override
@@ -163,7 +225,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 
 	@Override
-	public void add(FormItem formComp) {
+	public final void add(FormItem formComp) {
 		add(formComp.getName(), formComp);
 	}
 
@@ -184,8 +246,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		}
 		formComp.setTranslator(itemTranslator);
 		formComp.setRootForm(getRootForm());
-		//
-		String formCompName = name;
+		if(layout != null && formComp.getFormLayout() == null) {
+			formComp.setFormLayout(layout);
+		}
+		
+		final String formCompName = name;
 		// book keeping of FormComponent order
 		formComponentsNames.add(formCompName);
 		formComponents.put(formCompName, formComp);
@@ -194,13 +259,14 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		 * add the gui representation
 		 */
 		formLayoutContainer.put(formCompName, formComp.getComponent());
-		formLayoutContainer.put(formCompName + FormItem.ERRORC, formComp.getErrorC());
-		formLayoutContainer.put(formCompName + FormItem.EXAMPLEC, formComp.getExampleC());
-		formLayoutContainer.put(formCompName + FormItem.LABELC, formComp.getLabelC());
 
 		// Check for multipart data, add upload limit to form
 		if (formComp instanceof FormMultipartItem) {
 			getRootForm().setMultipartEnabled(true);
+		}
+		
+		if(postAddFormItem != null) {
+			postAddFormItem.accept(formComp);
 		}
 	}
 	
@@ -219,9 +285,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		 * remove the gui representation
 		 */
 		formLayoutContainer.remove(toBeReplaced.getComponent());
-		formLayoutContainer.remove(toBeReplaced.getErrorC());
-		formLayoutContainer.remove(toBeReplaced.getExampleC());
-		formLayoutContainer.remove(toBeReplaced.getLabelC());
 		
 		
 	// set the formtranslator, and parent
@@ -242,9 +305,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		 * add the gui representation
 		 */
 		formLayoutContainer.put(formCompName, with.getComponent());
-		formLayoutContainer.put(formCompName + FormItem.ERRORC, with.getErrorC());
-		formLayoutContainer.put(formCompName + FormItem.EXAMPLEC, with.getExampleC());
-		formLayoutContainer.put(formCompName + FormItem.LABELC, with.getLabelC());
 
 		// Check for multipart data, add upload limit to form
 		if (with instanceof FormMultipartItem) {
@@ -272,9 +332,6 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		 * remove the gui representation
 		 */
 		formLayoutContainer.remove(toBeRemoved.getComponent());
-		formLayoutContainer.remove(toBeRemoved.getErrorC());
-		formLayoutContainer.remove(toBeRemoved.getExampleC());
-		formLayoutContainer.remove(toBeRemoved.getLabelC());
 	}
 	
 	public void removeAll() {
@@ -293,7 +350,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 	
 	@Override
-	public VelocityContainer getFormItemComponent() {
+	public FormVelocityContainer getFormItemComponent() {
 		return formLayoutContainer;
 	}
 	
@@ -348,6 +405,16 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	@Override
 	public boolean isDomReplacementWrapperRequired() {
 		return formLayoutContainer.isDomReplacementWrapperRequired();
+	}
+	
+	/**
+	 * The default layout and some others has per default the wrapper
+	 * disabled.
+	 * 
+	 * @param required
+	 */
+	public void setDomReplacementWrapperRequired(boolean required) {
+		formLayoutContainer.setDomReplacementWrapperRequired(required);
 	}
 	
 	public String getId(String prefix) {
@@ -424,17 +491,10 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 	
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.FormLayouter#setDirty(boolean)
-	 */
 	public void setDirty(boolean dirty){
 		formLayoutContainer.setDirty(dirty);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#setEnabled(boolean)
-	 */
 	@Override
 	public void setEnabled(boolean isEnabled) {
 		//enable / disable this
@@ -453,7 +513,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createDefaultFormLayout(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_DEFAULT, DOM_REQUIRED_FALSE);
 	}
 	
 	/**
@@ -463,7 +523,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createDefaultFormLayout_6_6(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT_6_6);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_DEFAULT_6_6, DOM_REQUIRED_FALSE);
 	}
 	
 	
@@ -474,7 +534,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createDefaultFormLayout_9_3(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT_9_3);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_DEFAULT_9_3, DOM_REQUIRED_FALSE);
 	}
 	
 	/**
@@ -484,7 +544,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createDefaultFormLayout_2_10(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_DEFAULT_2_10);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_DEFAULT_2_10, DOM_REQUIRED_FALSE);
 	}
 	
 	/**
@@ -495,7 +555,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createHorizontalFormLayout(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_HORIZONTAL);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_HORIZONTAL, DOM_REQUIRED_FALSE);
 	}
 
 	/**
@@ -508,7 +568,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createVerticalFormLayout(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_VERTICAL);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_VERTICAL, DOM_REQUIRED_FALSE);
 	}
 	
 	/**
@@ -519,7 +579,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createBareBoneFormLayout(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_BAREBONE);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_BAREBONE, null);
 	}
 	
 	/**
@@ -529,7 +589,19 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createPanelFormLayout(String name, Translator formTranslator){
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_PANEL);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_PANEL, null);
+	}
+	
+	/**
+	 * Create a layout of inlined items. The container sets the wrapper
+	 * as &lt;span&gt;.
+	 * 
+	 * @param name The name of the container
+	 * @param formTranslator The translator
+	 * @return An inline container
+	 */
+	public static FormLayoutContainer createInlineFormLayout(String name, Translator formTranslator){
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_INLINE, SPAN_WRAPPER);
 	}
 
 	/**
@@ -542,17 +614,19 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return
 	 */
 	public static FormLayoutContainer createButtonLayout(String name, Translator formTranslator) {
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_BUTTONGROUP);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_BUTTONGROUP, null);
 	}
 	
 	/**
+	 * Table layout, th left, td right. The container will always set the flag DOM replacement
+	 * wrapper required to false.
 	 * 
 	 * @param name
 	 * @param formTranslator
 	 * @return
 	 */
 	public static FormLayoutContainer createTableCondensedLayout(String name, Translator formTranslator) {
-		return new FormLayoutContainer(name, formTranslator, LAYOUT_TABLE_CONDENSED);
+		return new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_TABLE_CONDENSED, DOM_REQUIRED_FALSE);
 	}
 
 	/**
@@ -569,7 +643,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	 * @return the form layout container
 	 */
 	public static FormLayoutContainer createInputGroupLayout(String name, Translator formTranslator, String leftTextAddOn, String rightTextAddOn) {
-		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, LAYOUT_INPUTGROUP);
+		FormLayoutContainer tmp = new FormLayoutContainer(name, formTranslator, FormLayout.LAYOUT_INPUTGROUP, null);
 		if (StringHelper.containsNonWhitespace(leftTextAddOn)) {
 			tmp.contextPut("leftAddOn", leftTextAddOn);
 		}
@@ -592,7 +666,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	}
 
 	public static FormLayoutContainer createCustomFormLayout(String id, String name, Translator formTranslator, String page) {	
-		return new FormLayoutContainer(id, name, formTranslator, page);
+		return new FormLayoutContainer(id, name, formTranslator, null, page, true, null);
 	}
 
 	@Override

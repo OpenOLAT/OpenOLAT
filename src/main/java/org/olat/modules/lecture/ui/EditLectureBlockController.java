@@ -332,33 +332,33 @@ public class EditLectureBlockController extends FormBasicController {
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		plannedLecturesEl.clearError();
 		if(!plannedLecturesEl.isOneSelected()) {
-			plannedLecturesEl.setErrorKey("form.legende.mandatory", null);
+			plannedLecturesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		teacherEl.clearError();
 		if(!teacherEl.isAtLeastSelected(1)) {
-			teacherEl.setErrorKey("form.legende.mandatory", null);
+			teacherEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		groupsEl.clearError();
 		if(!groupsEl.isAtLeastSelected(1)) {
-			groupsEl.setErrorKey("form.legende.mandatory", null);
+			groupsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		dateEl.clearError();
 		if(dateEl.getDate() == null) {
-			dateEl.setErrorKey("form.legende.mandatory", null);
+			dateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!validateFormItem(dateEl)) {
+		} else if(!validateFormItem(ureq, dateEl)) {
 			allOk &= false;
 		}
 

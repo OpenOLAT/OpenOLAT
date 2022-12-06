@@ -45,7 +45,7 @@ import com.google.common.base.Objects;
  */
 public abstract class AbstractTextElement extends FormItemImpl implements TextElement {
 
-	public AbstractTextElement(String name) {
+	protected AbstractTextElement(String name) {
 		this(name, false);
 	}
 	
@@ -124,17 +124,11 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#getValue()
-	 */
 	@Override
 	public String getValue() {
 		return value;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.TextElement#getValue(org.olat.core.util.filter.Filter)
-	 */
 	@Override
 	public String getValue(Filter filter) {
 		return filter.filter(value);
@@ -256,7 +250,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 
 	private boolean notEmpty(){
 		if (value == null || value.equals("")) {
-			setErrorKey(notEmptyErrorKey, null);
+			setErrorKey(notEmptyErrorKey);
 			return false;
 		}
 		clearError();
@@ -322,7 +316,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	
 	private boolean checkForIsEqual(){
 		if (value == null || !value.equals(checkForOtherValue)) {
-			setErrorKey(otherValueErrorKey, null);
+			setErrorKey(otherValueErrorKey);
 			return false;
 		}
 		return true;
@@ -347,7 +341,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public boolean isEmpty(String errorKey) {
 		if (isEmpty()) {
-			setErrorKey(errorKey, null);
+			setErrorKey(errorKey);
 			return true;
 		}
 		return false;
@@ -445,7 +439,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	
 	private boolean checkRegexMatch(){
 		if (value == null || !value.matches(checkRegexp)) {
-			setErrorKey(checkRegexpErrorKey, null);
+			setErrorKey(checkRegexpErrorKey);
 			return false;
 		}
 		return true;

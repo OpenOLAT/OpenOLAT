@@ -39,6 +39,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.Window;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.tree.InsertionPoint.Position;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -52,7 +53,7 @@ import org.olat.core.util.tree.INodeFilter;
  * 
  * @author Felix Jost
  */
-public class MenuTree extends AbstractComponent {
+public class MenuTree extends AbstractComponent implements FormBaseComponent {
 	private static final ComponentRenderer RENDERER = new MenuTreeRenderer();
 
 	/**
@@ -160,6 +161,16 @@ public class MenuTree extends AbstractComponent {
 		this.menuTreeItem = menuTreeItem;
 	}
 	
+	@Override
+	public String getFormDispatchId() {
+		return DISPPREFIX.concat(super.getDispatchID());
+	}
+
+	@Override
+	public MenuTreeItem getFormItem() {
+		return menuTreeItem;
+	}
+
 	@Override
 	public void validate(UserRequest ureq, ValidationResult vr) {
 		super.validate(ureq, vr);

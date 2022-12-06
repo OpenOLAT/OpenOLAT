@@ -29,13 +29,13 @@
 	<div class="col-sm-10">
 		<div class="row">
 			<div class="col-sm-3">
-				$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}_LABEL")
+				$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}","label")
 				<div class="o_edubase_bs_book_id">
 					$r.render(${bookSection.getBookIdEl().getComponent().getComponentName()})
 				</div>
 				#if($f.hasError($bookSection.getBookIdEl().getComponent().getComponentName()))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
-					$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}_ERROR")
+					$r.render("${bookSection.getBookIdEl().getComponent().getComponentName()}","error")
 				#end
 			</div>
 			<div class="col-sm-1">
@@ -45,25 +45,25 @@
 				$r.render(${bookSection.getDetailsLinkEl().getComponent().getComponentName()})
 			</div>
 			<div class="col-sm-4">
-				$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}_LABEL")
+				$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}","label")
 				$r.render(${bookSection.getPageFromEl().getComponent().getComponentName()})
 				#if($f.hasError($bookSection.getPageFromEl().getComponent().getComponentName()))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
-					$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}_ERROR")
+					$r.render("${bookSection.getPageFromEl().getComponent().getComponentName()}","error")
 				#end
 			</div>
 			<div class="col-sm-4">
-				$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}_LABEL")
+				$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}","label")
 				$r.render(${bookSection.getPageToEl().getComponent().getComponentName()})
 				#if($f.hasError($bookSection.getPageToEl().getComponent().getComponentName()))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
-					$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}_ERROR")
+					$r.render("${bookSection.getPageToEl().getComponent().getComponentName()}","error")
 				#end
 			</div>
 		</div>
 		<div class="row">
 			<div class="col-sm-12">
-				$r.render("${bookSection.getTitleEl().getComponent().getComponentName()}_LABEL")
+				$r.render("${bookSection.getTitleEl().getComponent().getComponentName()}","label")
 				$r.render(${bookSection.getTitleEl().getComponent().getComponentName()})
 				#if($f.hasError($item))
 					<span class="o_icon o_icon_error form-control-feedback"></span>
@@ -72,7 +72,7 @@
 		</div>
 		<div class="row">
 			<div class="col-sm-12">
-				$r.render("${bookSection.getDescriptionEl().getComponent().getComponentName()}_LABEL")
+				$r.render("${bookSection.getDescriptionEl().getComponent().getComponentName()}","label")
 				$r.render(${bookSection.getDescriptionEl().getComponent().getComponentName()})
 				#if($f.hasError($item))
 					<span class="o_icon o_icon_error form-control-feedback"></span>

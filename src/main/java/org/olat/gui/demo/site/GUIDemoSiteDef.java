@@ -29,7 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.AbstractSiteDefinition;
 import org.olat.core.gui.control.navigation.SiteConfiguration;
-import org.olat.core.gui.control.navigation.SiteDefinition;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
@@ -41,7 +40,7 @@ import org.olat.core.gui.control.navigation.SiteInstance;
  * Initial Date:  11.09.2007 <br>
  * @author Lavinia Dumitrescu
  */
-public class GUIDemoSiteDef extends AbstractSiteDefinition implements SiteDefinition {
+public class GUIDemoSiteDef extends AbstractSiteDefinition {
 
 	@Override
 	public SiteInstance createSite(UserRequest ureq, WindowControl wControl, SiteConfiguration config) {

@@ -44,7 +44,7 @@ import org.olat.modules.ceditor.ui.PageEditorUIFactory;
 public class ContentEditorContainerComponentRenderer extends AbstractContentEditorComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		ContentEditorContainerComponent cmp = (ContentEditorContainerComponent)source;

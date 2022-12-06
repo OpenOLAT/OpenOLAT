@@ -19,8 +19,6 @@
  */
 package org.olat.course.condition.additionalconditions;
 
-import java.io.Serializable;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -28,7 +26,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
-public abstract class AdditionalCondition extends Condition implements Cloneable, Serializable {
+public abstract class AdditionalCondition extends Condition {
 
 	private static final long serialVersionUID = -65033606683343812L;
 	

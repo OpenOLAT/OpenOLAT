@@ -92,12 +92,27 @@ public class ConfirmBusinessGroupDefinitivelyDeleteController extends FormBasicC
 		}
 		
 		String[] notifications = new String[] { translate("dialog.modal.bg.mail.text") };
-		notificationEl = uifactory.addCheckboxesHorizontal("notifications", "dialog.modal.bg.mail.text", formLayout, new String[]{ "" },  notifications);
+		notificationEl = uifactory.addCheckboxesHorizontal("notifications", null, formLayout, new String[]{ "" },  notifications);
 		notificationEl.setVisible(hasMembers);
 		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		FormSubmit submit = uifactory.addFormSubmitButton("delete.group", "delete.group", formLayout);
 		submit.setElementCssClass("btn btn-default btn-danger");
+	}	
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		if(notificationEl.isVisible()) {
+			notificationEl.clearError();
+			if(!notificationEl.isAtLeastSelected(1)) {
+				notificationEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override

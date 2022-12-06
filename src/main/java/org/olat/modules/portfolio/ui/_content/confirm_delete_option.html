@@ -1,21 +1,8 @@
 <fieldset class="o_form form-horizontal">
-	<div class="form-group o_warning $f.getElementCssClass("acknowledge") #if($f.hasError("acknowledge")) has-feedback has-error #end clearfix">
-		#if ($f.hasLabel("acknowledge") && $r.visible("acknowledge_LABEL"))
-			$r.render("acknowledge_LABEL", "acknowledge", "col-sm-3")
-		#end
-		<div class='col-sm-9'>
-			$r.render("acknowledge", "form")
-			#if($f.hasError("acknowledge"))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasError("acknowledge"))
-			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("acknowledge_ERROR")
-			</div>
-		#end
+	<div class="o_warning">
+		$r.render("acknowledge", "3_9")
 	</div>
-	<div class="col-sm-offset-3 col-sm-9">
-		$r.render("cancel") $r.render("delete")
+	<div class="o_block col-sm-offset-3 col-sm-9">
+		$r.render("delete") $r.render("cancel")
 	</div>
 </fieldset>

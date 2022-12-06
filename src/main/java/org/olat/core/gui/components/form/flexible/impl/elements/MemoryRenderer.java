@@ -45,7 +45,7 @@ public class MemoryRenderer extends DefaultComponentRenderer {
 	private static final String[] bars = new String[]{ "progress-bar-success", "progress-bar-warning", "progress-bar-info" };
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		MemoryComponent cmp = (MemoryComponent)source;

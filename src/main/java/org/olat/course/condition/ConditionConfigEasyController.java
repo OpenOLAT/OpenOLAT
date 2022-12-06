@@ -635,7 +635,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		
 		dateSubContainer.clearError();
 		if (dateSwitch.getSelectedKeys().size() == 1) {
-			retVal &= validateFromToDates();
+			retVal &= validateFromToDates(ureq);
 		}
 
 		// (2)
@@ -647,10 +647,10 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			// foop d fbg,dfbg,f ,gfbirst check two error cases of a selection
 			// no node selected or a deleted node selected
 			if (nodePassed.getSelectedKey().equals(NO_NODE_SELECTED_IDENTIFYER)) {				
-				nodePassed.setErrorKey("form.easy.error.nodePassed", null);
+				nodePassed.setErrorKey("form.easy.error.nodePassed");
 				retVal = false;
 			} else if (nodePassed.getSelectedKey().equals(DELETED_NODE_IDENTIFYER)) {
-				nodePassed.setErrorKey("form.easy.error.nodeDeleted", null);
+				nodePassed.setErrorKey("form.easy.error.nodeDeleted");
 				retVal = false;
 			} else {
 				//clear nodepassed error
@@ -666,7 +666,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		return retVal;
 	}
 	
-	private boolean validateFromToDates() {
+	private boolean validateFromToDates(UserRequest ureq) {
 		boolean allOk = true;
 		
 		Date fromDateVal = fromDate.getDate();
@@ -680,9 +680,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		// one must be set
 		if (fromDate.isEmpty() && toDate.isEmpty()) {
 			// error concern both input fields -> set it as switch error				
-			dateSubContainer.setErrorKey("form.easy.error.date", null);
+			dateSubContainer.setErrorKey("form.easy.error.date");
 			allOk &= false;
-		} else if(!this.validateFormItem(fromDate) || !this.validateFormItem(toDate)) {
+		} else if(!validateFormItem(ureq, fromDate) || !validateFormItem(ureq, toDate)) {
 			allOk &= false;
 		} else if (fromDateVal != null && toDateVal != null) {
 
@@ -695,15 +695,15 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			 * Thus we check for Startdate < Enddate, error otherwise
 			 */
 			if (fromDateVal.after(toDateVal)) {					
-				dateSubContainer.setErrorKey("form.easy.error.bdateafteredate", null);
+				dateSubContainer.setErrorKey("form.easy.error.bdateafteredate");
 				allOk &= false;
 			}
 		} else if (fromDateVal == null && !fromDate.isEmpty()) {
 			//not a correct begin date
-			fromDate.setErrorKey("form.easy.error.bdate", null);
+			fromDate.setErrorKey("form.easy.error.bdate");
 			allOk &= false;
 		} else if (toDateVal == null && !toDate.isEmpty()) {
-			toDate.setErrorKey("form.easy.error.edate", null);
+			toDate.setErrorKey("form.easy.error.edate");
 			allOk &= false;
 		}
 
@@ -745,7 +745,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 					String csvMissGrps = toString(missingGroups);
 					String[] params = new String[] { "-", csvMissGrps };
-					easyGroupList.setErrorKey(labelKey, true, params);
+					easyGroupList.setWarningKey(labelKey, params);
 				}
 			}
 			areaChooseSubContainer.clearError();
@@ -772,7 +772,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 					String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 					String csvMissAreas = toString(missingAreas);
 					String[] params = new String[] { "-", csvMissAreas };
-					easyAreaList.setErrorKey(labelKey, true, params);
+					easyAreaList.setWarningKey(labelKey, params);
 				}
 			}
 
@@ -783,7 +783,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				groupSubContainer.clearError();
 			} else {
 				// error concerns both fields -> set it as switch error
-				groupSubContainer.setErrorKey("form.easy.error.group", null);
+				groupSubContainer.setErrorKey("form.easy.error.group");
 				retVal = false;
 			}
 		}
@@ -796,7 +796,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private boolean validateAttibuteFields() {
 		boolean retVal = true;
 		if (attributeSwitch.getSelectedKeys().size() == 1 && attribteRowAdderSubform.hasError()) {
-			attributeSwitch.setErrorKey("form.easy.error.attribute", null);
+			attributeSwitch.setErrorKey("form.easy.error.attribute");
 			retVal = false;
 			return retVal;
 		}

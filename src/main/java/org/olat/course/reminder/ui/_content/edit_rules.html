@@ -1,26 +1,16 @@
 <div class="o_form o_block">
 	<fieldset><legend>$r.translate("rules")</legend>
-		<label><i class="o_icon o_icon_mandatory"></i> $r.translate("rules.main")</label>
+		<label><i class="o_icon o_icon_mandatory"> </i> $r.translate("rules.main")</label>
 		<div class="o_reminder_rule row o_block_bottom o_sel_row-main">
 			<div class="col-md-4">$r.render($mainRule.typeComponentName)</div>
-			<div class="col-md-6">
-				$r.render($mainRule.customItemName)
-				#if($f.hasError($item))
-					<br/>$r.render("${mainRule.customItemName}_ERROR")
-				#end
-			</div>
+			<div class="col-md-6">$r.render($mainRule.customItemName, "minimal")</div>
 			<div class="col-md-2"><div class="text-right"></div></div>
 		</div>
 		<label>$r.translate("rules.additional")</label>
 		#foreach($rule in $additionalRules)
 		<div class="o_reminder_rule row o_sel_row-$foreach.count">
 			<div class="col-md-4">$r.render($rule.typeComponentName)</div>
-			<div class="col-md-6">
-				$r.render($rule.customItemName)
-				#if($f.hasError($item))
-					<br/>$r.render("${rule.customItemName}_ERROR")
-				#end
-			</div>
+			<div class="col-md-6">$r.render($rule.customItemName, "minimal")</div>
 			<div class="col-md-2"><div class="text-right">$r.render($rule.deleteButtonName)</div></div>
 		</div>
 		#end

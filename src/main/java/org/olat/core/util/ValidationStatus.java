@@ -30,9 +30,9 @@ import java.util.logging.Level;
 
 public interface ValidationStatus {
 
-	public final static Level ERROR = Level.SEVERE;
-	public final static Level WARNING = Level.WARNING;
-	public final static Level INFO = Level.INFO;
+	public static final Level ERROR = Level.SEVERE;
+	public static final Level WARNING = Level.WARNING;
+	public static final  Level INFO = Level.INFO;
 	final static Level NOERROR = Level.OFF;
 	/**
 	 * @return getLevel() == ERROR

@@ -198,7 +198,7 @@ public class Renderer {
 		// wrap with div's so javascript can replace this component by doing a document.getElementById(cid).innerHTML and so on.
 		boolean domReplaceable = source.isDomReplaceable();
 		boolean useSpan = source.getSpanAsDomReplaceable();
-		boolean domReplacementWrapperRequired = source.isDomReplacementWrapperRequired();
+		boolean domReplacementWrapperRequired = isDomReplacementWrapperRequired(source, args);
 		boolean forceDebugDivs = gset.isIdDivsForced();		
 
 		if (source.isVisible()) {
@@ -206,15 +206,9 @@ public class Renderer {
 			if (lev > 60) throw new AssertException("components were nested more than 60 times, assuming endless loop bug: latest comp name: "+source.getComponentName());
 			Translator componentTranslator = source.getTranslator();
 			
-			// for ajax mode: render surrounding divs or spans as a positional
-			// identifier for dom replacement
+			// for ajax mode: render surrounding divs or spans as a positional identifier for dom replacement
 			if (domReplaceable && domReplacementWrapperRequired && (ajaxon || forceDebugDivs)) {
-				if (useSpan) {
-					sb.append("<span id='o_c").append(source.getDispatchID());
-				} else {
-					sb.append("<div id='o_c").append(source.getDispatchID());
-				}
-				sb.append("'>");
+				sb.append("<").append("span", "div", useSpan).append(" id='o_c").append(source.getDispatchID()).append("'>");
 			}			
 			
 			ComponentRenderer cr = findComponentRenderer(source);
@@ -247,7 +241,6 @@ public class Renderer {
 			renderResult.decNestedLevel();
 			
 			// close div for the javascript dom replacement
-			
 			if (ajaxon && domReplaceable && domReplacementWrapperRequired) {
 				if(useSpan){
 					sb.append("</span>");
@@ -255,23 +248,33 @@ public class Renderer {
 					sb.append("</div>");
 				}
 			}
-			
-		} else { // not visible
-			if (domReplaceable && (ajaxon || forceDebugDivs)) {
-				// render empty div's (or spans in special cases) as a place holder since this component may 
-				// be set to visible later on, and then needs to know its place in the
-				// browser dom tree
-				if (useSpan) {
-					sb.append("<span id=\"o_c").append(source.getDispatchID()).append("\"></span>");			
-				} else {
-					// Add bugfix for IE min-height on empty div problem: min-height does
-					// not get applied when div contains an empty comment.
-					// Affects IE6, IE7
-					sb.append("<div id=\"o_c").append(source.getDispatchID()).append("\"><!-- empty --></div>");		
-				}					
+			// not visible
+		} else if (domReplaceable && (ajaxon || forceDebugDivs)) {
+			// render empty div's (or spans in special cases) as a place holder since this component may 
+			// be set to visible later on, and then needs to know its place in the
+			// browser dom tree
+			if (useSpan) {
+				sb.append("<span id=\"o_c").append(source.getDispatchID()).append("\"></span>");			
+			} else {
+				// Add bugfix for IE min-height on empty div problem: min-height does
+				// not get applied when div contains an empty comment.
+				// Affects IE6, IE7
+				sb.append("<div id=\"o_c").append(source.getDispatchID()).append("\"><!-- empty --></div>");		
 			}
-			
 		}
+	}
+	
+	private boolean isDomReplacementWrapperRequired(Component toRender, String[] args) {
+		boolean required = toRender.isDomReplacementWrapperRequired();
+		if(required && args != null) {
+			for(int i=args.length; i-->0; ) {
+				String arg = args[i];
+				if("error".equals(arg) || "label".equals(arg) || "example".equals(arg)) {
+					required &= false;
+				}
+			}
+		}
+		return required;
 	}
 
 	private ComponentRenderer findComponentRenderer(Component toRender) {

@@ -47,11 +47,11 @@ public class RequestAccountDataDeletetionController extends FormBasicController 
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String[] keys = new String[] { "on" };
 		String[] values = new String[] { translate("request.data.deletion.confirm.text") };
- 		confirmEl = uifactory.addCheckboxesHorizontal("request.data.deletion.confirm", formLayout, keys, values);
+ 		confirmEl = uifactory.addCheckboxesHorizontal("request.data.deletion.confirm", null, formLayout, keys, values);
 
+		uifactory.addFormSubmitButton("yes", formLayout);
 		FormCancel cancel = uifactory.addFormCancelButton("no", formLayout, ureq, getWindowControl());
 		cancel.setI18nKey("no");
-		uifactory.addFormSubmitButton("yes", formLayout);
 	}
 
 	@Override

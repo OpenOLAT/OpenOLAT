@@ -546,15 +546,15 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 			startDateEl.clearError();
 			endDateEl.clearError();
 			if(startDateEl.getDate() == null) {
-				startDateEl.setErrorKey("form.legende.mandatory", null);
+				startDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!validateFormItem(startDateEl)) {
+			} else if(!validateFormItem(ureq, startDateEl)) {
 				allOk &= false;
 			}
 			if(endDateEl.getDate() == null) {
-				endDateEl.setErrorKey("form.legende.mandatory", null);
+				endDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!validateFormItem(endDateEl)) {
+			} else if(!validateFormItem(ureq, endDateEl)) {
 				allOk &= false;
 			}
 			
@@ -562,13 +562,13 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 				Date start = startDateEl.getDate();
 				Date end = endDateEl.getDate();
 				if(end.before(start)) {
-					endDateEl.setErrorKey("error.start.after.end", null);
+					endDateEl.setErrorKey("error.start.after.end");
 					allOk &= false;
 				}
 				
 				Date now = new Date();
 				if(end.before(now)) {
-					endDateEl.setErrorKey("error.end.past", null);
+					endDateEl.setErrorKey("error.end.past");
 					allOk &= false;
 				}
 			}
@@ -593,10 +593,10 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (nameEl.getValue().contains("&")) {
-			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			nameEl.setErrorKey("form.invalidchar.noamp");
 			allOk &= false;
 		}
 		
@@ -612,7 +612,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		
 		el.clearError();
 		if(!el.isOneSelected()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

@@ -2,12 +2,12 @@
 #if($r.isTrue($scoreWarning))
 	<div class="o_warning" role="alert">$r.translate("warning.correct.answers.score")</div>
 #end
-<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
+<div class="form-group clearfix">
 	<div class="col-sm-1 col-md-offset-1"><strong>$r.translate("correct.answers")</strong></div>
 	<div class="col-sm-10"><strong>$r.translate("answers")</strong></div>
 </div>
 #foreach($choice in $choices)
-<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix o_sel_choice_${foreach.index}">
+<div class="form-group clearfix o_sel_choice_${foreach.index}">
 	<div class="col-sm-1">
 		#if($r.available(${choice.getRemove().getComponent().getComponentName()}) && $r.visible(${choice.getRemove().getComponent().getComponentName()}))
 			<div>$r.render(${choice.getRemove().getComponent().getComponentName()})</div>
@@ -32,15 +32,7 @@
 		#else
 			$r.render(${choice.getAnswerReadOnly().getComponent().getComponentName()})
 		#end
-		#if($f.hasError($item))
-			<span class="o_icon o_icon_error form-control-feedback"></span>
-		#end
 	</div>
-	#if($f.hasError($item))
-		<div class="col-sm-offset-2 col-sm-10">
-			$r.render("${item}_ERROR")
-		</div>
-	#end
 </div>
 #end
 </fieldset>

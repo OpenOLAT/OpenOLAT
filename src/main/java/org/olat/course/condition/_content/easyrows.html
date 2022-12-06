@@ -25,8 +25,7 @@
 	      	<td>
    			#if ($f.isVisible(${columnValueText.get($i)}))
    				## input field
-   				$r.render(${columnValueText.get($i)})
-   				$r.render("${columnValueText.get($i)}_ERROR") 
+   				$r.render(${columnValueText.get($i)}, "minimal")
    			#end
    			#if ($f.isVisible(${columnValueSelection.get($i)}))
    				## selection drop down

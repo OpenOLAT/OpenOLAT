@@ -1,9 +1,7 @@
 <fieldset>
 	<legend>$r.translate("change.username.title") $r.contextHelpWithWrapper("manual_admin/usermanagement/Configure_User/")</legend>
-	<div class="form-group $f.getElementCssClass($item) o_user_edit_username clearfix">
-		$r.render("username_LABEL", $f.getItemId("username"), "col-sm-3")
-		<div class="col-sm-3 form-inline">$r.render("username") $r.render("edit")</div>
-	</div>
+	$r.render("username", "3_9")
+	$r.render("edit", "3_9")
 </fieldset>
 <fieldset>
 	<legend>$r.translate("authentications.title")</legend>

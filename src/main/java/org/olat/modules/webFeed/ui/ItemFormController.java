@@ -254,7 +254,7 @@ public abstract class ItemFormController extends FormBasicController {
 				if (remainingQuotaKb != -1 && file.getUploadFile().length() / 1024 > remainingQuotaKb) {
 					String supportAddr = WebappHelper.getMailConfig("mailQuota");
 					Long uploadLimitKB = feedQuota.getUlLimitKB();
-					file.setErrorKey("ULLimitExceeded", new String[] { Formatter.roundToString(uploadLimitKB.floatValue() / 1000f, 1), supportAddr });
+					file.setErrorKey("ULLimitExceeded", Formatter.roundToString(uploadLimitKB.floatValue() / 1000f, 1), supportAddr);
 					allOk = false;
 				}
 			}
@@ -265,13 +265,13 @@ public abstract class ItemFormController extends FormBasicController {
 			try {
 				Integer.parseInt(width);
 			} catch (NumberFormatException e) {
-				widthEl.setErrorKey("feed.item.file.size.error", null);
+				widthEl.setErrorKey("feed.item.file.size.error");
 				allOk = false;
 			}
 		}
 		
 		publishDateChooser.clearError();
-		if(!validateFormItem(publishDateChooser)) {
+		if(!validateFormItem(ureq, publishDateChooser)) {
 			allOk &= false;
 		}
 
@@ -280,7 +280,7 @@ public abstract class ItemFormController extends FormBasicController {
 			try {
 				Integer.parseInt(height);
 			} catch (NumberFormatException e) {
-				heightEl.setErrorKey("feed.item.file.size.error", null);
+				heightEl.setErrorKey("feed.item.file.size.error");
 				allOk = false;
 			}
 		}
@@ -293,7 +293,7 @@ public abstract class ItemFormController extends FormBasicController {
 
 		boolean isFilenameValid = FileUtils.validateFilename(filename);
 		if(!isFilenameValid) {
-			file.setErrorKey("feed.item.file.name.notvalid", null);
+			file.setErrorKey("feed.item.file.name.notvalid");
 			allOk = false;
 		}
 
@@ -301,7 +301,7 @@ public abstract class ItemFormController extends FormBasicController {
 		// us validate the file ending instead as a pragmatic solution.
 		boolean isFiletypeValid = filename.toLowerCase().matches(ALLOWED_MIME_TYPES);
 		if(!isFiletypeValid) {
-			file.setErrorKey("feed.form.file.type.error", null);
+			file.setErrorKey("feed.form.file.type.error");
 			allOk = false;
 		}
 

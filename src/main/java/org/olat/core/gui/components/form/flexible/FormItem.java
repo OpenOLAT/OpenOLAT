@@ -149,6 +149,11 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @return true if the data can be safely saved
 	 */
 	public boolean validate();
+	
+	/**
+	 * @return true if the validation need to be executed after all others components
+	 */
+	public boolean isValidationDeferred();
 
 	/**
 	 * reset the data in the field to a initial/predefined value. This method is 
@@ -171,6 +176,10 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public String getElementCssClass();
 	
 	public void setElementCssClass(String cssClass);
+	
+	public boolean isInlineValidationOn();
+
+	public void setInlineValidationOn(boolean isInlineValidationOn);
 	
 	/**
 	 * called if this component is dispatched, e.g. was clicked (double clicked,
@@ -237,16 +246,6 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * 
 	 * @return
 	 */
-	public Component getLabelC();
-
-	/**
-	 * label panel of the form item, <code>null</code> if no label
-	 * provided/rendered
-	 * <p>
-	 * This method is used by a form infrastructure provider.
-	 * 
-	 * @return
-	 */
 	public String getLabelText();
 
 	/**
@@ -278,13 +277,24 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	public void setMandatory(boolean isMandatory);
 	
 	/**
+	 * @return The translated error text
+	 */
+	public String getErrorText();
+	
+	
+	/**
 	 * Sets the i18n key for this form item's error message and displays the error message if showErro(true) is set.
 	 * 
 	 * @param errorKey i18n key for the error message.
 	 * @param params Additional error message contents. 
 	 */
-	public void setErrorKey(String errorKey, String[] params);
+	public void setErrorKey(String errorKey, String... params);
 
+	/**
+	 * @return The translated warning text
+	 */
+	public String getWarningText();
+	
 	/**
 	 * Sets the i18n key for this form item's error message and displays the error message if showErro(true) is set.
 	 * Further you can specify whether it is a warning or an error
@@ -293,23 +303,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param isWarning
 	 * @param params
 	 */
-	public void setErrorKey(String errorKey, boolean isWarning, String... params);
-
-	/**
-	 * a complex "error" message, or a helper wizard to fix the error may be
-	 * <p>
-	 * This method is used by a form infrastructure provider. <code>null</code>
-	 */
-	public Component getErrorC();
-	
-	/**
-	 * translated example text, wrapped in component
-	 * <p>
-	 * This method is used by a form infrastructure provider.
-	 * 
-	 * @return
-	 */
-	public Component getExampleC();
+	public void setWarningKey(String errorKey, String... params);
 
 	/**
 	 * 
@@ -441,6 +435,11 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param rootForm
 	 */
 	public void setRootForm(Form rootForm);
+	
+	
+	public String getFormLayout();
+	
+	public void setFormLayout(String layout);
 
 	/**
 	 * 
@@ -460,6 +459,11 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 *
 	 */
 	public void clearError();
+	
+	/**
+	 * Remove the warning
+	 */
+	public void clearWarning();
 	
 	/**
 	 * 

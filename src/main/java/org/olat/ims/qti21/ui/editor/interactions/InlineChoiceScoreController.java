@@ -150,6 +150,7 @@ public class InlineChoiceScoreController extends AssessmentItemRefEditorControll
 		
 		String pointElId = "points_" + counter++;
 		TextElement pointEl = uifactory.addTextElement(pointElId, null, 5, points, scoreCont);
+		pointEl.setDomReplacementWrapperRequired(false);
 		pointEl.setDisplaySize(5);
 		pointEl.setEnabled(!restrictedEdit && !readOnly);
 		scoreCont.add(pointElId, pointEl);

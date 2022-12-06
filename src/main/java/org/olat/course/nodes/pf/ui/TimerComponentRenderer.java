@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
 public class TimerComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TimerComponent cmp = (TimerComponent)source;
 		Date endDate = cmp.getEndDate();

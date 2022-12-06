@@ -62,7 +62,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 	private static final Logger log = Tracing.createLoggerFor(AssessmentTreeComponentRenderer.class);
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		AssessmentTreeComponent component = (AssessmentTreeComponent)source;

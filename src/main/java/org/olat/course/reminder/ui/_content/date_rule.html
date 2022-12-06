@@ -1,9 +1,3 @@
-<div class='form-inline'>
-	$r.render("coursenodes.${id}") $r.render("value.${id}") $r.render("unit.${id}") <span class="form-control-static">$r.translate("before")</span>
-	#if($f.hasError("value.${id}"))
-		<br/>$r.render("value.${id}_ERROR")
-	#end
-	#if($f.hasError("coursenodes.${id}"))
-		<br/>$r.render("coursenodes.${id}_ERROR")
-	#end
+<div class='form-inline'>$r.render("coursenodes.${id}") $r.render("value.${id}") $r.render("unit.${id}") <span class="form-control-static">$r.translate("before")</span>
+	$r.render("errors")
 </div>

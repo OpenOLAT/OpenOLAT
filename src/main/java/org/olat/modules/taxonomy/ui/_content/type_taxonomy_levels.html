@@ -3,18 +3,15 @@
 		<div class="o_error">$errorMsg</div>
 	#else
 		<div class="o_block">
-			<div class="form-group clearfix">
-				$r.render("types_LABEL", "types", "col-sm-3")
-				<div class='col-sm-9'>
-					$r.render("types", "form")
-				</div>
-			</div>
+			$r.render("types", "3_9", "col-sm-3")
 		</div>
 	#end
-	<div class="o_button_group">
-		$r.render("cancel")
+	<div class="form-group clearfix">
+		<div class="col-sm-offset-3 col-sm-9 ">
 		#if($r.available("assign.type"))
 			$r.render("assign.type")
 		#end
+		$r.render("cancel")
+		</div>
 	</div>
 </div>

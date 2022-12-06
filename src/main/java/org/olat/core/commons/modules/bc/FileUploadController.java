@@ -573,7 +573,7 @@ public class FileUploadController extends FormBasicController {
 	private void doUpload(UserRequest ureq) {
 		// check for available space
 		if (remainingQuotKB != -1 && (fileEl.getUploadFile().length() / 1024 > remainingQuotKB)) {
-			fileEl.setErrorKey("QuotaExceeded", null);
+			fileEl.setErrorKey("QuotaExceeded");
 			FileUtils.deleteFile(fileEl.getUploadFile());
 			return;			
 		}
@@ -642,7 +642,7 @@ public class FileUploadController extends FormBasicController {
 	private void lockedFileDialog(UserRequest ureq, String renamedFilename) {
 		removeAsListenerAndDispose(lockedFileDialog);
 		String title = translate("ul.lockedFile.title");
-		String text = translate("ul.lockedFile.text", new String[] { existingVFSItem.getName(), renamedFilename} );
+		String text = translate("ul.lockedFile.text", existingVFSItem.getName(), renamedFilename);
 		lockedFileDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(), title, text,
 				asList(translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
 		listenTo(lockedFileDialog);
@@ -671,7 +671,7 @@ public class FileUploadController extends FormBasicController {
 		// let calling method decide what to do.
 		// for this, we put a list with "existing name" and "new name"
 		overwriteDialog = DialogBoxUIFactory.createGenericDialog(ureq, getWindowControl(),
-				translate("ul.overwrite.threeoptions.title"), translate("ul.overwrite.threeoptions.text", new String[] {existingVFSItem.getName(), renamedFilename} ),
+				translate("ul.overwrite.threeoptions.title"), translate("ul.overwrite.threeoptions.text", existingVFSItem.getName(), renamedFilename),
 				asList(translate("ul.overwrite.threeoptions.overwrite"), translate("ul.overwrite.threeoptions.rename", renamedFilename), translate("ul.overwrite.threeoptions.cancel")));
 		listenTo(overwriteDialog);
 		overwriteDialog.activate();
@@ -850,7 +850,7 @@ public class FileUploadController extends FormBasicController {
 				// Cleanup first
 				subPath = subPath.toLowerCase().trim();
 				if (!validSubPathPattern.matcher(subPath).matches()) {
-					targetSubPath.setErrorKey("subpath.error.characters", null);
+					targetSubPath.setErrorKey("subpath.error.characters");
 					return false;
 				} else {
 					// Fix mess with slashes and dots
@@ -881,7 +881,7 @@ public class FileUploadController extends FormBasicController {
 						// already exists. this is fine, as long as it is a directory and not a file
 						if (!(uploadDir instanceof VFSContainer)) {
 							// error
-							targetSubPath.setErrorKey("subpath.error.dir.is.file", new String[] {subPath});
+							targetSubPath.setErrorKey("subpath.error.dir.is.file", subPath);
 							return false;
 						}
 					}
@@ -902,10 +902,10 @@ public class FileUploadController extends FormBasicController {
 		if(itemEl.validate()) {
 			String filename = itemEl.getUploadFileName();
 			if (!StringHelper.containsNonWhitespace(filename)) {
-				itemEl.setErrorKey("NoFileChosen", null);
+				itemEl.setErrorKey("NoFileChosen");
 				allOk &= false;
 			} else if(!FileUtils.validateFilename(filename)) {
-				itemEl.setErrorKey("cfile.name.notvalid", null);
+				itemEl.setErrorKey("cfile.name.notvalid");
 				allOk &= false;
 			} else {
 				allOk &= validateUri(filename, itemEl);
@@ -922,10 +922,10 @@ public class FileUploadController extends FormBasicController {
 		
 		boolean allOk = true;
 		if (!StringHelper.containsNonWhitespace(filename)) {
-			itemEl.setErrorKey("NoFileChosen", null);
+			itemEl.setErrorKey("NoFileChosen");
 			allOk &= false;
 		} else if(!FileUtils.validateFilename(filename)) {
-			itemEl.setErrorKey("cfile.name.notvalid", null);
+			itemEl.setErrorKey("cfile.name.notvalid");
 			allOk &= false;
 		} else {
 			allOk &= validateUri(filename, itemEl);
@@ -943,7 +943,7 @@ public class FileUploadController extends FormBasicController {
 				URI uri = new URI(filename);
 				uri.normalize();
 			} catch(Exception e) {
-				itemEl.setErrorKey("cfile.name.notvalid.uri", null);
+				itemEl.setErrorKey("cfile.name.notvalid.uri");
 				allOk &= false;
 			}
 		}
@@ -955,7 +955,7 @@ public class FileUploadController extends FormBasicController {
 		if (remainingQuotKB != -1  && itemEl.getUploadFile() != null
 				&& itemEl.getUploadFile().length() / 1024 > remainingQuotKB) {
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
-			getWindowControl().setError(translate("ULLimitExceeded", new String[] { Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr }));
+			getWindowControl().setError(translate("ULLimitExceeded", Formatter.roundToString((uploadLimitKB+0f) / 1000, 1), supportAddr));
 			return false;
 		}
 		return true;

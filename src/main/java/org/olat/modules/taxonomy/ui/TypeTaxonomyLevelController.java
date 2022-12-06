@@ -80,7 +80,7 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 					allowedSubTypes.add(typeToType.getAllowedSubTaxonomyLevelType());
 				}
 				
-				if(allowedSubTypes.size() > 0) {
+				if(!allowedSubTypes.isEmpty()) {
 					allowedTypes.retainAll(allowedSubTypes);
 				}
 			}
@@ -96,6 +96,7 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 				layoutCont.contextPut("errorMsg", translate("error.found.no.allowed.sub.types"));
 			}
+			
 			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		} else {
 			String[] theKeys = new String[availableTypes.size()];
@@ -106,9 +107,9 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 				theValues[i] = type.getDisplayName();
 			}
 			typeEl = uifactory.addDropdownSingleselect("types", "level.types.to.assign", formLayout, theKeys, theValues, null);
-	
-			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+
 			uifactory.addFormSubmitButton("assign.type", formLayout);
+			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		}
 	}
 	

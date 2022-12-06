@@ -1,9 +1,4 @@
 <div class='form-inline'>
 	$r.render("operators.${id}") $r.render("value.${id}") <span class="form-control-static">$r.translate("percent")</span>
-	#if($f.hasError("value.${id}"))
-		<br/>$r.render("value.${id}_ERROR")
-	#end
-	#if($f.hasError("operators.${id}"))
-		<br/>$r.render("operators.${id}_ERROR")
-	#end
+	$r.render("errors")
 </div>

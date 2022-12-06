@@ -50,7 +50,7 @@ public class TextBoxListTagifyRenderer extends DefaultComponentRenderer {
 
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 
 		TextBoxListElementComponent tblComponent = (TextBoxListElementComponent) source;

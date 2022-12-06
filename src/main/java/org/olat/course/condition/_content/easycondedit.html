@@ -8,7 +8,7 @@
 	$r.render("dateSwitch")
 	#if ($f.isVisible("dateSubContainer"))
 		$r.render("dateSubContainer")
-		<div class="col-sm-9 col-sm-offset-3">$r.render("dateSubContainer_ERROR")</div>
+		<div class="col-sm-9 col-sm-offset-3">$r.render("dateSubContainer","error")</div>
 	#end
 	
 ## group switch, group and group area listing	
@@ -18,7 +18,7 @@
 	$r.render("groupSwitch")
 	#if ($f.isVisible("groupSubContainer"))
 		$r.render("groupSubContainer")
-		<div class="col-sm-9 col-sm-offset-3">$r.render("groupSubContainer_ERROR")</div>
+		<div class="col-sm-9 col-sm-offset-3">$r.render("groupSubContainer","error")</div>
 	#end
 	
 ## assessment switch, cutvalue or score switch and score value	

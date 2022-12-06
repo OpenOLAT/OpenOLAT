@@ -26,15 +26,13 @@
 
 package org.olat.core.gui.components.tree;
 
-import java.io.Serializable;
-
 import org.olat.core.gui.components.badge.Badge;
 import org.olat.core.util.nodes.GenericNode;
 
 /**
  * @author Mike Stock
  */
-public class GenericTreeNode extends GenericNode implements TreeNode, Serializable {
+public class GenericTreeNode extends GenericNode implements TreeNode {
 
 	private static final long serialVersionUID = -2381133733726739228L;
 	

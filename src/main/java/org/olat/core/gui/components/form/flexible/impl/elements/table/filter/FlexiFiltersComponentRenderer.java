@@ -41,7 +41,7 @@ import org.olat.core.gui.translator.Translator;
 public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator transl,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator transl,
 			RenderResult renderResult, String[] args) {
 		
 		FlexiFiltersComponent ffC = (FlexiFiltersComponent)source;

@@ -62,7 +62,6 @@ public class TeacherRollCallPage {
 	 */
 	public TeacherRollCallPage setAbsence(UserVO user, String col) {
 		String name = user.getFirstName();
-		//div[contains(@class,'o_rollcall_table')]//table//tr[td[contains(text(),'Kanu-Rnd-34a2154f8-7d48-4a97-8aad-740bff74bd2a')]]/td[count(//div[contains(@class,'o_rollcall_table')]//table//tr/th[a[text()='1']]/preceding-sibling::th)+1]/div/label/input
 		By checkBy = By.xpath("//div[contains(@class,'o_rollcall_table')]//table//tr[td[contains(text(),'" + name + "')]]/td[count(//div[contains(@class,'o_rollcall_table')]//table//tr/th[a[text()='L. " + col + "']]/preceding-sibling::th)+1]/div/label/input");
 		WebElement checkEl = browser.findElement(checkBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);

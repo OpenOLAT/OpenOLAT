@@ -61,6 +61,7 @@ public class FlexiFilterTabsElementImpl extends FormItemImpl implements FormItem
 	
 	public FlexiFilterTabsElementImpl(String name, FlexiTableElementImpl tableEl, Translator translator) {
 		super(name);
+		setTranslator(translator);
 		this.tableEl = tableEl;
 		component = new FlexiFilterTabsComponent(this, translator);
 		component.setDomReplacementWrapperRequired(false);

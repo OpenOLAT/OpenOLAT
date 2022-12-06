@@ -121,11 +121,8 @@ public class ReminderAdminController extends FormBasicController {
 		}
 		
 		String timePage = velocity_root + "/time.html";
-		timeLayout = FormLayoutContainer.createCustomFormLayout("send.time", getTranslator(), timePage);
-		timeLayout.setRootForm(mainForm);
-		formLayout.add(timeLayout);
-		timeLayout.setLabel("default.send.time", null);
-		
+		timeLayout = uifactory.addCustomFormLayout("send.time", "default.send.time", timePage, formLayout);
+
 		String hourStr = (hour < 10 ? "0" : "") + hour;
 		hoursEl = uifactory.addTextElement("hours", null, 2, hourStr, timeLayout);
 		hoursEl.setDisplaySize(2);

@@ -74,7 +74,7 @@ public class RecordingAdminConfigController extends FormBasicController {
 		enableLocalTranscodingEl.addActionListener(FormEvent.ONCHANGE);
 		enableLocalTranscodingEl.setHelpTextKey("admin.recording.enable.local.transcoding.info", null);
 		if (!avModule.isLocalTranscodingPossible()) {
-			enableLocalTranscodingEl.setErrorKey("admin.recording.enable.local.transcoding.warning", true);
+			enableLocalTranscodingEl.setWarningKey("admin.recording.enable.local.transcoding.warning");
 			if (!avModule.isLocalTranscodingEnabled()) {
 				enableLocalTranscodingEl.setEnabled(false);
 			}

@@ -43,7 +43,7 @@ import org.olat.core.util.StringHelper;
 class TextElementRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TextElementComponent teC = (TextElementComponent) source;
 		TextElementImpl te = teC.getFormItem();
@@ -83,11 +83,17 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			if(StringHelper.containsNonWhitespace(te.getAriaLabel())) {
 				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
 			}
-			
-			sb.append(" />");
+			if(te.hasError() || te.hasWarning()) {
+				sb.append(" aria-label=\"").append(te.getAriaLabel()).append("\"");
+			}
+			appendErrorAriaDescribedby(sb, te);
+			sb.append(">");
 			
 			//add set dirty form only if enabled
-			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
+			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), id);
+			if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
+				FormJSHelper.appendValidationListeners(sb, te.getRootForm(), id);
+			}
 			
 			if (te.isPlaceholderUpdate()) {
 				sb.append("<script>\n")
@@ -119,7 +125,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			sb.append("<input id=\"").append(id).append("\" type=\"").append(te.getHtmlInputType())
 			  .append("\" disabled=\"disabled\" class='form-control o_disabled ").append(elementCSS, elementCSS != null)
 			  .append("' size=\"").append(size)
-			  .append("\" value=\"").append(htmlVal).append("\" />")
+			  .append("\" value=\"").append(htmlVal).append("\">")
 			  .append("</span>");
 		}
 		

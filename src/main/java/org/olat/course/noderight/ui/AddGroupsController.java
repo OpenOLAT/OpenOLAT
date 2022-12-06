@@ -109,10 +109,10 @@ public class AddGroupsController extends FormBasicController {
 		endEl.clearError();
 		Date start = startEl.getDate();
 		Date to = endEl.getDate();
-		if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+		if(!validateFormItem(ureq, startEl) || !validateFormItem(ureq, endEl)) {
 			allOk &= false;
 		} else if (start != null && to != null && start.after(to)) {
-			endEl.setErrorKey("error.end.after.start", null);
+			endEl.setErrorKey("error.end.after.start");
 			allOk &= false;
 		}
 		

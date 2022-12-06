@@ -36,7 +36,7 @@ import org.olat.core.gui.translator.Translator;
 class LinkedViewRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		SegmentViewComponent component = (SegmentViewComponent)source;
 		if(component.isEmpty() || (component.isDontShowSingleSegment() && component.getSegments().size() == 1)) {
 			return;

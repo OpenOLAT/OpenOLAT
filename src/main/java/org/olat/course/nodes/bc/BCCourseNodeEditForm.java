@@ -38,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -57,7 +56,7 @@ import org.olat.course.nodes.BCCourseNode;
  *
  * @author gnaegi
  */
-public class BCCourseNodeEditForm extends FormBasicController implements ControllerEventListener{
+public class BCCourseNodeEditForm extends FormBasicController {
 
 	private SingleSelection folderTargetChoose;
 	private FormLink chooseFolder;
@@ -89,12 +88,9 @@ public class BCCourseNodeEditForm extends FormBasicController implements Control
 		folderTargetChoose.addActionListener(FormEvent.ONCLICK);
 		subPath = uifactory.addStaticTextElement("subPathLab.label", translate("subPathLab.dummy"), formLayout);
 
-		sharedFolderInfo = uifactory.addStaticExampleText("warning","", "<div class=\"o_important\">"+translate("info.sharedfolder")+"</div>",formLayout);
-		sharedFolderWarning = uifactory.createSimpleErrorText("warning", translate("warning.no.sharedfolder"));
-		formLayout.add(sharedFolderWarning);
-
-		linkedFolderWarning = uifactory.createSimpleErrorText("warning2", translate("warning.no.linkedfolder"));
-		formLayout.add(linkedFolderWarning);
+		sharedFolderInfo = uifactory.addStaticExampleText("warning","", "<div class=\"o_important\">" + translate("info.sharedfolder") + "</div>", formLayout);
+		sharedFolderWarning = uifactory.addErrorText("warning", translate("warning.no.sharedfolder"), formLayout);
+		linkedFolderWarning = uifactory.addErrorText("warning2", translate("warning.no.linkedfolder"), formLayout);
 
 		boolean isAuto = node.getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER);
 

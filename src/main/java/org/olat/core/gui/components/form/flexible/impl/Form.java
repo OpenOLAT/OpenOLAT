@@ -173,6 +173,7 @@ public class Form {
 	private boolean isHideDirtyMarkingMessage = false;
 	private boolean multipartEnabled = false;
 	private boolean csrfProtection = true;
+	private boolean inlineValidationOn = false;
 	// temporary form data, only valid within execution of evalFormRequest()
 	private Map<String,String[]> requestParams = new HashMap<>();
 	private Map<String, File> requestMultipartFiles = new HashMap<>();
@@ -467,14 +468,29 @@ public class Form {
 		boolean isValid = true;
 		// let the business logic validate this is implemented by the outside listener
 		for (Iterator<FormBasicController> iterator = formListeners.iterator(); iterator.hasNext();) {
-			FormBasicController fbc = iterator.next();
 			//let all listeners validate and calc the total isValid
 			//let further validate even if one fails.
-			isValid &= fbc.validateFormLogic(ureq);
+			isValid &= iterator.next().validateFormLogic(ureq);
 		}
+		
+		for (Iterator<FormBasicController> iterator = formListeners.iterator(); iterator.hasNext();) {
+			isValid &= iterator.next().validateDeferredFormLogic(ureq);
+		}
+		
 		return isValid;
 	}
 	
+	public boolean validateInline(UserRequest ureq, FormItem item) {
+		boolean isValid = true;
+		for (Iterator<FormBasicController> iterator = formListeners.iterator(); iterator.hasNext();) {
+			isValid &= iterator.next().validateFormItem(ureq, item);
+		}
+
+		if(formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).validateDeferred();
+		}
+		return isValid;
+	}
 	
 	/**
 	 * @param ureq
@@ -609,6 +625,12 @@ public class Form {
 	 */
 	public Set<String> getRequestMultipartFilesSet() {
 		return requestMultipartFiles.keySet();
+	}
+	
+	public boolean hasExplicitSubmit() {
+		SubmitFormComponentVisitor efcv = new SubmitFormComponentVisitor();
+		new FormComponentTraverser(efcv, formLayout, false).visitAll(null);
+		return efcv.getSubmit() != null;
 	}
 	
 	/**
@@ -783,5 +805,14 @@ public class Form {
 
 	public void setCsrfProtection(boolean csrfProtection) {
 		this.csrfProtection = csrfProtection;
+	}
+
+	public boolean isInlineValidationOn() {
+		return inlineValidationOn;
+	}
+
+	public void setInlineValidationOn(boolean on) {
+		this.inlineValidationOn = on;
+		formLayout.setInlineValidationOn(on);
 	}
 }

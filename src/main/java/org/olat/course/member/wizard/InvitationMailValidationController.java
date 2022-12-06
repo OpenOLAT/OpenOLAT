@@ -137,16 +137,16 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		String mail = emailEl.getValue();
 		if(StringHelper.containsNonWhitespace(mail)) {
 			if (!MailHelper.isValidEmailAddress(mail)) {
-				emailEl.setErrorKey("error.mail.invalid", null);
+				emailEl.setErrorKey("error.mail.invalid");
 				allOk &= false;
 			}
 		} else {
-			emailEl.setErrorKey("form.legende.mandatory", null);
+			emailEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(existingInviteeEl.isVisible() && !existingInviteeEl.isOneSelected()) {
-			existingInviteeEl.setErrorKey("error.existing.invitee.selection", null);
+			existingInviteeEl.setErrorKey("error.existing.invitee.selection");
 			allOk &= false;
 		}
 		
@@ -158,7 +158,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		
 		String data = namesEl.getValue();
 		if(!StringHelper.containsNonWhitespace(data)) {
-			namesEl.setErrorKey("form.legende.mandatory", null);
+			namesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			List<String[]> lines = getLines(data);
@@ -181,9 +181,9 @@ public class InvitationMailValidationController extends StepFormBasicController 
 			
 			if(!errors.isEmpty()) {
 				if(missingData) {
-					namesEl.setErrorKey("form.legende.mandatory", null);
+					namesEl.setErrorKey("form.legende.mandatory");
 				} else if(emailError) {
-					namesEl.setErrorKey("error.mail.invalid", null);
+					namesEl.setErrorKey("error.mail.invalid");
 				}
 				namesEl.setErrors(errors);
 				allOk &= false;
@@ -245,7 +245,7 @@ public class InvitationMailValidationController extends StepFormBasicController 
 					inviteeKeyValues.add(SelectionValues.entry(id.getKey().toString(), fullname));
 				}
 				existingInviteeEl.setKeysAndValues(inviteeKeyValues.keys(), inviteeKeyValues.values(), null);
-				existingInviteeEl.setErrorKey("error.existing.invitee.selection", null);
+				existingInviteeEl.setErrorKey("error.existing.invitee.selection");
 				existingInviteeEl.setVisible(true);
 			}
 		}

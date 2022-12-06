@@ -48,7 +48,7 @@ import org.olat.core.util.Util;
 class JSDateChooserRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		JSDateChooserComponent jsdcc = (JSDateChooserComponent) source;
 		String exDate = jsdcc.getExampleDateString();
@@ -70,13 +70,15 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 	
 	private void renderDateElement(StringOutput sb, JSDateChooserComponent jsdcc, int maxlength, Translator translator) {
 		String receiverId = jsdcc.getTextElementComponent().getFormDispatchId();
+		
 		if (!jsdcc.isTimeOnlyEnabled()) {
 			renderDateChooser(sb, jsdcc, receiverId, receiverId, jsdcc.getValue(), "o_first_date", maxlength, translator);
 		}
 		//input fields for hour and minute
 		if (jsdcc.isDateChooserTimeEnabled() || jsdcc.isTimeOnlyEnabled()) {
 			String timeOnlyCss = jsdcc.isTimeOnlyEnabled() ? " o_time_only" : "";
-			renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
+			renderTime(sb, jsdcc.getHour(), jsdcc.getMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+					receiverId, jsdcc, "o_first_ms".concat(timeOnlyCss));
 			if(jsdcc.isSecondDate() && jsdcc.isSameDay()) {
 				String separator;
 				if(jsdcc.getSeparator() != null) {
@@ -85,7 +87,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 					separator = " - ";
 				}
 				renderSeparator(sb, separator);
-				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
+				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+						receiverId.concat("_snd"), jsdcc, "o_second_ms".concat(timeOnlyCss));
 			}
 		}
 		if(jsdcc.isSecondDate() && !jsdcc.isSameDay()) {
@@ -96,7 +99,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				renderDateChooser(sb, jsdcc, receiverId.concat("_snd"), receiverId, jsdcc.getSecondValue(), "o_second_date", maxlength, translator);
 			}
 			if (jsdcc.isDateChooserTimeEnabled()) {
-				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(), receiverId.concat("_snd"), jsdcc, "o_second_ms");
+				renderTime(sb, jsdcc.getSecondHour(), jsdcc.getSecondMinute(), jsdcc.isDefaultTimeAtEndOfDay(),
+						receiverId.concat("_snd"), jsdcc, "o_second_ms");
 			}
 		}
 	}
@@ -119,7 +123,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		Translator dateTranslator = Util.createPackageTranslator(JSDateChooserRenderer.class, translator.getLocale());
 
 		sb.append("<div class='form-group ").append(cssClass).append("'><div class='input-group o_date_picker'>");
-		renderTextElement(sb, receiverId, onChangeId, value, teC, maxlength);
+		renderTextElement(sb, receiverId, onChangeId, value, jsdcc, teC, maxlength);
 		//date chooser button
 		sb.append("<span class='input-group-addon'>")
 		  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
@@ -158,14 +162,17 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			  .append("'").append(dateTranslator.translate("day.short.sa")).append("'")
 			.append("],\n")
 			.append("  showOtherMonths:true,\n");
+			
 
+			sb.append("  beforeShow:function(el, inst) {\n");
 			if(jsdcc.getFormItem().getDefaultValue() != null) {
 				String id = ((JSDateChooser)jsdcc.getFormItem().getDefaultValue()).getTextElementComponent().getFormDispatchId();
-				sb.append("  beforeShow:function(el, inst) {\n")
-				  .append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
-				  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);")
-				  .append("  },\n");
+				sb.append("    var defDate = jQuery('#").append(id).append("').datepicker('getDate');\n")
+				  .append("    jQuery('#").append(receiverId).append("').datepicker('option', 'defaultDate', defDate);\n");  
 			}
+			sb.append("    jQuery('#").append(receiverId).append("').attr('data-oo-validation','suspend');\n")
+			  .append("  },\n");
+
 			sb.append("  onSelect:function(){\n")
 			  .append("    setFlexiFormDirty('").append(te.getRootForm().getDispatchFieldId()).append("');\n")
 			  .append("    jQuery(this).focus();\n")
@@ -178,7 +185,8 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 				  .append("      jQuery('#").append(pushId).append("').val(cDate);\n")
 				  .append("    }");
 			}
-			sb.append("  }\n")
+			sb.append("    jQuery('#").append(receiverId).append("').attr('data-oo-validation',null);\n")
+			  .append("  }\n")
 			  .append("})});")
 			  .append("\n</script>");
 		}
@@ -202,7 +210,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("title=\"").append(value).append("\">");
 		sb.append("<input id='").append(id).append("' disabled='disabled' class='form-control o_disabled' size=\"")
 		  .append(maxLength)
-		  .append("\" value=\"").append(value).append("\" /></span></div></div>");
+		  .append("\" value=\"").append(value).append("\" autocomplete=\"off\"></span></div></div>");
 	}
 	
 	private void renderTime(StringOutput sb, int hour, int minute, boolean defaultEndOfDay, String receiverId, JSDateChooserComponent teC, String cssClass) {
@@ -224,6 +232,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		
 		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), hId);
 		FormJSHelper.appendFlexiFormDirty(sb, teC.getFormItem().getRootForm(), mId);
+		
+		if(teC.getFormItem().getRootForm().isInlineValidationOn() || teC.getFormItem().isInlineValidationOn()) {
+			FormJSHelper.appendValidationListeners(sb, teC.getFormItem().getRootForm(), hId, receiverId);
+			FormJSHelper.appendValidationListeners(sb, teC.getFormItem().getRootForm(), mId, receiverId);
+		}
 	}
 	
 	private void renderTimeDisabled(StringOutput sb, Date date, String receiverId, String cssClass) {
@@ -283,8 +296,9 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		dc.append("<input class='form-control o_date_ms' type='text' id='").append(id).append("'")
 	      .append(" name=\"").append(id).append("\" size='2'")
 		  .append(" maxlength='4' value='").append(time > 9 ? "" + time : "0" + time).append("'")
+		  .append(" data-oo-validation-group='").append(receiverId).append("' ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), receiverId, action, false, null, id))
-		  .append(" />");
+		  .append(" autocomplete=\"off\">");
 		return dc;
 	}
 	
@@ -292,11 +306,11 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		dc.append("<input class='form-control o_disabled o_date_ms' disabled='disabled' type='text' id='").append(id).append("'")
 	      .append(" name=\"").append(id).append("\" size='2'")
 		  .append(" maxlength='2' value='").append(time > 9 ? "" + time : "0" + time).append("'")
-		  .append(" />");
+		  .append(" autocomplete=\"off\">");
 		return dc;
 	}
 	
-	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, TextElementComponent teC, int maxlength) {
+	private void renderTextElement(StringOutput sb, String receiverId, String onChangeId, String value, JSDateChooserComponent jsdcc, TextElementComponent teC, int maxlength) {
 		TextElementImpl te = teC.getFormItem();
 		
 		//display size cannot be bigger the maxlenght given by dateformat
@@ -308,9 +322,13 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append("\" size=\"").append(te.displaySize)
 		  .append("\" maxlength=\"").append(maxlength)
 		  .append("\" value=\"").append(StringHelper.escapeHtml(value)).append("\" ")
+		  .append("\" data-oo-validation-group=\"").append(receiverId).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()))
-		  .append("/>");
+		  .append(" autocomplete=\"off\">");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), receiverId);
+		if(jsdcc.getFormItem().getRootForm().isInlineValidationOn() || jsdcc.getFormItem().isInlineValidationOn()) {
+			FormJSHelper.appendValidationListeners(sb, jsdcc.getFormItem().getRootForm(), receiverId, receiverId);
+		}
 	}
 }

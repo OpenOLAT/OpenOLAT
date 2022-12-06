@@ -41,7 +41,7 @@ import org.olat.core.util.filter.FilterFactory;
 public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		RadarChartComponent soc = (RadarChartComponent)source;
 		String cmpId = soc.getDispatchID();
 		List<RadarSeries> series = soc.getSeries();

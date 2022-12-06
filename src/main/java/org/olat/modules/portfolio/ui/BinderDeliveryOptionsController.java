@@ -114,8 +114,8 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsLayout.setRootForm(mainForm);
 			formLayout.add(buttonsLayout);
-			uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("save", buttonsLayout);
+			uifactory.addFormCancelButton("cancel", buttonsLayout, ureq, getWindowControl());
 		}
 	}
 	
@@ -184,7 +184,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 		deleteOptionCtrl = new ConfirmDeleteOptionController(ureq, getWindowControl());
 		listenTo(deleteOptionCtrl);
 		
-		String title = translate("create.new.binder");
+		String title = translate("confirmation");
 		deleteOptionCmcCtrl = new CloseableModalController(getWindowControl(), null, deleteOptionCtrl.getInitialComponent(), true, title, true);
 		listenTo(deleteOptionCmcCtrl);
 		deleteOptionCmcCtrl.activate();

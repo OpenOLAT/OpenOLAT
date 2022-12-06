@@ -44,7 +44,7 @@ import org.olat.core.util.StringHelper;
 public class DownloadComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		DownloadComponent comp = (DownloadComponent) source;

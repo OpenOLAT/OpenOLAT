@@ -21,7 +21,6 @@ package org.olat.core.gui.components.chart;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.helpers.Settings;
 
@@ -33,7 +32,7 @@ import org.olat.core.helpers.Settings;
  */
 public class StatisticsComponent extends DefaultD3Component {
 	
-	private static final ComponentRenderer RENDERER = new DefaultComponentRenderer();
+	private static final ComponentRenderer RENDERER = new EmptyComponentRender();
 	
 	public StatisticsComponent(String name) {
 		super(name);

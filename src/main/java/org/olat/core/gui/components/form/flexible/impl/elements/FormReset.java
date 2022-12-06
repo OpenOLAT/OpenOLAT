@@ -37,18 +37,16 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 public class FormReset extends FormButton implements Reset {
 
 	private String i18nKey;
-	private FormButtonComponent component;
+	private final FormButtonComponent component;
 
 	public FormReset(String name, String i18nKey) {
 		super(name);
 		this.i18nKey = i18nKey;
 		this.action = FormEvent.ONCLICK;
+		String formItemId = getFormItemId();
+		component = new FormButtonComponent(formItemId, this);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponentImpl#doDispatchFormRequest(org.olat.core.gui.UserRequest,
-	 *      long[], int)
-	 */
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
 		if(getRootForm().getAction() == FormEvent.ONCLICK){
@@ -60,22 +58,13 @@ public class FormReset extends FormButton implements Reset {
 		return component;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#rootFormAvailable()
-	 */
 	@Override
 	protected void rootFormAvailable() {
-		String formItemId = getFormItemId();
-		component = new FormButtonComponent(formItemId, this);
+		//
 	}
 
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.FormButton#getTranslated()
-	 */
 	@Override
 	String getTranslated() {
 		return getTranslator().translate(i18nKey);
 	}
-
 }

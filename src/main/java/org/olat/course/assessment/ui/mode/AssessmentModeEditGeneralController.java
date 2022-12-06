@@ -219,28 +219,28 @@ public class AssessmentModeEditGeneralController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			//too long
 		} else {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		endEl.clearError();
 		beginEl.clearError();
 		if(beginEl.getDate() == null) {
-			beginEl.setErrorKey("form.legende.mandatory", null);
+			beginEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!validateFormItem(beginEl)) {
+		} else if(!validateFormItem(ureq, beginEl)) {
 			allOk &= false;
 		}
 		if(endEl.getDate() == null) {
-			endEl.setErrorKey("form.legende.mandatory", null);
+			endEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!validateFormItem(endEl)) {
+		} else if(!validateFormItem(ureq, endEl)) {
 			allOk &= false;
 		}
 		if(beginEl.getDate() != null && endEl.getDate() != null
 				&& beginEl.getDate().compareTo(endEl.getDate()) >= 0) {
-			beginEl.setErrorKey("error.begin.after.end", null);
-			endEl.setErrorKey("error.begin.after.end", null);
+			beginEl.setErrorKey("error.begin.after.end");
+			endEl.setErrorKey("error.begin.after.end");
 			allOk &= false;
 		}
 		

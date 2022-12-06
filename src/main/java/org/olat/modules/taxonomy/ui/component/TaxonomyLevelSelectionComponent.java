@@ -20,8 +20,8 @@
 package org.olat.modules.taxonomy.ui.component;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TaxonomyLevelSelectionComponent extends AbstractComponent {
+public class TaxonomyLevelSelectionComponent extends FormBaseComponentImpl {
 	
 	private static final ComponentRenderer RENDERER = new TaxonomyLevelSelectionRenderer();
 
@@ -41,6 +41,11 @@ public class TaxonomyLevelSelectionComponent extends AbstractComponent {
 	}
 
 	@Override
+	public TaxonomyLevelSelectionImpl getFormItem() {
+		return taxonomyLevelSelection;
+	}
+
+	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		//
 	}
@@ -49,9 +54,4 @@ public class TaxonomyLevelSelectionComponent extends AbstractComponent {
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
-
-	public TaxonomyLevelSelectionImpl getTaxonomyLevelSelection() {
-		return taxonomyLevelSelection;
-	}
-
 }

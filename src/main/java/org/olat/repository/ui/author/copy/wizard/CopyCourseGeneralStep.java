@@ -127,9 +127,8 @@ public class CopyCourseGeneralStep extends BasicStep {
 			listenTo(lifecycleController);
 			
 			initForm(ureq);
-			
-			checkCourseAvailability(ureq, displayNameEl);
-			checkCourseAvailability(ureq, externalRefEl);
+			validateDisplayName(ureq);
+			validateExternalRef(ureq);
 		}
 
 		@Override
@@ -138,7 +137,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			
 			displayNameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-				displayNameEl.setErrorKey("input.mandatory", null);
+				displayNameEl.setErrorKey("input.mandatory");
 				allOk &= false;
 			}
 			
@@ -164,14 +163,14 @@ public class CopyCourseGeneralStep extends BasicStep {
 			// Course name
 			displayNameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, context.getSourceRepositoryEntry().getDisplayname() + " " + translate("copy.suffix"), referenceAndTitleLayout);
 			displayNameEl.setDisplaySize(30);
-			displayNameEl.setMandatory(true);
-			displayNameEl.addActionListener(FormEvent.ONCHANGE);
+			displayNameEl.setNotEmptyCheck("input.mandatory");
+			displayNameEl.setInlineValidationOn(true);
 			
 			// Course reference
 			externalRefEl = uifactory.addTextElement("cif.externalref", "cif.externalref", 255, context.getSourceRepositoryEntry().getExternalRef(), referenceAndTitleLayout);
 			externalRefEl.setHelpText(translate("cif.externalref.hover"));
 			externalRefEl.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
-			externalRefEl.addActionListener(FormEvent.ONCHANGE);
+			externalRefEl.setInlineValidationOn(true);
 			
 			// Spacer
 			uifactory.addSpacerElement("space_1", formLayout, false);
@@ -205,6 +204,17 @@ public class CopyCourseGeneralStep extends BasicStep {
 		}
 		
 		@Override
+		protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+			boolean ok = super.validateFormItem(ureq, item);
+			if(ok && item == displayNameEl) {
+				validateDisplayName(ureq);
+			} else if(ok && item == externalRefEl) {
+				validateExternalRef(ureq);
+			}
+			return ok;
+		}
+
+		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == copyModeEl) {
 				if (copyModeEl.isKeySelected(AUTOMATIC_MODE)) {
@@ -217,52 +227,36 @@ public class CopyCourseGeneralStep extends BasicStep {
 				
 				setNextStep(CopyCourseStepsStep.create(ureq, steps));
 				fireEvent(ureq, StepsEvent.STEPS_CHANGED);
-			} else if (source == displayNameEl) {
-				checkCourseAvailability(ureq, displayNameEl);
-				checkCourseAvailability(ureq, externalRefEl);
-			} else if (source == externalRefEl) {
-				checkCourseAvailability(ureq, externalRefEl);
-				checkCourseAvailability(ureq, displayNameEl);
 			}
 		}
 		
-		private void checkCourseAvailability(UserRequest ureq, TextElement textElement) {
-			if (StringHelper.containsNonWhitespace(textElement.getValue())) {
-				SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
-				params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
-				params.setExactSearch(true);
-				params.setCanCopy(true);
-				
-				if (textElement == displayNameEl) {
-					String displayName = textElement.getValue();
-					if (displayName != null) {
-						displayName = displayName.toLowerCase();
-					}
-					params.setDisplayname(displayName);
-				} else if (textElement == externalRefEl) {
-					String reference = textElement.getValue();
-					if (reference != null) {
-						reference = reference.toLowerCase();
-					}
-					params.setReference(reference);
-				}
-				
-				textElement.clearError();
-				if (repositoryService.countAuthorView(params) > 0) {
-					String errorKey = "input.existing";
-					
-					if (textElement == displayNameEl) {
-						errorKey += ".name";
-					} else if (textElement == externalRefEl) {
-						errorKey += ".reference";
-					}
-					textElement.setErrorKey(errorKey, true);
-				}
-			} else if (textElement.isMandatory()) {
-				textElement.setErrorKey("input.mandatory", null);
+		private void validateDisplayName(UserRequest ureq) {
+			if(StringHelper.containsNonWhitespace(displayNameEl.getValue())
+					&& hasLikeRepositoryEntry(ureq, displayNameEl.getValue().toLowerCase(), null)) {
+				displayNameEl.setWarningKey("input.existing.name");
 			} else {
-				textElement.clearError();
+				displayNameEl.clearWarning();
 			}
+		}
+		
+		private void validateExternalRef(UserRequest ureq) {
+			if(StringHelper.containsNonWhitespace(externalRefEl.getValue())
+					&& hasLikeRepositoryEntry(ureq, null, externalRefEl.getValue().toLowerCase())) {
+				externalRefEl.setWarningKey("input.existing.reference");
+			} else {
+				externalRefEl.clearWarning();
+			}
+		}
+		
+		private boolean hasLikeRepositoryEntry(UserRequest ureq, String displayName, String reference) {
+			SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(),
+					ureq.getUserSession().getRoles());
+			params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
+			params.setExactSearch(true);
+			params.setCanCopy(true);
+			params.setDisplayname(displayName);
+			params.setReference(reference);
+			return repositoryService.countAuthorView(params) > 0;
 		}
 		
 		private String getCopyTypeHelpText() {			

@@ -188,13 +188,13 @@ public class TUConfigForm extends FormBasicController {
 		try {
 			URL url = new URL(thost.getValue());
 			if (!StringHelper.containsNonWhitespace(url.getHost())) {
-				thost.setErrorKey("TUConfigForm.invalidurl", null);
+				thost.setErrorKey("TUConfigForm.invalidurl");
 				allOk &= false;
 			} else if (url.getHost().startsWith(Settings.getServerDomainName())) {
-				thost.setErrorKey("error.internal", true);
+				thost.setWarningKey("error.internal");
 			}
 		} catch (MalformedURLException e) {
-			thost.setErrorKey("TUConfigForm.invalidurl", null);
+			thost.setErrorKey("TUConfigForm.invalidurl");
 			allOk &= false;
 		}
 		return allOk;

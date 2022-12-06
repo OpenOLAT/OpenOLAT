@@ -354,8 +354,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk = super.validateFormLogic(ureq);
 
-        allOk &= validatePeriod(retentionPeriodEl, 1, 365, translate("days"));
-        allOk &= validatePeriod(defaultDurationEl, 1, 300, translate("minutes"));
+        allOk &= validatePeriod(ureq, retentionPeriodEl, 1, 365, translate("days"));
+        allOk &= validatePeriod(ureq, defaultDurationEl, 1, 300, translate("minutes"));
 
         return allOk;
     }
@@ -496,24 +496,24 @@ public class ContactTracingConfigurationController extends FormBasicController {
         }
     }
 
-    private boolean validatePeriod(TextElement el, int lowest, int highest, String unit) {
+    private boolean validatePeriod(UserRequest ureq, TextElement el, int lowest, int highest, String unit) {
         el.clearError();
-        boolean allOk = validateFormItem(el);
+        boolean allOk = validateFormItem(ureq, el);
         if(el.isEnabled() && el.isVisible()) {
             String val = el.getValue();
             if (StringHelper.containsNonWhitespace(val)) {
                 try {
                     int number = Integer.parseInt(val);
                     if (number < lowest || number > highest) {
-                        el.setErrorKey("contact.tracing.form.error.wrong.period", new String[]{String.valueOf(lowest), String.valueOf(highest), unit});
+                        el.setErrorKey("contact.tracing.form.error.wrong.period", String.valueOf(lowest), String.valueOf(highest), unit);
                         allOk = false;
                     }
                 } catch (NumberFormatException e) {
-                    el.setErrorKey("contact.tracing.form.error.wrong.period", new String[]{String.valueOf(lowest), String.valueOf(highest), unit});
+                    el.setErrorKey("contact.tracing.form.error.wrong.period", String.valueOf(lowest), String.valueOf(highest), unit);
                     allOk = false;
                 }
             } else if (el.isMandatory()) {
-                el.setErrorKey("form.mandatory.hover", null);
+                el.setErrorKey("form.mandatory.hover");
                 allOk = false;
             }
         }

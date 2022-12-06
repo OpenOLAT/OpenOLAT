@@ -57,7 +57,7 @@ import org.olat.core.util.vfs.VFSContainer;
 class RichTextElementRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		RichTextElementComponent teC = (RichTextElementComponent) source;
@@ -283,6 +283,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		  .append("          jQuery('#rtinye_").append(teC.getFormDispatchId()).append("').val(ed.contentAreaContainer.clientHeight);\n")
 		  .append("        } catch(e) { }\n")
 		  .append("      });\n");
+		
 		if(config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")
 			  .append("        if(jQuery('#mathlive').length == 0) {")// MathLive plug-in takes the focus and blur Tiny
@@ -291,6 +292,13 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 	          .append("        }\n")
 			  .append("      });\n");
 		}
+		if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
+			sb.append("      ed.on('focusout', function(e) {\n")
+			  .append("       setTimeout(function() {\n")
+			  .append(FormJSHelper.getJSFnCallFor(form, te.getFormDispatchId(), 5, false, null))
+			  .append("      },100); });\n");
+		}
+
 		sb.append("    },\n")
 		  .append(configurations)
 		  .append("  });\n")

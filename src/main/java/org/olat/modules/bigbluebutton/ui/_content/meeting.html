@@ -59,10 +59,7 @@
 <div class="o_warning">
 	<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
 	<p>$r.translate("meeting.acknowledge.recording.explain")</p>
-	$r.render("meeting.acknowledge.recording")
-	#if($f.hasError("meeting.acknowledge.recording"))
-		$r.render("meeting.acknowledge.recording_ERROR")
-	#end
+	$r.render("meeting.acknowledge.recording","minimal")
 </div>
 #end
 

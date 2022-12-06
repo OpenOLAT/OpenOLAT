@@ -63,11 +63,9 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("course.launch.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addCustomFormLayout("course.launch.".concat(id), null, page, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		String currentValue = null;
 		String currentUnit = null;

@@ -118,4 +118,8 @@ class SelectboxComponent extends FormBaseComponentImpl {
 		return selectionWrapper.getFormDispatchId();
 	}
 	
+	public boolean isInlineValidationOn() {
+		return selectionWrapper.isInlineValidationOn();
+	}
+	
 }

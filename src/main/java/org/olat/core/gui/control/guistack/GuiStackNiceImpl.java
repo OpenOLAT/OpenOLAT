@@ -50,7 +50,7 @@ import org.olat.core.util.Util;
 public class GuiStackNiceImpl implements GuiStack {
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(GuiStackNiceImpl.class);
 	
-	private StackedPanel panel;
+	private final StackedPanel panel;
 	private final StackedPanel modalPanel;
 	private final StackedPanel topModalPanel;
 	private int modalLayers = 0;

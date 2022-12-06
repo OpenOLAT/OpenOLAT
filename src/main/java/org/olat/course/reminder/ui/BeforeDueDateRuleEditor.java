@@ -80,11 +80,9 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment impleme
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("taks.".concat(id), trans, page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addCustomFormLayout("taks.".concat(id), null, page, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
 
@@ -127,7 +125,7 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment impleme
 			courseNodeEl.select(nodeKeys[0], true);
 		}
 		if(StringHelper.containsNonWhitespace(currentCourseNode) && !nodeSelected) {
-			courseNodeEl.setErrorKey("error.course.node.found", null);
+			courseNodeEl.setErrorKey("error.course.node.found");
 		}
 
 		valueEl = uifactory.addTextElement("value.".concat(id), null, 128, currentValue, ruleCont);
@@ -192,19 +190,19 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment impleme
 		
 		courseNodeEl.clearError();
 		if(!courseNodeEl.isOneSelected()) {
-			courseNodeEl.setErrorKey("form.mandatory.hover", null);
+			courseNodeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		unitEl.clearError();
 		if(!unitEl.isOneSelected()) {
-			unitEl.setErrorKey("form.mandatory.hover", null);
+			unitEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -223,7 +221,7 @@ public abstract class BeforeDueDateRuleEditor extends RuleEditorFragment impleme
 					Integer.parseInt(value);
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 				}
 			}
 		}

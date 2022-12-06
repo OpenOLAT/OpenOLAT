@@ -325,7 +325,7 @@ public class RulesEditController extends StepFormBasicController {
 		
 		descriptionEl.clearError();
 		if(!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setErrorKey("form.mandatory.hover", null);
+			descriptionEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

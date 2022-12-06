@@ -42,7 +42,7 @@ import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 public class InteractionResultComponentRenderer extends AssessmentObjectComponentRenderer {
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		InteractionResultComponent cmp = (InteractionResultComponent)source;

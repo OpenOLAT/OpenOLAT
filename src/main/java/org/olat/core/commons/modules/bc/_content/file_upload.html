@@ -21,7 +21,7 @@
 	$r.render("file_upload")
 	#if($f.hasError("file_upload"))
 		<div class="col-sm-offset-6 col-sm-6">
-			$r.render("file_upload_ERROR")
+			$r.render("file_upload","error")
 		</div>
 	#end
 #if($r.available("resize_image_wrapper"))

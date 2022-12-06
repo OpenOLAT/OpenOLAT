@@ -99,13 +99,13 @@ public class LoginOrganizerController extends FormBasicController {
 		
 		usernameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(usernameEl.getValue())) {
-			usernameEl.setErrorKey("form.mandatory.hover", null);
+			usernameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		passwordEl.clearError();
 		if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
-			passwordEl.setErrorKey("form.mandatory.hover", null);
+			passwordEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

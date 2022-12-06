@@ -280,13 +280,13 @@ public class FileElementImpl extends FormItemImpl
 
 			// check for a general error
 		} else if (lastFormError == Form.REQUEST_ERROR_GENERAL) {
-			setErrorKey("file.element.error.general", null);
+			setErrorKey("file.element.error.general");
 			return false;
 
 			// check if uploaded at all
 		} else if (isMandatory() && ((initialFile == null && (tempUploadFile == null || !tempUploadFile.exists()))
 				|| (initialFile != null && tempUploadFile != null && !tempUploadFile.exists()))) {
-			setErrorKey(i18nErrMandatory, null);
+			setErrorKey(i18nErrMandatory);
 			return false;
 
 			// check for file size of current file

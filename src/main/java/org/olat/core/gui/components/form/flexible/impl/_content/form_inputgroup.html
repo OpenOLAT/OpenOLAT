@@ -28,12 +28,12 @@
 		</div>
 	#if($f.hasExample($formitemnames.get(0)))
 		<div class="o_form_example help-block">
-			$r.render("$formitemnames.get(0)_EXAMPLE")
+			$r.render("$formitemnames.get(0)","example")
 		</div>
 	#end
 	#if($f.hasError($formitemnames.get(0)) || $f.hasWarning($formitemnames.get(0)))
 		<div>
-			$r.render("$formitemnames.get(0)_ERROR")
+			$r.render("$formitemnames.get(0)","error")
 		</div>
 	#end
 	#end

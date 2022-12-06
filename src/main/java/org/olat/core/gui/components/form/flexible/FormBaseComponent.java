@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible;
 
+import org.olat.core.gui.components.Component;
 
 /**
  * 
@@ -26,8 +27,12 @@ package org.olat.core.gui.components.form.flexible;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface FormBaseComponent extends FormBaseComponentIdProvider {
+public interface FormBaseComponent extends FormBaseComponentIdProvider, Component {
 
 	public FormItem getFormItem();
+	
+	public String getLayout();
+	
+	public void setLayout(String layout);
 	
 }

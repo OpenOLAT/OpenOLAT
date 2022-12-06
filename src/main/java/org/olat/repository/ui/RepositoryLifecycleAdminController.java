@@ -122,13 +122,10 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			toCloseEl.select(onKeys[0], true);
 		}
 		
-		closeRuleCont = FormLayoutContainer.createCustomFormLayout("close.".concat(id), lifecycleCont.getTranslator(), page);
+		closeRuleCont = uifactory.addCustomFormLayout("close.".concat(id), null, page, lifecycleCont);
 		closeRuleCont.contextPut("ruleMsg", translate("after.course.end"));
-		closeRuleCont.setLabel(null, null);
 		closeRuleCont.setVisible(toCloseEl.isAtLeastSelected(1));
 		closeRuleCont.contextPut("prefix", "clo");
-		lifecycleCont.add(closeRuleCont);
-		closeRuleCont.setRootForm(mainForm);
 		
 		String currentCloseValue = autoCloseValue == null ? null : Integer.toString(autoCloseValue.getValue());
 		closeValueEl = uifactory.addTextElement("clo-value", null, 128, currentCloseValue, closeRuleCont);
@@ -149,13 +146,10 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			toDeleteEl.select(onKeys[0], true);
 		}
 		
-		deleteRuleCont = FormLayoutContainer.createCustomFormLayout("delete.".concat(id), lifecycleCont.getTranslator(), page);
+		deleteRuleCont = uifactory.addCustomFormLayout("delete.".concat(id), null, page, lifecycleCont);
 		deleteRuleCont.contextPut("ruleMsg", translate("after.course.end"));
-		deleteRuleCont.setLabel(null, null);
 		deleteRuleCont.setVisible(toDeleteEl.isAtLeastSelected(1));
 		deleteRuleCont.contextPut("prefix", "del");
-		lifecycleCont.add(deleteRuleCont);
-		deleteRuleCont.setRootForm(mainForm);
 		
 		String currentDeleteValue = autoDeleteValue == null ? null : Integer.toString(autoDeleteValue.getValue());
 		deleteValueEl = uifactory.addTextElement("del-value", null, 128, currentDeleteValue, deleteRuleCont);
@@ -176,13 +170,10 @@ public class RepositoryLifecycleAdminController extends FormBasicController {
 			toDefinitivelyDeleteEl.select(onKeys[0], true);
 		}
 		
-		definitivelyDeleteRuleCont = FormLayoutContainer.createCustomFormLayout("def-delete.".concat(id), lifecycleCont.getTranslator(), page);
+		definitivelyDeleteRuleCont = uifactory.addCustomFormLayout("def-delete.".concat(id), null, page, lifecycleCont);
 		definitivelyDeleteRuleCont.contextPut("ruleMsg", translate("after.course.deletion"));
-		definitivelyDeleteRuleCont.setLabel(null, null);
 		definitivelyDeleteRuleCont.setVisible(toDefinitivelyDeleteEl.isAtLeastSelected(1));
 		definitivelyDeleteRuleCont.contextPut("prefix", "def-del");
-		lifecycleCont.add(definitivelyDeleteRuleCont);
-		definitivelyDeleteRuleCont.setRootForm(mainForm);
 		
 		String currentDeleteValue = autoDefinitivelyDeleteValue == null ? null : Integer.toString(autoDefinitivelyDeleteValue.getValue());
 		definitivelyDeleteValueEl = uifactory.addTextElement("def-del-value", null, 128, currentDeleteValue, definitivelyDeleteRuleCont);

@@ -303,7 +303,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		overrideEl.clearError();
 		if(!overrideEl.isOneSelected()) {
-			overrideEl.setErrorKey("form.legende.mandatory", null);
+			overrideEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -322,15 +322,15 @@ public class LectureRepositorySettingsController extends FormBasicController {
 					try {
 						long rateInPercent = Long.parseLong(attendanceRateEl.getValue());
 						if(rateInPercent <= 0 || rateInPercent > 100) {
-							attendanceRateEl.setErrorKey("error.integer.between", new String[] {"1", "100"});
+							attendanceRateEl.setErrorKey("error.integer.between", "1", "100");
 							allOk &= false;
 						}
 					} catch(NumberFormatException e) {
-						attendanceRateEl.setErrorKey("form.error.nointeger", null);
+						attendanceRateEl.setErrorKey("form.error.nointeger");
 						allOk &= false;
 					}
 				} else {
-					attendanceRateEl.setErrorKey("form.legende.mandatory", null);
+					attendanceRateEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 			}
@@ -344,17 +344,17 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			try {
 				int value = Integer.parseInt(el.getValue());
 				if(value < 0) {
-					el.setErrorKey("form.error.nointeger", null);
+					el.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}

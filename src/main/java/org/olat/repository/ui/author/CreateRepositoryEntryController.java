@@ -213,14 +213,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		displaynameEl.setFocus(true);
 		displaynameEl.setDisplaySize(30);
 		displaynameEl.setMandatory(true);
-		//TODO reactivate the feature if OO-6496 is solved
-		//displaynameEl.addActionListener(FormEvent.ONCHANGE);
+		displaynameEl.setInlineValidationOn(true);
 		
 		externalRef = uifactory.addTextElement("cif.externalref", 255, null, generalCont);
 		externalRef.setHelpText(translate("cif.externalref.hover"));
 		externalRef.setHelpUrlForManualPage("manual_user/authoring/Set_up_info_page/");
-		//TODO reactivate the feature if OO-6496 is solved
-		//externalRef.addActionListener(FormEvent.ONCHANGE);
+		externalRef.setInlineValidationOn(true);
 		
 		if (hasLifecycle()) {
 			initLifecycle(generalCont);
@@ -370,12 +368,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == displaynameEl) {
-			validateDisplaynameUnique(ureq);
-		} else if (source == externalRef) {
-			validateDisplaynameUnique(ureq);
-			validateExtRefUnique(ureq);
-		} else if (source == dateTypesEl) {
+		if (source == dateTypesEl) {
 			updateDatesVisibility();
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -385,6 +378,19 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean ok = super.validateFormItem(ureq, item);
+		
+		if(item == displaynameEl) {
+			validateDisplaynameUnique(ureq);
+		} else if(item == externalRef) {
+			validateExtRefUnique(ureq);
+		}
+		
+		return ok;
 	}
 
 	@Override
@@ -407,17 +413,15 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		if (publicDatesEl != null) {
 			publicDatesEl.clearError();
-			if(publicDatesEl.isEnabled() && publicDatesEl.isVisible()) {
-				if(!publicDatesEl.isOneSelected()) {
-					publicDatesEl.setErrorKey("form.legende.mandatory", null);
-					allOk &= false;
-				}
+			if(publicDatesEl.isEnabled() && publicDatesEl.isVisible() && !publicDatesEl.isOneSelected()) {
+				publicDatesEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 		}
 		
 		organisationEl.clearError();
 		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory", null);
+			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -429,26 +433,26 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	}
 
 	private void validateDisplaynameUnique(UserRequest ureq) {
-		displaynameEl.clearError();
+		displaynameEl.clearWarning();
 		if (StringHelper.containsNonWhitespace(displaynameEl.getValue()) && !StringHelper.containsNonWhitespace(externalRef.getValue())) {
 			SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
 			params.setExactSearch(true);
 			params.setDisplayname(displaynameEl.getValue().toLowerCase());
 			if (repositoryService.countAuthorView(params) > 0) {
-				displaynameEl.setErrorKey("error.exists.displayname", true);
+				displaynameEl.setWarningKey("error.exists.displayname");
 			}
 		}
 	}
 	private void validateExtRefUnique(UserRequest ureq) {
-		externalRef.clearError();
+		externalRef.clearWarning();
 		if (StringHelper.containsNonWhitespace(externalRef.getValue())) {
 			SearchAuthorRepositoryEntryViewParams params = new SearchAuthorRepositoryEntryViewParams(getIdentity(), ureq.getUserSession().getRoles());
 			params.setStatus(RepositoryEntryStatusEnum.preparationToPublished());
 			params.setExactSearch(true);
 			params.setReference(externalRef.getValue().toLowerCase());
 			if (repositoryService.countAuthorView(params) > 0) {
-				externalRef.setErrorKey("error.exists.ext.ref", true);
+				externalRef.setWarningKey("error.exists.ext.ref");
 			}
 		}
 	}

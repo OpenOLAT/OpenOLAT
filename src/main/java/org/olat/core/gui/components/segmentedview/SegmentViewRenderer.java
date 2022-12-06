@@ -34,7 +34,7 @@ import org.olat.core.gui.translator.Translator;
 class SegmentViewRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		SegmentViewComponent component = (SegmentViewComponent)source;
 		List<Component> visibleComponents = component.getSegments()
 				.stream()

@@ -45,7 +45,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class FeedbackResultComponentRenderer extends AssessmentObjectComponentRenderer {
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		FeedbackResultComponent cmp = (FeedbackResultComponent)source;

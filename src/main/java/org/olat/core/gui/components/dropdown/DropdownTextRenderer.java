@@ -36,7 +36,7 @@ import org.olat.core.gui.translator.Translator;
 public class DropdownTextRenderer extends DefaultComponentRenderer {
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		DropdownText dropdownText = (DropdownText)source;

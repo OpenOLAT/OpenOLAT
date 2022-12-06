@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
 public class MediaCollectorComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		MediaCollectorComponent cmp = (MediaCollectorComponent)source;
 		sb.append("<a class='o_portfolio_collector' ");

@@ -136,16 +136,16 @@ public class AssessmentMessageEditController extends FormBasicController {
 		
 		publicationEl.clearError();
 		if(!publicationEl.isOneSelected()) {
-			publicationEl.setErrorKey("form.legende.mandatory", null);
+			publicationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		messageEl.clearError();
 		if(!StringHelper.containsNonWhitespace(messageEl.getValue())) {
-			messageEl.setErrorKey("form.legende.mandatory", null);
+			messageEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(messageEl.getValue().length() > 500) {
-			messageEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(500) });
+			messageEl.setErrorKey("form.error.toolong", Integer.toString(500));
 			allOk &= false;
 		}
 		
@@ -153,28 +153,28 @@ public class AssessmentMessageEditController extends FormBasicController {
 		expirationDateEl.clearError();
 		if(publicationDateEl.isVisible() && expirationDateEl.isVisible()) {
 			if(publicationDateEl.getDate() == null) {
-				publicationDateEl.setErrorKey("form.legende.mandatory", null);
+				publicationDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!validateFormItem(publicationDateEl)) {
+			} else if(!validateFormItem(ureq, publicationDateEl)) {
 				allOk &= false;
 			}
 			
 			if(expirationDateEl.getDate() == null) {
-				expirationDateEl.setErrorKey("form.legende.mandatory", null);
+				expirationDateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
-			} else if(!validateFormItem(expirationDateEl)) {
+			} else if(!validateFormItem(ureq, expirationDateEl)) {
 				allOk &= false;
 			}
 			
 			if(message == null && publicationDateEl.getDate() != null
 					&& publicationDateEl.getDate().before(CalendarUtils.removeSeconds(ureq.getRequestTimestamp()))) {
-				publicationDateEl.setErrorKey("error.publication.date.futre.only", null);
+				publicationDateEl.setErrorKey("error.publication.date.futre.only");
 				allOk &= false;
 			}
 			
 			if(publicationDateEl.getDate() != null && expirationDateEl.getDate() != null
 					&& publicationDateEl.getDate().after(expirationDateEl.getDate())) {
-				expirationDateEl.setErrorKey("error.publication.date.after", null);
+				expirationDateEl.setErrorKey("error.publication.date.after");
 				allOk &= false;
 			}
 		}

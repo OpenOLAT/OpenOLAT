@@ -19,11 +19,11 @@
 		<div>
 			#if($f.hasError($appointment.getStartElName()))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
-				$r.render("${appointment.getStartElName()}_ERROR")
+				$r.render("${appointment.getStartElName()}","error")
 			#end
 			#if($f.hasError($appointment.getEndElName()))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
-				$r.render("${appointment.getEndElName()}_ERROR")
+				$r.render("${appointment.getEndElName()}","error")
 			#end
 		</div>
 	#end

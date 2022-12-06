@@ -44,12 +44,12 @@ import org.olat.core.util.StringHelper;
 public class ChoiceRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
 		// Get the model object
 		Choice choice = (Choice) source;
-		ChoiceModel model = choice.getModel();
+		ChoiceModel<?> model = choice.getModel();
 
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
 		// form header

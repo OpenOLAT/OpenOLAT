@@ -212,11 +212,8 @@ public class GradeSystemEditController extends FormBasicController {
 		cutValueEl = uifactory.addTextElement("grade.system.cut.value", 10, cutValue, formLayout);
 		cutValueEl.setMandatory(true);
 		
-		performanceClassCont = FormLayoutContainer.createCustomFormLayout("pcCont", getTranslator(), velocity_root + "/performance_classes.html");
-		performanceClassCont.setLabel("performance.classes", null);
-		performanceClassCont.setRootForm(mainForm);
-		formLayout.add(performanceClassCont);
-		
+		performanceClassCont = uifactory.addCustomFormLayout("pcCont", "performance.classes", velocity_root + "/performance_classes.html", formLayout);
+
 		addButton = uifactory.addFormLink("performance.class.add", performanceClassCont, Link.BUTTON);
 		addButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 
@@ -366,7 +363,7 @@ public class GradeSystemEditController extends FormBasicController {
 		}
 		if (performanceClassCont.isVisible()) {
 			if (performanceClassRows.isEmpty()) {
-				tableEl.setErrorKey("error.performance.class.madatory", null);
+				tableEl.setErrorKey("error.performance.class.madatory");
 				allOk &= false;
 			} else if (passedEl.isAtLeastSelected(1)) {
 				Boolean passed = null;
@@ -383,7 +380,7 @@ public class GradeSystemEditController extends FormBasicController {
 									passed = rowPassed;
 									firstPassed = false;
 								} else {
-									tableEl.setErrorKey("error.passed.missmatch", null);
+									tableEl.setErrorKey("error.passed.missmatch");
 									allOk &= false;
 								}
 							}
@@ -394,7 +391,7 @@ public class GradeSystemEditController extends FormBasicController {
 					}
 				}
 				if (allOk && noSinglePassed) {
-					tableEl.setErrorKey("error.passed.manadatory", null);
+					tableEl.setErrorKey("error.passed.manadatory");
 					allOk &= false;
 				}
 			}

@@ -2,12 +2,7 @@
 	<legend>$r.translate("step1.description")</legend>
 
 #if($r.visible("organisation"))
-	<div class="form-group clearfix">
-		$r.render("organisation_LABEL", "organisation", "col-sm-3")
-		<div class="col-sm-9">
-			$r.render("organisation", "form")
-		</div>
-	</div>
+	$r.render("organisation", "3_9", "form")
 #end
 
 #if($newusers=="true")
@@ -17,33 +12,10 @@
 #end
 
 #if($r.visible("update.user"))
-	<div class="form-group  #if($f.hasError("update.user")) has-feedback has-error #end clearfix">
-		$r.render("update.user_LABEL", "update.user", "col-sm-3")
-		<div class="col-sm-9">
-			$r.render("update.user", "form")
-			#if($f.hasError("update.user"))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasError("update.user"))
-			<div class="col-sm-offset-3 col-sm-9">$r.render("update.user_ERROR")</div>
-		#end
-	</div>
+	$r.render("update.user", "3_9", "form")
 #end
 #if($r.visible("update.password"))
 	<p class="o_desc">$r.translate("step1.passwordEmails")</p>
-	
-	<div class="form-group  #if($f.hasError("update.password")) has-feedback has-error #end clearfix">
-		$r.render("update.password_LABEL", "update.password", "col-sm-3")
-		<div class="col-sm-9">
-			$r.render("update.password", "form")
-			#if($f.hasError("update.password"))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasError("update.password"))
-			<div class="col-sm-offset-3 col-sm-9">$r.render("update.password_ERROR")</div>
-		#end
-	</div>
+	$r.render("update.password", "3_9", "form")
 #end
 </fieldset>

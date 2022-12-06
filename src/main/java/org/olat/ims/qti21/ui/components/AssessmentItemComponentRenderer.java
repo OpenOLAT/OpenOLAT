@@ -69,7 +69,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 	private static final Logger log = Tracing.createLoggerFor(AssessmentItemComponentRenderer.class);
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 
 		AssessmentItemComponent cmp = (AssessmentItemComponent)source;

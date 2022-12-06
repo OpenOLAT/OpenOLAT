@@ -133,8 +133,7 @@ public class GroupSearchController extends StepFormBasicController {
 			uifactory.addSpacerElement("space", formLayout, false);
 		}
 		
-		errorComp = uifactory.createSimpleErrorText("error", "");
-		formLayout.add(errorComp);
+		errorComp = uifactory.addErrorText("error", "", formLayout);
 
 		tableCont = FormLayoutContainer.createCustomFormLayout("", getTranslator(), velocity_root + "/resulttable.html");
 		tableCont.setRootForm(mainForm);

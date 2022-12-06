@@ -102,7 +102,7 @@ public class ContactTracingAdminPage {
 			browser.findElement(buildingBy).sendKeys(building);
 		}
 		
-		By urlBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_location')]//div[contains(@class,'o_sel_contacttracing_qrid')]//div[contains(@class,'o_form_example')]/div");
+		By urlBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_location')]//div[contains(@class,'o_sel_contacttracing_qrid')]//div[contains(@class,'o_form_example')]");
 		String url = browser.findElement(urlBy).getText().trim();
 		
 		By saveBy = By.cssSelector("fieldset.o_sel_contacttracing_location button.btn.btn-primary");

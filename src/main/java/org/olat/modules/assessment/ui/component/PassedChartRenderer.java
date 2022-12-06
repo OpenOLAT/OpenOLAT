@@ -37,7 +37,7 @@ import org.olat.modules.assessment.ui.component.PassedChart.PassedPercent;
 public class PassedChartRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		PassedChart passedChart = (PassedChart)source;

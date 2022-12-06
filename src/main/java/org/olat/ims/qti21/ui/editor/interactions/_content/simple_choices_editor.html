@@ -1,6 +1,6 @@
 $r.render("metadata")
 #if($f.hasError("answers"))
-	<div>$r.render("answers_ERROR")</div>
+	<div>$r.render("answers","error")</div>
 #end
 $r.render("answers")
 #if($r.available("buttons"))

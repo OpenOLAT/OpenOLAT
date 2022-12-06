@@ -150,7 +150,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				contextWrapper.setQrIdGenerationMode(QrIdGenerationMode.humanReadable);
 			}
 			
-			allOk &= validateExcelInput(excelTextElement);
+			allOk &= validateExcelInput(ureq, excelTextElement);
 			
 			return allOk;
 		}
@@ -160,8 +160,8 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);			
 		}
 		
-		private boolean validateExcelInput(TextAreaElement inputEl) {
-			boolean allOk = validateFormItem(inputEl);
+		private boolean validateExcelInput(UserRequest ureq, TextAreaElement inputEl) {
+			boolean allOk = validateFormItem(ureq, inputEl);
 			
 			if (allOk == false || !StringHelper.containsNonWhitespace(inputEl.getValue())) {
 				return false;
@@ -188,7 +188,7 @@ public class ContactTracingLocationImportStep1 extends BasicStep {
 				
 				if (columns.length < 8) {
 					allOk = false;
-					inputEl.setErrorKey("contact.tracing.locations.import.excel.error", new String[] {String.valueOf(i + 1)});
+					inputEl.setErrorKey("contact.tracing.locations.import.excel.error", String.valueOf(i + 1));
 					break;
 				}
 				

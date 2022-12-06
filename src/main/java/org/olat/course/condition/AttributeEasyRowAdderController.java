@@ -72,10 +72,10 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 
 	private static final String EASYROWS = "easyrows";
 	// identifyer prefixes
-	private final static String PRE_ATTRIBUTE = "attribute_";
-	private final static String PRE_OPERATOR = "operator_";
-	private final static String PRE_VALUE_TEXT = "valuetxt_";
-	private final static String PRE_VALUE_SELECTION = "valuesel_";
+	private static final String PRE_ATTRIBUTE = "attribute_";
+	private static final String PRE_OPERATOR = "operator_";
+	private static final String PRE_VALUE_TEXT = "valuetxt_";
+	private static final String PRE_VALUE_SELECTION = "valuesel_";
 	private final String[] attrKeys;
 	private final String preselectedAttribute;
 	private final String preselectedAttributeValue;
@@ -309,7 +309,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 		if (getRowCount() > 1) { throw new AssertException("more than one row found, don't know what do do"); }
 		if (!isinit) { throw new AssertException("must call init() before calling setAttributeConditions() !"); }
 		// use default initialized rows when no conditions have to be set
-		if (cond.size() == 0) { return; }
+		if (cond.isEmpty()) { return; }
 		// remove default row from init process to make process of generating the
 		// existing configuration easier
 		removeRowAt(0);

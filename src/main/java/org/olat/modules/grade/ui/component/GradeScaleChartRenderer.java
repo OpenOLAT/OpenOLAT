@@ -55,7 +55,7 @@ public class GradeScaleChartRenderer extends DefaultComponentRenderer {
 	private static final BigDecimal TWO = new BigDecimal("2");
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		GradeScaleChart gradeScaleChart = (GradeScaleChart)source;
 		String cmpId = gradeScaleChart.getDispatchID();

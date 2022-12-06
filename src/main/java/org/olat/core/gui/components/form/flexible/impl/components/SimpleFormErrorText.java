@@ -45,7 +45,7 @@ import org.olat.core.util.StringHelper;
 public class SimpleFormErrorText extends FormBaseComponentImpl {
 	private static final ComponentRenderer ERROR_RENDERER = new DefaultComponentRenderer() {
 		@Override
-		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+		public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleFormErrorText stc = (SimpleFormErrorText) source;
 			if(StringHelper.containsNonWhitespace(stc.getText())) {
@@ -56,50 +56,29 @@ public class SimpleFormErrorText extends FormBaseComponentImpl {
 			}
 		}
 	};
-	
-	private static final ComponentRenderer WARNING_RENDERER = new DefaultComponentRenderer() {
-		@Override
-		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-				RenderResult renderResult, String[] args) {
-			SimpleFormErrorText stc = (SimpleFormErrorText) source;
-			if(StringHelper.containsNonWhitespace(stc.getText())) {
-			// error component only
-				sb.append("<div class='o_warning' id='o_c").append(source.getDispatchID()).append("'>")
-				  .append(stc.getText())
-				  .append("</div>");
-			}
-		}
-	};
 
 	private final String text;
-	private final boolean isWarning;
+	private final SimpleFormErrorTextItem element;
 
-	public SimpleFormErrorText(String name, String text, boolean isWarning) {
+	public SimpleFormErrorText(String name, String text, SimpleFormErrorTextItem element) {
 		super(name);
 		this.text = text;
-		this.setDomReplacementWrapperRequired(false);
-		this.isWarning = isWarning;
+		this.element = element;
+		setDomReplacementWrapperRequired(false);
 		setDirty(true);
-	}
-	
-	public SimpleFormErrorText(String name, String text) { 
-		this(name, text, false);
 	}
 	
 	@Override
 	public FormItem getFormItem() {
-		return null;
+		return element;
 	}
 	
 	public String getText() {
 		return text;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		return isWarning ? WARNING_RENDERER : ERROR_RENDERER;
+		return ERROR_RENDERER;
 	}
 }

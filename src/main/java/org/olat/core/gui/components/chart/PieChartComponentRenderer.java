@@ -39,7 +39,7 @@ import org.olat.core.util.StringHelper;
 public class PieChartComponentRenderer extends DefaultComponentRenderer {
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		PieChartComponent poc = (PieChartComponent)source;
 		String cmpId = poc.getDispatchID();
 		List<PiePoint> serie = poc.getSerie();

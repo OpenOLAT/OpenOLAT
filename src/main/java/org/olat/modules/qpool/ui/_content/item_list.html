@@ -15,10 +15,9 @@
 	$r.render("source.status.endOfLife")
 #end
 </div>
-
 #if($r.available("source.selector"))
     <div class="o_block_bottom o_qpool_filter_box clearfix">
-        $r.render("source.selector_LABEL") $r.render("source.selector")
+        $r.render("source.selector", "label") $r.render("source.selector")
     </div>
 #end
 #if($r.available("new.item") || $r.available("import.item"))

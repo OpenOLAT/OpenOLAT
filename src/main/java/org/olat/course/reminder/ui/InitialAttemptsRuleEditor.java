@@ -36,7 +36,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -78,18 +77,14 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/initial_attempts.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addInlineFormLayout("attempts.".concat(id), null, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
-		
 		
 		String currentValue = null;
 		String currentUnit = null;
@@ -130,7 +125,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 			courseNodeEl.select(nodeKeys[0], true);
 		}
 		if(StringHelper.containsNonWhitespace(currentCourseNode) && !nodeSelected) {
-			courseNodeEl.setErrorKey("error.course.node.found", null);
+			courseNodeEl.setErrorKey("error.course.node.found");
 		}
 
 		valueEl = uifactory.addTextElement("attemptvalue.".concat(id), null, 128, currentValue, ruleCont);
@@ -195,19 +190,19 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 		
 		courseNodeEl.clearError();
 		if(!courseNodeEl.isOneSelected()) {
-			courseNodeEl.setErrorKey("form.mandatory.hover", null);
+			courseNodeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		unitEl.clearError();
 		if(!unitEl.isOneSelected()) {
-			unitEl.setErrorKey("form.mandatory.hover", null);
+			unitEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -226,7 +221,7 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 					Integer.parseInt(value);
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 				}
 			}
 		}

@@ -35,7 +35,7 @@ import org.olat.core.gui.translator.Translator;
 public class MainPanelRenderer extends PanelRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		String cssClass = ((MainPanel)source).getCssClass();
 		
@@ -45,7 +45,7 @@ public class MainPanelRenderer extends PanelRenderer {
 		  .append("<a id='o_content' aria-hidden='true'></a>\n")
 		  .append("<div id='o_main_center_content_inner'>\n");
 		
-		super.render(renderer, sb, source, ubu, translator, renderResult, args);
+		super.renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 		
 		sb.append("</div>\n")
 		  .append("</div>\n")

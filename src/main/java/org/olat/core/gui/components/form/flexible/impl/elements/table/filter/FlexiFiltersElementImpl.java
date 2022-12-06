@@ -94,6 +94,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		super(name);
 		this.wControl = wControl;
 		this.tableEl = tableEl;
+		setTranslator(translator);
 		component = new FlexiFiltersComponent(this, translator);
 		component.setDomReplacementWrapperRequired(false);
 		
@@ -144,7 +145,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		moreMenu.setEmbbeded(true);
 		moreMenu.setButton(true);
 	}
-	
+
 	public boolean isExpanded() {
 		return expanded || alwaysExpanded;
 	}

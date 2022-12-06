@@ -103,11 +103,11 @@ public class SelectCourseController extends StepFormBasicController {
 	}
 
 	@Override
-	protected boolean validateFormItem(FormItem item) {
-		boolean allOk = super.validateFormItem(item);
+	protected boolean validateFormItem(UserRequest ureq, FormItem item) {
+		boolean allOk = super.validateFormItem(ureq, item);
 		
 		if(listCtrl.getMultiSelectedRows().isEmpty() && importCourseContext.getEntry() == null) {
-			listCtrl.getInitialFormItem().setErrorKey("form.legende.mandatory", null);
+			listCtrl.getInitialFormItem().setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			listCtrl.getInitialFormItem().clearError();
@@ -124,7 +124,7 @@ public class SelectCourseController extends StepFormBasicController {
 			importCourseContext.setEntry(entry);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		} else {
-			listCtrl.getInitialFormItem().setErrorKey("form.legende.mandatory", null);
+			listCtrl.getInitialFormItem().setErrorKey("form.legende.mandatory");
 		}
 	}
 }

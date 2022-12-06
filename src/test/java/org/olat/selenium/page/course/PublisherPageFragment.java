@@ -118,11 +118,11 @@ public class PublisherPageFragment {
 		OOGraphene.waitBusy(browser);
 
 		if(access == UserAccess.membersOnly) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
 			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
 		} else if(access == UserAccess.booking || access == UserAccess.registred || access == UserAccess.guest) {
-			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='public']");
+			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public']");
 			OOGraphene.waitElement(allUsersBy, browser);
 			browser.findElement(allUsersBy).click();
 			By accessConfigurationBy = By.cssSelector("fieldset.o_ac_configuration");

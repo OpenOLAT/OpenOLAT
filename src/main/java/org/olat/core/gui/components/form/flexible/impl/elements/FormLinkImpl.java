@@ -26,7 +26,6 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
@@ -52,31 +51,12 @@ import org.olat.core.util.StringHelper;
  * @author patrickb
  */
 public class FormLinkImpl extends FormItemImpl implements FormLink {
-
-	private Link component;
-	private int presentation = Link.LINK;
+	
 	private String i18n;
-	private String cmd;
-	private String url;
-	private boolean hasCustomEnabledCss = false;
-	private boolean hasCustomDisabledCss = false;
-	private boolean domReplacementWrapperRequired = false;
-	private boolean isPrimary = false;
-	private boolean ghost = false;
-	private boolean ownDirtyFormWarning = false;
-	private boolean newWindow;
-	private boolean newWindowAfterDispatchUrl;
+	private final Link component;
+	private final int presentation;
+	private boolean ownDirtyFormWarning;
 	private boolean newWindowWithSubmit;
-	private LinkPopupSettings popup;
-	private String iconLeftCSS;
-	private String iconRightCSS;
-	private String customEnabledLinkCSS;
-	private String customDisabledLinkCSS;
-	private String title;	
-	private String ariaLabel;
-	private String ariaRole;
-	private String textReasonForDisabling;
-	private String target;
 
 	/**
 	 * creates a form link with the given name which acts also as command, i18n
@@ -84,7 +64,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	 * @param name
 	 */
 	public FormLinkImpl(String name) {
-		super(name);
+		this(name, null, null, Link.LINK);
 	}
 
 	/**
@@ -94,8 +74,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	 * @param i18n
 	 */
 	public FormLinkImpl(String name, String i18n){
-		this(name);
-		this.i18n = i18n;
+		this(name, null, i18n, Link.LINK);
 	}
 	
 	/**
@@ -106,11 +85,13 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	 * @param i18n
 	 * @param presentation
 	 */
-	public FormLinkImpl(String name, String cmd, String i18n, int presentation){
-		this(name, i18n);
-		hasCustomEnabledCss = true;
-		this.cmd = cmd;
+	public FormLinkImpl(String name, String cmd, String i18n, int presentation) {
+		super(name);
+		this.i18n = i18n;
 		this.presentation = presentation;
+		cmd = cmd == null ? name : cmd;
+		i18n = i18n == null ? name : i18n;
+		component = new Link(null, name, cmd, i18n, presentation + Link.FLEXIBLEFORMLNK, this);
 	}
 	
 	@Override
@@ -120,33 +101,27 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
-		this.domReplacementWrapperRequired = required;
-		if(component != null) {
-			component.setDomReplacementWrapperRequired(required);
-		}
+		component.setDomReplacementWrapperRequired(required);
 	}
 	
 	@Override
 	public String getTextReasonForDisabling() {
-		return textReasonForDisabling;
+		return component.getTextReasonForDisabling();
 	}
 
 	@Override
 	public void setTextReasonForDisabling(String textReasonForDisabling) {
-		this.textReasonForDisabling = textReasonForDisabling;
-		if(component != null) {
-			component.setTextReasonForDisabling(textReasonForDisabling);
-		}
+		component.setTextReasonForDisabling(textReasonForDisabling);
 	}
 
 	@Override
 	public boolean isNewWindow() {
-		return newWindow;
+		return component.isNewWindow();
 	}
 	
 	@Override
 	public boolean isNewWindowAfterDispatchUrl() {
-		return newWindowAfterDispatchUrl;
+		return component.isNewWindowAfterDispatchUrl();
 	}
 
 	@Override
@@ -156,42 +131,32 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 
 	@Override
 	public void setNewWindow(boolean openInNewWindow, boolean afterDispatchUrl, boolean withSubmit) {
-		newWindow = openInNewWindow;
 		newWindowWithSubmit = withSubmit;
-		newWindowAfterDispatchUrl = afterDispatchUrl;
-		if(component != null) {
-			component.setNewWindow(openInNewWindow, afterDispatchUrl);
-		}
+		component.setNewWindow(openInNewWindow, afterDispatchUrl);
 	}
 
 	@Override
 	public boolean isPopup() {
-		return popup != null;
+		return component.isPopup();
 	}
 
 	@Override
 	public LinkPopupSettings getPopup() {
-		return popup;
+		return component.getPopup();
 	}
 
 	@Override
 	public void setPopup(LinkPopupSettings popup) {
-		this.popup = popup;
-		if(component != null) {
-			component.setPopup(popup);
-		}
+		component.setPopup(popup);
 	}
 
 	public String getTarget() {
-		return target;
+		return component.getTarget();
 	}
 
 	@Override
 	public void setTarget(String target) {
-		this.target = target;
-		if(component != null) {
-			component.setTarget(target);
-		}
+		component.setTarget(target);
 	}
 
 	@Override
@@ -202,9 +167,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	@Override
 	public void setForceOwnDirtyFormWarning(boolean warning) {
 		ownDirtyFormWarning = warning;
-		if(component != null) {
-			component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
-		}
+		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
 	}
 
 	/*
@@ -214,72 +177,11 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	 */
 	@Override
 	protected void rootFormAvailable() {
-		// create component if we have the root form
-		String name = getName();
-		cmd = cmd == null ? name : cmd;
-		i18n = i18n == null ? name : i18n;
-		if(hasCustomEnabledCss || hasCustomDisabledCss){
-			component = new Link(null, name, cmd, i18n, presentation + Link.FLEXIBLEFORMLNK, this);
-			if(customEnabledLinkCSS != null){
-				component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
-			}
-			if(customDisabledLinkCSS != null){
-				component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
-			}
-			if ((presentation - Link.FLEXIBLEFORMLNK - Link.NONTRANSLATED) >= 0) {
-				// don't translate non-tranlated links
-				component.setCustomDisplayText(i18n);					
-			}
-		} else {
-			component = new Link(null, name, name, name,  Link.LINK + Link.FLEXIBLEFORMLNK, this);
-			// set link text
-			if ((presentation - Link.FLEXIBLEFORMLNK - Link.NONTRANSLATED) >= 0) {
-				// don't translate non-tranlated links
-				component.setCustomDisplayText(i18n);					
-			} else {
-				// translate other links
-				if (StringHelper.containsNonWhitespace(i18n)) {
-					component.setCustomDisplayText(getTranslator().translate(i18n));
-				}
-			}
-		}
-		//if enabled or not must be set now in case it was set during construction time
-		component.setVisible(isVisible());
-		component.setEnabled(isEnabled());
-		component.setTranslator(getTranslator());
-		component.setIconLeftCSS(iconLeftCSS);
-		component.setIconRightCSS(iconRightCSS);
-		component.setElementCssClass(getElementCssClass());
-		component.setTitle(title);
-		component.setPrimary(isPrimary);
-		component.setGhost(ghost);
-		component.setAriaLabel(ariaLabel);
-		component.setForceFlexiDirtyFormWarning(ownDirtyFormWarning);
-		component.setPopup(popup);
-		component.setNewWindow(newWindow, newWindowAfterDispatchUrl);
-		component.setUrl(url);
-		if(textReasonForDisabling != null) {
-			component.setTextReasonForDisabling(textReasonForDisabling);
-		}
-		component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
-		component.setFocus(super.hasFocus());
-		if(StringHelper.containsNonWhitespace(getElementCssClass())) {
-			component.setElementCssClass(getElementCssClass());
-		}
-		if (ariaRole != null) {
-			component.setAriaRole(ariaRole);			
-		} else if (presentation >= Link.BUTTON_XSMALL) {
-			// set button role if button style is applied. Extract the link style
-			int linkStyle = presentation;
-			if ((linkStyle - Link.FLEXIBLEFORMLNK) >= 0) {
-				linkStyle = linkStyle - Link.FLEXIBLEFORMLNK;
-			}
-			if ((linkStyle - Link.NONTRANSLATED) >= 0) {
-				linkStyle = linkStyle - Link.NONTRANSLATED;
-			}
-			if (linkStyle >= Link.BUTTON_XSMALL && linkStyle <= Link.BUTTON_LARGE) {
-				component.setAriaRole(Link.ARIA_ROLE_BUTTON);
-			}
+		// set link text
+		if ((presentation - Link.NONTRANSLATED) >= 0) {
+			component.setCustomDisplayText(i18n);					
+		} else if (StringHelper.containsNonWhitespace(i18n)) {
+			component.setCustomDisplayText(getTranslator().translate(i18n));
 		}
 	}
 	
@@ -299,192 +201,128 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	}
 
 	@Override
-	protected Component getFormItemComponent() {
+	protected Link getFormItemComponent() {
 		return component;
 	}
 
 	@Override
 	public String getCmd() {
-		return cmd;
+		return component.getCommand();
 	}
 	
 	@Override
 	public void setUrl(String url) {
-		this.url = url;
-		if(component != null) {
-			component.setUrl(url);
-		}
+		component.setUrl(url);
 	}
 
 	@Override
 	public void setTranslator(Translator translator) {
-		if(component != null) {
-			component.setTranslator(translator);
-		}
+		component.setTranslator(translator);
 		super.setTranslator(translator);
 	}
 
 	@Override
 	public void setElementCssClass(String elementCssClass) {
-		if(component != null) {
-			component.setElementCssClass(elementCssClass);
-		}
+		component.setElementCssClass(elementCssClass);
 		super.setElementCssClass(elementCssClass);
 	}
 
 	@Override
 	public void setIconLeftCSS(String iconCSS) {
-		this.iconLeftCSS = iconCSS;
-		if(component != null){
-			component.setIconLeftCSS(iconCSS);
-		}
+		component.setIconLeftCSS(iconCSS);
 	}
 
 	@Override
 	public void setIconRightCSS(String iconCSS) {
-		this.iconRightCSS = iconCSS;
-		if(component != null){
-			component.setIconRightCSS(iconCSS);
-		}
+		component.setIconRightCSS(iconCSS);
 	}
 
 	@Override
 	public void setTitle(String linkTitle) {
-		this.title = linkTitle;
-		if(component != null){
-			component.setTitle(linkTitle);
-		}
+		component.setTitle(linkTitle);
 	}
 
 	@Override
 	public void setAriaLabel(String label) {
-		this.ariaLabel = label;
-		if(component != null) {
-			component.setAriaLabel(label);
-		}
+		component.setAriaLabel(label);
 	}
 
 	@Override
 	public void setAriaRole(String role) {
-		this.ariaRole = role;
-		if(component != null) {
-			component.setAriaRole(role);
-		}
+		component.setAriaRole(role);
 	}
 
 	@Override
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
-		hasCustomEnabledCss=true;
-		this.customEnabledLinkCSS = customEnabledLinkCSS;
-		if(customEnabledLinkCSS != null && component != null){
-			component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
-		}
+		component.setCustomEnabledLinkCSS(customEnabledLinkCSS);
 	}
 
 	@Override
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
-		hasCustomDisabledCss = true;
-		this.customDisabledLinkCSS  = customDisabledLinkCSS;
-		if(customDisabledLinkCSS != null && component != null){
-			component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
-		}
+		component.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 	}
 
 	@Override
 	public String getI18nKey() {
 		return i18n;
 	}
-
-	@Override
-	public void setI18nKey(String i18n) {
-		this.i18n = i18n;
-		if (component != null) {
-			if ((presentation - Link.NONTRANSLATED) >= 0) {
-				// don't translate non-tranlated links
-				component.setCustomDisplayText(i18n);					
-			} else if (StringHelper.containsNonWhitespace(i18n)) {
-				// translate other links
-				component.setCustomDisplayText(getTranslator().translate(i18n));
-			}
-		}
-	}
 	
 	@Override
-	public void setI18nKey(String i18n, String[] args) {
+	public void setI18nKey(String i18n, String... args) {
 		this.i18n = i18n;
-		if (component != null) {
-			if ((presentation - Link.NONTRANSLATED) >= 0) {
-				// don't translate non-tranlated links
-				component.setCustomDisplayText(i18n);					
-			} else if (StringHelper.containsNonWhitespace(i18n)) {
-				// translate other links
-				component.setCustomDisplayText(getTranslator().translate(i18n, args));
-			}
+		if ((presentation - Link.NONTRANSLATED) >= 0) {
+			// don't translate non-tranlated links
+			component.setCustomDisplayText(i18n);					
+		} else if (StringHelper.containsNonWhitespace(i18n) && getTranslator() != null) {
+			// translate other links
+			component.setCustomDisplayText(getTranslator().translate(i18n, args));
 		}
 	}
 
 	@Override
 	protected boolean translateLabel() {
-		if (presentation==Link.NONTRANSLATED ||
-				(presentation==(Link.NONTRANSLATED + Link.FLEXIBLEFORMLNK))) {
+		if (presentation==Link.NONTRANSLATED || (presentation==(Link.NONTRANSLATED + Link.FLEXIBLEFORMLNK))) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 	@Override
 	public void setLinkTitle(String i18nKey) {
-		if (component != null) {
-			if (StringHelper.containsNonWhitespace(i18nKey)) {
-				// translate other links
-				component.setTitle(i18nKey);
-			}
-		}		
+		if (StringHelper.containsNonWhitespace(i18nKey)) {
+			// translate other links
+			component.setTitle(i18nKey);
+		}	
 	}
 
 	@Override
 	public String getLinkTitleText() {
-		String linkTitle = null;
-		if (component != null) {
-			linkTitle = component.getCustomDisplayText();
-			if (linkTitle == null && getTranslator() != null) {
-				if (StringHelper.containsNonWhitespace(component.getI18n())) {
-					linkTitle = getTranslator().translate(component.getI18n());
-				}
-			}
+		String linkTitle = component.getCustomDisplayText();
+		if (linkTitle == null && getTranslator() != null
+				&& StringHelper.containsNonWhitespace(component.getI18n())) {
+			linkTitle = getTranslator().translate(component.getI18n());
 		}
 		return linkTitle;
 	}
 
 	@Override
 	public void setActive(boolean isActive) {
-		if (component != null) {
-			component.setActive(isActive);
-		}		
+		component.setActive(isActive);	
 	}
 
 	@Override
 	public void setPrimary(boolean isPrimary) {
-		this.isPrimary = isPrimary;
-		if (component != null) {
-			component.setPrimary(isPrimary);
-		}		
+		component.setPrimary(isPrimary);
 	}
 
 	@Override
 	public void setGhost(boolean ghost) {
-		this.ghost = ghost;
-		if (component != null) {
-			component.setGhost(ghost);
-		}
+		component.setGhost(ghost);
 	}
 	
 	@Override
 	public void setFocus(boolean hasFocus){
-		if (component != null) {
-			component.setFocus(hasFocus);
-		}
+		component.setFocus(hasFocus);
 		// set also on parent as fallback
 		super.setFocus(hasFocus);
 	}
@@ -493,10 +331,9 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	public boolean hasFocus(){
 		if (component != null) {
 			return component.isFocus();
-		} else {
-			// fallback
-			return super.hasFocus();			
 		}
+		// fallback
+		return super.hasFocus();			
 	}
 	
 	@Override

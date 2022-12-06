@@ -80,49 +80,31 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 		cancelLink.setSuppressDirtyFormWarning(true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#getFormItemComponent()
-	 */
 	@Override
 	protected Component getFormItemComponent() {
 		return cancelLink;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#reset()
-	 */
 	@Override
 	public void reset() {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#rootFormAvailable()
-	 */
 	@Override
 	protected void rootFormAvailable() {
 		// nothing to do
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setCustomDisabledLinkCSS(java.lang.String)
-	 */
 	@Override
 	public void setCustomDisabledLinkCSS(String customDisabledLinkCSS) {
 		cancelLink.setCustomDisabledLinkCSS(customDisabledLinkCSS);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setCustomEnabledLinkCSS(java.lang.String)
-	 */
 	@Override
 	public void setCustomEnabledLinkCSS(String customEnabledLinkCSS) {
 		cancelLink.setCustomEnabledLinkCSS(customEnabledLinkCSS);
@@ -130,23 +112,15 @@ public class FormCancel extends FormItemImpl implements Disposable, Cancel {
 
 	@Override
 	public void setElementCssClass(String elementCssClass) {
-		if(cancelLink != null) {
-			cancelLink.setElementCssClass(elementCssClass);
-		}
+		cancelLink.setElementCssClass(elementCssClass);
 		super.setElementCssClass(elementCssClass);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.Cancel#setI18nKey(java.lang.String)
-	 */
 	@Override
 	public void setI18nKey(String i18n) {
 		cancelLink.setCustomDisplayText(translator.translate(i18n));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.Disposable#dispose()
-	 */
 	@Override
 	public void dispose() {
 		if (dispatchLinkController != null) {

@@ -214,7 +214,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		if (val != null && val.length() == 0 && !isMandatory()) return true; 
 		if (val == null || getDate() == null) {
 			//must be set
-			setErrorKey(forValidDateErrorKey, null);
+			setErrorKey(forValidDateErrorKey);
 			return false;
 		}
 		return true;
@@ -224,7 +224,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		if((timeOnlyEnabled || dateChooserTimeEnabled)
 				&& ((hour < 0 || hour > 23 || minute < 0 || minute > 59)
 						|| (secondDate && (secondHour < 0 || secondHour > 23 || secondMinute < 0 || secondMinute > 59)))) {
-			setErrorKey(forValidDateErrorKey, null);
+			setErrorKey(forValidDateErrorKey);
 			return false;
 		}
 		return true;

@@ -131,7 +131,7 @@ public class FileCreatorController extends FormBasicController {
 			// Cleanup first
 			subPath = subPath.toLowerCase().trim();
 			if (!validSubPathPattern.matcher(subPath).matches()) {
-				targetSubPath.setErrorKey("subpath.error.characters", null);
+				targetSubPath.setErrorKey("subpath.error.characters");
 				isSubDirValid = false;
 			} else {
 				// Fix mess with slashes and dots
@@ -162,7 +162,7 @@ public class FileCreatorController extends FormBasicController {
 					// already exists. this is fine, as long as it is a directory and not a file
 					if (!(uploadDir instanceof VFSContainer)) {
 						// error
-						targetSubPath.setErrorKey("subpath.error.dir.is.file", new String[] {subPath});
+						targetSubPath.setErrorKey("subpath.error.dir.is.file", subPath);
 						isSubDirValid = false;
 					}
 				}
@@ -177,12 +177,12 @@ public class FileCreatorController extends FormBasicController {
 		// 2: Check file name
 		String fileName = fileNameElement.getValue();		
 		if(!StringHelper.containsNonWhitespace(fileName)) {
-			fileNameElement.setErrorKey("mf.error.filename.empty", new String[0]);
+			fileNameElement.setErrorKey("mf.error.filename.empty");
 			isFileNmaeValid = false;
 		} else {
 			fileName = fileName.toLowerCase().trim();
 			if (!FileUtils.validateFilename(fileName)) {
-				fileNameElement.setErrorKey("mf.error.filename.invalidchars", new String[0]);
+				fileNameElement.setErrorKey("mf.error.filename.invalidchars");
 				isFileNmaeValid = false;
 			} else if (!fileName.endsWith(".html") && !fileName.endsWith(".htm")) {
 				fileName = fileName + ".html";
@@ -199,7 +199,7 @@ public class FileCreatorController extends FormBasicController {
 			}
 			VFSItem vfsItem = baseContainer.resolve(filePath);
 			if (vfsItem != null) {
-				fileNameElement.setErrorKey("mf.error.filename.exists", new String[] {filePath});
+				fileNameElement.setErrorKey("mf.error.filename.exists", filePath);
 				isFileNmaeValid = false;
 			}
 		}
@@ -250,6 +250,6 @@ public class FileCreatorController extends FormBasicController {
 	 * @return
 	 */
 	public VFSLeaf getCreatedFile(){
-		return this.createdFile;
+		return createdFile;
 	}
 }

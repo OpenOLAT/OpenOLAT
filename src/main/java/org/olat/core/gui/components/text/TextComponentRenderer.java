@@ -44,7 +44,7 @@ import org.olat.core.util.StringHelper;
 class TextComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TextComponent comp = (TextComponent) source;
 		String text = comp.getDisplayText();

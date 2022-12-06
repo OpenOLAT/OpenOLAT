@@ -1,9 +1,6 @@
 <fieldset class="o_form form-inline form $f.getContainerCssClass()">
 	<div class="form-group clearfix">
-	$r.render("text", "form")
-	#if($f.hasError("text"))
-		$r.render("text_ERROR")
-	#end
+	$r.render("text", "minimal", "form")
 	</div>
 	<div class="o_block">$r.render("update") $r.render("clear")</div>
 </fieldset>

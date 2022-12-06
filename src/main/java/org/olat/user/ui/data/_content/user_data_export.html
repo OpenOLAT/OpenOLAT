@@ -19,24 +19,10 @@
 				<input id="export_url" name="export_url" value="$dataBusinessPath" onclick="this.select()"/>
 			</div></div>
 		</div>
-		
-		<div class="form-group $f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end clearfix">
-			$r.render("export.options_LABEL", $f.getItemId("export.options"), "col-sm-3")
-			<div class="col-sm-9">
-				$r.render("export.options", "form")
-				#if($f.hasError("export.options"))
-					<span class="o_icon o_icon_error form-control-feedback"></span>
-				#end
-			</div>
-			#if($f.hasError("export.options"))
-				<div class="col-sm-offset-3 col-sm-9">
-					$r.render("export.options_ERROR")
-				</div>
-			#end
-		</div>
+		$r.render("export.options", "3_9", "form")
 		<div class="o_button_group">
-			$r.render("cancel")
 			$r.render("export.start")
+			$r.render("cancel")
 		</div>
 	#end
 </fieldset>

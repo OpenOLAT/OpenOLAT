@@ -1,17 +1,12 @@
 #if($r.visible("absence.category"))
 	<div class="clearfix o_block_small_bottom form-inline o_form_inline_mandatory_compact">
-		<i class="o_icon o_icon_mandatory"> </i> $r.render("absence.category")
-		#if($f.hasError("absence.category"))
-		<div class="clearfix">
-			$r.render("absence.category_ERROR")
-		</div>
-	#end
+		<i class="o_icon o_icon_mandatory"> </i> $r.render("absence.category") $r.render("absence.category","error")
 	</div>
 #end
 <div class="clearfix">$r.render("reason")</div>
 <div class="o_button_group small">
-	$r.render("cancel")
 	#if($r.available("save"))
 		$r.render("save")
 	#end
+	$r.render("cancel")
 </div>

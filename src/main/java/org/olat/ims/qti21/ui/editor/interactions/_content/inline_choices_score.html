@@ -17,11 +17,7 @@
 		<tr>
 			<td><input type="radio" name="$choice.id" value="$choice.id" #if(${choice.isCorrect()}) checked #end disabled></td>
 			<td>$r.escapeHtml($choice.text)</td>
-			<td>$r.render($choice.getPointsEl())
-			#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
-				<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
-			#end
-			</td>
+			<td>$r.render($choice.getPointsEl(), "minimal")</td>
 		</tr>
 		#end
 		</tbody>
