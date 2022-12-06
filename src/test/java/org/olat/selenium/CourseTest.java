@@ -681,14 +681,14 @@ public class CourseTest extends Deployments {
 			.setDescription("Eventhor", "Hammer", "Asgard")
 			.setAllDay(true)
 			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
-			.save();
+			.save(true);
 		// modify an occurence
 		calendar
 			.openDetailsOccurence("Eventhor", 17)
 			.edit()
 			.setAllDay(false)
 			.setBeginEnd(13, 15)
-			.save()
+			.save(false)
 			.confirmModifyOneOccurence();
 		
 		// check
@@ -701,7 +701,7 @@ public class CourseTest extends Deployments {
 			.openDetailsOccurence("Eventhor", 3)
 			.edit()
 			.setDescription("Eventoki", null, null)
-			.save()
+			.save(false)
 			.confirmModifyAllOccurences();
 		// check
 		calendar
@@ -793,7 +793,7 @@ public class CourseTest extends Deployments {
 			.setAllDay(false)
 			.setBeginEnd(14, 18)
 			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
-			.save()
+			.save(true)
 			.assertOnEvents("Repeat", 4);
 		
 		//pick an occurence which is not the first and modify it
@@ -801,7 +801,7 @@ public class CourseTest extends Deployments {
 			.openDetailsOccurence("Repeat", 16)
 			.edit()
 			.setBeginEnd(15, 18)
-			.save()
+			.save(false)
 			.confirmModifyAllOccurences()
 			.assertOnEventsAt("Repeat", 4, 15);
 		
@@ -880,7 +880,7 @@ public class CourseTest extends Deployments {
 			.setDescription("Repeat", "Loop", "Foreach")
 			.setAllDay(false)
 			.setBeginEnd(14, 18)
-			.save()
+			.save(true)
 			.assertOnEvents("Repeat", 1);
 		
 		//pick an occurence which is not the first and modify it
@@ -888,7 +888,7 @@ public class CourseTest extends Deployments {
 			.openDetails("Repeat")
 			.edit()
 			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
-			.save()
+			.save(true)
 			.assertOnEventsAt("Repeat", 4, 14);
 		
 		//pick details of an occurent

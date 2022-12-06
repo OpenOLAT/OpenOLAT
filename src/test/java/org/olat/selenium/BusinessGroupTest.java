@@ -608,14 +608,14 @@ public class BusinessGroupTest extends Deployments {
 			.assertOnCalendar()
 			.addEvent(2)
 			.setDescription("Hello", "Very important event", "here or there")
-			.save()
+			.save(true)
 			.assertOnEvent("Hello");
 		//edit the event
 		calendar
 			.openDetails("Hello")
 			.edit()
 			.setDescription("Bye", null, null)
-			.save();
+			.save(true);
 		//check the changes
 		calendar
 			.assertOnEvent("Bye");
@@ -664,7 +664,7 @@ public class BusinessGroupTest extends Deployments {
 			.setAllDay(false)
 			.setBeginEnd(10, 11)
 			.setRecurringEvent(KalendarEvent.WEEKLY, 28)
-			.save()
+			.save(true)
 			.assertOnEvents("Recurring", 4);
 		
 		//pick an occurence of the recurring event and modify it
@@ -672,7 +672,7 @@ public class BusinessGroupTest extends Deployments {
 			.openDetailsOccurence("Recurring", 9)
 			.edit()
 			.setDescription("Special", null, null)
-			.save()
+			.save(false)
 			.confirmModifyOneOccurence()
 			.assertOnEvents("Special", 1)
 			.assertOnEvents("Recurring", 3);
@@ -682,7 +682,7 @@ public class BusinessGroupTest extends Deployments {
 			.openDetailsOccurence("Recurring", 2)
 			.edit()
 			.setBeginEnd(11, 12).assertOnEvents("Special", 1)
-			.save()
+			.save(false)
 			.confirmModifyAllOccurences()
 			.assertOnEventsAt("Recurring", 3, 11);
 	}
