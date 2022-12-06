@@ -22,6 +22,8 @@ package org.olat.course.nodes.video;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -43,6 +45,7 @@ import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,8 +158,27 @@ public class VideoRunController extends BasicController {
 	private void doLaunch(UserRequest ureq) {
 		VelocityContainer myContent = createVelocityContainer("run");
 		RepositoryEntry videoEntry = VideoEditController.getVideoReference(config, false);
+		
+		// show empty screen when video is not available or in deleted state
 		if (videoEntry == null) {
-			showError(VideoEditController.NLS_ERROR_VIDEOREPOENTRYMISSING);
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYMISSING)
+					.build();			
+			myContent = createVelocityContainer("novideo");
+			EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
+			main.setContent(myContent);			
+			return;
+		} else if (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {			
+			EmptyStateConfig emptyState = EmptyStateConfig.builder()
+					.withIconCss("o_icon_video")
+					.withIndicatorIconCss("o_icon_deleted")
+					.withMessageI18nKey(VideoEditController.NLS_ERROR_VIDEOREPOENTRYDELETED)
+					.build();			
+			myContent = createVelocityContainer("novideo");
+			EmptyStateFactory.create("emptyStateCmp", myContent, this, emptyState);
+			main.setContent(myContent);			
 			return;
 		}
 		

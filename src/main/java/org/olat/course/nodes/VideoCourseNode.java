@@ -56,6 +56,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 
@@ -147,6 +148,20 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			sd.setDescriptionForUnit(getIdent());
 			// set which pane is affected by error
 			sd.setActivateableViewIdentifier(VideoEditController.PANE_TAB_VIDEOCONFIG);
+		} else {
+			// check for video resources in deleted status
+			RepositoryEntry videoEntry = getReferencedRepositoryEntry();
+			if (videoEntry != null && (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
+				|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus())) {	
+				String shortKey = "video.deleted";
+				String longKey = "error.noreference.long";
+				String[] params = new String[] { this.getShortTitle() };
+				String translPackage = Util.getPackageName(VideoEditController.class);
+				sd = new StatusDescription(ValidationStatus.WARNING, shortKey, longKey, params, translPackage);
+				sd.setDescriptionForUnit(getIdent());
+				// set which pane is affected by error
+				sd.setActivateableViewIdentifier(VideoEditController.PANE_TAB_VIDEOCONFIG);
+			}
 		}
 		return sd;
 	}

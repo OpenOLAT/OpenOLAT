@@ -72,6 +72,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	private static final String[] paneKeys = { PANE_TAB_VIDEOCONFIG};
 
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
+	public static final String NLS_ERROR_VIDEOREPOENTRYDELETED = "error.videorepoentrydeleted";
 	private static final String NLS_COMMAND_CHOOSEVIDEO = "command.choosevideo";
 	private static final String NLS_COMMAND_CREATEVID = "command.createvideo";
 	private static final String NLS_COMMAND_CHANGEVID = "command.changevideo";
