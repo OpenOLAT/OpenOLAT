@@ -110,7 +110,7 @@ public class BigBlueButtonPage {
 	 * @return Itself
 	 */
 	public BigBlueButtonPage assertEditMeetingExternalUrl() {
-		By externalUrlBy = By.xpath("//div[contains(@class,'o_sel_bbb_edit_meeting_guest')]//div[contains(@class,'o_form_example')]/div[text()[contains(.,'http')]]");
+		By externalUrlBy = By.xpath("//div[contains(@class,'o_sel_bbb_edit_meeting_guest')]//div[contains(@class,'o_form_example')][text()[contains(.,'http')]]");
 		OOGraphene.waitElement(externalUrlBy, browser);
 		return this;
 	}

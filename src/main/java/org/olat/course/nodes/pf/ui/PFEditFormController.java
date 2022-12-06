@@ -80,7 +80,7 @@ public class PFEditFormController extends FormBasicController {
 		String[] timeframe = new String[]{ translate("time.frame") };
 		timeFrame = uifactory.addCheckboxesHorizontal("time.frame", "blank.label", formLayout, new String[]{"xx"}, timeframe);
 		timeFrame.addActionListener(FormEvent.ONCLICK);
-		timeFrame.showLabel(Boolean.FALSE);
+		timeFrame.showLabel(false);
 			
 		dateStart = new JSDateChooser("dateStart", getLocale());
 		dateStart.setLabel("date.start", null);
@@ -99,9 +99,9 @@ public class PFEditFormController extends FormBasicController {
 		String[] limitcount = new String[]{ translate("limit.count") };
 		limitFileCount = uifactory.addCheckboxesHorizontal("limit.count", "blank.label", formLayout, new String[]{"xx"}, limitcount);
 		limitFileCount.addActionListener(FormEvent.ONCLICK);
-		limitFileCount.showLabel(Boolean.FALSE);
+		limitFileCount.showLabel(false);
 		fileCount = uifactory.addTextElement("file.count", 4, "3", formLayout);
-		fileCount.showLabel(Boolean.FALSE);
+		fileCount.showLabel(false);
 		fileCount.setHelpTextKey("limit.count.coach.info", null);
 		
 		// Create submit button

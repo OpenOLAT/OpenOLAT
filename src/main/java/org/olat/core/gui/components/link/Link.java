@@ -443,7 +443,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		setDirty(true);
 	}
 
-	protected String getTextReasonForDisabling() {
+	public String getTextReasonForDisabling() {
 		return textReasonForDisabling;
 	}
 
@@ -775,21 +775,4 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		active = isActive;
 		setDirty(true);
 	}
-	
-	@Override
-	public void setDirty(boolean dirty) {
-		super.setDirty(dirty);
-		if(flexiLink != null) {
-			// particularly important for by setDirty false
-			if(flexiLink.getExampleC() != null) {
-				flexiLink.getExampleC().setDirty(dirty);
-			}
-			if(flexiLink.getErrorC() != null) {
-				flexiLink.getErrorC().setDirty(dirty);
-			}
-			if(flexiLink.getLabelC() != null) {
-				flexiLink.getLabelC().setDirty(dirty);
-			}
-		}
-	}	
 }

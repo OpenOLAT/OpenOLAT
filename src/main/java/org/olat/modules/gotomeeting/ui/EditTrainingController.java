@@ -153,7 +153,7 @@ public class EditTrainingController extends FormBasicController {
 		if(meeting == null || meeting.getOrganizer() == null) {
 			organizersEl.clearError();
 			if(!organizersEl.isOneSelected()) {
-				organizersEl.setErrorKey("form.mandatory.hover", null);
+				organizersEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			} else {
 				Date start = startDateEl.getDate();
@@ -164,7 +164,7 @@ public class EditTrainingController extends FormBasicController {
 				GoToOrganizer organizer = availablesOrganizers.get(selectedIndex);
 				if(start != null && end != null && organizer != null) {
 					if(!meetingManager.checkOrganizerAvailability(organizer, start, end)) {
-						organizersEl.setErrorKey("error.organizer.overbooked", null);
+						organizersEl.setErrorKey("error.organizer.overbooked");
 						allOk &= false;
 					}
 				}
@@ -173,18 +173,18 @@ public class EditTrainingController extends FormBasicController {
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.mandatory.hover", null);
+			nameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		startDateEl.clearError();
 		if(startDateEl.getDate() == null) {
-			startDateEl.setErrorKey("form.mandatory.hover", null);
+			startDateEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		endDateEl.clearError();
 		if(endDateEl.getDate() == null) {
-			endDateEl.setErrorKey("form.mandatory.hover", null);
+			endDateEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -192,7 +192,7 @@ public class EditTrainingController extends FormBasicController {
 			Date start = startDateEl.getDate();
 			Date end = endDateEl.getDate();
 			if(start.compareTo(end) >= 0) {
-				startDateEl.setErrorKey("error.start.after.end", null);
+				startDateEl.setErrorKey("error.start.after.end");
 			}
 		}
 		

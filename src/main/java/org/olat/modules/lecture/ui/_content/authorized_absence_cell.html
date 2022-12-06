@@ -7,7 +7,5 @@
 		$r.render($row.getNoticeLink())
 	#end
 	</div>
-	#if($f.hasError($row.getAuthorizedAbsence().getComponent().getComponentName()))
-		<div>$r.render("${row.getAuthorizedAbsence().getComponent().getComponentName()}_ERROR")</div>
-	#end
+	$r.render("errors")
 </div>

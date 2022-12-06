@@ -88,9 +88,9 @@ public class ConfirmBusinessGroupStartChangeStatusController extends FormBasicCo
 				i18nAction = "soft.delete.group.start";
 			}
 		}
-
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		
 		uifactory.addFormSubmitButton("change.status", i18nAction, formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override

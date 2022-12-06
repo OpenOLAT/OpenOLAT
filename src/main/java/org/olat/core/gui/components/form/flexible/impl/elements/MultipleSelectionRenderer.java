@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
 public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		MultipleSelectionComponent stC = (MultipleSelectionComponent)source;
@@ -135,17 +135,14 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 			// Set button text on ready
 			sb.append("<script>");
-		    sb.append("/* <![CDATA[ */");
 			sb.append("jQuery('#").append(buttonTitleId).append("').ready(function() {");
 			sb.append(getJsSetButtonText(stF, buttonTitleId, listId));
 			sb.append("});");
-			sb.append("/* ]]> */");
 			sb.append("</script>");
 			
 			if(stC.isEnabled() && check.isEnabled()) {
 				// (un-) check ckechbox when clicking on the menu entry
 				sb.append("<script>");
-				sb.append("/* <![CDATA[ */");
 				sb.append("jQuery('#").append(aId).append("').on('click', function(event) {");
 				sb.append("   var $target = jQuery(event.currentTarget);");
 				sb.append("   var $inp = $target.find('input');");
@@ -162,8 +159,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 				// remember last focus position, see FormJSHelper.getRawJSFor()
 				sb.append("jQuery('#").append(check.getFormDispatchId()).append("').on('focus',function(event) {");
 				sb.append("o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';"); 
-				sb.append("});");				
-				sb.append("/* ]]> */");
+				sb.append("});");
 				sb.append("</script>");
 			}
 		}
@@ -173,12 +169,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		
 		if(stC.isEnabled() && stF.isDropdownHiddenEventEnabled()) {
 			sb.append("<script>");
-			sb.append("/* <![CDATA[ */");
 			sb.append("jQuery('#").append(buttonGroupId).append("').on('hidden.bs.dropdown', function() {");
 			sb.append(FormJSHelper.getXHRFnCallFor(stF.getRootForm(), stC.getFormDispatchId(), 1, false, false, false,
 				new NameValuePair("dropdown-hidden", "true"))).append(";");
 			sb.append("});");
-			sb.append("/* ]]> */");
 			sb.append("</script>");
 		}
 	}
@@ -280,14 +274,13 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 	
 	private void renderHorizontal(StringOutput sb, MultipleSelectionComponent stC) {
-		sb.append("<div ");
+		sb.append("<").append("span", "div", stC.getSpanAsDomReplaceable());
 		appendIdIfRequired(sb, stC).append(" class='form-inline'>");
 		for(CheckboxElement check:stC.getCheckComponents()) {
 			renderCheckbox(sb, check, stC, true);
 		}
-		sb.append("</div>");
+		sb.append("</").append("span", "div", stC.getSpanAsDomReplaceable()).append(">");
 	}
-	
 	
 	private void renderCheckbox(StringOutput sb, CheckboxElement check, MultipleSelectionComponent stC, boolean inline) {
 		MultipleSelectionElementImpl stF = stC.getFormItem();
@@ -354,6 +347,10 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		if(stC.isEnabled()){
 			//add set dirty form only if enabled
 			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, stF.getRootForm(), formDispatchId);
+			
+			if(stC.getFormItem().getRootForm().isInlineValidationOn() || stC.getFormItem().isInlineValidationOn()) {
+				FormJSHelper.appendValidationListeners(sb, stC.getFormItem().getRootForm(), formDispatchId, stC.getFormItem().getFormDispatchId());
+			}
 		}
 	}
 }

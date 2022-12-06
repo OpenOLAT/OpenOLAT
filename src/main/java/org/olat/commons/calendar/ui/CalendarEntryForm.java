@@ -231,33 +231,33 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		begin.clearError();
 		if (begin.getDate() == null) {
-			begin.setErrorKey("cal.form.error.date", null);
+			begin.setErrorKey("cal.form.error.date");
 			allOk &= false;
-		} else if(!validateFormItem(begin)) {
+		} else if(!validateFormItem(ureq, begin)) {
 			allOk &= false;
 		}
 		
 		end.clearError();
 		if (end.getDate() == null) {
-			end.setErrorKey("cal.form.error.date", null);
+			end.setErrorKey("cal.form.error.date");
 			allOk &= false;
-		} else if(!validateFormItem(end)) {
+		} else if(!validateFormItem(ureq, end)) {
 			allOk &= false;
 		} else if (begin.getDate() != null && end.getDate().before(begin.getDate())) {
-			end.setErrorKey("cal.form.error.endbeforebegin", null);
+			end.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}
 		
 		boolean hasEnd = !chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE);
 		recurrenceEnd.clearError();
 		if (hasEnd && recurrenceEnd.getDate() == null) {
-			recurrenceEnd.setErrorKey("cal.form.error.date", null);
+			recurrenceEnd.setErrorKey("cal.form.error.date");
 			allOk &= false;
 		}
 		
 		if (hasEnd && recurrenceEnd.getDate() != null && begin.getDate() != null
 				&& recurrenceEnd.getDate().before(begin.getDate())) {
-			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin", null);
+			recurrenceEnd.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}
 		

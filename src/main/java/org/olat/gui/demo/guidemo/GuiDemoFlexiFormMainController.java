@@ -104,6 +104,12 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		demolinknames.add("guidemo_flexi_form_simpleform");
 		demos.put("guidemo_flexi_form_simpleform", (ureq, wControl) -> new GuiDemoFlexiForm(ureq, wControl, null));
 		
+		demolinknames.add("guidemo_flexi_form_simpleform_validating");
+		demos.put("guidemo_flexi_form_simpleform_validating", GuiDemoFlexiFormValidating::new);
+		
+		demolinknames.add("guidemo_flexi_form_inlineform_validating");
+		demos.put("guidemo_flexi_form_inlineform_validating", GuiDemoFlexiInlineFormValidating::new);
+
 		demolinknames.add("guidemo_flexi_form_withchooser");
 		demos.put("guidemo_flexi_form_withchooser", (ureq, wControl) ->  new GuiDemoFlexiFormSubworkflow(ureq, wControl, null));
 		
@@ -135,10 +141,11 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 				sourceP.setContent(sc.getInitialComponent());
 				
 				//cleanup former democontroller
-				if (demoController != null) demoController.dispose();
+				removeAsListenerAndDispose(demoController);
 				contentP.popContent();
 				//create new demo controller
 				demoController = cc.createController(ureq, getWindowControl());
+				listenTo(demoController);
 				contentP.pushContent(demoController.getInitialComponent());
 			}
 		}

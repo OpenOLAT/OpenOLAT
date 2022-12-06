@@ -43,8 +43,6 @@ public class DownloadLinkImpl extends FormItemImpl implements DownloadLink {
 		super(name);
 		downloadCmp = new DownloadComponent(name, this);
 	}
-	
-	
 
 	@Override
 	public String getLinkText() {

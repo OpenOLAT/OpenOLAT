@@ -9,11 +9,7 @@
 	<tr>
 		<td>${foreach.count}.</td>
 		<td>#if(${choice.isCorrect()}) <i class="o_icon o_icon-lg o_icon_check_on"> </i> #end</td>
-		<td>$r.render($choice.getPointsEl().getComponent().getComponentName())
-		#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
-			<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
-		#end
-		</td>
+		<td>$r.render($choice.getPointsEl().getComponent().getComponentName(), "minimal")</td>
 	</tr>
 	#end
 	</tbody>
@@ -28,6 +24,7 @@
 	</div>
 </div>
 <script>
+"use strict";
 jQuery(function() {
 	var scaleFactor = jQuery("#${r.getCId()}_table").width() / $width;
 	if(scaleFactor > 1.0) {

@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
 public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TooledStackedPanel panel = (TooledStackedPanel) source;
 		List<Link> breadCrumbs = panel.getBreadCrumbs();

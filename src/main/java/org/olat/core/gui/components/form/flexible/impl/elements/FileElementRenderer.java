@@ -60,7 +60,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		// Use translator with flexi form elements fallback
@@ -89,7 +89,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			ImageFormItem previewCmp = fileElem.getPreviewFormItem();
 			if(previewCmp != null && previewCmp.isEnabled() && previewCmp.isVisible()) {
 				sb.append("<div class='o_filepreview'>");	
-				renderer.render(previewCmp.getComponent(), sb, args);
+				renderer.render(previewCmp.getComponent(), sb, new String[] { "form" });
 				sb.append("</div>");
 			}
 			

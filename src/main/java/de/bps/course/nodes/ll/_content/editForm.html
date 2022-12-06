@@ -2,9 +2,7 @@
 #foreach($link in $linkList)
 	#set( $iter = $foreach.count - 1)
 	#set( $target = $lTargetInputList.get($iter).getName() )
-	#set( $targetErr =	$target + "_ERROR" )
 	#set( $descr =	$lDescriptionInputList.get($iter).getName() )
-	#set( $descrErr = $descr + "_ERROR" )
 	#set( $hasError = "false" )
 
 	<div class="row o_block_bottom">
@@ -33,10 +31,10 @@
 				</div>
 			</div>
 			#if ($f.hasError($target))
-				$r.render($targetErr)	
+				$r.render($target,"error")	
 			#end
 			#if ($f.hasError($descr))
-				$r.render($descrErr)	
+				$r.render($descr,"error")	
 			#end
 			<div class="o_block">
 			  	<label class="sr-only" for="$f.getItemId($lCommentInputList.get($iter).getName())">$r.translate("ll.table.comment")</label>

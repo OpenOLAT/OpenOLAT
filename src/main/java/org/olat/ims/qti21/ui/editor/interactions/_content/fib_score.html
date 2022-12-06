@@ -7,22 +7,14 @@
 	#foreach($choice in $choices)
 	<tr>
 		<td>$r.escapeHtml($choice.summary)</td>
-		<td>$r.render($choice.getPointsEl().getComponent().getComponentName())
-		#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
-			<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
-		#end
-		</td>
+		<td>$r.render($choice.getPointsEl().getComponent().getComponentName(), "minimal")</td>
 	</tr>
 		#if($r.isTrue($withAlternatives))
 			#set($alternatives = ${choice.getAlternatives()})
 			#foreach($alternative in $alternatives)
 			<tr>
 				<td><span class='o_qti_gaptext_score_alternative'>$r.escapeHtml($alternative.summary)</span></td>
-				<td>$r.render(${alternative.getPointsEl().getComponent().getComponentName()})
-				#if($f.hasError($alternative.getPointsEl().getComponent().getComponentName()))
-					<div>$r.render("${alternative.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
-				#end
-				</td>
+				<td>$r.render(${alternative.getPointsEl().getComponent().getComponentName()}, "minimal")</td>
 			</tr>
 			#end
 		#end

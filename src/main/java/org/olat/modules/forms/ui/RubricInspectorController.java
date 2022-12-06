@@ -244,11 +244,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 		
 		// insufficient range
 		String insufficientPage = velocity_root + "/rubric_range_insufficient.html";
-		insufficientCont = FormLayoutContainer.createCustomFormLayout("insufficient",
-				getTranslator(), insufficientPage);
-		insufficientCont.setRootForm(mainForm);
-		layoutCont.add("insufficient", insufficientCont);
-		insufficientCont.setLabel("rubric.insufficient", null);
+		insufficientCont = uifactory.addCustomFormLayout("insufficient", "rubric.insufficient", insufficientPage, layoutCont);
 		insufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.insufficient")} );
 		String insufficientLowerBound = rubric.getLowerBoundInsufficient() != null
 				? String.valueOf(rubric.getLowerBoundInsufficient())
@@ -271,11 +267,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 
 		// neutral range
 		String neutralPage = velocity_root + "/rubric_range_neutral.html";
-		neutralCont = FormLayoutContainer.createCustomFormLayout("neutral", getTranslator(),
-				neutralPage);
-		neutralCont.setRootForm(mainForm);
-		layoutCont.add("neutral", neutralCont);
-		neutralCont.setLabel("rubric.neutral", null);
+		neutralCont = uifactory.addCustomFormLayout("neutral", "rubric.neutral", neutralPage, layoutCont);
 		neutralCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.neutral")} );
 		String neutralLowerBound = rubric.getLowerBoundNeutral() != null ? String.valueOf(rubric.getLowerBoundNeutral())
 				: null;
@@ -294,11 +286,7 @@ public class RubricInspectorController extends FormBasicController implements Pa
 
 		// sufficient range
 		String sufficientPage = velocity_root + "/rubric_range_sufficient.html";
-		sufficientCont = FormLayoutContainer.createCustomFormLayout("sufficient", getTranslator(),
-				sufficientPage);
-		sufficientCont.setRootForm(mainForm);
-		layoutCont.add("sufficient", sufficientCont);
-		sufficientCont.setLabel("rubric.sufficient", null);
+		sufficientCont = uifactory.addCustomFormLayout("sufficient","rubric.sufficient", sufficientPage, layoutCont);
 		sufficientCont.setHelpTextKey("rubric.rating.help", new String[] { translate("rubric.sufficient")} );
 		String sufficientLowerBound = rubric.getLowerBoundSufficient() != null
 				? String.valueOf(rubric.getLowerBoundSufficient())

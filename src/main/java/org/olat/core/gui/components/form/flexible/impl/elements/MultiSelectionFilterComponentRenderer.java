@@ -37,7 +37,7 @@ import org.olat.core.gui.translator.Translator;
 public class MultiSelectionFilterComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		MultiSelectionFilterComponent cmp = (MultiSelectionFilterComponent)source;

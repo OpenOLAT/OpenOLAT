@@ -46,12 +46,8 @@
 		<div class="$colLabelValue"><div class="form-inline">
 			#foreach($stepLabel in $stepLabels)
 				<div class="o_evaluation_step_labels" style="width:${stepInPercent}%;">
-					$r.render($stepLabel.stepLabelEl)
-					#if($f.hasExample($stepLabel.stepLabelEl.getComponent().getComponentName()))
-						<div class="help-block o_evaluation_example">
-							$r.render("${stepLabel.stepLabelEl.getComponent().getComponentName()}_EXAMPLE")
-						</div>
-					#end
+					$r.render($stepLabel.stepLabelEl, "minimal")
+					
 				</div>
 			#end
 		</div> </div>
@@ -66,7 +62,7 @@
 		<div class="$colSliderButtons o_slider_buttons">
 			<div class="pull-right">
 				<div class="help-block o_evaluation_example o_weight_example">
-					$r.render("${slider.weightEl.getComponent().getComponentName()}_EXAMPLE")
+					<div>$r.render($slider.weightEl, "example")</div>
 					$r.render($slider.weightEl)
 					<div>
 						<div class='btn-group o_updown'>$r.render($slider.upButton)$r.render($slider.downButton)</div>

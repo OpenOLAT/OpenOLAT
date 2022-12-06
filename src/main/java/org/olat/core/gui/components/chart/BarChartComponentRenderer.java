@@ -38,7 +38,7 @@ import org.olat.core.util.StringHelper;
 public class BarChartComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		BarChartComponent chartCmp = (BarChartComponent)source;

@@ -10,8 +10,8 @@
 	</div>
 </div>
 <div class="clearfix o_filter_search_list_values o_tax_ls_selections">
-	$r.render("taxonomy.level.selection.selection.none_LABEL")
-	$r.render("taxonomy.level.selection.selection_LABEL")
+	$r.render("taxonomy.level.selection.selection.none","label")
+	$r.render("taxonomy.level.selection.selection","label")
 	#if($expand)
 		$r.render("taxonomy.level.selection.selection.none")
 		$r.render("taxonomy.level.selection.selection")
@@ -19,9 +19,9 @@
 	#if($r.visible("expandButton"))
 		<div class="o_button_group o_tax_ls_expand">$r.render("expandButton")</div>
 	#end
-	$r.render("taxonomy.level.selection.results.none_LABEL")
+	$r.render("taxonomy.level.selection.results.none","label")
 	$r.render("taxonomy.level.selection.results.none")
-	$r.render("taxonomy.level.selection.results_LABEL")
+	$r.render("taxonomy.level.selection.results","label")
 	$r.render("taxonomy.level.selection.results")
 </div>
 <small>$r.render("taxonomy.level.selection.results.more")</small>

@@ -116,12 +116,9 @@ public class BCCourseNodeConfigController extends FormBasicController {
 		folderTargetChoose.addActionListener(FormEvent.ONCLICK);
 		subPath = uifactory.addStaticTextElement("subPathLab.label", translate("subPathLab.dummy"), pathCont);
 
-		sharedFolderInfo = uifactory.addStaticExampleText("warning","", "<div class=\"o_important\">"+translate("info.sharedfolder")+"</div>",pathCont);
-		sharedFolderWarning = uifactory.createSimpleErrorText("warning", translate("warning.no.sharedfolder"));
-		formLayout.add(sharedFolderWarning);
-		
-		linkedFolderWarning = uifactory.createSimpleErrorText("warning2", translate("warning.no.linkedfolder"));
-		formLayout.add(linkedFolderWarning);
+		sharedFolderInfo = uifactory.addStaticExampleText("warning","", "<div class=\"o_important\">" + translate("info.sharedfolder") + "</div>", pathCont);
+		sharedFolderWarning = uifactory.addErrorText("warning", translate("warning.no.sharedfolder"), formLayout);
+		linkedFolderWarning = uifactory.addErrorText("warning2", translate("warning.no.linkedfolder"), formLayout);
 
 		boolean isAuto = moduleConfig.getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER);
 

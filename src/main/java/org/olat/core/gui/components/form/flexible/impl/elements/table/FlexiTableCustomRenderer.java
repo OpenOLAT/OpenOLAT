@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
 class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		FlexiTableComponent ftC = (FlexiTableComponent)source;

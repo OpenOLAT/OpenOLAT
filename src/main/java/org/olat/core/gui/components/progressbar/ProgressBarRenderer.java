@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
 public class ProgressBarRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
 			RenderResult renderResult, String[] args) {
 
 		ProgressBar ubar = (ProgressBar) source;

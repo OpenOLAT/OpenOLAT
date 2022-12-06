@@ -1,10 +1,5 @@
 <div class="o_error" role="alert"><i class="o_icon o_icon-lg o_icon_important"> </i> $msg</div>
-#if($r.available("notifications"))
-	$r.render("notifications")
-	#if($f.hasError("notifications"))
-		$r.render("notifications_ERROR")
-	#end
-#end
+$r.render("notifications","minimal")
 <div class="o_button_group">
 	$r.render("cancel")
 	$r.render("delete.group")

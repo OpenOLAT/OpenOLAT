@@ -21,38 +21,18 @@
 	#if($r.visible("meeting.join.button"))
 		<div class="o_hint">$r.translate("meeting.guest.pseudo.explain")</div>
 		<div class="clearfix">
-			#if ($f.hasLabel("meeting.guest.pseudo"))
-				$r.render("meeting.guest.pseudo_LABEL", "meeting.guest.pseudo")
-			#end
-			$r.render("meeting.guest.pseudo")
-			#if($f.hasError("meeting.guest.pseudo"))
-			<div class="">
-				$r.render("meeting.guest.pseudo_ERROR")
-			</div>
-			#end
+			$r.render("meeting.guest.pseudo","minimal")
 		</div>
 		<div class="clearfix">
-			#if ($f.hasLabel("meeting.guest.password"))
-				$r.render("meeting.guest.password_LABEL", "meeting.guest.password")
-			#end
-			$r.render("meeting.guest.password")
-			#if($f.hasError("meeting.guest.password"))
-			<div class="">
-				$r.render("meeting.guest.password_ERROR")
-			</div>
-			#end
+			$r.render("meeting.guest.password","minimal")
 		</div>
 		#if($r.visible("meeting.acknowledge.recording"))
 		<div class="o_warning">
 			<h4>$r.translate("meeting.acknowledge.recording.explain.title")</h4>
 			<p>$r.translate("meeting.acknowledge.recording.explain")</p>
-			$r.render("meeting.acknowledge.recording")
-			#if($f.hasError("meeting.acknowledge.recording"))
-				$r.render("meeting.acknowledge.recording_ERROR")
-			#end
+			$r.render("meeting.acknowledge.recording","minimal")
 		</div>
 		#end
-		
 		<div class=o_button_group>
 			$r.render("meeting.join.button")
 			#if($r.visible("meeting.login")) 

@@ -105,8 +105,8 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		taxonomyLevelEl.clearError();
-		if (taxonomyLevelEl != null && !taxonomyLevelEl.isOneSelected()) {
-			taxonomyLevelEl.setErrorKey("form.legende.mandatory", null);
+		if (!taxonomyLevelEl.isOneSelected()) {
+			taxonomyLevelEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			validateTaxonomyLevelInLauncher();
@@ -147,7 +147,7 @@ public class CatalogFilterTaxonomyLevelController extends AbstractFilterEditCont
 		
 		if (!launcherNames.isEmpty()) {
 			String names = launcherNames.stream().collect(Collectors.joining(", "));
-			taxonomyLevelEl.setErrorKey("error.taxonomy.level.filter.hidden", true, names);
+			taxonomyLevelEl.setWarningKey("error.taxonomy.level.filter.hidden", names);
 		}
 	}
 

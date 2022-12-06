@@ -38,7 +38,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -77,14 +76,11 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/passed.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addInlineFormLayout("attempts.".concat(id), null, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
 
@@ -124,7 +120,7 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 			courseNodeEl.select(nodeKeys[0], true);
 		}
 		if(StringHelper.containsNonWhitespace(currentCourseNode) && !nodeSelected) {
-			courseNodeEl.setErrorKey("error.course.node.found", null);
+			courseNodeEl.setErrorKey("error.course.node.found");
 		}
 		
 		Translator trans = formLayout.getTranslator();
@@ -185,13 +181,13 @@ public class PassedRuleEditor extends RuleEditorFragment implements CourseNodeFr
 		
 		courseNodeEl.clearError();
 		if(!courseNodeEl.isOneSelected()) {
-			courseNodeEl.setErrorKey("form.mandatory.hover", null);
+			courseNodeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		statusEl.clearError();
 		if(!statusEl.isAtLeastSelected(1)) {
-			statusEl.setErrorKey("form.mandatory.hover", null);
+			statusEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 

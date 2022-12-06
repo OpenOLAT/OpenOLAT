@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -82,7 +81,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 	private final boolean restrictedEdit;
 	private final FeedbacksEnabler enable;
 	private final AssessmentItemBuilder itemBuilder;
-	private final AtomicInteger counter = new AtomicInteger();
+	private int counter = 0;
 
 	public FeedbacksEditorController(UserRequest ureq, WindowControl wControl, AssessmentItemBuilder itemBuilder,
 			File rootDirectory, VFSContainer rootContainer, File itemFile, FeedbacksEnabler enable,
@@ -319,7 +318,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		}
 
 		public void initForm(UserRequest ureq, FormItemContainer parentFormLayout) {
-			String id = Integer.toString(counter.incrementAndGet());
+			String id = Integer.toString(++counter);
 
 			formLayout = FormLayoutContainer.createDefaultFormLayout_2_10(feedbackType.name(), getTranslator());
 			parentFormLayout.add(formLayout);
@@ -427,27 +426,23 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 		}
 
 		public void initForm(UserRequest ureq, FormItemContainer parentFormLayout) {
-			String id = Integer.toString(counter.incrementAndGet());
+			String id = Integer.toString(++counter);
 			
 			formLayout = FormLayoutContainer.createDefaultFormLayout_2_10("feedback".concat(id), getTranslator());
 			formLayout.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_" + position);
 			parentFormLayout.add(formLayout);
 			formLayout.setRootForm(mainForm);
-			formLayout.setFormTitle(translate("form.imd.additional.text", new String[] { Integer.toString(position) }));
+			formLayout.setFormTitle(translate("form.imd.additional.text", Integer.toString(position)));
 
 			String title = feedbackBuilder == null ? "" : feedbackBuilder.getTitle();
 			titleEl = uifactory.addTextElement("title_".concat(id), "form.imd.feedback.title", -1, title, formLayout);
 			titleEl.setUserObject(feedbackBuilder);
 			titleEl.setEnabled(!readOnly);
 			titleEl.setElementCssClass("o_sel_assessment_item_" + feedbackType.name() + "_feedback_title");
-			
+
 			String conditionListPage = velocity_root + "/feedback_condition_list.html";
-			conditionListContainer = FormLayoutContainer.createCustomFormLayout("cond_list_".concat(id),
-					getTranslator(), conditionListPage);
-			formLayout.add(conditionListContainer);
-			conditionListContainer.setRootForm(mainForm);
+			conditionListContainer = uifactory.addCustomFormLayout("cond_list_".concat(id), "form.imd.condition", conditionListPage, formLayout);
 			conditionListContainer.contextPut("conditions", conditions);
-			conditionListContainer.setLabel("form.imd.condition", null);
 			
 			// rules
 			if(feedbackBuilder.getFeedbackConditons() != null && !feedbackBuilder.getFeedbackConditons().isEmpty()) {
@@ -625,12 +620,10 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			}
 			
 			public void initForm(FormItemContainer feedbackFormLayout) {
-				String id = Integer.toString(counter.incrementAndGet());
+				String id = Integer.toString(++counter);
 
-				String page = velocity_root + "/feedback_condition.html";
-				ruleContainer = FormLayoutContainer.createCustomFormLayout("rule_".concat(id), getTranslator(), page);
-				feedbackFormLayout.add(ruleContainer);
-				ruleContainer.setRootForm(mainForm);
+				ruleContainer = uifactory.addInlineFormLayout(id, null, feedbackFormLayout);
+				ruleContainer.setDomReplacementWrapperRequired(false);
 				ruleContainer.contextPut("id", id);
 				ruleContainer.contextPut("rule", this);
 				
@@ -640,7 +633,6 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 					variableValues[i] = translate("variable.".concat(varKeys[i]));
 				}
 				variableEl = uifactory.addDropdownSingleselect("var_".concat(id), null, ruleContainer, varKeys, variableValues, null);
-				variableEl.setDomReplacementWrapperRequired(false);
 				variableEl.setEnabled(!restrictedEdit && !readOnly);
 				variableEl.addActionListener(FormEvent.ONCHANGE);
 				boolean found = false;
@@ -658,7 +650,6 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 				operatorEl = uifactory.addDropdownSingleselect("ope_".concat(id), null, ruleContainer, new String[0], new String[0], null);
 				String[] operatorKeys = updateOperators();
-				operatorEl.setDomReplacementWrapperRequired(false);
 				operatorEl.setEnabled(!restrictedEdit && !readOnly);
 				boolean foundOp = false;
 				if(condition.getVariable() != null) {
@@ -675,12 +666,10 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				
 				String val = condition.getValue();
 				textValueEl = uifactory.addTextElement("txt_val_".concat(id), null, 8, val, ruleContainer);
-				textValueEl.setDomReplacementWrapperRequired(false);
 				textValueEl.setEnabled(!restrictedEdit && !readOnly);
 				
 				String[] answerKeys = new String[0];		
 				dropDownValueEl = uifactory.addDropdownSingleselect("ans_".concat(id), null, ruleContainer, answerKeys, answerKeys, null);
-				dropDownValueEl.setDomReplacementWrapperRequired(false);
 				dropDownValueEl.setEnabled(!restrictedEdit && !readOnly);
 				
 				updateValues(val);
@@ -800,16 +789,16 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			}
 			
 			public ModalFeedbackCondition commit() {
-				ModalFeedbackCondition.Variable var = ModalFeedbackCondition.Variable.valueOf(variableEl.getSelectedKey());
+				ModalFeedbackCondition.Variable variable = ModalFeedbackCondition.Variable.valueOf(variableEl.getSelectedKey());
 				ModalFeedbackCondition.Operator operator = ModalFeedbackCondition.Operator.valueOf(operatorEl.getSelectedKey());
 				String val = getValue();
-				return new ModalFeedbackCondition(var, operator, val);
+				return new ModalFeedbackCondition(variable, operator, val);
 			}
 			
 			public String getValue() {
-				ModalFeedbackCondition.Variable var = ModalFeedbackCondition.Variable.valueOf(variableEl.getSelectedKey());
+				ModalFeedbackCondition.Variable variable = ModalFeedbackCondition.Variable.valueOf(variableEl.getSelectedKey());
 				String val = null;
-				switch(var) {
+				switch(variable) {
 					case score:
 					case attempts:
 						val = textValueEl.getValue();

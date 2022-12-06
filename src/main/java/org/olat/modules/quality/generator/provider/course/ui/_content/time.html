@@ -1,7 +1,2 @@
-<div class="o_date_ms form-inline">$r.render("config.start.hour"):$r.render("config.start.minute")</div>
-#if($f.hasError("config.start.hour"))
-	<div>$r.render("config.start.hour_ERROR")</div>
-#end
-#if($f.hasError("config.start.minute"))
-	<div>$r.render("config.start.minute_ERROR")</div>
-#end
+<div class="o_date_ms form-inline">$r.render("config.start.hour") : $r.render("config.start.minute")
+$r.render("errors")</div>

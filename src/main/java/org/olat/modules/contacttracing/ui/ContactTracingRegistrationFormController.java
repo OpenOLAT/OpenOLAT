@@ -386,7 +386,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
 
         // Check every form item
         for (FormItem item : userPropertyHandlerFormItemMap.values()) {
-            allOk &= validateFormItem(item);
+            allOk &= validateFormItem(ureq, item);
         }
 
         // Validate date choosers
@@ -397,33 +397,33 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
         if (startDate != null) {
             if (startDate.after(currentDate)) {
                 allOk = false;
-                startDateEl.setErrorKey("contact.tracing.registration.date.start.error", null);
+                startDateEl.setErrorKey("contact.tracing.registration.date.start.error");
             } else {
                 startDateEl.clearError();
             }
         } else if (startDateEl.isMandatory()){
-            startDateEl.setErrorKey("contact.tracing.required", null);
+            startDateEl.setErrorKey("contact.tracing.required");
         }
 
         if (endDate != null) {
             if (startDate != null && endDate.before(startDate)) {
                 allOk = false;
-                endDateEl.setErrorKey("contact.tracing.registration.date.end.before.start.error", null);
+                endDateEl.setErrorKey("contact.tracing.registration.date.end.before.start.error");
             } else if (endDate.before(currentDate)) {
                 allOk = false;
-                endDateEl.setErrorKey("contact.tracing.registration.date.end.error", null);
+                endDateEl.setErrorKey("contact.tracing.registration.date.end.error");
             } else {
                 endDateEl.clearError();
             }
         } else if (endDateEl.isMandatory()){
-            endDateEl.setErrorKey("contact.tracing.required", null);
+            endDateEl.setErrorKey("contact.tracing.required");
         }
 
         return allOk;
     }
 
     @Override
-    protected boolean validateFormItem(FormItem item) {
+    protected boolean validateFormItem(UserRequest ureq, FormItem item) {
         if (item.getUserObject() instanceof AttributeState) {
             AttributeState state = (AttributeState) item.getUserObject();
             if (state != AttributeState.mandatory) {
@@ -431,7 +431,7 @@ public class ContactTracingRegistrationFormController extends FormBasicControlle
             }
         }
 
-        return super.validateFormItem(item);
+        return super.validateFormItem(ureq, item);
     }
 
     @Override

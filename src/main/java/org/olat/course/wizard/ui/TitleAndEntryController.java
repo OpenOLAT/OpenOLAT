@@ -137,7 +137,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 			titleEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
-			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+			titleEl.setWarningKey("error.title.too.long", String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH));
 		}
 		
 		return allOk;

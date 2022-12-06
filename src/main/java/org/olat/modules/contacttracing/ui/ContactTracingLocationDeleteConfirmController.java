@@ -114,11 +114,11 @@ public class ContactTracingLocationDeleteConfirmController extends FormBasicCont
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk = super.validateFormLogic(ureq);
 
-        allOk &= validateRegistrations(confirmRegistrationsEl);
+        allOk &= validateRegistrations(ureq, confirmRegistrationsEl);
 
         if (!confirmCheckBoxEl.isSelected(0)) {
             allOk = false;
-            confirmCheckBoxEl.setErrorKey("form.mandatory.hover", null);
+            confirmCheckBoxEl.setErrorKey("form.mandatory.hover");
         } else {
             confirmCheckBoxEl.clearError();
         }
@@ -126,24 +126,24 @@ public class ContactTracingLocationDeleteConfirmController extends FormBasicCont
         return allOk;
     }
 
-    private boolean validateRegistrations(TextElement el) {
+    private boolean validateRegistrations(UserRequest ureq, TextElement el) {
         el.clearError();
-        boolean allOk = validateFormItem(el);
+        boolean allOk = validateFormItem(ureq, el);
         if(el.isEnabled() && el.isVisible()) {
             String val = el.getValue();
             if (StringHelper.containsNonWhitespace(val)) {
                 try {
                     int number = Integer.parseInt(val);
                     if (number != registrationsCount) {
-                        el.setErrorKey("contact.tracing.location.delete.count.error", null);
+                        el.setErrorKey("contact.tracing.location.delete.count.error");
                         allOk = false;
                     }
                 } catch (NumberFormatException e) {
-                    el.setErrorKey("contact.tracing.location.delete.count.error", null);
+                    el.setErrorKey("contact.tracing.location.delete.count.error");
                     allOk = false;
                 }
             } else if (el.isMandatory()) {
-                el.setErrorKey("form.mandatory.hover", null);
+                el.setErrorKey("form.mandatory.hover");
                 allOk = false;
             }
         }

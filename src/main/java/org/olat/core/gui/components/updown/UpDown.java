@@ -94,7 +94,7 @@ public class UpDown extends AbstractComponent implements ComponentCollection, Co
 		return down;
 	}
 	
-	Layout getLayout() {
+	Layout getButtonLayout() {
 		return layout;
 	}
 

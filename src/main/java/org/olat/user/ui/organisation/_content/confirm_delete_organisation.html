@@ -1,23 +1,8 @@
 <div class="o_warning">
 	<p>$r.translate("confirm.delete.organisation", $organisationName)</p>
 </div>
-#if($r.available("organisation.replacement"))
-	<div class="form-group $f.getElementCssClass($item) #if($f.hasError("organisation.replacement")) has-feedback has-error #end clearfix">
-		<label class="control-label col-sm-3">$r.translate("organisation.replacement")</label>
-		<div class='col-sm-9'>
-			$r.render("organisation.replacement", "form")
-			#if($f.hasError("organisation.replacement"))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#end
-		</div>
-		#if($f.hasError("organisation.replacement"))
-			<div class="col-sm-offset-3 col-sm-9">
-				$r.render("organisation.replacement_ERROR")
-			</div>
-		#end
-	</div>
-#end
+$r.render("organisation.replacement", "3_9", "form")
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("delete")
+	$r.render("cancel")
 </div>

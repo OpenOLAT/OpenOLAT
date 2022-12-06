@@ -460,7 +460,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 				String newFilename = logoUpl.getUploadFileName();
 				boolean isValidFileType = newFilename.toLowerCase().matches(".*[.](png|jpg|jpeg|gif)");
 				if (!isValidFileType) {
-					logoUpl.setErrorKey("logo.file.type.error", null);
+					logoUpl.setErrorKey("logo.file.type.error");
 				} else {
 					logoUpl.clearError();
 				}
@@ -624,7 +624,7 @@ public class CourseLayoutGeneratorController extends FormBasicController {
 		if (teaserImageUploadEl.isVisible()) {
 			if (teaserImageUploadEl.validate() && teaserImageUploadEl.getUploadFile() == null
 					&& teaserImageUploadEl.getInitialFile() == null) {
-				teaserImageUploadEl.setErrorKey("form.legende.mandatory", null);
+				teaserImageUploadEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}	

@@ -112,16 +112,16 @@ public class ImportCurriculumController extends FormBasicController {
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		uploadFileEl.clearError();
 		if(uploadFileEl.getUploadFile() == null) {
-			uploadFileEl.setErrorKey("form.legende.mandatory", null);
+			uploadFileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
-			validateFormItem(uploadFileEl);
+			validateFormItem(ureq, uploadFileEl);
 		}
 		
 		return allOk;

@@ -174,10 +174,10 @@ public class ViteroConfigurationController extends FormBasicController {
 			
 		} catch (URISyntaxException e) {
 			logError("", e);
-			urlEl.setErrorKey("error.url.invalid", null);
+			urlEl.setErrorKey("error.url.invalid");
 		} catch(NumberFormatException e) {
 			logError("", e);
-			urlEl.setErrorKey("error.customer.invalid", null);
+			urlEl.setErrorKey("error.customer.invalid");
 		}
 	}
 
@@ -191,14 +191,14 @@ public class ViteroConfigurationController extends FormBasicController {
 			customerEl.clearError();
 			String customerIdStr = customerEl.getValue();
 			if(!StringHelper.containsNonWhitespace(customerIdStr)) {
-				customerEl.setErrorKey("error.customer.invalid", null);
+				customerEl.setErrorKey("error.customer.invalid");
 				allOk = false;
 			} else {
 				int customerId = -1;
 				try {
 					customerId = Integer.parseInt(customerIdStr);
 				} catch(Exception e) {
-					customerEl.setErrorKey("error.customer.invalid", null);
+					customerEl.setErrorKey("error.customer.invalid");
 					allOk = false;
 				}
 				
@@ -210,7 +210,7 @@ public class ViteroConfigurationController extends FormBasicController {
 						}
 						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), credential, customerId);
 						if(!ok) {
-							customerEl.setErrorKey("error.customerDoesntExist", null);
+							customerEl.setErrorKey("error.customerDoesntExist");
 							allOk = false;
 						}
 					} catch (VmsNotAvailableException e) {
@@ -233,25 +233,25 @@ public class ViteroConfigurationController extends FormBasicController {
 				URI uri = new URI(url);
 				uri.getHost();
 			} catch(Exception e) {
-				urlEl.setErrorKey("error.url.invalid", null);
+				urlEl.setErrorKey("error.url.invalid");
 				allOk = false;
 			}
 		} else {
-			urlEl.setErrorKey("form.legende.mandatory", null);
+			urlEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		
 		String login = loginEl.getValue();
 		loginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(login)) {
-			loginEl.setErrorKey("form.legende.mandatory", null);
+			loginEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		
 		String password = passwordEl.getValue();
 		passwordEl.clearError();
 		if(!StringHelper.containsNonWhitespace(password)) {
-			passwordEl.setErrorKey("form.legende.mandatory", null);
+			passwordEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		

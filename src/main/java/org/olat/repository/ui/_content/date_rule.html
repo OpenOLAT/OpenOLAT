@@ -1,6 +1,4 @@
 <div class='form-inline'>
 	$r.render("${prefix}-value") $r.render("${prefix}-unit") <span class="form-control-static">$ruleMsg</span>
-	#if($f.hasError("${prefix}-value"))
-		<br/>$r.render("${prefix}-value_ERROR")
-	#end
+	$r.render("errors")
 </div>

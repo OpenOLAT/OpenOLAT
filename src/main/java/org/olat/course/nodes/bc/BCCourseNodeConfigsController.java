@@ -71,9 +71,7 @@ public class BCCourseNodeConfigsController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == configCtrl) {
-			fireEvent(ureq, event);
-		} else if (source == nodeRightCtrl) {
+		if (source == configCtrl || source == nodeRightCtrl) {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);

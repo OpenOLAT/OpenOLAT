@@ -39,7 +39,7 @@ import org.olat.modules.portfolio.Citation;
 public class CitationComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		CitationComponent cmp = (CitationComponent)source;
 		String notes = null;
 		String links = null;

@@ -28,7 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineIntegerElement;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -36,8 +35,7 @@ import org.olat.core.logging.AssertException;
  * 
  * @author patrickb
  */
-public class IntegerElementImpl extends TextElementImpl implements
-		IntegerElement, InlineIntegerElement {
+public class IntegerElementImpl extends TextElementImpl implements InlineIntegerElement {
 
 	private boolean hasMinCheck = false;
 	private boolean hasMaxCheck = false;
@@ -101,7 +99,7 @@ public class IntegerElementImpl extends TextElementImpl implements
 		boolean allOk = true;
 		if(intValueCheck()) {
 			if(!validate()) {
-				setErrorKey(intValueErrorKey, null);
+				setErrorKey(intValueErrorKey);
 				allOk &= false;
 			}
 		} else {
@@ -114,15 +112,12 @@ public class IntegerElementImpl extends TextElementImpl implements
 		try {
 			Integer.parseInt(getValue());
 		} catch (NumberFormatException nfe) {
-			setErrorKey(intValueErrorKey, null);
+			setErrorKey(intValueErrorKey);
 			return false;
 		}
 		return true;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		if(isInlineEditingElement()) return;
@@ -136,6 +131,7 @@ public class IntegerElementImpl extends TextElementImpl implements
 		}
 	}
 
+	@Override
 	protected void dispatchFormRequest(UserRequest ureq) {
 		if(isInlineEditingElement()){
 			dispatchFormRequestInline(ureq);
@@ -163,7 +159,11 @@ public class IntegerElementImpl extends TextElementImpl implements
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);
 			}
-			getRootForm().submit(ureq);//submit validates again!
+			if(getRootForm().isInlineValidationOn() || isInlineValidationOn()) {
+				getRootForm().validateInline(ureq, this);
+			} else {
+				getRootForm().validate(ureq);
+			}
 			
 			if(hasError()){
 				super.setValue(transientValue);//error with paramVal -> fallback to previous				
@@ -227,12 +227,7 @@ public class IntegerElementImpl extends TextElementImpl implements
 		return true;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.elements.IntegerElement#setIsEqualCheck(int,
-	 *      java.lang.String)
-	 *
-	 */
+	@Override
 	public void setIsEqualCheck(int equalValue, String errorKey) {
 		hasEqualCheck = true;
 		this.equalValue = equalValue;
@@ -247,14 +242,14 @@ public class IntegerElementImpl extends TextElementImpl implements
 
 	private boolean isEqualCheck() {
 		if (hasEqualCheck && getIntValue() != equalValue) {
-			setErrorKey(equalValueErrorKey, null);
+			setErrorKey(equalValueErrorKey);
 			return false;
 		} else {
 			return true;
 		}
 	}
 
-	
+	@Override
 	public void setMaxValueCheck(int maxValue, String errorKey) {
 		hasMaxCheck = true;
 		this.maxValue = maxValue;
@@ -267,13 +262,13 @@ public class IntegerElementImpl extends TextElementImpl implements
 	
 	private boolean isMaxValueCheck() {
 		if (hasMaxCheck && getIntValue() > maxValue) {
-			setErrorKey(maxValueErrorKey, new String[]{String.valueOf(maxValue)});
+			setErrorKey(maxValueErrorKey, String.valueOf(maxValue));
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
-	
+
+	@Override
 	public void setMinValueCheck(int minValue, String errorKey) {
 		hasMinCheck = true;
 		this.minValue = minValue;
@@ -287,11 +282,10 @@ public class IntegerElementImpl extends TextElementImpl implements
 	
 	private boolean isMinValueCheck() {
 		if (hasMinCheck &&  getIntValue() < minValue) {
-			setErrorKey(minValueErrorKey, new String[]{String.valueOf(minValue)});
+			setErrorKey(minValueErrorKey, String.valueOf(minValue));
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 
 }

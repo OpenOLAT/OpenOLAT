@@ -46,7 +46,7 @@ public class RatingRenderer extends DefaultComponentRenderer {
 
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		RatingComponent rating = (RatingComponent) source;
 		sb.append("<div class='o_rating ");

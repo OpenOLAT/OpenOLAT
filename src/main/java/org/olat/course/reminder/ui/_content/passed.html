@@ -1,9 +1,0 @@
-<div class='form-inline o_rule_passed'>
-	$r.render("coursenodes.${id}") $r.render("status.${id}")
-	#if($f.hasError("status.${id}"))
-		<br/>$r.render("status.${id}_ERROR")
-	#end
-	#if($f.hasError("coursenodes.${id}"))
-		<br/>$r.render("coursenodes.${id}_ERROR")
-	#end
-</div>

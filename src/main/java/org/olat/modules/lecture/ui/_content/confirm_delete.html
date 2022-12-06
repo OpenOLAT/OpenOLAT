@@ -4,12 +4,9 @@
 #end
 </div>
 #if($r.available("confirm"))
-	$r.render("confirm")
-	#if($f.hasError("confirm"))
-		$r.render("confirm_ERROR")
-	#end
+	$r.render("confirm", "minimal")
 #end
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("delete")
+	$r.render("cancel")
 </div>

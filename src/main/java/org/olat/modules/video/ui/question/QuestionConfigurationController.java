@@ -114,7 +114,6 @@ public class QuestionConfigurationController extends FormBasicController {
 		}
 		styleEl = uifactory.addDropdownSingleselect("color", "video.marker.color", formLayout, colorKeys, colorValues);
 		styleEl.setDomReplacementWrapperRequired(false);
-		styleEl.getLabelC().setDomReplaceable(false);
 		
 		boolean found = false;
 		String style = question.getStyle();

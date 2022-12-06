@@ -51,7 +51,7 @@ public class DateComponentRenderer extends DefaultComponentRenderer {
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		DateComponent dateC = (DateComponent) source;

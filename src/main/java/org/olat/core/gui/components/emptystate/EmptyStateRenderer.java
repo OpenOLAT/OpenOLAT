@@ -38,7 +38,7 @@ import org.olat.core.util.Util;
 public class EmptyStateRenderer extends DefaultComponentRenderer {
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		EmptyState emptyState = (EmptyState)source;
 		
@@ -52,7 +52,7 @@ public class EmptyStateRenderer extends DefaultComponentRenderer {
 				: "o_icon_empty_objects";
 		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
 		sb.append("</div>");
-		
+	
 		String message = null;
 		if (StringHelper.containsNonWhitespace(emptyState.getMessageTranslated())) {
 			message = emptyState.getMessageTranslated();

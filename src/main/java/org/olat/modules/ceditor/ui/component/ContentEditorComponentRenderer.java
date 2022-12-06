@@ -36,7 +36,7 @@ public class ContentEditorComponentRenderer extends AbstractContentEditorCompone
 	
 	
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		ContentEditorComponent cmp = (ContentEditorComponent)source;

@@ -1,6 +1,4 @@
 <div class='form-inline'>
 	$r.render("launchvalue.${id}") $r.render("launchunit.${id}") <span class="form-control-static">$r.translate("ago")</span>
-	#if($f.hasError("launchvalue.${id}"))
-		<br/>$r.render("launchvalue.${id}_ERROR")
-	#end
+	$r.render("errors")
 </div>

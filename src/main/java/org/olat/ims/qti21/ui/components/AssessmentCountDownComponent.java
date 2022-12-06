@@ -59,6 +59,7 @@ public class AssessmentCountDownComponent extends FormBaseComponentImpl {
 		this.alreadyEnded = alreadyEnded;
 	}
 
+	@Override
 	public AssessmentCountDownFormItem getFormItem() {
 		return item;
 	}

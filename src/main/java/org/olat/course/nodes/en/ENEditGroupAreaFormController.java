@@ -403,7 +403,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				String labelKey = missingGroups.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 				String csvMissGrps = toString(missingGroups);
 				String[] params = new String[] { "-", csvMissGrps };
-				easyGroupTableElement.setErrorKey(labelKey, true, params);
+				easyGroupTableElement.setWarningKey(labelKey, params);
 			}
 		}
 
@@ -430,7 +430,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				String labelKey = missingAreas.size() == 1 ? "error.notfound.name" : "error.notfound.names";
 				String csvMissAreas = toString(missingAreas);
 				String[] params = new String[] { "-", csvMissAreas };
-				easyAreaList.setErrorKey(labelKey, true, params);
+				easyAreaList.setWarningKey(labelKey, params);
 			}
 		}
 
@@ -438,13 +438,13 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		boolean easyAreaOK = activeAreaSelection != null && !activeAreaSelection.isEmpty();
 		if (!easyGroupOK && !easyAreaOK) {
 			// error concerns both fields -> set it as switch error
-			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas", null);
+			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas");
 			retVal = false;
 		}
 
 		//raise error if someone removed all groups and areas from form
 		if (!retVal && !easyGroupOK && !easyAreaOK) {
-			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas", null);
+			easyGroupTableElement.setErrorKey("form.noGroupsOrAreas");
 		}
 		return retVal;
 	}

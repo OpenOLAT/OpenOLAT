@@ -82,7 +82,6 @@ public class ItemListMyListsController extends AbstractItemListController {
 
         myListEl = uifactory.addDropdownSingleselect("source.selector", "my.list", formLayout, listKV.keys(), listKV.values(), null);
         myListEl.setDomReplacementWrapperRequired(false);
-        myListEl.getLabelC().setDomReplaceable(false);
         myListEl.addActionListener(FormEvent.ONCHANGE);
         if(numOfCollections > 0) {
             myListEl.select(myListEl.getKey(0), true);

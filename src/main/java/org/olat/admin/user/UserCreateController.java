@@ -332,7 +332,7 @@ class NewUserForm extends FormBasicController {
 		// validate if username does match the syntactical login requirements
 		usernameTextElement.clearError();
 		if (!StringHelper.containsNonWhitespace(username)) {
-			usernameTextElement.setErrorKey("form.legende.mandatory", null);
+			usernameTextElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
@@ -363,21 +363,21 @@ class NewUserForm extends FormBasicController {
 			if (registrationManager.isRegistrationPending(email)) {
 				doConfirmDeletePendingRegistration(ureq, email);
 			}
-			emailTextElement.setErrorKey("new.error.email.choosen", new String[] {});
+			emailTextElement.setErrorKey("new.error.email.choosen");
 			allOk &= false;
 		}
 		
 		// organization
 		organisationsElement.clearError();
 		if(organisationsElement.isVisible() && !organisationsElement.isOneSelected()) {
-			organisationsElement.setErrorKey("form.legende.mandatory", null);
+			organisationsElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		// expiration
 		expirationDateEl.clearError();
 		if(expirationDateEl.getDate() != null && expirationDateEl.getDate().before(ureq.getRequestTimestamp())) {
-			expirationDateEl.setErrorKey("error.date.in.past", null);
+			expirationDateEl.setErrorKey("error.date.in.past");
 			allOk &= false;
 		}
 

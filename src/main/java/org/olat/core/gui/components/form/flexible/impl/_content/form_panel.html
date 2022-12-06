@@ -21,35 +21,9 @@
 
 <table class="table table-condensed">
 	<tbody>
-#foreach ($item in $formitemnames)
-	#if ($f.isVisible($item))
-	<tr class="$f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #elseif($f.hasWarning($item)) has-feedback has-warning #end clearfix">
-		
-		#if ($f.hasLabel($item))
-			<th>$r.render("${item}_LABEL", "$f.getItemId($item)", "col-sm-3")</th>
-		#end
-		<td class="">
-			$r.render(${item}, "form")
-			#if($f.hasError($item))
-				<span class="o_icon o_icon_error form-control-feedback"></span>
-			#elseif($f.hasWarning($item))
-				<span class="o_icon o_icon_warn form-control-feedback"></span>
-			#end
-			
-			#if($f.hasExample($item))
-				<div class="o_form_example help-block">
-					$r.render("${item}_EXAMPLE")
-				</div>
-			#end
-			#if($f.hasError($item) || $f.hasWarning($item))
-				<div class="">
-					$r.render("${item}_ERROR")
-				</div>
-			#end
-		</td>
-	</tr>
+	#foreach ($item in $formitemnames)
+		$r.render(${item}, "tr", "form")
 	#end
-#end
 	</tbody>
 </table>
 </div>

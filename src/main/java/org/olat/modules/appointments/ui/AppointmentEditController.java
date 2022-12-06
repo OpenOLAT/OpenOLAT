@@ -418,21 +418,21 @@ public class AppointmentEditController extends FormBasicController {
 		startEl.clearError();
 		endEl.clearError();
 		if (startEl.getDate() == null) {
-			startEl.setErrorKey("form.legende.mandatory", null);
+			startEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		if (endEl.getDate() == null) {
-			endEl.setErrorKey("form.legende.mandatory", null);
+			endEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
-		if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+		if(!validateFormItem(ureq, startEl) || !validateFormItem(ureq, endEl)) {
 			allOk &= false;
 		} else if (startEl.getDate() != null && endEl.getDate() != null) {
 			Date start = startEl.getDate();
 			Date end = endEl.getDate();
 			if(end.before(start)) {
-				endEl.setErrorKey("error.start.after.end", null);
+				endEl.setErrorKey("error.start.after.end");
 				allOk &= false;
 			}
 		}
@@ -445,18 +445,18 @@ public class AppointmentEditController extends FormBasicController {
 			try {
 				maxParticipants = Integer.valueOf(maxParticipationsValue);
 				if (maxParticipants.intValue() < 1) {
-					maxParticipationsEl.setErrorKey("error.positiv.number", null);
+					maxParticipationsEl.setErrorKey("error.positiv.number");
 					allOk &= false;
 				} else if (appointment != null) {
 					particiationCount = getParticipationCount();
 					if (particiationCount.doubleValue() > maxParticipants.intValue()) {
 						maxParticipationsEl.setErrorKey("error.too.much.participations",
-								new String[] { particiationCount.toString() });
+								particiationCount.toString());
 						allOk &= false;
 					}
 				}
 			} catch (NumberFormatException e) {
-				maxParticipationsEl.setErrorKey("error.positiv.number", null);
+				maxParticipationsEl.setErrorKey("error.positiv.number");
 				allOk &= false;
 			}
 		}
@@ -469,7 +469,7 @@ public class AppointmentEditController extends FormBasicController {
 			
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {
-				templateEl.setErrorKey("form.legende.mandatory", null);
+				templateEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
@@ -481,13 +481,13 @@ public class AppointmentEditController extends FormBasicController {
 					if (maxParticipants == null) {
 						particiationCount = particiationCount != null? particiationCount: getParticipationCount();
 						if (particiationCount.intValue() > template.getMaxParticipants().intValue()) {
-							templateEl.setErrorKey("error.participations.count.greater.room", new String[] {particiationCount.toString()});
+							templateEl.setErrorKey("error.participations.count.greater.room", particiationCount.toString());
 							allOk &= false;
 						} else {
 							maxParticipationsEl.setValue(template.getMaxParticipants().toString());
 						}
 					} else if (maxParticipants.intValue() > template.getMaxParticipants().intValue()) {
-						maxParticipationsEl.setErrorKey("error.participations.max.greater.room", new String[] {template.getMaxParticipants().toString()});
+						maxParticipationsEl.setErrorKey("error.participations.max.greater.room", template.getMaxParticipants().toString());
 						allOk &= false;
 					}
 				}

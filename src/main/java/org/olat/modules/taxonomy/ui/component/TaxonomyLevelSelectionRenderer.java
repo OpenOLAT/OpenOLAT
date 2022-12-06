@@ -37,11 +37,11 @@ import org.olat.core.gui.translator.Translator;
 public class TaxonomyLevelSelectionRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder urlBuilder, Translator translator,
 			RenderResult renderResult, String[] args) {
 		
 		TaxonomyLevelSelectionComponent cmp = (TaxonomyLevelSelectionComponent)source;
-		TaxonomyLevelSelectionImpl el = cmp.getTaxonomyLevelSelection();
+		TaxonomyLevelSelectionImpl el = cmp.getFormItem();
 		FormLink button = el.getButton();
 		
 		if (el.isEnabled()) {

@@ -1,9 +1,6 @@
 <div class="o_hint">
 	$r.translate("request.data.deletion.text")
-	$r.render("request.data.deletion.confirm")
-	#if($f.hasError("request.data.deletion.confirm"))
-	<div class="">$r.render("request.data.deletion.confirm_ERROR")</div>
-	#end
+	$r.render("request.data.deletion.confirm", "minimal")
 </div>
 <div class="o_button_group">
 	$r.render("no")

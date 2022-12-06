@@ -15,20 +15,15 @@
 			#end
 		</div>
 		<div class="o_block">
-			<div class="form-group clearfix">
-				$r.render("mergeto_LABEL", "mergeto", "col-sm-3")
-				<div class='col-sm-9'>
-					$r.render("mergeto", "form")
-				</div>
-			</div>
+			$r.render("mergeto", "3_9")
 		</div>
 	#end
 	<div class="form-group clearfix">
-		<div class="col-sm-offset-3 col-sm-9 ">
-		$r.render("cancel")
+		<div class="col-sm-offset-3 col-sm-9">
 		#if($r.available("delete"))
 			$r.render("delete")
 		#end
+		$r.render("cancel")
 		</div>
 	</div>
 </div>

@@ -38,13 +38,13 @@ import org.olat.core.gui.render.DomWrapperElement;
 public class StaticTextElementImpl extends FormItemImpl implements StaticTextElement {
 
 	private String value;
-	private StaticTextElementComponent component;
+	private final StaticTextElementComponent component;
 	private DomWrapperElement domWrapperElement = DomWrapperElement.p;
 	
 	public StaticTextElementImpl(String name, String value) {
 		super(name);
 		this.value = value;
-		this.component = new StaticTextElementComponent(this);
+		component = new StaticTextElementComponent(this);
 	}
 
 	@Override
@@ -61,7 +61,8 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 	public String getForId() {
 		return null;//text is not a form control
 	}
-	
+
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
@@ -77,10 +78,12 @@ public class StaticTextElementImpl extends FormItemImpl implements StaticTextEle
 		//root form not interesting for Static text
 	}
 
+	@Override
 	public String getValue() {
 		return value;
 	}
 
+	@Override
 	public void setValue(String replacementValue) {
 		value = replacementValue;
 		getFormItemComponent().setDirty(true);

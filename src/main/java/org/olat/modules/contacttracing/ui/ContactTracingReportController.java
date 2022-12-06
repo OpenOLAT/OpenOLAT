@@ -155,8 +155,8 @@ public class ContactTracingReportController extends FormBasicController {
 
         boolean allOk = super.validateFormLogic(ureq);
 
-        allOk &= validateFormItem(authorizedByEl);
-        allOk &= validateFormItem(reasonEl);
+        allOk &= validateFormItem(ureq, authorizedByEl);
+        allOk &= validateFormItem(ureq, reasonEl);
 
         return allOk;
     }
@@ -223,7 +223,7 @@ public class ContactTracingReportController extends FormBasicController {
 
             // Create excel sheet
             String label = "Contact_tracing_report_" + Formatter.formatDateFilesystemSave(new Date()) + ".xlsx";
-            List<String> sheetNames = new ArrayList<String>();
+            List<String> sheetNames = new ArrayList<>();
             for (ContactTracingLocation location : locationEntryMap.keySet()) {
 				if (StringHelper.containsNonWhitespace(location.getBuilding())) {
 					sheetNames.add(location.getReference());

@@ -2,25 +2,14 @@
 	<i class="o_icon o_icon-lg o_icon_important"> </i> $msg
 </div>
 <div class="clearfix">
-$r.render("acknowledge")
-#if($f.hasError("acknowledge"))
-	<div class="clearfix">
-		$r.render("acknowledge_ERROR")
-	</div>
-#end
+$r.render("acknowledge", "vertical")
 </div>
 #if($r.available("acknowledge2"))
 <div class="clearfix">
-	$r.render("acknowledge2")
-	#if($f.hasError("acknowledge2"))
-		<div class="clearfix">
-			$r.render("acknowledge2_ERROR")
-		</div>
-	#end
+	$r.render("acknowledge2", "vertical")
 </div>
 #end
-
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("delete")
+	$r.render("cancel")
 </div>

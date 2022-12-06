@@ -106,7 +106,7 @@ public class ContentEditorPage extends ContentViewPage {
 		By inputBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, image, browser);
 		By previewBy = By.cssSelector("div.o_filepreview>div.o_image>img");
-		OOGraphene.waitElement(previewBy, 5, browser);
+		OOGraphene.waitElement(previewBy, browser);
 		
 		By titleBy = By.cssSelector("fieldset.o_sel_pf_collect_image_form .o_sel_pf_collect_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);

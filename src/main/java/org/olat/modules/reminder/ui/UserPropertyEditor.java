@@ -63,14 +63,11 @@ public class UserPropertyEditor extends RuleEditorFragment {
 
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/user_prop.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		FormLayoutContainer userPropCont = FormLayoutContainer
-				.createCustomFormLayout("user.prop.".concat(id), formLayout.getTranslator(), page);
-		userPropCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(userPropCont);
-		userPropCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer userPropCont = uifactory
+				.addInlineFormLayout("user.prop.".concat(id), null, formLayout);
+		userPropCont.contextPut("id", id);
 		
 		Translator trans = Util.createPackageTranslator(UserPropertyHandler.class, ureq.getLocale(), formLayout.getTranslator());
 		
@@ -114,13 +111,13 @@ public class UserPropertyEditor extends RuleEditorFragment {
 		
 		propEl.clearError();
 		if(!propEl.isOneSelected()) {
-			propEl.setErrorKey("form.mandatory.hover", null);
+			propEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

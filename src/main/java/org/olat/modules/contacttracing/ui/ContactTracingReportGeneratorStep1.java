@@ -131,15 +131,15 @@ public class ContactTracingReportGeneratorStep1 extends BasicStep {
         protected boolean validateFormLogic(UserRequest ureq) {
             boolean allOk =  super.validateFormLogic(ureq);
 
-            allOk &= validateFormItem(locationFullTextSearchEl);
-            allOk &= validateFormItem(referenceEl);
-            allOk &= validateFormItem(titleEl);
-            allOk &= validateFormItem(buildingEl);
-            allOk &= validateFormItem(roomEl);
-            allOk &= validateFormItem(sectorEl);
-            allOk &= validateFormItem(tableEl);
-            allOk &= validateFormItem(startDateEl);
-            allOk &= validateFormItem(endDateEl);
+            allOk &= validateFormItem(ureq, locationFullTextSearchEl);
+            allOk &= validateFormItem(ureq, referenceEl);
+            allOk &= validateFormItem(ureq, titleEl);
+            allOk &= validateFormItem(ureq, buildingEl);
+            allOk &= validateFormItem(ureq, roomEl);
+            allOk &= validateFormItem(ureq, sectorEl);
+            allOk &= validateFormItem(ureq, tableEl);
+            allOk &= validateFormItem(ureq, startDateEl);
+            allOk &= validateFormItem(ureq, endDateEl);
 
             allOk &= containsFormAnyData();
 

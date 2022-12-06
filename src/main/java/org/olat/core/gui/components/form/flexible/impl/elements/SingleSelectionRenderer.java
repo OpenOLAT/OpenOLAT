@@ -40,7 +40,7 @@ import org.olat.core.util.StringHelper;
 class SingleSelectionRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		SingleSelectionComponent teC = (SingleSelectionComponent) source;
 		Layout layout = teC.getFormItem().getLayout();
@@ -197,6 +197,10 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			// add set dirty form only if enabled
 			// must be placed within label to make multiple radio-inline rules of bootstrap match 
 			FormJSHelper.appendFlexiFormDirtyForCheckbox(sb, ssec.getRootForm(), formDispatchId);
+
+			if(ssec.getRootForm().isInlineValidationOn() || source.getFormItem().isInlineValidationOn()) {
+				FormJSHelper.appendValidationListeners(sb, ssec.getRootForm(), formDispatchId, source.getFormItem().getFormDispatchId());
+			}
 		}
 		
 		sb.append("</label>")

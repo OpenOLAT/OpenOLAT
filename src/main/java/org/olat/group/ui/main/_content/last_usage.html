@@ -1,6 +1,4 @@
 <div class="form-inline">
 $r.render("search.last.usage") <span class="form-control-static">$r.translate("search.last.usage.days")</span>
-#if($f.hasError("search.last.usage"))
-	<br/>$r.render("search.last.usage_ERROR")
-#end
+$r.render("errors")
 </div>

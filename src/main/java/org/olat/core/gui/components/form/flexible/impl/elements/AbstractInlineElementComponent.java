@@ -35,13 +35,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 public class AbstractInlineElementComponent extends FormBaseComponentImpl {
 
 	
-	private final ComponentRenderer RENDERER;
+	private final ComponentRenderer renderer;
 	private InlineElement aie;
 
-	public AbstractInlineElementComponent(InlineElement aie, ComponentRenderer HTMLRenderer) {
+	public AbstractInlineElementComponent(InlineElement aie, ComponentRenderer htmlRenderer) {
 		super(aie.getName());
 		this.aie = aie;
-		RENDERER = HTMLRenderer;
+		renderer = htmlRenderer;
 	}
 	
 	@Override
@@ -51,6 +51,6 @@ public class AbstractInlineElementComponent extends FormBaseComponentImpl {
 	
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+		return renderer;
 	}
 }

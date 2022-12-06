@@ -34,7 +34,6 @@ import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
@@ -62,9 +61,9 @@ import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleTextItem;
+import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorTextItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl.AddRemoveMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImpl;
@@ -72,6 +71,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompletionMu
 import org.olat.core.gui.components.form.flexible.impl.elements.DownloadLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormErrorsGroupItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormReset;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -80,7 +80,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementIm
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionFilterElementImpl;
-import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionTreeImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionImpl;
@@ -115,7 +114,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -363,22 +361,6 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, tlsi);
 		formLayout.add(tlsi);
 		return tlsi;
-	}
-
-	/**
-	 * Create a multiple selection element as a tree.
-	 * @param name
-	 * @param i18nLabel Can be null
-	 * @param formLayout
-	 * @param treemodel
-	 * @param selectableFilter
-	 * @return
-	 */
-	public MultipleSelectionElement addTreeMultiselect(String name, String i18nLabel, FormItemContainer formLayout, TreeModel treemodel, INodeFilter selectableFilter){
-		MultipleSelectionElement mse = new MultiSelectionTreeImpl(name, treemodel, selectableFilter);
-		setLabelIfNotNull(i18nLabel, mse);
-		formLayout.add(mse);
-		return mse;
 	}
 	
 	public MenuTreeItem addTreeMultiselect(String name, String i18nLabel, FormItemContainer formLayout, TreeModel treemodel, ComponentEventListener listener){
@@ -645,6 +627,16 @@ public class FormUIFactory {
 		return ie;
 	}
 	
+	public TextElement addInlineTextElement(String name, String i18nLabel, String value, FormItemContainer formLayout, FormBasicController listener) {
+		TextElement ie = new TextElementImpl(null, name, value, TextElementImpl.HTML_INPUT_TYPE_TEXT, true);
+		ie.addActionListener(FormEvent.ONCLICK);
+		setLabelIfNotNull(i18nLabel, ie);
+		if(listener != null){
+			formLayout.add(ie);
+		}
+		return ie;
+	}
+	
 	/**
 	 * Inserts an HTML horizontal bar (&lt;HR&gt;) element.
 	 * 
@@ -681,30 +673,7 @@ public class FormUIFactory {
 	 * @return
 	 */
 	public FormItem addStaticExampleText(String name, String i18nLabel, String text, FormItemContainer formLayout){
-		final SimpleExampleText set = new SimpleExampleText(name, text);
-		//wrap the SimpleExampleText Component within a FormItem
-		FormItem fiWrapper = new FormItemImpl("simpleExampleTextWrapper_"+name) {
-			
-			@Override
-			protected Component getFormItemComponent() {
-				return set;
-			}
-		
-			@Override
-			protected void rootFormAvailable() {
-			 //nothing to do		
-			}
-		
-			@Override
-			public void reset() {
-				//nothing to do
-			}
-		
-			@Override
-			public void evalFormRequest(UserRequest ureq) {
-			 //nothing to do
-			}
-		};
+		SimpleExampleTextItem fiWrapper = new SimpleExampleTextItem(name, text);
 		setLabelIfNotNull(i18nLabel, fiWrapper);
 		formLayout.add(fiWrapper);
 		return fiWrapper;
@@ -1111,33 +1080,13 @@ public class FormUIFactory {
 	 * @param translatedText already translated text that should be displayed.
 	 * @return
 	 */
-	public FormItem createSimpleErrorText(final String name, final String translatedText) {
-		FormItem wrapper = new FormItemImpl(name) {
-			SimpleFormErrorText mySimpleErrorTextC = new SimpleFormErrorText(name, translatedText);
-		
-			@Override
-			protected void rootFormAvailable() {
-			//  nothing to do
-		
-			}
-		
-			@Override
-			public void reset() {
-				// nothing to do
-			}
-		
-			@Override
-			protected Component getFormItemComponent() {
-				return mySimpleErrorTextC;
-			}
-		
-			@Override
-			public void evalFormRequest(UserRequest ureq) {
-				// nothing to do
-			}
-		};
-		
-		return wrapper; 
+	public SimpleFormErrorTextItem addErrorText(final String name, final String translatedText, FormItemContainer formLayout) {
+		SimpleFormErrorTextItem sfeti = new SimpleFormErrorTextItem(name, translatedText);
+		if(formLayout != null) {
+			// Add to form and finish
+			formLayout.add(sfeti);
+		}
+		return sfeti; 
 	}
 
 	/**
@@ -1552,4 +1501,114 @@ public class FormUIFactory {
 		return tabbedPane;
 	}
 	
+	/**
+	 * Factory method for the standard 3 9 bootstrap layout.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return The layout container, bootstrap 3 9
+	 */
+	public FormLayoutContainer addDefaultFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer customContainer = FormLayoutContainer.createDefaultFormLayout(id, formLayout.getTranslator());
+		formLayout.add(customContainer);
+		setLabelIfNotNull(i18nLabel, customContainer);
+		return customContainer;
+	}
+	
+	/**
+	 * Factory method for the buttons layout, the buttons are
+	 * in a line.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return A buttons container
+	 */
+	public FormLayoutContainer addButtonsFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer customContainer = FormLayoutContainer.createButtonLayout(id, formLayout.getTranslator());
+		formLayout.add(customContainer);
+		
+		setLabelIfNotNull(i18nLabel, customContainer);
+		return customContainer;
+	}
+	
+	/**
+	 * Factory method for a custom layout with the specified velocity
+	 * template. An "errors" component is automatically added to the 
+	 * layout to show the errors and warnings collected from the form
+	 * items in the layout.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param page The page (mandatory)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return A custom container
+	 */
+	public FormLayoutContainer addCustomFormLayout(String id, String i18nLabel, String page, FormItemContainer formLayout) {
+		FormLayoutContainer customContainer = FormLayoutContainer.createCustomFormLayout(id, id, formLayout.getTranslator(), page);
+		formLayout.add(customContainer);
+		
+		FormErrorsGroupItem errorsEl = new FormErrorsGroupItem("errors", customContainer);
+		customContainer.add("errors", errorsEl);
+		
+		setLabelIfNotNull(i18nLabel, customContainer);
+		return customContainer;
+	}
+	
+	/**
+	 * Factory method for the inline layout, a standard layout to present
+	 * all form items in a line. An "errors" component is automatically added to the 
+	 * layout to show the errors and warnings collected from the form
+	 * items in the layout and it's presented at the end on an other line.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return A line container
+	 */
+	public FormLayoutContainer addInlineFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer inlineContainer = FormLayoutContainer.createInlineFormLayout(id, formLayout.getTranslator());
+		formLayout.add(inlineContainer);
+		
+		FormErrorsGroupItem errorsEl = new FormErrorsGroupItem("errors", inlineContainer);
+		inlineContainer.add("errors", errorsEl);
+		
+		setLabelIfNotNull(i18nLabel, inlineContainer);
+		return inlineContainer;
+	}
+	
+	/**
+	 * Factory method for the vertical layout, a standard layout to present
+	 * all form items vertically.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return A vertical container
+	 */
+	public FormLayoutContainer addVerticalFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer verticalContainer = FormLayoutContainer.createVerticalFormLayout(id, formLayout.getTranslator());
+		formLayout.add(verticalContainer);
+		
+		setLabelIfNotNull(i18nLabel, verticalContainer);
+		return verticalContainer;
+	}
+	
+	/**
+	 * Factory method for the horizontal layout, a standard layout to present
+	 * all form items horizontally.
+	 * 
+	 * @param id The id/name of the component (mandatory)
+	 * @param i18nLabel The label (can be null)
+	 * @param formLayout The parent layout (mandatory)
+	 * @return A horizontal container
+	 */
+	public FormLayoutContainer addHorizontalFormLayout(String id, String i18nLabel, FormItemContainer formLayout) {
+		FormLayoutContainer verticalContainer = FormLayoutContainer.createHorizontalFormLayout(id, formLayout.getTranslator());
+		formLayout.add(verticalContainer);
+		
+		setLabelIfNotNull(i18nLabel, verticalContainer);
+		return verticalContainer;
+	}
 }

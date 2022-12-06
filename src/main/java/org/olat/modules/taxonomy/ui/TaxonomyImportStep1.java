@@ -394,10 +394,10 @@ public class TaxonomyImportStep1 extends BasicStep {
 			updatedLevels.clear();
 			taxonomyLevelToImage.clear();
 
-			if ((!validateFormItem(importDataElement) && !validateFormItem(uploadFileEl))
+			if ((!validateFormItem(ureq, importDataElement) && !validateFormItem(ureq, uploadFileEl))
 					|| (uploadFileEl.getUploadFile() == null && !StringHelper.containsNonWhitespace(importDataElement.getValue()))) {
-				importDataElement.setErrorKey("import.taxonomy.levels.mandatory.either", new String[0]);
-				uploadFileEl.setErrorKey("import.taxonomy.levels.mandatory.either", new String[0]);
+				importDataElement.setErrorKey("import.taxonomy.levels.mandatory.either");
+				uploadFileEl.setErrorKey("import.taxonomy.levels.mandatory.either");
 				allOk = false;
 			} else {
 				importDataElement.clearError();
@@ -543,7 +543,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (columns.length < 2) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error", null);
+					inputEl.setErrorKey("import.taxonomy.error");
 					errorRows.add(i);
 					continue;
 				}
@@ -564,12 +564,12 @@ public class TaxonomyImportStep1 extends BasicStep {
 
 						if (!isValidLanguage(language)) {
 							allOk = false;
-							inputEl.setErrorKey("import.taxonomy.error.language", new String[] { language });
+							inputEl.setErrorKey("import.taxonomy.error.language", language);
 							errorRows.add(i);
 						} else if (!org.olat.core.util.FileUtils.validateFilename(identifier)
 								|| !org.olat.core.util.FileUtils.validateFilename(displayName)) {
 							allOk = false;
-							inputEl.setErrorKey("import.taxonomy.error.invalid", null);
+							inputEl.setErrorKey("import.taxonomy.error.invalid");
 							errorRows.add(i);
 						} else if (StringHelper.containsNonWhitespace(language)
 								&& StringHelper.containsNonWhitespace(displayName)) {
@@ -581,7 +581,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				// If no path is given
 				if (!StringHelper.containsNonWhitespace(path) || path.equals("/")) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error.no.path", null);
+					inputEl.setErrorKey("import.taxonomy.error.no.path");
 					errorRows.add(i);
 					continue;
 				}
@@ -589,7 +589,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				// Check identifier length
 				if (identifier.length() > 64) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error.identifier.too.long", new String[] {"64"});
+					inputEl.setErrorKey("import.taxonomy.error.identifier.too.long", "64");
 					errorRows.add(i);
 					continue;
 				}
@@ -597,7 +597,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				// Check display name length
 				if (displayName.length() > 255) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error.displayname.too.long", new String[] {"255"});
+					inputEl.setErrorKey("import.taxonomy.error.displayname.too.long", "255");
 					errorRows.add(i);
 					continue;
 				}
@@ -613,7 +613,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 						order = Integer.valueOf(orderString); 
 					} catch (Exception e) {
 						allOk = false;
-						inputEl.setErrorKey("import.taxonomy.error.order", null);
+						inputEl.setErrorKey("import.taxonomy.error.order");
 						errorRows.add(i);
 						continue;
 					}
@@ -623,7 +623,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 
 				if (currentLevel == null) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error.level", null);
+					inputEl.setErrorKey("import.taxonomy.error.level");
 					errorRows.add(i);
 					continue;
 				}
@@ -632,7 +632,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				
 				if (StringHelper.containsNonWhitespace(type) && currentLevelType == null) {
 					allOk = false;
-					inputEl.setErrorKey("import.taxonomy.error.type", null);
+					inputEl.setErrorKey("import.taxonomy.error.type");
 					errorRows.add(i);
 					continue;
 				}

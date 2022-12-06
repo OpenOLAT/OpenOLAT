@@ -32,7 +32,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
@@ -49,7 +48,7 @@ import org.olat.modules.ModuleConfiguration;
  * Initial Date: Sep 8, 2004
  * @author Felix Jost, gnaegi
  */
-public class ENEditController extends ActivateableTabbableDefaultController implements ControllerEventListener{
+public class ENEditController extends ActivateableTabbableDefaultController {
 
 	public static final String PANE_TAB_ENCONFIG = "pane.tab.enconfig";
 
@@ -59,7 +58,7 @@ public class ENEditController extends ActivateableTabbableDefaultController impl
 	private UserCourseEnvironment euce;
 	private TabbedPane myTabbedPane;
 	private ENEditGroupAreaFormController easyGroupEditCtrllr;
-	final static String[] paneKeys = {PANE_TAB_ENCONFIG};
+	static final String[] paneKeys = {PANE_TAB_ENCONFIG};
 
 	public ENEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, UserCourseEnvironment euce) {
 		super(ureq,wControl);

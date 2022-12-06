@@ -3,9 +3,9 @@
 #end
 <table class="table o_sel_choices_scores">
 	<thead><tr>
-		<th>$r.translate("form.score.answer.correct")</th>
-		<th>$r.translate("form.score.answer.summary")</th>
-		<th>$r.translate("form.score.answer.points")</th>
+		<th scope="col">$r.translate("form.score.answer.correct")</th>
+		<th scope="col">$r.translate("form.score.answer.summary")</th>
+		<th scope="col">$r.translate("form.score.answer.points")</th>
 	</tr></thead>
 	<tbody>
 	#foreach($choice in $choices)
@@ -16,11 +16,7 @@
 		#else
 			$choice.summary
 		#end</td>
-		<td>$r.render($choice.getPointsEl().getComponent().getComponentName())
-		#if($f.hasError($choice.getPointsEl().getComponent().getComponentName()))
-			<div>$r.render("${choice.getPointsEl().getComponent().getComponentName()}_ERROR")</div>
-		#end
-		</td>
+		<td>$r.render($choice.getPointsEl().getComponent().getComponentName(), "minimal")</td>
 	</tr>
 	#end
 	</tbody>

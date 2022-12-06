@@ -34,10 +34,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleExampleText;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleFormErrorText;
-import org.olat.core.gui.components.form.flexible.impl.components.SimpleLabelText;
-import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
@@ -50,32 +46,33 @@ import org.olat.core.logging.AssertException;
  * @author patrickb
  */
 public abstract class FormItemImpl implements InlineElement {
-	private static final String PREFIX = "PANEL_";
+
 	private boolean componentIsMandatory;
+	
 	private String errorKey;
 	private String[] errorParams;
-	private Component errorComponent;
-	private Panel errorPanel;
-	private String[] exampleParams;
-	private String exampleKey;
-	private String[] helpParams;
+	protected boolean hasError = false;
+	private String warningKey;
+	private String[] warningParams;
+	protected boolean hasWarning = false;
+	
 	private String helpKey;
+	private String[] helpParams;
 	private String helpText;
 	private String helpUrl;
-	private Component exampleC;
-	private Panel examplePanel;
+
+	private String[] exampleParams;
+	private String exampleKey;
+	private boolean hasExample = false;
+	
 	private String[] labelParams;
 	private String labelKey;
 	private boolean translateLabel;
-	private Component labelC;
-	private Panel labelPanel;
+	private boolean hasLabel;
+	
 	protected Translator translator;
 	private final String id;
 	private final String name;
-	private boolean hasLabel = false;
-	private boolean hasExample = false;
-	protected boolean hasError = false;
-	protected boolean hasWarning = false;
 	private Form rootForm = null;
 	protected int action;
 	private Object userObject;
@@ -83,6 +80,7 @@ public abstract class FormItemImpl implements InlineElement {
 	private boolean formItemIsEnabled = true;
 	private boolean isInlineEditingElement;
 	private boolean isInlineEditingOn;
+	private boolean inlineValidationOn;
 	private Component inlineEditingComponent;
 	private String i18nKey4EmptyText="inline.empty.click.for.edit";
 	private String elementCssClass;
@@ -91,25 +89,18 @@ public abstract class FormItemImpl implements InlineElement {
 	 * 
 	 * @param name
 	 */
-	public FormItemImpl(String name) {
+	protected FormItemImpl(String name) {
 		this(name, false);//default is not inline
 	}
 	
-	public FormItemImpl(String name, boolean asInlineEditingElement) {
+	protected FormItemImpl(String name, boolean asInlineEditingElement) {
 		this(null, name, asInlineEditingElement);
 	}
 
-	public FormItemImpl(String id, String name, boolean asInlineEditingElement) {
+	protected FormItemImpl(String id, String name, boolean asInlineEditingElement) {
 		this.id = id;
 		this.name = name;
 		this.isInlineEditingElement = asInlineEditingElement;
-		/*
-		 * prepare three panels as placeholder for label, example, error
-		 */
-		String pName = PREFIX.concat(name);
-		errorPanel = new Panel(pName.concat(FormItem.ERRORC));
-		examplePanel = new Panel(pName.concat(FormItem.EXAMPLEC));
-		labelPanel = new Panel(pName.concat(FormItem.LABELC));
 	}
 
 	@Override
@@ -138,11 +129,21 @@ public abstract class FormItemImpl implements InlineElement {
 	}
 
 	@Override
+	public boolean isInlineValidationOn() {
+		return inlineValidationOn;
+	}
+
+	@Override
+	public void setInlineValidationOn(boolean on) {
+		this.inlineValidationOn = on;
+	}
+
+	@Override
 	public boolean isInlineEditingOn() {
 		if(!isInlineEditingElement) throw new AssertException("isInlineEditingOn called although it is not a inlineEditingElement");
 		return isInlineEditingOn;
 	}
-	
+
 	@Override
 	public FormItem setEmptyDisplayText(String i18nKey4Text) {
 		this.i18nKey4EmptyText = i18nKey4Text;
@@ -186,9 +187,6 @@ public abstract class FormItemImpl implements InlineElement {
 	
 	protected abstract Component getFormItemComponent();
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getRootForm()
-	 */
 	@Override
 	public Form getRootForm() {
 		return rootForm;
@@ -222,19 +220,7 @@ public abstract class FormItemImpl implements InlineElement {
 				throw new AssertException("Your label "+labelKey+" for formitem "+getName()+" is not available, please use the addXXX method with labelI18nKey and set it to null.");
 			}
 		}
-		if(labelKey != null) {
-			labelC = new SimpleLabelText(this, labelKey, labelTrsl);
-			labelC.setTranslator(translator);
-			labelPanel.setContent(labelC);
-		}
-		if(errorKey != null) {
-			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams), hasWarning());
-			errorPanel.setContent(errorComponent);
-		}
-		if(exampleKey != null) {
-			exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, exampleParams));
-			examplePanel.setContent(exampleC);
-		}
+
 		if(helpKey != null) {
 			helpText = translate(helpKey, helpParams);
 		}
@@ -242,12 +228,10 @@ public abstract class FormItemImpl implements InlineElement {
 
 	@Override
 	public Translator getTranslator() {
+		if(translator == null && getFormItemComponent() != null) {
+			return getFormItemComponent().getTranslator();
+		}
 		return translator;
-	}
-
-	@Override
-	public Component getLabelC() {
-		return labelPanel;
 	}
 
 	@Override
@@ -262,19 +246,10 @@ public abstract class FormItemImpl implements InlineElement {
 
 	@Override
 	public void setLabel(String label, String[] params, boolean translate) {
-		hasLabel = (label != null);
+		hasLabel = label != null;
 		translateLabel = translate;
 		labelKey = label;
 		labelParams = params;
-		// set label may be called before the translator is available
-		if (getTranslator() != null && labelKey != null) {
-			labelC = new SimpleLabelText(this, label, getLabelText());
-			labelC.setTranslator(getTranslator());
-			labelPanel.setContent(labelC);
-		} else if(label == null) {
-			labelC = null;
-			labelPanel.setContent(labelC);
-		}
 	}
 
 	@Override
@@ -297,65 +272,33 @@ public abstract class FormItemImpl implements InlineElement {
 		componentIsMandatory = isMandatory;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getExample()
-	 */
-	@Override
-	public Component getExampleC() {
-		return examplePanel;
-	}
-
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getExampleText()
-	 */
 	@Override
 	public String getExampleText() {
 		return translate(exampleKey, exampleParams);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getHelpText()
-	 */
+
 	@Override
 	public String getHelpText() {
 		// always translated
 		return helpText;		
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getHelpUrl()
-	 */
 	@Override
 	public String getHelpUrl() {
 		return helpUrl;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setExampleKey(java.lang.String,
-	 *      java.lang.String[])
-	 */
 	@Override
 	public void setExampleKey(String exampleKey, String[] params) {
 		if(exampleKey == null) {
-			// reset
-			exampleC = null;
-			examplePanel.setContent(exampleC);
 			hasExample = false;
 		} else {
 			hasExample = true;
 			this.exampleKey = exampleKey;
 			this.exampleParams = params;
-			if (getTranslator() != null) {
-				exampleC = new SimpleExampleText(exampleKey, translate(exampleKey, params));
-				examplePanel.setContent(exampleC);
-			} 
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpTextKey(java.lang.String,
-	 *      java.lang.String[])
-	 */
+
 	@Override
 	public void setHelpTextKey(String helpKey, String[] params) {
 		this.helpKey = helpKey;
@@ -364,10 +307,7 @@ public abstract class FormItemImpl implements InlineElement {
 			this.helpText = translate(helpKey, helpParams);
 		}
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpText(java.lang.String)
-	 */
+
 	@Override
 	public void setHelpText(String helpText) {
 		this.helpKey = null;
@@ -375,17 +315,11 @@ public abstract class FormItemImpl implements InlineElement {
 		this.helpText = helpText;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrl(java.lang.String)
-	 */
 	@Override
 	public void setHelpUrl(String helpUrl) {
 		this.helpUrl = helpUrl;
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setHelpUrlForManualPage(java.lang.String)
-	 */
+
 	@Override
 	public void setHelpUrlForManualPage(String manualAliasName) {
 		HelpModule helpModule = CoreSpringFactory.getImpl(HelpModule.class);
@@ -396,33 +330,41 @@ public abstract class FormItemImpl implements InlineElement {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setErrorKey(java.lang.String,
-	 *      java.lang.String[])
-	 */
 	@Override
-	public void setErrorKey(String errorKey, String[] params) {
-		setErrorKey(errorKey, false, params);
+	public String getErrorText() {
+		return translate(errorKey, errorParams);
+	}
+
+	@Override
+	public void setErrorKey(String errorKey, String... params) {
+		this.hasError = true;
+		this.errorKey = errorKey;
+		// legacy check to prevent NPE when passing null to params instead of nothing
+		if (params != null && params.length == 1 && params[0] == null) {
+			errorParams = null;
+		} else {
+			errorParams = params;
+		}
+		setComponentDirty();
 	}
 	
 	@Override
-	public void setErrorKey(String errorKey, boolean isWarning, String... params) {
-		this.hasError = !isWarning;
-		this.hasWarning = isWarning;
-		this.errorKey = errorKey;
+	public String getWarningText() {
+		return translate(warningKey, warningParams);
+	}
+
+	@Override
+	public void setWarningKey(String warningKey, String... params) {
+		this.hasWarning = true;
+		this.warningKey = warningKey;
 		
 		// legacy check to prevent NPE when passing null to params instead of nothing
 		if (params != null && params.length == 1 && params[0] == null) {
-			this.errorParams = null;
+			warningParams = null;
 		} else {
-			this.errorParams = params;
+			warningParams = params;
 		}
-		if (getTranslator() != null) {
-			errorComponent = new SimpleFormErrorText(errorKey, translate(errorKey, errorParams), isWarning);		
-			errorPanel.setContent(errorComponent);
-		}
-		showError(true);
-		getRootForm().getInitialComponent().setDirty(true);
+		setComponentDirty();
 	}
 
 	/**
@@ -441,30 +383,13 @@ public abstract class FormItemImpl implements InlineElement {
 		}
 		return retVal;
 	}
-
-	@Override
-	public Component getErrorC() {
-		return errorPanel;
-	}
 	
 	@Override
 	public void setEnabled(boolean isEnabled) {
-		getErrorC().setEnabled(isEnabled);
-		if(errorComponent != null) {
-			errorComponent.setEnabled(isEnabled);
-		}
-		getExampleC().setEnabled(isEnabled);
-		if(exampleC!=null) {
-			exampleC.setEnabled(isEnabled);
-		}
-		getLabelC().setEnabled(isEnabled);
-		if(labelC!=null) {
-			labelC.setEnabled(isEnabled);
-		}
-		
 		formItemIsEnabled = isEnabled;
-		if(getComponent()==null) return;
-		getComponent().setEnabled(isEnabled);
+		if(getComponent() != null) {
+			getComponent().setEnabled(isEnabled);
+		}
 	}
 
 	@Override
@@ -474,11 +399,9 @@ public abstract class FormItemImpl implements InlineElement {
 
 	@Override
 	public void setVisible(boolean isVisible) {
-		if(getComponent()==null) return;
-		getComponent().setVisible(isVisible);
-		showError(isVisible && hasError);
-		showExample(isVisible && hasExample);
-		showLabel(isVisible && hasLabel);
+		if(getComponent() != null) {
+			getComponent().setVisible(isVisible);
+		}
 	}
 
 	@Override
@@ -488,17 +411,32 @@ public abstract class FormItemImpl implements InlineElement {
 	}
 
 	@Override
-	public boolean hasError(){
+	public String getFormLayout() {
+		if(getComponent() != null) {
+			return getComponent().getLayout();
+		}
+		return null;
+	}
+
+	@Override
+	public void setFormLayout(String layout) {
+		if(getComponent() != null) {
+			getComponent().setLayout(layout);
+		}
+	}
+
+	@Override
+	public boolean hasError() {
 		return hasError;
 	}
 
 	@Override
-	public boolean hasLabel(){
-		return hasLabel;
+	public boolean hasLabel() {
+		return labelKey != null && hasLabel;
 	}
 
 	@Override
-	public boolean hasExample(){
+	public boolean hasExample() {
 		return hasExample;
 	}
 	
@@ -508,49 +446,49 @@ public abstract class FormItemImpl implements InlineElement {
 	}
 
 	@Override
-	public void showLabel(boolean show){
-		if(show) {
-			labelPanel.setContent(labelC);
-		}else{
-			labelPanel.setContent(null);
-		}
-		labelPanel.setVisible(show);
-		labelPanel.setEnabled(show);
+	public void showLabel(boolean show) {
+		this.hasLabel = show;
 	}
 	
 	@Override
-	public void showError(boolean show){
-		if (show) {
-			errorPanel.setContent(errorComponent);
-		}else{
-			errorPanel.setContent(null);
+	public void showError(boolean show) {
+		if(hasError != show) {
+			this.hasError = show;
+			setComponentDirty();
 		}
-		errorPanel.setVisible(show);
-		errorPanel.setEnabled(show);
+	}
+	
+	public void showWarning(boolean show) {
+		if(hasWarning != show) {
+			this.hasWarning = show;
+			setComponentDirty();
+		}
 	}
 
 	@Override
-	public void clearError(){
+	public void clearError() {
 		showError(false);
 		hasError = false;
-		hasWarning = false;
 	}
 	
+	@Override
+	public void clearWarning() {
+		showWarning(false);
+		hasWarning = false;
+	}
+
+	protected void setComponentDirty() {
+		Component cmp = getComponent();
+		if(cmp != null) {
+			cmp.setDirty(true);
+		}
+	}
 
 	@Override
-	public void showExample(boolean show){
-		if(show) {
-			examplePanel.setContent(exampleC);
-		}else{
-			examplePanel.setContent(null);
-		}
-		examplePanel.setVisible(show);
-		examplePanel.setEnabled(show);
+	public void showExample(boolean show) {
+		this.hasExample = show;
 	}
-		
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItem#addActionListenerFor(org.olat.core.gui.control.Controller, int)
-	 */
+
 	@Override
 	public void addActionListener(int action) {
 		this.action = action;
@@ -593,7 +531,9 @@ public abstract class FormItemImpl implements InlineElement {
 			case FormEvent.ONBLUR:
 				getRootForm().fireFormEvent(ureq, new FormEvent("ONBLUR", this, FormEvent.ONBLUR));
 				break;
-				
+			case FormEvent.ONVALIDATION:	
+				getRootForm().validateInline(ureq, this);
+				break;
 			default:
 				//nothing to do, default is handled
 		}
@@ -631,6 +571,11 @@ public abstract class FormItemImpl implements InlineElement {
 	@Override
 	public boolean validate() {
 		return true;
+	}
+
+	@Override
+	public boolean isValidationDeferred() {
+		return false;
 	}
 	
 	@Override

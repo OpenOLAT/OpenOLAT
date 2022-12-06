@@ -1,0 +1,8 @@
+<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="form-inline #if($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+#foreach ($item in $formitemnames)
+	#if($item != "errors")
+		$r.render(${item}, "form")
+	#end
+#end
+$r.render("errors")
+</div>

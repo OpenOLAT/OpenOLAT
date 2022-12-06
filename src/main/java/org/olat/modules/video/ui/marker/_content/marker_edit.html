@@ -1,24 +1,24 @@
 <fieldset class="o_form">
 	<legend>$r.translate("video.marker.legend")</legend>
 	<div class="form-group row clearfix">
-		$r.render("begin_LABEL", $f.getItemId("begin"), "col-sm-2")
+		$r.render("begin", "label", "col-sm-2")
 		<div class="col-sm-2 form-inline o_sel_video_start">
 			$r.render("begin", "form")
 			#if($f.hasError("begin"))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 			#if($f.hasError("begin"))
-			<div>$r.render("begin_ERROR")</div>
+			<div>$r.render("begin","error")</div>
 			#end
 		</div>
-		$r.render("duration_LABEL", $f.getItemId("duration"), "col-sm-2")
+		$r.render("duration","label", "col-sm-2")
 		<div class="col-sm-2 form-inline o_sel_video_duration">
 			$r.render("duration", "form")
 			#if($f.hasError("duration"))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 			#if($f.hasError("duration"))
-			<div>$r.render("duration_ERROR")</div>
+			<div>$r.render("duration","error")</div>
 			#end
 		</div>
 		<label class="control-label col-sm-1" for="o_video_end">$r.translate("video.marker.end")</label>
@@ -26,7 +26,6 @@
 			<input type="text" id="o_video_end" name="o_video_end" class="form-control " size="5" maxlength="10" value="">
 		</div>
 		<script>
-/* <![CDATA[ */
 jQuery(function() {
 	var startEl = jQuery(".o_sel_video_start input");
 	var durationEl = jQuery(".o_sel_video_duration input");
@@ -57,18 +56,17 @@ jQuery(function() {
 	});
 	updateEndEl();
 });
-/* ]]> */
 		</script>
 	</div>
 	<div class="form-group row clearfix">
-		$r.render("top_LABEL", $f.getItemId("top"), "col-sm-2")
+		$r.render("top", "label", "col-sm-2")
 		<div class="col-sm-2 form-inline o_sel_video_marker_top">
 			$r.render("top", "form") <span>%</span>
 			#if($f.hasError("top"))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 		</div>
-		$r.render("left_LABEL", $f.getItemId("left"), "col-sm-2")
+		$r.render("left", "label", "col-sm-2")
 		<div class="col-sm-2 form-inline o_sel_video_marker_left">
 			$r.render("left", "form") <span>%</span>
 			#if($f.hasError("left"))
@@ -77,14 +75,14 @@ jQuery(function() {
 		</div>
 	</div>
 	<div class="form-group row clearfix">
-		$r.render("width_LABEL", $f.getItemId("width"), "col-sm-2")
+		$r.render("width", "label", "col-sm-2")
 		<div class="col-sm-4 form-inline o_sel_video_marker_width">
 			$r.render("width", "form") <span>%</span>
 			#if($f.hasError("width"))
 				<span class="o_icon o_icon_error form-control-feedback"></span>
 			#end
 		</div>
-		$r.render("height_LABEL", $f.getItemId("height"), "col-sm-2")
+		$r.render("height", "label", "col-sm-2")
 		<div class="col-sm-4 form-inline o_sel_video_marker_height">
 			$r.render("height", "form") <span>%</span>
 			#if($f.hasError("height"))
@@ -93,7 +91,7 @@ jQuery(function() {
 		</div>
 	</div>
 	<div class="form-group row clearfix">
-		$r.render("color_LABEL", $f.getItemId("color"), "col-sm-2")
+		$r.render("color", "label", "col-sm-2")
 		<div class="col-sm-10 form-inline">
 			$r.render("color", "form")
 			#if($f.hasError("color"))
@@ -102,14 +100,10 @@ jQuery(function() {
 		</div>
 	</div>
 	<div class="form-group clearfix">
-		$r.render("text_LABEL", $f.getItemId("text"))
-		$r.render("text")
-		#if($f.hasError("text"))
-			<span class="o_icon o_icon_error form-control-feedback"></span>
-		#end
+		$r.render("text", "minimal")
 	</div>
 	<div class='o_button_group'>
-		$r.render("cancel")
 		$r.render("save")
+		$r.render("cancel")
 	</div>
 </fieldset>

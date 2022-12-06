@@ -32,7 +32,9 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Disposable;
@@ -91,16 +93,16 @@ public abstract class FormBasicController extends BasicController {
 
 	protected final FormUIFactory uifactory = FormUIFactory.getInstance();
 	
-	public FormBasicController(UserRequest ureq, WindowControl wControl) {
+	protected FormBasicController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, (String)null);
 	}
 	
 	
-	public FormBasicController(UserRequest ureq, WindowControl wControl, Translator fallbackTranslator) {
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, Translator fallbackTranslator) {
 		this(ureq, wControl, null, null, fallbackTranslator);
 	}
 
-	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName) {
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, String pageName) {
 		this(ureq, wControl, null, pageName);
 	}
 	
@@ -111,7 +113,7 @@ public abstract class FormBasicController extends BasicController {
 	 * @param mainFormId Give a fix identifier to the main form for state-less behavior
 	 * @param pageName
 	 */
-	public FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, String pageName) {
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, String mainFormId, String pageName) {
 		super(ureq, wControl);
 		constructorInit(mainFormId, pageName);
 	}
@@ -121,7 +123,7 @@ public abstract class FormBasicController extends BasicController {
 	* Translator pT = Util.createPackageTranslator(Alabla.class, ureq.getLocale(), getTranslator());
 	* this.setTranslator(pT);
 	*/
-	public FormBasicController(UserRequest ureq, WindowControl wControl, String pageName, Translator fallbackTranslator) {
+	protected FormBasicController(UserRequest ureq, WindowControl wControl, String pageName, Translator fallbackTranslator) {
 		this(ureq, wControl, null, pageName, fallbackTranslator);
 	}
 	
@@ -439,28 +441,43 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
-	protected void propagateDirtinessToContainer(FormItem fiSrc, @SuppressWarnings("unused") FormEvent fe) {
+	/**
+	 * Make eventually the whole container dirty to update it.
+	 * 
+	 * @param fiSrc The form item which triggered the event 
+	 * @param event The form event 
+	 */
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		// check for InlineElments remove as the tag library has been replaced
 		if(fiSrc instanceof FormLink) {
 			FormLink link = (FormLink)fiSrc;
 			if(!link.isPopup() && !link.isNewWindow()) {
-				flc.setDirty(true);
-				// Trigger re-focusing of current focused element										
-				Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
-				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+				applyDirtinessToContainer(fiSrc, event);
 			}
 		} else if(fiSrc instanceof InlineElement) {
 			if(fiSrc instanceof RichTextElement) {
 				// ignore
-			} else if(!((InlineElement) fiSrc).isInlineEditingElement()) {
+			} else if(!((InlineElement) fiSrc).isInlineEditingElement()
+					&& !flc.getRootForm().isInlineValidationOn()
+					&& !fiSrc.isInlineValidationOn()) {
 				//the container need to be redrawn because every form item element
 				//is made of severals components. If a form item is set to invisible
 				//the layout which glue the different components stay visible
-				flc.setDirty(true);
-				// Trigger re-focusing of current focused element
-				Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
-				getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+				applyDirtinessToContainer(fiSrc, event);
 			}
+		}
+	}
+	
+	private void applyDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		flc.setDirty(true);
+		// Trigger re-focusing of current focused element
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
+		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
+
+		if((fiSrc instanceof MultipleSelectionElement || fiSrc instanceof SingleSelection)
+				&& (event.wasTriggerdBy(FormEvent.ONCLICK) || event.wasTriggerdBy(FormEvent.ONCHANGE))
+				&& flc.getRootForm().hasExplicitSubmit()) {
+			markDirty();
 		}
 	}
 	
@@ -667,6 +684,10 @@ public abstract class FormBasicController extends BasicController {
 			flc.contextPut("off_css_class", cssClassName);
 		}
 	}
+	
+	protected void setInlineValidationOn(boolean on) {
+		mainForm.setInlineValidationOn(on);
+}
 
 	@Override
 	protected void setTranslator(Translator translator) {
@@ -678,11 +699,16 @@ public abstract class FormBasicController extends BasicController {
 	 * @param ureq
 	 * @return
 	 */
-	protected boolean validateFormLogic(UserRequest ureq) {
+	protected boolean validateFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
 		return flc.validate();
 	}
 	
-	protected boolean validateFormItem(FormItem item) {
+	protected boolean validateDeferredFormLogic(@SuppressWarnings("unused") UserRequest ureq) {
+		flc.validateDeferred();
+		return true;
+	}
+	
+	protected boolean validateFormItem(@SuppressWarnings("unused") UserRequest ureq, FormItem item) {
 		if(!item.isEnabled() || !item.isVisible()) {
 			return true;
 		}
@@ -699,7 +725,7 @@ public abstract class FormBasicController extends BasicController {
 	 * @see org.olat.core.gui.control.DefaultController#dispose()
 	 */
 	@Override
-	public void dispose() {
+	public synchronized void dispose() {
 		super.dispose();
 		ThreadLocalUserActivityLoggerInstaller.runWithUserActivityLogger(() -> {
 			// Dispose also disposable form items (such as file uploads that needs to

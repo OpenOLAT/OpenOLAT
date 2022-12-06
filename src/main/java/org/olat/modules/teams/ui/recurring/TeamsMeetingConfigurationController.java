@@ -157,35 +157,35 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		
 		startRecurringDateEl.clearError();
 		if(startRecurringDateEl.getDate() == null) {
-			startRecurringDateEl.setErrorKey("form.legende.mandatory", null);
+			startRecurringDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		endRecurringDateEl.clearError();
 		if(endRecurringDateEl.getDate() == null) {
-			endRecurringDateEl.setErrorKey("form.legende.mandatory", null);
+			endRecurringDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(startRecurringDateEl.getDate() != null && endRecurringDateEl.getDate() != null
 				&& endRecurringDateEl.getDate().before(startRecurringDateEl.getDate())) {
-			endRecurringDateEl.setErrorKey("error.start.after.end", null);
+			endRecurringDateEl.setErrorKey("error.start.after.end");
 			allOk &= false;
 		}
 
 		startTimeEl.clearError();
 		if(startTimeEl.getDate() == null) {
-			startTimeEl.setErrorKey("form.legende.mandatory", null);
+			startTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!this.validateFormItem(startTimeEl)) {
+		} else if(!validateFormItem(ureq, startTimeEl)) {
 			allOk &= false;
 		}
 		
 		endTimeEl.clearError();
 		if(endTimeEl.getDate() == null) {
-			endTimeEl.setErrorKey("form.legende.mandatory", null);
+			endTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
-		} else if(!this.validateFormItem(endTimeEl)) {
+		} else if(!validateFormItem(ureq, endTimeEl)) {
 			allOk &= false;
 		}
 		
@@ -193,7 +193,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 			long start = startTimeEl.getDate().getTime();
 			long end = endTimeEl.getDate().getTime();
 			if(start > end) {
-				endTimeEl.setErrorKey("error.start.after.end", null);
+				endTimeEl.setErrorKey("error.start.after.end");
 				allOk &= false;
 			}
 		}
@@ -201,7 +201,7 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		if(allOk) {
 			Date firstDate = getFirstDateTime();
 			if(firstDate != null && firstDate.before(new Date())) {
-				startRecurringDateEl.setErrorKey("error.first.date.in.past", null);
+				startRecurringDateEl.setErrorKey("error.first.date.in.past");
 				allOk &= false;
 			}
 		}
@@ -211,10 +211,10 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (nameEl.getValue().contains("&")) {
-			nameEl.setErrorKey("form.invalidchar.noamp", null);
+			nameEl.setErrorKey("form.invalidchar.noamp");
 			allOk &= false;
 		}
 		return allOk;
@@ -233,10 +233,10 @@ public class TeamsMeetingConfigurationController extends StepFormBasicController
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue())) {
 			if(!StringHelper.isLong(el.getValue())) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			} else if(Long.parseLong(el.getValue()) > maxValue) {
-				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
+				el.setErrorKey("error.too.long.time", Long.toString(maxValue));
 				allOk &= false;
 			}
 		}

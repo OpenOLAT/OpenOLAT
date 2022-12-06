@@ -28,7 +28,13 @@
 */
 package org.olat.core.gui.components.htmlheader.jscss;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.render.RenderResult;
+import org.olat.core.gui.render.Renderer;
+import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.render.URLBuilder;
+import org.olat.core.gui.translator.Translator;
 
 /**
 * Description:<br>
@@ -39,5 +45,11 @@ import org.olat.core.gui.components.DefaultComponentRenderer;
 * @author Felix Jost
 */
 public class JSAndCSSComponentRenderer extends DefaultComponentRenderer {
+
+	@Override
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+			Translator translator, RenderResult renderResult, String[] args) {
+		//
+	}
 
 }

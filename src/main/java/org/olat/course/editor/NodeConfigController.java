@@ -181,10 +181,10 @@ public class NodeConfigController extends FormBasicController {
 
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (titleEl.getValue().length() > LONG_TITLE_MAX_LENGTH) {
-			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(LONG_TITLE_MAX_LENGTH)});
+			titleEl.setWarningKey("error.title.too.long", String.valueOf(LONG_TITLE_MAX_LENGTH));
 		}
 
 		return allOk;

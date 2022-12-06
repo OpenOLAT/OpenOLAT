@@ -70,6 +70,7 @@ import org.olat.course.disclaimer.CourseDisclaimerManager;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
@@ -168,6 +169,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private PersistentTaskDAO persistentTaskDao;
 	@Autowired
 	private ReminderDAO reminderDao;
+	@Autowired
+	private InvitationDAO invitationDao;
 	@Autowired
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
@@ -615,6 +618,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		reToGroupDao.removeRelations(reloadedEntry);
 		dbInstance.commit();
+		
+		// Delete the invitations which are hold by the default group
+		invitationDao.deleteInvitation(defaultGroup);
 		
 		// has a delete veto?
 		boolean delete = true;

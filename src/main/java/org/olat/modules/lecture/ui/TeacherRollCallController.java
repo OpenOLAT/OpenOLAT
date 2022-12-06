@@ -409,10 +409,8 @@ public class TeacherRollCallController extends FormBasicController {
 		
 		if(secCallback.canEditAuthorizedAbsences() || secCallback.canViewAuthorizedAbsences()) {
 			String page = velocity_root + "/authorized_absence_cell.html";
-			FormLayoutContainer absenceCont = FormLayoutContainer.createCustomFormLayout("auth_cont_".concat(Integer.toString(++counter)), getTranslator(), page);
-			absenceCont.setRootForm(mainForm);
-			flc.add(absenceCont);
-			
+			FormLayoutContainer absenceCont = uifactory.addCustomFormLayout("auth_cont_".concat(Integer.toString(++counter)), null, page, flc);
+
 			String authorizedAbsencedId = "auth_abs_".concat(Integer.toString(++counter));
 			MultipleSelectionElement authorizedAbsencedEl = uifactory.addCheckboxesHorizontal(authorizedAbsencedId, null, absenceCont, onKeys, onValues);
 			authorizedAbsencedEl.setDomReplacementWrapperRequired(false);

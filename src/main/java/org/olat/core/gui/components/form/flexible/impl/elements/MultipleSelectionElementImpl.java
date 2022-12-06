@@ -57,14 +57,13 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	
 	private final Layout layout;
 	private final int columns;
-	protected MultipleSelectionComponent component;
+	protected final MultipleSelectionComponent component;
 	private String[] original = null;
 	private boolean ajaxOnlyMode = false;
 	private boolean evaluationOnlyVisible = false;
 	private boolean dropdownHiddenEventEnabled = false;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
-	private boolean domReplacementWrapperRequired = true;
 	private boolean horizontallyAlignedCheckboxes = false;
 	private String nonSelectedText = "";
 	private ConsumableBoolean formRequestEval = new ConsumableBoolean(false);
@@ -82,6 +81,9 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		selected = new HashSet<>();
 		this.layout = layout;
 		this.columns = columns;
+		
+		String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
+		component = new MultipleSelectionComponent(ssscId, this);
 	}
 	
 	@Override
@@ -91,10 +93,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	
 	@Override
 	public void setDomReplacementWrapperRequired(boolean required) {
-		domReplacementWrapperRequired = required;
-		if(component != null) {
-			component.setDomReplacementWrapperRequired(required);
-		}
+		component.setDomReplacementWrapperRequired(required);
 	}
 
 	@Override
@@ -453,14 +452,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 		}
 		
 		// create and add selectbox element
-		if(component == null) {
-			String ssscId = getFormItemId() == null ? null : getFormItemId() + "_SELBOX";
-			component = new MultipleSelectionComponent(ssscId, this);
-			component.setDomReplacementWrapperRequired(domReplacementWrapperRequired);
-			component.setCheckComponents(ssecs);
-		} else {
-			component.setCheckComponents(ssecs);
-		}
+		component.setCheckComponents(ssecs);
 	}
 
 	@Override

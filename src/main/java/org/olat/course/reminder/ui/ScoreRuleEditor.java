@@ -78,14 +78,11 @@ public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFra
 		String page = Util.getPackageVelocityRoot(this.getClass()) + "/score.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addCustomFormLayout("attempts.".concat(id), null, page, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
-		
 		
 		String currentValue = null;
 		String currentOperator = null;
@@ -126,7 +123,7 @@ public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFra
 			courseNodeEl.select(nodeKeys[0], true);
 		}
 		if(StringHelper.containsNonWhitespace(currentCourseNode) && !nodeSelected) {
-			courseNodeEl.setErrorKey("error.course.node.found", null);
+			courseNodeEl.setErrorKey("error.course.node.found");
 		}
 
 		operatorEl = uifactory.addDropdownSingleselect("operators.".concat(id), null, ruleCont, operatorKeys, operatorKeys, null);
@@ -186,19 +183,19 @@ public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFra
 		
 		courseNodeEl.clearError();
 		if(!courseNodeEl.isOneSelected()) {
-			courseNodeEl.setErrorKey("form.mandatory.hover", null);
+			courseNodeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		operatorEl.clearError();
 		if(!operatorEl.isOneSelected()) {
-			operatorEl.setErrorKey("form.mandatory.hover", null);
+			operatorEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -217,7 +214,7 @@ public class ScoreRuleEditor extends RuleEditorFragment implements CourseNodeFra
 					Integer.parseInt(value);
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 				}
 			}
 		}

@@ -141,7 +141,6 @@ public class MarkerEditController extends FormBasicController {
 		}
 		styleEl = uifactory.addDropdownSingleselect("color", "video.marker.color", formLayout, colorKeys, colorValues);
 		styleEl.setDomReplacementWrapperRequired(false);
-		styleEl.getLabelC().setDomReplaceable(false);
 		
 		topEl = uifactory.addTextElement("top", "video.marker.top", 3, "", formLayout);
 		inline(topEl, 1);
@@ -166,7 +165,6 @@ public class MarkerEditController extends FormBasicController {
 	private void inline(TextElement element, int displaySize) {
 		element.setDisplaySize(displaySize);
 		element.setDomReplacementWrapperRequired(false);
-		element.getLabelC().setDomReplaceable(false);
 	}
 
 	@Override

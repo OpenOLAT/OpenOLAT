@@ -48,7 +48,7 @@ import org.olat.modules.ceditor.ui.model.PageFragment;
 public class PageFragmentsComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		PageFragmentsComponent cmp = (PageFragmentsComponent)source;
 		renderFlatFragments(renderer, sb, cmp, ubu, translator, renderResult, args);

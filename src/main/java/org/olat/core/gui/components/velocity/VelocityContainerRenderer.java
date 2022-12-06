@@ -50,7 +50,7 @@ public class VelocityContainerRenderer extends DefaultComponentRenderer {
 	private static final Logger log = Tracing.createLoggerFor(VelocityContainerRenderer.class);
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		VelocityContainer vc = (VelocityContainer) source;
 		String pagePath = vc.getPage();

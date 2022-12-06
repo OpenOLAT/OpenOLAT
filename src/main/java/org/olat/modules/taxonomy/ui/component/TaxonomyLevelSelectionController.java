@@ -150,12 +150,6 @@ public class TaxonomyLevelSelectionController extends FormBasicController {
 		browserButton = uifactory.addFormLink("taxonomy.level.selection.browser", formLayout, Link.BUTTON_SMALL);
 		selectButton = uifactory.addFormLink("taxonomy.level.selection.select", formLayout, Link.BUTTON_SMALL);
 		selectButton.setPrimary(true);
-
-		/*
-		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(),
-				quickSearchEl.getFormDispatchId());
-		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
-		*/
 	}
 
 	private SelectionValues createTaxonomyLevelSV(Collection<TaxonomyLevel> taxonomyLevels) {

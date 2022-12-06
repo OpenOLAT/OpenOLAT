@@ -28,21 +28,13 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.InlineTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.gui.render.RenderResult;
-import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -130,102 +122,18 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 			component = new TextElementComponent(id, this);
 		}
 	}
+	
+	protected String getTransientValue() {
+		return transientValue;
+	}
 
 	private void initInlineEditing(String predefinedValue) {
 		// init the inline editing element component.
 		transientValue = predefinedValue;
-		AbstractInlineElementComponent aiec = new AbstractInlineElementComponent(this, new ComponentRenderer() {
-
-		public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-				RenderingState rstate) {
-		// nothing to do here
-		}
-
-		public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
-		// nothing to do here
-
-		}
-
-		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
-				RenderResult renderResult, String[] args) {
-
-			AbstractInlineElementComponent aiec = (AbstractInlineElementComponent) source;
-
-			InlineTextElement itei = (InlineTextElement) aiec.getFormItem();
-			StringBuilder htmlVal = new StringBuilder();
-			
-			/**
-			 * in case of an error show the test which caused the error which must be stored by the textelement in the transientValue.
-			 * the last valid value is always set over setValue(..) by the textelement, and thus can be retrieved as such here.
-			 */
-			String tmpVal;
-			String emptyVal = (itei.isInlineEditingOn() ? "" : itei.getEmptyDisplayText());
-			if(itei.hasError()){
-				tmpVal = StringHelper.containsNonWhitespace(transientValue) ? transientValue : emptyVal;
-			}else{
-				tmpVal = StringHelper.containsNonWhitespace(getValue()) ? getValue() : emptyVal;
-			}
-			// append the html safe value
-			htmlVal.append(StringHelper.escapeHtml(tmpVal));
-			if (!itei.isEnabled()) {
-				// RO view and not clickable
-				String id = aiec.getFormDispatchId();
-				sb.append("<div class='form-control-static' id=\"").append(id).append("\" ")
-				  .append(" >").append(htmlVal).append("</div>");
-			} else {
-				//
-				// Editable view
-				// which can be left
-				// .......with clicking outside -> onBlur saves the value
-				// .......pressing ENTER/RETURN or TAB -> onBlur saves the value
-				// .......presssing ESC -> restore previous value and submit this one.
-				if (itei.isInlineEditingOn()) {
-					String id = aiec.getFormDispatchId();
-					// read write view
-					sb.append("<input type=\"").append("input").append("\" class=\"form-control\" id=\"");
-					sb.append(id);
-					sb.append("\" name=\"");
-					sb.append(id);
-					sb.append("\" size=\"");
-					sb.append("30");
-					// if(itei.maxlength > -1){
-					// sb.append("\" maxlength=\"");
-					// sb.append(itei.maxlength);
-					// }
-					sb.append("\" value=\"");
-					sb.append(htmlVal);
-					sb.append("\" ");
-					sb.append(" />");
-					
-					// Javascript
-					sb.append(FormJSHelper.getJSStart());
-					// clicking outside or pressing enter -> OK, pressing ESC -> Cancel
-					FormJSHelper.getInlineEditOkCancelJS(sb, id, StringHelper.escapeHtml(getValue()), itei.getRootForm());
-					sb.append(FormJSHelper.getJSEnd());
-
-				} else {
-					// RO<->RW view which can be clicked 
-					Translator trans = Util.createPackageTranslator(TextElementImpl.class, translator.getLocale(), translator);
-					String id = aiec.getFormDispatchId();
-					sb.append("<div id='").append(id).append("' class='form-control-static' title=\"")
-						.appendHtmlEscaped(trans.translate("inline.edit.help"))
-						.append("\" ")
-						.append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()))
-						.append("> ")
-						.append(htmlVal)
-						.append(" <i class='o_icon o_icon_inline_editable'> </i></div>");
-				}
-				
-			}//endif 
-		}
-
-});
+		AbstractInlineElementComponent aiec = new AbstractInlineElementComponent(this, new TextElementInlineRenderer());
 		setInlineEditingComponent(aiec);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		if(isInlineEditingElement()){
@@ -270,21 +178,20 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 				//in any case, if an error is there -> set Inline Editing on
 				isInlineEditingOn(true);
 			}
-			getRootForm().submit(ureq);//submit validates again!
+			if(getRootForm().isInlineValidationOn() || isInlineValidationOn()) {
+				getRootForm().validateInline(ureq, this);
+			} else {
+				getRootForm().validate(ureq);
+			}
 			
-			if(hasError()){
+			if(hasError()) {
 				setValue(transientValue);//error with paramVal -> fallback to previous				
 			}
 			transientValue = paramVal;//this value shows in error case up in inline field along with error
-			
-			
 		}
-		if(!hasError()){
-			if (isInlineEditingOn()) {
-				isInlineEditingOn(false);
-			} else {
-				isInlineEditingOn(true);
-			}
+		
+		if(!hasError()) {
+			isInlineEditingOn(!isInlineEditingOn());
 		}
 		// mark associated component dirty, that it gets rerendered
 		getInlineEditingComponent().setDirty(true);

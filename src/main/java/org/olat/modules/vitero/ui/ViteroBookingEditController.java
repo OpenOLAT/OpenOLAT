@@ -204,11 +204,11 @@ public class ViteroBookingEditController extends FormBasicController {
 		groupName.clearError();
 		if(StringHelper.containsNonWhitespace(name)) {
 			if(name.contains("_")) {
-				groupName.setErrorKey("error.bookingName", null);
+				groupName.setErrorKey("error.bookingName");
 				allOk &= false;
 			}
 		} else {
-			groupName.setErrorKey("form.legende.mandatory", null);
+			groupName.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -216,10 +216,10 @@ public class ViteroBookingEditController extends FormBasicController {
 		if(beginChooser.isEnabled()) {
 			beginChooser.clearError();
 			if(begin == null) {
-				beginChooser.setErrorKey("form.legende.mandatory", null);
+				beginChooser.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(new Date().after(begin)) {
-				beginChooser.setErrorKey("error.bookingInPast", null);
+				beginChooser.setErrorKey("error.bookingInPast");
 				allOk &= false;
 			}
 		}
@@ -228,17 +228,17 @@ public class ViteroBookingEditController extends FormBasicController {
 			Date end = endChooser.getDate();
 			endChooser.clearError();
 			if(end == null) {
-				endChooser.setErrorKey("form.legende.mandatory", null);
+				endChooser.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(new Date().after(begin) || end.before(begin)) {
-				beginChooser.setErrorKey("error.bookingInPast", null);
+				beginChooser.setErrorKey("error.bookingInPast");
 				allOk &= false;
 			}
 		}
 		
 		roomSizeEl.clearError();
 		if(!roomSizeEl.isOneSelected()) {
-			roomSizeEl.setErrorKey("form.legende.mandatory", null);
+			roomSizeEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		

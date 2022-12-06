@@ -341,6 +341,35 @@ public class FormJSHelper {
 		return "})();\n /* ]]> */ \n</script>";
 	}
 	
+	public static StringOutput appendValidationListeners(StringOutput sb, Form form, String formDispatchId) {
+		return appendValidationListeners(sb, form, formDispatchId, formDispatchId);
+	}
+
+	public static StringOutput appendValidationListeners(StringOutput sb, Form form, String elementToListenTo, String formDispatchId) {
+		sb.append("<script>(function() { \"use strict\";\n")
+		  .append(" jQuery('#").append(elementToListenTo).append("').on('focusout', function(e) {\n");
+
+		sb.append(" if(e.type === 'focusout') {\n")
+		  .append("   if(e.currentTarget != null && e.relatedTarget != null")
+		  .append("       && ((e.currentTarget.getAttribute('name') != null && e.currentTarget.getAttribute('name') === e.relatedTarget.getAttribute('name')) ")
+		  .append("           || (e.currentTarget.getAttribute('data-oo-validation-group') != null && e.currentTarget.getAttribute('data-oo-validation-group') === e.relatedTarget.getAttribute('data-oo-validation-group')))")
+		  .append("           || (jQuery(e.currentTarget).parents('.ui-datepicker').length > 0)\n")
+		  .append("           || (e.currentTarget.getAttribute('data-oo-validation') === 'suspend')) {\n")
+		  .append("     return;\n")
+		  .append("   }\n")
+		  // Wait the end of the click, if the user select a checkbox or a radio box and the validation
+		  // push a message to the UI before the clicked element, the element is moved and the click miss
+		  // it.
+		  .append("   setTimeout(function() {\n")
+		  .append(getJSFnCallFor(form, formDispatchId, 5, false, null))
+		  .append("   },100);\n")
+		  .append("}\n");
+		
+		sb.append("});})();")
+		  .append("</script>");
+		return sb;
+	}
+	
 	// Execute code within an anonymous function (closure) to not leak
 	// variables to global scope (OLAT-5755)
 	public static StringOutput appendFlexiFormDirty(StringOutput sb, Form form, String id) {

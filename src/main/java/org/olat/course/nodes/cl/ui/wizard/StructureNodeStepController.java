@@ -125,10 +125,10 @@ public class StructureNodeStepController extends StepFormBasicController {
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
-			titleEl.setErrorKey("error.title.too.long", true, new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
+			titleEl.setWarningKey("error.title.too.long", String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH));
 		}
 		
 		cutValueEl.clearError();
@@ -136,14 +136,14 @@ public class StructureNodeStepController extends StepFormBasicController {
 			try {
 				Float.parseFloat(cutValueEl.getValue());
 			} catch (NumberFormatException e) {
-				cutValueEl.setErrorKey("form.error.wrongFloat", null);
+				cutValueEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 		}
 		
 		if(outputEl.isVisible() && outputEl.isSelected(0)) {
 			if(!StringHelper.containsNonWhitespace(cutValueEl.getValue())) {
-				cutValueEl.setErrorKey("form.legende.mandatory", null);
+				cutValueEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -153,9 +153,7 @@ public class StructureNodeStepController extends StepFormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(passedEl == source) {
-			updatePassedAndOutputUI();
-		} else if(outputEl == source) {
+		if(passedEl == source || outputEl == source) {
 			updatePassedAndOutputUI();
 		}
 		super.formInnerEvent(ureq, source, event);

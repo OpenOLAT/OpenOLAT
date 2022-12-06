@@ -515,7 +515,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		if(!targetsEl.isOneSelected()
 				|| (targetsEl.isSelected(1) && !entriesEl.isAtLeastSelected(1))
 				|| (targetsEl.isSelected(3) && getSelectedLectures().isEmpty())) {
-			targetsEl.setErrorKey("form.legende.mandatory", null);
+			targetsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		allOk &= validate(lectureBlocksEl);
@@ -527,7 +527,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			prolongateButton.setVisible(false);
 		}
 		if(datesEl.getDate() == null || datesEl.getSecondDate() == null) {
-			datesEl.setErrorKey("form.legende.mandatory", null);
+			datesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			Dates dates = getDates();
@@ -578,7 +578,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		}
 
 		String explanation = getNoticesExplaination(notices);
-		datesEl.setErrorKey("error.collision", true, explanation);
+		datesEl.setWarningKey("error.collision", explanation);
 		if(prolongateButton != null) {
 			prolongateButton.setVisible(true);
 			prolongateButton.setUserObject(notices);
@@ -678,7 +678,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private boolean validate(MultipleSelectionElement el) {
 		boolean allOk = true;
 		if(el.isVisible() && !el.isAtLeastSelected(1)) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -688,7 +688,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private boolean validate(FlexiTableElement el) {
 		boolean allOk = true;
 		if(el.isVisible() && el.getMultiSelectedIndex().isEmpty()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

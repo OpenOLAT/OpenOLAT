@@ -48,7 +48,7 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 
 		SelectboxComponent ssec = (SelectboxComponent)source;
@@ -120,6 +120,9 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 		if(source.isEnabled()){
 			//add set dirty form only if enabled
 			FormJSHelper.appendFlexiFormDirty(sb, ssec.getRootForm(), ssec.getFormDispatchId());
+		}
+		if(ssec.getRootForm().isInlineValidationOn() || ssec.isInlineValidationOn()) {
+			FormJSHelper.appendValidationListeners(sb, ssec.getRootForm(), ssec.getFormDispatchId());
 		}
 	}
 }

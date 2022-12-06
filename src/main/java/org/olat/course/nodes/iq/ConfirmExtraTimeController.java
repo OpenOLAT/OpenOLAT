@@ -110,7 +110,7 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 			String title = assessmentMode.getName();
 			String begin = formatter.formatDateAndTime(assessmentMode.getBegin());
 			String end = formatter.formatDateAndTime(assessmentMode.getEnd());
-			modes.add(translate("warning.assessment.mode.date", new String[] { title, begin, end}));
+			modes.add(translate("warning.assessment.mode.date", title, begin, end));
 		}
 		layoutCont.contextPut("assessmemtModeMessages", modes);
 	}

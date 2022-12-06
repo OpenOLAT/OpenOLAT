@@ -86,7 +86,7 @@ public class ConfirmDeleteLectureBlockController extends FormBasicController {
 				if(titles.length() > 0) titles.append(", ");
 				titles.append(StringHelper.escapeHtml(block.getTitle()));
 			}
-			String text = translate("confirm.delete.lectures", new String[] { titles.toString() });
+			String text = translate("confirm.delete.lectures", titles.toString());
 			((FormLayoutContainer)formLayout).contextPut("msg", text);
 		}
 		
@@ -105,11 +105,11 @@ public class ConfirmDeleteLectureBlockController extends FormBasicController {
 				names.append(name);
 			}
 
-			String text = translate("confirm.delete.lectures.notices", new String[] { Integer.toString(notices.size()),  names.toString() });
+			String text = translate("confirm.delete.lectures.notices", Integer.toString(notices.size()),  names.toString());
 			((FormLayoutContainer)formLayout).contextPut("noticeMsg", text);
 
 			String[] confirmationValues = new String[] {translate("confirm.delete.lectures.notices.confirmation") };
-			confirmEl = uifactory.addCheckboxesHorizontal("confirm", "confirm.delete.lectures.notices.confirmation", formLayout, confirmKeys, confirmationValues);
+			confirmEl = uifactory.addCheckboxesHorizontal("confirm", null, formLayout, confirmKeys, confirmationValues);
 		}
 		deleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

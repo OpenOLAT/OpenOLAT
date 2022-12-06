@@ -36,13 +36,13 @@ import org.olat.core.gui.translator.Translator;
 public class UpDownRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source,
 			URLBuilder ubu, Translator translator, RenderResult renderResult,
 			String[] args) {
 		
 		UpDown upDown = (UpDown) source;
 		
-		switch (upDown.getLayout()) {
+		switch (upDown.getButtonLayout()) {
 		case LINK_HORIZONTAL:
 			renderLinkHorizontal(renderer, sb, args, upDown);
 			break;

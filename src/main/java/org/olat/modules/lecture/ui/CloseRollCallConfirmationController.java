@@ -111,10 +111,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		}
 		
 		String datePage = velocity_root + "/date_end.html";
-		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
-		dateCont.setLabel("lecture.block.effective.end", null);
-		formLayout.add(dateCont);
-		
+		FormLayoutContainer dateCont = uifactory.addCustomFormLayout("start_end", "lecture.block.effective.end", datePage, formLayout);
+
 		effectiveEndHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
 		effectiveEndHourEl.setDomReplacementWrapperRequired(false);
 		effectiveEndHourEl.setDisplaySize(2);

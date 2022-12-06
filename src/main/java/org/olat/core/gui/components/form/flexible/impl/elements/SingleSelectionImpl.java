@@ -344,7 +344,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	@Override
 	public boolean validate() {
 		if (!allowNoSelection && isVisible() && !isOneSelected()) {
-			setErrorKey("form.legende.mandatory", null);
+			setErrorKey("form.legende.mandatory");
 			return false;
 		}
 		clearError();

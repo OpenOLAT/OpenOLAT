@@ -1,12 +1,12 @@
 <fieldset class="o_form form-horizontal o_kprim_choices_editor">
-<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
+<div class="form-group clearfix">
 	<div class="col-sm-1 col-md-offset-1"><strong>$r.translate("form.imd.correct.kprim")</strong></div>
 	<div class="col-sm-1"><strong>$r.translate("form.imd.wrong.kprim")</strong></div>
 	<div class="col-sm-9"><strong>$r.translate("answers")</strong></div>
 </div>
 
 #foreach($choice in $choices)
-<div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix o_sel_choice_${foreach.index}">
+<div class="form-group clearfix o_sel_choice_${foreach.index}">
 	<div class="col-sm-1">
 		#if($r.available(${choice.getUp().getComponent().getComponentName()}) && $r.visible(${choice.getUp().getComponent().getComponentName()}))
 			<div>$r.render(${choice.getUp().getComponent().getComponentName()})</div>
@@ -29,15 +29,7 @@
 		#else
 			$r.render(${choice.getAnswerReadOnly().getComponent().getComponentName()})
 		#end
-		#if($f.hasError($item))
-			<span class="o_icon o_icon_error form-control-feedback"></span>
-		#end
 	</div>
-	#if($f.hasError($item))
-		<div class="col-sm-offset-2 col-sm-10">
-			$r.render("${item}_ERROR")
-		</div>
-	#end
 </div>
 #end
 </fieldset>

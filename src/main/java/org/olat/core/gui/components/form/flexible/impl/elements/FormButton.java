@@ -42,7 +42,7 @@ abstract class FormButton extends FormItemImpl {
 	/**
 	 * @param name
 	 */
-	public FormButton(String name) {
+	protected FormButton(String name) {
 		super(name);
 	}
 	
@@ -50,7 +50,7 @@ abstract class FormButton extends FormItemImpl {
 	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name
 	 */
-	public FormButton(String id, String name) {
+	protected FormButton(String id, String name) {
 		super(id, name, false);
 	}
 	

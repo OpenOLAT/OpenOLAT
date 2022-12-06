@@ -699,8 +699,16 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
+			
+			// Absence notice
 			Long absenceNoticeKey = (Long)rawObject[pos++];
-			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceNoticeAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceNoticeAuthorized = null;
+				pos++;
+			}
 			String absenceNoticeType = (String)rawObject[pos++];
 			
 			Long lectureBlockKey = (Long)rawObject[pos++];
@@ -915,8 +923,16 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
+			
+			// Absence notice
 			Long absenceNoticeKey = (Long)rawObject[pos++];
-			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceNoticeAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceNoticeAuthorized = null;
+				pos++;
+			}
 			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];
@@ -1149,8 +1165,16 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
+			
+			// Absence notice
 			Long absenceNoticeKey = (Long)rawObject[pos++];
-			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			Boolean absenceNoticeAuthorized;
+			if(authorizedAbsenceEnabled) {
+				absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+			} else {
+				absenceNoticeAuthorized = null;
+				pos++;
+			}
 			String absenceNoticeType = (String)rawObject[pos++];
 
 			Long lectureBlockKey = (Long)rawObject[pos++];

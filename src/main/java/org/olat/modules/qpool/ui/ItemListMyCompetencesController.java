@@ -83,7 +83,6 @@ public class ItemListMyCompetencesController extends AbstractItemListController 
 		myCompetenceLevelsEl = uifactory.addDropdownSingleselect("source.selector", "my.competences", formLayout,
 				levelKeys, levelValues, null);
 		myCompetenceLevelsEl.setDomReplacementWrapperRequired(false);
-		myCompetenceLevelsEl.getLabelC().setDomReplaceable(false);
 		myCompetenceLevelsEl.addActionListener(FormEvent.ONCHANGE);
 		if(levelKeys.length > 0) {
 			myCompetenceLevelsEl.select(levelKeys[0], true);

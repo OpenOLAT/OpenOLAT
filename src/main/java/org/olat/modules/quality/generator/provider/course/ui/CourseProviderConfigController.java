@@ -155,9 +155,7 @@ public class CourseProviderConfigController extends ProviderConfigController {
 		
 		// daily time
 		String timePage = velocity_root + "/time.html";
-		timeCont = FormLayoutContainer.createCustomFormLayout("time", getTranslator(), timePage);
-		timeCont.setLabel("config.start.time", null);
-		formLayout.add(timeCont);
+		timeCont = uifactory.addCustomFormLayout("time", "config.start.time", timePage, formLayout);
 		
 		String dailyHour = configs.getValue(CourseProvider.CONFIG_KEY_DAILY_HOUR);
 		startHourEl = uifactory.addTextElement("config.start.hour", null, 2, dailyHour, timeCont);
@@ -275,6 +273,10 @@ public class CourseProviderConfigController extends ProviderConfigController {
 			break;
 		default:
 			//
+		}
+		
+		if(!allOk) {
+			validateDeferredFormLogic(ureq);
 		}
 		
 		return allOk;

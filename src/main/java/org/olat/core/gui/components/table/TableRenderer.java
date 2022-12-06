@@ -55,13 +55,9 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 
 	@Override
-	public void render(final Renderer renderer, final StringOutput target, final Component source, final URLBuilder ubu, final Translator translator, final RenderResult renderResult,
+	public void renderComponent(final Renderer renderer, final StringOutput target, final Component source, final URLBuilder ubu, final Translator translator, final RenderResult renderResult,
 			final String[] args) {
-		long start = 0;
-		if (log.isDebugEnabled()) {
-			start = System.currentTimeMillis();
-		}
-		assert (source instanceof Table);
+
 		Table table = (Table) source;
 
 		boolean iframePostEnabled = renderer.getGlobalSettings().getAjaxFlags().isIframePostEnabled();
@@ -92,9 +88,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		}
 
 		// Render table wrapper and table
-		
 
-		
 		String formName = renderMultiselectForm(target, source, ubu, iframePostEnabled);
 		String scrollableWrapperId = "o_scroll_" + table.getDispatchID();
 		target.append("<div class=\"o_table_wrapper\" id=\"o_table_wrapper_").append(table.hashCode()).append("\">")
@@ -113,11 +107,6 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// Initialize the scrolling overflow indicator code
 		target.append("<script>o_initScrollableOverflowIndicator('").append(scrollableWrapperId).append("');</script>");
 		appendViewportResizeJsFix(target, source, rows, usePageing);
-	
-		if (log.isDebugEnabled()) {
-			long duration = System.currentTimeMillis() - start;
-			log.debug("Perf-Test: render takes " + duration);
-		}
 	}
 
 	private void appendViewportResizeJsFix(final StringOutput target, final Component source, int rows, boolean usePageing) {

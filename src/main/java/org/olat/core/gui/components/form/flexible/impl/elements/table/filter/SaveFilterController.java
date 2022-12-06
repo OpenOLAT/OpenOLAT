@@ -68,13 +68,13 @@ public class SaveFilterController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(nameEl.getValue().length() > 255) {
-			nameEl.setErrorKey("text.element.error.notlongerthan", new String[] { Integer.toString(255) });
+			nameEl.setErrorKey("text.element.error.notlongerthan", Integer.toString(255));
 			allOk &= false;
 		} else if(!canReuseName(nameEl.getValue())) {
-			nameEl.setErrorKey("error.filter.name", null);
+			nameEl.setErrorKey("error.filter.name");
 			allOk &= false;
 		}
 

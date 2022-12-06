@@ -23,7 +23,7 @@ $r.translate("gsphc.moderadio") $r.render("moderadio")
 				$r.render($te)
 				
 				#if($f.hasError($item))
-						 $r.render("${item}_ERROR")
+					$r.render("${item}","error")
 				#end
 				</div>
 				</td>

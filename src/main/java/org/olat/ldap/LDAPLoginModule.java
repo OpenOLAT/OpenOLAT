@@ -121,7 +121,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	 * in the user management.
 	 */
 	@Value("${ldap.deleteRemovedLDAPUsersOnSync}")
-	private boolean deleteRemovedLDAPUsersOnSync;
+	private String deleteRemovedLDAPUsersOnSync;
 	/**
 	 * Sanity check when deleteRemovedLDAPUsersOnSync is set to 'true': if more than the defined
 	 * percentages of user accounts are not found on the LDAP server and thus recognized as to be
@@ -438,7 +438,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		this.convertExistingLocalUsersToLDAPUsers = convertExistingLocalUsersToLDAPUsers;
 	}
 
-	public void setDeleteRemovedLDAPUsersOnSync(boolean deleteRemovedLDAPUsersOnSync) {
+	public void setDeleteRemovedLDAPUsersOnSync(String deleteRemovedLDAPUsersOnSync) {
 		this.deleteRemovedLDAPUsersOnSync = deleteRemovedLDAPUsersOnSync;
 	}
 	
@@ -512,8 +512,12 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	public boolean isConvertExistingLocalUsersToLDAPUsers() {
 		return convertExistingLocalUsersToLDAPUsers;
 	}
+	
+	public boolean isRemoveLDAPUsersOnSyncEnabled() {
+		return "true".equals(deleteRemovedLDAPUsersOnSync) || "deactivate".equals(deleteRemovedLDAPUsersOnSync);
+	}
 
-	public boolean isDeleteRemovedLDAPUsersOnSync() {
+	public String getRemoveLDAPUsersOnSyncOption() {
 		return deleteRemovedLDAPUsersOnSync;
 	}
 	

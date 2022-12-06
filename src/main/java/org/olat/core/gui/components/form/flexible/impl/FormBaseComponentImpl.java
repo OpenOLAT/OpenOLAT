@@ -40,7 +40,9 @@ import org.olat.core.logging.AssertException;
  * Initial Date:  11.01.2007 <br>
  * @author patrickb
  */
-public abstract class FormBaseComponentImpl extends AbstractComponent implements FormBaseComponent {	
+public abstract class FormBaseComponentImpl extends AbstractComponent implements FormBaseComponent {
+	
+	private String layout;
 
 	public FormBaseComponentImpl(String name) {
 		super(name);
@@ -56,6 +58,16 @@ public abstract class FormBaseComponentImpl extends AbstractComponent implements
 	
 	public FormBaseComponentImpl(String id, String name, Translator translator) {
 		super(id, name, translator);
+	}
+
+	@Override
+	public String getLayout() {
+		return layout;
+	}
+
+	@Override
+	public void setLayout(String layout) {
+		this.layout = layout;
 	}
 
 	@Override

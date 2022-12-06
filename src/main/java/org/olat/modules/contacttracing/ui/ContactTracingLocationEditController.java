@@ -86,7 +86,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         this.location = location;
 
         initForm(ureq);
-        loadData();
+        loadData(ureq);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
         generatePdfPreviewLink = uifactory.addFormLink("contact.tracing.location.pdf.preview", buttonLayout, Link.BUTTON);
     }
 
-    private void loadData() {
+    private void loadData(UserRequest ureq) {
         if (location != null) {
             referenceEl.setValue(location.getReference());
             titleEl.setValue(location.getTitle());
@@ -166,17 +166,17 @@ public class ContactTracingLocationEditController extends FormBasicController {
         } else {
             qrTextEl.setVisible(false);
             guestsAllowedEl.select(ON_KEYS[0], true);
-            generateNumericQrID();
+            generateNumericQrID(ureq);
         }
     }
 
     @Override
     protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
         if (source == generateNumericIdentifierLink) {
-            generateNumericQrID();
+            generateNumericQrID(ureq);
             updatePdfPreview(ureq);
         } else if (source == generateHumanReadableIdentifierLink) {
-            generateHumanReadableID();
+            generateHumanReadableID(ureq);
             updatePdfPreview(ureq);
         } else if (source == generatePdfPreviewLink) {
             generatePdfPreview(ureq);
@@ -217,18 +217,18 @@ public class ContactTracingLocationEditController extends FormBasicController {
         return previewLocation;
     }
 
-    private void generateNumericQrID() {
+    private void generateNumericQrID(UserRequest ureq) {
         Random generator = new Random();
         String qrId;
 
         do {
             qrId = String.valueOf(generator.nextInt(80000) + 10000);
-        } while (qrIdExists(qrId, true));
+        } while (qrIdExists(ureq, qrId, true));
     }
 
-    private void generateHumanReadableID() {
+    private void generateHumanReadableID(UserRequest ureq) {
         // Try with reference
-        if (qrIdExists(transformStringToIdentifier(referenceEl.getValue()), true)) {
+        if (qrIdExists(ureq, transformStringToIdentifier(referenceEl.getValue()), true)) {
             StringBuilder qrIdBuilder = new StringBuilder();
 
             // Try with building-room-sector-table
@@ -246,9 +246,9 @@ public class ContactTracingLocationEditController extends FormBasicController {
                 qrId = qrId.substring(0, qrId.length() - 1);
             }
 
-            if (qrIdExists(qrId, true)) {
+            if (qrIdExists(ureq, qrId, true)) {
                 // Try with table
-                if (qrIdExists(transformStringToIdentifier(titleEl.getValue()), true)) {
+                if (qrIdExists(ureq, transformStringToIdentifier(titleEl.getValue()), true)) {
                     showWarning("contact.tracing.location.edit.generate.human.readable.error");
                 }
             }
@@ -268,17 +268,17 @@ public class ContactTracingLocationEditController extends FormBasicController {
         return identifier;
     }
 
-    private boolean qrIdExists(String qrId, boolean checkGeneratedId) {
+    private boolean qrIdExists(UserRequest ureq, String qrId, boolean checkGeneratedId) {
         // Return true if an empty qrId was provided
         if (!StringHelper.containsNonWhitespace(qrId) && checkGeneratedId) {
             return true;
         }
         // Check if qrIdEl is empty
-        if (validateFormItem(qrIdEl) || checkGeneratedId) {
+        if (validateFormItem(ureq, qrIdEl) || checkGeneratedId) {
             if (contactTracingManager.qrIdExists(qrId)) {
                 // Check whether it is the QR ID of the current location
                 if (!(location != null && location.getQrId().equals(qrId))) {
-                    qrIdEl.setErrorKey("contact.tracing.location.qr.id.exists", null);
+                    qrIdEl.setErrorKey("contact.tracing.location.qr.id.exists");
                     return true;
                 }
             }
@@ -287,7 +287,7 @@ public class ContactTracingLocationEditController extends FormBasicController {
             qrIdEl.setExampleKey("noTransOnlyParam", new String[]{ContactTracingDispatcher.getRegistrationUrl(qrId)});
         }
 
-        validateFormItem(qrIdEl);
+        validateFormItem(ureq, qrIdEl);
         return false;
     }
 
@@ -295,14 +295,14 @@ public class ContactTracingLocationEditController extends FormBasicController {
     protected boolean validateFormLogic(UserRequest ureq) {
         boolean allOk =  super.validateFormLogic(ureq);
 
-        allOk &= validateFormItem(referenceEl);
-        allOk &= validateFormItem(titleEl);
-        allOk &= validateFormItem(roomEl);
-        allOk &= validateFormItem(buildingEl);
-        allOk &= validateFormItem(qrIdEl);
-        allOk &= validateFormItem(qrTextEl);
+        allOk &= validateFormItem(ureq, referenceEl);
+        allOk &= validateFormItem(ureq, titleEl);
+        allOk &= validateFormItem(ureq, roomEl);
+        allOk &= validateFormItem(ureq, buildingEl);
+        allOk &= validateFormItem(ureq, qrIdEl);
+        allOk &= validateFormItem(ureq, qrTextEl);
 
-        allOk &= !qrIdExists(qrIdEl.getValue(), false);
+        allOk &= !qrIdExists(ureq, qrIdEl.getValue(), false);
 
         return allOk;
     }

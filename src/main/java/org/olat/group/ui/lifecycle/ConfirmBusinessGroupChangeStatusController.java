@@ -102,7 +102,7 @@ public class ConfirmBusinessGroupChangeStatusController extends FormBasicControl
 		}
 
 		String[] notifications = new String[] { translate("dialog.modal.bg.mail.responsible.text") };
-		notificationEl = uifactory.addCheckboxesHorizontal("notifications", "dialog.modal.bg.mail.text", formLayout, new String[]{ "" },  notifications);
+		notificationEl = uifactory.addCheckboxesHorizontal("notifications", null, formLayout, new String[]{ "" },  notifications);
 		notificationEl.setVisible(hasMembers);
 		if((newStatus == BusinessGroupStatusEnum.inactive && businessGroupModule.isMailAfterDeactivation())
 				|| ((newStatus == BusinessGroupStatusEnum.trash || newStatus == BusinessGroupStatusEnum.deleted)

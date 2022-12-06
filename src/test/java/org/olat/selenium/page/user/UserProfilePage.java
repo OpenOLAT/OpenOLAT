@@ -103,7 +103,7 @@ public class UserProfilePage {
 	}
 	
 	public  UserProfilePage assertOnChangedEmail(String newEmail) {
-		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_user_profil_email')]/div[contains(@class,'o_form_example')]/div/b[text()[contains(.,'" + newEmail + "')]]");
+		By emailBy = By.xpath("//div[contains(@class,'o_user_profile_form')]//div[contains(@class,'o_user_profil_email')]/div[contains(@class,'o_form_example')]/b[text()[contains(.,'" + newEmail + "')]]");
 		OOGraphene.waitElement(emailBy, browser);
 		return this;
 	}

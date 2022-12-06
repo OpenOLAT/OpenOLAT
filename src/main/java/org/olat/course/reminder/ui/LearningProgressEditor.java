@@ -56,11 +56,9 @@ public class LearningProgressEditor extends RuleEditorFragment {
 		String page = Util.getPackageVelocityRoot(this.getClass()) + "/learning_progress.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addCustomFormLayout("attempts.".concat(id), null, page, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		String currentValue = null;
 		String currentOperator = null;
@@ -99,7 +97,7 @@ public class LearningProgressEditor extends RuleEditorFragment {
 		
 		operatorEl.clearError();
 		if(!operatorEl.isOneSelected()) {
-			operatorEl.setErrorKey("form.mandatory.hover", null);
+			operatorEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -119,14 +117,14 @@ public class LearningProgressEditor extends RuleEditorFragment {
 					int parsedInt = Integer.parseInt(value);
 					if (parsedInt < 0 || parsedInt > 100) {
 						allOk = false;
-						el.setErrorKey("error.int.between", new String[] { "0", "100"} );
+						el.setErrorKey("error.int.between", "0", "100");
 					}
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.int.between", new String[] { "0", "100"} );
+					el.setErrorKey("error.int.between", "0", "100");
 				}
 			} else {
-				valueEl.setErrorKey("form.mandatory.hover", null);
+				valueEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -136,7 +134,7 @@ public class LearningProgressEditor extends RuleEditorFragment {
 
 	@Override
 	public ReminderRule getConfiguration() {
-		ReminderRuleImpl configuredRule = new ReminderRuleImpl();; 
+		ReminderRuleImpl configuredRule = new ReminderRuleImpl();
 		configuredRule.setType(LearningProgressRuleSPI.class.getSimpleName());
 		configuredRule.setOperator(operatorEl.getSelectedKey());
 		configuredRule.setRightOperand(valueEl.getValue());

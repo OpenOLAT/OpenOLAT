@@ -48,6 +48,12 @@ public interface Component {
 	
 	public ComponentRenderer getHTMLRendererSingleton();
 	
+	public String getElementCssClass();
+	
+	public String getLayout();
+	
+	public void setLayout(String layout);
+	
 	public boolean isEnabled();
 	
 	public void setEnabled(boolean enabled);
@@ -100,5 +106,10 @@ public interface Component {
 	 *         ID
 	 */
 	public boolean isDomReplacementWrapperRequired();
+	
+	/**
+	 * 
+	 */
+	public void setDomReplacementWrapperRequired(boolean required);
 
 }

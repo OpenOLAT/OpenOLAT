@@ -78,13 +78,13 @@ public class GradeSystemCreateController extends FormBasicController {
 			identifierEl.clearError();
 			String identifier = identifierEl.getValue();
 			if (!StringHelper.containsNonWhitespace(identifier)) {
-				identifierEl.setErrorKey("form.legende.mandatory", null);
+				identifierEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (!GradeUIFactory.validateIdentifierChars(identifier)) {
-				identifierEl.setErrorKey("error.identifier.invalid.chars", null);
+				identifierEl.setErrorKey("error.identifier.invalid.chars");
 				allOk &= false;
 			} else if (!gradeService.isGradeServiceIdentifierAvailable(identifier)) {
-				identifierEl.setErrorKey("error.identifier.not.available", null);
+				identifierEl.setErrorKey("error.identifier.not.available");
 				allOk &= false;
 			}
 		}

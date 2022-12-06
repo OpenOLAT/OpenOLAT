@@ -515,7 +515,7 @@ public class AppointmentCreateController extends FormBasicController {
 		if (titleEl != null) {
 			titleEl.clearError();
 			if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-				titleEl.setErrorKey("form.legende.mandatory", null);
+				titleEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -527,11 +527,11 @@ public class AppointmentCreateController extends FormBasicController {
 			try {
 				maxParticipants = Integer.parseInt(maxParticipationsValue);
 				if (maxParticipants.intValue() < 1) {
-					maxParticipationsEl.setErrorKey("error.positiv.number", null);
+					maxParticipationsEl.setErrorKey("error.positiv.number");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				maxParticipationsEl.setErrorKey("error.positiv.number", null);
+				maxParticipationsEl.setErrorKey("error.positiv.number");
 				allOk &= false;
 			}
 		}
@@ -540,20 +540,20 @@ public class AppointmentCreateController extends FormBasicController {
 			DateChooser startEl = wrapper.getStartEl();
 			if (AppointmentInputType.startDuration == appointmentInputType) {
 				if (wrapper.getStartEl().getDate() != null && !StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
-					startEl.setErrorKey("form.legende.mandatory", null);
+					startEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else if (wrapper.getStartEl().getDate() == null && StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
-					startEl.setErrorKey("form.legende.mandatory", null);
+					startEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else if (StringHelper.containsNonWhitespace(wrapper.getDurationEl().getValue())) {
 					try {
 						Integer duration = Integer.parseInt(wrapper.getDurationEl().getValue());
 						if (duration.intValue() < 1) {
-							startEl.setErrorKey("error.positiv.number", null);
+							startEl.setErrorKey("error.positiv.number");
 							allOk &= false;
 						}
 					} catch (NumberFormatException e) {
-						startEl.setErrorKey("error.positiv.number", null);
+						startEl.setErrorKey("error.positiv.number");
 						allOk &= false;
 					}
 				}
@@ -567,24 +567,24 @@ public class AppointmentCreateController extends FormBasicController {
 			endEl.clearError();
 			if (AppointmentInputType.startEnd == appointmentInputType) {
 				if (startEl.getDate() == null && endEl.getDate() != null) {
-					startEl.setErrorKey("form.legende.mandatory", null);
+					startEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 				if (endEl.getDate() == null && startEl.getDate() != null) {
-					endEl.setErrorKey("form.legende.mandatory", null);
+					endEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 				if (startEl.getDate() != null && endEl.getDate() != null) {
 					Date start = startEl.getDate();
 					Date end = endEl.getDate();
-					if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+					if(!validateFormItem(ureq, startEl) || !validateFormItem(ureq, endEl)) {
 						allOk &= false;
 					} else if(end.before(start)) {
-						endEl.setErrorKey("error.start.after.end", null);
+						endEl.setErrorKey("error.start.after.end");
 						allOk &= false;
 					}
 				}
-			} else if(!validateFormItem(startEl) || !validateFormItem(endEl)) {
+			} else if(!validateFormItem(ureq, startEl) || !validateFormItem(ureq, endEl)) {
 				allOk &= false;
 			}
 		}
@@ -594,26 +594,26 @@ public class AppointmentCreateController extends FormBasicController {
 		recurringLastEl.clearError();
 		if (AppointmentInputType.recurring == appointmentInputType) {
 			if (recurringFirstEl.getDate() == null || recurringFirstEl.getSecondDate() == null) {
-				recurringFirstEl.setErrorKey("form.legende.mandatory", null);
+				recurringFirstEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if (recurringFirstEl.getDate().after(recurringFirstEl.getSecondDate())) {
-				recurringFirstEl.setErrorKey("error.start.after.end", null);
+				recurringFirstEl.setErrorKey("error.start.after.end");
 				allOk &= false;
 			}
 			
 			if (!recurringDaysOfWeekEl.isAtLeastSelected(1)) {
-				recurringDaysOfWeekEl.setErrorKey("form.legende.mandatory", null);
+				recurringDaysOfWeekEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			if (recurringLastEl.getDate() == null) {
-				recurringLastEl.setErrorKey("form.legende.mandatory", null);
+				recurringLastEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			if (recurringFirstEl.getDate() != null && recurringLastEl.getDate() != null
 					&& recurringFirstEl.getDate().after(recurringLastEl.getDate())) {
-				recurringLastEl.setErrorKey("error.first.after.start", null);
+				recurringLastEl.setErrorKey("error.first.after.start");
 				allOk &= false;
 			}
 		}
@@ -626,9 +626,9 @@ public class AppointmentCreateController extends FormBasicController {
 			templateEl.clearError();
 			if(!templateEl.isOneSelected()) {
 				if(templateEl.getKeys() == null || templateEl.getKeys().length == 0) {
-					templateEl.setErrorKey("error.bigbluebutton.no.templates", null);
+					templateEl.setErrorKey("error.bigbluebutton.no.templates");
 				} else {
-					templateEl.setErrorKey("form.legende.mandatory", null);
+					templateEl.setErrorKey("form.legende.mandatory");
 				}
 				bbbOk &= false;
 			}
@@ -640,7 +640,7 @@ public class AppointmentCreateController extends FormBasicController {
 					if (maxParticipants == null) {
 						maxParticipationsEl.setValue(template.getMaxParticipants().toString());
 					} else if (maxParticipants.intValue() > template.getMaxParticipants().intValue()) {
-						maxParticipationsEl.setErrorKey("error.participations.max.greater.room", new String[] {template.getMaxParticipants().toString()});
+						maxParticipationsEl.setErrorKey("error.participations.max.greater.room", template.getMaxParticipants().toString());
 						bbbOk &= false;
 					}
 				}
@@ -648,7 +648,7 @@ public class AppointmentCreateController extends FormBasicController {
 				if (AppointmentInputType.recurring == appointmentInputType) {
 					allOk &= BigBlueButtonUIHelper.validateDuration(recurringFirstEl, bbbLeadTimeEl, bbbFollowupTimeEl, template);
 					if (!recurringFirstEl.hasError() && !validateRecurringSlot(template)) {
-						recurringFirstEl.setErrorKey("server.overloaded", new String[] { null });
+						recurringFirstEl.setErrorKey("server.overloaded");
 						bbbOk &= false;
 					}
 				} else {

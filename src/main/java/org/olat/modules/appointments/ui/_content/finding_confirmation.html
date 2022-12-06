@@ -7,10 +7,8 @@
 			$r.translate("finding.confirmation.meeting")
 		</div>
 	#end
-	$r.render("users")
-	#if($f.hasError("users"))
-		<span class="o_icon o_icon_error form-control-feedback"></span>
-		$r.render("users_ERROR")
-	#end
-	$r.render("buttons")
+	$r.render("users", "minimal")
+	<div class="o_button_group">
+		$r.render("buttons")
+	</div>
 </div>

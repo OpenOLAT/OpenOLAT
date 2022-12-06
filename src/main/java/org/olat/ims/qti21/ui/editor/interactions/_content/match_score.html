@@ -23,7 +23,7 @@
 					<i class=" o_icon o_icon-lg o_icon_accept"> </i>
 				#end
 				#if($f.hasError("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}"))
-					<div>$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}_ERROR")</div>
+					<div>$r.render("${sourceChoice.getChoiceIdentifier().toString()}-${targetChoice.getChoiceIdentifier().toString()}","error")</div>
 				#end
 				</td>
 			#end

@@ -135,11 +135,11 @@ public class GradeUIFactory {
 				try {
 					Integer.parseInt(val);
 				} catch (NumberFormatException e) {
-					el.setErrorKey("integer.element.int.error", null);
+					el.setErrorKey("integer.element.int.error");
 					allOk = false;
 				}
 			} else {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
@@ -155,11 +155,11 @@ public class GradeUIFactory {
 				try {
 					Double.parseDouble(val);
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.double", null);
+					el.setErrorKey("error.double");
 					allOk = false;
 				}
 			} else if (mandatory) {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
@@ -175,15 +175,15 @@ public class GradeUIFactory {
 				try {
 					BigDecimal value = new BigDecimal(val);
 					if (min != null && max != null && (value.compareTo(min) < 0 || value.compareTo(max) > 0)) {
-						el.setErrorKey("error.double.range", new String[] {THREE_DIGITS.format(min), THREE_DIGITS.format(max)});
+						el.setErrorKey("error.double.range", THREE_DIGITS.format(min), THREE_DIGITS.format(max));
 						allOk = false;
 					}
 				} catch (NumberFormatException e) {
-					el.setErrorKey("error.double", null);
+					el.setErrorKey("error.double");
 					allOk = false;
 				}
 			} else if (mandatory) {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
@@ -206,23 +206,23 @@ public class GradeUIFactory {
 					try {
 						Integer.parseInt(val);
 					} catch (NumberFormatException e) {
-						el.setErrorKey("integer.element.int.error", null);
+						el.setErrorKey("integer.element.int.error");
 						allOk = false;
 					}
 				} else {
 					try {
 						String value = THREE_DIGITS.format(Double.parseDouble(val));
 						if (!validateCutValue(value, resolution)) {
-							el.setErrorKey("error.digits", null);
+							el.setErrorKey("error.digits");
 							allOk = false;
 						}
 					} catch (NumberFormatException e) {
-						el.setErrorKey("error.double", null);
+						el.setErrorKey("error.double");
 						allOk = false;
 					}
 				}
 			} else {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}

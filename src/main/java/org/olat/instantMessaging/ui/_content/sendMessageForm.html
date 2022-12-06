@@ -6,7 +6,7 @@
 	</div>
 	#end
 	#if($f.hasError("msg"))
-		$r.render("msg_ERROR")
+		$r.render("msg","error")
 	#end
 	#if($r.visible("start.meeting"))
 		$r.render("start.meeting")

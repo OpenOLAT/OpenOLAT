@@ -80,7 +80,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	private MultipleSelectionElement compareSwitch;
 	private SingleSelection compareLangSelection;
 	private FormLink previousLink, saveLink, saveNextLink, nextLink, annotationAddLink;
-	private ProgressBar progressBarBundle, progressBarKey;
+	private ProgressBar progressBarBundle;
+	private ProgressBar progressBarKey;
 
 	private static final String[] KEYS_ENABLED = new String[]{ "enabled" };
 	// true when the overlay files are edited and not the language files itself
@@ -188,11 +189,11 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		keysSelection.addActionListener(FormEvent.ONCHANGE);
 		keysSelection.select(currentItem.getKey(), true);
 		// Add reference box
-		referenceArea = uifactory.addTextAreaElement("referenceArea", null, -1, 1, -1, true, false, null, flc);
+		referenceArea = uifactory.addTextAreaElement("referenceArea", null, -1, -1, -1, false, false, null, flc);
 		referenceArea.setEnabled(false); // read only
 		// Add compare box
 		Boolean compareEnabledPrefs = (Boolean) guiPrefs.get(I18nModule.class, I18nModule.GUI_PREFS_COMPARE_LANG_ENABLED, Boolean.FALSE);
-		compareArea = uifactory.addTextAreaElement("compareArea", null, -1, 1, -1, true, false, null, flc);
+		compareArea = uifactory.addTextAreaElement("compareArea", null, -1, -1, -1, false, false, null, flc);
 		compareArea.setEnabled(false); // read only
 		compareArea.setVisible(compareEnabledPrefs.booleanValue());
 		

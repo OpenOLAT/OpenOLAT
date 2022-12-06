@@ -58,7 +58,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 	private static final Pattern doubleQutoe = Pattern.compile("\"");
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		Link link = (Link) source;
 		
@@ -163,16 +163,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			
 			//tooltips
 			if(title != null) {
-				if (!link.hasTooltip()) {
-					sb.append(" title=\"");
-					if (nontranslated){
-						sb.appendHtmlEscaped(title).append("\"");
-					} else {
-						sb.appendHtmlEscaped(translator.translate(title)).append("\"");
-					}
-
-				}
-				//tooltips based on the extjs library, see webapp/static/js/ext*
+				sb.append(" title=\"");
 				if (link.hasTooltip()) {
 					String text;
 					if (nontranslated) {
@@ -180,8 +171,13 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						text = translator.translate(title);
 					}
-					sb.append(" title=\"").appendHtmlEscaped(text).append("\"");
+					sb.appendHtmlEscaped(text);
+				} else if (nontranslated){
+					sb.appendHtmlEscaped(title).append("\"");
+				} else {
+					sb.appendHtmlEscaped(translator.translate(title));
 				}
+				sb.append("\"");
 			}
 			if(link.getAriaLabel() != null) {
 				sb.append(" aria-label=\"");
@@ -193,6 +189,17 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			}
 			if(link.getAriaRole() != null) {
 				sb.append(" role=\"").appendHtmlEscaped(link.getAriaRole()).append("\"");
+			} else {
+				int linkStyle = presentation;
+				if ((linkStyle - Link.FLEXIBLEFORMLNK) >= 0) {
+					linkStyle = linkStyle - Link.FLEXIBLEFORMLNK;
+				}
+				if ((linkStyle - Link.NONTRANSLATED) >= 0) {
+					linkStyle = linkStyle - Link.NONTRANSLATED;
+				}
+				if (linkStyle >= Link.BUTTON_XSMALL && linkStyle <= Link.BUTTON_LARGE) {
+					sb.append(" role=\"").appendHtmlEscaped(Link.ARIA_ROLE_BUTTON).append("\"");
+				}
 			}
 			sb.append(">");
 			

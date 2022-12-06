@@ -1,8 +1,5 @@
-$r.render("organisations")
-#if($f.hasError("organisations"))
-<div class="">$r.render("organisations_ERROR")</div>
-#end
+$r.render("organisations", "minimal")
 <div class="o_button_group">
-	$r.render("cancel")
 	$r.render("move.organisation")
+	$r.render("cancel")
 </div>

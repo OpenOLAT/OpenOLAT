@@ -70,7 +70,7 @@ public class EditOrganizerNameController extends FormBasicController {
 		
 		accountNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(accountNameEl.getValue())) {
-			accountNameEl.setErrorKey("form.mandatory.hover", null);
+			accountNameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

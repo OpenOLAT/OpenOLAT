@@ -1,7 +1,4 @@
 #if($r.visible("performance.class.add"))
 	<div class="o_button_group o_button_group_right">$r.render("performance.class.add")</div>
 #end
-$r.render("table")
-#if($f.hasError("table"))
-	$r.render("table_ERROR")
-#end
+$r.render("table", "minimal")

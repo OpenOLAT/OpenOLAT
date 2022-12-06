@@ -66,10 +66,8 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("repo.valid.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
+		FormLayoutContainer ruleCont = uifactory
+				.addCustomFormLayout("repo.valid.".concat(id), null, page, formLayout);
 		ruleCont.contextPut("id", id);
 		
 		String currentValue = null;

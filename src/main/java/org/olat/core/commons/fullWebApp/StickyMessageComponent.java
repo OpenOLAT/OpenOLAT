@@ -107,7 +107,7 @@ class StickyMessageComponent extends AbstractComponent {
 	private static class StickyMessageRenderer extends DefaultComponentRenderer {
 
 		@Override
-		public void render(Renderer renderer, StringOutput sb, Component source,
+		public void renderComponent(Renderer renderer, StringOutput sb, Component source,
 				URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 			
 			StickyMessageComponent cmp = (StickyMessageComponent)source;

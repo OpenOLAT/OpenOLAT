@@ -36,7 +36,7 @@ import org.olat.core.gui.translator.Translator;
 class CountDownComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
-	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
+	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,
 			Translator translator, RenderResult renderResult, String[] args) {
 		
 		CountDownComponent cmp = (CountDownComponent)source;

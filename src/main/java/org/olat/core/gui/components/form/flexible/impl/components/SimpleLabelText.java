@@ -58,7 +58,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 		this.text = text;
 		this.item = item;
 		// to minimize DOM tree we provide our own DOM ID (o_c12245)
-		this.setDomReplacementWrapperRequired(false);
+		setDomReplacementWrapperRequired(false);
 	}
 	
 	@Override
@@ -94,7 +94,7 @@ public class SimpleLabelText extends FormBaseComponentImpl {
 	
 	private static class LabelComponentRenderer extends DefaultComponentRenderer {
 		@Override
-		public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+		public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 				RenderResult renderResult, String[] args) {
 			SimpleLabelText stc = (SimpleLabelText) source;
 			sb.append("<label class='control-label ");

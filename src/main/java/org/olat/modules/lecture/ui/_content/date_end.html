@@ -1,7 +1,2 @@
-<div class="o_date_ms form-inline">$r.render("lecture.end.hour"):$r.render("lecture.end.minute")</div>
-#if($f.hasError("lecture.end.hour"))
-	<div>$r.render("lecture.end.hour_ERROR")</div>
-#end
-#if($f.hasError("lecture.end.minute"))
-	<div>$r.render("lecture.end.minute_ERROR")</div>
-#end
+<div class="o_date_ms form-inline">$r.render("lecture.end.hour") : $r.render("lecture.end.minute")</div>
+$r.render("errors")

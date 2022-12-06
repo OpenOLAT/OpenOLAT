@@ -70,7 +70,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 	}
 
 	@Override
-	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+	public void renderComponent(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		if(vfsVersionModule == null) {
 			vfsVersionModule = CoreSpringFactory.getImpl(VFSVersionModule.class);
 		}

@@ -95,13 +95,13 @@ public class CustomDBController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("customDb.custom_db");
 		setFormTitleIconCss("o_icon o_icon_coursedb");
+		
+		addDatabase = uifactory.addFormLink("command.new_db", formLayout, Link.BUTTON);
+		addDatabase.setVisible(!readOnly);
 
 		dbListLayout = FormLayoutContainer.createDefaultFormLayout("dbListLayout", getTranslator());
 		formLayout.add(dbListLayout);
 		updateDBList(dbListLayout);
-		
-		addDatabase = uifactory.addFormLink("command.new_db", formLayout, Link.BUTTON);
-		addDatabase.setVisible(!readOnly);
 	}
 	
 	public void updateUI() {
@@ -139,9 +139,9 @@ public class CustomDBController extends FormBasicController {
 		for(String db:databases) {
 			if(!StringHelper.containsNonWhitespace(db)) continue;
 			
-			uifactory.addStaticExampleText("category_" + count, "customDb.category", db, formLayout);
+			uifactory.addStaticTextElement("category_" + count, "customDb.category", db, formLayout);
 			String url = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/repo/courses/" + courseKey + "/db/" + db;
-			uifactory.addStaticExampleText("url_" + count, "customDb.url", url, formLayout);
+			uifactory.addStaticTextElement("url_" + count, "customDb.url", url, formLayout);
 			
 			final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttonLayout_" + count, getTranslator());
 			formLayout.add(buttonLayout);

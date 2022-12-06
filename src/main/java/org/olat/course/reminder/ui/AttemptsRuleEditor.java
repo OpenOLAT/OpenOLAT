@@ -35,7 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -61,7 +60,8 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 	private static final String[] operatorKeys = new String[]{ "<", "<=", "=", "=>", ">", "!=" };
 	
 	private TextElement valueEl;
-	private SingleSelection courseNodeEl, operatorEl;
+	private SingleSelection courseNodeEl;
+	private SingleSelection operatorEl;
 	private String[] nodeKeys;
 	private String[] nodeValues;
 	
@@ -75,17 +75,13 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		String page = Util.getPackageVelocityRoot(this.getClass()) + "/attempts.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
-		FormLayoutContainer ruleCont = FormLayoutContainer
-				.createCustomFormLayout("attempts.".concat(id), formLayout.getTranslator(), page);
-		ruleCont.setRootForm(formLayout.getRootForm());
-		formLayout.add(ruleCont);
-		ruleCont.getFormItemComponent().contextPut("id", id);
+		FormLayoutContainer ruleCont = uifactory
+				.addInlineFormLayout("attempts.".concat(id), null, formLayout);
+		ruleCont.contextPut("id", id);
 		
 		ICourse course = CourseFactory.loadCourse(entry);
-		
 		
 		String currentValue = null;
 		String currentOperator = null;
@@ -126,7 +122,7 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 			courseNodeEl.select(nodeKeys[0], true);
 		}
 		if(StringHelper.containsNonWhitespace(currentCourseNode) && !nodeSelected) {
-			courseNodeEl.setErrorKey("error.course.node.found", null);
+			courseNodeEl.setErrorKey("error.course.node.found");
 		}
 
 		operatorEl = uifactory.addDropdownSingleselect("operators.".concat(id), null, ruleCont, operatorKeys, operatorKeys, null);
@@ -191,19 +187,19 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 		
 		courseNodeEl.clearError();
 		if(!courseNodeEl.isOneSelected()) {
-			courseNodeEl.setErrorKey("form.mandatory.hover", null);
+			courseNodeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		operatorEl.clearError();
 		if(!operatorEl.isOneSelected()) {
-			operatorEl.setErrorKey("form.mandatory.hover", null);
+			operatorEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -222,7 +218,7 @@ public class AttemptsRuleEditor extends RuleEditorFragment implements CourseNode
 					Integer.parseInt(value);
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 				}
 			}
 		}
