@@ -41,7 +41,7 @@
     	jQuery('.o_qti_times_up').css("display", "inline");
     	//reload the page but only if in test
     	if(jQuery('#o_qti_run').length > 0) {
-    		o_ffXHREvent(settings.formName, settings.dispIdField, settings.dispId, settings.eventIdField, '2', false, false, false, '_csrf', settings.csrfToken, 'cid', 'timesUp');
+    		o_ffXHREvent(settings.formName, settings.dispIdField, settings.dispId, settings.eventIdField, '2', false, false, false, false, '_csrf', settings.csrfToken, 'cid', 'timesUp');
     	}
     }
     

@@ -197,14 +197,13 @@ public class GroupTaskConfigurationPage {
 	public GroupTaskConfigurationPage uploadSolution(String title, File file) {
 		By addTaskBy = By.className("o_sel_course_gta_add_solution");
 		browser.findElement(addTaskBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By titleBy = By.cssSelector(".o_sel_course_gta_upload_solution_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");
 		OOGraphene.uploadFile(inputBy, file, browser);
-		OOGraphene.waitBusy(browser);
 		By uploadedBy = By.cssSelector(".o_sel_course_gta_upload_solution_form .o_sel_file_uploaded");
 		OOGraphene.waitElement(uploadedBy, browser);
 		

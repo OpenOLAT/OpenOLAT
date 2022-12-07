@@ -161,7 +161,7 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static String getXHRFnCallFor(FormItem item, boolean dirtyCheck, boolean pushState, boolean submit, NameValuePair... pairs) {
-		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, submit, pairs);
+		return getXHRFnCallFor(item.getRootForm(), item.getFormDispatchId(), 1, dirtyCheck, pushState, submit, true, pairs);
 	}
 	
 	/**
@@ -176,7 +176,7 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, NameValuePair... pairs) {
-		return getXHRFnCallFor(form, id, actionIndex, dirtyCheck, pushState, false, pairs);
+		return getXHRFnCallFor(form, id, actionIndex, dirtyCheck, pushState, false, true, pairs);
 	}
 	
 	/**
@@ -192,6 +192,24 @@ public class FormJSHelper {
 	 * @return The code
 	 */
 	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, boolean submit, NameValuePair... pairs) {
+		return getXHRFnCallFor(form, id, actionIndex, dirtyCheck, pushState, submit, true, pairs);
+	}
+	
+	/**
+	 * Build the JavaScript method to send a flexi form event with all possible settings.
+	 * 
+	 * @param form The form object
+	 * @param id The id of the element
+	 * @param actionIndex The type of event (click...)
+	 * @param dirtyCheck If false, the dirty check is by passed
+	 * @param pushState If true, the state (visible url in browser) will be pushed to the browser
+	 * @param submit If true, the form will be submitted but it only works for none multi part forms.
+	 * @param busyCheck Check the busy flag or ignored it (o2cl).
+	 * @param pairs Additional name value pairs send by the link
+	 * @return The code
+	 */
+	public static String getXHRFnCallFor(Form form, String id, int actionIndex, boolean dirtyCheck, boolean pushState, boolean submit, boolean busyCheck,
+			NameValuePair... pairs) {
 		try(StringOutput sb = new StringOutput(128)) {
 			sb.append("o_ffXHREvent('")
 			  .append(form.getFormName()).append("','")
@@ -201,7 +219,8 @@ public class FormJSHelper {
 			  .append(FormEvent.ON_DOTDOTDOT[actionIndex])
 			  .append("',").append(dirtyCheck)
 			  .append(",").append(pushState)
-			  .append(",").append(submit);
+			  .append(",").append(submit)
+			  .append(",").append(busyCheck);
 	
 			if(pairs != null && pairs.length > 0) {
 				for(NameValuePair pair:pairs) {
@@ -361,7 +380,8 @@ public class FormJSHelper {
 		  // push a message to the UI before the clicked element, the element is moved and the click miss
 		  // it.
 		  .append("   setTimeout(function() {\n")
-		  .append(getJSFnCallFor(form, formDispatchId, 5, false, null))
+		  .append("    console.log('Send validation');\n")
+		  .append(getXHRFnCallFor(form, formDispatchId, 5, false, false, true, false))
 		  .append("   },100);\n")
 		  .append("}\n");
 		

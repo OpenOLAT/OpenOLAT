@@ -286,16 +286,15 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		
 		if(config.isSendOnBlur()) {
 			sb.append("      ed.on('blur', function(e) {\n")
-			  .append("        if(jQuery('#mathlive').length == 0) {")// MathLive plug-in takes the focus and blur Tiny
-			  .append("          o_afterserver();\n")// The XHR event is blocked on mobile device by the busy flag
-			  .append("          o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false, false, 'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
-	          .append("        }\n")
+			  .append("        if(jQuery('#mathlive').length == 0) {\n")// MathLive plug-in takes the focus and blur Tiny
+			  .append("          o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(teC.getFormDispatchId()).append("','").append(form.getEventFieldId()).append("', 2, false, false, false, false, 'cmd','saveinlinedtiny','").append(domID).append("',ed.getContent());\n")
+			  .append("        }\n")
 			  .append("      });\n");
 		}
 		if(te.getRootForm().isInlineValidationOn() || te.isInlineValidationOn()) {
 			sb.append("      ed.on('focusout', function(e) {\n")
 			  .append("       setTimeout(function() {\n")
-			  .append(FormJSHelper.getJSFnCallFor(form, te.getFormDispatchId(), 5, false, null))
+			  .append(FormJSHelper.getXHRFnCallFor(form, te.getFormDispatchId(), 5, false, false, true, false))
 			  .append("      },100); });\n");
 		}
 

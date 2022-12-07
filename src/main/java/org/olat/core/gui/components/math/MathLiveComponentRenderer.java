@@ -76,7 +76,7 @@ public class MathLiveComponentRenderer extends DefaultComponentRenderer {
 		  .append(" });\n");
 		if(element.isSendOnBlur()) {
 			sb.append(" jQuery('#o_mlive_").append(dispatchId).append("').on('blur', function(e) {\n")
-			  .append("  o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(formDispatchId).append("','").append(form.getEventFieldId()).append("', 2, false, false, true,'cmd','saveinlinedmathlive');\n")
+			  .append("  o_ffXHREvent('").append(form.getFormName()).append("','").append(form.getDispatchFieldId()).append("','").append(formDispatchId).append("','").append(form.getEventFieldId()).append("', 2, false, false, true, false,'cmd','saveinlinedmathlive');\n")
 			  .append(" });\n");
 		}
 		sb.append("});\n")

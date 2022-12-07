@@ -13,7 +13,7 @@ var BTinyHelper = {
 		if(callback != null) {
 			BTinyHelper.currentCallback = callback;
 			var ffxhrevent = tinymce.activeEditor.settings.ffxhrevent;
-			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, 'browser', meta.filetype);
+			o_ffXHREvent(ffxhrevent.formNam, ffxhrevent.dispIdField, ffxhrevent.dispId, ffxhrevent.eventIdField, '2', false, false, true, true, 'browser', meta.filetype);
 		}
 	},
 

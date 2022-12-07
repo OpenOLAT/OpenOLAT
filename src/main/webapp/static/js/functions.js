@@ -1630,7 +1630,7 @@ function o_showFormDirtyDialog(onIgnoreCallback) {
 	return false;
 }
 
-function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit) {
+function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirtyCheck, push, submit, busyCheck) {
 	if(dirtyCheck && isFlexiFormDirty()) {
 		// Copy function arguments and set the dirtyCheck to false for execution in callback.
 		// Note that the argument list is dynamic, there are potentially more arguments than
@@ -1642,11 +1642,12 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 			o_ffXHREvent.apply(window, callbackArguments);
 		}
 		return o_showFormDirtyDialog(onIgnoreCallback);
-	} else {
+	} else if(busyCheck && !o2cl_noDirtyCheck()) {
 		// Start event execution, start server to prevent concurrent executions of other events.
 		// This check will call o_beforeserver(). 
 		// o_afterserver() called when AJAX call terminates
-		if(!o2cl_noDirtyCheck()) return false;
+		console.log('Event vetoed');
+		return false;
 	}	
 	// Don't call o_beforeserver() here because already called in o2cl_noDirtyCheck()
 	// The window.suppressOlatOnUnloadOnce works only once (needed in SCORM).
@@ -1671,9 +1672,9 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 	var openInNewWindowTarget = "_blank";
 	data['dispatchuri'] = dispId;
 	data['dispatchevent'] = eventInt;
-	if(arguments.length > 8) {
+	if(arguments.length > 9) {
 		var argLength = arguments.length;
-		for(var j=8; j<argLength; j=j+2) {
+		for(var j=9; j<argLength; j=j+2) {
 			if(argLength > j+1) {
 				data[arguments[j]] = arguments[j+1];
 				if(arguments[j] == "oo-opennewwindow-oo") {
