@@ -1130,7 +1130,8 @@ public class CourseTest extends Deployments {
 			.assertOnInfos();
 		settings
 			.metadata()
-			.setLicense();
+			.setLicense()
+			.save();
 		settings
 			.execution()
 			.setLifecycle(validFrom, validTo, Locale.GERMAN)

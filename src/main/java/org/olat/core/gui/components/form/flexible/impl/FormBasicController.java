@@ -449,15 +449,14 @@ public abstract class FormBasicController extends BasicController {
 	 */
 	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		// check for InlineElments remove as the tag library has been replaced
-		if(fiSrc instanceof FormLink) {
-			FormLink link = (FormLink)fiSrc;
+		if(fiSrc instanceof FormLink link) {
 			if(!link.isPopup() && !link.isNewWindow()) {
 				applyDirtinessToContainer(fiSrc, event);
 			}
-		} else if(fiSrc instanceof InlineElement) {
+		} else if(fiSrc instanceof InlineElement inlineElement) {
 			if(fiSrc instanceof RichTextElement) {
 				// ignore
-			} else if(!((InlineElement) fiSrc).isInlineEditingElement()
+			} else if(!inlineElement.isInlineEditingElement()
 					&& !flc.getRootForm().isInlineValidationOn()
 					&& !fiSrc.isInlineValidationOn()) {
 				//the container need to be redrawn because every form item element
@@ -468,13 +467,17 @@ public abstract class FormBasicController extends BasicController {
 		}
 	}
 	
-	private void applyDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+	private void applyDirtinessToContainer(FormItem source, FormEvent event) {
 		flc.setDirty(true);
 		// Trigger re-focusing of current focused element
 		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), null);						
 		getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 
-		if((fiSrc instanceof MultipleSelectionElement || fiSrc instanceof SingleSelection)
+		markDirtinessToContainer(source, event);
+	}
+	
+	protected void markDirtinessToContainer(FormItem source, FormEvent event) {
+		if((source instanceof MultipleSelectionElement || source instanceof SingleSelection)
 				&& (event.wasTriggerdBy(FormEvent.ONCLICK) || event.wasTriggerdBy(FormEvent.ONCHANGE))
 				&& flc.getRootForm().hasExplicitSubmit()) {
 			markDirty();

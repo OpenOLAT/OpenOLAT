@@ -308,6 +308,13 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
         super.formInnerEvent(ureq, source, event);
     }
+    
+    @Override
+	protected void markDirtinessToContainer(FormItem source, FormEvent event) {
+		if(source != enabledEl) {
+			super.markDirtinessToContainer(source, event);
+		}
+	}
 
     @Override
     protected void event(UserRequest ureq, Controller source, Event event) {
@@ -417,6 +424,8 @@ public class ContactTracingConfigurationController extends FormBasicController {
 
         loadData();
     }
+    
+    
 
     private void cleanUp() {
         if (cmc != null && cmc.isCloseable()) {
