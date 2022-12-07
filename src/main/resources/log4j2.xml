@@ -51,6 +51,9 @@
 		<Logger name="org.apache.activemq.audit" additivity="false" level="warn">
 			<AppenderRef ref="Console" />
 		</Logger>
+		<Logger name="org.springframework.core.LocalVariableTableParameterNameDiscoverer" additivity="false" level="error">
+			<AppenderRef ref="Console" />
+		</Logger>
 		<Logger name="org.olat.search" additivity="false" level="info">
             <AppenderRef ref="Console" />
         </Logger>

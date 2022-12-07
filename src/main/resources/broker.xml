@@ -7,6 +7,9 @@
 		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
 		<graceful-shutdown-timeout>2000</graceful-shutdown-timeout>
 		
+		<journal-type>NIO</journal-type>
+		<message-expiry-scan-period>-1</message-expiry-scan-period>
+		
 		<acceptors>
 			<acceptor name="in-vm">vm://0</acceptor>
 		</acceptors>
