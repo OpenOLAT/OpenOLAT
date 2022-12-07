@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -66,6 +67,8 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 	private DB dbInstance;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public DeleteTaxonomyLevelController(UserRequest ureq, WindowControl wControl,
 			List<TaxonomyLevel> levels, Taxonomy taxonomy) {
@@ -99,7 +102,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		boolean canDelete = true;
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String text = translate("confirmation.delete.level", new String[] { sb.toString() });
+			String text = translate("confirmation.delete.level", sb.toString());
 			layoutCont.contextPut("msg", text);
 			layoutCont.contextPut("msgForList", translate("error.delete.num"));
 			canDelete &= buildDangerMessage(layoutCont);
@@ -158,7 +161,7 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 			childrenToDelete.addAll(treeModel.getDescendants(node));
 		}
 		if(!childrenToDelete.isEmpty()) {
-			messages.add(translate("error.delete.num.child.levels", new String[]{ Integer.toString(childrenToDelete.size()) }));
+			messages.add(translate("error.delete.num.child.levels", Integer.toString(childrenToDelete.size())));
 		}
 		
 		List<TaxonomyLevelRef> refs = new ArrayList<>(levels);
@@ -169,18 +172,23 @@ public class DeleteTaxonomyLevelController extends FormBasicController {
 		// questions / relations / references
 		int relations = taxonomyService.countRelations(refs);
 		if(relations > 0) {
-			messages.add(translate("error.delete.num.relations", new String[]{ Integer.toString(relations) }));
+			messages.add(translate("error.delete.num.relations", Integer.toString(relations)));
 		}
 		
 		int surveys = taxonomyService.countQualityManagementsRelations(refs);
 		if(surveys > 0) {
-			messages.add(translate("error.delete.num.surveys", new String[]{ Integer.toString(surveys) }));
+			messages.add(translate("error.delete.num.surveys", Integer.toString(surveys)));
 		}
 		
 		// competences
 		int competences = taxonomyService.countTaxonomyCompetences(refs);
 		if(competences > 0) {
-			messages.add(translate("error.delete.num.competences", new String[]{ Integer.toString(competences) }));
+			messages.add(translate("error.delete.num.competences", Integer.toString(competences)));
+		}
+		
+		long curriculum = curriculumService.countCurriculumElements(refs);
+		if(curriculum > 0l) {
+			messages.add(translate("error.delete.num.curriculum", Long.toString(curriculum)));
 		}
 
 		layoutCont.contextPut("messages", messages);

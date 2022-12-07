@@ -134,5 +134,53 @@ public class CurriculumElementToTaxonomyLevelDAOTest extends OlatTestCase {
 		Assert.assertEquals(element, loadedElements.get(0));
 	}
 	
+	@Test
+	public void deleteTaxonomyLevelRelation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-5", "Curriculum for relation to taxonomy", "Curriculum", false, null);
+		CurriculumElement element = curriculumElementDao.createCurriculumElement("Element-5", "5. Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-305", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My taxonomy level n.5", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element, level);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumElementToTaxonomyLevelDao.deleteRelation(level);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElement> elements = curriculumElementToTaxonomyLevelDao.getCurriculumElements(level);
+		Assert.assertNotNull(elements);
+		Assert.assertTrue(elements.isEmpty());
+	}
+	
+	@Test
+	public void replaceTaxonomyLevelRelation() {
+		Curriculum curriculum = curriculumDao.createAndPersist("Cur-for-rela-6", "Curriculum for relation to taxonomy", "Curriculum", false, null);
+		CurriculumElement element1 = curriculumElementDao.createCurriculumElement("Element-6.1", "6.1 Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+		CurriculumElement element2 = curriculumElementDao.createCurriculumElement("Element-6.2", "6.2 Element",
+				CurriculumElementStatus.active, new Date(), new Date(), null, null, CurriculumCalendars.disabled,
+				CurriculumLectures.disabled, CurriculumLearningProgress.disabled, curriculum);
+
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-306", "Leveled taxonomy", null, null);
+		TaxonomyLevel level1 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-6", random(), "My taxonomy level n.6", "A basic level", null, null, null, null, taxonomy);
+		TaxonomyLevel level2 = taxonomyLevelDao.createTaxonomyLevel("ID-Level-6", random(), "My taxonomy level n.6", "A basic level", null, null, null, null, taxonomy);
+		curriculumElementToTaxonomyLevelDao.createRelation(element1, level1);
+		curriculumElementToTaxonomyLevelDao.createRelation(element2, level2);
+		dbInstance.commitAndCloseSession();
+		
+		curriculumElementToTaxonomyLevelDao.replace(level1, level2);
+		dbInstance.commitAndCloseSession();
+		
+		List<CurriculumElement> replacedElements = curriculumElementToTaxonomyLevelDao.getCurriculumElements(level1);
+		Assert.assertNotNull(replacedElements);
+		Assert.assertTrue(replacedElements.isEmpty());
+		
+		List<CurriculumElement> elements = curriculumElementToTaxonomyLevelDao.getCurriculumElements(level2);
+		Assert.assertNotNull(elements);
+		Assert.assertEquals(2, elements.size());
+	}
 
 }
