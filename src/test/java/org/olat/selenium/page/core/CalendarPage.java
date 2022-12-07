@@ -161,10 +161,15 @@ public class CalendarPage {
 		return this;
 	}
 	
-	public CalendarPage save() {
+	public CalendarPage save(boolean closeModal) {
 		By saveBy = By.cssSelector("fieldset.o_sel_cal_entry_form button.btn.btn-primary span");
-		OOGraphene.waitElement(saveBy, 5, browser);
-		OOGraphene.clickAndWait(saveBy, browser);
+		OOGraphene.waitElement(saveBy, browser);
+		OOGraphene.click(saveBy, browser);
+		if(closeModal) {
+			OOGraphene.waitModalDialogDisappears(browser);
+		} else {
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

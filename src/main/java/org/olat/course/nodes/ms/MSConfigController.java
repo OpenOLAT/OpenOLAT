@@ -232,6 +232,7 @@ public class MSConfigController extends FormBasicController {
 			gradeSpacer = uifactory.addSpacerElement("spacer0", formLayout, false);
 			
 			gradeEnabledEl = uifactory.addCheckboxesHorizontal("node.grade.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
+			gradeEnabledEl.setElementCssClass("o_sel_course_ms_grade");
 			gradeEnabledEl.addActionListener(FormEvent.ONCLICK);
 			boolean gradeEnabled = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 			gradeEnabledEl.select(gradeEnabledEl.getKey(0), gradeEnabled);
@@ -240,6 +241,7 @@ public class MSConfigController extends FormBasicController {
 			autoSV.add(new SelectionValue(Boolean.FALSE.toString(), translate("node.grade.auto.manually"), translate("node.grade.auto.manually.desc"), null, null, true));
 			autoSV.add(new SelectionValue(Boolean.TRUE.toString(), translate("node.grade.auto.auto"), translate("node.grade.auto.auto.desc"), null, null, true));
 			gradeAutoEl = uifactory.addCardSingleSelectHorizontal("node.grade.auto", formLayout, autoSV.keys(), autoSV.values(), autoSV.descriptions(), autoSV.icons());
+			gradeAutoEl.setElementCssClass("o_sel_course_ms_grade_mode");
 			gradeAutoEl.select(Boolean.valueOf(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_AUTO)).toString(), true);
 			
 			gradeScale = gradeService.getGradeScale(ores, nodeIdent);
@@ -249,6 +251,7 @@ public class MSConfigController extends FormBasicController {
 			gradeScaleButtonsCont.setRootForm(mainForm);
 			formLayout.add(gradeScaleButtonsCont);
 			gradeScaleEditLink = uifactory.addFormLink("grade.scale.edit", gradeScaleButtonsCont, "btn btn-default");
+			gradeScaleEditLink.setElementCssClass("o_sel_grade_edit_scale");
 			
 			gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", formLayout);
 		}

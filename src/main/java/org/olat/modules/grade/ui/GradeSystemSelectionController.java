@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -54,9 +53,9 @@ public class GradeSystemSelectionController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormInfo("grade.system.selection.info");
+		formLayout.setElementCssClass("o_sel_grade_select_system");
 		
 		gradeSystemEl = uifactory.addDropdownSingleselect("grade.system", formLayout, gradeSystemSV.keys(), gradeSystemSV.values());
-		gradeSystemEl.addActionListener(FormEvent.ONCHANGE);
 		if (gradeSystem != null && gradeSystemEl.containsKey(gradeSystem.getKey().toString())) {
 			gradeSystemEl.select(gradeSystem.getKey().toString(), true);
 		} else if (gradeSystemEl.getKeys().length > 0) {

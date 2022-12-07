@@ -150,6 +150,13 @@ public class AssessmentToolPage {
 		return this;
 	}
 	
+
+	public AssessmentToolPage assertUserSwissGradeCourseNode(String nodeTitle, String grade) {
+		By gradeBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/span/span[@class='o_grs_oo_grades_ch'][text()[contains(.,'" + grade + "')]]");
+		OOGraphene.waitElement(gradeBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Set the score in the assessment form
 	 * @param score
@@ -157,6 +164,14 @@ public class AssessmentToolPage {
 	 */
 	public AssessmentToolPage setAssessmentScore(float score) {
 		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
+		browser.findElement(scoreBy).clear();
+		browser.findElement(scoreBy).sendKeys(Float.toString(score));
+		return this;
+	}
+	
+	public AssessmentToolPage updateAssessmentScore(float score) {
+		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
+		browser.findElement(scoreBy).clear();
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		return this;
 	}

@@ -42,6 +42,7 @@ import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentModePage;
+import org.olat.selenium.page.course.AssessmentPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.BulkAssessmentPage.BulkAssessmentData;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
@@ -764,7 +765,8 @@ public class AssessmentTest extends Deployments {
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
 			.selectConfigurationWithRubric()
-			.setRubricScore(0.1f, 10.0f, 5.0f);
+			.setScore(0.1f, 10.0f, 5.0f)
+			.save();
 		//set the score / passed calculation in root node and publish
 		CourseSettingsPage courseSettings = courseEditor
 			.selectRoot()
@@ -822,6 +824,116 @@ public class AssessmentTest extends Deployments {
 			.selectStatement(courseTitle)
 			.selectStatementSegment()
 			.assertOnCourseDetails(assessmentNodeTitle, true);
+	}
+	
+
+	/**
+	 * An author makes a course with an assessment course element. It
+	 * selects the swiss grade system. It assess a student and gives a score,
+	 * modify again the score. The student login and checks her grade.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void assessmentCourseElementWithGrades()
+	throws IOException, URISyntaxException {
+	
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//create a course
+		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+
+		//create a course element of type Test with the test that we create above
+		String assessmentNodeTitle = "Assessment CE";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit()
+			.createNode("ms")
+			.nodeTitle(assessmentNodeTitle);
+		
+		//configure assessment
+		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
+		assessmentConfig
+			.selectConfigurationWithRubric()
+			.setScore(0.0f, 10.0f, 5.0f)
+			.enableGrade(true)
+			.save()
+			.editGradingScale()
+			.selectSwissGradeSystem()
+			.assertOnSwissNumericalGradeScale()
+			.saveConfiguration();
+		assessmentConfig
+			.save();
+		
+		courseEditor
+			.autoPublish()
+			.publish()
+			.settings()
+			.accessConfiguration()
+			.setAccessToRegisteredUser()
+			.save();
+		
+		//go to members management
+		CoursePageFragment courseRuntime = courseEditor.clickToolbarBack();
+		MembersPage members = courseRuntime
+			.members();
+		members
+			.addMember()
+			.searchMember(student, true)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//efficiency statement is default on
+		//go to the assessment to to set the points
+		members
+			.clickToolbarBack()
+			.assessmentTool()
+			.users()
+			.assertOnUsers(student)
+			.selectUser(student)
+			.selectUsersCourseNode(assessmentNodeTitle)
+			.setAssessmentScore(8.0f)
+			.closeAndPublishAssessment()
+			.assertUserSwissGradeCourseNode(assessmentNodeTitle, "5")
+			.assertUserPassedCourseNode(assessmentNodeTitle)
+			.selectUsersCourseNode(assessmentNodeTitle)
+			.reopenAssessment()
+			.updateAssessmentScore(10.0f)
+			.closeAndPublishAssessment()
+			.assertUserSwissGradeCourseNode(assessmentNodeTitle, "6")
+			.assertUserPassedCourseNode(assessmentNodeTitle);
+		
+		// Student login
+		LoginPage studentLoginPage = LoginPage.load(browser, deploymentUrl);
+		studentLoginPage
+			.loginAs(student.getLogin(), student.getPassword())
+			.resume();
+		
+		NavigationPage studentNavBar = NavigationPage.load(browser);
+		studentNavBar
+			.openMyCourses()
+			.select(courseTitle);
+
+		// Go to the course element and check the 
+		CoursePageFragment studentCourse = new CoursePageFragment(browser);
+		studentCourse
+			.tree()
+			.assertWithTitleSelected(assessmentNodeTitle);
+		
+		new AssessmentPage(browser)
+			.assertOnPassed()
+			.assertOnSwissGrade("6");
 	}
 
 	/**
@@ -1553,7 +1665,8 @@ public class AssessmentTest extends Deployments {
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
 			.selectConfigurationWithRubric()
-			.setRubricScore(0.1f, 10.0f, 5.0f);
+			.setScore(0.1f, 10.0f, 5.0f)
+			.save();
 		//set the score / passed calculation in root node and publish
 		courseEditor
 			.selectRoot()
