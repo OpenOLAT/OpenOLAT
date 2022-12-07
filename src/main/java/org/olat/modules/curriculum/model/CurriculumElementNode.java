@@ -53,5 +53,7 @@ public class CurriculumElementNode {
 	public void addChild(CurriculumElementNode node) {
 		children.add(node);
 	}
+	
+	
 
 }

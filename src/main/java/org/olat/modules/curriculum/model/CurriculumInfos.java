@@ -56,8 +56,7 @@ public class CurriculumInfos {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CurriculumInfos) {
-			CurriculumInfos infos = (CurriculumInfos)obj;
+		if(obj instanceof CurriculumInfos infos) {
 			return curriculum.equals(infos.curriculum);
 		}
 		return false;

@@ -396,6 +396,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void doDeleteCurriculum(UserRequest ureq, CurriculumRow row) {
 		removeAsListenerAndDispose(deleteCurriculumCtrl);
+		removeAsListenerAndDispose(cmc);
 		
 		Curriculum curriculum = curriculumService.getCurriculum(row);
 		if(curriculum == null) {

@@ -232,12 +232,12 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 
 		organisationEl.clearError();
 		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory", null);
+			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
-			displaynameEl.setErrorKey("form.legende.mandatory", null);
+			displaynameEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else if (displaynameEl.hasError()) {
 			allOk = false;
@@ -261,11 +261,11 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		urlEl.clearError();
 		selectType.clearError();
 		if(handlers == null || handlers.isEmpty()) {
-			urlEl.setErrorKey("add.failed", null);
+			urlEl.setErrorKey("add.failed");
 			allOk &= false;
 		} else if(handlers.size() > 1) {
 			if(!selectType.isOneSelected()) {
-				selectType.setErrorKey("form.legende.mandatory", null);
+				selectType.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

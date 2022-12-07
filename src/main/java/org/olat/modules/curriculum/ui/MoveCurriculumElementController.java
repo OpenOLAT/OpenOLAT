@@ -139,8 +139,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 		
 		boolean ok = false;
 		Object uobject = node.getUserObject();
-		if(uobject instanceof CurriculumElement) {
-			CurriculumElement level = (CurriculumElement)uobject;
+		if(uobject instanceof CurriculumElement level) {
 			CurriculumElementType type = level.getType();
 			if(type == null || allowedTypes.contains(type)) {
 				openedNodes.add(node);
@@ -207,16 +206,16 @@ public class MoveCurriculumElementController extends FormBasicController {
 		
 		curriculumTreeEl.clearError();
 		if(curriculumTreeEl.getSelectedNode() == null) {
-			curriculumTreeEl.setErrorKey("error.select.target.level", null);
+			curriculumTreeEl.setErrorKey("error.select.target.level");
 			allOk &= false;
 		} else if(isParent()) {
-			curriculumTreeEl.setErrorKey("error.target.no.parent", null);
+			curriculumTreeEl.setErrorKey("error.target.no.parent");
 			allOk &= false;
 		} else if(!targetableNodes.contains(curriculumTreeEl.getSelectedNode())) {
-			curriculumTreeEl.setErrorKey("error.target.not.allowed", null);
+			curriculumTreeEl.setErrorKey("error.target.not.allowed");
 			allOk &= false;
 		} else if(curriculumTreeEl.getInsertionPosition() == null) {
-			curriculumTreeEl.setErrorKey("error.target.no.insertion.point", null);
+			curriculumTreeEl.setErrorKey("error.target.no.insertion.point");
 			allOk &= false;
 		}
 

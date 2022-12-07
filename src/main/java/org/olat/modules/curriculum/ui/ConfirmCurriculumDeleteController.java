@@ -61,13 +61,13 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String[] args = new String[] {
 				StringHelper.escapeHtml(rowToDelete.getDisplayName()),
 				Long.toString(rowToDelete.getNumOfElements())
 			};
 			String msg = translate("confirmation.delete.curriculum", args);
-			((FormLayoutContainer)formLayout).contextPut("msg", msg);
+			layoutCont.contextPut("msg", msg);
 		}
 		
 		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
@@ -92,7 +92,7 @@ public class ConfirmCurriculumDeleteController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("form.legende.mandatory", null);
+			acknowledgeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

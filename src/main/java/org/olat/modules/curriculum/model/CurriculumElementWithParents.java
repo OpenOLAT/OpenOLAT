@@ -47,6 +47,7 @@ public class CurriculumElementWithParents implements CurriculumElementRef, Compa
 		this.order = order;
 		
 		parentLine = this.parents.stream()
+				.filter(parent -> !curriculumElement.equals(parent))
 				.map(CurriculumElement::getDisplayName)
 				.collect(Collectors.joining(" / "));
 	}

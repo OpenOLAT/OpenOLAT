@@ -22,6 +22,7 @@ package org.olat.modules.curriculum.ui;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -57,6 +58,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.grading.ui.component.RepositoryEntryComparator;
 import org.olat.repository.RepositoryEntry;
@@ -77,7 +79,7 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 	private FormLink downloadLink;
 	private FormLink additionalReferencesLink;
 	
-	private final int numOfChildren;
+	private final long numOfChildren;
 	private final CurriculumElementRow rowToDelete;
 	private final List<RepositoryEntry> references;
 	
@@ -91,18 +93,20 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 		super(ureq, wControl, "confirm_delete_curriculum_element", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.rowToDelete = rowToDelete;
 		
-		List<CurriculumElement> children = curriculumService.getCurriculumElements(rowToDelete);
-		numOfChildren = children.size();
-		references = curriculumService.getRepositoryEntries(rowToDelete);
+		CurriculumElement curElement = rowToDelete.getCurriculumElement();
+		List<CurriculumElement> descendants = curriculumService.getCurriculumElementsDescendants(curElement);
 		
+		numOfChildren = descendants.stream()
+				.filter(element -> element.getElementStatus() != CurriculumElementStatus.deleted)
+				.filter(element -> !element.equals(curElement))
+				.count();
+		references = new ArrayList<>(new HashSet<>(curriculumService.getRepositoryEntriesWithDescendants(curElement)));
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			String msgI18nKey;
 			if(numOfChildren == 0) {
 				msgI18nKey = "confirmation.delete.element";
@@ -111,7 +115,7 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 			} else {
 				msgI18nKey = "confirmation.delete.element.children";
 			}
-			String msg = translate(msgI18nKey, rowToDelete.getDisplayName(), Integer.toString(numOfChildren));
+			String msg = translate(msgI18nKey, rowToDelete.getDisplayName(), Long.toString(numOfChildren));
 			layoutCont.contextPut("msg", StringHelper.xssScan(msg));
 			
 			List<String> resources = new ArrayList<>(6);

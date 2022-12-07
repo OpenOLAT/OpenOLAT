@@ -113,7 +113,7 @@ public class ConfirmCloseController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("details.read.only.acknowledge.error", null);
+			acknowledgeEl.setErrorKey("details.read.only.acknowledge.error");
 			allOk &= false;
 		}
 

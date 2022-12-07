@@ -999,8 +999,7 @@ public class CurriculumElementDAO {
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof IdentityToElementKey) {
-				IdentityToElementKey el = (IdentityToElementKey)obj;
+			if(obj instanceof IdentityToElementKey el) {
 				return identityKey.equals(el.identityKey) && curriculumElementKey.equals(el.curriculumElementKey);
 			}
 			return false;

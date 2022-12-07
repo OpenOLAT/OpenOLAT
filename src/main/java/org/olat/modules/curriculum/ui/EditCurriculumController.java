@@ -196,10 +196,10 @@ public class EditCurriculumController extends FormBasicController {
 		el.clearError();
 		String val = el.getValue();
 		if(!StringHelper.containsNonWhitespace(val) && mandatory) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
-			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+			el.setErrorKey("input.toolong", Integer.toString(maxLength));
 			allOk &= false;
 		}
 		

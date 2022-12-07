@@ -161,19 +161,19 @@ public class SendMailController extends FormBasicController {
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
-			subjectEl.setErrorKey("form.legende.mandatory", null);
+			subjectEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		bodyEl.clearError();
 		if(!StringHelper.containsNonWhitespace(bodyEl.getValue())) {
-			bodyEl.setErrorKey("form.legende.mandatory", null);
+			bodyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		contactEl.clearError();
 		if(contactEl.getSelectedKeys().isEmpty()) {
-			contactEl.setErrorKey("form.legende.mandatory", null);
+			contactEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

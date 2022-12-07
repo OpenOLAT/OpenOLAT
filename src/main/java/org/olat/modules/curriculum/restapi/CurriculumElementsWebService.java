@@ -387,7 +387,7 @@ public class CurriculumElementsWebService {
 		if(!curriculumElement.getCurriculum().getKey().equals(curriculum.getKey())) {
 			return Response.serverError().status(Status.FORBIDDEN).build();
 		}
-		List<CurriculumElement> entries = curriculumService.getCurriculumElements(curriculumElement);
+		List<CurriculumElement> entries = curriculumService.getCurriculumElementsChildren(curriculumElement);
 		CurriculumElementVO[] entriesVoes = new CurriculumElementVO[entries.size()];
 		for(int i=entries.size(); i-->0; ) {
 			entriesVoes[i] = CurriculumElementVO.valueOf(entries.get(i));

@@ -402,7 +402,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		
-		List<CurriculumElement> childrenToClone = getCurriculumElements(elementToClone);
+		List<CurriculumElement> childrenToClone = getCurriculumElementsChildren(elementToClone);
 		for(CurriculumElement childToClone:childrenToClone) {
 			cloneCurriculumElementRec(curriculum, clone, childToClone, settings, identity, depth);
 		}
@@ -595,8 +595,13 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement) {
+	public List<CurriculumElement> getCurriculumElementsChildren(CurriculumElementRef parentElement) {
 		return curriculumElementDao.getChildren(parentElement);
+	}
+
+	@Override
+	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement) {
+		return curriculumElementDao.getDescendants(parentElement);
 	}
 
 	@Override

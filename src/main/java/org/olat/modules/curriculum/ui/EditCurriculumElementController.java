@@ -345,7 +345,7 @@ public class EditCurriculumElementController extends FormBasicController {
 
 			String[] onValues = new String[] {
 					translate("type.calendars.enabled.enabled"), translate("type.calendars.enabled.disabled"),
-					translate("type.calendars.enabled.inherited", new String[] { typeVal })
+					translate("type.calendars.enabled.inherited", typeVal)
 			};
 			calendarsEnabledEl.setKeysAndValues(calendarsTypedKeys, onValues, null);
 			calendarsEnabledEl.select(preferedEnabled.name(), true);
@@ -455,37 +455,37 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		identifierEl.clearError();
 		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
+			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		calendarsEnabledEl.clearError();
 		if(!calendarsEnabledEl.isOneSelected()) {
-			calendarsEnabledEl.setErrorKey("form.legende.mandatory", null);
+			calendarsEnabledEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		lecturesEnabledEl.clearError();
 		if(!lecturesEnabledEl.isOneSelected()) {
-			lecturesEnabledEl.setErrorKey("form.legende.mandatory", null);
+			lecturesEnabledEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		learningProgressEnabledEl.clearError();
 		if(!learningProgressEnabledEl.isOneSelected()) {
-			learningProgressEnabledEl.setErrorKey("form.legende.mandatory", null);
+			learningProgressEnabledEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		statusEl.clearError();
 		if(!statusEl.isOneSelected()) {
-			statusEl.setErrorKey("form.legende.mandatory", null);
+			statusEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

@@ -289,7 +289,10 @@ public interface CurriculumService {
 	 * @param parentElement The parent element
 	 * @return A list of curriculum elements
 	 */
-	public List<CurriculumElement> getCurriculumElements(CurriculumElementRef parentElement);
+	public List<CurriculumElement> getCurriculumElementsChildren(CurriculumElementRef parentElement);
+	
+
+	public List<CurriculumElement> getCurriculumElementsDescendants(CurriculumElement parentElement);
 	
 	/**
 	 * Returns the number of curriculum elements linked to the entry;

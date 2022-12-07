@@ -448,14 +448,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
 			if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
-				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
 		
 		accessEl.clearError();
 		if(!accessEl.isOneSelected()) {
-			accessEl.setErrorKey("form.legende.mandatory", null);
+			accessEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
