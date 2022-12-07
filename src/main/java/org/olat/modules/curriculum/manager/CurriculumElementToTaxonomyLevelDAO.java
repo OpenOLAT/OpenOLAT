@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -76,6 +77,24 @@ public class CurriculumElementToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
+	public long countCurriculumElements(List<? extends TaxonomyLevelRef> levels) {
+		if(levels == null || levels.isEmpty()) return 0;
+		
+		List<Long> levelKeys = levels.stream()
+				.map(TaxonomyLevelRef::getKey)
+				.collect(Collectors.toList());
+		
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select count(rel.curriculumElement.key) from curriculumelementtotaxonomylevel rel")
+		  .append(" where rel.taxonomyLevel.key in (:levelKeys)");
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("levelKeys", levelKeys)
+				.getResultList();
+		return count != null && !count.isEmpty() && count.get(0) != null ? count.get(0).longValue() : 0l;
+	}
+	
 	public List<CurriculumElementToTaxonomyLevel> getRelations(CurriculumElementRef curriculumElement) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select rel from curriculumelementtotaxonomylevel rel")
@@ -84,6 +103,15 @@ public class CurriculumElementToTaxonomyLevelDAO {
 				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)
 				.setParameter("elementKey", curriculumElement.getKey())
 				.getResultList();
+	}
+	
+	public int replace(TaxonomyLevel source, TaxonomyLevel target) {
+		String q = "update curriculumelementtotaxonomylevel rel set rel.taxonomyLevel.key=:targetLevelKey where rel.taxonomyLevel.key=:sourceLevelKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("sourceLevelKey", source.getKey())
+				.setParameter("targetLevelKey", target.getKey())
+				.executeUpdate();
 	}
 	
 	public void removeRelation(CurriculumElementToTaxonomyLevel rel) {
@@ -104,6 +132,19 @@ public class CurriculumElementToTaxonomyLevelDAO {
 		List<CurriculumElementToTaxonomyLevel> relationsToDelete = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)
 				.setParameter("elementKey", curriculumElement.getKey())
+				.setParameter("levelKey", taxonomyLevel.getKey())
+				.getResultList();
+		for(CurriculumElementToTaxonomyLevel relationToDelete:relationsToDelete) {
+			dbInstance.getCurrentEntityManager().remove(relationToDelete);
+		}
+	}
+	
+	public void deleteRelation(TaxonomyLevelRef taxonomyLevel) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select rel from curriculumelementtotaxonomylevel rel")
+		  .append(" where rel.taxonomyLevel.key=:levelKey");
+		List<CurriculumElementToTaxonomyLevel> relationsToDelete = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), CurriculumElementToTaxonomyLevel.class)
 				.setParameter("levelKey", taxonomyLevel.getKey())
 				.getResultList();
 		for(CurriculumElementToTaxonomyLevel relationToDelete:relationsToDelete) {

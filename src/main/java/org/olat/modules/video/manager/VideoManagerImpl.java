@@ -275,8 +275,13 @@ public class VideoManagerImpl implements VideoManager {
 		List<VFSItem> trackItems = vfsContainer.getItems(new TrackFilter());
 		for (VFSItem item : trackItems) {
 			String itemname = item.getName();
-			String key = itemname.substring(itemname.indexOf('_') + 1, itemname.indexOf('.'));
-			tracks.put(key, resolveFromMasterContainer(videoResource, itemname));
+			int indexUnderscore = itemname.indexOf('_');
+			int indexPoint = itemname.indexOf('.');
+			// Why -1? because -1 + 1 -> 0 and it's allowed
+			if(indexUnderscore >= -1 && indexPoint > indexUnderscore) {
+				String key = itemname.substring(indexUnderscore + 1, indexPoint);
+				tracks.put(key, resolveFromMasterContainer(videoResource, itemname));
+			}
 		}
 		return tracks;
 	}
@@ -1283,8 +1288,10 @@ public class VideoManagerImpl implements VideoManager {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
 			if(vfsItem instanceof VFSLeaf) {
-				String suffix = FileUtils.getFileSuffix(vfsItem.getName());
-				return VideoManager.FILETYPE_SRT.equals(suffix) || VideoManager.FILETYPE_VTT.equals(suffix);
+				String name = vfsItem.getName();
+				String suffix = FileUtils.getFileSuffix(name);
+				return !name.startsWith(".")
+						&& (VideoManager.FILETYPE_SRT.equals(suffix) || VideoManager.FILETYPE_VTT.equals(suffix));
 			}
 			return false;
 		}

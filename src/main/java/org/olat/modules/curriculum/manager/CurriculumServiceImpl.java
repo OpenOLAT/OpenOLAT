@@ -1003,6 +1003,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level) {
 		return curriculumElementToTaxonomyLevelDao.getCurriculumElements(level);
 	}
+	
+	@Override
+	public long countCurriculumElements(List<? extends TaxonomyLevelRef> taxonomyLevels) {
+		return curriculumElementToTaxonomyLevelDao.countCurriculumElements(taxonomyLevels);
+	}
 
 	@Override
 	public List<CurriculumElementWebDAVInfos> getCurriculumElementInfosForWebDAV(IdentityRef identity) {

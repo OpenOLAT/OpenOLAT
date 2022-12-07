@@ -178,7 +178,7 @@ public class EditCurriculumElementController extends FormBasicController {
 		boolean canEdit = element == null || secCallback.canEditCurriculumElement(element);
 		
 		String identifier = element == null ? "" : element.getIdentifier();
-		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
+		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 64, identifier, formLayout);
 		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
 		identifierEl.setMandatory(true);
 		if(identifierEl.isEnabled() && !StringHelper.containsNonWhitespace(identifier)) {
@@ -457,11 +457,17 @@ public class EditCurriculumElementController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
 			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
+		} else if(displayNameEl.getValue().length() > 255) {
+			displayNameEl.setErrorKey("form.error.toolong", new String[] { "255" });
+			allOk &= false;
 		}
 		
 		identifierEl.clearError();
 		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
 			identifierEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		} else if(identifierEl.getValue().length() > 64) {
+			identifierEl.setErrorKey("form.error.toolong", new String[] { "64" });
 			allOk &= false;
 		}
 		

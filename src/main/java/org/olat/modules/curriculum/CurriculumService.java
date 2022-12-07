@@ -523,6 +523,8 @@ public interface CurriculumService {
 	
 	public List<CurriculumElement> getCurriculumElements(TaxonomyLevelRef level);
 	
+	public long countCurriculumElements(List<? extends TaxonomyLevelRef> taxonomyLevels);
+	
 	public void updateTaxonomyLevels(CurriculumElement element, Collection<TaxonomyLevel> addedLevels, Collection<TaxonomyLevel> removedLevels);
 	
 	/**

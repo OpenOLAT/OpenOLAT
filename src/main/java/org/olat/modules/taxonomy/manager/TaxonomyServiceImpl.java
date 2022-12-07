@@ -39,6 +39,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
 import org.olat.modules.portfolio.manager.PortfolioPageToTaxonomyCompetenceDAO;
 import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
@@ -73,6 +74,10 @@ import org.springframework.stereotype.Service;
 public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	
 	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
@@ -87,13 +92,11 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
 	@Autowired
-	private I18nModule i18nModule;
-	@Autowired
-	private I18nManager i18nManager;
-	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	@Autowired
 	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
+	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
 	@Autowired
 	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
 	
@@ -246,6 +249,8 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 			}
 
 			repositoryEntryToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
+			
+			curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedTaxonomyLevel);
 
 			return taxonomyLevelDao.delete(reloadedTaxonomyLevel);
 		}
@@ -254,20 +259,22 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	}
 
 	private void merge(TaxonomyLevel taxonomyLevel, TaxonomyLevel mergeTo) {
-		//documents
+		// Documents
 		VFSContainer sourceLibrary = taxonomyLevelDao.getDocumentsLibrary(taxonomyLevel);
 		VFSContainer targetLibrary = taxonomyLevelDao.getDocumentsLibrary(mergeTo);
 		VFSManager.copyContent(sourceLibrary, targetLibrary);
 		
-		//children
+		// Children
 		List<TaxonomyLevel> children = taxonomyLevelDao.getChildren(taxonomyLevel);
 		for(TaxonomyLevel child:children) {
 			taxonomyLevelDao.moveTaxonomyLevel(child, mergeTo);
 		}
-		//move the competences
+		// Move the competences
 		taxonomyCompetenceDao.replace(taxonomyLevel, mergeTo);
-		//questions
+		// Questions
 		taxonomyRelationsDao.replaceQuestionItem(taxonomyLevel, mergeTo);
+		// Curriculum elements
+		curriculumElementToTaxonomyLevelDao.replace(taxonomyLevel, mergeTo);
 	}
 
 	@Override
