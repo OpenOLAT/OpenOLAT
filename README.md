@@ -73,8 +73,8 @@ This is an installation guide for developers.
 * Check that you are using maven 3.8 or higher (mvn -V)
 * Check that you have the git plugin installed in eclipse
 * Check that you have git installed
-* Check that you have Java 11 installed
-* Check that you have Tomcat 9.0 installed
+* Check that you have Java 17 installed
+* Check that you have Tomcat 10.0 or 10.1 installed
 
 #### 1. In Eclipse
 
@@ -187,7 +187,7 @@ Note that MySQL is still supported but not recommended and support might
 eventually come to an end. Use Postgres if you can. 
 
 ##### Prerequisites
-* MySQL 5.6 or greater
+* MySQL 8.0 or greater
 
 ##### Database setup
 Create user `openolat` and a database `openolat`
@@ -465,7 +465,7 @@ when the test get slower over time.
 
 #### Execute Selenium functional tests
 
-The Selenium integration tests start the whole web application in Tomcat 9.0. They run with
+The Selenium integration tests start the whole web application in Tomcat 10.1. They run with
 Google Chrome or Firefox and their WebDrivers will be automatically downloaded (internet connection
 needed). The browsers need to be installed the standard way on Mac or Linux.
 

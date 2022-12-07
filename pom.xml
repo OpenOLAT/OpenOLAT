@@ -433,12 +433,8 @@
 							<artifactId>slf4j-log4j12</artifactId>
 						</exclusion>
 						<exclusion>
-							<groupId>javax.activation</groupId>
-							<artifactId>javax.activation-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>javax.xml.bind</groupId>
-							<artifactId>jaxb-api</artifactId>
+							<groupId>com.sun.activation</groupId>
+							<artifactId>jakarta.activation</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -623,12 +619,8 @@
 							<artifactId>slf4j-log4j12</artifactId>
 						</exclusion>
 						<exclusion>
-							<groupId>javax.activation</groupId>
-							<artifactId>javax.activation-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>javax.xml.bind</groupId>
-							<artifactId>jaxb-api</artifactId>
+							<groupId>com.sun.activation</groupId>
+							<artifactId>jakarta.activation</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -763,12 +755,8 @@
 							<artifactId>slf4j-log4j12</artifactId>
 						</exclusion>
 						<exclusion>
-							<groupId>javax.activation</groupId>
-							<artifactId>javax.activation-api</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>javax.xml.bind</groupId>
-							<artifactId>jaxb-api</artifactId>
+							<groupId>com.sun.activation</groupId>
+							<artifactId>jakarta.activation</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -2206,12 +2194,8 @@
 					<artifactId>slf4j-log4j12</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>javax.activation</groupId>
-					<artifactId>javax.activation-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.xml.bind</groupId>
-					<artifactId>jaxb-api</artifactId>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>jakarta.activation</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -2603,6 +2587,12 @@
 			<artifactId>selenium-remote-driver</artifactId>
 			<version>${version.selenium}</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>jakarta.activation</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
