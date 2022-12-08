@@ -36,6 +36,7 @@
   margin-left: -5px; // Offset the first child's margin
   @include clearfix;
 
+  .btn,
   .btn-group,
   .input-group {
     float: left;
@@ -58,7 +59,7 @@
     @include border-right-radius(0);
   }
 }
-// Need .dropdown-toggle since :last-child doesn't apply given a .dropdown-menu immediately after it
+// Need .dropdown-toggle since :last-child doesn't apply, given that a .dropdown-menu is used immediately after it
 .btn-group > .btn:last-child:not(:first-child),
 .btn-group > .dropdown-toggle:not(:first-child) {
   @include border-left-radius(0);
@@ -71,13 +72,13 @@
 .btn-group > .btn-group:not(:first-child):not(:last-child) > .btn {
   border-radius: 0;
 }
-.btn-group > .btn-group:first-child {
+.btn-group > .btn-group:first-child:not(:last-child) {
   > .btn:last-child,
   > .dropdown-toggle {
     @include border-right-radius(0);
   }
 }
-.btn-group > .btn-group:last-child > .btn:first-child {
+.btn-group > .btn-group:last-child:not(:first-child) > .btn:first-child {
   @include border-left-radius(0);
 }
 
@@ -102,18 +103,18 @@
 
 // Give the line between buttons some depth
 .btn-group > .btn + .dropdown-toggle {
-  padding-left: 8px;
   padding-right: 8px;
+  padding-left: 8px;
 }
 .btn-group > .btn-lg + .dropdown-toggle {
-  padding-left: 12px;
   padding-right: 12px;
+  padding-left: 12px;
 }
 
 // The clickable button for toggling the menu
 // Remove the gradient and set the same inset shadow as the :active state
 .btn-group.open .dropdown-toggle {
-  @include box-shadow(inset 0 3px 5px rgba(0,0,0,.125));
+  @include box-shadow(inset 0 3px 5px rgba(0, 0, 0, .125));
 
   // Show no shadow for `.btn-link` since it has no other button styles.
   &.btn-link {
@@ -172,12 +173,12 @@
     border-radius: 0;
   }
   &:first-child:not(:last-child) {
-    border-top-right-radius: $border-radius-base;
+    @include border-top-radius($btn-border-radius-base);
     @include border-bottom-radius(0);
   }
   &:last-child:not(:first-child) {
-    border-bottom-left-radius: $border-radius-base;
     @include border-top-radius(0);
+    @include border-bottom-radius($btn-border-radius-base);
   }
 }
 .btn-group-vertical > .btn-group:not(:first-child):not(:last-child) > .btn {
@@ -204,8 +205,8 @@
   border-collapse: separate;
   > .btn,
   > .btn-group {
-    float: none;
     display: table-cell;
+    float: none;
     width: 1%;
   }
   > .btn-group .btn {
@@ -236,7 +237,7 @@
     input[type="radio"],
     input[type="checkbox"] {
       position: absolute;
-      clip: rect(0,0,0,0);
+      clip: rect(0, 0, 0, 0);
       pointer-events: none;
     }
   }

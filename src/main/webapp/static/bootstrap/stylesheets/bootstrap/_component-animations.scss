@@ -10,6 +10,7 @@
 .fade {
   opacity: 0;
   @include transition(opacity .15s linear);
+
   &.in {
     opacity: 1;
   }
@@ -17,9 +18,8 @@
 
 .collapse {
   display: none;
-  visibility: hidden;
 
-  &.in      { display: block; visibility: visible; }
+  &.in      { display: block; }
   // [converter] extracted tr&.in to tr.collapse.in
   // [converter] extracted tbody&.in to tbody.collapse.in
 }

@@ -1,5 +1,95 @@
 # Changelog
 
+## 3.4.0
+
+* Bootstrap rubygem now depends on SassC instead of Sass.
+* Compass no longer supported.
+
+## 3.3.7
+
+* Allows jQuery 3.x in bower.json. [#1048](https://github.com/twbs/bootstrap-sass/issues/1048)
+* Adds the `style` and `sass` fields to package.json. [#1045](https://github.com/twbs/bootstrap-sass/issues/1045)
+* Adds Eyeglass support. [#1007](https://github.com/twbs/bootstrap-sass/pull/1007)
+
+## 3.3.6
+
+* Bumps Sass dependency to 3.3.4+ to avoid compatibility issues with @at-root.
+* Bumps node-sass dependency to ~3.4.2 for Node.js v5 compatibility. [#986](https://github.com/twbs/bootstrap-sass/issues/986)
+* Fixes breadcrumb content issues on libsass. [#919](https://github.com/twbs/bootstrap-sass/issues/919)
+* Fixes a Rails 5 compatibility issue. [#965](https://github.com/twbs/bootstrap-sass/pull/965)
+
+Framework version: Bootstrap **v3.3.6**
+
+## 3.3.5
+
+Fix for standalone Compass extension compatibility. [#914](https://github.com/twbs/bootstrap-sass/issues/914)
+
+Framework version: Bootstrap **v3.3.5**
+
+## 3.3.4
+
+No Sass-specific changes.
+
+Framework version: Bootstrap **v3.3.4**
+
+## 3.3.3
+
+This is a re-packaged release of 3.3.2.1 (v3.3.2+1).
+
+Versions are now strictly semver.
+The PATCH version may be ahead of the upstream.
+
+Framework version: Bootstrap **v3.3.2**.
+
+## 3.3.2.1
+
+* Fix glyphicons regression (revert 443d5b49eac84aec1cb2f8ea173554327bfc8c14)
+
+## 3.3.2.0
+
+* Autoprefixer is now required, and `autoprefixer-rails` is now a dependency for the ruby gem. [#824](https://github.com/twbs/bootstrap-sass/issues/824)
+* Minimum precision reduced from 10 to 8 [#821](https://github.com/twbs/bootstrap-sass/issues/821)
+* Requiring bootstrap JS from npm now works [#812](https://github.com/twbs/bootstrap-sass/issues/812)
+* Fix Sass 3.4.x + IE10 compatibility issue [#803](https://github.com/twbs/bootstrap-sass/issues/803)
+* Provide minified JS bundle [#777](https://github.com/twbs/bootstrap-sass/issues/777)
+* Bower package is now at bootstrap-sass [#813](https://github.com/twbs/bootstrap-sass/issues/813)
+
+
+## 3.3.1.0
+
+* Variables override template at templates/project/_bootstrap-variables.sass
+* Readme: Bower + Rails configuration
+
+## 3.3.0.1
+
+* Fix loading issue with the ruby gem version
+
+## 3.3.0
+
+* Improve libsass compatibility
+* Support using Bower package with Rails
+
+## 3.2.0.2
+
+Main bootstrap file is now a partial (_bootstrap.scss), for compatibility with Compass 1+.
+
+Fixed a number of bugs. [Issues closed in v3.2.0.2](https://github.com/twbs/bootstrap-sass/issues?q=is%3Aissue+is%3Aclosed+milestone%3Av3.2.0.2).
+
+## 3.2.0.1
+
+Fixed a number of bugs: [Issues closed in v3.2.0.1](https://github.com/twbs/bootstrap-sass/issues?q=is%3Aissue+is%3Aclosed+milestone%3Av3.2.0.1).
+
+## 3.2.0.0
+
+- Assets (Sass, JS, fonts) moved from `vendor/assets` to `assets`. `bootstrap.js` now contains concatenated JS.
+- Compass generator now copies JS and fonts, and provides a better default `styles.sass`.
+- Compass, Sprockets, and Mincer asset path helpers are now provided in pure Sass: `bootstrap-compass`, `bootstrap-sprockets`, and `bootstrap-mincer`.
+Asset path helpers must be imported before `bootstrap`, more in Readme.
+- Sprockets / Mincer JS manifest has been moved to `bootstrap-sprockets.js`.
+It can be required without adding Bootstrap JS directory to load path, as it now uses relative paths.
+- Sprockets: `depend_on_asset` (`glyphicons.scss`) has been changed to `depend_on` to work around an issue with `depend_on_asset`.
+[More information](https://github.com/twbs/bootstrap-sass/issues/592#issuecomment-46570286).
+
 ## 3.1.1.0
 
 - Updated Bower docs

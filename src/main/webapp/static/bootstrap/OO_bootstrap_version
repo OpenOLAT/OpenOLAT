@@ -1,11 +1,13 @@
-3.2.0
+3.4.1
 
-SaSS version, get it from https://github.com/twbs/bootstrap-sass/releases
+SaSS version, get it from 
+https://github.com/twbs/bootstrap-sass/releases
+https://github.com/twbs/bootstrap-sass/archive/v3.4.1.tar.gz
 
 
 PATCHES:
 
-- Add "panel-collapse" to about line 98 in panels.scss like this: 
+- Add "panel-collapse" to about line 109 in _panels.scss like this: 
 
 .panel, .panel-collapse {
   > .table,

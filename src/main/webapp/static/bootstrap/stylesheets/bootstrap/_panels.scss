@@ -9,7 +9,7 @@
   background-color: $panel-bg;
   border: 1px solid transparent;
   border-radius: $panel-border-radius;
-  @include box-shadow(0 1px 1px rgba(0,0,0,.05));
+  @include box-shadow(0 1px 1px rgba(0, 0, 0, .05));
 }
 
 // Panel contents
@@ -36,7 +36,11 @@
   font-size: ceil(($font-size-base * 1.125));
   color: inherit;
 
-  > a {
+  > a,
+  > small,
+  > .small,
+  > small > a,
+  > .small > a {
     color: inherit;
   }
 }
@@ -72,12 +76,18 @@
         @include border-top-radius(($panel-border-radius - 1));
       }
     }
+
     // Add border bottom radius for last one
     &:last-child {
       .list-group-item:last-child {
         border-bottom: 0;
         @include border-bottom-radius(($panel-border-radius - 1));
       }
+    }
+  }
+  > .panel-heading + .panel-collapse > .list-group {
+    .list-group-item:first-child {
+      @include border-top-radius(0);
     }
   }
 }
@@ -103,8 +113,8 @@
     margin-bottom: 0;
 
     caption {
-      padding-left: $panel-body-padding;
       padding-right: $panel-body-padding;
+      padding-left: $panel-body-padding;
     }
   }
   // Add border top radius for first one
@@ -137,8 +147,8 @@
     > tbody:last-child,
     > tfoot:last-child {
       > tr:last-child {
-        border-bottom-left-radius: ($panel-border-radius - 1);
         border-bottom-right-radius: ($panel-border-radius - 1);
+        border-bottom-left-radius: ($panel-border-radius - 1);
 
         td:first-child,
         th:first-child {
@@ -198,13 +208,13 @@
     }
   }
   > .table-responsive {
-    border: 0;
     margin-bottom: 0;
+    border: 0;
   }
 }
 
 
-// Collapsable panels (aka, accordion)
+// Collapsible panels (aka, accordion)
 //
 // Wrap a series of panels in `.panel-group` to turn them into an accordion with
 // the help of our collapse JavaScript plugin.

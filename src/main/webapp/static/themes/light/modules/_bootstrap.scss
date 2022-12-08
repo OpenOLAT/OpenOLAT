@@ -4,6 +4,9 @@
 // Reset
 @import "../../../bootstrap/stylesheets/bootstrap/normalize";
 @import "../../../bootstrap/stylesheets/bootstrap/print";
+/* we use font-awesome instead
+@import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
+*/
 
 // Core CSS
 @import "../../../bootstrap/stylesheets/bootstrap/scaffolding";
@@ -16,9 +19,6 @@
 
 // Components
 @import "../../../bootstrap/stylesheets/bootstrap/component-animations";
-/* we use font-awesome instead
-@import "../../../bootstrap/stylesheets/bootstrap/glyphicons"; 
-*/
 @import "../../../bootstrap/stylesheets/bootstrap/dropdowns";
 @import "../../../bootstrap/stylesheets/bootstrap/button-groups";
 @import "../../../bootstrap/stylesheets/bootstrap/input-groups";

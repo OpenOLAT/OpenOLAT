@@ -1,5 +1,5 @@
 <div class="modal show in $!windowCssClass" id='$r.getId("o_closablewapper_")' role="dialog" #if ($title) aria-labelledby="$r.getId('o_md_')" #end>
-	<div class="modal-backdrop in"></div><div class="modal-dialog modal-lg"><div class="modal-content">
+	<div class="modal-dialog modal-lg"><div class="modal-content">
 	<div class="modal-header">
 		#if ($r.available("closeIcon"))
 			$r.render("closeIcon")
@@ -15,6 +15,7 @@
 		$r.render("modalContent")
 	</div>
 </div></div></div>
+<div class="modal-backdrop in"></div>
 ## always show top of modal dialog when on long pages
 <script>
 jQuery(function() {
