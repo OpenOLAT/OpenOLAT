@@ -899,7 +899,9 @@ public class FileUploadController extends FormBasicController {
 	
 	private boolean validateFilename(FileElement itemEl) {
 		boolean allOk = true;
-		if(itemEl.validate()) {
+		
+		allOk &= itemEl.validate();
+		if (allOk) {
 			String filename = itemEl.getUploadFileName();
 			if (!StringHelper.containsNonWhitespace(filename)) {
 				itemEl.setErrorKey("NoFileChosen");
