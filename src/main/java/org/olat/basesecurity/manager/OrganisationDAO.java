@@ -158,6 +158,25 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * Search in identifier, displayName or external ID
+	 * 
+	 * @param name 
+	 * @return
+	 */
+	public List<Organisation> loadByLabel(String label) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where lower(org.identifier)=:label or lower(org.displayName)=:label or lower(org.externalId)=:label ");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("label", label.toLowerCase())
+				.getResultList();
+	}
+	
 	public List<Organisation> loadByIdentifier(String identifier) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select org from organisation org")
@@ -330,6 +349,11 @@ public class OrganisationDAO {
 				.setParameter("organisationIdentifier", organisationIdentifier)
 				.setParameter("role", role)
 				.getResultList();
+	}
+	
+	public Set<Long> getMemberKeySet(OrganisationRef organisation, OrganisationRoles... roles) {
+		List<Long> memberKeys = getMemberKeys(organisation, roles);
+		return new HashSet<>(memberKeys);
 	}
 	
 	public List<Long> getMemberKeys(OrganisationRef organisation, OrganisationRoles... roles) {

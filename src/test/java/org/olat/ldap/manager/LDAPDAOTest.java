@@ -30,6 +30,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.ldap.LDAPLoginManager;
+import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.model.LDAPGroup;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,8 @@ public class LDAPDAOTest extends OlatTestCase {
 	private LDAPDAO ldapDao;
 	@Autowired
 	private LDAPLoginManager ldapManager;
+	@Autowired
+	private LDAPSyncConfiguration syncConfiguration;
 	
 	@ClassRule
 	public static final EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder
@@ -60,15 +63,18 @@ public class LDAPDAOTest extends OlatTestCase {
 	        .build();
 	
 	@Test
-	public void searchGroups() {	
+	public void searchGroupsWithMembers() {	
 		LdapContext ctx = ldapManager.bindSystem();
+		String filter = syncConfiguration.getLdapGroupFilter();
 		List<String> bases = List.of("ou=groups,dc=olattest,dc=org");
-		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases);
+		List<LDAPGroup> onlyGroups = ldapDao.searchGroupsWithMembers(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(4)
+			.hasSize(5)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat");
+			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation")
+			// Empty hasn't any member
+			.doesNotContain("ldapempty");
 	}
 
 	@Test
@@ -79,9 +85,9 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(4)
+			.hasSize(6)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat");
+			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
 	}
 	
 	@Test
@@ -92,11 +98,24 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(2)
+			.hasSize(4)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat");
+			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
 	}
 	
+	@Test
+	public void searchAllGroupsIncludeOnlyCns() {	
+		LdapContext ctx = ldapManager.bindSystem();
+		List<String> bases = List.of("ou=groups,dc=olattest,dc=org");
+		String filter = "(&(objectClass=groupOfNames)(|(cn=ldapteaching)(cn=ldaplearning)))";
+		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
+		assertThat(onlyGroups)
+			.isNotNull()
+			.hasSize(2)
+			.map(LDAPGroup::getCommonName)
+			.containsExactlyInAnyOrder("ldapteaching", "ldaplearning");
+	}
+
 	@Test
 	public void searchGroupsWithSpecificMember() {	
 		LdapContext ctx = ldapManager.bindSystem();
@@ -105,9 +124,9 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(2)
+			.hasSize(3)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat");
+			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat", "ldaporganisation");
 	}
 
 	@Test
@@ -118,8 +137,8 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(1)
+			.hasSize(2)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldapopenolat");
+			.containsExactlyInAnyOrder("ldapopenolat", "ldaporganisation");
 	}
 }

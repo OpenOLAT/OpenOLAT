@@ -80,9 +80,15 @@ public class LDAPDAO {
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	
-	
-	public List<LDAPGroup> searchGroups(LdapContext ctx, List<String> groupDNs) {
-		String filter = syncConfiguration.getLdapGroupFilter();
+	/**
+	 * Search in the list of specified bases with the attributes cn and member.
+	 * 
+	 * @param ctx The LDAP context
+	 * @param groupDNs A list of bases
+	 * @param filter An optional filter
+	 * @return
+	 */
+	public List<LDAPGroup> searchGroupsWithMembers(LdapContext ctx, List<String> groupDNs, String filter) {
 		List<LDAPGroup> ldapGroups = new ArrayList<>();
 		String[] groupAttributes = new String[]{"cn", "member"};
 		for(String groupDN:groupDNs) {

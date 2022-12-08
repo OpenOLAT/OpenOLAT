@@ -334,6 +334,22 @@ sn: Ferro
 uid: vferro
 userPassword: olat
 modifyTimestamp: 20100630180000Z
+employeeNumber: usermanager
+
+dn: uid=jmartin,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Julia Martin
+givenname: Julia
+labeleduri: https://www.openolat.com
+mail: jmartin@openolat.com
+o: Informatik
+sn: Martin
+uid: jmartin
+employeeNumber: poolmanager
+userPassword: olat
 
 dn: cn=ldaplearning,ou=groups,dc=olattest,dc=org
 objectclass: top
@@ -362,6 +378,20 @@ objectclass: groupOfNames
 cn: ldapopenolat
 member: uid=gstieger,ou=person,dc=olattest,dc=org
 member: uid=dforster,ou=person,dc=olattest,dc=org
+
+dn: cn=ldaporganisation,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldaporganisation
+member: uid=jmartin,ou=person,dc=olattest,dc=org
+member: uid=dforster,ou=person,dc=olattest,dc=org
+member: uid=vferro,ou=person,dc=olattest,dc=org
+
+dn: cn=ldapempty,ou=groups,dc=olattest,dc=org
+objectclass: top
+objectclass: groupOfNames
+cn: ldapempty
+
 
 
 
