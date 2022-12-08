@@ -211,3 +211,8 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 		border: 2px solid $o-gloss-tooltip-border-color;
 	}
 }
+
+/* accessibility fix: visually set focus for drop-down toggles */
+.dropdown-toggle:focus-visible {
+	@include tab-focus;
+}
