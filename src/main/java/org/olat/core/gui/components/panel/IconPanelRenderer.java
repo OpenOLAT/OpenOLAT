@@ -70,20 +70,16 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		// Content column
 		sb.append("<div class='o_icon_panel_content_col'>");
 		// Header
-		if (StringHelper.containsNonWhitespace(panel.getTitle()) || StringHelper.containsNonWhitespace(panel.getTagline())) {
-			sb.append("<header>");
-			if (StringHelper.containsNonWhitespace(panel.getTagline())) {
-				sb.append("<p class='o_icon_panel_tagline'>");
-				sb.append(panel.getTagline());
-				sb.append("</p>");
-			}
-			if (StringHelper.containsNonWhitespace(panel.getTitle())) {
-				sb.append("<h4>");
-				sb.append(panel.getTitle());
-				sb.append("</h4>");
-			}
-			sb.append("</header>");
+		sb.append("<div class='o_icon_panel_header'>");
+		if (StringHelper.containsNonWhitespace(panel.getTitle())) {
+			sb.append("<h4>");
+			sb.append(panel.getTitle());
+			sb.append("</h4>");
 		}
+		if (StringHelper.containsNonWhitespace(panel.getTagline())) {
+			sb.append("<small class=\"text-muted\">").append(panel.getTagline()).append("</small>");
+		}
+		sb.append("</div>");
 		
 		// Content
 		if (panel.getContent() != null && panel.getContent().isVisible()) {

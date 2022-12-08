@@ -138,6 +138,7 @@ public class QTI21EditForm extends FormBasicController {
 	
 	private final boolean selfAssessment;
 	private final boolean needManualCorrection;
+	private final boolean correctionGrading;
 	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
 	private final ModuleConfiguration modConfig;
@@ -169,7 +170,7 @@ public class QTI21EditForm extends FormBasicController {
 	
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry, CourseNode courseNode,
 			NodeAccessType nodeAccessType, QTI21DeliveryOptions deliveryOptions, boolean needManualCorrection,
-			boolean selfAssessment, Float minValue, Float maxValue) {
+			boolean correctionGrading, boolean selfAssessment, Float minValue, Float maxValue) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
@@ -179,6 +180,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = (deliveryOptions == null ? new QTI21DeliveryOptions() : deliveryOptions);
 		this.needManualCorrection = needManualCorrection;
+		this.correctionGrading = correctionGrading;
 		this.selfAssessment = selfAssessment;
 		this.wizard = false;
 		this.assessmentModeDefaults = null;
@@ -193,7 +195,7 @@ public class QTI21EditForm extends FormBasicController {
 
 	public QTI21EditForm(UserRequest ureq, WindowControl wControl, Form rootForm, RepositoryEntry courseEntry,
 			IQTESTCourseNodeContext context, NodeAccessType nodeAccessType, boolean needManualCorrection,
-			boolean selfAssessment) {
+			boolean correctionGrading, boolean selfAssessment) {
 		super(ureq, wControl, LAYOUT_BAREBONE, null, rootForm);
 		setTranslator(Util.createPackageTranslator(getTranslator(), DueDateConfigFormItem.class, getLocale()));
 		this.courseEntry = courseEntry;
@@ -203,6 +205,7 @@ public class QTI21EditForm extends FormBasicController {
 		this.ignoreInCourseAssessmentAvailable = !nodeAccessService.isScoreCalculatorSupported(nodeAccessType);
 		this.deliveryOptions = new QTI21DeliveryOptions();
 		this.needManualCorrection = needManualCorrection;
+		this.correctionGrading = correctionGrading;
 		this.selfAssessment = selfAssessment;
 		this.wizard = true;
 		this.minValue = null;
@@ -624,6 +627,8 @@ public class QTI21EditForm extends FormBasicController {
 	private void updateCorrectionWarning() {
 		if (needManualCorrection && correctionModeEl.isKeySelected(IQEditController.CORRECTION_AUTO)) {
 			correctionLayout.setFormWarning(translate("error.manual.auto"));
+		} else if (correctionGrading && !correctionModeEl.isKeySelected(IQEditController.CORRECTION_GRADING)) {
+			correctionLayout.setFormWarning(translate("error.grading.not.grading"));
 		} else {
 			correctionLayout.setFormWarning(null);
 		}

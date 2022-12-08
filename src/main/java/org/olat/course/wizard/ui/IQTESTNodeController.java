@@ -42,6 +42,7 @@ import org.olat.course.wizard.CourseWizardService;
 import org.olat.course.wizard.IQTESTCourseNodeContext;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.wizard.InfoMetadata;
 
@@ -89,13 +90,15 @@ public class IQTESTNodeController extends StepFormBasicController {
 		}
 		
 		boolean needManualCorrection = false;
+		boolean correctionGrading = false;
 		RepositoryEntry testEntry = context.getReferencedEntry();
 		if (testEntry != null) {
 			moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);
 			IQEditController.setIQReference(testEntry, moduleConfig);
 			needManualCorrection = CoreSpringFactory.getImpl(QTI21Service.class).needManualCorrection(testEntry);
+			correctionGrading = CoreSpringFactory.getImpl(GradingService.class).isGradingEnabled(testEntry, null);
 		}
-		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, false);
+		qti21EditForm = new QTI21EditForm(ureq, control, rootForm, entry, context, nodeAccessType, needManualCorrection, correctionGrading, false);
 		listenTo(qti21EditForm);
 		
 		initForm(ureq);

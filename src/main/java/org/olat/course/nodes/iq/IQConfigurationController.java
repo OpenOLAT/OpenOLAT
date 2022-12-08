@@ -129,7 +129,7 @@ public class IQConfigurationController extends BasicController implements Refere
 			stackPanel.addListener(this);
 		}
 		
-		myContent = createVelocityContainer("edit");	
+		myContent = createVelocityContainer("edit");
 		
 		switch(type) {
 			case QTI21Constants.QMD_ENTRY_TYPE_ASSESS:
@@ -161,7 +161,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		listenTo(referenceCtrl);
 		myContent.put("reference", referenceCtrl.getInitialComponent());
 		
-		putInitialPanel(myContent);	
+		putInitialPanel(myContent);
 		updateEditController(ureq, false);
 	}
 	
@@ -191,6 +191,7 @@ public class IQConfigurationController extends BasicController implements Refere
 			myContent.remove("iqeditform");
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
 			boolean needManualCorrection = false;
+			boolean correctionGrading = gradingService.isGradingEnabled(re, null);
 			try {// in case of an unreadable test
 				needManualCorrection = needManualCorrectionQTI21(re);
 			} catch (Exception e) {
@@ -200,7 +201,7 @@ public class IQConfigurationController extends BasicController implements Refere
 			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
 				String correctionMode;
-				if(gradingService.isGradingEnabled(re, null)) {
+				if(correctionGrading) {
 					correctionMode = IQEditController.CORRECTION_GRADING;
 					showInfo("replaced.grading");
 				} else if(needManualCorrection || getPassedType(re, deliveryOptions) == PassedType.manually) {
@@ -211,9 +212,10 @@ public class IQConfigurationController extends BasicController implements Refere
 					showInfo("replaced.auto");
 				}
 				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionMode);
-				if(IQEditController.CORRECTION_GRADING.equals(correctionMode) ||  IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
+				if(IQEditController.CORRECTION_GRADING.equals(correctionMode) || IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
 					String userVisible = qti21Module.isResultsVisibleAfterCorrectionWorkflow()
-							? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION : IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
+							? IQEditController.CONFIG_VALUE_SCORE_VISIBLE_AFTER_CORRECTION
+							: IQEditController.CONFIG_VALUE_SCORE_NOT_VISIBLE_AFTER_CORRECTION;
 					moduleConfiguration.setStringValue(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION, userVisible);
 				} else {
 					moduleConfiguration.remove(IQEditController.CONFIG_KEY_SCORE_VISIBILITY_AFTER_CORRECTION);
@@ -243,10 +245,12 @@ public class IQConfigurationController extends BasicController implements Refere
 			Float min = minValue == null ? null : minValue.floatValue();
 			Float max = maxValue == null ? null : maxValue.floatValue();
 			
-			updateReferenceContentUI(re, deliveryOptions, needManualCorrection, min, max, cutValue);
+			updateReferenceContentUI(re, deliveryOptions, needManualCorrection, correctionGrading, min, max, cutValue);
 			
-			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(), course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
-					courseNode, NodeAccessType.of(course), deliveryOptions, needManualCorrection, courseNode instanceof IQSELFCourseNode, min, max);
+			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(),
+					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
+					NodeAccessType.of(course), deliveryOptions, needManualCorrection, correctionGrading,
+					courseNode instanceof IQSELFCourseNode, min, max);
 			mod21ConfigForm.updateUI();
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
@@ -257,7 +261,7 @@ public class IQConfigurationController extends BasicController implements Refere
 	}
 	
 	private void updateReferenceContentUI(RepositoryEntry testEntry, QTI21DeliveryOptions deliveryOptions,
-			boolean needManualCorrection, Float min, Float max, Double cutValue) {
+			boolean needManualCorrection, boolean correctionGrading, Float min, Float max, Double cutValue) {
 		List<IconPanelLabelTextContent.LabelText> labelTexts = new ArrayList<>(4);
 		
 		String correctionText = needManualCorrection
@@ -269,7 +273,6 @@ public class IQConfigurationController extends BasicController implements Refere
 		if (scoreMinMax != null) {
 			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("score.min.max"), scoreMinMax));
 		}
-		
 		
 		PassedType passedType = deliveryOptions.getPassedType(cutValue);
 		String passedTypeValue;
@@ -286,6 +289,11 @@ public class IQConfigurationController extends BasicController implements Refere
 		}
 		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("show.passed"), passedTypeValue));
 		
+		if (correctionGrading) {
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("correction.workflow"),
+					translate("correction.workflow.on")));
+		}
+		
 		Long sessionsCount = qti21service.getAssessmentTestSessionsCount(
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
 				testEntry);
@@ -293,9 +301,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		
 		iconPanelContent.setLabelTexts(labelTexts);
 		
-		String warning = sessionsCount > 0
-				? translate("error.edit.restricted.in.use")
-				: null;
+		String warning = qti21service.isAssessmentTestActivelyUsed(testEntry) ? translate("error.edit.restricted.in.use") : null;
 		iconPanelContent.setWarning(warning);
 	}
 
@@ -370,9 +376,9 @@ public class IQConfigurationController extends BasicController implements Refere
 			}
 			
 			if(numOfAssessedIdentities > 0) {
-				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(),
-						course, (QTICourseNode)courseNode, newEntry, currentEntry,
-						new ArrayList<>(assessedIdentities), numOfAssessedIdentities);
+				confirmChangeResourceCtrl = new ConfirmChangeResourceController(ureq, getWindowControl(), course,
+						(QTICourseNode) courseNode, newEntry, currentEntry, new ArrayList<>(assessedIdentities),
+						numOfAssessedIdentities);
 				listenTo(confirmChangeResourceCtrl);
 				String title = translate("replace.entry");
 				cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmChangeResourceCtrl.getInitialComponent(), title);
@@ -434,8 +440,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		if(courseNode instanceof IQSURVCourseNode || courseNode instanceof IQSELFCourseNode) {
 			//nothing to do
 		} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())
-				&&needManualCorrectionQTI21(re)) {
-			showWarning("warning.test.with.essay");
+				&& needManualCorrectionQTI21(re)) {
 			return true;
 		}
 		return false;
