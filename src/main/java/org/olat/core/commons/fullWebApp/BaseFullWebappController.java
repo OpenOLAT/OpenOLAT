@@ -1249,7 +1249,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			Link link = LinkFactory.createCustomLink(linkId, linkId, "", Link.NONTRANSLATED, navTabsVc, this);
 			link.setCustomDisplayText(StringHelper.xssScan(dt.getNavElement().getTitle()));
 			link.setIconLeftCSS("o_icon o_icon-fw ".concat(dt.getNavElement().getIconCSSClass()));
-			link.setTitle(dt.getTitle());
+			link.setTitle(translate("resource.opened", dt.getTitle()));
 			link.setUserObject(dt);
 			// Set accessibility access key using the 's' key. You can loop through all opened tabs by
 			// pressing s repetitively (works only in IE/FF which is normally used by blind people)
@@ -1258,7 +1258,8 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			Link calink = LinkFactory.createCustomLink("c" + dtabCreateCounter, "c" + dtabCreateCounter, "", Link.NONTRANSLATED, navTabsVc, this);
 			calink.setCustomEnabledLinkCSS("o_navbar_tab_close");
 			calink.setIconLeftCSS("o_icon o_icon_close_tab");
-			calink.setTitle(translate("close"));
+			calink.setTitle(translate("resource.close", dt.getTitle()));
+			calink.setAriaRole(Link.ARIA_ROLE_BUTTON);
 			calink.setUserObject(dt);
 
 			Controller dtabCtr = dt.getController();

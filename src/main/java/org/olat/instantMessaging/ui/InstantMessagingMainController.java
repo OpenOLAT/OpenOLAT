@@ -261,10 +261,13 @@ public class InstantMessagingMainController extends BasicController implements G
 	
 	private void updateBuddyStats() {
 		if(allowToUpdateBuddyStats()) {
-			BuddyStats stats = imService.getBuddyStats(getIdentity());
+			BuddyStats stats = imService.getBuddyStats(getIdentity());			
 			String text = translate("im.roster.launch", Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()));
+			String altText = translate("im.roster.launch.screenreader", Long.toString(stats.getOnlineBuddies()), Long.toString(stats.getOfflineBuddies()));
+			
 			if(!text.equals(onlineOfflineCount.getCustomDisplayText())) {
-				onlineOfflineCount.setCustomDisplayText(text);
+				String withMarkup = "<span aria-hidden='true'>" + text + "</span><span class='visually-hidden'>" + altText + "</span>";
+				onlineOfflineCount.setCustomDisplayText(withMarkup);
 			}
 		}
 	}
