@@ -221,11 +221,24 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				renderer.render(link.getInnerComponent(), sb, args);
 			} else if (customDisplayText != null) {
 				//link is not translated but has custom text
-				sb.append(customDisplayText);
-			}	else if (nontranslated) {
-				if (i18n != null) {
+				if (StringHelper.containsNonWhitespace(customDisplayText)) {
+					sb.append(customDisplayText);					
+				} else {
+					// a11y: try adding something invisible but speakable for screenreaders
+					if(title != null) {
+						sb.append("<span class='visually-hidden'>" + title + "</span>");
+					}
+				}
+				
+			} else if (nontranslated) {
+				if (StringHelper.containsNonWhitespace(i18n)) {
 					// link name is not a i18n key
 					sb.append(i18n);
+				} else {
+					// a11y: try adding something invisible but speakable for screenreaders
+					if(title != null) {
+						sb.append("<span class='visually-hidden'>" + title + "</span>");
+					}
 				}
 			} else {
 				// use translator

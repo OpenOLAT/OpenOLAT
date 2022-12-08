@@ -104,7 +104,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 		boolean ajax = getWindowControl().getWindowBackOffice().getWindowManager().isAjaxEnabled();
 		if (ajax) {
 			final Panel guiMsgPlace = new Panel("guimessage_place");
-			calloutVC = new VelocityContainer("closeablewrapper", velocity_root + "/callout.html", null, this) {
+			calloutVC = new VelocityContainer("closeablewrapper", velocity_root + "/callout.html", getTranslator(), this) {
 				@Override
 				public void validate(UserRequest uureq, ValidationResult vr) {
 					super.validate(uureq, vr);
@@ -125,7 +125,7 @@ public class CloseableCalloutWindowController extends BasicController implements
 			putInitialPanel(calloutVC);
 		} else {
 			// Fallback to old-school modal dialog
-			cmc = new CloseableModalController(wControl, "close", calloutWindowContent, true, title, closable);
+			cmc = new CloseableModalController(wControl, translate("close.dialog"), calloutWindowContent, true, title, closable);
 			listenTo(cmc);
 			putInitialPanel(new Panel("empty"));
 		}

@@ -33,6 +33,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
+import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.DefaultController;
 import org.olat.core.gui.control.Event;
@@ -131,6 +132,24 @@ public class CloseableModalController extends DefaultController implements Modal
 			closeIcon = LinkFactory.createIconClose(closeButtonText, myContent, this);
 			closeIcon.setDomReplacementWrapperRequired(false);
 			closeIcon.setSuppressDirtyFormWarning(true);
+			// a11y: Set focus to close link and thus to the dialog itself
+			closeIcon.setFocus(true); 
+			if (closeButtonText == null && modalContent != null) {
+				// Use standard close text. use Translator from content as we have no access to
+				// the user locale here. 
+				Translator trans = modalContent.getTranslator();
+				if (trans == null && modalContent instanceof StackedPanel) {
+					// Content had no translator, probably a panel, which is very common to have
+					// here. Try to get translator from panel content as last option
+					StackedPanel panel = (StackedPanel) modalContent;
+					Component realComponent = panel.getContent();
+					if (realComponent != null) {
+						trans = realComponent.getTranslator();
+					}
+				}
+				closeButtonText  = (trans == null ? "close" : trans.translate("close.dialog"));
+			}
+			closeIcon.setTitle(closeButtonText == null ? "close" : closeButtonText); 
 		}
 		if (title != null) {
 			myContent.contextPut("title", StringHelper.escapeHtml(title));

@@ -58,8 +58,12 @@ public class ModalInspectorController extends BasicController implements PageEle
 		if(title != null) {
 			mainVC.contextPut("title", title);
 		}
-		closeButton = LinkFactory.createIconClose("close", mainVC, this);
+		String title = translate("inspector.hide");
+		closeButton = LinkFactory.createIconClose(title, mainVC, this);
 		closeButton.setDomReplacementWrapperRequired(false);
+		// a11y: Set focus to close link and thus to the dialog itself
+		closeButton.setFocus(true); 
+		closeButton.setTitle(title);
 		mainVC.put("close", closeButton);
 		
 		putInitialPanel(mainVC);

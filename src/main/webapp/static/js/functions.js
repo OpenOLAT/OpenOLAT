@@ -2575,6 +2575,22 @@ function o_doPrint() {
 	}
 }
 
+/*
+ * The escape key event loop for OpenOlat components 
+ */
+function o_doEscapeDispatch(event) {
+	// Check if we are in a multilayered OpenOlat dialog, callout or modal dialog
+	var lastDialog = jQuery('.o_layered_panel, .o_ltop_modal_panel, .ui-dialog').last();
+	if (lastDialog.length > 0) {
+		// execute the close button if available
+		var closeElem = lastDialog.find('.close, .ui-dialog-titlebar-close');
+		if (closeElem.length > 0) {
+			event.stopPropagation();
+			closeElem.click();
+		}
+	}
+	// note: we have no control over tinymce windows, they handle the ESC independently
+}
 
 /*
  * Animate radial progress bar
@@ -2823,4 +2839,11 @@ var OOEdusharing = {
 jQuery( document ).ready(function() {
 	OOEdusharing.start();
 });
+// Listen to all escape keyboard events
+jQuery( document ).on('keyup', function(event) {
+    if (event.key == "Escape") {
+        o_doEscapeDispatch(event);
+    }
+});
+
 

@@ -88,17 +88,20 @@ public class LinkFactory {
 	 * 
 	 * @param title
 	 * - displayed on hovering over the icon
-	 * - can be null, then no title is displayed
+	 * - can be null, then the standard close text is shown
 	 * @param vc
 	 * @param listener
 	 * @return Link which display just the close icon
 	 */
 	public static Link createIconClose(String title, VelocityContainer vc, ComponentEventListener listener){
 		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listener);
-		closeIcon.setIconLeftCSS("close o_icon o_icon_close o_icon-lg");
+		closeIcon.setElementCssClass("close");
+		closeIcon.setIconLeftCSS("o_icon o_icon_close");
+		// a11y: set either custom or standard close title
 		if(title != null){
 			closeIcon.setTitle(title);
 		}
+		closeIcon.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		return closeIcon;
 	}
 	

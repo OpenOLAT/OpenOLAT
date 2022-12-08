@@ -1,5 +1,7 @@
 <div id="callout_layer_$r.getCId()" class="o_callout_content $!cssClasses">
 	<div id="callout_layer_content_$r.getCId()">
+		## render close button just for screenreaders
+		<div class="visually-hidden"><a href="#" class="close" onClick="$r.javaScriptCommand('close');">$r.translate("close.dialog")</a></div>
 		$r.render("calloutWindowContent")
 	</div>
 </div>

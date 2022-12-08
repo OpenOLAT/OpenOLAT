@@ -180,7 +180,10 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		mainVC = createVelocityContainer("practice");
 		mainVC.contextPut("numOfItems", Integer.valueOf(items.size()));
-		closeLink = LinkFactory.createIconClose("close", mainVC, this);
+		String title = translate("back.serie");
+		closeLink = LinkFactory.createIconClose(title, mainVC, this);
+		closeLink.setTitle(title);
+
 		mainVC.put("close", closeLink);
 		
 		progressBar = new ProgressBar("progress-serie", 100, 0.0f, Float.valueOf(items.size()), null);

@@ -271,18 +271,26 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		prevButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_prev");
 		prevButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_prev");
 		prevButton.setIconLeftCSS("o_icon o_icon_previous_step o_icon-fw");
+		prevButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		nextButton = new FormLinkImpl("next");
 		nextButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_next");
 		nextButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_next");
 		nextButton.setIconRightCSS("o_icon o_icon_next_step o_icon-fw");
+		nextButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		finishButton = new FormLinkImpl("finish");
 		finishButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_finish");
 		finishButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_finish");
+		finishButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		cancelButton = new FormLinkImpl("cancel");
 		cancelButton.setCustomEnabledLinkCSS("btn btn-default o_wizard_button_cancel");
 		cancelButton.setCustomDisabledLinkCSS("btn btn-default o_wizard_button_cancel");
+		cancelButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
 		closeLink = new FormLinkImpl("closeIcon", "close", "", Link.NONTRANSLATED);
 		closeLink.setIconLeftCSS("o_icon o_icon_close");
+		closeLink.setTitle(translate("close.dialog"));
+		closeLink.setElementCssClass("close");
+		closeLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		
 		formLayout.add(prevButton);
 		formLayout.add(nextButton);
 		formLayout.add(finishButton);

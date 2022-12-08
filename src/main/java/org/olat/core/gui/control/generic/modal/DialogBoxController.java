@@ -104,7 +104,7 @@ public class DialogBoxController extends BasicController {
 				Link link = LinkFactory.createButton(linkName, dialogBoxVC, this);
 				link.setCustomDisplayText(buttonText);
 				// Within a dialog all 'you will loose form data' messages should be
-				// supporesse. this is obvious to a user and leads to impossible
+				// suppressed. this is obvious to a user and leads to impossible
 				// workflows. See OLAT-4257
 				link.setSuppressDirtyFormWarning(true);
 				buttons.add(linkName);
@@ -121,11 +121,15 @@ public class DialogBoxController extends BasicController {
 	public void setCloseWindowEnabled(boolean closeWindowEnabled) {
 		// add optional close icon
 		if (closeWindowEnabled){
-			closeLink = LinkFactory.createIconClose("close", dialogBoxVC, this);
+			String title = translate("close.dialog");
+			closeLink = LinkFactory.createIconClose(title, dialogBoxVC, this);
 			// Within a dialog all 'you will loose form data' messages should be
-			// supporesse. this is obvious to a user and leads to impossible
+			// suppressed. this is obvious to a user and leads to impossible
 			// workflows. See OLAT-4257
 			closeLink.setSuppressDirtyFormWarning(true);
+			// a11y: Set focus to close link and thus to the dialog itself
+			closeLink.setFocus(true); 
+			closeLink.setTitle(title);
 			dialogBoxVC.contextPut("closeIcon", Boolean.TRUE);
 		}	else {
 			dialogBoxVC.contextPut("closeIcon", Boolean.FALSE);			
