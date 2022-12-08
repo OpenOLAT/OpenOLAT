@@ -271,7 +271,7 @@ $r.renderForce("development")
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
 <div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation" aria-label="$r.translate("accesskey.side")">
-	<a href="javascript:;" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'> </i> </a>
+	<a href="javascript:;" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'> </i> <span class="visually-hidden">$r.translate("close.dialog")</span></a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
 		#if($r.available("menuComponent"))
 			$r.render("menuComponent")

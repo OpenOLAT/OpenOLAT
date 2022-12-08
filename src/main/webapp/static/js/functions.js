@@ -2587,9 +2587,18 @@ function o_doEscapeDispatch(event) {
 		if (closeElem.length > 0) {
 			event.stopPropagation();
 			closeElem.click();
+			return;
 		}
-	}
 	// note: we have no control over tinymce windows, they handle the ESC independently
+	}
+	// Check if the right side personal menu canvas is open
+	var offCanvas = jQuery('#o_offcanvas_right');
+	if (offCanvas.is(":visible")) {
+		window.OPOL.navbar.hideRight();
+		return;
+	}
+	
+	
 }
 
 /*

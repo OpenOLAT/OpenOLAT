@@ -378,7 +378,9 @@
 			var that = this;
 			var box = $('#o_offcanvas_right');
 			box.show().transition({ x: -that.state.offCanvasWidth}, function() {
-				$('body').addClass('o_offcanvas_right_visible');	    	
+				$('body').addClass('o_offcanvas_right_visible');	 
+				// a11y: set focus on offcanvas for screenreader
+				box.find('.o_offcanvas_close').focus();				
 				// hide menu when clicking anywhere in content (timeout to pass the event in IE8/9 which hide the navbar)
 				var listener = $.proxy(that.hideRightOnClick, that);
 				setTimeout(function() {
