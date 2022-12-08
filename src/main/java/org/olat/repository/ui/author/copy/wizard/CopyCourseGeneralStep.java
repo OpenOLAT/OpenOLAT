@@ -161,7 +161,7 @@ public class CopyCourseGeneralStep extends BasicStep {
 			formLayout.add(referenceAndTitleLayout);
 			
 			// Course name
-			displayNameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, context.getSourceRepositoryEntry().getDisplayname() + " " + translate("copy.suffix"), referenceAndTitleLayout);
+			displayNameEl = uifactory.addTextElement("cif.title", "cif.title", 100, context.getSourceRepositoryEntry().getDisplayname() + " " + translate("copy.suffix"), referenceAndTitleLayout);
 			displayNameEl.setDisplaySize(30);
 			displayNameEl.setNotEmptyCheck("input.mandatory");
 			displayNameEl.setInlineValidationOn(true);
