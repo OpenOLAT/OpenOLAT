@@ -59,16 +59,6 @@ public class GuiDemoTooltipsController extends BasicController {
 		Link link2 = LinkFactory.createLink("link2", content, this);
 		link2.setTooltip("tooltip.content");
 		
-		//link with component content
-		
-		/**
-		 * works when passing a custom html id like id="blalala"
-		 * and then fetching the content from this id with getElementById("id").innerHTML
-		 * but with the component the component is not invisible and gets renderer somewhere
-		 * and somehow not 
-		 */
-		
-		LinkFactory.createLink("link3", content, this);
 		content.put("tooltipContent", tooltipContent);
 		link4 = LinkFactory.createLink("link4", tooltipContent, this);
 
