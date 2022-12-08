@@ -55,7 +55,9 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -89,6 +91,7 @@ import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
 import org.olat.ldap.LDAPSyncConfiguration;
 import org.olat.ldap.model.LDAPGroup;
+import org.olat.ldap.model.LDAPOrganisationGroup;
 import org.olat.ldap.model.LDAPUser;
 import org.olat.ldap.model.LDAPValidationResult;
 import org.olat.ldap.ui.LDAPAuthenticationController;
@@ -136,6 +139,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	private BaseSecurity securityManager;
 	@Autowired
 	private OrganisationDAO organisationDao;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
@@ -282,15 +287,14 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			ctx.getConnectControls();
 			return ctx;
 		} catch (NamingException e) {
-			log.error("NamingException when trying to bind system with DN::" + ldapLoginModule.getLdapSystemDN() + " and PW::"
-					+ ldapLoginModule.getLdapSystemPW() + " on URL::" + ldapLoginModule.getLdapUrl(), e);
+			log.error("NamingException when trying to bind system with DN::{} and PW::{} on URL::{}",
+					ldapLoginModule.getLdapSystemDN(), ldapLoginModule.getLdapSystemPW(), ldapLoginModule.getLdapUrl(), e);
 			return null;
 		} catch (Exception e) {
-			log.error("Exception when trying to bind system with DN::" + ldapLoginModule.getLdapSystemDN() + " and PW::"
-					+ ldapLoginModule.getLdapSystemPW() + " on URL::" + ldapLoginModule.getLdapUrl(), e);
+			log.error("Exception when trying to bind system with DN::{} and PW::{} on URL::{}",
+					 ldapLoginModule.getLdapSystemDN(), ldapLoginModule.getLdapSystemPW(), ldapLoginModule.getLdapUrl(), e);
 			return null;
 		}
-
 	}
 
 	/**
@@ -778,6 +782,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			return null;
 		}
 	}
+	
+	public void syncUserOrganisations(Identity identity) {
+		//TODO ldap
+	}
 
 	/**
 	 * The method search in LDAP the user, search the groups
@@ -1110,7 +1118,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			
 			ctx.close();
 			success = true;
-			log.info(Tracing.M_AUDIT, "LDAP batch sync done: " + success + " in " + ((System.currentTimeMillis() - startTime) / 1000) + "s");
+			log.info(Tracing.M_AUDIT, "LDAP batch sync done: {} in {}s", success, ((System.currentTimeMillis() - startTime) / 1000));
 			return success;
 		} catch (Exception e) {
 
@@ -1135,96 +1143,214 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			coordinator.getEventBus().fireEventToListenersOf(endEvent, ldapSyncLockOres);
 		}
 	}
-	
+
+	/**
+	 *
+	 * @param ctx
+	 * @param ldapUsers
+	 * @param dnToIdentityKeyMap
+	 * @param errors
+	 * @throws NamingException
+	 */
 	private void doBatchSyncRoles(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
+	throws NamingException {
+		// Search the roles of LDAP users in specified groups bases
+		doBatchSearchRolesInGroups(ctx, ldapUsers, dnToIdentityKeyMap, errors);
+		
+		// Sync organizations if configured
+		List<LDAPOrganisationGroup> organisationsMapping = doBatchSyncOrganisations(ctx);
+		if(organisationsMapping == null) {
+			// Map all on default organization (users are only added in the default organization, never removed)
+			doBatchSyncRolesToDefaultOrganisation(ldapUsers);
+		} else {
+			// Map on organizations with full synchronization, add and remove.
+			List<OrganisationRoles> synchronizedRoles = syncConfiguration.getSynchronizedRoles();
+			for(LDAPOrganisationGroup organisationGroup:organisationsMapping) {
+				doBatchSyncRolesToOrganisations(synchronizedRoles, organisationGroup, ldapUsers);
+			}
+			// Synchronize Lost+Found organization
+			doBatchSyncLostAndFound(organisationsMapping, ldapUsers);
+		}
+	}
+	
+	private List<LDAPOrganisationGroup> doBatchSyncOrganisations(LdapContext ctx)
+	throws NamingException {
+		ctx.close();
+		ctx = bindSystem();
+
+		List<LDAPOrganisationGroup> organisationsGroups = null;
+		List<String> groupDNs = syncConfiguration.getLdapOrganisationsGroupBases();
+		if(groupDNs != null && !groupDNs.isEmpty()) {
+			String filter = syncConfiguration.getLdapOrganisationsGroupFilter();
+			List<LDAPGroup> groups = ldapDao.searchGroupsWithMembers(ctx, groupDNs, filter);
+			organisationsGroups = new ArrayList<>(groups.size());
+			for(LDAPGroup group:groups) {
+				String commonName = group.getCommonName();
+				Organisation organisation = syncManagedOrganisation(commonName);
+				organisationsGroups.add(LDAPOrganisationGroup.valueOf(group, organisation));
+			}
+		}
+		dbInstance.commitAndCloseSession();
+		return organisationsGroups;
+	}
+	
+	private Organisation syncManagedOrganisation(String commonName) {
+		Organisation organisation;
+		List<Organisation> organisations = organisationDao.loadByLabel(commonName);
+		if(organisations.size() == 1) {
+			organisation = organisations.get(0);
+			if(!StringHelper.containsNonWhitespace(organisation.getExternalId())) {
+				organisation.setExternalId(commonName);
+				organisation.setManagedFlags(OrganisationManagedFlag.toEnum("externalId,delete,members"));
+				organisation = organisationService.updateOrganisation(organisation);
+			}
+		} else {
+			Organisation defOrganisation = organisationService.getDefaultOrganisation();
+			organisation = organisationService.createOrganisation(commonName, commonName, null, defOrganisation, null);
+			organisation.setExternalId(commonName);
+			organisation.setManagedFlags(OrganisationManagedFlag.toEnum("externalId,delete,members"));
+			organisation = organisationService.updateOrganisation(organisation);
+		}
+		return organisation;
+	}
+	
+	/**
+	 * Search roles in dedicated groups:
+	 * 
+	 * @param ctx
+	 * @param ldapUsers
+	 * @param dnToIdentityKeyMap
+	 * @param errors
+	 */
+	private void doBatchSearchRolesInGroups(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
 	throws NamingException {
 		ctx.close();
 		ctx = bindSystem();
 		
-		List<Organisation> organisations = organisationDao.loadDefaultOrganisation();
-		Organisation organisation = organisations.get(0);
+		String filter = syncConfiguration.getLdapGroupFilter();
 		
 		//authors
 		if(syncConfiguration.getAuthorsGroupBase() != null && !syncConfiguration.getAuthorsGroupBase().isEmpty()) {
-			List<LDAPGroup> authorGroups = ldapDao.searchGroups(ctx, syncConfiguration.getAuthorsGroupBase());
-			syncRole(ctx, authorGroups, organisation, OrganisationRoles.author, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> authorGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getAuthorsGroupBase(), filter);
+			syncRole(ctx, authorGroups, OrganisationRoles.author, dnToIdentityKeyMap, errors);
 		}
 		//user managers
 		if(syncConfiguration.getUserManagersGroupBase() != null && !syncConfiguration.getUserManagersGroupBase().isEmpty()) {
-			List<LDAPGroup> userManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getUserManagersGroupBase());
-			syncRole(ctx, userManagerGroups, organisation, OrganisationRoles.usermanager, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> userManagerGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getUserManagersGroupBase(), filter);
+			syncRole(ctx, userManagerGroups, OrganisationRoles.usermanager, dnToIdentityKeyMap, errors);
 		}
 		//group managers
 		if(syncConfiguration.getGroupManagersGroupBase() != null && !syncConfiguration.getGroupManagersGroupBase().isEmpty()) {
-			List<LDAPGroup> groupManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getGroupManagersGroupBase());
-			syncRole(ctx, groupManagerGroups, organisation, OrganisationRoles.groupmanager, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> groupManagerGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getGroupManagersGroupBase(), filter);
+			syncRole(ctx, groupManagerGroups, OrganisationRoles.groupmanager, dnToIdentityKeyMap, errors);
 		}
 		//question pool managers
 		if(syncConfiguration.getQpoolManagersGroupBase() != null && !syncConfiguration.getQpoolManagersGroupBase().isEmpty()) {
-			List<LDAPGroup> qpoolManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getQpoolManagersGroupBase());
-			syncRole(ctx, qpoolManagerGroups, organisation, OrganisationRoles.poolmanager, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> qpoolManagerGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getQpoolManagersGroupBase(), filter);
+			syncRole(ctx, qpoolManagerGroups, OrganisationRoles.poolmanager, dnToIdentityKeyMap, errors);
 		}
 		//curriculum managers
 		if(syncConfiguration.getCurriculumManagersGroupBase() != null && !syncConfiguration.getCurriculumManagersGroupBase().isEmpty()) {
-			List<LDAPGroup> curriculumManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getCurriculumManagersGroupBase());
-			syncRole(ctx, curriculumManagerGroups, organisation, OrganisationRoles.curriculummanager, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> curriculumManagerGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getCurriculumManagersGroupBase(), filter);
+			syncRole(ctx, curriculumManagerGroups, OrganisationRoles.curriculummanager, dnToIdentityKeyMap, errors);
 		}
 		//learning resource manager
 		if(syncConfiguration.getLearningResourceManagersGroupBase() != null && !syncConfiguration.getLearningResourceManagersGroupBase().isEmpty()) {
-			List<LDAPGroup> resourceManagerGroups = ldapDao.searchGroups(ctx, syncConfiguration.getLearningResourceManagersGroupBase());
-			syncRole(ctx, resourceManagerGroups, organisation, OrganisationRoles.learnresourcemanager, dnToIdentityKeyMap, errors);
+			List<LDAPGroup> resourceManagerGroups = ldapDao.searchGroupsWithMembers(ctx, syncConfiguration.getLearningResourceManagersGroupBase(), filter);
+			syncRole(ctx, resourceManagerGroups, OrganisationRoles.learnresourcemanager, dnToIdentityKeyMap, errors);
 		}
-
-		int count = 0;
-		boolean syncAuthor = StringHelper.containsNonWhitespace(syncConfiguration.getAuthorRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getAuthorRoleValue());
-		boolean syncUserManager = StringHelper.containsNonWhitespace(syncConfiguration.getUserManagerRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getUserManagerRoleValue());
-		boolean syncGroupManager = StringHelper.containsNonWhitespace(syncConfiguration.getGroupManagerRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getGroupManagerRoleValue());
-		boolean syncQpoolManager = StringHelper.containsNonWhitespace(syncConfiguration.getQpoolManagerRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getQpoolManagerRoleValue());
-		boolean syncCurriculumManager = StringHelper.containsNonWhitespace(syncConfiguration.getCurriculumManagerRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getCurriculumManagerRoleValue());
-		boolean syncLearningResourceManager = StringHelper.containsNonWhitespace(syncConfiguration.getLearningResourceManagerRoleAttribute())
-				&& StringHelper.containsNonWhitespace(syncConfiguration.getLearningResourceManagerRoleValue());
-
-		for(LDAPUser ldapUser:ldapUsers) {
-			if(syncAuthor && ldapUser.isAuthor()) {
-				syncRole(ldapUser, organisation, OrganisationRoles.author);
-				count++;
-			}
-			if(syncUserManager && ldapUser.isUserManager()) {
-				syncRole(ldapUser, organisation, OrganisationRoles.usermanager);
-				count++;
-			}
-			if(syncGroupManager && ldapUser.isGroupManager()) {
-				syncRole(ldapUser, organisation, OrganisationRoles.groupmanager);
-				count++;
-			}
-			if(syncQpoolManager && ldapUser.isQpoolManager()) {
-				syncRole(ldapUser,organisation,  OrganisationRoles.poolmanager);
-				count++;
-			}
-			if(syncCurriculumManager && ldapUser.isCurriculumManager()) {
-				syncRole(ldapUser, organisation, OrganisationRoles.curriculummanager);
-				count++;
-			}
-			if(syncLearningResourceManager && ldapUser.isLearningResourceManager()) {
-				syncRole(ldapUser, organisation, OrganisationRoles.learnresourcemanager);
-				count++;
-			}
-
-			if(count > 20) {
-				dbInstance.commitAndCloseSession();
-				count = 0;
-			}
-		}
-
-		dbInstance.commitAndCloseSession();
 	}
 	
-	private void syncRole(LdapContext ctx, List<LDAPGroup> groups, Organisation organisation, OrganisationRoles role,
+	private void doBatchSyncLostAndFound(List<LDAPOrganisationGroup> organisationsGroups, List<LDAPUser> ldapUsers) {
+		Organisation lostAndFoundOrganisation = syncManagedOrganisation("Lost and found");
+		Set<Long> organisationUserKeys = organisationDao.getMemberKeySet(lostAndFoundOrganisation, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		for(LDAPUser ldapUser:ldapUsers) {
+			if(ldapUser.getCachedIdentity() == null) {
+				continue;
+			}
+			
+			Long identityKey = ldapUser.getCachedIdentity().getKey();
+			
+			boolean isMemberOf = false;
+			for(LDAPOrganisationGroup organisationGroup:organisationsGroups) {
+				isMemberOf |= organisationGroup.isMember(ldapUser.getDn());
+			}
+			
+			if(isMemberOf) {
+				// Will be removed after
+			} else {
+				boolean removed = organisationUserKeys.remove(identityKey);
+				if(!removed) {
+					Identity identity = securityManager.loadIdentityByKey(identityKey);
+					syncRole(List.of(), true, identity, lostAndFoundOrganisation, List.of());
+					dbInstance.commitAndCloseSession();
+				}
+			}
+		}
+		
+		for(Long lostAndFoundKey:organisationUserKeys) {
+			unsyncRole(new IdentityRefImpl(lostAndFoundKey), lostAndFoundOrganisation);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+
+	private void doBatchSyncRolesToOrganisations(List<OrganisationRoles> synchronizedRoles,
+			LDAPOrganisationGroup organisationGroup, List<LDAPUser> ldapUsers) {
+
+		Organisation organisation = organisationGroup.getOrganisation();
+		List<OrganisationRoles> orgRoles = new ArrayList<>(synchronizedRoles);
+		orgRoles.add(OrganisationRoles.user);
+		Set<Long> organisationUserKeys = organisationDao
+				.getMemberKeySet(organisation, orgRoles.toArray(new OrganisationRoles[orgRoles.size()]));
+		
+		for(LDAPUser ldapUser:ldapUsers) {
+			if(ldapUser.getCachedIdentity() == null) {
+				continue;
+			}
+			Long identityKey = ldapUser.getCachedIdentity().getKey();
+			Identity identity = securityManager.loadIdentityByKey(identityKey);
+
+			List<OrganisationRoles> roles = ldapUser.getRoles();
+			boolean member = organisationGroup.isMember(ldapUser.getDn());
+			if(member) {
+				syncRole(synchronizedRoles, true, identity, organisation, roles);
+				organisationUserKeys.remove(identity.getKey());
+			}
+
+			if(!roles.isEmpty()) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+		
+		for(Long organisationUserKey:organisationUserKeys) {
+			Identity identity = securityManager.loadIdentityByKey(organisationUserKey);
+			unsyncRole(identity, organisation);
+		}
+	}
+	
+	private void doBatchSyncRolesToDefaultOrganisation(List<LDAPUser> ldapUsers) {
+		List<OrganisationRoles> synchronizedRoles = syncConfiguration.getSynchronizedRoles();
+		if(synchronizedRoles.isEmpty()) return;
+		
+		List<Organisation> organisations = organisationDao.loadDefaultOrganisation();
+		Organisation defOrganisation = organisations.get(0);
+		for(LDAPUser ldapUser:ldapUsers) {
+			if(ldapUser.getCachedIdentity() == null) {
+				continue;
+			}
+			
+			List<OrganisationRoles> roles = ldapUser.getRoles();
+			Identity identity = securityManager.loadIdentityByKey(ldapUser.getCachedIdentity().getKey());
+			syncRole(synchronizedRoles, false, identity, defOrganisation, roles);
+			if(!roles.isEmpty()) {
+				dbInstance.commitAndCloseSession();
+			}
+		}
+	}
+	
+	private void syncRole(LdapContext ctx, List<LDAPGroup> groups, OrganisationRoles role,
 			Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors) {
 		if(groups == null || groups.isEmpty()) return;
 		
@@ -1234,7 +1360,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				for(String member:members) {
 					LDAPUser ldapUser = getLDAPUser(ctx, member, dnToIdentityKeyMap, errors);
 					if(ldapUser != null && ldapUser.getCachedIdentity() != null) {
-						syncRole(ldapUser, organisation, role);
+						ldapUser.addRole(role);
 					}
 				}
 			}
@@ -1242,60 +1368,41 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}	
 	}
 
-	private void syncRole(LDAPUser ldapUser, Organisation organisation, OrganisationRoles role) {
-		IdentityRef identityRef = ldapUser.getCachedIdentity();
-		List<String> roleList = securityManager.getRolesAsString(identityRef);
-		if(!roleList.contains(role.name())) {
-			Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
-			Roles roles = securityManager.getRoles(identity);
-			switch(role) {
-				case author: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							true, roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				case usermanager: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
-							true, roles.isLearnResourceManager(), roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				case groupmanager: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isAuthor(), true, roles.isPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				case poolmanager: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isAuthor(), roles.isGroupManager(), true, roles.isCurriculumManager(),
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				case curriculummanager: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), true,
-							roles.isUserManager(), roles.isLearnResourceManager(), roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				case learnresourcemanager: {
-					RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-							roles.isAuthor(), roles.isGroupManager(), roles.isPoolManager(), roles.isCurriculumManager(),
-							roles.isUserManager(), true, roles.isAdministrator());
-					securityManager.updateRoles(null, identity, modifiedRoles);
-					break;
-				}
-				default: {
-					log.error("LDAP Role synchronization not supported for: {}", role);
-				}
-			}
+	private void syncRole(List<OrganisationRoles> synchronizedRoles, boolean fullSync,
+			Identity identity, Organisation organisation, List<OrganisationRoles> ldapRoles) {
+		
+		Roles roles = securityManager.getRoles(identity);
+
+		boolean author = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.author, roles.isAuthor());
+		boolean groupManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.groupmanager, roles.isGroupManager());
+		boolean poolManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.poolmanager, roles.isPoolManager());
+		boolean curriculumManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.curriculummanager, roles.isCurriculumManager());
+		boolean userManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.usermanager, roles.isUserManager());
+		boolean learnResourceManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.learnresourcemanager, roles.isLearnResourceManager());
+		boolean administrator = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.administrator, roles.isAdministrator());
+
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
+				author, groupManager, poolManager, curriculumManager, userManager, learnResourceManager, administrator);
+		securityManager.updateRoles(null, identity, modifiedRoles);
+	}
+	
+	private void unsyncRole(IdentityRef identityRef, Organisation organisation) {
+		Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, false,
+				false, false, false, false, false, false, false);
+		securityManager.updateRoles(null, identity, modifiedRoles);
+	}
+	
+	private boolean syncRole(List<OrganisationRoles> synchronizedRoles, boolean fullSync, List<OrganisationRoles> ldapRoles,
+			OrganisationRoles roleToModify, boolean currentValue) {
+		if(synchronizedRoles.contains(roleToModify)) {
+			if(fullSync) {
+				currentValue = ldapRoles.contains(roleToModify);
+			} else {
+				currentValue |= ldapRoles.contains(roleToModify);
+			}	
 		}
+		return currentValue;
 	}
 	
 	private void doBatchSyncDeletedUsers(LdapContext ctx, String sinceSentence) {
@@ -1319,7 +1426,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					int cutValue = ldapLoginModule.getDeleteRemovedLDAPUsersPercentage();
 					String removeOption = ldapLoginModule.getRemoveLDAPUsersOnSyncOption();
 					if (prozente >= cutValue) {
-						log.info("LDAP batch sync: more than {}% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. {}% tried to delete.", cutValue, prozente);
+						log.info("LDAP batch sync: more than {}% of LDAP managed users should be deleted. Please use Admin Deletion Job. Or increase deleteRemovedLDAPUsersPercentage. {}% tried to delete.",
+								cutValue, prozente);
 					} else if("true".equals(removeOption)){
 						// delete users
 						deleteIdentities(deletedUserList, null);
@@ -1465,8 +1573,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		
 		// retrieve all ldap group's with their list of members
 		if(syncConfiguration.syncGroupWithLDAPGroup()) {
+			String filter = syncConfiguration.getLdapGroupFilter();
 			List<String> groupDNs = syncConfiguration.getLdapGroupBases();
-			List<LDAPGroup> ldapGroups = ldapDao.searchGroups(ctx, groupDNs);
+			List<LDAPGroup> ldapGroups = ldapDao.searchGroupsWithMembers(ctx, groupDNs, filter);
 			for(LDAPGroup ldapGroup:ldapGroups) {
 				cnToGroupMap.put(ldapGroup.getCommonName(), ldapGroup);
 			}

@@ -21,6 +21,9 @@
 
 		<property name="ldapUserFilter" value="${ldap.ldapUserFilter}"/>
 		<property name="ldapGroupFilter" value="${ldap.ldapGroupFilter}"/>
+		<property name="ldapOrganisationsGroupFilter" value="${ldap.ldapOrganisationFilter}"/>
+		
+		<property name="ldapOrganisationManagedFlag" value="ldap.organisation"/>
 		
 		<property name="ldapBases" >
     		<list>
@@ -32,7 +35,12 @@
     			<value>${ldap.ldapGroupBases}</value> 
     		</list>
 		</property>
-
+		<property name="ldapOrganisationsGroupBases" >
+    		<list>
+    			<value>${ldap.ldapOrganisationBases}</value> 
+    		</list>
+		</property>
+		
 		<property name="groupAttribute" value="${ldap.user.groupAttribute}"/>
 		<property name="groupAttributeSeparator" value="${ldap.user.groupAttributeSeparator}"/>
 		<property name="coachedGroupAttribute" value="${ldap.user.coachedGroupAttribute}"/>

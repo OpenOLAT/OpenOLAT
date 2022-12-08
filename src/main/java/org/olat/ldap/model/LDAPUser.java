@@ -19,11 +19,14 @@
  */
 package org.olat.ldap.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.directory.Attributes;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.id.Organisation;
 
 /**
  * 
@@ -34,6 +37,7 @@ import org.olat.basesecurity.IdentityRef;
 public class LDAPUser {
 	
 	private String dn;
+	
 	private boolean coach;
 	private boolean author;
 	private boolean userManager;
@@ -41,10 +45,13 @@ public class LDAPUser {
 	private boolean qpoolManager;
 	private boolean curriculumManager;
 	private boolean learningResourceManager;
+	
 	private List<String> groupIds;
 	private List<String> coachedGroupIds;
 	private Attributes attributes;
 	private IdentityRef cachedIdentity;
+	
+	private List<Organisation> organisations;
 	
 	private boolean notFound = false;
 	
@@ -150,6 +157,67 @@ public class LDAPUser {
 
 	public void setNotFound(boolean notFound) {
 		this.notFound = notFound;
+	}
+	
+	public List<OrganisationRoles> getRoles() {
+		List<OrganisationRoles> roles = new ArrayList<>();
+		if(isAuthor()) {
+			roles.add(OrganisationRoles.author);
+		}
+		if(isUserManager()) {
+			roles.add(OrganisationRoles.usermanager);
+		}
+		if(isGroupManager()) {
+			roles.add(OrganisationRoles.groupmanager);
+		}
+		if(isQpoolManager()) {
+			roles.add(OrganisationRoles.poolmanager);
+		}
+		if(isCurriculumManager()) {
+			roles.add(OrganisationRoles.curriculummanager);
+		}
+		if(isLearningResourceManager()) {
+			roles.add(OrganisationRoles.learnresourcemanager);
+		}
+		return roles;
+	}
+
+	public void addRole(OrganisationRoles role) {
+		if(role == null) return;
+		
+		switch(role) {
+			case author:
+				setAuthor(true);
+				break;
+			case usermanager:
+				setUserManager(true);
+				break;
+			case groupmanager:
+				setGroupManager(true);
+				break;
+			case poolmanager:
+				setQpoolManager(true);
+				break;
+			case curriculummanager:
+				setCurriculumManager(true);
+				break;
+			case learnresourcemanager:
+				setLearningResourceManager(true);
+				break;
+			default:
+				break;
+		}
+	}
+
+	public List<Organisation> getOrganisations() {
+		return organisations;
+	}
+
+	public void addOrganisation(Organisation organisation) {
+		if(organisations == null) {
+			organisations = new ArrayList<>(3);
+		}
+		organisations.add(organisation);
 	}
 
 	@Override

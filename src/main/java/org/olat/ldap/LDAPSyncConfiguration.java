@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.naming.directory.Attributes;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
@@ -51,9 +52,13 @@ public class LDAPSyncConfiguration {
 	
 	private String ldapUserFilter;
 	private String ldapGroupFilter;
+	private String ldapOrganisationsGroupFilter;
+	
+	private String ldapOrganisationManagedFlag;
 	
 	private List<String> ldapBases;
 	private List<String> ldapGroupBases;
+	private List<String> ldapOrganisationsGroupBases;
 	
 	private String ldapUserCreatedTimestampAttribute;
 	private String ldapUserLastModifiedTimestampAttribute;
@@ -136,6 +141,14 @@ public class LDAPSyncConfiguration {
 		ldapGroupBases = toList(bases);
 	}
 	
+	public List<String> getLdapOrganisationsGroupBases() {
+		return ldapOrganisationsGroupBases;
+	}
+	
+	public void setLdapOrganisationsGroupBases(List<String> bases) {
+		ldapOrganisationsGroupBases = toList(bases);
+	}
+	
 	private List<String> toList(List<String> list) {
 		List<String> listToUse = new ArrayList<>();
 		if (list != null) {
@@ -183,6 +196,33 @@ public class LDAPSyncConfiguration {
 		}
 	}
 	
+	public String getLdapOrganisationsGroupFilter() {
+		return ldapOrganisationsGroupFilter;
+	}
+
+	public void setLdapOrganisationsGroupFilter(String filter) {
+		if(StringHelper.containsNonWhitespace(filter)) {
+			ldapOrganisationsGroupFilter = filter.trim();
+		} else {
+			ldapOrganisationsGroupFilter = null;
+		}
+	}
+
+	public OrganisationManagement getLdapOrganisationManagedFlag() {
+		boolean hasOrganisationGroups = ldapOrganisationsGroupBases != null && !ldapOrganisationsGroupBases.isEmpty();
+		if(!hasOrganisationGroups) {
+			return OrganisationManagement.none;
+		}
+		if("default".equalsIgnoreCase(ldapOrganisationManagedFlag)) {
+			return OrganisationManagement.def;
+		}
+		return OrganisationManagement.managed;
+	}
+
+	public void setLdapOrganisationManagedFlag(String ldapOrganisationManagedFlag) {
+		this.ldapOrganisationManagedFlag = ldapOrganisationManagedFlag;
+	}
+
 	public boolean syncGroupWithLDAPGroup() {
 		return ldapGroupBases != null && !ldapGroupBases.isEmpty();
 	}
@@ -394,6 +434,40 @@ public class LDAPSyncConfiguration {
 	public void setLearningResourceManagerRoleValue(String attribute) {
 		this.learningResourceManagerRoleValue = attribute;
 	}
+	
+	public boolean syncOrganisationWithLDAPGroup() {
+		return ldapOrganisationsGroupBases != null && !ldapGroupBases.isEmpty();
+	}
+	
+	public List<OrganisationRoles> getSynchronizedRoles() {
+		List<OrganisationRoles> roles = new ArrayList<>(12);
+		if(StringHelper.containsNonWhitespace(authorRoleAttribute)
+				|| (authorsGroupBase != null && !authorsGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.author);
+		}
+		if(StringHelper.containsNonWhitespace(userManagerRoleAttribute)
+				|| (userManagersGroupBase != null && !userManagersGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.usermanager);
+		}
+		if(StringHelper.containsNonWhitespace(groupManagerRoleAttribute)
+				|| (groupManagersGroupBase != null && !groupManagersGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.groupmanager);
+		}
+		if(StringHelper.containsNonWhitespace(qpoolManagerRoleAttribute)
+				|| (qpoolManagersGroupBase != null && !qpoolManagersGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.poolmanager);
+		}
+		if(StringHelper.containsNonWhitespace(curriculumManagerRoleAttribute)
+				|| (curriculumManagersGroupBase != null && !curriculumManagersGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.curriculummanager);
+		}
+		if(StringHelper.containsNonWhitespace(learningResourceManagerRoleAttribute)
+				|| (learningResourceManagersGroupBase != null && !learningResourceManagersGroupBase.isEmpty())) {
+			roles.add(OrganisationRoles.learnresourcemanager);
+		}
+		return roles;
+	}
+
 
 	public void setLdapUserCreatedTimestampAttribute(String attribute) {
 		this.ldapUserCreatedTimestampAttribute = attribute;
@@ -602,5 +676,11 @@ public class LDAPSyncConfiguration {
 			}
 		}
 		return null;
+	}
+	
+	public enum OrganisationManagement {
+		none,
+		def,
+		managed
 	}
 }

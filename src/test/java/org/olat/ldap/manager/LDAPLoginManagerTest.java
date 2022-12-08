@@ -49,11 +49,15 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.FindNamedIdentity;
+import org.olat.basesecurity.model.SearchOrganisationParameters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -101,6 +105,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Autowired
 	private LDAPLoginManager ldapManager;
 	@Autowired
+	private OrganisationDAO organisationDao;
+	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
@@ -124,7 +130,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	
 	@Before
 	public void resetSynchronizationSettings() {
-		syncConfiguration.setLdapGroupBases(Collections.emptyList());
+		syncConfiguration.setLdapGroupBases(List.of());
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of());
 		syncConfiguration.setCoachedGroupAttribute(null);
 		syncConfiguration.setCoachedGroupAttributeSeparator(null);
 		syncConfiguration.setCoachRoleAttribute(null);
@@ -132,6 +139,12 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		syncConfiguration.setGroupCoachAsParticipant("false");
 		syncConfiguration.setAuthorRoleAttribute(null);
 		syncConfiguration.setAuthorRoleValue(null);
+		syncConfiguration.setQpoolManagerRoleAttribute(null);
+		syncConfiguration.setQpoolManagerRoleValue(null);
+		syncConfiguration.setUserManagerRoleAttribute(null);
+		syncConfiguration.setUserManagerRoleValue(null);
+		
+		syncConfiguration.setUserManagersGroupBase(List.of());
 		
 		securityModule.setIdentityName("auto");
 	}
@@ -158,7 +171,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncGroupsParticipantsOnly() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		
 		LDAPError errors = new LDAPError();
 		boolean allOk = ldapManager.doBatchSync(errors);
@@ -194,7 +207,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncGroupsParticipantsAndCoachByAttribute() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		syncConfiguration.setCoachedGroupAttribute("employeeType");
 		syncConfiguration.setCoachedGroupAttributeSeparator(",");
 		
@@ -237,7 +250,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncGroupsParticipantsAndCoachByRole() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		syncConfiguration.setCoachRoleAttribute("employeeNumber");
 		syncConfiguration.setCoachRoleValue("234");
 		syncConfiguration.setGroupCoachAsParticipant("false");
@@ -276,7 +289,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncGroupsParticipantsAndCoachAsParticipantByRole() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of());
 		syncConfiguration.setCoachRoleAttribute("employeeNumber");
 		syncConfiguration.setCoachRoleValue("234");
 		syncConfiguration.setGroupCoachAsParticipant("true");
@@ -314,7 +328,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncGroupsParticipantsByAttribute() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		syncConfiguration.setGroupAttribute("memberOf");
 		
 		LDAPError errors = new LDAPError();
@@ -346,7 +360,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void gSyncGroupsAuthorRole() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		syncConfiguration.setAuthorRoleAttribute("employeeNumber");
 		syncConfiguration.setAuthorRoleValue("author");
 		
@@ -527,7 +541,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncUserGroups() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
 		
 		// sync the groups first (sync by user only doesn't creates the groups)
@@ -580,7 +594,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncUserGroupsCoachAsParticipantsToo() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
 		
 		// sync the groups first (sync by user only doesn't creates the groups)
@@ -635,7 +649,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Test
 	public void syncUserGroupsRemove() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
-		syncConfiguration.setLdapGroupBases(Collections.singletonList("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
@@ -669,6 +683,170 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		List<Identity> managedParticipants = businessGroupService.getMembers(managedGroup, GroupRoles.participant.name());
 		Assert.assertTrue(managedParticipants.isEmpty());
 		Assert.assertFalse(managedParticipants.contains(id1));
+	}
+	
+	@Test
+	public void syncUserOrganisationsRolesByAttribute() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldaplearning)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setQpoolManagerRoleAttribute("employeeNumber");
+		syncConfiguration.setQpoolManagerRoleValue("poolmanager");
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("ldaporganisation");
+		List<Organisation> ldapOrganisations = organisationDao.findOrganisations(params);
+		assertThat(ldapOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.map(Organisation::getDisplayName)
+			.containsExactlyInAnyOrder("ldaporganisation");
+		
+		List<Identity> poolManagers = organisationDao
+				.getNonInheritedMembersIdentity(ldapOrganisations.get(0), OrganisationRoles.poolmanager.name());
+		assertThat(poolManagers)
+			.isNotNull()
+			.hasSize(1)
+			.map(Identity::getUser)
+			.map(User::getLastName)
+			.containsExactlyInAnyOrder("Martin");
+	}
+	
+	@Test
+	public void syncUserOrganisationsRolesByAdditionalGroups() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapempty)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupFilter("(&(objectClass=groupOfNames)(cn=ldapcoaching))");
+		syncConfiguration.setUserManagersGroupBase(List.of("ou=groups,dc=olattest,dc=org"));
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("ldaporganisation");
+		List<Organisation> ldapOrganisations = organisationDao.findOrganisations(params);
+		assertThat(ldapOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.map(Organisation::getDisplayName)
+			.containsExactlyInAnyOrder("ldaporganisation");
+		
+		List<Identity> userManagers = organisationDao
+				.getNonInheritedMembersIdentity(ldapOrganisations.get(0), OrganisationRoles.usermanager.name());
+		assertThat(userManagers)
+			.isNotNull()
+			.hasSize(1)
+			.map(Identity::getUser)
+			.map(User::getLastName)
+			.containsExactlyInAnyOrder("Forster");
+	}
+	
+	/**
+	 * Configure user manager synchronization by attribute and than
+	 * with a dummy value to see if the managers are veicted.
+	 * 
+	 * @throws LDAPException
+	 */
+	@Test
+	public void syncUserOrganisationsRolesEviction() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapempty)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupFilter("(&(objectClass=groupOfNames)(cn=ldapcoaching))");
+		syncConfiguration.setUserManagerRoleAttribute("employeeNumber");
+		syncConfiguration.setUserManagerRoleValue("usermanager");
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("ldaporganisation");
+		List<Organisation> ldapOrganisations = organisationDao.findOrganisations(params);
+		assertThat(ldapOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.map(Organisation::getDisplayName)
+			.containsExactlyInAnyOrder("ldaporganisation");
+		
+		// At least one user manager
+		List<Identity> userManagers = organisationDao
+				.getNonInheritedMembersIdentity(ldapOrganisations.get(0), OrganisationRoles.usermanager.name());
+		assertThat(userManagers)
+			.isNotNull()
+			.map(Identity::getUser)
+			.map(User::getLastName)
+			.containsAnyOf("Ferro");
+		
+		// A configuration which match nobody
+		syncConfiguration.setUserManagerRoleValue("notreallymanager");
+		
+		allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		List<Identity> notReallyManagers = organisationDao
+				.getNonInheritedMembersIdentity(ldapOrganisations.get(0), OrganisationRoles.usermanager.name());
+		assertThat(notReallyManagers)
+			.isNotNull()
+			.isEmpty();
+	}
+	
+	/**
+	 * Synchronize organizations with LDAP groups and check that users
+	 * which are not member of a group, go in the "Lost and found" organization.
+	 * 
+	 * @throws LDAPException
+	 */
+	@Test
+	public void syncUserOrganisationsLostAndFound() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapopenolat)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupFilter("(&(objectClass=groupOfNames)(cn=ldapcoaching))");
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("Lost and found");
+		List<Organisation> lostAndFoundOrganisations = organisationDao.findOrganisations(params);
+		assertThat(lostAndFoundOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.map(Organisation::getDisplayName)
+			.containsExactlyInAnyOrder("Lost and found");
+		
+		// At least some lost users
+		List<Identity> users = organisationDao
+				.getMembersIdentity(lostAndFoundOrganisations.get(0), OrganisationRoles.user.name());
+		assertThat(users)
+			.isNotNull()
+			.map(Identity::getUser)
+			.map(User::getLastName)
+			.containsAnyOf("Meier", "Rohrer")
+			.doesNotContain("Ferro", "Forster", "Martin", "Stieger");
+		
+		// Add an additional LDAP group, stieger must disappear from the organization
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapopenolat)(cn=ldapcoaching)))");
+		
+		allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+	
+		List<Identity> updateUsers = organisationDao
+				.getMembersIdentity(lostAndFoundOrganisations.get(0), OrganisationRoles.user.name());
+		assertThat(updateUsers)
+			.isNotNull()
+			.map(Identity::getUser)
+			.map(User::getLastName)
+			.containsAnyOf("Meier", "Rohrer", "Stieger")
+			.doesNotContain("Ferro", "Forster", "Martin");
 	}
 	
 	@Test

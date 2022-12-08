@@ -54,6 +54,8 @@ public interface LDAPLoginManager {
 	
 	public void syncUserGroups(Identity identity);
 	
+	public void syncUserOrganisations(Identity identity);
+	
 	public void deleteIdentities(List<Identity> identityList, Identity doer);
 	
 	public void inactivateIdentities(List<Identity> identityList, Identity doer);
