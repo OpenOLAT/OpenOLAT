@@ -156,7 +156,7 @@ public class BookingPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_accesscontrol_open_form");
 		
-		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_sel_ac_offer>div.o_icon_panel_content_col>header>h4");
+		By publicRowBy = By.cssSelector("fieldset.o_ac_configuration div.o_sel_ac_offer>div.o_icon_panel_content_col>div.o_icon_panel_header>h4");
 		OOGraphene.waitElement(publicRowBy, browser);
 		return this;
 	}

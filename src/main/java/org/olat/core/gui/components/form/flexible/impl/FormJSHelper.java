@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.gui.control.winmgr.CommandFactory;
@@ -380,8 +381,8 @@ public class FormJSHelper {
 		  // push a message to the UI before the clicked element, the element is moved and the click miss
 		  // it.
 		  .append("   setTimeout(function() {\n")
-		  .append("    console.log('Send validation');\n")
-		  .append(getXHRFnCallFor(form, formDispatchId, 5, false, false, true, false))
+		  .append(getXHRFnCallFor(form, formDispatchId, 5, false, false, true, false,
+				  new NameValuePair(Window.IGNORE_VALIDATING_ERROR_PARAMETER_MARKER, Window.IGNORE_VALIDATING_ERROR_RESPONSE_VALUE_MARKER)))
 		  .append("   },100);\n")
 		  .append("}\n");
 		
