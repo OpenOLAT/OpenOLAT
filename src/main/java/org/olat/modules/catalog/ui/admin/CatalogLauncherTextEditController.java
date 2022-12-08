@@ -150,7 +150,7 @@ public class CatalogLauncherTextEditController extends AbstractLauncherEditContr
 		
 		defaultLocaleTextEl.clearError();
 		if(!StringHelper.containsNonWhitespace(defaultLocaleTextEl.getValue())) {
-			defaultLocaleTextEl.setErrorKey("form.legende.mandatory", null);
+			defaultLocaleTextEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 			tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
 		}

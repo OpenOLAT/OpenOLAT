@@ -40,6 +40,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogFilter;
 import org.olat.modules.catalog.CatalogFilterHandler;
 import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
+import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
@@ -63,6 +64,8 @@ public class LicenseHandler implements CatalogFilterHandler {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private CatalogV2Service catalogService;
 
 	@Override
 	public String getType() {
@@ -113,7 +116,14 @@ public class LicenseHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
-		List<LicenseType> licenseTypes = licenseService.loadActiveLicenseTypes(licenseHandler);
+		List<Long> licenseTypeKeys = catalogService.getLicenseTypeKeys(searchParams);
+		if (licenseTypeKeys == null || licenseTypeKeys.isEmpty()) {
+			return null;
+		}
+		
+		List<LicenseType> licenseTypes = licenseService.loadLicenseTypes().stream()
+				.filter(licenseType -> licenseTypeKeys.contains(licenseType.getKey()))
+				.collect(Collectors.toList());
 		if (licenseTypes == null || licenseTypes.isEmpty()) {
 			return null;
 		}

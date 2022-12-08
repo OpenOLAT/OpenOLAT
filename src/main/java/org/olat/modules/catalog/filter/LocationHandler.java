@@ -39,7 +39,6 @@ import org.olat.modules.catalog.CatalogRepositoryEntrySearchParams;
 import org.olat.modules.catalog.CatalogV2Service;
 import org.olat.modules.catalog.ui.admin.CatalogFilterBasicController;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,16 +105,16 @@ public class LocationHandler implements CatalogFilterHandler {
 	public FlexiTableExtendedFilter createFlexiTableFilter(Translator translator, CatalogRepositoryEntrySearchParams searchParams, CatalogFilter catalogFilter) {
 		Translator repositoryTranslator = Util.createPackageTranslator(RepositoryService.class, translator.getLocale());
 		
-		List<RepositoryEntryLifecycle> publicLifecycles = catalogService.getPublicLifecycles(searchParams);
-		if (publicLifecycles == null || publicLifecycles.isEmpty()) {
+		List<String> locations = catalogService.getLocations(searchParams);
+		if (locations == null || locations.isEmpty()) {
 			return null;
 		}
 		
 		SelectionValues filterKV = new SelectionValues();
-		publicLifecycles.forEach(lifecycle -> filterKV.add(new SelectionValue(lifecycle.getKey().toString(), lifecycle.getLabel())));
+		locations.forEach(location -> filterKV.add(new SelectionValue(location, location)));
 		filterKV.sort(SelectionValues.VALUE_ASC);
 		
-		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.public.dates"), TYPE, filterKV,
+		return new FlexiTableMultiSelectionFilter(repositoryTranslator.translate("cif.location"), TYPE, filterKV,
 				catalogFilter.isDefaultVisible());
 	}
 

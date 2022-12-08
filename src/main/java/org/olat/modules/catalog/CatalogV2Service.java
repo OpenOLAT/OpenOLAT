@@ -48,6 +48,8 @@ public interface CatalogV2Service {
 	public List<String> getExpendituresOfWork(CatalogRepositoryEntrySearchParams searchParams);
 	
 	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams);
+	
+	public List<Long> getLicenseTypeKeys(CatalogRepositoryEntrySearchParams searchParams);
 
 	public List<Long> getTaxonomyLevelsWithOffers(CatalogRepositoryEntrySearchParams searchParams);
 	

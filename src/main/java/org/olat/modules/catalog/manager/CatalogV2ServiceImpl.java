@@ -32,8 +32,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -69,6 +67,8 @@ import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.model.OLATResourceAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.annotation.PostConstruct;
 
 /**
  * 
@@ -268,6 +268,11 @@ public class CatalogV2ServiceImpl implements CatalogV2Service, OrganisationDataD
 	@Override
 	public List<String> getLocations(CatalogRepositoryEntrySearchParams searchParams) {
 		return queries.loadLocations(searchParams);
+	}
+	
+	@Override
+	public List<Long> getLicenseTypeKeys(CatalogRepositoryEntrySearchParams searchParams) {
+		return queries.loadLicenseTypeKeys(searchParams);
 	}
 	
 	@Override

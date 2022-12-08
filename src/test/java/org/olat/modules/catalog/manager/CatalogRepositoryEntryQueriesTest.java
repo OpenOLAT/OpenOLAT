@@ -36,6 +36,7 @@ import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -59,6 +60,7 @@ import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.resource.accesscontrol.ACService;
@@ -97,7 +99,11 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private RepositoryEntryLicenseHandler licenseHandler;
 	
 	@Autowired
 	private CatalogRepositoryEntryQueries sut;
@@ -196,6 +202,42 @@ public class CatalogRepositoryEntryQueriesTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(
 						lifecycle1,
 						lifecycle2
+				);
+	}
+	
+	@Test
+	public void shouldLoadLicenseTypeKeys() {
+		TestCatalogItem catalogItem = createCatalogItem(5);
+		
+		LicenseType licenseType1 = licenseService.createLicenseType(random());
+		licenseService.saveLicenseType(licenseType1);
+		LicenseType licenseType2 = licenseService.createLicenseType(random());
+		licenseService.saveLicenseType(licenseType2);
+		LicenseType licenseType3 = licenseService.createLicenseType(random());
+		licenseService.saveLicenseType(licenseType3);
+		dbInstance.commitAndCloseSession();
+		
+		ResourceLicense license0 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(0).getOlatResource());
+		license0.setLicenseType(licenseType1);
+		licenseService.update(license0);
+		ResourceLicense license1 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(1).getOlatResource());
+		license1.setLicenseType(licenseType1);
+		licenseService.update(license1);
+		ResourceLicense license2 = licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(2).getOlatResource());
+		license2.setLicenseType(licenseType2);
+		licenseService.update(license2);
+		licenseService.loadOrCreateLicense(catalogItem.getRepositoryEntry(3).getOlatResource());
+		dbInstance.commitAndCloseSession();
+		
+		CatalogRepositoryEntrySearchParams searchParams = catalogItem.getSearchParams();
+		List<Long> licenseTypeKeys = sut.loadLicenseTypeKeys(searchParams);
+		
+		Long defaultLicenseTypeKey = Long.valueOf(licenseModule.getDefaultLicenseTypeKey(licenseHandler));
+		assertThat(licenseTypeKeys)
+				.containsExactlyInAnyOrder(
+						licenseType1.getKey(),
+						licenseType2.getKey(),
+						defaultLicenseTypeKey
 				);
 	}
 	

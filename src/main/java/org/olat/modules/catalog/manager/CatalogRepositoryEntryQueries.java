@@ -29,10 +29,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
-
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.persistence.DB;
@@ -55,6 +51,10 @@ import org.olat.user.UserImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 /**
  * 
  * Initial date: 24 May 2022<br>
@@ -76,7 +76,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.mainLanguage != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -94,7 +94,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.expenditureOfWork != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -112,7 +112,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.olatResource as res");
 		sb.and().append("v.location != null");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		
 		TypedQuery<String> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), String.class)
@@ -131,10 +131,25 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" inner join v.lifecycle as lifecycle");
 		sb.and().append("lifecycle.privateCycle = false");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false);
+		appendWhere(searchParams, sb, addParams, false, false);
 		
 		TypedQuery<RepositoryEntryLifecycle> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryLifecycle.class)
+				.setFlushMode(FlushModeType.COMMIT);
+		appendParams(searchParams, query, addParams, false);
+		return query.getResultList();
+	}
+	
+	public List<Long> loadLicenseTypeKeys(CatalogRepositoryEntrySearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct lic.licenseType.key");
+		sb.append(" from repositoryentry as v");
+		sb.append(" inner join v.olatResource as res");
+		AddParams addParams = new AddParams();
+		appendWhere(searchParams, sb, addParams, false, true);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
 				.setFlushMode(FlushModeType.COMMIT);
 		appendParams(searchParams, query, addParams, false);
 		return query.getResultList();
@@ -148,7 +163,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("         on reToTax.entry.key = v.key");
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		sb.and().append(" reToTax.taxonomyLevel.key != null");
 		sb.append(" group by reToTax.taxonomyLevel.key");
 		sb.append(" having count(*) > 0");
@@ -168,7 +183,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("         on reToTax.entry.key = v.key");
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		sb.append(" group by reToTax.taxonomyLevel.materializedPathKeys");
 		sb.append(" having count(*) > 0");
 		
@@ -185,7 +200,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append(" from repositoryentry as v");
 		sb.append(" inner join v.olatResource as res");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, true);
+		appendWhere(searchParams, sb, addParams, true, false);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
@@ -211,7 +226,7 @@ public class CatalogRepositoryEntryQueries {
 		sb.append("  left join fetch v.lifecycle as lifecycle");
 		sb.append("  left join fetch v.educationalType as educationalType");
 		AddParams addParams = new AddParams();
-		appendWhere(searchParams, sb, addParams, false);
+		appendWhere(searchParams, sb, addParams, false, false);
 		appendOrderBy(searchParams, sb);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -229,8 +244,8 @@ public class CatalogRepositoryEntryQueries {
 	}
 	
 	private void appendWhere(CatalogRepositoryEntrySearchParams searchParams, QueryBuilder sb, AddParams addParams,
-			boolean addFromLifecycle) {
-		if (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty()) {
+			boolean addFromLifecycle, boolean addFormLicense) {
+		if (addFormLicense || (searchParams.getLicenseTypeKeys() != null && !searchParams.getLicenseTypeKeys().isEmpty())) {
 			sb.append(" inner join license as lic");
 			sb.append("    on lic.resId = res.resId");
 			sb.append("   and lic.resName = res.resName");
@@ -718,4 +733,5 @@ public class CatalogRepositoryEntryQueries {
 		}
 		
 	}
+
 }

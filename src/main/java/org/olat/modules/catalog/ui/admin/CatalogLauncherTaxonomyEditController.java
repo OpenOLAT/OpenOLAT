@@ -155,7 +155,7 @@ public class CatalogLauncherTaxonomyEditController extends AbstractLauncherEditC
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (taxonomyLevelEl != null && !taxonomyLevelEl.isOneSelected()) {
-			taxonomyLevelEl.setErrorKey("form.legende.mandatory", null);
+			taxonomyLevelEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
