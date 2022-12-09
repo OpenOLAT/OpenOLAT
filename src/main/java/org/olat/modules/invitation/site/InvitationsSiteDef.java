@@ -59,4 +59,10 @@ public class InvitationsSiteDef extends AbstractSiteDefinition implements SiteDe
 		return (module.isBusinessGroupInvitationEnabled() || module.isCourseInvitationEnabled() || module.isPortfolioInvitationEnabled())
 				&& super.isEnabled();
 	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		InvitationModule module = CoreSpringFactory.getImpl(InvitationModule.class);
+		return (module.isBusinessGroupInvitationEnabled() || module.isCourseInvitationEnabled() || module.isPortfolioInvitationEnabled());
+	}
 }

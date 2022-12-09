@@ -4524,6 +4524,8 @@ create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start);
+create index idx_as_entry_subident_idx on o_as_entry(a_subident, fk_entry, fk_identity);
+create index idx_as_entry_re_status_idx on o_as_entry(fk_entry, a_status);
 
 alter table o_as_score_accounting_trigger add constraint satrigger_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_satrigger_re_idx on o_as_score_accounting_trigger (fk_entry);

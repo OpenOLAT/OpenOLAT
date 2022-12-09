@@ -282,7 +282,7 @@ public class SiteDefinitions extends AbstractSpringModule {
 			synchronized(this) {
 				if (siteDefMap == null) {
 					Map<String,SiteDefinition> siteDefs = CoreSpringFactory.getBeansOfType(SiteDefinition.class);
-					siteDefMap = new ConcurrentHashMap<>(siteDefs);
+					siteDefMap = Map.copyOf(siteDefs);
 
 					List<SiteConfiguration> configs = getSitesConfiguration();
 					Map<String,SiteConfiguration> siteConfigs = new HashMap<>();
