@@ -40,6 +40,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNoticeType;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.event.SearchAbsenceNoticeEvent;
@@ -67,6 +68,8 @@ public class AbsenceNoticeSearchController extends FormBasicController {
 	private Date currentDate;
 	private List<AbsenceCategory> categories;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	
@@ -96,6 +99,7 @@ public class AbsenceNoticeSearchController extends FormBasicController {
 			translate("authorized.absence"), translate("not.authorized.absence")
 		};
 		authorizedEl = uifactory.addCheckboxesHorizontal("authorized", null, formLayout, authorizedKeys, authorizedValues);
+		authorizedEl.setVisible(lectureModule.isAuthorizedAbsenceEnabled());
 		authorizedEl.selectAll();
 		
 		SelectionValues categoriesKeyValues = new SelectionValues();
@@ -123,7 +127,7 @@ public class AbsenceNoticeSearchController extends FormBasicController {
 			endDate = CalendarUtils.endOfDay(endDate);
 		}
 		Boolean authorized = null;
-		if(authorizedEl.isAtLeastSelected(1) && !authorizedEl.isAtLeastSelected(2)) {
+		if(authorizedEl.isVisible() && authorizedEl.isAtLeastSelected(1) && !authorizedEl.isAtLeastSelected(2)) {
 			authorized = Boolean.valueOf(authorizedEl.isSelected(0)); 
 		}
 		
