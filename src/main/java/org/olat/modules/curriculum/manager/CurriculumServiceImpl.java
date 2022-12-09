@@ -763,6 +763,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			}
 		}
 		
+		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
 	}
 
@@ -791,6 +792,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				}
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
 	}
 	
@@ -835,6 +837,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				}
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
 	}
 
@@ -847,6 +850,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 				events.add(CurriculumElementMembershipEvent.identityRemoved(element, member));
 			}
 		}
+		dbInstance.commitAndCloseSession();
 		sendDeferredEvents(events);
 	}
 

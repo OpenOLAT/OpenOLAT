@@ -144,9 +144,9 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 			}
 		} else if (event instanceof CurriculumElementMembershipEvent) {
 			CurriculumElementMembershipEvent e = (CurriculumElementMembershipEvent)event;
-			if (CurriculumElementMembershipEvent.MEMEBER_ADDED.equals(e.getCommand())) {
+			if (CurriculumElementMembershipEvent.MEMBER_ADDED.equals(e.getCommand())) {
 				tryProcessIdentityAddedToCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey(), e.getRole());
-			} else if (CurriculumElementMembershipEvent.MEMEBER_REMOVED.equals(e.getCommand())) {
+			} else if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
 				tryProcessIdentityRemovedFromCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey(), e.getRole());
 			}
 		} else if (event instanceof CurriculumElementRepositoryEntryEvent) {

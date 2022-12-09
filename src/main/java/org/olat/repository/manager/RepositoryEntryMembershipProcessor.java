@@ -39,6 +39,9 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
@@ -47,6 +50,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
+import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.springframework.beans.factory.InitializingBean;
@@ -88,6 +92,7 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(RepositoryEntry.class));
+		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(CurriculumElement.class));
 	}
 
 	@Override
@@ -101,6 +106,11 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())) {
 				processIdentityAddedToRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
 			}
+		} else if (event instanceof CurriculumElementMembershipEvent) {
+			CurriculumElementMembershipEvent e = (CurriculumElementMembershipEvent)event;
+			if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
+				processIdentityRemovedFromCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey());
+			}
 		}
 	}
 	
@@ -113,6 +123,21 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			String[] args = new String[] {url};
 			NotificationEvent event = new NotificationEvent(RepositoryManager.class, "pending.enrolments.info", args);
 			coordinator.getCoordinator().getEventBus().fireEventToListenersOf(event, target);
+		}
+	}
+	
+	private void processIdentityRemovedFromCurriculumElement(Long identityKey, long curriculumElementKey) {
+		IdentityRef identity = new IdentityRefImpl(identityKey);
+		List<RepositoryEntryToGroupRelation> relations = repositoryEntryRelationDao
+				.getCurriculumRelations(new CurriculumElementRefImpl(curriculumElementKey));
+		
+		for(RepositoryEntryToGroupRelation relation:relations) {
+			RepositoryEntry re = relation.getEntry();
+			List<String> remainingRoles = repositoryEntryRelationDao.getRoles(identity, re);
+			if(remainingRoles.isEmpty()) {
+				OLATResource resource = repositoryManager.lookupRepositoryEntryResource(re.getKey());
+				notificationsManager.unsubscribeAllForIdentityAndResId(identity, resource.getResourceableId());
+			}
 		}
 	}
 	
