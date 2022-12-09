@@ -46,4 +46,16 @@ public class LibrarySiteDef extends AbstractSiteDefinition implements SiteDefini
 		}
 		return null;
 	}
+
+	@Override
+	public boolean isEnabled() {
+		LibraryModule lm = CoreSpringFactory.getImpl(LibraryModule.class);
+		return lm.isEnabled() && super.isEnabled();
+	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		LibraryModule lm = CoreSpringFactory.getImpl(LibraryModule.class);
+		return lm.isEnabled();
+	}
 }

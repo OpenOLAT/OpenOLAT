@@ -57,4 +57,12 @@ public class LecturesManagementSiteDef extends AbstractSiteDefinition {
 		LectureModule module = CoreSpringFactory.getImpl(LectureModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		LectureModule module = CoreSpringFactory.getImpl(LectureModule.class);
+		return module.isEnabled();
+	}
+	
+	
 }

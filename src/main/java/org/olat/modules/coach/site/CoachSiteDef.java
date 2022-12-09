@@ -71,4 +71,10 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 		CoachingModule module = CoreSpringFactory.getImpl(CoachingModule.class);
 		return module.isEnabled() && super.isEnabled();
 	}
+
+	@Override
+	public boolean isFeatureEnabled() {
+		CoachingModule module = CoreSpringFactory.getImpl(CoachingModule.class);
+		return module.isEnabled();
+	}
 }
