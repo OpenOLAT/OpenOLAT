@@ -25,11 +25,11 @@
 								
 				<div class="o_portrait"><div class="o_portrait_image">
 				#if($message.anonym) 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_anonymous_small" aria-hidden="true" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_anonymous_small" aria-hidden="true">
 				#elseif ($message.avatarKey != "-1") 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${message.avatarKey}/portrait_small.jpg')">
 				#else
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_dummy_small" aria-hidden="true" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$message.from)" title="$r.translate("portrait.alt",$message.from)" class="o_portrait_dummy_small" aria-hidden="true">
 				#end 
 				</div></div>
 								

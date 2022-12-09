@@ -3,9 +3,9 @@
 		<div class="clearfix">
 			<div class="o_portrait" aria-hidden="true">
 				#if($member.isPortraitAvailable())
-					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" style="background-image: url('$avatarBaseURL/${member.getKey()}/portrait.jpg') !important;" alt="$r.escapeHtml("$member.getFullName()")" />
+					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" style="background-image: url('$avatarBaseURL/${member.getKey()}/portrait.jpg') !important;" alt="$r.escapeHtml("$member.getFullName()")">
 				#else
-					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" alt="$r.escapeHtml("$member.getFullName()")" />
+					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" alt="$r.escapeHtml("$member.getFullName()")">
 				#end
 			</div>
 			<div class="o_cmember_info_wrapper">

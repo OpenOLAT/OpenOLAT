@@ -3,7 +3,7 @@
 	<ul class="list-unstyled">
 	#foreach($entry in $roster.entries)
 		<li>
-			<span class="o_portrait"><img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$entry.name)" title="$r.translate("portrait.alt",$entry.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${entry.identityKey}/portrait_small.jpg')" /></span>
+			<span class="o_portrait"><img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$entry.name)" title="$r.translate("portrait.alt",$entry.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${entry.identityKey}/portrait_small.jpg')"></span>
 			<span><i class='o_icon o_icon-fw #if($entry.status == "available") o_icon_status_available #elseif($entry.status == "unavailable") o_icon_status_unavailable #elseif($entry.status == "dnd") o_icon_status_dnd #elseif($entry.status != "me") o_icon_status_unavailable #end'> </i>
 			$r.escapeHtml(${entry.name})</span>
 		</li>			

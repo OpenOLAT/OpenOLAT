@@ -171,20 +171,20 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						text = translator.translate(title);
 					}
-					sb.appendHtmlEscaped(text);
+					sb.appendHtmlAttributeEscaped(text);
 				} else if (nontranslated){
-					sb.appendHtmlEscaped(title).append("\"");
+					sb.appendHtmlAttributeEscaped(title);
 				} else {
-					sb.appendHtmlEscaped(translator.translate(title));
+					sb.appendHtmlAttributeEscaped(translator.translate(title));
 				}
 				sb.append("\"");
 			}
 			if(link.getAriaLabel() != null) {
 				sb.append(" aria-label=\"");
 				if (nontranslated){
-					sb.appendHtmlEscaped(link.getAriaLabel()).append("\"");
+					sb.appendHtmlAttributeEscaped(link.getAriaLabel()).append("\"");
 				} else {
-					sb.appendHtmlEscaped(translator.translate(link.getAriaLabel())).append("\"");
+					sb.appendHtmlAttributeEscaped(translator.translate(link.getAriaLabel())).append("\"");
 				}
 			}
 			if(link.getAriaRole() != null) {

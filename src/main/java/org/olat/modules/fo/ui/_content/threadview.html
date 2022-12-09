@@ -75,7 +75,7 @@
 			#end
 			#if(!$guestOnly)
 				#if($message.guest || ($message.pseudonym && !${message.pseudonym.isEmpty()}))
-				 	<div class="o_portrait" aria-hidden="true"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous" /></div></div>
+				 	<div class="o_portrait" aria-hidden="true"><div class="o_portrait_image"><img src="$r.staticLink("images/transparent.gif")" class="o_portrait_avatar o_portrait_anonymous"></div></div>
 				#elseif($r.available("portrait_${message.key}"))
 					$r.render("portrait_${message.key}")
 				#end

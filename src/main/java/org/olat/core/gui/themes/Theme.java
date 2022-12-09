@@ -146,11 +146,11 @@ public class Theme {
 		StringBuilder sb = new StringBuilder(512);
 		File themeFolder = getThemeFolder();
 		// Include the theme css file
-		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet' />\n");
+		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet'>\n");
 		// Include the email css file. It is necessary because AntiSAMY filters the styles in the OpenOLAT email module.
 		Path cssPath = getEmailCssPath();
 		if (Files.exists(cssPath)) {
-			sb.append("<link id='o_email_css' href='").append(baseURI).append("email.css' rel='stylesheet' />\n");
+			sb.append("<link id='o_email_css' href='").append(baseURI).append("email.css' rel='stylesheet'>\n");
 		}
 		// Include custom theme javascript file, for login caroussel, js-based layout patches etc
 		if (new File(themeFolder,CUSTOM_JS_FILENAME).exists()) {
@@ -158,38 +158,38 @@ public class Theme {
 		}
 		// Include the favicons in legacy .ico format and others in png format and different resolutions
 		if (new File(themeFolder,CUSTOM_FAVICON_ICO_FILENAME).exists()) {	
-			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_ICO_FILENAME).append("' type='image/x-icon' />\n");
+			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_ICO_FILENAME).append("' type='image/x-icon'>\n");
 		}
 		if (new File(themeFolder,CUSTOM_FAVICON_PNG16_FILENAME).exists()) {
-			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG16_FILENAME).append("' type='image/png' sizes='16x16' />\n");
+			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG16_FILENAME).append("' type='image/png' sizes='16x16'>\n");
 		}
 		if (new File(themeFolder,CUSTOM_FAVICON_PNG32_FILENAME).exists()) {
-			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG32_FILENAME).append("' type='image/png' sizes='32x32' />\n");
+			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG32_FILENAME).append("' type='image/png' sizes='32x32'>\n");
 		}
 		if (new File(themeFolder,CUSTOM_FAVICON_PNG64_FILENAME).exists()) {
-			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG64_FILENAME).append("' type='image/png' sizes='64x64' />\n");
+			sb.append("<link rel='icon' href='").append(baseURI).append(CUSTOM_FAVICON_PNG64_FILENAME).append("' type='image/png' sizes='64x64'>\n");
 		}
 		// Include high-res apple app/touch icon
 		if (new File(themeFolder,CUSTOM_APPICON_PNG180_FILENAME).exists()) {
-			sb.append("<link rel='apple-touch-icon' href='").append(baseURI).append(CUSTOM_APPICON_PNG180_FILENAME).append("' type='image/png' sizes='180x180' />\n");
+			sb.append("<link rel='apple-touch-icon' href='").append(baseURI).append(CUSTOM_APPICON_PNG180_FILENAME).append("' type='image/png' sizes='180x180'>\n");
 		}
 		// Include Google manifest file
 		if (new File(themeFolder,CUSTOM_MANIFEST_FILENAME).exists()) {
-			sb.append("<link rel='manifest' href='").append(baseURI).append(CUSTOM_MANIFEST_FILENAME).append("' />\n");
+			sb.append("<link rel='manifest' href='").append(baseURI).append(CUSTOM_MANIFEST_FILENAME).append("'>\n");
 		}
 		// Include Microsoft application config file (make sure any referenced image in the file has absolute path configuration
 		if (new File(themeFolder,CUSTOM_MS_APPLICATION_CONFIG_FILENAM).exists()) {
-			sb.append("<meta name='msapplication-config' content='").append(baseURI).append(CUSTOM_MS_APPLICATION_CONFIG_FILENAM).append("' />\n");
+			sb.append("<meta name='msapplication-config' content='").append(baseURI).append(CUSTOM_MS_APPLICATION_CONFIG_FILENAM).append("'>\n");
 		} else {
-			sb.append("<meta name='msapplication-TileColor' content='").append("#ffffff").append("' />\n");
+			sb.append("<meta name='msapplication-TileColor' content='").append("#ffffff").append("'>\n");
 			if (new File(themeFolder,CUSTOM_TILEICON_PNG70_FILENAME).exists()) {
-				sb.append("<meta name='msapplication-square70x70logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG70_FILENAME).append("' />\n");
+				sb.append("<meta name='msapplication-square70x70logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG70_FILENAME).append("'>\n");
 			}
 			if (new File(themeFolder,CUSTOM_TILEICON_PNG150_FILENAME).exists()) {
-				sb.append("<meta name='msapplication-square150x150logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG150_FILENAME).append("' />\n");
+				sb.append("<meta name='msapplication-square150x150logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG150_FILENAME).append("'>\n");
 			}
 			if (new File(themeFolder,CUSTOM_TILEICON_PNG310_FILENAME).exists()) {
-				sb.append("<meta name='msapplication-square310x310logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG310_FILENAME).append("' />\n");
+				sb.append("<meta name='msapplication-square310x310logo' content='").append(baseURI).append(CUSTOM_TILEICON_PNG310_FILENAME).append("'>\n");
 			}
 		}
 		

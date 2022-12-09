@@ -53,6 +53,6 @@ public class SpacerElementRenderer extends DefaultComponentRenderer {
 		if (customCSS != null) {
 			sb.append(" ").append(customCSS);
 		}
-		sb.append("\" />");
+		sb.append("\">");
 	}
 }

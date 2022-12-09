@@ -31,7 +31,7 @@
 	#end
 	
 	<p />
-	<hr />
+	<hr>
 	<h4>$r.translate("check.test")</h4>
 	<p>$r.translate("check.explanation")</p>
 	$r.render("check.test")
@@ -40,7 +40,7 @@
 	#end
 	#if($r.available("open.room") || $r.available("room.members") || $r.available("edit"))
 		<p />
-		<hr />
+		<hr>
 		$r.contextHelpWithWrapper("manual_user/course_elements/Course_element_OpenMeetings/")
 		<h4>$r.translate("administration.title")</h4>
 		#if($r.available("open.room"))

@@ -1,6 +1,6 @@
 $r.render("sourceview")
 <h3>Callout windows</h3>
-<hr />
+<hr>
 <div class="o_button_group o_button_group_right">
 	$r.render("calloutTriggerLink")
 </div>
@@ -16,7 +16,7 @@ $r.render("sourceview")
 	
 	$r.render("calloutTriggerLink2")
 </p>
-<hr />
+<hr>
 <p>
 	The constructor works with both a link object or by providing the DOM ID of the trigger element in case you're not using a link or you want to do something special. In the example below the trigger is 
 	a javascript on-click event.
@@ -26,7 +26,6 @@ $r.render("sourceview")
 </div>
 
 <script>
-/* <![CDATA[ */
 jQuery(function() {
 	## Add click listener to trigger 3 via JavaScript, fire event on 
 	## this velocity container back to java code when click is executed
@@ -34,5 +33,4 @@ jQuery(function() {
 		$r.javaScriptCommand('trigger3');
 	});
 });
-/* ]]> */
 </script>

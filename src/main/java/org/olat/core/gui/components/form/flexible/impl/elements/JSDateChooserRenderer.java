@@ -321,7 +321,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append(receiverId).append("\" name=\"").append(receiverId)
 		  .append("\" size=\"").append(te.displaySize)
 		  .append("\" maxlength=\"").append(maxlength)
-		  .append("\" value=\"").append(StringHelper.escapeHtml(value)).append("\" ")
+		  .append("\" value=\"").append(StringHelper.escapeHtml(value))
 		  .append("\" data-oo-validation-group=\"").append(receiverId).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), onChangeId, te.getAction()))
 		  .append(" autocomplete=\"off\">");

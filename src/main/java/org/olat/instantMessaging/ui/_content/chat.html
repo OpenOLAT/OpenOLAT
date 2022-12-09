@@ -33,11 +33,11 @@ function focus_${panelName}() {
 			#foreach($entry in $rosterNonVipEntries)
 				<span class="o_portrait"><span class="o_portrait">
 				#if($message.anonym) 
-					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_anonymous_small" aria-hidden="true" />
+					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_anonymous_small" aria-hidden="true">
 				#elseif ($message.avatarKey != "-1") 
-					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$entry.name)" title="$r.translate("portrait.alt",$entry.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${entry.avatarKey}/portrait_small.jpg')" />
+					<img src="$r.staticLink("images/transparent.gif")" alt="$r.translate("portrait.alt",$entry.name)" title="$r.translate("portrait.alt",$entry.name)" class="o_portrait_avatar_small" style="background-image: url('${avatarBaseURL}/${entry.avatarKey}/portrait_small.jpg')">
 				#else
-					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_dummy_small" aria-hidden="true" />
+					<img src="$r.staticLink("images/transparent.gif")" alt='$r.translate("portrait.generic=")' class="o_portrait_dummy_small" aria-hidden="true">
 				#end 
 				</span></span> <span><i class='o_icon o_icon-fw ${entry.onlineCssStatus}'> </i> $r.escapeHtml($entry.name)</span>
 			#end

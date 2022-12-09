@@ -59,7 +59,7 @@ public class UserAvatarCellRenderer implements FlexiCellRenderer {
 				target.append("<span class=\"o_portrait\"><img src=\"").append(transparentGif).append("\"")
 				      .append(" alt=\"").append(name).append("\" title=\"").append(name).append("\"")
 				      .append(" class=\"o_portrait_avatar_small\"")
-				      .append(" style=\"background-image: url('").append(avatarBaseURL).append("/").append(entry.getIdentityKey().toString()).append("/portrait_small.jpg')\" /></span>");
+				      .append(" style=\"background-image: url('").append(avatarBaseURL).append("/").append(entry.getIdentityKey().toString()).append("/portrait_small.jpg')\"></span>");
 			}
 		}
 	}

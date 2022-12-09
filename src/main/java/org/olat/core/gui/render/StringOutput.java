@@ -182,6 +182,11 @@ public class StringOutput extends Writer {
 		return this;
 	}
 	
+	public StringOutput appendHtmlAttributeEscaped(String str) {
+		sb.append(StringHelper.escapeForHtmlAttribute(str));
+		return this;
+	}
+	
 	public StringOutput insert(int offset, String str) {
 		sb.insert(offset, str);
 		return this;

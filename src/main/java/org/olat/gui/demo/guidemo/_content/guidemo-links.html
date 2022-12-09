@@ -1,7 +1,7 @@
 <h4>Links</h4>
 $r.render("sourceview")
 <p>All available links & buttons in OLAT</p>
-<hr />
+<hr>
 <p>$r.render("closeIcon")</p>
 Buttons:<br />
 <p>$r.render("button.xsmall") (CSS classes <b>btn bt-default</b> and <b>xsmall</b>)</p>
@@ -14,10 +14,10 @@ Buttons:<br />
 <p>$r.render("button.ghost")</p>
 <p>$r.render("button.ghost.disabled")</p>
 <p>$r.render("sonne")</p>
-<hr />
+<hr>
 Form Buttons:<br />
 <p>$r.render("formbuttonctr")</p>
-<hr />
+<hr>
 Links:<br>
 <p>$r.render("link")</p>
 <p>$r.render("backLink") (CSS class <b>o_icon o_icon_back</b>)</p>
@@ -25,14 +25,14 @@ Links:<br>
 <p>$r.render("link.mail") (CSS class <b>o_icon o_icon_mail</b>)</p>
 <p>$r.render("link.pos") (Give the position)</p>
 <p>$r.render("link.tooltip") (Tooltip)</p>
-<hr />
+<hr>
 Up and down:<br>
 #foreach($upDown in $upDowns)
 <p>$r.render($upDown.component) $upDown.text</p>
 #end
-<br />
-<br />
-<hr />
+<br>
+<br>
+<hr>
 Text Component:<br />
 <ul class="list-unstyled">
 <li>$r.render("text.simple")</li>
@@ -47,8 +47,8 @@ Text Component:<br />
 <li>$r.render("text.div.error")</li>
 <li>$r.render("text.div.advice") $r.contextHelpAdditionalInfo("")</li>
 </ul>
-<br />
-<hr />
+<br>
+<hr>
 <fieldset>
 $r.render("ajaxtest")
 </fieldset>

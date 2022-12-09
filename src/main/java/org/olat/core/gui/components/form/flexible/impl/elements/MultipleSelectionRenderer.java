@@ -118,7 +118,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			if(!stC.isEnabled() || !check.isEnabled()) {
 				sb.append(" disabled='disabled' ");
 			}
-			sb.append(" /> ");
+			sb.append("> ");
 			
 			String iconLeftCSS = check.getIconLeftCSS();
 			if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
@@ -329,7 +329,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			//TODO editor force focus to move on
 			sb.append(" onmousedown=\"o_info.lastFormFocusEl='").append(check.getFormDispatchId()).append("';\"");
 		}
-		sb.append(" />");
+		sb.append(">");
 		String iconLeftCSS = check.getIconLeftCSS();
 		if (StringHelper.containsNonWhitespace(iconLeftCSS)) {
 			sb.append(" <i class='").append(iconLeftCSS).append("'> </i> ");

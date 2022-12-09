@@ -103,13 +103,13 @@ class FormWrapperContainerRenderer extends DefaultComponentRenderer {
 			// hidden input field for dispatch uri
 			sb.append("<input type=\"hidden\" id=\"")
 			  .append(formC.getDispatchFieldId())
-			  .append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\" />")
+			  .append("\" name=\"dispatchuri\" value=\"").append(Form.FORM_UNDEFINED).append("\">")
 			  .append("<input type=\"hidden\" id=\"")
 			  .append(formC.getEventFieldId())
-			  .append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\" />");
+			  .append("\" name=\"dispatchevent\" value=\"").append(Form.FORM_UNDEFINED).append("\">");
 			if(formC.isCsrfProtected()) {
 				sb.append("<input type=\"hidden\"")
-				  .append(" name=\"").append(Form.FORM_CSRF).append("\" value=\"").append(renderer.getCsrfToken()).append("\" />");
+				  .append(" name=\"").append(Form.FORM_CSRF).append("\" value=\"").append(renderer.getCsrfToken()).append("\">");
 			}
 
 			/*
