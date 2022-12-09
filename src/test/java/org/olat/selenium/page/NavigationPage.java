@@ -164,7 +164,7 @@ public class NavigationPage {
 	}
 	
 	public void openCourse(String title) {
-		By courseTab = By.xpath("//li/a[@title='" + title + "']");
+		By courseTab = By.xpath("//li/a[contains(@title,'" + title + "')][not(i[contains(@class,'o_icon_close_tab')])]");
 		List<WebElement> courseLinks = browser.findElements(courseTab);
 		if(courseLinks.isEmpty() || !courseLinks.get(0).isDisplayed()) {
 			openMoreMenu();

@@ -418,7 +418,7 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment chooseResourceModern(By chooseButton, String resourceTitle) {
-		By landingBy = By.xpath("//div[@class='o_re_reference']//header/h4[text()[contains(.,'" + resourceTitle + "')]]");
+		By landingBy = By.xpath("//div[@class='o_re_reference']//div[@class='o_icon_panel_header']/h4[text()[contains(.,'" + resourceTitle + "')]]");
 		return chooseResource(chooseButton, resourceTitle, landingBy);
 	}
 	
