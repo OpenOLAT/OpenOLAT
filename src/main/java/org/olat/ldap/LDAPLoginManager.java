@@ -52,9 +52,7 @@ public interface LDAPLoginManager {
 	
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors);
 	
-	public void syncUserGroups(Identity identity);
-	
-	public void syncUserOrganisations(Identity identity);
+	public void syncUser(Identity identity);
 	
 	public void deleteIdentities(List<Identity> identityList, Identity doer);
 	

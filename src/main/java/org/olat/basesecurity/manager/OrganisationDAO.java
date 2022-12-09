@@ -431,6 +431,28 @@ public class OrganisationDAO {
 		return new ArrayList<>(deduplicatedOrganisations);
 	}
 	
+	public List<Organisation> getManagedOrganisations(IdentityRef identity, OrganisationRef parentOrganisation) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select org from organisation org")
+		  .append(" inner join fetch org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" left join fetch org.type orgType")
+		  .append(" left join fetch org.parent parentOrg")
+		  .append(" where membership.identity.key=:identityKey and parentOrg.key=:parentOrganisationKey")
+		  .append(" and org.status ").in(OrganisationStatus.notDelete())
+		  .append(" and membership.inheritanceModeString ").in(GroupMembershipInheritance.root, GroupMembershipInheritance.none)
+		  .append(" and (org.managedFlagsString is not null or org.externalId is not null)");
+
+		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Organisation.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("parentOrganisationKey", parentOrganisation.getKey())
+				.getResultList();
+		// because of the CLOB on Oracle, we make the "distinct" in Java
+		Set<Organisation> deduplicatedOrganisations = new HashSet<>(organisations);
+		return new ArrayList<>(deduplicatedOrganisations);
+	}
+	
 	public Map<Long,List<String>> getUsersOrganisationsName(List<IdentityRef> identities) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select membership.identity.key, org.displayName from organisation org")

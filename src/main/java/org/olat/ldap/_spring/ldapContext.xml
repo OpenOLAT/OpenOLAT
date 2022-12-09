@@ -23,8 +23,6 @@
 		<property name="ldapGroupFilter" value="${ldap.ldapGroupFilter}"/>
 		<property name="ldapOrganisationsGroupFilter" value="${ldap.ldapOrganisationFilter}"/>
 		
-		<property name="ldapOrganisationManagedFlag" value="ldap.organisation"/>
-		
 		<property name="ldapBases" >
     		<list>
     			<value>${ldap.ldapBases}</value> 

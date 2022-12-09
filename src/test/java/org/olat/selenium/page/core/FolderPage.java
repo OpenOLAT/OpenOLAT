@@ -59,7 +59,7 @@ public class FolderPage {
 	public FolderPage createDirectory(String name) {
 		By newFolderBy = By.className("b_bc_newfolder");
 		browser.findElement(newFolderBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialog(browser);
 		
 		By folderNameBy = By.cssSelector(".o_sel_folder_new_folder_name input[type='text']");
 		OOGraphene.waitElement(folderNameBy, browser);
@@ -67,7 +67,7 @@ public class FolderPage {
 		
 		By createBy = By.cssSelector(".o_sel_folder_new_folder button.btn-primary");
 		browser.findElement(createBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
