@@ -51,6 +51,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.AuthenticationDAO;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.manager.OrganisationDAO;
 import org.olat.basesecurity.model.FindNamedIdentity;
 import org.olat.basesecurity.model.SearchOrganisationParameters;
@@ -97,6 +98,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
 	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
@@ -131,6 +134,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Before
 	public void resetSynchronizationSettings() {
 		syncConfiguration.setLdapGroupBases(List.of());
+		syncConfiguration.setLdapGroupFilter("(objectClass=groupOfNames)");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of());
 		syncConfiguration.setCoachedGroupAttribute(null);
 		syncConfiguration.setCoachedGroupAttributeSeparator(null);
@@ -568,12 +572,12 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		syncConfiguration.setCoachedGroupAttributeSeparator(",");
 		
 		Identity id1 = securityManager.findIdentityByLogin("dforster");
-		ldapManager.syncUserGroups(id1);
+		ldapManager.syncUser(id1);
 		dbInstance.commitAndCloseSession();
 		
 		// has additional coach attribute
 		Identity id2 = securityManager.findIdentityByLogin("gstieger");
-		ldapManager.syncUserGroups(id2);
+		ldapManager.syncUser(id2);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
@@ -622,12 +626,12 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		syncConfiguration.setGroupCoachAsParticipant("true");
 		
 		Identity id1 = securityManager.findIdentityByLogin("dforster");
-		ldapManager.syncUserGroups(id1);
+		ldapManager.syncUser(id1);
 		dbInstance.commitAndCloseSession();
 		
 		// has additional coach attribute
 		Identity id2 = securityManager.findIdentityByLogin("gstieger");
-		ldapManager.syncUserGroups(id2);
+		ldapManager.syncUser(id2);
 		dbInstance.commitAndCloseSession();
 		
 		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
@@ -645,6 +649,57 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 			.containsExactlyInAnyOrder("gstieger");
 	}
 	
+	@Test
+	public void syncUserGroupsAttributesOnly() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setGroupAttribute(CONTEXT_PATH);
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("admin-ldap");
+		
+		// sync the groups first (sync by user only doesn't creates the groups)
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		// first remove all members of the LDAP group
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setExactName("ldapcoaching");
+		List<BusinessGroup> ldapGroups = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		Assert.assertEquals(1, ldapGroups.size());
+
+		BusinessGroup ldapGroup = ldapGroups.get(0);
+		List<Identity> currentMembers = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		businessGroupService.removeMembers(admin, currentMembers, ldapGroup.getResource(), new MailPackage(false), true);
+		dbInstance.commitAndCloseSession();
+		
+		int numOfMembers = businessGroupService.countMembers(ldapGroup, GroupRoles.coach.name(), GroupRoles.participant.name());
+		Assert.assertEquals(0, numOfMembers);
+		
+		// set synchronization settings
+		syncConfiguration.setGroupAttribute("memberOf");
+		syncConfiguration.setGroupAttributeSeparator(",");
+		
+		Identity id1 = securityManager.findIdentityByLogin("dforster");
+		ldapManager.syncUser(id1);
+		dbInstance.commitAndCloseSession();
+		
+		// has additional coach attribute
+		Identity id2 = securityManager.findIdentityByLogin("gstieger");
+		ldapManager.syncUser(id2);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> participants = businessGroupService.getMembers(ldapGroup, GroupRoles.participant.name());
+		assertThat(participants)
+			.isNotNull()
+			.hasSize(1)
+			.extracting(id -> id.getUser())
+			.extracting(user -> user.getNickName())
+			.containsExactlyInAnyOrder("gstieger");
+		
+		List<Identity> coaches = businessGroupService.getMembers(ldapGroup, GroupRoles.coach.name());
+		assertThat(coaches)
+			.isNotNull()
+			.isEmpty();
+	}
 
 	@Test
 	public void syncUserGroupsRemove() throws LDAPException {
@@ -672,7 +727,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		syncConfiguration.setGroupCoachAsParticipant("true");
 		
 		id1 = securityManager.findIdentityByLogin("dforster");
-		ldapManager.syncUserGroups(id1);
+		ldapManager.syncUser(id1);
 		dbInstance.commitAndCloseSession();
 		
 		// check the user is still in the real LDAP group
@@ -686,7 +741,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void syncUserOrganisationsRolesByAttribute() throws LDAPException {
+	public void syncOrganisationsRolesByAttribute() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldaplearning)))");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
@@ -717,7 +772,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void syncUserOrganisationsRolesByAdditionalGroups() throws LDAPException {
+	public void syncOrganisationsRolesByAdditionalGroups() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapempty)))");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
@@ -754,7 +809,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	 * @throws LDAPException
 	 */
 	@Test
-	public void syncUserOrganisationsRolesEviction() throws LDAPException {
+	public void syncOrganisationsRolesEviction() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapempty)))");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
@@ -804,7 +859,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	 * @throws LDAPException
 	 */
 	@Test
-	public void syncUserOrganisationsLostAndFound() throws LDAPException {
+	public void syncOrganisationsLostAndFound() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapopenolat)))");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
@@ -815,13 +870,13 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertTrue(allOk);
 		
 		SearchOrganisationParameters params = new SearchOrganisationParameters();
-		params.setExternalId("Lost and found");
+		params.setExternalId(LDAPLoginManagerImpl.LOST_AND_FOUND_ORGANISATION);
 		List<Organisation> lostAndFoundOrganisations = organisationDao.findOrganisations(params);
 		assertThat(lostAndFoundOrganisations)
 			.isNotNull()
 			.hasSize(1)
 			.map(Organisation::getDisplayName)
-			.containsExactlyInAnyOrder("Lost and found");
+			.containsExactlyInAnyOrder(LDAPLoginManagerImpl.LOST_AND_FOUND_ORGANISATION);
 		
 		// At least some lost users
 		List<Identity> users = organisationDao
@@ -847,6 +902,58 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 			.map(User::getLastName)
 			.containsAnyOf("Meier", "Rohrer", "Stieger")
 			.doesNotContain("Ferro", "Forster", "Martin");
+	}
+	
+	@Test
+	public void syncUserOrganisation() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapopenolat)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupFilter("(&(objectClass=groupOfNames)(cn=ldapcoaching))");
+		syncConfiguration.setUserManagerRoleAttribute("employeeNumber");
+		syncConfiguration.setUserManagerRoleValue("usermanager");
+		
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+
+		Identity id = securityManager.findIdentityByLogin("vferro");
+		// Remove all memberships of the test user
+		List<Organisation> allOrganisations = organisationDao
+				.findOrganisations(new SearchOrganisationParameters());
+		for(Organisation organisation:allOrganisations) {
+			groupDao.removeMembership(organisation.getGroup(), id);
+		}
+		dbInstance.commitAndCloseSession();
+		
+		List<Organisation> organisations = organisationDao.getOrganisations(id, OrganisationRoles.toList(OrganisationRoles.values()), false);
+		assertThat(organisations)
+			.isNotNull()
+			.isEmpty();
+		
+		// Sync this single user
+		ldapManager.syncUser(id);
+		dbInstance.commitAndCloseSession();
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("ldaporganisation");
+		List<Organisation> ldapOrganisations = organisationDao.findOrganisations(params);
+
+		// Sync as user
+		List<Organisation> userOrganisations = organisationDao
+				.getOrganisations(id, OrganisationRoles.toList(OrganisationRoles.user), false);
+		assertThat(userOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.containsExactlyInAnyOrder(ldapOrganisations.get(0));
+
+		// Sync as user manager
+		List<Organisation> userManagerOrganisations = organisationDao
+				.getOrganisations(id, OrganisationRoles.toList(OrganisationRoles.usermanager), false);
+		assertThat(userManagerOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.containsExactly(ldapOrganisations.get(0));
 	}
 	
 	@Test

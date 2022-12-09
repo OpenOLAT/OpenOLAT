@@ -22,6 +22,7 @@ package org.olat.ldap.manager;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -249,6 +250,90 @@ public class LDAPDAO {
 		}
 		
 		return userDN;
+	}
+	
+	public LDAPUser searchLDAPUserByUid(String username, DirContext ctx) {
+		if(ctx == null) return null;
+		
+		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
+		String filter = buildSearchUserFilter(ldapUserIDAttribute, username);
+
+		List<String> ldapBases = syncConfiguration.getLdapBases();
+
+		List<String> searchAttr = new ArrayList<>();
+		searchAttr.add("dn");
+		Collections.addAll(searchAttr, getEnhancedUserAttributes());
+
+		SearchControls ctls = new SearchControls();
+		ctls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+		ctls.setReturningAttributes(searchAttr.toArray(new String[ searchAttr.size() ]));
+
+		LDAPUserVisitor visitor = new LDAPUserVisitor(syncConfiguration);
+		for (String ldapBase : ldapBases) {
+			try {
+				NamingEnumeration<SearchResult> enm = ctx.search(ldapBase, filter, ctls);
+				while (enm.hasMore()) {
+					SearchResult result = enm.next();
+					visitor.visit(result);
+				}
+				if(!visitor.getLdapUserList().isEmpty()) {
+					break;
+				}
+			} catch (NamingException e) {
+				log.error("NamingException when trying to bind user with username::{} on ldapBase::{}", username, ldapBase, e);
+			}
+		}
+		
+		List<LDAPUser> users = visitor.getLdapUserList();
+		return users.isEmpty() ? null : users.get(0);
+	}
+	
+	protected static List<String> parseGroupList(Attributes resAttribs, String attributeName, String attributeSeparator) {
+		List<String> groupList = List.of();
+		if(StringHelper.containsNonWhitespace(attributeName)) {
+			try {
+				Attribute groupAttr = resAttribs.get(attributeName);
+				if(groupAttr != null && groupAttr.get() instanceof String) {
+					String groupString = (String)groupAttr.get();
+					if(!"-".equals(groupString)) {
+						String[] groupArr = groupString.split(attributeSeparator);
+						groupList = new ArrayList<>(groupArr.length);
+						for(String group:groupArr) {
+							groupList.add(group);
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("");
+			}
+		}
+		return groupList;
+	}
+	
+	protected static boolean hasAttributeValue(Attributes resAttribs, String attribute, String value) {
+		boolean hasAttributeValue = false;
+		if(StringHelper.containsNonWhitespace(attribute) && StringHelper.containsNonWhitespace(value)) {
+			try {
+				Attribute attr = resAttribs.get(attribute);
+				if(attr != null) {
+					if(attr.size() == 1) {
+						if(value.equals(attr.get())) {
+							hasAttributeValue = true;
+						}
+					} else if(attr.size() > 1) {
+						for(NamingEnumeration<?> valuEnum=attr.getAll(); valuEnum.hasMoreElements(); ) {
+							Object nextValue = valuEnum.next();
+							if(value.equals(nextValue)) {
+								hasAttributeValue = true;
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("");
+			}
+		}
+		return hasAttributeValue;
 	}
 	
 	protected String buildSearchUserFilter(String attribute, String uid) {

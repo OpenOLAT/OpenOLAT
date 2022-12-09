@@ -54,8 +54,6 @@ public class LDAPSyncConfiguration {
 	private String ldapGroupFilter;
 	private String ldapOrganisationsGroupFilter;
 	
-	private String ldapOrganisationManagedFlag;
-	
 	private List<String> ldapBases;
 	private List<String> ldapGroupBases;
 	private List<String> ldapOrganisationsGroupBases;
@@ -206,21 +204,6 @@ public class LDAPSyncConfiguration {
 		} else {
 			ldapOrganisationsGroupFilter = null;
 		}
-	}
-
-	public OrganisationManagement getLdapOrganisationManagedFlag() {
-		boolean hasOrganisationGroups = ldapOrganisationsGroupBases != null && !ldapOrganisationsGroupBases.isEmpty();
-		if(!hasOrganisationGroups) {
-			return OrganisationManagement.none;
-		}
-		if("default".equalsIgnoreCase(ldapOrganisationManagedFlag)) {
-			return OrganisationManagement.def;
-		}
-		return OrganisationManagement.managed;
-	}
-
-	public void setLdapOrganisationManagedFlag(String ldapOrganisationManagedFlag) {
-		this.ldapOrganisationManagedFlag = ldapOrganisationManagedFlag;
 	}
 
 	public boolean syncGroupWithLDAPGroup() {
@@ -436,7 +419,7 @@ public class LDAPSyncConfiguration {
 	}
 	
 	public boolean syncOrganisationWithLDAPGroup() {
-		return ldapOrganisationsGroupBases != null && !ldapGroupBases.isEmpty();
+		return ldapOrganisationsGroupBases != null && !ldapOrganisationsGroupBases.isEmpty();
 	}
 	
 	public List<OrganisationRoles> getSynchronizedRoles() {
