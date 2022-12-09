@@ -3,7 +3,7 @@ $o-brand-chocolate				: rgb(52,44,36);
 /* $o-brand-chocolate				: rgb(71,55,41);  more brownish */
 $o-brand-sprout					: rgb(178,207,66);
 $o-brand-forest					: rgb(17,98,79);
-$o-brand-sea					: rgb(32,157,158);
+$o-brand-sea					: #126365; // 11ay optimized version of rgb(32,157,158);
 $o-brand-peach					: rgb(242,175,64);
 $o-brand-berry					: rgb(143,31,64);
 
@@ -56,7 +56,7 @@ CC by frentix GmbH http://www.frentix.com
 */
 
 
-$o-login-btn-register-color		: #fff;
+$o-login-btn-register-color		: $text-color;
 $o-login-btn-register-bg		: $o-brand-sprout;
 $o-login-btn-register-border	: $o-brand-sprout; 
 

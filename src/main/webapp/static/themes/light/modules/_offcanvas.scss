@@ -73,6 +73,13 @@ body.o_dmz #o_container_page_width_toggler {
 	min-height: 100%;
 	z-index: 10;
 	display: none;
+	
+	.o_offcanvas_close {
+		color: 	$o-offcanvas-logout-color;
+		:hover {
+			color: 	$o-offcanvas-logout-hover-color;		
+		}
+	}
 }
 
 

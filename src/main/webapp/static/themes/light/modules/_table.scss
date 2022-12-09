@@ -217,9 +217,12 @@
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
-				
+			}
+			/* special colors for the filter buttons itself */
+			.o_table_filter {
+				@include button-variant($o-table-filter-color, $o-table-filter-bg, $o-table-filter-border);
 				&.o_filter_active {
-					background-color: $o-table-filter-active-bg;
+					@include button-variant($o-table-filter-active-color, $o-table-filter-active-bg, $o-table-filter-active-border);
 				}
 			}
 		}
@@ -555,16 +558,6 @@ a.o_orderby, a.o_orderby:hover {
 			font-weight: normal;
 		}
 	}
-}
-
-/* Use special coloring for filter menu to better separate form normal forms    */
-/* Primary color for dark colors, otherwise use the text color                  */
-.o_table_filter {
-	@if color.blackness($btn-primary-border) < 30 {
-		@include button-variant($text-color, #fff, $btn-primary-border);
-	} @else {
-		@include button-variant($btn-primary-border, #fff, $btn-primary-border);
-	} 
 }
 
  table tr.o_no_border td,

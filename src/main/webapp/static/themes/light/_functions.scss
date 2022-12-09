@@ -1,0 +1,69 @@
+/*
+ * =================================================
+ *   
+ * OpenOLAT theme functions file
+ *
+ * @author gnaegi,  www.frentix.com
+ * @date December 2022
+ */
+@use "sass:color";
+@use "sass:math";
+ 
+ 
+/* Helper method to calculate the relative luminance required to
+ * implement proper accessiblility 
+ *
+ * Based on code from https://css-tricks.com/snippets/sass/luminance-color-function/
+ * 
+ *
+ * Returns the luminance of `$color` as a float (between 0 and 1)
+ * 1 is pure white, 0 is pure black
+ * 
+ * @param {Color} $color - Color
+ * @return {Number}
+ * @link http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef Reference
+ */
+ 
+@function luminance($color) {
+  $colors: (
+    'red': red($color),
+    'green': green($color),
+    'blue': blue($color)
+  );
+
+  @each $name, $value in $colors {
+    $adjusted: 0;
+    $value: math.div($value , 255);
+
+    @if $value < 0.03928 {
+      $value: math.div($value , 12.92);
+    } @else {
+      $value: math.div(($value + .055) , 1.055);
+      $value: math.pow($value, 2.4);
+    }
+
+    $colors: map-merge($colors, ($name: $value));
+  }
+
+  @return (map-get($colors, 'red') * .2126) + (map-get($colors, 'green') * .7152) + (map-get($colors, 'blue') * .0722);
+}
+
+/* Helper method to calculate the contrast based on the luminance
+ * For good readibility the contrast should be greater than 4.5
+ * for bold and large text it can be as low as 3 depending on the font size
+ *
+ * @param {Color1} $color1 - The first color (e.g. text color)
+ * @param {Color2} $color2 - The second color (e.g. text background)
+ * @return {Number}
+ */  
+@function contrast($color1, $color2) {
+	// 0=black  1=white
+	$lum1 : luminance($color1);
+	$lum2 : luminance($color2);
+	
+	@if $lum1 < $lum2 {
+		@return ( math.div(($lum2 + 0.05) , ($lum1 + 0.05)) )
+	} @else {
+		@return ( math.div(($lum1 + 0.05) , ($lum2 + 0.05)) )
+    } 
+}

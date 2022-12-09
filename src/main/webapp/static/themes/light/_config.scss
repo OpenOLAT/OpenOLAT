@@ -84,7 +84,18 @@ $o-table-edit-border			: #f90;
 $o-table-edit-bg				: #fefbf6;
 
 $o-table-filter-collapse-color	: #e7e7e7;
-$o-table-filter-active-bg		: #f9f9f9 !default;
+
+$o-table-filter-color			: $btn-primary-border !default;
+$o-table-filter-border			: $btn-primary-border !default;
+$o-table-filter-bg				: #fff !default;
+$o-table-filter-active-color	: #fff !default;
+$o-table-filter-active-border	: $btn-primary-border !default;
+$o-table-filter-active-bg		: $btn-primary-border !default;
+/* Override if color contrast not high enough */
+@if contrast($btn-primary-border, $o-table-filter-bg) < 4.5 {
+	$o-table-filter-color			: $text-color;
+	$o-table-filter-active-color	: $text-color;
+}
 
 /* Empty state in various modules */
 $o-empty-indicator-color		: #495057 !default;
@@ -173,12 +184,12 @@ $o-offcanvas-padding-horizontal		: $navbar-padding-horizontal !default;
 $o-offcanvas-padding-vertical		: $navbar-padding-vertical !default;
 $o-offcanvas-border 				: $navbar-inverse-border !default;
 $o-offcanvas-bg 					: $navbar-inverse-bg !default;
-$o-offcanvas-link-color				: $navbar-inverse-color!default;
-$o-offcanvas-link-hover-color 		: $navbar-inverse-link-hover-color!default;
+$o-offcanvas-link-color				: #ACACAC!default;
+$o-offcanvas-link-hover-color 		: darken(#ACACAC,10%) !default;
 $o-offcanvas-link-hover-bg 			: $navbar-inverse-link-hover-bg!default;
 $o-offcanvas-link-active-color		: $navbar-inverse-link-active-color!default;
 $o-offcanvas-link-active-bg			: $navbar-inverse-link-active-bg!default;
-$o-offcanvas-logout-color			: $brand-danger !default;
+$o-offcanvas-logout-color			: #FF8B9B !default;
 $o-offcanvas-logout-hover-color		: darken($o-offcanvas-logout-color,10%)!default;
 $o-offcanvas-dropdown-bg			: $o-offcanvas-bg !default;
 $o-offcanvas-dropdown-font-size		: $font-size-base !default;
