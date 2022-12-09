@@ -102,10 +102,18 @@ public class ScoreAccountingEvaluateAllWorker implements Runnable {
 		List<Identity> members = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.participant.name());
 		identities.addAll(members);
 		
-		for(Identity identity: identities) {
+		identities.forEach(identity -> tryEvaluateAll(course, courseEnv, obligationContext, identity));
+	}
+	
+	private void tryEvaluateAll(ICourse course, CourseEnvironment courseEnv,
+			MultiUserObligationContext obligationContext, Identity identity) {
+		try {
 			evaluateAll(courseEnv, obligationContext, identity);
 			log.debug("Evaluated score accounting in {} for {}", course, identity);
 			dbInstance.commitAndCloseSession();
+		} catch (Exception e) {
+			log.warn("Evaluated score accounting failed in {} for {}", course, identity);
+			dbInstance.rollbackAndCloseSession();
 		}
 	}
 
