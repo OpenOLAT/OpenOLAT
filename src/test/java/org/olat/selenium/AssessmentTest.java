@@ -266,7 +266,7 @@ public class AssessmentTest extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false);
+			.chooseTest(qtiTestTitle);
 
 		//publish the course
 		courseEditor
@@ -498,7 +498,7 @@ public class AssessmentTest extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(testTitle, false);
+			.chooseTest(testTitle);
 		
 		editor
 			.selectRoot()

@@ -198,14 +198,10 @@ public class QTI21ConfigurationCEPage {
 		return this;
 	}
 	
-	public QTI21ConfigurationCEPage chooseTest(String resourceTitle, boolean closeWarning) {
+	public QTI21ConfigurationCEPage chooseTest(String resourceTitle) {
 		CourseEditorPageFragment fragment = new CourseEditorPageFragment(browser);
 		fragment.chooseResourceModern(chooseTestButton, resourceTitle);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
-		if(closeWarning) {
-			//close the warning
-			OOGraphene.closeWarningBox(browser);
-		}
 		return this;
 	}
 }

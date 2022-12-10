@@ -306,7 +306,7 @@ public class QTI21EditLayoutForm extends FormBasicController {
 		
 		configEl.clearError();
 		if(!configEl.isOneSelected()) {
-			configEl.setErrorKey("form.legende.mandatory", null);
+			configEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -316,14 +316,14 @@ public class QTI21EditLayoutForm extends FormBasicController {
 				try {
 					int val = Integer.parseInt(maxAttemptsEl.getValue());
 					if(val <= 0) {
-						maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+						maxAttemptsEl.setErrorKey("form.error.nointeger");
 					}
 				} catch(NumberFormatException e) {
-					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					maxAttemptsEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				maxAttemptsEl.setErrorKey("form.legende.mandatory", null);
+				maxAttemptsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -343,11 +343,11 @@ public class QTI21EditLayoutForm extends FormBasicController {
 			try {
 				double val = Long.parseLong(timeEl.getValue());
 				if(val < 0l) {
-					maxTimeCont.setErrorKey("form.error.nointeger", null);
+					maxTimeCont.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				maxTimeCont.setErrorKey("form.error.nointeger", null);
+				maxTimeCont.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}

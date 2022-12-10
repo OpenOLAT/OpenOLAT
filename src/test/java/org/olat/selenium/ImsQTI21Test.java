@@ -534,7 +534,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -750,7 +750,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.showScoreOnHomepage(true)
 			.assertShowResultsOptions()
 			.saveConfiguration();
@@ -851,7 +851,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -965,7 +965,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.selectLayoutConfiguration()
 			.overrideConfiguration()
 			.fullWindow()
@@ -1109,7 +1109,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.showScoreOnHomepage(true)
 			.assertShowResultsOptions()
 			.saveConfiguration();
@@ -1238,7 +1238,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false);
+			.chooseTest(qtiTestTitle);
 		
 		//SEL cannot wait and discard the warning box on the server, simply wait it disappears
 		OOGraphene.waitingTooLong();
@@ -1402,7 +1402,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, true)
+			.chooseTest(qtiTestTitle)
 			.setCorrectionMode("grading")
 			.saveConfiguration();
 		
@@ -1576,7 +1576,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, true)
+			.chooseTest(qtiTestTitle)
 			.setCorrectionMode("grading")
 			.saveConfiguration();
 		
@@ -1758,7 +1758,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
 		configPage
 			.selectLearnContent()
-			.chooseTest(qtiTestTitle, false)
+			.chooseTest(qtiTestTitle)
 			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
 			.showScoreOnHomepage(true)
 			.saveConfiguration();
