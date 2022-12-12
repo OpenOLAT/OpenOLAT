@@ -39,6 +39,10 @@ $list-group-bg					: #fcfcfc !default;
 $input-bg						: #fcfcfc !default; 
 $input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
 
+/* a11y optimizations */
+$text-color						: #333 !default;
+$badge-bg						: #666 !default;
+
 /* 	Add standard bootstrap variables to the mix */
 @import "../../bootstrap/stylesheets/bootstrap/variables";
 
@@ -129,8 +133,8 @@ $o-navbar-collapse-max-height		: $navbar-collapse-max-height !default;
 $o-navbar-border-color				: $navbar-default-border !default;
 $o-navbar-bg						: $navbar-default-bg !default;
 $o-navbar-color						: $navbar-default-color !default;
-$o-navbar-link-color				: $navbar-default-link-color !default;
-$o-navbar-link-hover-color			: $navbar-default-link-hover-color !default;
+$o-navbar-link-color				: #666 !default;
+$o-navbar-link-hover-color			: darken($o-navbar-link-color, 10%) !default;
 $o-navbar-link-hover-bg 			: $navbar-default-link-hover-bg !default;
 $o-navbar-link-active-color 		: $navbar-default-link-active-color !default;
 $o-navbar-link-active-bg 			: $navbar-default-link-active-bg !default;
@@ -203,8 +207,8 @@ $o-footer-height 					: 70px !default;
 $o-footer-dmz-height 				: $o-footer-height !default;
 $o-footer-outer-bg 					: #f5f5f5 !default;
 $o-footer-inner-bg 					: #f5f5f5 !default;
-$o-footer-default-color 			: #999 !default;
-$o-footer-default-link-color 		: #999 !default;
+$o-footer-default-color 			: #666 !default;
+$o-footer-default-link-color 		: #666 !default;
 $o-footer-default-link-hover-color 	: #000 !default;
 $o-footer-position-absolute 		: true !default;
 $o-footer-margin-top				: $padding-large-vertical !default;

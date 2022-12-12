@@ -96,16 +96,20 @@
 		#o_navbar_wrapper {
 			background: transparent;
 		}
-		.o_navbar-nav>li>a,
-		#o_footer_wrapper a	{
-			color: #FFF;
+		.o_navbar-nav>li>a {
+		    background: rgba(255,255,255,0.5);
+		    color: #2d2926;
+		    border-radius: 5px;
+		    padding: 5px 10px;
+		    margin: 10px;
+    
 			&:hover {
-				background-color: transparent;
+			    background: rgba(255,255,255,0.8);
 			}
 		}	
 		
 		#o_footer_wrapper {
-			background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 40%, rgba(0, 0, 0, 0.5) 100%);
+			background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.4) 40%, rgba(0, 0, 0, 0.8) 100%);
 			border: 0;
 			height: 100px;
 			padding-top: 30px;

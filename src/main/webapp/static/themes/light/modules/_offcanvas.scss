@@ -80,6 +80,10 @@ body.o_dmz #o_container_page_width_toggler {
 			color: 	$o-offcanvas-logout-hover-color;		
 		}
 	}
+	
+	.dropdown-header  {
+		color: $o-offcanvas-link-color;
+	}
 }
 
 
