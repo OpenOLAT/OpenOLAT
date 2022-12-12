@@ -120,6 +120,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final Consumer<FormItem> DOM_REQUIRED_FALSE = (FormItem item) -> {
 		if(item.getComponent() != null) {
 			item.getComponent().setDomReplacementWrapperRequired(false);
+			item.getComponent().setDomLayoutWrapper(true);
 		}
 	};
 	
@@ -204,8 +205,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	public void validateDeferred() {	
 		for(String formComponentName:formComponentsNames) {
 			FormItem item = formComponents.get(formComponentName);
-			if(item instanceof FormLayoutContainer) {
-				((FormLayoutContainer)item).validateDeferred();
+			if(item instanceof FormLayoutContainer layoutContainer) {
+				layoutContainer.validateDeferred();
 			} else if(item.isValidationDeferred()) {
 				item.validate();
 			}
@@ -400,6 +401,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 
 	public Component getComponent(String name) {
 		return formLayoutContainer.getComponent(name);
+	}
+	
+	@Override
+	public boolean isDomLayoutWrapper() {
+		return formLayoutContainer.isDomLayoutWrapper();
 	}
 
 	@Override
@@ -686,8 +692,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		// Dispose also disposable form items (such as file uploads that needs to
 		// cleanup temporary files)
 		for (FormItem formItem : getFormItems()) {
-			if (formItem instanceof Disposable) {
-				Disposable disposableFormItem = (Disposable) formItem;
+			if (formItem instanceof Disposable disposableFormItem) {
 				disposableFormItem.dispose();
 			}
 		}

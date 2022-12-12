@@ -43,7 +43,7 @@ public class IconPanelRenderer extends DefaultComponentRenderer {
 		IconPanel panel = (IconPanel) source;
 		
 		sb.append("<div");
-		if (!panel.isDomReplacementWrapperRequired()) {
+		if (!panel.isDomReplacementWrapperRequired() && !panel.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(panel.getDispatchID()).append("'");
 		}
 		sb.append(" class='o_icon_panel");

@@ -382,7 +382,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				textEl.clearError();
 				String text = textEl.getRawValue();
 				if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
-					textEl.setErrorKey("error.cannot.remove.feedback", null);
+					textEl.setErrorKey("error.cannot.remove.feedback");
 					allOk = false;
 				}
 			}
@@ -501,7 +501,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 			textEl.clearError();
 			String text = textEl.getRawValue();
 			if(restrictedEdit && TestFeedbackBuilder.isEmpty(text)) {
-				textEl.setErrorKey("error.cannot.remove.feedback", null);
+				textEl.setErrorKey("error.cannot.remove.feedback");
 				allOk = false;
 			}
 			
@@ -704,24 +704,24 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 						try {
 							Double.parseDouble(textValueEl.getValue());
 						} catch (NumberFormatException e) {
-							textValueEl.setErrorKey("error.double", null);
+							textValueEl.setErrorKey("error.double");
 							allOk &= false;
 						}
 					} else if(ModalFeedbackCondition.Variable.attempts.name().equals(selectedKey)) {
 						try {
 							Integer.parseInt(textValueEl.getValue());
 						} catch (Exception e) {
-							textValueEl.setErrorKey("error.integer", null);
+							textValueEl.setErrorKey("error.integer");
 							allOk &= false;
 						}
 					} else if(ModalFeedbackCondition.Variable.response.name().equals(selectedKey)) {
 						if(!dropDownValueEl.isOneSelected()) {
-							dropDownValueEl.setErrorKey("form.legende.mandatory", null);
+							dropDownValueEl.setErrorKey("form.legende.mandatory");
 							allOk &= false;
 						}
 					}
 				} else {
-					variableEl.setErrorKey("form.legende.mandatory", null);
+					variableEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 				
@@ -760,8 +760,7 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 				textValueEl.setVisible(!responseVar);
 				dropDownValueEl.setVisible(responseVar);
 				
-				if(itemBuilder instanceof ResponseIdentifierForFeedback) {
-					ResponseIdentifierForFeedback responseFeedback = (ResponseIdentifierForFeedback)itemBuilder;
+				if(itemBuilder instanceof ResponseIdentifierForFeedback responseFeedback) {
 					List<Answer> answers = responseFeedback.getAnswers();
 					String[] answerKeys = new String[answers.size()];
 					String[] answerValues = new String[answers.size()];

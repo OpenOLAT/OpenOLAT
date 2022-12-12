@@ -1,4 +1,4 @@
-<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="panel #if($off_warn) panel-warning #elseif($off_info) panel-info #else panel-default #end #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+<div #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="panel #if($off_warn) panel-warning #elseif($off_info) panel-info #else panel-default #end #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 #if ($off_title || $off_chelp_url || $off_icon) 
 	<div class="panel-heading">	
 		#if ($off_chelp_url) 

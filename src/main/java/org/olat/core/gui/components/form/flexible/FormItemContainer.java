@@ -40,6 +40,8 @@ import java.util.Map;
  */
 public interface FormItemContainer extends FormItem, FormItemCollection {
 	
+	public boolean isDomLayoutWrapper();
+	
 	public boolean isDomReplacementWrapperRequired();
 
 	/**

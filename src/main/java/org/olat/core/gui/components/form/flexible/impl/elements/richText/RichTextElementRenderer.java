@@ -153,7 +153,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			sb.append(" autofocus");
 		}
 
-		sb.append(" />");
+		sb.append(">");
 		//add set dirty form only if enabled
 		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());	
 	}
@@ -226,7 +226,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		String uploadUrl = getImageUploadURL(renderer, teC, ubu);
 		String height = config.getEditorHeight();
 		
-		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
+		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value=''>");
 		sb.append("<script>\n");
 		sb.append(" (function() {")
 		  .append(" \"use strict\";");

@@ -197,7 +197,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			 // Add pseudo focus marker on fake file chooser button
 			 sb.append(" onblur=\"try { this.form.fake_").append(id).append(".nextSibling.style.border = '0'; } catch(e) {}\"");
 			 // Add select text (hover)
-			 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");
+			 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\">");
 		}
 		
 		if(showReplaceButton) {
@@ -218,7 +218,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			// Add the visible but fake input field and a styled faked file chooser button
 			sb.append("<div class='o_fakechooser input-group' aria-hidden='true'>");
 			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
-			  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" tabindex='-1' />");  
+			  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" tabindex='-1'>");  
 			sb.append("<span class='input-group-addon'><a href='javascript:;' tabindex='-1'><i class='o_icon o_icon_upload'> </i></a></span>");
 			sb.append("</div>");				
 		}

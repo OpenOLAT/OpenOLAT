@@ -111,5 +111,22 @@ public interface Component {
 	 * 
 	 */
 	public void setDomReplacementWrapperRequired(boolean required);
+	
+	/**
+	 * The component render responsible for the layout need to add
+	 * an ID.
+	 *
+	 * @return
+	 */
+	public boolean isDomLayoutWrapper();
+	
+	/**
+	 * For the layout container, set if the component renderer need
+	 * to add an ID to the layout part.
+	 * 
+	 * 
+	 * @param required
+	 */
+	public void setDomLayoutWrapper(boolean required);
 
 }

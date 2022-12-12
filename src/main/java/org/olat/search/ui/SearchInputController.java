@@ -186,8 +186,7 @@ public class SearchInputController extends FormBasicController implements Generi
 
 	@Override
 	public void event(Event event) {
-		if (event instanceof AssessmentEvent) {
-			AssessmentEvent ae = (AssessmentEvent)event;
+		if (event instanceof AssessmentEvent ae) {
 			if(ae.getEventType().equals(AssessmentEvent.TYPE.STARTED)) {
 				flc.setVisible(false);
 			} else if(ae.getEventType().equals(AssessmentEvent.TYPE.STOPPED)) {
@@ -252,7 +251,7 @@ public class SearchInputController extends FormBasicController implements Generi
 	protected void setContext(ContextTokens context) {
 		if(!context.isEmpty()) {
 			String scope = context.getValueAt(context.getSize() - 1);
-			String tooltip = getTranslator().translate("form.search.label.tooltip", new String[]{scope});
+			String tooltip = getTranslator().translate("form.search.label.tooltip", scope);
 			searchButton.getComponent().setTitle(tooltip);
 		}
 	}

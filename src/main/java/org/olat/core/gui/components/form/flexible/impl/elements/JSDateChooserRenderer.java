@@ -56,7 +56,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 
 		//add pop js for date chooser, if componente is enabled
 		sb.append("<div");
-		if(!jsdcc.isDomReplacementWrapperRequired()) {
+		if(!jsdcc.isDomReplacementWrapperRequired() && !jsdcc.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(jsdcc.getDispatchID()).append("'");
 		}
 		sb.append(" class='o_date form-inline'>");

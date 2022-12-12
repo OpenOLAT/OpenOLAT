@@ -67,7 +67,7 @@ class TextComponentRenderer extends DefaultComponentRenderer {
 				}
 				sb.append("'");
 			}
-			if(!comp.isDomReplacementWrapperRequired()) {
+			if(!comp.isDomReplacementWrapperRequired() && !comp.isDomLayoutWrapper()) {
 				sb.append(" id='").append(comp.getDispatchID()).append("'");
 			}
 			sb.append(">")

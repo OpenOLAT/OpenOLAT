@@ -170,6 +170,11 @@ public class AutoCompletionMultiSelectionImpl extends FormItemImpl implements Au
 	}
 	
 	@Override
+	public String getForId() {
+		return button.getForId();
+	}
+	
+	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		Form form = getRootForm();
 		String dispatchuri = form.getRequestParameter("dispatchuri");
@@ -181,8 +186,7 @@ public class AutoCompletionMultiSelectionImpl extends FormItemImpl implements Au
 	@Override
 	public void dispatchEvent(UserRequest ureq, Controller source, Event event) {
 		if(autoCompletionrCtrl == source) {
-			if(event instanceof AutoCompletionSelectionEvent) {
-				AutoCompletionSelectionEvent se = (AutoCompletionSelectionEvent)event;
+			if(event instanceof AutoCompletionSelectionEvent se) {
 				selection = se.getSelection();
 				autoCompletionCallout.deactivate();
 				cleanUp();

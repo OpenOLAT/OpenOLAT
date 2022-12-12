@@ -66,6 +66,7 @@ public abstract class AbstractComponent implements Component {
 	// true when contents have changed since last rendering
 	private boolean dirty = false;
 	private boolean domReplaceable = true;
+	private boolean domLayoutWrapper = false;
 	private boolean domReplacementWrapperRequired = true;
 
 	private final List<ComponentEventListener> listeners;
@@ -130,6 +131,16 @@ public abstract class AbstractComponent implements Component {
 		listeners = new ArrayList<>(1);
 	}
 	
+	@Override
+	public boolean isDomLayoutWrapper() {
+		return domLayoutWrapper;
+	}
+
+	@Override
+	public void setDomLayoutWrapper(boolean domLayoutWrapper) {
+		this.domLayoutWrapper = domLayoutWrapper;
+	}
+
 	/**
 	 * OO-98 : a fix in FormUIFactory changed the id from "null" to
 	 * "something.like.this" for selectionElements (like radio-buttons)

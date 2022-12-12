@@ -52,7 +52,7 @@ public class MemoryRenderer extends DefaultComponentRenderer {
 		MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
 		
 		sb.append("<div class='progress' ");
-		if(!cmp.isDomReplacementWrapperRequired()) {
+		if(!cmp.isDomReplacementWrapperRequired() && !cmp.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(cmp.getDispatchID()).append("'");
 		}
 		

@@ -1193,8 +1193,8 @@ public class FormUIFactory {
 		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(null, fte);
 		
-		if(table instanceof FlexiTableElementImpl) {
-			((FlexiTableElementImpl)table).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl flexiTable) {
+			flexiTable.addFormItem(fte);
 		}
 		return fte;
 	}
@@ -1250,8 +1250,8 @@ public class FormUIFactory {
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(table instanceof FlexiTableElementImpl) {
-			((FlexiTableElementImpl)table).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl flexiTable) {
+			flexiTable.addFormItem(fte);
 		}
 		return fte;
 	}
@@ -1261,8 +1261,8 @@ public class FormUIFactory {
 		fte.setLinkText(linkTitle);
 		fte.setDownloadItem(file);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(table instanceof FlexiTableElementImpl) {
-			((FlexiTableElementImpl)table).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl flexiTable) {
+			flexiTable.addFormItem(fte);
 		}
 		return fte;
 	}
@@ -1272,8 +1272,8 @@ public class FormUIFactory {
 		fte.setLinkText(linkTitle);
 		fte.setDownloadMedia(resource);
 		setLabelIfNotNull(i18nLabel, fte);
-		if(table instanceof FlexiTableElementImpl) {
-			((FlexiTableElementImpl)table).addFormItem(fte);
+		if(table instanceof FlexiTableElementImpl flexiTable) {
+			flexiTable.addFormItem(fte);
 		}
 		return fte;
 	}

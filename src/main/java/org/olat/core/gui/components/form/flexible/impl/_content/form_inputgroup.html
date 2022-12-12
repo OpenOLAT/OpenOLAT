@@ -1,4 +1,4 @@
-<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="form-group $f.getElementCssClass($formitemnames.get(0)) #if($f.hasError($formitemnames.get(0))) has-feedback has-error #end">
+<div #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="form-group $f.getElementCssClass($formitemnames.get(0)) #if($f.hasError($formitemnames.get(0))) has-feedback has-error #end">
 	#if ($f.isVisible($formitemnames.get(0)))
 		<div class="input-group #if($inputGroupSizeCss)$inputGroupSizeCss#end">
 		#if($leftAddOn)

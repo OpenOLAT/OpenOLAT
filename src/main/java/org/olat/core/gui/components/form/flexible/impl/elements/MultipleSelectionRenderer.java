@@ -227,7 +227,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	}
 
 	private StringOutput appendIdIfRequired(StringOutput sb, MultipleSelectionComponent stC) {
-		if(!stC.isDomReplacementWrapperRequired()) {
+		if(!stC.isDomReplacementWrapperRequired() && !stC.isDomLayoutWrapper()) {
 			sb.append(" id='").append(stC.getDispatchID()).append("'");
 		}
 		return sb;

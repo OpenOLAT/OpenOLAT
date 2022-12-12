@@ -245,8 +245,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	}
 	
 	private void renderExample(StringOutput sb, Component component) {
-		if(component instanceof FormBaseComponent) {
-			FormItem item = ((FormBaseComponent)component).getFormItem();
+		if(component instanceof FormBaseComponent fComponent) {
+			FormItem item = fComponent.getFormItem();
 			renderExample(sb, item);
 		}
 	}
@@ -259,8 +259,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	}
 	
 	private void renderError(StringOutput sb, Component component) {
-		if(component instanceof FormBaseComponent) {
-			FormItem item = ((FormBaseComponent)component).getFormItem();
+		if(component instanceof FormBaseComponent fComponent) {
+			FormItem item = fComponent.getFormItem();
 			renderError(sb, item, item.hasError(), item.hasWarning()); 
 		}
 	}
@@ -293,8 +293,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 	}
 
 	private void renderLabel(StringOutput sb, Component component, Translator translator, String[] args) {
-		if(component instanceof FormBaseComponent) {
-			renderLabel(sb, (FormBaseComponent)component, translator, args);
+		if(component instanceof FormBaseComponent fComponent) {
+			renderLabel(sb, fComponent, translator, args);
 		}
 	}
 	
@@ -380,8 +380,8 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		private final String elementCssClass;
 		
 		public Item(Component source) {
-			if(source instanceof FormBaseComponent) {
-				formItem = ((FormBaseComponent)source).getFormItem();
+			if(source instanceof FormBaseComponent formComponent) {
+				formItem = formComponent.getFormItem();
 			} else {
 				formItem = null;
 			}

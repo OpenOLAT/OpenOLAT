@@ -51,6 +51,10 @@ public class FormDecorator {
 	public boolean isDomReplacementWrapperRequired() {
 		return container.isDomReplacementWrapperRequired();
 	}
+	
+	public boolean isDomLayoutWrapper() {
+		return container.isDomLayoutWrapper();
+	}
 
 	/**
 	 * @see org.olat.core.gui.components.form.flexible.FormDecorator#hasError(java.lang.String)

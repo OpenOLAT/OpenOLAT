@@ -42,7 +42,7 @@ public class ListPanelRenderer extends DefaultComponentRenderer {
 
 		ListPanel panel = (ListPanel) source;
 		sb.append("<div");
-		if(!panel.isDomReplacementWrapperRequired()) {
+		if(!panel.isDomReplacementWrapperRequired() && !panel.isDomLayoutWrapper()) {
 			sb.append(" id='o_c").append(panel.getDispatchID()).append("'");
 		}
 		if(StringHelper.containsNonWhitespace(panel.getCssClass())) {

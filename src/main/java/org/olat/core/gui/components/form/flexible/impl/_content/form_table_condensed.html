@@ -1,5 +1,5 @@
 ## for odd reason bootstrap calls vertial horizontal
-<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+<fieldset #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
 #if ($off_desc || $off_warn || $off_info)
 	<div class="row"><div class="col-sm-offset-3 col-sm-9">
 		#if ($off_desc) <div class="o_desc">$off_desc</div> #end

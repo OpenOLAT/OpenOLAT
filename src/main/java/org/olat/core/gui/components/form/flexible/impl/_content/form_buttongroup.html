@@ -1,4 +1,4 @@
-<div #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="form-inline $f.getContainerCssClass()">
+<div #if(!$!f.domReplacementWrapperRequired  && !$!f.domLayoutWrapper) id="$r.getCId()" #end class="form-inline buttons $f.getContainerCssClass()">
 #foreach ($item in $formitemnames)
 	$r.render("$item")
 #end
