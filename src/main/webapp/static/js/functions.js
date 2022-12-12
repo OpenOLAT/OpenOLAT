@@ -1139,8 +1139,12 @@ function o_scrollTop() {
 
 function o_scrollTopAndFocus(focusArray) {
 	try {
+		var focused = false;
 		jQuery('html, body').animate({ scrollTop : 0 }, 300, "swing", function() {
-			o_ffSetFocusArray(focusArray);
+			if(!focused) {
+				o_ffSetFocusArray(focusArray);
+				focused = true;
+			}
 		});
 	} catch (e) {
 		//console.log(e);
@@ -2111,9 +2115,9 @@ function o_ffSetFocus(formId, formItemId) {
 				if(tagName == "INPUT") {
 					jLastEl.select();
 				}
-				setTimeout(function(){
+				setTimeout(function() {
 					jLastEl.focus();
-				},0);
+				}, 0);
 				focusApplied = true;
 			}
 		} else {
