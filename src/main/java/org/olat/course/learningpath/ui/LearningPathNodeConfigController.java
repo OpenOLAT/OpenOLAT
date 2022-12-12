@@ -157,7 +157,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("config.title");
-		setFormContextHelp("Learning path element");
+		setFormContextHelp("manual_user/course_create/Learning_path_course_-_Course_editor/");
 		formLayout.setElementCssClass("o_lp_config_edit");
 		
 		obligationCont = FormLayoutContainer.createCustomFormLayout("obligationCont", getTranslator(), velocity_root + "/config_obligation.html");
