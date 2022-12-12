@@ -290,6 +290,7 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		closeLink.setTitle(translate("close.dialog"));
 		closeLink.setElementCssClass("close");
 		closeLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
+		closeLink.setFocus(true);
 		
 		formLayout.add(prevButton);
 		formLayout.add(nextButton);
