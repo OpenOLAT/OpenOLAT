@@ -626,9 +626,10 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page moveToVerticalSlider() {
-		By interactionBy = By.cssSelector("span.ui-slider-handle");
-		OOGraphene.waitElement(interactionBy, browser);
-		OOGraphene.moveTo(interactionBy, browser);
+		By sliderBy = By.cssSelector("div.sliderInteraction");
+		OOGraphene.waitElement(sliderBy, browser);
+		By itemBy = By.cssSelector("div.o_assessmentitem_wrapper");
+		OOGraphene.moveTo(itemBy, browser);
 		return this;
 	}
 	
