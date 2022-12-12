@@ -259,6 +259,7 @@ public class DMZDispatcher implements Dispatcher {
 					ChiefController occ = chiefControllerCreator.createChiefController(ureq);
 					
 					window = occ.getWindow();
+					window.getWindowBackOffice().getWindowManager().setAjaxWanted(ureq);
 					window.setUriPrefix(uriPrefix);
 					ws.registerWindow(occ);
 					

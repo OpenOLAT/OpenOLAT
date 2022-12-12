@@ -73,8 +73,7 @@ public class FolderPage {
 	
 	public FolderPage assertOnDirectory(String name) {
 		// encode name same was as in UI
-		URLBuilder urlBuilder = new URLBuilder("", "", "", "");
-		String escapedName = urlBuilder.encodeUrl(name);
+		String escapedName = URLBuilder.encodeUrl(name);
 		By directoryBy = By.xpath("//table[contains(@class,'o_bc_table')]//a[contains(@onclick,'" + escapedName + "')]");
 		List<WebElement> directoryEls = browser.findElements(directoryBy);
 		Assert.assertFalse(directoryEls.isEmpty());

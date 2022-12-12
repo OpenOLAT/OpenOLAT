@@ -297,7 +297,7 @@ public class URLBuilder {
 	 * @param url
 	 * @return encoded string
 	 */
-	public String encodeUrl(String url) {
+	public static String encodeUrl(String url) {
 		String encodedURL;
 		try {
 			encodedURL = URLEncoder.encode(url, "UTF-8");

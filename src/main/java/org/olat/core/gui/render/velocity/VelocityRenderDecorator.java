@@ -47,6 +47,7 @@ import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
+import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
@@ -716,7 +717,7 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 	
 	public String encodeUrl(String url) {
-		return renderer.getUrlBuilder().encodeUrl(url);
+		return URLBuilder.encodeUrl(url);
 	}
 	
 	public String encodeUrlPathSegment(String path) {
