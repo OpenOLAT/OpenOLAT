@@ -131,8 +131,11 @@ public class NewDocumentController extends FormBasicController {
 			if(documentContainer.resolve(filename) != null) {
 				filenameEl.setErrorKey("error.file.exists", new String[]{filename});
 				allOk &= false;
-			}else if (!FileUtils.validateFilename(filename)) {
+			} else if (!FileUtils.validateFilename(filename)) {
 				filenameEl.setErrorKey("error.file.invalid", null);
+				allOk &= false;
+			} else if(filename.length() > 128) {
+				filenameEl.setErrorKey("form.error.toolong", new String[] { "128" });
 				allOk &= false;
 			}
 		}
