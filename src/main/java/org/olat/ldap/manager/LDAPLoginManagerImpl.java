@@ -1386,6 +1386,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	private void doBatchSyncRolesToOrganisations(List<OrganisationRoles> synchronizedRoles,
 			LDAPOrganisationGroup organisationGroup, List<LDAPUser> ldapUsers) {
 
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		Organisation organisation = organisationGroup.getOrganisation();
 		List<OrganisationRoles> orgRoles = new ArrayList<>(synchronizedRoles);
 		orgRoles.add(OrganisationRoles.user);
@@ -1404,6 +1405,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			if(member) {
 				syncRole(synchronizedRoles, true, identity, organisation, roles);
 				organisationUserKeys.remove(identity.getKey());
+			}
+			
+			if(organisationDao.hasRole(identity, null, defOrganisation, OrganisationRoles.user.name())) {
+				organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
 			}
 
 			if(!roles.isEmpty()) {
