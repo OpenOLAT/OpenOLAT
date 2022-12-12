@@ -259,7 +259,12 @@ public class LinkFileCombiCalloutController extends BasicController {
 					// Unzip file and open file chooser in new modal
 					VFSContainer zipContainer = doUnzip(newFile, newFile.getParentContainer());
 					if (zipContainer != null) {
-						FileChooserController fileChooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), zipContainer, null, true);
+						VFSItemFilter filter = new VFSAndFilter(List.of(
+								new VFSSystemItemFilter(),
+								new VFSOrFilter(List.of(
+										new VFSContainerFilter(),
+										new VFSItemSuffixFilter(new String[] { "html", "htm" })))));
+						FileChooserController fileChooserCtr = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), zipContainer, filter, true);
 						fileChooserCtr.setShowTitle(true);
 						displayModal(fileChooserCtr);
 						return;						
