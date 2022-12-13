@@ -108,6 +108,8 @@ public class AssistanceAccordionController extends BasicController {
                     Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, AssistanceAccordionController.this);
             expandButton.setCustomEnabledLinkCSS("o_clean_link");
             expandButton.setSuppressDirtyFormWarning(true);
+            expandButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
+            expandButton.setElementCssClass("o_assistance_accordion_expand");
 
             String titleLinkName = "titleLink_" + index;
             titleLink = LinkFactory.createCustomLink(titleLinkName, titleLinkName, null,
@@ -115,6 +117,8 @@ public class AssistanceAccordionController extends BasicController {
             titleLink.setCustomDisplayText(translator.translate(titleKey));
             titleLink.setCustomEnabledLinkCSS("o_clean_link");
             titleLink.setSuppressDirtyFormWarning(true);
+            titleLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
+            titleLink.setElementCssClass("o_assistance_accordion_title");
 
             this.components = components;
             if (components != null) {

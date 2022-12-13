@@ -12,15 +12,23 @@
   }
 
   .o_expand_collapse_icon {
+	flex-grow: 0;
     margin-top: 0.6em;
     margin-right: 1em;
   }
 
   .o_item_content {
-
+	flex-grow: 1;
+	
+	.o_assistance_accordion_title,
+	.o_assistance_accordion_expand {
+      	padding-top: 1em;
+      	padding-bottom: 1em;
+		display: block;
+	}
+	
     .o_text_block {
-      margin-top: 1em;
-      margin-bottom: 1em;
+   	  	margin-bottom: 1em;
     }
 
     .o_components_block {
