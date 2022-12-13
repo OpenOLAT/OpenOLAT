@@ -4,6 +4,10 @@
 		border:none;
 	}
 	padding-bottom: 2em;
+	
+	.o_container_part.o_page_layout {
+		grid-gap: 0;
+	}
 }
 
 .o_page_fragment_edit  {
