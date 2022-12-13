@@ -214,10 +214,15 @@ public class BusinessGroupDAO {
 		  .append(" inner join fetch bgi.resource resource")
 		  .append(" where bgi.key in (:ids)");
 
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), BusinessGroup.class)
-				.setParameter("ids", ids)
-				.getResultList();
+		List<BusinessGroup> businessGroups = new ArrayList<>(ids.size());
+		for (List<Long> chunkOfIds : PersistenceHelper.collectionOfChunks(new ArrayList<>(ids))) {
+			List<BusinessGroup> chunkOfBusinessGroups = dbInstance.getCurrentEntityManager()
+		 				.createQuery(sb.toString(), BusinessGroup.class)
+		 				.setParameter("ids", chunkOfIds)
+		 				.getResultList();
+			businessGroups.addAll(chunkOfBusinessGroups);
+		}
+		return businessGroups;
 	}
 	
 	public List<BusinessGroup> loadAll() {
