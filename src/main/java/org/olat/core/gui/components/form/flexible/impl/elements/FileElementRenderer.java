@@ -111,7 +111,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 						&& (fileElem.getInitialFile() != null || fileElem.getUploadFile() != null);
 				if(showDeleteButton) {
 					sb.append("<a class='btn btn-xs btn-default o_filedelete' href=\"javascript:")
-					.append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
+					.append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, true, new NameValuePair("delete", "delete")))
 					.append(";\" onclick=\"\" ")
 					.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete_item'> </i> ").append(trans.translate("delete")).append("</a>");
 				}
