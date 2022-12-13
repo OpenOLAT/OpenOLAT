@@ -7,13 +7,9 @@
         #set ($index = $helpItem.getIndex())
         #set ($helpItemDetails = $helpItem.getDetails())
         <div class="o_item">
-            <div class="o_expand_collapse_icon">
-                $r.render($helpItem.getExpandButton())
-            </div>
             <div class="o_item_content">
-                <div class="o_text_block">
-                    $r.render($helpItem.getTitleLink())
-                </div>
+                $r.render($helpItem.getTitleLink())
+                
                 #if($helpItem.isExpanded() && $helpItem.getDetailsText())
                 <div class="o_text_block">
                     $helpItem.getDetailsText()
@@ -28,6 +24,9 @@
                     </div>
                 </div>
                 #end
+            </div>
+            <div class="o_expand_collapse_icon" aria-hidden="true">
+                $r.render($helpItem.getExpandButton())
             </div>
         </div>
         #end
