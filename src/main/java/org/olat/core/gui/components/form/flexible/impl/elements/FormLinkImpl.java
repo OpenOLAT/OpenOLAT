@@ -322,7 +322,7 @@ public class FormLinkImpl extends FormItemImpl implements FormLink {
 	
 	@Override
 	public void setFocus(boolean hasFocus){
-		component.setFocus(hasFocus);
+		component.setFocus(hasFocus, false);
 		// set also on parent as fallback
 		super.setFocus(hasFocus);
 	}

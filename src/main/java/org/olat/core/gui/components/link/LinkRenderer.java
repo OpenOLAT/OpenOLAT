@@ -281,7 +281,11 @@ public class LinkRenderer extends DefaultComponentRenderer {
 			 * Focus link so that it can be invoked using the enter key using a keyboard. 
 			 */
 			if(link.isFocus()) {								
-				jsSb.append(elementId).append(".focus();");
+				jsSb.append("document.getElementById('").append(elementId).append("').focus(");
+				if(link.isPreventFocusScroll()) {
+					jsSb.append("{preventScroll:true}");
+				}
+				jsSb.append(");");
 			}
 		} else {
 			String text;

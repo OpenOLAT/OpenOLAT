@@ -115,7 +115,7 @@ public class TabbedPaneRenderer extends DefaultComponentRenderer {
 		sb.append("</div></div>");
 		
 		if (tb.isPanelFocus()) {
-			sb.append("<script>try {jQuery('#o_c").append(tb.getDispatchID()).append("_c').focus(); } catch(e){if(console){console.log(e);}};</script>");
+			sb.append("<script>try {document.getElementById('o_c").append(tb.getDispatchID()).append("_c').focus({preventScroll:true});} catch(e){if(console){console.log(e);}};</script>");
 		}
 	}
 	

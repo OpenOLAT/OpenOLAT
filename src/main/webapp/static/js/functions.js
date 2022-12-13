@@ -2106,18 +2106,18 @@ function o_ffSetFocus(formId, formItemId) {
 		var tagName = el.tagName;
 		var focusApplied = false;
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
-			var jLastEl = jQuery(el);
 			if(el.classList.contains('o_date_day')) {
+				var jLastEl = jQuery(el);
 				jLastEl.datepicker('option', 'showOn', '');
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');
 				focusApplied = true;
 			} else {
 				if(tagName == "INPUT") {
-					jLastEl.select();
+					el.select();
 				}
 				setTimeout(function() {
-					jLastEl.focus();
+					el.focus();
 				}, 0);
 				focusApplied = true;
 			}

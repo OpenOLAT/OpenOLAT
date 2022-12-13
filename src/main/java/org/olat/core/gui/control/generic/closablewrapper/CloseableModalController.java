@@ -133,15 +133,14 @@ public class CloseableModalController extends DefaultController implements Modal
 			closeIcon.setDomReplacementWrapperRequired(false);
 			closeIcon.setSuppressDirtyFormWarning(true);
 			// a11y: Set focus to close link and thus to the dialog itself
-			closeIcon.setFocus(true); 
+			closeIcon.setFocus(true, true); 
 			if (closeButtonText == null && modalContent != null) {
 				// Use standard close text. use Translator from content as we have no access to
 				// the user locale here. 
 				Translator trans = modalContent.getTranslator();
-				if (trans == null && modalContent instanceof StackedPanel) {
+				if (trans == null && modalContent instanceof StackedPanel panel) {
 					// Content had no translator, probably a panel, which is very common to have
 					// here. Try to get translator from panel content as last option
-					StackedPanel panel = (StackedPanel) modalContent;
 					Component realComponent = panel.getContent();
 					if (realComponent != null) {
 						trans = realComponent.getTranslator();

@@ -128,7 +128,7 @@ public class DialogBoxController extends BasicController {
 			// workflows. See OLAT-4257
 			closeLink.setSuppressDirtyFormWarning(true);
 			// a11y: Set focus to close link and thus to the dialog itself
-			closeLink.setFocus(true); 
+			closeLink.setFocus(true, true); 
 			closeLink.setTitle(title);
 			dialogBoxVC.contextPut("closeIcon", Boolean.TRUE);
 		}	else {

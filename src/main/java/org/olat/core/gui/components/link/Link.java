@@ -90,6 +90,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	private boolean primary;
 	private boolean ghost;
 	private boolean focus;
+	private boolean preventFocusScroll;
 	private String i18n;
 	private String title;
 	private String ariaLabel;
@@ -256,8 +257,9 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 * 
 	 * @param focus true: element should have focus in DOM; false: no focused
 	 */
-	public void setFocus(boolean focus){
+	public void setFocus(boolean focus, boolean preventScroll) {
 		this.focus = focus;
+		this.preventFocusScroll = preventScroll;
 	}
 
 	/**
@@ -265,6 +267,10 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	 */
 	public boolean isFocus(){
 		return focus;
+	}
+	
+	public boolean isPreventFocusScroll() {
+		return preventFocusScroll;
 	}
 
 	public boolean isPopup() {
