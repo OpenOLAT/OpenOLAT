@@ -125,7 +125,7 @@ public class OOGraphene {
 	
 	public static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration) {
 		try {
-			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
+			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal')][div[contains(@class,'modal-dialog')] or div[contains(@class,'modal-backdrop')]]");
 			new WebDriverWait(browser, driverTimeout)
 				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
 				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
@@ -792,7 +792,7 @@ public class OOGraphene {
 	 * @param browser The browser
 	 */
 	public static final void closeWarningBox(WebDriver browser) {
-		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-warning");
+		By errorBoxBy = By.cssSelector("div.modal.fade.in div.modal-body.alert.alert-warning");
 		waitElement(errorBoxBy, browser);
 		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
 		waitElement(closeButtonBy, browser);
@@ -840,33 +840,6 @@ public class OOGraphene {
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(Duration.ofMillis(1000)).pollingEvery(polling)
 			.until(new CloseAlertInfoPredicate());
-	}
-	
-	public static final void closeModalDialogWindow(WebDriver browser) {
-		By closeModalDialogButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//div[contains(@class,'modal-header')]/button[@class='close']");
-		List<WebElement> closeButtons = browser.findElements(closeModalDialogButtonBy);
-		for(WebElement closeButton:closeButtons) {
-			if(closeButton.isDisplayed()) {
-				try {
-					clickModalDialogCloseButton(browser, closeButton);
-				} catch (TimeoutException e) {
-					try {
-						clickModalDialogCloseButton(browser, closeButton);
-					} catch(Exception e2) {
-						//
-					}
-				}
-			}
-		}
-	}
-	
-	private static final void clickModalDialogCloseButton(WebDriver browser, WebElement closeButton) {
-		try {
-			closeButton.click();
-			waitModalDialogDisappears(browser);
-		} catch (Exception e) {
-			log.warn("", e);
-		}
 	}
 	
 	public static final void closeOffCanvas(WebDriver browser) {

@@ -73,11 +73,9 @@ public class CourseEditorPageFragment {
 	}
 	
 	public CourseEditorPageFragment assertOnWarning() {
-		By warningBy = By.cssSelector("div.modal-dialog div.alert.alert-warning");
+		By warningBy = By.cssSelector("div.modal.in div.modal-dialog div.alert.alert-warning");
 		OOGraphene.waitElement(warningBy, browser);
-		List<WebElement> warningEls = browser.findElements(warningBy);
-		Assert.assertFalse(warningEls.isEmpty());
-		OOGraphene.closeModalDialogWindow(browser);
+		OOGraphene.closeWarningBox(browser);
 		return this;
 	}
 	
@@ -87,7 +85,6 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment selectRoot() {
 		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
 		browser.findElement(rootNodeBy).click();
-		OOGraphene.waitBusy(browser);
 		By rootNodeActiveBy = By.cssSelector("span.o_tree_link.o_tree_l0.active");
 		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
