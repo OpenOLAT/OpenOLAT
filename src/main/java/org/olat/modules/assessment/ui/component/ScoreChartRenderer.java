@@ -92,11 +92,16 @@ public class ScoreChartRenderer extends DefaultComponentRenderer {
 		  .append("   .call(xAxis)\n");
 		sb.append("  .append('text')\n")
 		  .append("    .attr('y', (5))\n")
-		  .append("    .attr('x', (width / 2))\n")
 		  .append("    .attr('dy', '1em')\n")
 		  .append("    .attr('fill', '#000')\n")
-		  .append("    .style('text-anchor', 'middle')\n")
 		  .append("    .text('").append(translator.translate("score.chart.legend", AssessmentHelper.getRoundedScore(Double.valueOf(scoreAvg)))).append("')\n");
+		if (minScore != maxScore) {
+			sb.append("    .attr('x', (width / 2))\n")
+			  .append("    .style('text-anchor', 'middle')\n");
+		} else {
+			sb.append("    .attr('x', (width))\n")
+			  .append("    .style('text-anchor', 'end')\n");
+		}
 		sb.append(";\n");
 		
 		sb.append("svg.append('g')\n")

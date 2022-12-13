@@ -79,7 +79,7 @@
 		<org.postgresql.version>42.5.1</org.postgresql.version>
 		<org.infinispan.version>14.0.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.7.0</version.selenium>
+		<version.selenium>4.7.1</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
 		<activemq.artemis.version>2.27.1</activemq.artemis.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
@@ -107,9 +107,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>106.0.5249.21</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>108.0.5359.71</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>106.0.5249.21</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>108.0.5359.71</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
