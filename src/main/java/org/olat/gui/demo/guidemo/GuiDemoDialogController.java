@@ -55,7 +55,7 @@ import org.olat.core.logging.AssertException;
 public class GuiDemoDialogController extends BasicController {
 
 	VelocityContainer vcMain;
-	private Link yesNoButton, okCancelButton, genericDialogButton, noCloseButton, customCssButton;
+	private Link yesNoButton, okCancelButton, genericDialogButton, customCssButton;
 	private DialogBoxController dialogBoxOne;
 	private DialogBoxController dialogBoxTwo;
 	private DialogBoxController dialogBoxThree;
@@ -74,7 +74,6 @@ public class GuiDemoDialogController extends BasicController {
 		okCancelButton = LinkFactory.createButton("guidemo.dialog.okcancel", vcMain, this);
 		genericDialogButton = LinkFactory.createButton("guidemo.dialog.generic", vcMain, this);
 		customCssButton = LinkFactory.createButton("guidemo.dialog.customcss", vcMain, this);
-		noCloseButton = LinkFactory.createButton("guidemo.dialog.noclose", vcMain, this);
 		guimsgButton = LinkFactory.createButton("guidemo.dialog.guimsg", vcMain, this);
 		
 		//add source view control
@@ -108,11 +107,6 @@ public class GuiDemoDialogController extends BasicController {
 					"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aliquam id quam in dui pellentesque sodales?", dialogBoxSpecialCSS);
 			// use custom CSS: in this case with a special icon
 			dialogBoxSpecialCSS.setCssClass("o_warning");
-		}
-		if (source == noCloseButton) {
-			dialogBoxWithoutClose = activateYesNoDialog(ureq, "Hello World",
-					"Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aliquam id quam in dui pellentesque sodales?", dialogBoxWithoutClose);
-			dialogBoxWithoutClose.setCloseWindowEnabled(false);
 		}
 		if(source == guimsgButton){
 			guimsg = MessageUIFactory.createInfoMessage(ureq, getWindowControl(), "Helau", "asdifasdlkf sdlfasfd asdf.");

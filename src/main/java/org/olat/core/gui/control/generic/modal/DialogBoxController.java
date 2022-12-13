@@ -113,27 +113,19 @@ public class DialogBoxController extends BasicController {
 		dialogBoxVC.contextPut("buttons", buttons);
 		
 		// configuration default values:
-		setCloseWindowEnabled(true);
+		String closeTitle = translate("close.dialog");
+		closeLink = LinkFactory.createIconClose(closeTitle, dialogBoxVC, this);
+		// Within a dialog all 'you will loose form data' messages should be
+		// suppressed. this is obvious to a user and leads to impossible
+		// workflows. See OLAT-4257
+		closeLink.setSuppressDirtyFormWarning(true);
+		// a11y: Set focus to close link and thus to the dialog itself
+		closeLink.setFocus(true, true); 
+		closeLink.setTitle(closeTitle);
+		dialogBoxVC.contextPut("closeIcon", Boolean.TRUE);
+		
 		// activate modal dialog now
 		putInitialPanel(dialogBoxVC);
-	}
-
-	public void setCloseWindowEnabled(boolean closeWindowEnabled) {
-		// add optional close icon
-		if (closeWindowEnabled){
-			String title = translate("close.dialog");
-			closeLink = LinkFactory.createIconClose(title, dialogBoxVC, this);
-			// Within a dialog all 'you will loose form data' messages should be
-			// suppressed. this is obvious to a user and leads to impossible
-			// workflows. See OLAT-4257
-			closeLink.setSuppressDirtyFormWarning(true);
-			// a11y: Set focus to close link and thus to the dialog itself
-			closeLink.setFocus(true, true); 
-			closeLink.setTitle(title);
-			dialogBoxVC.contextPut("closeIcon", Boolean.TRUE);
-		}	else {
-			dialogBoxVC.contextPut("closeIcon", Boolean.FALSE);			
-		}
 	}
 	
 	/**

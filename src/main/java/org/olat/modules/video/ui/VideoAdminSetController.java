@@ -197,7 +197,6 @@ public class VideoAdminSetController extends FormBasicController  {
 			if(resolutions.size() <= 0){
 				deactivationHintController = activateYesNoDialog(ureq, translate("admin.config.hint.title"), translate("admin.config.hint"), deactivationHintController);
 				deactivationHintController.setUserObject(source);
-				deactivationHintController.setCloseWindowEnabled(false);
 				return;
 			}
 			//translate the list to an int[]-Array
