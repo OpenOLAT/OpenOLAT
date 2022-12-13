@@ -113,10 +113,11 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		resetFiltersButton.setGhost(true);
 		components.put("rResetFiltersDropDown", resetFiltersButton);
 		
-		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collapseFiltersButton"), "rCollapseFiltersButton", "collpase.filters", Link.BUTTON);
+		collpaseFiltersButton = new FormLinkImpl(dispatchId.concat("_collapseFiltersButton"), "rCollapseFiltersButton", "filters.collapse", Link.BUTTON);
 		collpaseFiltersButton.setElementCssClass("o_button_details");
 		collpaseFiltersButton.setDomReplacementWrapperRequired(false);
 		collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_expand");
+		collpaseFiltersButton.setTitle("filters.collapse");
 		collpaseFiltersButton.setTranslator(translator);
 		components.put("rCollpaseFiltersButton", collpaseFiltersButton);
 		
@@ -158,8 +159,13 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		this.expanded = expand;
 		if(this.expanded) {
 			collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_collaps");
+			collpaseFiltersButton.setI18nKey("filters.collapse");
+			collpaseFiltersButton.setTitle("filters.collapse");
+
 		} else {
 			collpaseFiltersButton.setIconLeftCSS("o_icon o_icon-fw o_icon_details_expand");
+			collpaseFiltersButton.setI18nKey("filters.expand");
+			collpaseFiltersButton.setTitle("filters.expand");
 		}
 		component.setDirty(true);
 	}

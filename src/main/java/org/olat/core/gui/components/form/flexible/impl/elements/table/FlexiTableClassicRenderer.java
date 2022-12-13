@@ -323,13 +323,15 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			Object rowObject = ftE.getTableDataModel().getObject(row);
 			if (ftE.getComponentDelegate() != null && ftE.getComponentDelegate().isDetailsRow(row, rowObject)) {
 				String collapseIcon = ftE.isDetailsExpended(row)? "o_icon_details_collaps": "o_icon_details_expand";
-				target.append("<div title=\"").append(translator.translate("form.details")).append("\">");
+				String collapseText = ftE.isDetailsExpended(row)? translator.translate("form.details.collapse") : translator.translate("form.details.expand");
+				target.append("<div title=\"").append(collapseText).append("\">");
 				target.append("<a href='javascript:;' onclick=\"");
 				target.append(FormJSHelper.getXHRFnCallFor(theForm, ftC.getFormDispatchId(), 1, false, false, false,
 						new NameValuePair("tt-details", Integer.toString(row))));
 				target.append(";");
-				target.append(" return false;\">");
+				target.append(" return false;\" role='button'>");
 				target.append("<i class='o_icon o_icon-lg ").append(collapseIcon).append("'> </i>");
+				target.append("<span class='visually-hidden'>").append(collapseText).append("</span>");
 				target.append("</a>");
 			}
 			
