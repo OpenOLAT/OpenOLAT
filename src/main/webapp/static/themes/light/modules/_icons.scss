@@ -358,6 +358,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_show_more:before { content: $fa-var-toggle-down; }
 .o_icon_show_less:before { content: $fa-var-toggle-up; }
 .o_icon_show_send:before { content: $fa-var-paper-plane-o; }
+.o_icon_shrink:before { content: $fa-var-search-minus;}
 .o_icon_shuffle:before { content: $fa-var-random;}
 .o_icon_sign_out:before { content: $fa-var-sign-out; }
 .o_icon_slide_down:before { content: $fa-var-chevron-down; }
@@ -937,3 +938,11 @@ a.o_icon {
 	text-align: center;
 }
 
+/* Font Awesome 6 icons */
+.o_icon_fa6_a:before { content:"\EA00"; font-family: openolat; font-size: 120% }
+.o_icon_fa6_c:before { content:"\EA01"; font-family: openolat; font-size: 120% }
+.o_icon_fa6_q:before { content:"\EA02"; font-family: openolat; font-size: 120% }
+.o_icon_fa6_s:before { content:"\EA03"; font-family: openolat; font-size: 120% }
+.o_icon_fa6_v:before { content:"\EA04"; font-family: openolat; font-size: 120% }
+.o_icon_fa6_timeline:before { content:"\EB00"; font-family: openolat; font-size: 120%; }
+.o_icon_fa6_table:before { content:"\EB01"; font-family: openolat; font-size: 120%; }
