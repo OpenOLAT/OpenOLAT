@@ -17,3 +17,11 @@
 		#end
 	</div>
 </div></div></div>
+<div class="modal-backdrop in"></div>
+## always show top of modal dialog when on long pages
+<script>
+jQuery(function() {
+	jQuery('#$r.getId("o_closablewapper_") > .modal-backdrop')
+		.css('height', 0).css('height', jQuery('#$r.getId("o_closablewapper_")')[0].scrollHeight);
+});
+</script>

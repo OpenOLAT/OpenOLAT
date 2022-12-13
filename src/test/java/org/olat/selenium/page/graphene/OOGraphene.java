@@ -125,7 +125,7 @@ public class OOGraphene {
 	
 	public static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration) {
 		try {
-			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal')][div[contains(@class,'modal-dialog')] or div[contains(@class,'modal-backdrop')]]");
+			By modalBy = By.xpath("//div[contains(@class,'modal') and not(@id='o_form_dirty_message')][div/div[contains(@class,'modal-content')] or following-sibling::div[contains(@class,'modal-backdrop')]]");			
 			new WebDriverWait(browser, driverTimeout)
 				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
 				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
