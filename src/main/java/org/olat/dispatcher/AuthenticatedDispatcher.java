@@ -126,6 +126,12 @@ public class AuthenticatedDispatcher implements Dispatcher {
 		boolean auth = usess.isAuthenticated();
 		Tracing.setUserSession(usess);
 		if (!auth) {
+			String pathInfo = request.getPathInfo();
+			if(pathInfo != null && pathInfo.contains("close-window")) {
+				DispatcherModule.setNotContent(pathInfo, response);
+				return;
+			}
+			
 			String guestAccess = ureq.getParameter(GUEST);
 			if (guestAccess == null || !CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginEnabled()) {
 				String businessPath = extractBusinessPath(ureq, request, uriPrefix);

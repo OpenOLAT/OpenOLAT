@@ -175,17 +175,17 @@ public class CalendarPage {
 	
 	public CalendarPage confirmModifyOneOccurence() {
 		By saveOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_one");
-		OOGraphene.waitElement(saveOneBy, 5, browser);
+		OOGraphene.waitElement(saveOneBy, browser);
 		browser.findElement(saveOneBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
 	public CalendarPage confirmModifyAllOccurences() {
 		By saveAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_all");
-		OOGraphene.waitElement(saveAllBy, 5, browser);
+		OOGraphene.waitElement(saveAllBy, browser);
 		browser.findElement(saveAllBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -198,9 +198,9 @@ public class CalendarPage {
 	
 	public CalendarPage confirmDeleteOneOccurence() {
 		By deleteOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_one");
-		OOGraphene.waitElement(deleteOneBy, 5, browser);
+		OOGraphene.waitElement(deleteOneBy, browser);
 		browser.findElement(deleteOneBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -208,7 +208,7 @@ public class CalendarPage {
 		By deleteFutureBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_future_events");
 		OOGraphene.waitElement(deleteFutureBy, browser);
 		browser.findElement(deleteFutureBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -216,7 +216,7 @@ public class CalendarPage {
 		By deleteAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_delete_all");
 		OOGraphene.waitElement(deleteAllBy, browser);
 		browser.findElement(deleteAllBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
