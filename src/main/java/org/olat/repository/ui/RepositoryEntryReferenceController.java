@@ -269,40 +269,54 @@ public class RepositoryEntryReferenceController extends BasicController {
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				repositoryEntry = searchCtrl.getSelectedEntry();
 				updateUI(ureq);
+				cmc.deactivate();
+				cleanUp();
 				fireEvent(ureq, SELECTION_EVENT);
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == createCtrl) {
 			if (event.equals(Event.DONE_EVENT)) {
 				repositoryEntry = createCtrl.getAddedEntry();
 				updateUI(ureq);
+				cmc.deactivate();
+				cleanUp();
 				fireEvent(ureq, SELECTION_EVENT);
 			} else if (event.equals(Event.FAILED_EVENT)) {
+				cmc.deactivate();
+				cleanUp();
 				showError("add.failed");
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == importCtrl) {
 			if (event.equals(Event.DONE_EVENT)) {
 				repositoryEntry = importCtrl.getImportedEntry();
 				updateUI(ureq);
 				fireEvent(ureq, SELECTION_EVENT);
 			} else if (event.equals(Event.FAILED_EVENT)) {
+				cmc.deactivate();
+				cleanUp();
 				showError("add.failed");
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == importUrlCtrl) {
 			if (event.equals(Event.DONE_EVENT)) {
 				repositoryEntry = importUrlCtrl.getImportedEntry();
 				updateUI(ureq);
 				fireEvent(ureq, SELECTION_EVENT);
 			} else if (event.equals(Event.FAILED_EVENT)) {
+				cmc.deactivate();
+				cleanUp();
 				showError("add.failed");
+			} else {
+				cmc.deactivate();
+				cleanUp();
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}

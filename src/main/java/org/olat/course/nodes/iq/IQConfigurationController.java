@@ -337,6 +337,7 @@ public class IQConfigurationController extends BasicController implements Refere
 				doChangeResource(urequest, newEntry);
 			}
 			cmc.deactivate();
+			cleanUp();
 		} else if (source == mod21ConfigForm) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -350,6 +351,13 @@ public class IQConfigurationController extends BasicController implements Refere
 				doPreview(urequest);
 			}
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(confirmChangeResourceCtrl);
+		removeAsListenerAndDispose(cmc);
+		confirmChangeResourceCtrl = null;
+		cmc = null;
 	}
 	
 	/**
