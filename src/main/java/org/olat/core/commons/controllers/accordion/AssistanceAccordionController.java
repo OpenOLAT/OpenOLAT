@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -43,82 +41,55 @@ public class AssistanceAccordionController extends BasicController {
 
     private final VelocityContainer mainVC;
 
-    private final Translator translator;
-
     private final List<HelpItem> helpItems = new ArrayList<>();
 
     public AssistanceAccordionController(UserRequest ureq, WindowControl wControl, Translator translator, String titleKey) {
-        super(ureq, wControl);
-
-        this.translator = translator;
+        super(ureq, wControl, translator);
 
         mainVC = createVelocityContainer("assistanceAccordion");
         mainVC.contextPut("title", translator.translate(titleKey));
         mainVC.contextPut("helpItems", helpItems);
 
         putInitialPanel(mainVC);
-
-        updateUI();
-    }
-
-    private void updateUI() {
-        for (HelpItem helpItem : helpItems) {
-            helpItem.update();
-        }
     }
 
     public void addQuestionAnswer(String titleKey, String detailsKey, Component[] components) {
         int index = helpItems.size();
         helpItems.add(new HelpItem(index, titleKey, detailsKey, components));
-        updateUI();
     }
 
     public void setHelpLink(String helpLinkKey, String contextHelpUrl) {
-        mainVC.contextPut("contextHelpText", translator.translate(helpLinkKey));
+        mainVC.contextPut("contextHelpText", getTranslator().translate(helpLinkKey));
         mainVC.contextPut("contextHelpUrl", contextHelpUrl);
     }
 
     @Override
     protected void event(UserRequest ureq, Component source, Event event) {
-        for (HelpItem helpItem : helpItems) {
-            if (helpItem.expandButton == source || helpItem.titleLink == source) {
-                helpItem.setExpanded(!helpItem.isExpanded());
-                helpItem.update();
-                mainVC.contextPut("helpItems", helpItems);
-            }
-        }
+    	if (source == mainVC) {
+    		// Persist expand/close events in help items for support full page refresh / redrawing 
+    		String iParam = ureq.getParameter("i");
+    		if (!StringHelper.isLong(iParam)) {
+    			return; // some hacker or something
+    		}
+    		int pos = Integer.parseInt(iParam);
+    		HelpItem item = helpItems.get(pos);
+    		String cmd = event.getCommand();
+    		item.setExpanded("e".equals(cmd));
+    	}
     }
 
     public class HelpItem {
         private final String detailsText;
+        private final String title;
 
         private boolean expanded = false;
-
-        private final Link expandButton;
-
-        private final Link titleLink;
+        
 
         private final Component[] components;
 
         public HelpItem(int index, String titleKey, String detailsKey, Component[] components) {
-            this.detailsText = StringHelper.containsNonWhitespace(detailsKey)? translator.translate(detailsKey): null;
-
-            String expandButtonName = "expandButton_" + index;
-            expandButton = LinkFactory.createCustomLink(expandButtonName, expandButtonName, null,
-                    Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, AssistanceAccordionController.this);
-            expandButton.setCustomEnabledLinkCSS("o_clean_link");
-            expandButton.setSuppressDirtyFormWarning(true);
-            expandButton.setAriaRole(Link.ARIA_ROLE_BUTTON);
-            expandButton.setElementCssClass("o_assistance_accordion_expand");
-
-            String titleLinkName = "titleLink_" + index;
-            titleLink = LinkFactory.createCustomLink(titleLinkName, titleLinkName, null,
-                    Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, mainVC, AssistanceAccordionController.this);
-            titleLink.setCustomDisplayText(translator.translate(titleKey));
-            titleLink.setCustomEnabledLinkCSS("o_clean_link");
-            titleLink.setSuppressDirtyFormWarning(true);
-            titleLink.setAriaRole(Link.ARIA_ROLE_BUTTON);
-            titleLink.setElementCssClass("o_assistance_accordion_title");
+            this.detailsText = StringHelper.containsNonWhitespace(detailsKey)? getTranslator().translate(detailsKey): null;
+            this.title = getTranslator().translate(titleKey);
 
             this.components = components;
             if (components != null) {
@@ -126,11 +97,6 @@ public class AssistanceAccordionController extends BasicController {
                     mainVC.put(component.getComponentName(), component);
                 }
             }
-        }
-
-        public void update() {
-            String expandedIcon = expanded ? "o_icon_details_collaps" : "o_icon_details_expand";
-            expandButton.setIconLeftCSS("o_icon o_icon-2x " + expandedIcon);
         }
 
         public boolean isExpanded() {
@@ -144,13 +110,8 @@ public class AssistanceAccordionController extends BasicController {
         public String getDetailsText() {
             return detailsText;
         }
-
-        public Link getExpandButton() {
-            return expandButton;
-        }
-
-        public Link getTitleLink() {
-            return titleLink;
+        public String getTitle() {
+            return title;
         }
 
         public Component[] getComponents() {

@@ -3,19 +3,26 @@
         <h4>$title</h4>
     </div>
     <div class="o_items">
-        #foreach($helpItem in $helpItems)
-        #set ($index = $helpItem.getIndex())
-        #set ($helpItemDetails = $helpItem.getDetails())
+    #foreach($helpItem in $helpItems)
+        #set ($expanded = $helpItem.isExpanded())
         <div class="o_item">
-            <div class="o_item_content">
-                $r.render($helpItem.getTitleLink())
-                
-                #if($helpItem.isExpanded() && $helpItem.getDetailsText())
+            <div class="o_expand_collapse">
+            	<a href="#$r.getCId()_aa__$foreach.index" role="button" data-toggle="collapse" aria-controls="$r.getCId()_aa__$foreach.index" 
+            		#if($expanded) aria-expanded="true" #else aria-expanded="false" class="collapsed" #end >
+					<span>
+						$helpItem.getTitle()
+						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_expand" aria-hidden="true"> </i>
+						<i class="o_icon o_icon-2x o_icon-fw o_icon_details_collaps" aria-hidden="true"> </i>						
+            		</span>
+				</a>            
+            </div>
+            <div class="o_item_content collapse #if($expanded) in #end" id="$r.getCId()_aa__$foreach.index" #if($expanded) aria-expanded="true" #else aria-expanded="false" #end >                
+            	#if ($helpItem.getDetailsText())
                 <div class="o_text_block">
                     $helpItem.getDetailsText()
                 </div>
                 #end
-                #if($helpItem.isExpanded() && $helpItem.hasComponents())
+                #if($helpItem.hasComponents())
                 <div class="o_components_block">
                     <div class="o_components">
                         #foreach($component in $helpItem.getComponents())
@@ -25,11 +32,16 @@
                 </div>
                 #end
             </div>
-            <div class="o_expand_collapse_icon" aria-hidden="true">
-                $r.render($helpItem.getExpandButton())
-            </div>
         </div>
-        #end
+        <script>
+        jQuery('#$r.getCId()_aa__$foreach.index').on('shown.bs.collapse', function () {
+        	$r.backgroundCommand("e", "i", "$foreach.index");
+		});
+        jQuery('#$r.getCId()_aa__$foreach.index').on('hidden.bs.collapse', function () {
+        	$r.backgroundCommand("c", "i", "$foreach.index");
+		});
+        </script>
+	#end
     </div>
     #if($r.isNotEmpty($contextHelpUrl))
     <div class="o_context_help">
@@ -40,3 +52,4 @@
     </div>
     #end
 </div>
+
