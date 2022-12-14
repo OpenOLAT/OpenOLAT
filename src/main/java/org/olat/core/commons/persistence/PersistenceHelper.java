@@ -190,7 +190,9 @@ public class PersistenceHelper {
 		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		string = string.replace("_", "\\_");
+		if(DBFactory.getInstance().isMySQL() || DBFactory.getInstance().isOracle()) {
+			string = string.replace("_", "\\_");
+		}
 		return string.toLowerCase();
 	}
 	
@@ -203,7 +205,9 @@ public class PersistenceHelper {
 		string = string + "%";
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		string = string.replace("_", "\\_");
+		if(DBFactory.getInstance().isMySQL() || DBFactory.getInstance().isOracle()) {
+			string = string.replace("_", "\\_");
+		}
 		return string.toLowerCase();
 	}
 	

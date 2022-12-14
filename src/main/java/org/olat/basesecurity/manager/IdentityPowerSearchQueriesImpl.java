@@ -805,7 +805,9 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
 		// To test for literal instances of '_', we have to escape it.
-		string = string.replace("_", "\\_");
+		if(dbInstance.isMySQL() || dbInstance.isOracle()) {
+			string = string.replace("_", "\\_");
+		}
 		return string;
 	}
 }
