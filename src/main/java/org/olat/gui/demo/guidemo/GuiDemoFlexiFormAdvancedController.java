@@ -33,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -120,6 +121,12 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		TextElement disabledRichTextElement = uifactory.addRichTextElementForStringData("guidemo.form.richtext.simple3", "guidemo.form.richtext.simple", "this <i>is</i> <b>disabled</b>", -1, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		disabledRichTextElement.setEnabled(false);
+
+		SliderElement sliderElement = uifactory.addSliderElement("guidemo.form.slider", "guidemo.form.slider", formLayout);
+		sliderElement.setMinValue(0);
+		sliderElement.setMaxValue(100);
+		sliderElement.setElementCssClass("o_super_slider");
+		sliderElement.setDomReplacementWrapperRequired(false);
 
 		// Button layout
 		final FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
