@@ -103,6 +103,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		switch(ftE.getRendererType()) {
 			case custom: sb.append(" o_rendertype_custom"); break;
 			case classic: sb.append(" o_rendertype_classic"); break;
+			case external: sb.append(" o_rendertype_user"); break;
 		}
 		sb.append("'");
 		String wrapperSelector = ftE.getWrapperSelector();
@@ -199,7 +200,16 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		return false;
 	}
-	
+
+	/**
+	 *  Subclasses can override this method to render extra HTML or form items on the right side of the
+	 *  toolbar above the table.
+	 */
+	protected void renderUserOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu,
+									 Translator translator, RenderResult renderResult) {
+		//
+	}
+
 	private void renderFilterTabs(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		renderFormItem(renderer, sb, ftE.getFilterTabsElement(), ubu, translator, renderResult, args);
@@ -308,7 +318,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</span>");
 		}
 		sb.append("</div>");
-		
+
+		renderUserOptions(renderer, sb, ftE, ubu, translator, renderResult);
 
 		sb.append("<div class='o_table_tools o_noprint'>");
 		
@@ -517,6 +528,10 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				}
 				case classic: {
 					renderFormItem(renderer, sb, ftE.getClassicTypeButton(), ubu, translator, renderResult, args);
+					break;
+				}
+				case external: {
+					renderFormItem(renderer, sb, ftE.getExternalTypeButton(), ubu, translator, renderResult, args);
 					break;
 				}
 			}

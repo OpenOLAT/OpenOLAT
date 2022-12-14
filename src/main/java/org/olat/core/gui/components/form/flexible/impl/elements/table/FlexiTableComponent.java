@@ -47,6 +47,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 	
 	private FlexiTableElementImpl element;
 	private final Map<String,Component> components = new HashMap<>();
+	private AbstractFlexiTableRenderer externalRenderer;
 	
 	public FlexiTableComponent(FlexiTableElementImpl element) {
 		super(element.getName());
@@ -57,7 +58,11 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		super(element.getName(), translator);
 		this.element = element;
 	}
-	
+
+	public void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer) {
+		this.externalRenderer = externalRenderer;
+	}
+
 	@Override
 	public FlexiTableElementImpl getFormItem() {
 		return element;
@@ -94,6 +99,7 @@ public class FlexiTableComponent extends FormBaseComponentImpl implements Compon
 		switch(element.getRendererType()) {
 			case classic: return CLASSIC_RENDERER;
 			case custom: return CUSTOM_RENDERER;
+			case external: return externalRenderer;
 			default: return CLASSIC_RENDERER;
 		}
 	}

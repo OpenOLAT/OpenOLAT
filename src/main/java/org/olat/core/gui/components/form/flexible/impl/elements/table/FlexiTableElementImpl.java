@@ -149,6 +149,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private FormLink extendedSearchButton;
 	private FormLink classicTypeButton;
 	private FormLink customTypeButton;
+	private FormLink externalTypeButton;
 	private FormLink settingsButton;
 	private AbstractTextElement searchFieldEl;
 	private ExtendedFlexiTableSearchController extendedSearchCtrl;
@@ -236,6 +237,11 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		setEmptyTableSettings("default.tableEmptyMessage", null, FlexiTableElement.TABLE_EMPTY_ICON);
 	}
 
+	public void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer, String iconCssSelector) {
+		component.setExternalRenderer(externalRenderer);
+		externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
+	}
+
 	@Override
 	public int getColumnIndexForDragAndDropLabel() {
 		return columnLabelForDragAndDrop;
@@ -259,6 +265,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(classicTypeButton != null) {
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
+		}
+		if (externalTypeButton != null) {
+			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
 		}
 		// update render type
 		this.rendererType = rendererType;
@@ -292,10 +301,18 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			classicTypeButton.setActive(FlexiTableRendererType.classic == rendererType);
 			classicTypeButton.setAriaLabel(translator.translate("aria.view.table"));
 			components.put("rTypeClassic", classicTypeButton);
-			
+			// externally defined table visualization
+			externalTypeButton = new FormLinkImpl(dispatchId + "_externalRTypeButton", "rExternalRTypeButton", "", Link.BUTTON + Link.NONTRANSLATED);
+			externalTypeButton.setTranslator(translator);
+			externalTypeButton.setIconLeftCSS("o_icon");
+			externalTypeButton.setElementCssClass("o_sel_external");
+			externalTypeButton.setActive(FlexiTableRendererType.external == rendererType);
+			externalTypeButton.setAriaLabel(translator.translate("aria.view.other"));
+
 			if(getRootForm() != null) {
 				rootFormAvailable(customTypeButton);
 				rootFormAvailable(classicTypeButton);
+				rootFormAvailable(externalTypeButton);
 			}
 		}
 	}
@@ -306,6 +323,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public FormLink getCustomTypeButton() {
 		return customTypeButton;
+	}
+
+	public FormLink getExternalTypeButton() {
+		return externalTypeButton;
 	}
 
 	public FormLink getEmptyTablePrimaryActionButton() {
@@ -1230,6 +1251,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			saveCustomSettings(ureq);
 			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
 					FlexiTableRendererType.classic, FormEvent.ONCLICK));
+		} else if (externalTypeButton != null
+				&& externalTypeButton.getFormDispatchId().equals(dispatchuri)) {
+			setRendererType(FlexiTableRendererType.external);
+			saveCustomSettings(ureq);
+			getRootForm().fireFormEvent(ureq, new FlexiTableRenderEvent(FlexiTableRenderEvent.CHANGE_RENDER_TYPE, this,
+					FlexiTableRendererType.external, FormEvent.ONCLICK));
 		} else if(getFormDispatchId().equals(dispatchuri) && doSelect(ureq)) {
 			//do select
 		}
@@ -2398,6 +2425,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		rootFormAvailable(extendedSearchButton);
 		rootFormAvailable(customTypeButton);
 		rootFormAvailable(classicTypeButton);
+		rootFormAvailable(externalTypeButton);
 		rootFormAvailable(emptyTablePrimaryActionButton);
 		if(components != null) {
 			for(FormItem item:components.values()) {

@@ -33,6 +33,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractFlexiTableRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -75,7 +76,15 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	 * @param rendererType
 	 */
 	public void setRendererType(FlexiTableRendererType rendererType);
-	
+
+	/**
+	 * Set an external renderer that can be used instead of the built-in renderer types.
+	 *
+	 * @param externalRenderer The user-defined renderer.
+	 * @param iconCssSelector The CSS selector used to set the renderer's mode button icon. Example: o_icon_timeline
+	 */
+	void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer, String iconCssSelector);
+
 	/**
 	 * Set the renderer available
 	 * @param rendererType
