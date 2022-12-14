@@ -25,19 +25,15 @@
 package org.olat.gui.demo.guidemo;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -55,7 +51,6 @@ public class GuiDemoFlexiForm extends FormBasicController {
 	private TextElement lastName;
 	private TextElement institution;
 	private FileElement fileElement;
-	private Submit submit;
 	private GuiDemoFlexiFormPersonData personData;
 	private VelocityContainer confirm;
 	private GuiDemoFlexiForm confirmController;
@@ -129,7 +124,6 @@ public class GuiDemoFlexiForm extends FormBasicController {
 
 		firstName = uifactory.addTextElement("firstname", "guidemo.flexi.form.firstname", 256, personData.getFirstName(), formLayout);
 		firstName.setDisplaySize(defaultDisplaySize);
-		//firstName.setNotEmptyCheck("guidemo.flexi.form.mustbefilled");
 		firstName.setMandatory(true);
 		firstName.setEnabled(inputMode);
 		firstName.setPlaceholderText("Hans");
@@ -158,27 +152,12 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		institution.setEnabled(inputMode);
 		institution.setHelpTextKey("guidemo.flexi.form.institution.help", null);
 		
-		stripedBackgroundAndLineNumbersEl = uifactory.addTextAreaElement("stripedAndLineNumbers", "guidemo.textarea.striped.line.numbers.label", -1, 10, -1, false, true, null, formLayout);
+		stripedBackgroundAndLineNumbersEl = uifactory.addTextAreaElement("stripedAndLineNumbers", "guidemo.textarea.striped.line.numbers.label", -1, 10, -1, true, true, null, formLayout);
 		stripedBackgroundAndLineNumbersEl.setOriginalLineBreaks(true);
 		stripedBackgroundAndLineNumbersEl.setStripedBackgroundEnabled(true);
 		stripedBackgroundAndLineNumbersEl.setLineNumbersEnbaled(true);
 		stripedBackgroundAndLineNumbersEl.setEnabled(true);
-		
-		List<Integer> errors = new ArrayList<>();
-		errors.add(4);
-		errors.add(10);
-		errors.add(60);
-		errors.add(100);
-		errors.add(1000);
-		errors.add(1500);
-		
-		//stripedBackgroundAndLineNumbersEl.setErrors(errors);
 
-		if (inputMode) {
-			// submit only if in input mode
-			submit = new FormSubmit("submit", "submit");
-			formLayout.add(submit);
-		}
+		uifactory.addFormSubmitButton("submit", formLayout);
 	}
-
 }

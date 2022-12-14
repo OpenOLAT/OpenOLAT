@@ -419,6 +419,13 @@ public class FormJSHelper {
 		  .append("})();</script>");
 		return sb;
 	}
+	
+	public static StringOutput appendPreventEnterPropagation(StringOutput sb, String formDispatchId) {
+		sb.append("<script>(function() { \"use strict\";\n")
+		  .append(" jQuery('#").append(formDispatchId).append("').on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
+		  .append("})();</script>");
+		return sb;
+	}
 
 	/**
 	 * Set the flexi form dirty.

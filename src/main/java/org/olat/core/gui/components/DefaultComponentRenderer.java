@@ -200,7 +200,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			renderLabel(sb, (FormBaseComponent)source, translator, new String[] { item.getFormDispatchId(), "col-sm-" + labelWidth } );
 		}
 
-		sb.append("<div class='col-sm-9 ").append(" col-sm-offset-" + labelWidth, !item.hasLabel()).append("'>");
+		sb.append("<div class='col-sm-").append(fieldWidth).append(" col-sm-offset-" + labelWidth, !item.hasLabel()).append("'>");
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 		renderErrorWarningMarker(sb,  item.hasError(), item.hasWarning());
 		sb.append("</div>");

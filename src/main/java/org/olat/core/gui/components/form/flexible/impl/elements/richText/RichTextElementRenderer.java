@@ -183,11 +183,9 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("\">")
 		  .append(value)
-		  .append("</textarea>")
-		  .append(FormJSHelper.getJSStartWithVarDeclaration(domID))
-		  //plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-		  .append(domID).append(".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
-		  .append(FormJSHelper.getJSEnd());
+		  .append("</textarea>");
+		FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), domID);
+		FormJSHelper.appendPreventEnterPropagation(sb, domID);
 	}
 
 	private void renderTinyMCE(Renderer renderer, StringOutput sb, String domID, RichTextElementComponent teC, URLBuilder ubu, Translator translator) {

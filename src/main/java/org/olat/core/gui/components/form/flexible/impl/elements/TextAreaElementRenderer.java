@@ -130,11 +130,9 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			sb.append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 			  .append(" >")
 			  .append(value)
-			  .append("</textarea>")
-			  .append(FormJSHelper.getJSStartWithVarDeclaration(id))
-			//plain textAreas should not propagate the keypress "enter" (keynum = 13) as this would submit the form
-			  .append(id+".on('keypress', function(event, target){if (13 == event.keyCode) {event.stopPropagation()} })")
-			  .append(FormJSHelper.getJSEnd());
+			  .append("</textarea>");
+			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), id);
+			FormJSHelper.appendPreventEnterPropagation(sb, id);
 			
 			if (teC.isLineNumbersEnabled()) {
 				sb.append("<script>O_TEXTAREA.append_line_numbers('").append(id).append("')</script>");
@@ -149,7 +147,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		if (teC.isAutoHeightEnabled()) {
 			int minSize = Math.max(90, (Math.abs(rows) * 20));
 			sb.append("<script>\n")
-			  .append("/* <![CDATA[ */\n")
+			  .append("\"use strict\"\n")
 			  .append("jQuery(function(){\n")
 			  .append(" jQuery('#").append(id).append("').each(function () {\n")
 			  .append("  this.setAttribute('style', 'height:' + (jQuery(this).outerHeight() > this.scrollHeight ? jQuery(this).outerHeight() : this.scrollHeight) + 'px;overflow-y:hidden;');\n")
@@ -158,13 +156,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			  .append("  this.style.height = (this.scrollHeight < ").append(minSize).append(" ? ").append(minSize).append(" : this.scrollHeight) + 'px';\n")
 			  .append(" });\n")
 			  .append("});\n")
-			  .append("/* ]]> */\n")
 			  .append("</script>\n");
-		}
-		
-		if(source.isEnabled()){
-			//add set dirty form only if enabled
-			FormJSHelper.appendFlexiFormDirty(sb, te.getRootForm(), teC.getFormDispatchId());
 		}
 		
 		if (teC.isFixedFontWidth()) {
