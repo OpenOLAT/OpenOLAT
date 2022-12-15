@@ -124,13 +124,15 @@ public class GuiDemoFlexiFormMainController extends BasicController {
 		
 		demolinknames.add("guidemo_flexi_form_advanced");
 		demos.put("guidemo_flexi_form_advanced", (ureq, wControl) -> new GuiDemoFlexiFormAdvancedController(ureq, wControl));
+		
+		demolinknames.add("guidemo_flexi_form_multiple");
+		demos.put("guidemo_flexi_form_multiple", GuiDemoFlexiMultipleSelectionController::new);
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//there are only events of type link from the demos navigation
-		if (source instanceof Link) {
-			Link sl = (Link) source;
+		if (source instanceof Link sl) {
 			//userobject tells which demo to activate
 			String uob = (String) sl.getUserObject();
 			if (uob != null) {

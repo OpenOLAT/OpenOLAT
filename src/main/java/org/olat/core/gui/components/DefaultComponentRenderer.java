@@ -46,27 +46,27 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		String layout = layout(source, args);
 		switch(layout) {
 			case "2_10":
-				renderBootstrapLayout(renderer, sb, source, 10, ubu, translator, renderResult, args);
+				renderBootstrapLayout(renderer, sb, source, 10, layout, ubu, translator, renderResult, args);
 				break;
 			case "3_9":
-				renderBootstrapLayout(renderer, sb, source, 9, ubu, translator, renderResult, args);
+				renderBootstrapLayout(renderer, sb, source, 9, layout, ubu, translator, renderResult, args);
 				break;
 			case "6_6":
-				renderBootstrapLayout(renderer, sb, source, 6, ubu, translator, renderResult, args);
+				renderBootstrapLayout(renderer, sb, source, 6, layout, ubu, translator, renderResult, args);
 				break;
 			case "9_3":
-				renderBootstrapLayout(renderer, sb, source, 3, ubu, translator, renderResult, args);
+				renderBootstrapLayout(renderer, sb, source, 3, layout, ubu, translator, renderResult, args);
 				break;
 			case "tr":
-				renderTrLayout(renderer, sb, source, ubu, translator, renderResult, args);
+				renderTrLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "vertical":
 			case "horizontal":
 			case "minimal":
-				renderMinimalLayout(renderer, sb, source, ubu, translator, renderResult, args);
+				renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "label":
-				renderLabel(sb, source, translator, args);
+				renderLabel(sb, source, "label", translator, args);
 				break;
 			case "error":
 				renderError(sb, source);
@@ -133,14 +133,14 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 	}
 	
-	private void renderMinimalLayout(Renderer renderer, StringOutput sb, Component source,
+	private void renderMinimalLayout(Renderer renderer, StringOutput sb, Component source, String layout,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 
 		Item item = new Item(source);
-		renderOpenFormComponent(sb, "div", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 
 		if(item.hasLabel()) {
-			renderLabel(sb, (FormBaseComponent)source, translator, new String[] { item.getFormDispatchId() } );
+			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId() } );
 		}
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
 		renderErrorWarningMarker(sb, item.hasError(), item.hasWarning());
@@ -153,18 +153,18 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			renderError(sb, item.getFormItem(),  item.hasError(), item.hasWarning());
 		}
 
-		renderCloseFormComponent(sb, "div");
+		renderCloseFormComponent(sb, wrapperTagName);
 	}
 	
-	private void renderTrLayout(Renderer renderer, StringOutput sb, Component source,
+	private void renderTrLayout(Renderer renderer, StringOutput sb, Component source, String layout,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		
 		Item item = new Item(source);
-		renderOpenFormComponent(sb, "tr", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 		
 		if(item.hasLabel()) {
 			sb.append("<th class='col-left'>");
-			renderLabel(sb, (FormBaseComponent)source, translator, new String[] { item.getFormDispatchId() } );
+			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId() } );
 			sb.append("</th>");
 		}
 		
@@ -185,19 +185,19 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			sb.append("</div>");
 		}
 		sb.append("</td>");
-		renderCloseFormComponent(sb, "tr");
+		renderCloseFormComponent(sb, wrapperTagName);
 	}
 
-	private void renderBootstrapLayout(Renderer renderer, StringOutput sb, Component source, int fieldWidth,
+	private void renderBootstrapLayout(Renderer renderer, StringOutput sb, Component source, int fieldWidth, String layout,
 			URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		
 		Item item = new Item(source);
 		int labelWidth = 12 - fieldWidth;
 		
-		renderOpenFormComponent(sb, "div", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 		
 		if(item.hasLabel()) {
-			renderLabel(sb, (FormBaseComponent)source, translator, new String[] { item.getFormDispatchId(), "col-sm-" + labelWidth } );
+			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId(), "col-sm-" + labelWidth } );
 		}
 
 		sb.append("<div class='col-sm-").append(fieldWidth).append(" col-sm-offset-" + labelWidth, !item.hasLabel()).append("'>");
@@ -217,10 +217,20 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			renderError(sb, item.getFormItem(),  item.hasError(), item.hasWarning());
 			sb.append("</div>");
 		}
-		renderCloseFormComponent(sb, "div");
+		renderCloseFormComponent(sb, wrapperTagName);
 	}
 	
-	private void renderOpenFormComponent(StringOutput sb, String tag, Component component,
+	protected String renderOpenFormComponent(StringOutput sb, Component source, String layout, Item item) {
+		String tag;
+		if("tr".equals(layout)) {
+			tag = "tr";
+		} else {
+			tag = "div";
+		}
+		return renderOpenFormComponent(sb, tag, source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+	}
+	
+	protected final String renderOpenFormComponent(StringOutput sb, String tag, Component component,
 			String elementCssClass,  boolean hasError, boolean hasWarning) {
 		boolean domReplacementWrapperRequired = component.isDomReplacementWrapperRequired();
 		sb.append("<").append(tag);
@@ -238,9 +248,10 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			sb.append(" has-feedback has-warning");
 		}
 		sb.append("'>");
+		return tag;
 	}
 	
-	private void renderCloseFormComponent(StringOutput sb, String tag) {
+	protected void renderCloseFormComponent(StringOutput sb, String tag) {
 		sb.append("</").append(tag).append(">");
 	}
 	
@@ -292,15 +303,19 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		}
 	}
 
-	private void renderLabel(StringOutput sb, Component component, Translator translator, String[] args) {
+	private void renderLabel(StringOutput sb, Component component, String layout, Translator translator, String[] args) {
 		if(component instanceof FormBaseComponent fComponent) {
-			renderLabel(sb, fComponent, translator, args);
+			renderLabel(sb, fComponent, layout, translator, args);
 		}
 	}
 	
-	private void renderLabel(StringOutput sb, FormBaseComponent component, Translator translator, String[] args) {
-
-		sb.append("<label class='control-label ");
+	protected void renderLabel(StringOutput sb, FormBaseComponent component,
+			@SuppressWarnings("unused") String layout, Translator translator, String[] args) {
+		renderLabel(sb, "label", component, translator, args);
+	}
+	
+	protected final void renderLabel(StringOutput sb, String tagName, FormBaseComponent component, Translator translator, String[] args) {
+		sb.append("<").append(tagName).append(" class='control-label ");
 		if (args !=  null && args.length > 0) {
 			for (int i = 0; i < args.length; i++) {
 				String arg = args[i];
@@ -313,7 +328,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		// add the reference to form element for which this label stands. this is important for screen readers
 		if (component.getFormItem() != null) {
 			String forId = component.getFormItem().getForId();
-			if(forId != null) {
+			if(forId != null && tagName.equals("label")) {
 				sb.append(" for=\"").append(forId).append("\"");
 			}
 		}
@@ -359,7 +374,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			}
 			sb.append("\"});})</script>");		
 		}
-		sb.append("</label>");
+		sb.append("</").append(tagName).append(">");
 	}
 	
 	private void renderErrorWarningMarker(StringOutput sb, boolean hasError, boolean hasWarning) {
@@ -370,7 +385,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		}
 	}
 	
-	private static class Item {
+	public static class Item {
 		
 		private final FormItem formItem;
 		private final boolean hasError;

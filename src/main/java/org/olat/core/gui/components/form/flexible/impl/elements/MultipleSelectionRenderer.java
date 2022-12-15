@@ -21,9 +21,11 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer.FormLayout;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -61,6 +63,27 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		}
 	}
 	
+	@Override
+	protected String renderOpenFormComponent(StringOutput sb, Component source, String layout, Item item) {
+		MultipleSelectionElementImpl stF = (MultipleSelectionElementImpl)item.getFormItem();
+		if(stF.singleCheckWithoutValue() || FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)) {
+			return super.renderOpenFormComponent(sb, source, layout, item);
+		}
+		return renderOpenFormComponent(sb, "fieldset", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+	}
+
+	@Override
+	protected void renderLabel(StringOutput sb, FormBaseComponent component, String layout, Translator translator, String[] args) {
+		MultipleSelectionElementImpl stF = (MultipleSelectionElementImpl)component.getFormItem();
+		if(stF.singleCheckWithoutValue()
+				|| FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)
+				|| "label".equals(layout)) {
+			super.renderLabel(sb, component, layout, translator, args);
+		} else {
+			renderLabel(sb, "legend", component, translator, args);
+		}
+	}
+
 	private void renderDropDown(StringOutput sb, MultipleSelectionComponent stC) {
 		MultipleSelectionElementImpl stF = stC.getFormItem();
 		long listId = CodeHelper.getRAMUniqueID();
@@ -134,11 +157,12 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			}
 			
 			// Set button text on ready
-			sb.append("<script>");
-			sb.append("jQuery('#").append(buttonTitleId).append("').ready(function() {");
-			sb.append(getJsSetButtonText(stF, buttonTitleId, listId));
-			sb.append("});");
-			sb.append("</script>");
+			sb.append("<script>\n")
+			  .append("\"use strict\";\n")
+			  .append("jQuery('#").append(buttonTitleId).append("').ready(function() {")
+			  .append(getJsSetButtonText(stF, buttonTitleId, listId))
+			  .append("});")
+			  .append("</script>");
 			
 			if(stC.isEnabled() && check.isEnabled()) {
 				// (un-) check ckechbox when clicking on the menu entry
@@ -257,7 +281,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		appendIdIfRequired(sb, stC).append(">");
 		CheckboxElement[] checks = stC.getCheckComponents();
 		for(int i=0; i<checks.length; ) {
-			sb.append("<div class='row'>");
+			sb.append("<div class='row checkbox'>");
 			
 			for(int j=columns; j-->0; ) {
 				if(i < checks.length) {
@@ -302,7 +326,11 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<div>", !inline); // normal checkboxes need a wrapper (bootstrap) ...
 		sb.append("<label class='").append("checkbox-inline ", inline); // ... and inline a class on the label (bootstrap)			
 		sb.append(" o_checkbox_h_aligned ", stF.isHorizontallyAlignedCheckboxes());
-		sb.append(cssClass, cssClass != null).append("' for=\"").append(formDispatchId).append("\">");
+		sb.append(cssClass, cssClass != null).append("'");
+		if(StringHelper.containsNonWhitespace(value)) {
+			sb.append(" for='").append(formDispatchId).append("'");
+		}
+		sb.append(">");
 		
 		
 		sb.append("<input type='checkbox' id='").append(formDispatchId).append("' ")

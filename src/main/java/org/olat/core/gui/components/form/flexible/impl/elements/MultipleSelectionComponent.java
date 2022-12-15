@@ -44,6 +44,10 @@ class MultipleSelectionComponent extends FormBaseComponentImpl {
 	public MultipleSelectionElementImpl getFormItem() {
 		return element;
 	}
+	
+	public int getNumOfCheckComponents() {
+		return checkComponents == null ? 0 : checkComponents.length;
+	}
 
 	public CheckboxElement[] getCheckComponents() {
 		return checkComponents;

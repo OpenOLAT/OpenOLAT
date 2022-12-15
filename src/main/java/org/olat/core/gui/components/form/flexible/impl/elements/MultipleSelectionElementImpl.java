@@ -88,7 +88,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	
 	@Override
 	public String getForId() {
+		if(component.getNumOfCheckComponents() == 1) {
+			CheckboxElement singleElement = component.getCheckComponents()[0];
+			return singleElement.getFormDispatchId();
+		}
 		return null;
+	}
+	
+	public boolean singleCheckWithoutValue() {
+		return component.getNumOfCheckComponents() == 1
+				&& !StringHelper.containsNonWhitespace(component.getCheckComponents()[0].getValue());
 	}
 	
 	@Override

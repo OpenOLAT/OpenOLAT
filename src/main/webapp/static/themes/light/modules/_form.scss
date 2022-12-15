@@ -573,6 +573,17 @@
 	}
 }
 
+legend.control-label {
+  display: inline-block;
+  padding: 0;
+  margin-bottom: 5px;
+  font-size: $font-size-base;
+  font-weight: 700;
+  line-height: inherit;
+  color: $legend-color;
+  border: none;
+}
+
 /* choice element */
 .o_choice_checkrow,
 .o_choice_textrow {
