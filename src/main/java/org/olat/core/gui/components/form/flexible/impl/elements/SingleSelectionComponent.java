@@ -53,6 +53,9 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		return element;
 	}
 	
+	public int getNumOfRadioComponents() {
+		return radioComponents == null ? 0 : radioComponents.length;
+	}
 	
 	RadioElementComponent[] getRadioComponents() {
 		return radioComponents;

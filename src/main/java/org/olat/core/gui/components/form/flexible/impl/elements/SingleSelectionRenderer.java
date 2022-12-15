@@ -21,8 +21,10 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection.Layout;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer.FormLayout;
 import org.olat.core.gui.components.form.flexible.impl.elements.SingleSelectionComponent.RadioElementComponent;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -48,6 +50,27 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 			renderVertical(sb, teC);
 		} else {
 			renderHorizontal(sb, teC);
+		}
+	}
+	
+	@Override
+	protected String renderOpenFormComponent(StringOutput sb, Component source, String layout, Item item) {
+		SingleSelectionImpl stF = (SingleSelectionImpl)item.getFormItem();
+		if(stF.singleCheckWithoutValue() || FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)) {
+			return super.renderOpenFormComponent(sb, source, layout, item);
+		}
+		return renderOpenFormComponent(sb, "fieldset", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+	}
+
+	@Override
+	protected void renderLabel(StringOutput sb, FormBaseComponent component, String layout, Translator translator, String[] args) {
+		SingleSelectionImpl stF = (SingleSelectionImpl)component.getFormItem();
+		if(stF.singleCheckWithoutValue()
+				|| FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)
+				|| "label".equals(layout)) {
+			super.renderLabel(sb, component, layout, translator, args);
+		} else {
+			renderLabel(sb, "legend", component, translator, args);
 		}
 	}
 	

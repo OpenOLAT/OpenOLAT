@@ -86,7 +86,16 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	
 	@Override
 	public String getForId() {
-		return null;//every radio box has its own label
+		if(component.getNumOfRadioComponents() == 1) {
+			RadioElementComponent singleElement = component.getRadioComponents()[0];
+			return singleElement.getFormDispatchId();
+		}
+		return null;
+	}
+	
+	public boolean singleCheckWithoutValue() {
+		return component.getNumOfRadioComponents() == 1
+				&& !StringHelper.containsNonWhitespace(component.getRadioComponents()[0].getValue());
 	}
 
 	@Override

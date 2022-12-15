@@ -33,9 +33,9 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GuiDemoFlexiMultipleSelectionController extends FormBasicController {
+public class GuiDemoFlexiSingleSelectionController extends FormBasicController {
 	
-	public GuiDemoFlexiMultipleSelectionController(UserRequest ureq, WindowControl wControl) {
+	public GuiDemoFlexiSingleSelectionController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		initForm(ureq);
@@ -64,18 +64,16 @@ public class GuiDemoFlexiMultipleSelectionController extends FormBasicController
 		values.add(SelectionValues.entry("7", translate("select.7")));
 		values.add(SelectionValues.entry("8", translate("select.8")));
 		
-		// Checkbox vertical one column
-		uifactory.addCheckboxesVertical("vert.multi." + suffix, "multi.select", formLayout, values.keys(), values.values(), 1);
-		// Checkbox vertical two columns
-		uifactory.addCheckboxesVertical("vert.multi." + suffix + ".2col", "multi.select.2col", formLayout, values.keys(), values.values(), 2);
-
+		// Radio vertical one column
+		uifactory.addRadiosVertical("vert.multi." + suffix, "single.select", formLayout, values.keys(), values.values());
+	
 		SelectionValues singleValues = new SelectionValues();
 		singleValues.add(SelectionValues.entry("1", translate("select.alt.1")));
-		uifactory.addCheckboxesVertical("vert.single." + suffix, "multi.select.single.value", formLayout, singleValues.keys(), singleValues.values(), 1);
+		uifactory.addRadiosVertical("vert.single." + suffix, "single.select.single.value", formLayout, singleValues.keys(), singleValues.values());
 		
 		SelectionValues singleNoValues = new SelectionValues();
 		singleNoValues.add(SelectionValues.entry("on", ""));
-		uifactory.addCheckboxesVertical("vert.single.no.value." + suffix, "multi.select.single.no.value", formLayout, singleNoValues.keys(), singleNoValues.values(), 1);
+		uifactory.addRadiosVertical("vert.single.no.value." + suffix, "single.select.single.no.value", formLayout, singleNoValues.keys(), singleNoValues.values());
 	}
 
 	@Override

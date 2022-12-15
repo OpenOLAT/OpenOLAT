@@ -265,6 +265,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		SingleSelection cs1 = uifactory.addCardSingleSelectHorizontal("guidemo.form.card1", form, yesOrNoKeys, yesOrNoOptions, descs, null);
 		cs1.setElementCssClass("o_radio_cards_sm");
 		SingleSelection cs2 = uifactory.addCardSingleSelectHorizontal("guidemo.form.card2", form, yesOrNoKeys, yesOrNoOptions, descs, icons);
+		cs2.setElementCssClass("");
 		SingleSelection cs3 = uifactory.addCardSingleSelectHorizontal("guidemo.form.card3", form, yesOrNoKeys, yesOrNoOptions, descs, icons);
 		cs3.setElementCssClass("o_radio_cards_lg");
 	}
