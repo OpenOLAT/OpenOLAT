@@ -1190,9 +1190,11 @@ public class FormUIFactory {
 	
 	public FormLink addFormLink(String name, String cmd, String i18nLink, FlexiTableElement table, int presentation) {
 		FormLinkImpl fte = new FormLinkImpl(name, cmd, i18nLink, presentation);
+		if(table.getTranslator() != null) {
+			fte.setTranslator(table.getTranslator());
+		}
 		fte.setI18nKey(i18nLink);
 		setLabelIfNotNull(null, fte);
-		
 		if(table instanceof FlexiTableElementImpl flexiTable) {
 			flexiTable.addFormItem(fte);
 		}

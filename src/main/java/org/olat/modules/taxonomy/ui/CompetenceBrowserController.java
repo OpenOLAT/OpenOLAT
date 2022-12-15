@@ -124,13 +124,11 @@ public class CompetenceBrowserController extends FormBasicController {
 	private void loadModel() {
 		List<CompetenceBrowserTableRow> rows = new ArrayList<>();
 		
-		int linkCounter = 0;
-		
 		if (taxonomies != null) {
 			for (Taxonomy taxonomy : taxonomies) {
 				CompetenceBrowserTableRow taxonomyRow = new CompetenceBrowserTableRow(taxonomy);
 				if (StringHelper.containsNonWhitespace(taxonomyRow.getDescription())) {
-					FormLink taxonomyDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + taxonomyRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+					FormLink taxonomyDetailsLink = uifactory.addFormLink("tax_" + taxonomyRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 					taxonomyDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 					taxonomyDetailsLink.setUserObject(taxonomyRow);
 					taxonomyRow.setDetailsLink(taxonomyDetailsLink);
@@ -143,7 +141,7 @@ public class CompetenceBrowserController extends FormBasicController {
 					String description = TaxonomyUIFactory.translateDescription(getTranslator(), level);
 					CompetenceBrowserTableRow levelRow = new CompetenceBrowserTableRow(taxonomy, level, displayName, description);
 					if (StringHelper.containsNonWhitespace(levelRow.getDescription())) {
-						FormLink levelDetailsLink = uifactory.addFormLink(linkCounter++ + "_" + levelRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
+						FormLink levelDetailsLink = uifactory.addFormLink("det_" + levelRow.getKey(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
 						levelDetailsLink.setIconLeftCSS("o_icon o_icon_fw o_icon_description");
 						levelDetailsLink.setUserObject(levelRow);
 						levelRow.setDetailsLink(levelDetailsLink);
@@ -222,8 +220,7 @@ public class CompetenceBrowserController extends FormBasicController {
 		} else if (selectButton == source) {
 			List<TaxonomyLevel> taxonomyLevels = getSelectedTaxonomyLevels();
 			fireEvent(ureq, new TaxonomyLevelSelectionEvent(taxonomyLevels));
-		} else if (source instanceof FormLink) {
-			FormLink sFl = (FormLink) source;
+		} else if (source instanceof FormLink sFl) {
 			if (sFl.getCmd().equals(OPEN_INFO)) {
 				doOpen(ureq, sFl, (CompetenceBrowserTableRow) sFl.getUserObject());	
 			}

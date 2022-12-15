@@ -86,6 +86,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -1119,6 +1120,20 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	public void addFormItem(FormItem item) {
 		components.put(item.getName(), item);
+		
+		// set the form translator, and parent
+		Translator itemTranslator = item.getTranslator();
+		if (itemTranslator != null && !itemTranslator.equals(translator)
+				&& itemTranslator instanceof PackageTranslator itemPt) {
+			// let the FormItem provide a more specialized translator
+			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
+		} else {
+			itemTranslator = translator;
+		}
+		
+		if(getRootForm() != null) {
+			rootFormAvailable(item);
+		}
 	}
 	
 	public List<FormItem> getBatchButtons() {
