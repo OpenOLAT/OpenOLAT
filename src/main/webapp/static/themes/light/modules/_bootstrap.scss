@@ -212,6 +212,38 @@ td.text-left>div.form-inline>label.checkbox-inline>input[type='checkbox'] {
 	}
 }
 
+.dropdown-menu > li > label {
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    color: $dropdown-link-hover-color;
+    background-color: $dropdown-link-hover-bg;
+  }
+}
+
+// Active state
+.dropdown-menu > .active > label {
+  &,
+  &:hover,
+  &:focus {
+    color: $dropdown-link-active-color;
+    text-decoration: none;
+    outline: 0;
+    background-color: $dropdown-link-active-bg;
+  }
+}
+
+ .dropdown-menu > li > label {
+    display: block;
+    padding: 3px 10px;
+    margin: 0;
+    clear: both;
+    font-weight: normal;
+    line-height: $line-height-base;
+    color: $dropdown-link-color;
+    white-space: nowrap; // prevent links from randomly breaking onto new lines
+  }
+
 /* a11y: accessibility fix: visually set focus for drop-down toggles */
 .dropdown-toggle:focus-visible {
 	@include tab-focus;

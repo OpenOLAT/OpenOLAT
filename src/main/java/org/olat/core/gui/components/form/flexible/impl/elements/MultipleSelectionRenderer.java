@@ -95,7 +95,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("<div ");
 		appendIdIfRequired(sb, stC).append(">");
 		sb.append("<div id='").append(buttonGroupId).append("'");
-		sb.append(" class='button-group");
+		sb.append(" class='button-group dropdown");
 		if (stF.getFormRequestEval().isTrue()) {
 			// The menu should be open, if the component is dirty after a listener event
 			sb.append(" open");
