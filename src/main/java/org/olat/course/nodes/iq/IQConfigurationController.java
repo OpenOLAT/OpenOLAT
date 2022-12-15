@@ -204,7 +204,7 @@ public class IQConfigurationController extends BasicController implements Refere
 				if(correctionGrading) {
 					correctionMode = IQEditController.CORRECTION_GRADING;
 					showInfo("replaced.grading");
-				} else if(needManualCorrection && getPassedType(re, deliveryOptions) == PassedType.manually) {
+				} else if(needManualCorrection) {
 					correctionMode = IQEditController.CORRECTION_MANUAL;
 					showInfo("replaced.manual");
 				} else if(getPassedType(re, deliveryOptions) == PassedType.manually) {
