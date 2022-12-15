@@ -195,7 +195,8 @@ public class TeamsPage {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_flexi')]//table//tr[td[text()[contains(.,'" + meetingName + "')]]]/td/a[contains(@onclick,'select')]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
-		OOGraphene.waitBusy(browser);
+		By titleBy = By.xpath("//div[@class='o_sel_teams_meeting']//h3[text()[contains(.,'" + meetingName + "')]]");
+		OOGraphene.waitElementPresence(titleBy, 10, browser);
 		return this;
 	}
 	
