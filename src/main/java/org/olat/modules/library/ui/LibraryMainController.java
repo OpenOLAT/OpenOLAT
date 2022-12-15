@@ -322,7 +322,7 @@ public class LibraryMainController extends MainLayoutBasicController implements 
 	private OLATResourceable getSelectedPathResource(String relativePath) {
 		String directoryPath = libraryManager.getDirectoryPath();
 		String path;
-		if(relativePath != null) {
+		if(relativePath != null && directoryPath != null) {
 			int index = relativePath.indexOf(directoryPath);
 			if(index >= 0) {
 				int start = index + directoryPath.length();

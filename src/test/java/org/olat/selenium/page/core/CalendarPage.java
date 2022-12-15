@@ -174,6 +174,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage confirmModifyOneOccurence() {
+		OOGraphene.waitModalDialog(browser, "div.o_sel_confirm_calendar_update");
 		By saveOneBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_one");
 		OOGraphene.waitElement(saveOneBy, browser);
 		browser.findElement(saveOneBy).click();
@@ -182,6 +183,7 @@ public class CalendarPage {
 	}
 	
 	public CalendarPage confirmModifyAllOccurences() {
+		OOGraphene.waitModalDialog(browser, "div.o_sel_confirm_calendar_update");
 		By saveAllBy = By.cssSelector("div.modal-dialog a.o_sel_cal_update_all");
 		OOGraphene.waitElement(saveAllBy, browser);
 		browser.findElement(saveAllBy).click();

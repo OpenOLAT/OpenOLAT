@@ -87,17 +87,22 @@ public class MyCoursesPage {
 	}
 	
 	/**
-	 * Select a course (or a respository entry) in a
+	 * Select a course (or a repository entry) in a
 	 * "My course" list.
 	 * 
 	 * @param title
 	 * @return
 	 */
 	public MyCoursesPage select(String title) {
-		By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
-		OOGraphene.waitElement(titleBy, browser);
-		browser.findElement(titleBy).click();
-		OOGraphene.waitBusy(browser);
+		try {
+			By titleBy = By.xpath("//h4[contains(@class,'o_title')]/a[span[text()[contains(.,'" + title + "')]]]");
+			OOGraphene.waitElement(titleBy, browser);
+			browser.findElement(titleBy).click();
+			OOGraphene.waitBusy(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Select in my courses", browser);
+			throw e;
+		}
 		return this;
 	}
 	

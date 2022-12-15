@@ -1,12 +1,14 @@
-<div class="o_button_group">
-	$r.render("cancel")
-	#if($r.available("update"))
-		$r.render("update")
-	#end
-	#if($r.available("update.all"))
-		$r.render("update.all")
-	#end
-	#if($r.available("update.once"))
-		$r.render("update.once")
-	#end
+<div class="o_sel_confirm_calendar_update">
+	<div class="o_button_group">
+		$r.render("cancel")
+		#if($r.available("update"))
+			$r.render("update")
+		#end
+		#if($r.available("update.all"))
+			$r.render("update.all")
+		#end
+		#if($r.available("update.once"))
+			$r.render("update.once")
+		#end
+	</div>
 </div>
