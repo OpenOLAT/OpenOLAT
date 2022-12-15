@@ -39,11 +39,11 @@ public class LearnPathCourseElementEditorPage {
 	}
 	
 	public LearnPathCourseElementEditorPage setCompletionCriterion(FullyAssessedTrigger trigger) {
-		By triggerBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
+		By triggerBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//fieldset[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "']");
 		OOGraphene.waitElement(triggerBy, browser);
 		browser.findElement(triggerBy).click();
 		OOGraphene.waitingLong();//SEL wait focus jump
-		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//div[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
+		By checkedBy = By.xpath("//fieldset[contains(@class,'o_lp_config_edit')]//fieldset[@id='o_coconfig_trigger']//input[@name='config.trigger'][@value='" + trigger.name() + "'][@checked='checked']");
 		OOGraphene.waitElement(checkedBy, browser);
 		return this;
 	}

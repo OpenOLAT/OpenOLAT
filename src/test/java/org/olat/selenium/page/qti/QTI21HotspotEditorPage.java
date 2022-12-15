@@ -59,7 +59,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	}
 	
 	public QTI21HotspotEditorPage setCorrect(String name, String indexName, boolean correct) {
-		By correctCheckboxBy = By.xpath("//div[contains(@class,'o_sel_assessment_item_correct_spots')]//label[contains(text(),'" + name+ "')]/input[@name='form.imd.correct.spots']");
+		By correctCheckboxBy = By.xpath("//fieldset[contains(@class,'o_sel_assessment_item_correct_spots')]//label[contains(text(),'" + name+ "')]/input[@name='form.imd.correct.spots']");
 		WebElement correctCheckboxEl = browser.findElement(correctCheckboxBy);
 		OOGraphene.check(correctCheckboxEl, Boolean.valueOf(correct));
 		if(correct) {
@@ -86,7 +86,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
 		OOGraphene.waitingLong();//SEL wait focus jump
-		OOGraphene.moveTo(By.cssSelector("div div.o_sel_assessment_item_correct_spots"), browser);
+		OOGraphene.moveTo(By.cssSelector("div fieldset.o_sel_assessment_item_correct_spots"), browser);
 		return this;
 	}
 	

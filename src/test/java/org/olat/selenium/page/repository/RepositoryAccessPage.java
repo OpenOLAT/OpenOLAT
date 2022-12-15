@@ -45,13 +45,13 @@ public class RepositoryAccessPage {
 	 * @return Itself
 	 */
 	public RepositoryAccessPage setAccessToPublic() {
-		By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public']");
+		By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='public']");
 		browser.findElement(allUsersBy).click();
 		return this;
 	}
 	
 	public RepositoryAccessPage setAccessToMembersOnly() {
-		By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
+		By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
 		browser.findElement(allUsersBy).click();
 		return this;
 	}

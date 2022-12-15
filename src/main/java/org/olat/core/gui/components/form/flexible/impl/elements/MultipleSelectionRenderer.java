@@ -66,7 +66,9 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 	@Override
 	protected String renderOpenFormComponent(StringOutput sb, Component source, String layout, Item item) {
 		MultipleSelectionElementImpl stF = (MultipleSelectionElementImpl)item.getFormItem();
-		if(stF.singleCheckWithoutValue() || FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)) {
+		if(stF.singleCheckWithoutValue()
+				|| FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)
+				|| "label".equals(layout)) {
 			return super.renderOpenFormComponent(sb, source, layout, item);
 		}
 		return renderOpenFormComponent(sb, "fieldset", source, item.getElementCssClass(), item.hasError(), item.hasWarning());

@@ -56,7 +56,7 @@ import org.olat.core.util.StringHelper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MultiSelectionFilterElementImpl  extends FormItemImpl implements MultiSelectionFilterElement, FormItemCollection, ControllerEventListener {
+public class MultiSelectionFilterElementImpl extends FormItemImpl implements MultiSelectionFilterElement, FormItemCollection, ControllerEventListener {
 
 	private final MultiSelectionFilterComponent component;
 	private final WindowControl wControl;

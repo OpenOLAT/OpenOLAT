@@ -93,7 +93,7 @@ public class UserAdminPage {
 	 * @return Itself
 	 */
 	public UserAdminPage confirmDeleteUsers() {
-		By confirmCheckBy = By.cssSelector("div.o_sel_confirm_delete_user input[type='checkbox']");
+		By confirmCheckBy = By.cssSelector("fieldset.o_sel_confirm_delete_user input[type='checkbox']");
 		OOGraphene.waitElement(confirmCheckBy, browser);
 		WebElement confirmCheckEl = browser.findElement(confirmCheckBy);
 		OOGraphene.check(confirmCheckEl, Boolean.TRUE);

@@ -67,7 +67,7 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	public QTI21ConfigurationCEPage assertShowResultsOptions() {
-		By optionsBy = By.cssSelector("div.o_sel_qti_show_results_options label>input[type='checkbox']");
+		By optionsBy = By.cssSelector("fieldset.o_sel_qti_show_results_options label>input[type='checkbox']");
 		OOGraphene.waitElement(optionsBy, browser);
 		return this;
 	}
@@ -76,31 +76,31 @@ public class QTI21ConfigurationCEPage {
 		By showResultsBy = By.cssSelector("div.o_sel_qti_show_results input[type='checkbox']");
 		WebElement showResultsEl = browser.findElement(showResultsBy);
 		OOGraphene.check(showResultsEl, show);
-		By resultsLevelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox']");
+		By resultsLevelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox']");
 		OOGraphene.waitElement(resultsLevelBy, browser);
 
 		if(options.isMetadata()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isSectionSummary()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isQuestionSummary()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isUserSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
 		if(options.isCorrectSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
 			OOGraphene.check(browser.findElement(levelBy), Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
@@ -115,7 +115,7 @@ public class QTI21ConfigurationCEPage {
 	 * @return Itself
 	 */
 	public QTI21ConfigurationCEPage setCorrectionMode(String mode) {
-		By correctionBy = By.xpath("//fieldset[contains(@class,'o_qti_21_correction')]//div[@id='o_cocorrection_mode']//input[@value='" + mode + "'][@name='correction.mode'][@type='radio']");
+		By correctionBy = By.xpath("//fieldset[contains(@class,'o_qti_21_correction')]//fieldset[@id='o_cocorrection_mode']//input[@value='" + mode + "'][@name='correction.mode'][@type='radio']");
 		OOGraphene.waitElement(correctionBy, browser);
 		browser.findElement(correctionBy).click();
 		return this;

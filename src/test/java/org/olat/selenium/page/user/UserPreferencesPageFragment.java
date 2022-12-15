@@ -122,7 +122,7 @@ public class UserPreferencesPageFragment {
 	}
 	
 	public UserPreferencesPageFragment resetPreferences() {
-		By checksBy = By.cssSelector("div.o_sel_home_settings_reset_sysprefs div.checkbox input");
+		By checksBy = By.cssSelector("fieldset.o_sel_home_settings_reset_sysprefs .checkbox input");
 		List<WebElement> checks = browser.findElements(checksBy);
 		Assert.assertEquals(3, checks.size());
 		

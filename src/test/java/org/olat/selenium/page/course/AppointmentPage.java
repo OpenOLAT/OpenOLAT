@@ -74,7 +74,7 @@ public class AppointmentPage {
 	 * @return Itself
 	 */
 	public AppointmentPage setFinding() {
-		By findingBy = By.cssSelector("div#o_cotopic_type input[name='topic.type'][value='finding']");
+		By findingBy = By.cssSelector("fieldset#o_cotopic_type input[name='topic.type'][value='finding']");
 		browser.findElement(findingBy).click();
 		OOGraphene.waitBusy(browser);	
 		return this;
@@ -83,7 +83,7 @@ public class AppointmentPage {
 	public AppointmentPage setRecurringTopic(int firstDay, int lastDay, int startHour, int endHour, DayOfWeek day) {
 		By recurringBy = By.cssSelector("#o_coappointment_input_type input[name='appointment.input.type'][value='recurring']");
 		browser.findElement(recurringBy).click();
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_app_topic_recurring_day"), browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_app_topic_recurring_day"), browser);
 		
 		By firstBy = By.cssSelector("div.o_sel_app_topic_recurring_first span.input-group-addon i");
 		OOGraphene.waitElement(firstBy, browser);
@@ -107,7 +107,7 @@ public class AppointmentPage {
 		endHourEl.clear();
 		endHourEl.sendKeys(Integer.toString(endHour));
 		
-		By dayBy = By.xpath("//div[contains(@class,'o_sel_app_topic_recurring_day')]//input[@name='appointments.recurring.days.of.week'][@value='" + day.name() + "']");
+		By dayBy = By.xpath("//fieldset[contains(@class,'o_sel_app_topic_recurring_day')]//input[@name='appointments.recurring.days.of.week'][@value='" + day.name() + "']");
 		WebElement dayEl = browser.findElement(dayBy);
 		OOGraphene.check(dayEl, Boolean.TRUE);
 		

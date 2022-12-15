@@ -63,7 +63,7 @@ public class CheckListConfigPage {
 		browser.findElement(titleBy).sendKeys(title);
 		
 		if(score > 0) {
-			By awardPoints = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form div.o_sel_cl_checkbox_award_points input[type='checkbox']");
+			By awardPoints = By.cssSelector("fieldset.o_sel_cl_edit_checkbox_form fieldset.o_sel_cl_checkbox_award_points input[type='checkbox']");
 			browser.findElement(awardPoints).click();
 			OOGraphene.waitBusy(browser);
 			

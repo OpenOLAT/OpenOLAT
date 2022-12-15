@@ -125,7 +125,7 @@ public class AssessmentCEConfigurationPage {
 	}
 	
 	public AssessmentCEConfigurationPage enableGrade(boolean auto) {
-		By enableBy = By.xpath("//div[contains(@class,'o_sel_course_ms_grade')]//input[@name='node.grade.enabled'][@type='checkbox']");
+		By enableBy = By.xpath("//fieldset[contains(@class,'o_sel_course_ms_grade')]//input[@name='node.grade.enabled'][@type='checkbox']");
 		WebElement enableEl = browser.findElement(enableBy);
 		OOGraphene.check(enableEl, Boolean.TRUE);
 		

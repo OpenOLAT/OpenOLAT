@@ -48,7 +48,7 @@ public class EditLectureBlockPage {
 	}
 	
 	public EditLectureBlockPage setTeacher(UserVO user) {
-		By checkboxBy = By.xpath("//div[contains(@class,'o_sel_repo_lecture_teachers')]//input[@type='checkbox'][@value='" + user.getKey() + "']");
+		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_repo_lecture_teachers')]//input[@type='checkbox'][@value='" + user.getKey() + "']");
 		WebElement checkboxEl = browser.findElement(checkboxBy);
 		OOGraphene.check(checkboxEl, Boolean.TRUE);
 		return this;

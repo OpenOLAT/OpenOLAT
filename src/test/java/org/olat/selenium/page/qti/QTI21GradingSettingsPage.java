@@ -38,7 +38,7 @@ public class QTI21GradingSettingsPage {
 	}
 	
 	public QTI21GradingSettingsPage enable() {
-		By enableBy = By.xpath("//div[contains(@class,'o_sel_repo_grading_enable')]//input[@name='grading.repo.enabled'][@type='checkbox']");
+		By enableBy = By.xpath("//fieldset[contains(@class,'o_sel_repo_grading_enable')]//input[@name='grading.repo.enabled'][@type='checkbox']");
 		OOGraphene.waitElement(enableBy, browser);
 		browser.findElement(enableBy).click();
 		OOGraphene.waitBusy(browser);

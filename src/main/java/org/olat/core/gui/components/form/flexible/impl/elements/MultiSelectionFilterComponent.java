@@ -20,8 +20,8 @@
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
@@ -29,7 +29,7 @@ import org.olat.core.gui.components.ComponentRenderer;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MultiSelectionFilterComponent extends AbstractComponent {
+public class MultiSelectionFilterComponent extends FormBaseComponentImpl {
 	
 	private static final ComponentRenderer RENDERER = new MultiSelectionFilterComponentRenderer();
 
@@ -50,7 +50,8 @@ public class MultiSelectionFilterComponent extends AbstractComponent {
 		return RENDERER;
 	}
 
-	public MultiSelectionFilterElementImpl getMultiSelectionFilterElement() {
+	@Override
+	public MultiSelectionFilterElementImpl getFormItem() {
 		return taxonomyLevelSelection;
 	}
 

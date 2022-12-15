@@ -46,29 +46,29 @@ public class QTI21OptionsPage {
 		WebElement showResultsEl2 = browser.findElement(showResultsBy);
 		OOGraphene.check(showResultsEl2, show);
 
-		By resultsLevelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox']");
+		By resultsLevelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox']");
 		OOGraphene.waitElement(resultsLevelBy, browser);
 		
 		OOGraphene.scrollTo(By.className("o_sel_qti_show_results_options"), browser);
 
 		if(options.isMetadata()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='metadata']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isSectionSummary()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='sectionsSummary']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isQuestionSummary()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='questionSummary']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isUserSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='userSolutions']");
 			browser.findElement(levelBy).click();
 		}
 		if(options.isCorrectSolutions()) {
-			By levelBy = By.cssSelector("div.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
+			By levelBy = By.cssSelector("fieldset.o_sel_qti_show_results_options input[type='checkbox'][value='correctSolutions']");
 			browser.findElement(levelBy).click();
 		}
 		return this;

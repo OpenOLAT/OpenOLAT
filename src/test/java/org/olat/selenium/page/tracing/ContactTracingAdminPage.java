@@ -45,16 +45,14 @@ public class ContactTracingAdminPage {
 	 * @return Itself
 	 */
 	public ContactTracingAdminPage enableTracing() {
-		By enableBy = By.xpath("//div[contains(@class,'o_sel_contacttracing_enable')]//label/input[@name='contact.tracing.enabled' and @value='on']");
+		By enableBy = By.xpath("//fieldset[contains(@class,'o_sel_contacttracing_enable')]//label/input[@name='contact.tracing.enabled' and @value='on']");
 		OOGraphene.waitElement(enableBy, browser);
 		WebElement checkEl = browser.findElement(enableBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
 		
-		By anonymousBy = By.cssSelector("div.o_sel_contacttracing_anonymous");
+		By anonymousBy = By.cssSelector("fieldset.o_sel_contacttracing_anonymous");
 		OOGraphene.waitElement(anonymousBy, browser);
-		
-		// save on click
+		// save on click 
 		return this;
 	}
 	

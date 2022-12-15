@@ -109,7 +109,7 @@ public class MembersPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}

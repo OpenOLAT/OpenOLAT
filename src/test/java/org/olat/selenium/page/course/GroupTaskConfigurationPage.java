@@ -48,9 +48,9 @@ public class GroupTaskConfigurationPage {
 	public GroupTaskConfigurationPage optional(boolean optional) {
 		By optionalBy;
 		if(optional) {
-			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='optional']");
+			optionalBy = By.cssSelector("fieldset#o_coobligation input[type='radio'][value='optional']");
 		} else {
-			optionalBy = By.cssSelector("div#o_coobligation input[type='radio'][value='mandatory']");
+			optionalBy = By.cssSelector("fieldset#o_coobligation input[type='radio'][value='mandatory']");
 		}
 		OOGraphene.waitElement(optionalBy, browser);
 		OOGraphene.check(browser.findElement(optionalBy), Boolean.TRUE);
@@ -93,9 +93,9 @@ public class GroupTaskConfigurationPage {
 	public GroupTaskConfigurationPage enableSolutionForAll(boolean forAll) {
 		By optionBy;
 		if(forAll) {
-			optionBy = By.xpath("//div[@id='o_covisibleall']//label/input[@name='visibleall'][@value='all']");
+			optionBy = By.xpath("//fieldset[@id='o_covisibleall']//label/input[@name='visibleall'][@value='all']");
 		} else {
-			optionBy = By.xpath("//div[@id='o_covisibleall']//label/input[@name='visibleall'][@value='restricted']");
+			optionBy = By.xpath("//fieldset[@id='o_covisibleall']//label/input[@name='visibleall'][@value='restricted']");
 		}
 		OOGraphene.waitElement(optionBy, browser);
 		browser.findElement(optionBy).click();;

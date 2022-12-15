@@ -67,14 +67,14 @@ public class MemberListPage {
 	}
 	
 	public MemberListPage contactAllParticipants() {
-		By allParticipantsBy = By.cssSelector("div.o_sel_cmembers_mail_participant input[name='contact.all.participants']");
+		By allParticipantsBy = By.cssSelector("fieldset.o_sel_cmembers_mail_participant input[name='contact.all.participants']");
 		WebElement allParticipantEl = browser.findElement(allParticipantsBy);
 		OOGraphene.check(allParticipantEl, Boolean.TRUE);
 		return this;
 	}
 	
 	public MemberListPage contactExternal(String mail) {
-		By externalBy = By.cssSelector("div.o_sel_cmembers_mail_external input[name='contact.external']");
+		By externalBy = By.cssSelector("fieldset.o_sel_cmembers_mail_external input[name='contact.external']");
 		WebElement externalEl = browser.findElement(externalBy);
 		OOGraphene.check(externalEl, Boolean.TRUE);
 		

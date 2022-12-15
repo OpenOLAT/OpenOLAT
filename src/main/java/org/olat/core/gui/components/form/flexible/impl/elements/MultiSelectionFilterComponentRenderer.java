@@ -41,7 +41,7 @@ public class MultiSelectionFilterComponentRenderer extends DefaultComponentRende
 			RenderResult renderResult, String[] args) {
 		
 		MultiSelectionFilterComponent cmp = (MultiSelectionFilterComponent)source;
-		MultiSelectionFilterElementImpl el = cmp.getMultiSelectionFilterElement();
+		MultiSelectionFilterElementImpl el = cmp.getFormItem();
 		FormLink button = el.getButton();
 		
 		if (el.isEnabled()) {
