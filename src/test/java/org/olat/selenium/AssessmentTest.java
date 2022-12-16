@@ -108,7 +108,7 @@ public class AssessmentTest extends Deployments {
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
-		//upload a test
+		//upload a SCORM package
 		String scormTitle = "SCORM - " + UUID.randomUUID();
 		URL scormUrl = JunitTestHelper.class.getResource("file_resources/very_simple_scorm.zip");
 		File scormFile = new File(scormUrl.toURI());

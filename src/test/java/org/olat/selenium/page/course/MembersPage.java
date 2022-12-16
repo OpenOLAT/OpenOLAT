@@ -56,6 +56,18 @@ public class MembersPage {
 		return new MembersWizardPage(browser);
 	}
 	
+	public InvitationWizardPage addInvitation() {
+		By moreBy = By.cssSelector("button.btn.o_sel_add_more");
+		browser.findElement(moreBy).click();
+		By moreDropdownBy = By.cssSelector("ul.dropdown-menu.o_sel_add_more");
+		OOGraphene.waitElement(moreDropdownBy, browser);
+		By addInvitationBy = By.cssSelector("ul.o_sel_add_more a.o_sel_course_invitations");
+		browser.findElement(addInvitationBy).click();
+		OOGraphene.waitModalWizard(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_import_type_form"), browser);
+		return new InvitationWizardPage(browser);
+	}
+	
 	public MembersWizardPage importMembers() {
 		By moreBy = By.className("o_sel_add_more");
 		OOGraphene.waitElement(moreBy, browser);
@@ -123,7 +135,7 @@ public class MembersPage {
 		
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
