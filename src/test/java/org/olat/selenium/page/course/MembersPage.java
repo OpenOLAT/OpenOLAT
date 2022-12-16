@@ -55,6 +55,18 @@ public class MembersPage {
 		OOGraphene.waitElementSlowly(By.cssSelector("fieldset.o_sel_usersearch_searchform"), 5, browser);
 		return new MembersWizardPage(browser);
 	}
+
+	public InvitationWizardPage addInvitation() {
+		By moreBy = By.cssSelector("button.btn.o_sel_add_more");
+		browser.findElement(moreBy).click();
+		By moreDropdownBy = By.cssSelector("ul.dropdown-menu.o_sel_add_more");
+		OOGraphene.waitElement(moreDropdownBy, browser);
+		By addInvitationBy = By.cssSelector("ul.o_sel_add_more a.o_sel_course_invitations");
+		browser.findElement(addInvitationBy).click();
+		OOGraphene.waitModalWizard(browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_import_type_form"), browser);
+		return new InvitationWizardPage(browser);
+	}
 	
 	public MembersPage selectBusinessGroups() {
 		By groupsItemBy = By.cssSelector("li.o_sel_membersmgt_groups a");

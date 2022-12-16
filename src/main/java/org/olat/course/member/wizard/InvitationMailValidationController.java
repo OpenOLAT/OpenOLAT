@@ -89,6 +89,8 @@ public class InvitationMailValidationController extends StepFormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_import_type_form");
+		
 		SelectionValues importTypeKeysValues = new SelectionValues();
 		importTypeKeysValues.add(SelectionValues.entry(KEY_EMAIL, translate("input.email"), null, "o_icon o_icon_user", null, true));
 		importTypeKeysValues.add(SelectionValues.entry(KEY_BATCH, translate("input.batch"), null, "o_icon o_icon_group", null, true));
@@ -98,10 +100,12 @@ public class InvitationMailValidationController extends StepFormBasicController 
 		importTypeEl.select("email", true);
 		
 		emailEl = uifactory.addTextElement("invitation.mail", 255, "", formLayout);
+		emailEl.setElementCssClass("o_sel_invitation_email");
 		emailEl.setFocus(true);
 		emailEl.setMandatory(true);
 		
 		namesEl = uifactory.addTextAreaElement("addusers", "input.addusers", -1, 15, 40, false, false, context.getRawNames(), formLayout);
+		namesEl.setElementCssClass("o_sel_import_names");
 		namesEl.setExampleKey("input.addusers.example", null);
 		namesEl.setMandatory(true);
 		namesEl.setLineNumbersEnbaled(true);

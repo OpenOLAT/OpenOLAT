@@ -93,7 +93,9 @@ public class InvitationUserInfosController extends StepFormBasicController {
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler != null) {
 				FormItem fi = userPropertyHandler.addFormItem(getLocale(), existingUser, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
+				fi.setElementCssClass("o_sel_user_" + userPropertyHandler.getName());
 				propFormItems.put(userPropertyHandler.getName(), fi);
+				
 				if(first) {
 					fi.setFocus(true);
 					first = false;

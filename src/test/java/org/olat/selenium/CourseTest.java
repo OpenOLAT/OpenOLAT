@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -53,6 +54,7 @@ import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
+import org.olat.selenium.page.course.InvitationRegistrationWizardPage;
 import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.course.RemindersPage;
@@ -72,6 +74,8 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * The test @see confirmMembershipForCourse can break others if not successful
@@ -1862,6 +1866,91 @@ public class CourseTest extends Deployments {
 			.assertOnTitle(title)
 			.assertOnMessage()
 			.assertStatus(RepositoryEntryStatusEnum.closed);
+	}
+	
+
+	/**
+	 * An administrator invite an external user in a course. The
+	 * invitee read the email, copy the link and jump to the
+	 * course. It registers itself, set a password and arrive
+	 * to the course.
+	 * 
+	 * @param authorLoginPage
+	 * @param ryomouBrowser
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseInvitation()
+	throws IOException, URISyntaxException {
+		
+		//admin make the confirmation of membership mandatory
+		//for groups created by standard users.
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+
+		NavigationPage navBar = NavigationPage.load(browser);
+		//create a course
+		String courseTitle = "Cours sur invitation " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type Scorm with the scorm that we create above
+		String infosNodeTitle = "Invitation infos";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("info")
+			.nodeTitle(infosNodeTitle)
+			.autoPublish()
+			.settings()
+			.accessConfiguration()
+			.setAccessToMembersOnly()
+			.save()
+			.cleanBlueBox()
+			.clickToolbarBack();
+		
+		String email = "john." + UUID.randomUUID().toString().replace("-", "") + "@openolat.org";
+		
+		CoursePageFragment courseRuntime = new CoursePageFragment(browser);
+		//publish the course
+		courseRuntime
+			.publish();
+		//add Ryomou as a course member
+		courseRuntime
+			.members()
+			.addInvitation()
+			.newInvitation(email)
+			.nextUserInfos("John", "Valentin", email)
+			.nextPermissions(false, true)
+			.nextEmail();
+		
+		List<SmtpMessage> emails = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, emails.size());
+
+		new UserToolsPage(browser)
+			.logout();
+		
+		InvitationRegistrationWizardPage registration = new InvitationRegistrationWizardPage(browser);
+		String link = registration.extractLink(emails.get(0));
+		Assert.assertNotNull(link);
+		
+		registration
+			.loadRegistrationLink(link)
+			.selectLanguage()
+			.nextToDisclaimer()
+			.acknowledgeDisclaimer()
+			.nextToPassword()
+			.finalizeRegistration("2change");
+		
+		CoursePageFragment invitationCourse = new CoursePageFragment(browser);
+		invitationCourse
+			.assertOnLearnPathNodeDone(infosNodeTitle);
 	}
 	
 	/**
