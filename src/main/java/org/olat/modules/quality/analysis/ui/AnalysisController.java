@@ -82,6 +82,8 @@ import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.PresentationEvent.Action;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -139,6 +141,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
@@ -150,8 +154,9 @@ public class AnalysisController extends BasicController implements TooledControl
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.presentation = presentation;
-		this.form = evaluationFormManager.loadForm(presentation.getFormEntry());
-		this.storage = evaluationFormManager.loadStorage(presentation.getFormEntry());
+		RepositoryEntry formEntry = repositoryManager.lookupRepositoryEntry(presentation.getFormEntry().getKey());
+		this.form = evaluationFormManager.loadForm(formEntry);
+		this.storage = evaluationFormManager.loadStorage(formEntry);
 		
 		presentation.getSearchParams().setDataCollectionOrganisationRefs(secCallback.getViewAnalysisOrganisationRefs());
 		
