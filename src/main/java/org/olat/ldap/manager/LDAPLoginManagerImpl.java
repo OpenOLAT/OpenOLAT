@@ -1393,6 +1393,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		Set<Long> organisationUserKeys = organisationDao
 				.getMemberKeySet(organisation, orgRoles.toArray(new OrganisationRoles[orgRoles.size()]));
 		
+		int count = 0;
 		for(LDAPUser ldapUser:ldapUsers) {
 			if(ldapUser.getCachedIdentity() == null) {
 				continue;
@@ -1411,21 +1412,35 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				organisationService.addMember(defOrganisation, identity, OrganisationRoles.user);
 			}
 
-			if(!roles.isEmpty()) {
+			if(!roles.isEmpty() || count % 25 == 0) {
 				dbInstance.commitAndCloseSession();
 			}
+			if(count % 1000 == 0) {
+				log.info("Synchronize {}/{} users in LDAP server on organisation: {}", count, ldapUsers.size(), organisationGroup.getCommonName());
+			}
+			count++;
 		}
 		
+		int unCount = 0;
 		for(Long organisationUserKey:organisationUserKeys) {
 			Identity identity = securityManager.loadIdentityByKey(organisationUserKey);
 			unsyncRole(identity, organisation);
+			
+			if(unCount % 25 == 0) {
+				dbInstance.commitAndCloseSession();
+			}
+			if(unCount % 1000 == 0) {
+				log.info("Unsynchronize {}/{} users in LDAP server on organisation: {}", unCount, organisationUserKeys.size(), organisationGroup.getCommonName());
+			}
+			unCount++;
 		}
 	}
 	
 	private void doBatchSyncRolesToDefaultOrganisation(List<LDAPUser> ldapUsers) {
 		List<OrganisationRoles> synchronizedRoles = syncConfiguration.getSynchronizedRoles();
 		if(synchronizedRoles.isEmpty()) return;
-		
+
+		int count = 0;
 		List<Organisation> organisations = organisationDao.loadDefaultOrganisation();
 		Organisation defOrganisation = organisations.get(0);
 		for(LDAPUser ldapUser:ldapUsers) {
@@ -1439,6 +1454,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			if(!roles.isEmpty()) {
 				dbInstance.commitAndCloseSession();
 			}
+			if(count % 1000 == 0) {
+				log.info("Synchronize {}/{} users in LDAP server on default organisation", count, ldapUsers.size());
+			}
+			count++;
 		}
 	}
 	
