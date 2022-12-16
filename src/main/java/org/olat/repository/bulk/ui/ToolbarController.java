@@ -132,6 +132,10 @@ public class ToolbarController extends StepFormBasicController {
 		cont.setRootForm(mainForm);
 		formLayout.add(cont);
 		
+		String courseOnlyInfo = "<i class='o_icon o_icon_warn'> </i> " + translate("settings.bulk.course.only.multi");
+		StaticTextElement courseOnlyEl = uifactory.addStaticTextElement("course.only.info", null, courseOnlyInfo, cont);
+		courseOnlyEl.setElementCssClass("o_form_explanation");
+		
 		SelectionValues toolbarSV = new SelectionValues();
 		toolbarSV.add(SelectionValues.entry(KEY_ON, translate("on")));
 		toolbarSV.add(SelectionValues.entry(KEY_OFF, translate("off")));
@@ -349,14 +353,14 @@ public class ToolbarController extends StepFormBasicController {
 		blogKeyCont.clearError();
 		boolean blogKeyEnabled = blogKeyCont.isVisible();
 		if (blogKeyEnabled && blogEntry == null) {
-			blogKeyCont.setErrorKey("settings.bulk.toolbar.error.no.blog.selected", null);
+			blogKeyCont.setErrorKey("settings.bulk.toolbar.error.no.blog.selected");
 			allOk &= false;
 		}
 		
 		wikiKeyCont.clearError();
 		boolean wikiKeyEnabled = wikiKeyCont.isVisible();
 		if (wikiKeyEnabled && wikiEntry == null) {
-			wikiKeyCont.setErrorKey("settings.bulk.toolbar.error.no.wiki.selected", null);
+			wikiKeyCont.setErrorKey("settings.bulk.toolbar.error.no.wiki.selected");
 			allOk &= false;
 		}
 		
@@ -413,12 +417,17 @@ public class ToolbarController extends StepFormBasicController {
 		context.select(SettingsBulkEditable.toolBlog, blogEl.isVisible() && blogEl.isOneSelected());
 		if (blogEl.isVisible() && blogEl.isOneSelected()) {
 			context.setToolBlog(Replacement.valueOf(blogEl.getSelectedKey()));
-			context.setToolBlogKey(blogEntry.getSoftkey());
+			if (blogKeyCont.isVisible()) {
+				context.setToolBlogKey(blogEntry.getSoftkey());
+			}
 		}
 		
+		context.select(SettingsBulkEditable.toolWiki, wikiEl.isVisible() && wikiEl.isOneSelected());
 		if (wikiEl.isVisible() && wikiEl.isOneSelected()) {
 			context.setToolWiki(Replacement.valueOf(wikiEl.getSelectedKey()));
-			context.setToolWikiKey(wikiEntry.getSoftkey());
+			if (wikiKeyCont.isVisible()) {
+				context.setToolWikiKey(wikiEntry.getSoftkey());
+			}
 		}
 		
 		context.select(SettingsBulkEditable.toolForum, forumEl.isVisible());

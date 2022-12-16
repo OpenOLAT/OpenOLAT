@@ -431,8 +431,9 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 					|| !repositoryEntry.getLifecycle().isPrivateCycle()
 					|| !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom());
 		}
-		return repositoryEntry.getLifecycle().isPrivateCycle()
-				&& !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom());
+		return repositoryEntry.getLifecycle() == null
+				|| (repositoryEntry.getLifecycle().isPrivateCycle()
+						&& !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom()));
 	}
 
 	private boolean hasLifecycleValidToChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Date lifecycleValidTo) {
@@ -444,8 +445,9 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 					|| !repositoryEntry.getLifecycle().isPrivateCycle()
 					|| !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
 		}
-		return repositoryEntry.getLifecycle().isPrivateCycle()
-				&& !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
+		return repositoryEntry.getLifecycle() == null
+				|| (repositoryEntry.getLifecycle().isPrivateCycle()
+						&& !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo()));
 	}
 
 	private boolean hasToolBlogChanged(RepositoryEntry repositoryEntry, SettingsContext context) {

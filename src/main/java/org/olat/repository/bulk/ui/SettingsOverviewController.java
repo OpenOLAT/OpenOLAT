@@ -30,6 +30,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -159,11 +160,17 @@ public class SettingsOverviewController extends StepFormBasicController {
 				if (licenseService.isFreetext(licenseType)) {
 					text = translate("settings.bulk.overview.license.freetext", licenseType.getName(), Formatter.truncate(context.getFreetext(), 60));
 				} else if (licenseType != null) {
-					text = translate("settings.bulk.overview.license.regular", licenseType.getName());
+					text = translate("settings.bulk.overview.license.regular", LicenseUIFactory.translate(licenseType, getLocale()));
 				} else {
 					text = translate("settings.bulk.overview.license.none");
 				}
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.license);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+			if (context.isSelected(SettingsBulkEditable.licensor)) {
+				String text = translate("settings.bulk.overview.licensor", context.getLicensor());
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.licensor);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
@@ -337,7 +344,7 @@ public class SettingsOverviewController extends StepFormBasicController {
 			addToolbarField(fields, SettingsBulkEditable.toolEmail, context.isToolEmail(), "settings.bulk.toolbar.email");
 			addToolbarField(fields, SettingsBulkEditable.toolTeams, context.isToolTeams(), "settings.bulk.toolbar.teams");
 			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButton, context.isToolBigBlueButton(), "settings.bulk.toolbar.bigbluebutton");
-			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, context.isToolBigBlueButton(), "settings.bulk.toolbar.bigbluebutton.moderator");
+			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, context.isToolBigBlueButtonModeratorStartsMeeting(), "settings.bulk.toolbar.bigbluebutton.moderator");
 			addToolbarField(fields, SettingsBulkEditable.toolZoom, context.isToolZoom(), "settings.bulk.toolbar.zoom");
 			if (context.isSelected(SettingsBulkEditable.toolBlog)) {
 				String text = null;

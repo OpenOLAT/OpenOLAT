@@ -147,8 +147,12 @@ public class TaxonomyController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.bulk.taxonomy.title");
-		setFormInfo("noTransOnlyParam",
-				new String[] {RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.taxonomy.desc")});
+		
+		FormLayoutContainer infoCont = FormLayoutContainer.createDefaultFormLayout("info", getTranslator());
+		infoCont.setRootForm(mainForm);
+		formLayout.add(infoCont);
+		infoCont.setFormInfo(translate("noTransOnlyParam",
+				new String[] {RepositoryBulkUIFactory.getSettingsDescription(getTranslator(), context.getRepositoryEntries(), "settings.bulk.taxonomy.desc")}));
 		
 		FormLayoutContainer addCont = FormLayoutContainer.createDefaultFormLayout("addCont", getTranslator());
 		addCont.setRootForm(mainForm);

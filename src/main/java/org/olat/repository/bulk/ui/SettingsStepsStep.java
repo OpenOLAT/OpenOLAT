@@ -29,6 +29,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -67,6 +68,11 @@ public class SettingsStepsStep extends BasicStep {
 
 	private void updateNextStep(UserRequest ureq) {
 		setNextStep(RepositoryBulkUIFactory.getNextSettingsStep(ureq, steps, Step.steps));
+	}
+
+	@Override
+	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
+		return new PrevNextFinishConfig(false, true, false);
 	}
 
 	@Override
@@ -129,6 +135,19 @@ public class SettingsStepsStep extends BasicStep {
 			steps.stream().forEach(step -> stepsEl.select(step.name(), true));
 		}
 		
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+			
+			stepsEl.clearError();
+			if (!stepsEl.isAtLeastSelected(1)) {
+				stepsEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+			
+			return allOk;
+		}
+
 		@Override
 		protected void formOK(UserRequest ureq) {
 			steps.reset();

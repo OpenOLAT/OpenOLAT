@@ -302,27 +302,37 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleType, repositoryEntry)) {
 			if (context.getLifecycleType() == null || context.getLifecycleType() == LifecycleType.none) {
 				lifecycle = null;
+				changed = true;
+			} else if (context.getLifecycleType() == LifecycleType.privateCycle && (lifecycle == null || !lifecycle.isPrivateCycle())) {
+				String softKey = "lf_" + repositoryEntry.getSoftkey();
+				lifecycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, null, null);
+				changed = true;
 			}
 		}
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecyclePublicKey, repositoryEntry)) {
 			lifecycle = publicLifecycle;
+			changed = true;
 		}
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleValidFrom, repositoryEntry)) {
 			if (lifecycle == null || !lifecycle.isPrivateCycle()) {
 				String softKey = "lf_" + repositoryEntry.getSoftkey();
-				lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, context.getLifecycleValidFrom(), null);
+				lifecycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, context.getLifecycleValidFrom(), null);
+				changed = true;
 			} else {
 				lifecycle.setValidFrom(context.getLifecycleValidFrom());
 				lifecycle = lifecycleDao.updateLifecycle(lifecycle);
+				changed = true;
 			}
 		}
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.lifecycleValidTo, repositoryEntry)) {
 			if (lifecycle == null || !lifecycle.isPrivateCycle()) {
 				String softKey = "lf_" + repositoryEntry.getSoftkey();
-				lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, null, context.getLifecycleValidTo());
+				lifecycle = lifecycleDao.create(repositoryEntry.getDisplayname(), softKey, true, null, context.getLifecycleValidTo());
+				changed = true;
 			} else {
 				lifecycle.setValidTo(context.getLifecycleValidTo());
 				lifecycle = lifecycleDao.updateLifecycle(lifecycle);
+				changed = true;
 			}
 		}
 		repositoryEntry.setLifecycle(lifecycle);
