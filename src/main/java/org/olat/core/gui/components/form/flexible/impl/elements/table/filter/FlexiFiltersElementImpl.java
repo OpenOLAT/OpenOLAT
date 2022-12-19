@@ -127,7 +127,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		
 		updateFilterLink = new FormLinkImpl(dispatchId.concat("_updateFilterLink"), "rUpdateFilterLink", "custom.filter.update", Link.LINK);
 		updateFilterLink.setDomReplacementWrapperRequired(false);
-		updateFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_update");
+		updateFilterLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reload");
 		updateFilterLink.setTranslator(translator);
 		components.put("rUpdateFilterLink", updateFilterLink);
 		
