@@ -216,7 +216,7 @@ public class PoolsAdminController extends FormBasicController {
 	private void doManageOwners(UserRequest ureq, Pool pool) {
 		if(pool instanceof PoolImpl) {
 			PoolImpl poolImpl = (PoolImpl)pool;
-			groupCtrl = new GroupController(ureq, getWindowControl(), true, true, false, true,
+			groupCtrl = new GroupController(ureq, getWindowControl(), true, true, false, false,
 					false, false, poolImpl.getOwnerGroup());
 			groupCtrl.setUserObject(pool);
 			listenTo(groupCtrl);
