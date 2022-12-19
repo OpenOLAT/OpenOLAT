@@ -103,7 +103,7 @@ public class RepositoryEntryInvitationsWebService {
 	@ApiResponse(responseCode = "200", description = "The invitation object", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -131,7 +131,7 @@ public class RepositoryEntryInvitationsWebService {
 	@ApiResponse(responseCode = "200", description = "The invitation object", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -188,14 +188,18 @@ public class RepositoryEntryInvitationsWebService {
 	}
 	
 	/**
+	 * Create or update an invitation for an external user to a course.
 	 * 
+	 * @param invitation The invitation
+	 * @param request The HTTP request
+	 * @return The merged invitation
 	 */
 	@PUT
 	@Operation(summary = "Creates or update an invitation", description = "Creates or update an invitation for a course or a repository entry")
 	@ApiResponse(responseCode = "200", description = "The invitation object", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -268,7 +272,7 @@ public class RepositoryEntryInvitationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of invitations", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -292,7 +296,7 @@ public class RepositoryEntryInvitationsWebService {
 	}
 	
 	/**
-	 * Retrieve the list of invitations of a specific repository entry.
+	 * Retrieve an invitation of a specific repository entry by its primary key.
 	 */
 	@GET
 	@Path("{invitationKey}")
@@ -301,7 +305,7 @@ public class RepositoryEntryInvitationsWebService {
 	@ApiResponse(responseCode = "200", description = "The list of invitations", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -330,16 +334,16 @@ public class RepositoryEntryInvitationsWebService {
 	}
 	
 	/**
-	 * Retrieve the list of invitations of a specific repository entry.
+	 * Delete an invitation.
 	 */
 	@DELETE
 	@Path("{invitationKey}")
-	@Operation(summary = "Get an invitation in the specified ressource by its primary key",
-		description = "Get an invitation in the specified ressource by its primary key")
+	@Operation(summary = "Delete an invitation by its primary key",
+		description = "Delete an invitation in the specified ressource by its primary key")
 	@ApiResponse(responseCode = "200", description = "The list of invitations", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = InvitationVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = InvitationVO.class)) })
-	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "The course / repository entry was not found")
 	@ApiResponse(responseCode = "405", description = "The feature is not enabled")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
