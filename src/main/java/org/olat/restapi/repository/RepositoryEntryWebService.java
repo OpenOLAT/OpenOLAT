@@ -37,28 +37,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.FormParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HEAD;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.EntityTag;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
@@ -87,6 +65,7 @@ import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
+import org.olat.modules.invitation.restapi.RepositoryEntryInvitationsWebService;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -128,6 +107,27 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.HEAD;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.EntityTag;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Description:<br>
@@ -235,11 +235,26 @@ public class RepositoryEntryWebService {
 	 * @return The web service for reminders.
 	 */
 	@Path("reminders")
-	@Operation(summary = "To get the web service for the reminders of a specific course", description = "To get the web service for the reminders of a specific course")
-	@ApiResponse(responseCode = "200", description = "The web service for reminders")	
+	@Operation(summary = "To get the web service for the reminders of a specific course",
+		description = "To get the web service for the reminders of a specific course")
+	@ApiResponse(responseCode = "200", description = "The web service for reminders")
 	public RemindersWebService getRemindersWebService(@Context HttpServletRequest request) {
 		boolean administrator = isAuthorEditor(request);
 		RemindersWebService service = new RemindersWebService(entry, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * 
+	 * @return The web service for invitations and external users
+	 */
+	@Path("invitations")
+	@Operation(summary = "To get the web service for the invitations and external users of a specific course",
+		description = "To get the web service for the invitations and external users of a specific course")
+	@ApiResponse(responseCode = "200", description = "The web service for invitations and externa users")	
+	public RepositoryEntryInvitationsWebService getInvitationsWebService() {
+		RepositoryEntryInvitationsWebService service = new RepositoryEntryInvitationsWebService(entry);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

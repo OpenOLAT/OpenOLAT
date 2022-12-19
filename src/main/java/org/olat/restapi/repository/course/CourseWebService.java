@@ -88,6 +88,7 @@ import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.gotomeeting.restapi.GoToTrainingWebService;
+import org.olat.modules.invitation.restapi.RepositoryEntryInvitationsWebService;
 import org.olat.modules.lecture.restapi.LectureBlocksWebService;
 import org.olat.modules.reminder.restapi.RemindersWebService;
 import org.olat.modules.vitero.restapi.ViteroBookingWebService;
@@ -269,6 +270,21 @@ public class CourseWebService {
 		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		boolean administrator = isManager(request);
 		RemindersWebService service = new RemindersWebService(courseRe, administrator);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
+	 * 
+	 * @return The web service for invitations and external users
+	 */
+	@Path("invitations")
+	@Operation(summary = "To get the web service for the invitations and external users of a specific course",
+		description = "To get the web service for the invitations and external users of a specific course")
+	@ApiResponse(responseCode = "200", description = "The web service for invitations and externa users")	
+	public RepositoryEntryInvitationsWebService getInvitationsWebService() {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntryInvitationsWebService service = new RepositoryEntryInvitationsWebService(courseRe);
 		CoreSpringFactory.autowireObject(service);
 		return service;
 	}

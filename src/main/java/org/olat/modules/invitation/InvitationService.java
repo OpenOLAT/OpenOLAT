@@ -62,6 +62,8 @@ public interface InvitationService {
 	
 	public Invitation getInvitation(Invitation invitation);
 	
+	public Invitation getInvitationByKey(Long key);
+	
 	public Invitation findInvitation(String token);
 
 	public Invitation findInvitation(Binder binder, IdentityRef identity);

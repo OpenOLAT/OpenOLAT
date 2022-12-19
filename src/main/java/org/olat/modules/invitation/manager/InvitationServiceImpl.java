@@ -199,6 +199,14 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		}
 		return invitationDao.findInvitationByKey(invitation.getKey());
 	}
+	
+	@Override
+	public Invitation getInvitationByKey(Long key) {
+		if(key == null) {
+			return null;
+		}
+		return invitationDao.findInvitationByKey(key);
+	}
 
 	@Override
 	public Invitation findInvitation(String token) {
@@ -249,14 +257,23 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 
 	@Override
 	public Invitation update(Invitation invitation, String firstName, String lastName, String email) {
-		List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
-		for(Identity identity:identities) {
+		if(invitation.getIdentity() != null) {
+			Identity identity = invitation.getIdentity();
 			User user = identity.getUser();
-			if(email.equals(user.getEmail())) {
-				user.setProperty(UserConstants.FIRSTNAME, firstName);
-				user.setProperty(UserConstants.LASTNAME, lastName);
-				user.setProperty(UserConstants.EMAIL, email);
-				userManager.updateUserFromIdentity(identity);
+			user.setProperty(UserConstants.FIRSTNAME, firstName);
+			user.setProperty(UserConstants.LASTNAME, lastName);
+			user.setProperty(UserConstants.EMAIL, email);
+			userManager.updateUserFromIdentity(identity);
+		} else {
+			List<Identity> identities = groupDao.getMembers(invitation.getBaseGroup(), GroupRoles.invitee.name());
+			for(Identity identity:identities) {
+				User user = identity.getUser();
+				if(email.equals(user.getEmail())) {
+					user.setProperty(UserConstants.FIRSTNAME, firstName);
+					user.setProperty(UserConstants.LASTNAME, lastName);
+					user.setProperty(UserConstants.EMAIL, email);
+					userManager.updateUserFromIdentity(identity);
+				}
 			}
 		}
 		

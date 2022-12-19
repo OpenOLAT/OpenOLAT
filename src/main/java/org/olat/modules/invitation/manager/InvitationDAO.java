@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.persistence.TypedQuery;
-
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -38,15 +36,17 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
-import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.TypedQuery;
 
 /**
  * This is only for e-Portfolio. For wider useage, need a refactor of the datamodel

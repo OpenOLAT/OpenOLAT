@@ -30,24 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.FormParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.CacheControl;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Request;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurity;
@@ -78,6 +60,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
+import org.olat.modules.invitation.restapi.BusinessGroupInvitationsWebService;
 import org.olat.modules.wiki.restapi.GroupWikiWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
@@ -95,6 +78,23 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Description:<br>
@@ -718,7 +718,18 @@ public class LearningGroupWebService {
 		}
 		return null;
 	}
-
+	
+	@Path("{groupKey}/invitations")
+	@Operation(summary = "Return the calendar web service", description = "Return the calendar web service")
+	public BusinessGroupInvitationsWebService getInvitationsWebService(@PathParam("groupKey") Long groupKey) {
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return null;
+		}
+		BusinessGroupInvitationsWebService webService = new BusinessGroupInvitationsWebService(bg);
+		CoreSpringFactory.autowireObject(webService);
+		return webService;
+	}
 	
 	/**
 	 * Returns the list of owners of the group specified by the groupKey.
