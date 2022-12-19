@@ -346,7 +346,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		if(item instanceof QuestionItemImpl) {
 			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
 			
-			groupController = new GroupController(ureq, getWindowControl(), true, true, false, true,
+			groupController = new GroupController(ureq, getWindowControl(), true, true, false, false,
 					false, false, itemImpl.getOwnerGroup());
 			listenTo(groupController);
 

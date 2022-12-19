@@ -102,7 +102,7 @@ public class FlexiFilterTabsComponentRenderer extends DefaultComponentRenderer {
 		  .append(" ", elementCssClass != null).append(elementCssClass, elementCssClass != null)
 		  .append("'><span>").append(StringHelper.escapeHtml(tab.getLabel()))
 		  .append("</span>")
-		  .append(" <i class='o_icon o_icon_update'> </i>", update)
+		  .append(" <i class='o_icon o_icon_reload'> </i>", update)
 		  .append("</a>");
 
 		sb.append("</li>");
