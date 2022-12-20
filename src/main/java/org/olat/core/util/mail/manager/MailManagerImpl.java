@@ -510,7 +510,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct(mail) from ").append(DBMailLightImpl.class.getName()).append(" mail")
 			.append(" inner join fetch mail.from fromRecipient")
-			.append(" inner join fromRecipient.recipient fromRecipientIdentity")
+			.append(" inner join fetch fromRecipient.recipient fromRecipientIdentity")
+			.append(" inner join fetch fromRecipientIdentity.user fromRecipientUser")
 			.append(" inner join ").append(fetchRecipients ? "fetch" : "").append(" mail.recipients recipient")
 			.append(" left join ").append(fetchRecipients ? "fetch" : "").append(" recipient.recipient recipientIdentity")
 			.append(" where fromRecipientIdentity.key=:fromKey and fromRecipient.deleted=false ")
@@ -560,6 +561,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		String fetchOption = (fetchRecipients != null && fetchRecipients.booleanValue()) ? "fetch" : "";
 		sb.append("select mail from ").append(DBMailLightImpl.class.getName()).append(" mail")
 		  .append(" inner join fetch ").append(" mail.from fromRecipient")
+		  .append(" inner join fetch ").append(" fromRecipient.recipient fromRecipientIdentity")
+		  .append(" inner join fetch ").append(" fromRecipientIdentity.user fromRecipientUser")
 		  .append(" inner join ").append(fetchOption).append(" mail.recipients recipient")
 		  .append(" left join ").append(fetchOption).append(" recipient.recipient recipientIdentity")
 		  .append(" left join ").append(fetchOption).append(" recipientIdentity.user recipientUser")

@@ -120,10 +120,10 @@ public class MailTemplateAdminController extends FormBasicController  {
 		String value = templateEl.getValue();
 		templateEl.clearError();
 		if(value.length() <= 0) {
-			templateEl.setErrorKey("form.legende.mandatory", null);
+			templateEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else if(value.length() > MAX_LENGTH) {
-			templateEl.setErrorKey("error.too.long", new String[] { Formatter.formatBytes(MAX_LENGTH) } );
+			templateEl.setErrorKey("error.too.long", Formatter.formatBytes(MAX_LENGTH));
 			allOk = false;
 		}
 		return allOk;

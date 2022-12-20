@@ -137,7 +137,7 @@ public class EMailCalloutCtrl extends FormBasicController {
 		if(emailEl != null) {
 			emailEl.clearError();
 			if(!MailHelper.isValidEmailAddress(emailEl.getValue())) {
-				emailEl.setErrorKey("mailhelper.error.single.addressinvalid", null);
+				emailEl.setErrorKey("mailhelper.error.single.addressinvalid");
 				allOk &= false;
 			}
 		}

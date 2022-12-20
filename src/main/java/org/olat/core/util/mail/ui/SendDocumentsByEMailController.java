@@ -198,8 +198,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			VFSItem item = currentContainer.resolve(file);
 			if (item instanceof VFSContainer) {
 				selectionWithContainer = true;
-			} else if (item instanceof VFSLeaf) {
-				leafs.add((VFSLeaf) item);
+			} else if (item instanceof VFSLeaf leaf) {
+				leafs.add(leaf);
 			}
 		}
 		if (selectionWithContainer) {
@@ -239,8 +239,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			appendBusinessPath(rootContainer, file, bodySb);
 			bodySb.append('\n').append('\n');
 			fileSize += file.getSize();
-			if (allowAttachments && file instanceof LocalFileImpl) {
-				File f = ((LocalFileImpl) file).getBasefile();
+			if (allowAttachments && file instanceof LocalFileImpl localFile) {
+				File f = localFile.getBasefile();
 				attachments.add(f);
 			}
 		}
@@ -392,18 +392,17 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 		String subject = subjectElement.getValue();
 		subjectElement.clearError();
 		if (!StringHelper.containsNonWhitespace(subject)) {
-			subjectElement.setErrorKey("form.legende.mandatory", null);
+			subjectElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(subject != null && subject.length() > subjectElement.getMaxLength()) {
-			subjectElement.setErrorKey("text.element.error.notlongerthan",
-					new String[]{ Integer.toString(subjectElement.getMaxLength()) });
+			subjectElement.setErrorKey("text.element.error.notlongerthan", Integer.toString(subjectElement.getMaxLength()));
 			allOk &= false;
 		}
 
 		String body = bodyElement.getValue();
 		bodyElement.clearError();
 		if (!StringHelper.containsNonWhitespace(body)) {
-			bodyElement.setErrorKey("form.legende.mandatory", null);
+			bodyElement.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -414,7 +413,7 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 			userListBox.setErrorKey("mailhelper.error.addressinvalid", invalidTos.toArray(invalidTosArray));
 			allOk &= false;
 		} else if(toValues == null || toValues.isEmpty()) {
-			userListBox.setErrorKey("form.legende.mandatory", null);
+			userListBox.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -473,8 +472,8 @@ public class SendDocumentsByEMailController extends FormBasicController implemen
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == emailCalloutCtrl) {
-			if (event instanceof SingleIdentityChosenEvent) {
-				addIdentity((SingleIdentityChosenEvent)event);
+			if (event instanceof SingleIdentityChosenEvent sice) {
+				addIdentity(sice);
 			}
 			calloutCtrl.deactivate();
 		}

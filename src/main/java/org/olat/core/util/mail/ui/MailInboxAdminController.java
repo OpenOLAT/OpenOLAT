@@ -138,16 +138,16 @@ public class MailInboxAdminController extends FormBasicController  {
 		}
 		userDefaultSettingEl.setEnabled(on);
 		
-		Collection<String> showInboxKeys = showInboxEl.getSelectedKeys();
-		boolean showInboxRecipientName = showInboxKeys.contains(INBOX_SHOW_RECIPIENT_NAMES_KEY);
+		Collection<String> inboxKeys = showInboxEl.getSelectedKeys();
+		boolean showInboxRecipientName = inboxKeys.contains(INBOX_SHOW_RECIPIENT_NAMES_KEY);
 		mailModule.setShowInboxRecipientNames(showInboxRecipientName);
-		boolean showInboxMailAddresses = showInboxKeys.contains(INBOX_SHOW_MAIL_ADDRESSES_KEY);
+		boolean showInboxMailAddresses = inboxKeys.contains(INBOX_SHOW_MAIL_ADDRESSES_KEY);
 		mailModule.setShowInboxMailAddresses(showInboxMailAddresses);
 		
-		Collection<String> showOutboxKeys = showOutboxEl.getSelectedKeys();
-		boolean showOutboxRecipientName = showOutboxKeys.contains(OUTBOX_SHOW_RECIPIENT_NAMES_KEY);
+		Collection<String> outboxKeys = showOutboxEl.getSelectedKeys();
+		boolean showOutboxRecipientName = outboxKeys.contains(OUTBOX_SHOW_RECIPIENT_NAMES_KEY);
 		mailModule.setShowOutboxRecipientNames(showOutboxRecipientName);
-		boolean showOutboxMailAddresses = showOutboxKeys.contains(OUTBOX_SHOW_MAIL_ADDRESSES_KEY);
+		boolean showOutboxMailAddresses = outboxKeys.contains(OUTBOX_SHOW_MAIL_ADDRESSES_KEY);
 		mailModule.setShowOutboxMailAddresses(showOutboxMailAddresses);
 		
 		getWindowControl().setInfo("saved");

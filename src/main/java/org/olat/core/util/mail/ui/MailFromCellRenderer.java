@@ -64,8 +64,7 @@ public class MailFromCellRenderer implements CustomCellRenderer {
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof Identity) {
-			Identity identity = (Identity)val;
+		if(val instanceof Identity identity) {
 			String fullName = userManager.getUserDisplayName(identity);
 			if(renderer == null) {
 				sb.appendHtmlEscaped(fullName);
@@ -78,8 +77,8 @@ public class MailFromCellRenderer implements CustomCellRenderer {
 				link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
 				link.setDirty(false);
 			}
-		} else if (val instanceof String) {
-			sb.append("<span>").appendHtmlEscaped((String)val).append("</span>");
+		} else if (val instanceof String string) {
+			sb.append("<span>").appendHtmlEscaped(string).append("</span>");
 		}
 	}
 }
