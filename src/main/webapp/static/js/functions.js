@@ -1157,6 +1157,7 @@ function o_popover(id, contentId, loc) {
 	jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
+    	sanitize: false,
     	trigger: 'click',
     	container: 'body',
     	content: function() { return jQuery('#' + contentId).clone().html(); }
@@ -1177,6 +1178,7 @@ function o_popoverWithTitle(id, contentId, title, loc) {
 	var popover = jQuery('#' + id).popover({
     	placement : loc,
     	html: true,
+    	sanitize: false,
     	title: title,
     	trigger: 'click',
     	container: 'body',
@@ -1200,6 +1202,7 @@ function o_shareLinkPopup(id, text, loc) {
 	elem.popover({
     	placement : loc,
     	html: true,
+    	sanitize: false,
     	trigger: 'click',
     	container: 'body',
     	content: text
