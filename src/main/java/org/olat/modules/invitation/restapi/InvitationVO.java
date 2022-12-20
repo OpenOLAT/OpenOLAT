@@ -19,6 +19,8 @@
  */
 package org.olat.modules.invitation.restapi;
 
+import java.util.Date;
+
 import org.olat.basesecurity.Invitation;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -39,7 +41,9 @@ public class InvitationVO {
 	private String firstName;
 	private String lastName;
 	private String email;
+	
 	private Long identityKey;
+	private Date expirationDate;
 
 	private String status;
 	private Boolean registration;
@@ -59,6 +63,7 @@ public class InvitationVO {
 		vo.setEmail(invitation.getMail());
 		if(invitation.getIdentity() != null) {
 			vo.setIdentityKey(invitation.getIdentity().getKey());
+			vo.setExpirationDate(invitation.getIdentity().getExpirationDate());
 		}
 		vo.setStatus(invitation.getStatus() == null ? null : invitation.getStatus().name());
 		vo.setRegistration(Boolean.valueOf(invitation.isRegistration()));
@@ -105,6 +110,14 @@ public class InvitationVO {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public Date getExpirationDate() {
+		return expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		this.expirationDate = expirationDate;
 	}
 
 	public String getStatus() {

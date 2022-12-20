@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -44,6 +45,7 @@ import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.invitation.InvitationService;
@@ -97,7 +99,9 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(courseEntry.getKey().toString()).path("invitations")
 				.queryParam("firstName", "John").queryParam("lastName", "Valentin")
-				.queryParam("email", email).queryParam("registrationRequired", "false")
+				.queryParam("email", email)
+				.queryParam("registrationRequired", "false")
+				.queryParam("expiration", "6")
 				.build();
 		
 		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
@@ -115,6 +119,10 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		Invitation savedInvitation = invitationService.findInvitation(invitation.getToken());
 		Assert.assertNotNull(savedInvitation);
 		Assert.assertEquals(invitation.getKey(), savedInvitation.getKey());
+		
+		Identity externalUser = savedInvitation.getIdentity();
+		Assert.assertNotNull(externalUser);
+		Assert.assertNotNull(externalUser.getExpirationDate());
 	}
 	
 	@Test
@@ -132,6 +140,7 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		invitationVo.setLastName("Valentin");
 		invitationVo.setEmail(email);
 		invitationVo.setRegistration(Boolean.FALSE);
+		invitationVo.setExpirationDate(DateUtils.addDays(new Date(), 2));
 
 		URI uri = UriBuilder.fromUri(getContextURI())
 				.path("repo").path("entries").path(entry.getKey().toString()).path("invitations")
@@ -153,6 +162,10 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 
 		Invitation savedInvitation = invitationService.findInvitation(savedInvitationVo.getToken());
 		Assert.assertNotNull(savedInvitation);
+		
+		Identity externalUser = savedInvitation.getIdentity();
+		Assert.assertNotNull(externalUser);
+		Assert.assertNotNull(externalUser.getExpirationDate());
 	}
 	
 	@Test
@@ -212,6 +225,53 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals("JJ", updatedIdentity.getUser().getFirstName());
 		Assert.assertEquals("V", updatedIdentity.getUser().getLastName());
 		Assert.assertEquals(newEmail, updatedIdentity.getUser().getEmail());
+	}
+	
+	@Test
+	public void updateInvitationsInRepositoryEntryWithReactivation()
+	throws IOException, URISyntaxException {
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		
+		String email = "albert.v@" + UUID.randomUUID();
+		
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-invitation 7",
+				RepositoryEntryStatusEnum.published, false, false);
+		Invitation tmpInvitation = invitationService.createInvitation(InvitationTypeEnum.repositoryEntry);
+		tmpInvitation.setFirstName("Albert");
+		tmpInvitation.setLastName("Valentin");
+		tmpInvitation.setMail(email);
+		
+		Group repoGroup = repositoryService.getDefaultGroup(courseEntry);
+		Identity id = invitationService.getOrCreateIdentityAndPersistInvitation(tmpInvitation, repoGroup, Locale.GERMAN, admin);
+		dbInstance.commit();
+		id = securityManager.saveIdentityStatus(id, Identity.STATUS_INACTIVE, admin);
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI uri = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(courseEntry.getKey().toString()).path("invitations")
+				.queryParam("firstName", "Albert")
+				.queryParam("lastName", "Valentin")
+				.queryParam("email", email)
+				.queryParam("registrationRequired", "false")
+				.queryParam("expiration", "6")
+				.build();
+		
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		InvitationVO invitation = conn.parse(response, InvitationVO.class);
+		Assert.assertNotNull(invitation);
+
+
+		Invitation updatedInvitation = invitationService.findInvitation(invitation.getToken());
+		Assert.assertNotNull(updatedInvitation);
+		
+		Identity externalUser = updatedInvitation.getIdentity();
+		Assert.assertNotNull(externalUser);
+		Assert.assertEquals(Identity.STATUS_ACTIV, externalUser.getStatus());
 	}
 	
 	@Test

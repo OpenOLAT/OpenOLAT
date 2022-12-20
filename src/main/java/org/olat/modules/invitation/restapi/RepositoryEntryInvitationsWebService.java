@@ -23,30 +23,21 @@ import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.basesecurity.OrganisationRoles;
-import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
-import org.olat.modules.invitation.InvitationModule;
-import org.olat.modules.invitation.InvitationService;
-import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -69,19 +60,9 @@ import jakarta.ws.rs.core.Response.Status;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Tag (name = "Invitations")
-public class RepositoryEntryInvitationsWebService {
+public class RepositoryEntryInvitationsWebService extends AbstractInvitationsWebService {
 
 	private RepositoryEntry entry;
-	
-	@Autowired
-	private DB dbInstance;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private InvitationService invitationService;
-	@Autowired
-	private InvitationModule invitationModule;
 	
 	public RepositoryEntryInvitationsWebService(RepositoryEntry entry) {
 		this.entry = entry;
@@ -111,8 +92,9 @@ public class RepositoryEntryInvitationsWebService {
 	public Response postInvitationForRepositoryEntry(@QueryParam("firstName") String firstName,
 			@QueryParam("lastName") String lastName, @QueryParam("email") String email,
 			@QueryParam("registrationRequired") @DefaultValue("true") Boolean registrationRequiered,
+			@QueryParam("expiration") Integer expiration,
 			@Context HttpServletRequest request) {
-		return createInvitation(firstName, lastName, email, registrationRequiered, request);
+		return createInvitation(firstName, lastName, email, registrationRequiered, expiration, request);
 	}
 	
 	/**
@@ -139,12 +121,13 @@ public class RepositoryEntryInvitationsWebService {
 	public Response putInvitationForRepositoryEntry(@QueryParam("firstName") String firstName,
 			@QueryParam("lastName") String lastName, @QueryParam("email") String email,
 			@QueryParam("registrationRequired") @DefaultValue("true") Boolean registrationRequiered,
+			@QueryParam("expiration") Integer expiration,
 			@Context HttpServletRequest request) {
-		return createInvitation(firstName, lastName, email, registrationRequiered, request);
+		return createInvitation(firstName, lastName, email, registrationRequiered, expiration, request);
 	}
 	
 	private Response createInvitation(String firstName, String lastName, String email,
-			Boolean registrationRequiered, HttpServletRequest request) {
+			Boolean registrationRequiered, Integer expirationInHours, HttpServletRequest request) {
 	
 		if(!invitationModule.isCourseInvitationEnabled()) {
 			return Response.serverError().status(Status.METHOD_NOT_ALLOWED).build();	
@@ -164,27 +147,12 @@ public class RepositoryEntryInvitationsWebService {
 		invitation.setRegistration(registrationRequiered == null || registrationRequiered.booleanValue());
 		invitation.setRoleList(roles);
 		
-		invitation = createOrUpdateTemporaryInvitation(invitation, ureq.getLocale(), doer);
+		Group group = repositoryService.getDefaultGroup(entry);
+		invitation = createOrUpdateTemporaryInvitation(invitation, group, InvitationTypeEnum.repositoryEntry, expirationInHours, null, ureq.getLocale(), doer);
 		
 		String url = invitationService.toUrl(invitation, entry);
 		InvitationVO vo = InvitationVO.valueOf(invitation, url);
 		return Response.ok(vo).build();
-	}
-	
-	private Invitation createOrUpdateTemporaryInvitation(Invitation invitation, Locale locale, Identity doer) {
-		Group group = repositoryService.getDefaultGroup(entry);
-		Invitation similarInvitation = invitationService.findSimilarInvitation( InvitationTypeEnum.repositoryEntry,
-				invitation.getMail(), invitation.getRoleList(), group);
-		if(similarInvitation == null) {
-			invitationService.getOrCreateIdentityAndPersistInvitation(invitation, group, locale, doer);
-		} else {
-			if(similarInvitation.getStatus() != InvitationStatusEnum.active) {
-				similarInvitation.setStatus(InvitationStatusEnum.active);
-				similarInvitation = invitationService.update(similarInvitation);
-			}
-			invitation = similarInvitation;
-		}
-		return invitation;
 	}
 	
 	/**
@@ -233,29 +201,8 @@ public class RepositoryEntryInvitationsWebService {
 		Identity doer = getIdentity(request);
 		UserRequest ureq = getUserRequest(request);
 		
-		Invitation invitation;
-		if(invitationVo.getKey() == null) {
-			List<String> roles = List.of(GroupRoles.participant.name());
-			invitation = invitationService.createInvitation(InvitationTypeEnum.repositoryEntry);
-
-			invitation.setRegistration(invitationVo.getRegistration());
-			invitation.setFirstName(invitationVo.getFirstName());
-			invitation.setLastName(invitationVo.getLastName());
-			invitation.setMail(invitationVo.getEmail());
-			invitation.setRegistration(invitationVo.getRegistration() == null || invitationVo.getRegistration());
-			invitation.setRoleList(roles);
-			
-			invitation = createOrUpdateTemporaryInvitation(invitation, ureq.getLocale(), doer);	
-		} else {
-			invitation = invitationService.getInvitationByKey(invitationVo.getKey());
-			if(invitationVo.getRegistration() != null) {
-				invitation.setRegistration(invitationVo.getRegistration());
-			}
-			if(StringHelper.containsNonWhitespace(invitationVo.getStatus())) {
-				invitation.setStatus(InvitationStatusEnum.valueOf(invitationVo.getStatus()));
-			}
-			invitation = invitationService.update(invitation, invitationVo.getFirstName(), invitationVo.getLastName(), invitationVo.getEmail());
-		}
+		Group group = repositoryService.getDefaultGroup(entry);
+		Invitation invitation = createOrUpdateTemporaryInvitation(invitationVo, group, InvitationTypeEnum.repositoryEntry, ureq.getLocale(), doer);
 		
 		String url = invitationService.toUrl(invitation, entry);
 		InvitationVO updatedInvitationVo = InvitationVO.valueOf(invitation, url);
