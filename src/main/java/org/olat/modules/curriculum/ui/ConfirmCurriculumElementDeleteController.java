@@ -130,7 +130,7 @@ public class ConfirmCurriculumElementDeleteController extends FormBasicControlle
 			layoutCont.contextPut("referenceMsg", referenceMsg);
 
 			if(references.size() > maxRefs) {
-				String linkTitle = translate("additional.references", Integer.toString(references.size()));
+				String linkTitle = translate("additional.references", Integer.toString(references.size() - resources.size()));
 				additionalReferencesLink = uifactory.addFormLink("additional.references", "refs", linkTitle,
 						null, layoutCont, Link.NONTRANSLATED | Link.LINK);
 			}
