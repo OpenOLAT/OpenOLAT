@@ -154,7 +154,7 @@ public class UsrPropCfgTableController extends FormBasicController {
 			groupDropdown.addActionListener(FormEvent.ONCHANGE);
 
 			// the "active"-toggle button
-			fi = uifactory.addToggleButton(FT_NAME_PREFIX_TGL + handlerName, "&nbsp;&nbsp;", propTableFlc, null, null);
+			fi = uifactory.addToggleButton(FT_NAME_PREFIX_TGL + handlerName, null, "&nbsp;&nbsp;", propTableFlc, null, null);
 			if (usrPropCfgMng.getUserPropertiesConfigObject().isActiveHandler(handler)) fi.toggleOn();
 			else fi.toggleOff();
 

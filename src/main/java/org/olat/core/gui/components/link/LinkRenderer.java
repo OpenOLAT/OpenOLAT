@@ -156,7 +156,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				sb.append("accesskey=\"").append(accessKey).append("\" ");
 			}
 			if (flexiformlink) {
-				renderHrefAndOnclickFormLink(renderer, sb, link.getFlexiForm(), ubu);
+				renderHrefAndOnclickFormLink(renderer, sb, link.getFormItem(), ubu);
 			} else {
 				renderHrefAndOnclickLink(renderer, sb, link, ubu);
 			}

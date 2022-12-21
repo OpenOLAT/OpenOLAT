@@ -69,28 +69,28 @@ public class UserFilterController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (canMembers) {
-			membersToggle = uifactory.addToggleButton("members", "&nbsp;&nbsp;", formLayout, null, null);
+			membersToggle = uifactory.addToggleButton("members", null, "&nbsp;&nbsp;", formLayout, null, null);
 			membersToggle.addActionListener(FormEvent.ONCHANGE);
 			if (initialMembers) {
 				membersToggle.toggleOn();
 			}
 		}
 		if (canOtherUsers) {
-			nonMembersToggle = uifactory.addToggleButton("non.members", "&nbsp;&nbsp;", formLayout, null, null);
+			nonMembersToggle = uifactory.addToggleButton("non.members", null, "&nbsp;&nbsp;", formLayout, null, null);
 			nonMembersToggle.addActionListener(FormEvent.ONCHANGE);
 			if (initialOtherUser) {
 				nonMembersToggle.toggleOn();
 			}
 		}
 		if (canFakeParticipants) {
-			fakeParticipantsToggle = uifactory.addToggleButton("fake.participants", "&nbsp;&nbsp;", formLayout, null, null);
+			fakeParticipantsToggle = uifactory.addToggleButton("fake.participants", null, "&nbsp;&nbsp;", formLayout, null, null);
 			fakeParticipantsToggle.addActionListener(FormEvent.ONCHANGE);
 			if (initialFakeParticipants) {
 				fakeParticipantsToggle.toggleOn();
 			}
 		}
 		if (canAnonymous) {
-			anonymousToggle = uifactory.addToggleButton("anonymous", "&nbsp;&nbsp;", formLayout, null, null);
+			anonymousToggle = uifactory.addToggleButton("anonymous", null, "&nbsp;&nbsp;", formLayout, null, null);
 			anonymousToggle.addActionListener(FormEvent.ONCHANGE);
 			if (initialAnonymous) {
 				anonymousToggle.toggleOn();

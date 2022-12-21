@@ -37,6 +37,7 @@ import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.badge.Badge;
+import org.olat.core.gui.components.form.flexible.FormBaseComponent;
 import org.olat.core.gui.components.form.flexible.FormBaseComponentIdProvider;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -52,7 +53,7 @@ import org.olat.core.logging.Tracing;
  * 
  * @author Alexander Schneider, Patrick Brunner
  */
-public class Link extends AbstractComponent implements ComponentCollection {
+public class Link extends AbstractComponent implements ComponentCollection, FormBaseComponent {
 	private static final Logger log = Tracing.createLoggerFor(Link.class);
 	//single renderer for all users, lazy creation upon first object creation of this class.
 	private static final ComponentRenderer RENDERER = new LinkRenderer();
@@ -182,11 +183,9 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		this.presentation = presentation;
 		this.presentationBeforeCustomCSS = presentation;
 		
-		if(log.isDebugEnabled()){
-			log.debug("***LINK_CREATED***" 
-					+ " name: " + getComponentName()  
-					+ " component: " + getComponentName() 
-					+ " dispatchId: " + getDispatchID());
+		if(log.isDebugEnabled()) {
+			log.debug("***LINK_CREATED*** name: {} component: {} dispatchId: {}",
+					getComponentName(), getComponentName(), getDispatchID());
 		}
 		// use span wrappers - if the custom layout needs div wrappers this flag has
 		// to be set manually
@@ -198,13 +197,7 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	protected void doDispatchRequest(UserRequest ureq) {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
-		
-		if(log.isDebugEnabled()){
-			log.debug("***LINK_CLICKED*** " 
-					+ " dispatchID: " + ureq.getComponentID()
-					+ " commandID: " + cmd);
-		}
-		
+		log.debug("***LINK_CLICKED*** dispatchID: {} commandID: {}", ureq.getComponentID(), cmd);
 		dispatch(ureq, command);
 	}
 
@@ -224,6 +217,11 @@ public class Link extends AbstractComponent implements ComponentCollection {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
+	}
+	
+	@Override
+	public String getFormDispatchId() {
+		return DISPPREFIX.concat(super.getDispatchID());
 	}
 
 	public String getCommand() {
@@ -356,7 +354,8 @@ public class Link extends AbstractComponent implements ComponentCollection {
 		return ariaRole;
 	}
 	
-	FormLink getFlexiForm() {
+	@Override
+	public FormLink getFormItem() {
 		return flexiLink;
 	}
 	
