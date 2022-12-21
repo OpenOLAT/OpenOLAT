@@ -40,6 +40,8 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.style.ImageSourceType;
@@ -59,6 +61,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseModule extends AbstractSpringModule {
+	
+	public static final String COURSE_TYPE_PATH = LearningPathNodeAccessProvider.TYPE;
+	public static final String COURSE_TYPE_PROGRESS = "progress";
+	public static final String COURSE_TYPE_CLASSIC = ConditionNodeAccessProvider.TYPE;
 
 	private static final String COURSE_DISPLAY_CHANGELOG = "course.display.changelog";
 	private static final String COURSE_DISPLAY_INFOBOX = "course.display.infobox";

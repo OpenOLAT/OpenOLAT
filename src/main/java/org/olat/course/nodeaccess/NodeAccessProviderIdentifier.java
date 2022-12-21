@@ -36,13 +36,4 @@ public interface NodeAccessProviderIdentifier extends NodeAccessType {
 	 */
 	public String getDisplayName(Locale locale);
 
-	/**
-	 * A localized help text that describes the main features of this access type
-	 * for a tooltip help
-	 * 
-	 * @param locale
-	 * @return
-	 */
-	public String getToolTipHelpText(Locale locale);
-
 }

@@ -56,10 +56,6 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	private static final Logger log = Tracing.createLoggerFor(CreateCourseRepositoryEntryController.class);
 	
-	private static final String KEY_PATH = "path";
-	private static final String KEY_PROGRESS = "progress";
-	private static final String KEY_CLASSIC = "classic";
-
 	private SingleSelection designEl;
 	
 	private CourseAssistanceController courseAssistanceCtrl;
@@ -86,17 +82,16 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 	@Override
 	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		SelectionValues designKV = new SelectionValues();
-		designKV.add(new SelectionValue(KEY_PATH, translate("course.design.path"), translate("course.design.path.desc"),"o_course_design_path_icon", null, true));
-		designKV.add(new SelectionValue(KEY_PROGRESS, translate("course.design.progress"), translate("course.design.progress.desc"),"o_course_design_progress_icon", null, true));
-		designKV.add(new SelectionValue(KEY_CLASSIC, translate("course.design.classic"), translate("course.design.classic.desc"),"o_course_design_classic_icon", null, true));
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PATH, translate("course.design.path"), translate("course.design.path.desc"),"o_course_design_path_icon", null, true));
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PROGRESS, translate("course.design.progress"), translate("course.design.progress.desc"),"o_course_design_progress_icon", null, true));
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_CLASSIC, translate("course.design.classic"), translate("course.design.classic.desc"),"o_course_design_classic_icon", null, true));
 		designEl = uifactory.addCardSingleSelectHorizontal("course.design", "course.design", formLayout, designKV);
 		designEl.setElementCssClass("o_course_design");
 		String defaultCourseType = courseModule.getCourseTypeDefault();
-		String designKey = StringHelper.containsNonWhitespace(defaultCourseType) && ConditionNodeAccessProvider.TYPE.equals(defaultCourseType)
-				? KEY_CLASSIC
-				: KEY_PATH;
-		designEl.select(designKey, true);
-		
+		if (!StringHelper.containsNonWhitespace(defaultCourseType)) {
+			defaultCourseType = CourseModule.COURSE_TYPE_PATH;
+		}
+		designEl.select(defaultCourseType, true);
 		
 		FormLayoutContainer assistanceCont = FormLayoutContainer.createCustomFormLayout("assistanceCont", getTranslator(), velocity_root + "/course_assistance_container.html");
 		assistanceCont.setRootForm(mainForm);
@@ -114,13 +109,13 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 
 	@Override
 	protected void afterEntryCreated() {
-		String type = KEY_CLASSIC.equals(designEl.getSelectedKey())
+		String type = CourseModule.COURSE_TYPE_CLASSIC.equals(designEl.getSelectedKey())
 				? ConditionNodeAccessProvider.TYPE
 				: LearningPathNodeAccessProvider.TYPE;
 		CourseFactory.initNodeAccessType(repositoryEntry, NodeAccessType.of(type));
 		repositoryEntry = repositoryManager.setTechnicalType(repositoryEntry, type);
 		
-		if (KEY_PROGRESS.equals(designEl.getSelectedKey())) {
+		if (CourseModule.COURSE_TYPE_PROGRESS.equals(designEl.getSelectedKey())) {
 			initProgressCourseConfig();
 		}
 	}

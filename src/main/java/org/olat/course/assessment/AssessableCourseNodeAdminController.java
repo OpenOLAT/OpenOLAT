@@ -31,13 +31,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
-import org.olat.course.config.CourseConfig;
-import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
-import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 /**
  * 
@@ -50,21 +49,19 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 	private static final String[] onKeys = new String[]{ "on" };
 	private final String[] onValues;
 	
+	private SingleSelection designEl;
 	private MultipleSelectionElement infoBoxEl;
 	private MultipleSelectionElement changeLogEl;
 	private MultipleSelectionElement disclaimerEnabledEl;
-	
-	private SingleSelection courseDefaultTypeEl;
 	
 	private FormLink inviteeLink;
 
 	@Autowired
 	private CourseModule courseModule;
-	@Autowired
-	private NodeAccessService nodeAccessService;
 	
 	public AssessableCourseNodeAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
 		onValues = new String[]{ translate("on") };
 
@@ -73,35 +70,30 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		// General Course Settings
-		FormLayoutContainer courseSettings = FormLayoutContainer.createDefaultFormLayout("courseSettings", getTranslator());
-		courseSettings.setFormTitle(translate("admin.course.type.settings"));
+		FormLayoutContainer courseSettings = FormLayoutContainer.createVerticalFormLayout("courseSettings", getTranslator());
+		courseSettings.setFormTitle(translate("admin.course.design.settings"));
 		courseSettings.setRootForm(mainForm);
-		
-		SelectionValues nodeAccessKV = new SelectionValues();
-		StringBuilder helpText = new StringBuilder(1024);
-		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
-			String title = identifier.getDisplayName(getLocale());
-			nodeAccessKV.add(SelectionValues.entry(identifier.getType(), title));
-			helpText.append("<strong>").append(title).append("</strong><br>").append(identifier.getToolTipHelpText(getLocale())).append("<br><br>");
-		}
-		
-		courseDefaultTypeEl = uifactory.addRadiosVertical("course.default.type", courseSettings, nodeAccessKV.keys(), nodeAccessKV.values());
-		courseDefaultTypeEl.setHelpText(helpText.toString());
-		courseDefaultTypeEl.addActionListener(FormEvent.ONCHANGE);
-		
-		String defaultCourseType = courseModule.getCourseTypeDefault();
-		if (!StringHelper.containsNonWhitespace(defaultCourseType) || !nodeAccessKV.containsKey(defaultCourseType)) {
-			defaultCourseType = CourseConfig.NODE_ACCESS_TYPE_DEFAULT;
-		}
-		courseDefaultTypeEl.select(defaultCourseType, true);
-		
 		formLayout.add(courseSettings);
+		
+		SelectionValues designKV = new SelectionValues();
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PATH, translate("course.design.path"), translate("course.design.path.desc"),"o_course_design_path_icon", null, true));
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_PROGRESS, translate("course.design.progress"), translate("course.design.progress.desc"),"o_course_design_progress_icon", null, true));
+		designKV.add(new SelectionValue(CourseModule.COURSE_TYPE_CLASSIC, translate("course.design.classic"), translate("course.design.classic.desc"),"o_course_design_classic_icon", null, true));
+		designEl = uifactory.addCardSingleSelectHorizontal("course.design", "admin.course.design.default", formLayout, designKV);
+		designEl.setElementCssClass("o_course_design");
+		designEl.addActionListener(FormEvent.ONCHANGE);
+		String defaultCourseType = courseModule.getCourseTypeDefault();
+		if (!designEl.containsKey(defaultCourseType)) {
+			defaultCourseType = CourseModule.COURSE_TYPE_PATH;
+		}
+		designEl.select(defaultCourseType, true);
+		
 		
 		// Assessable course node settings
 		FormLayoutContainer assessableCourseNodeSettings = FormLayoutContainer.createDefaultFormLayout("assessableCourseNodeSettings", getTranslator());
 		assessableCourseNodeSettings.setRootForm(mainForm);
 		assessableCourseNodeSettings.setFormTitle(translate("admin.assessable.coursenode"));
+		assessableCourseNodeSettings.setElementCssClass("o_block_top");
 		
 		infoBoxEl = uifactory.addCheckboxesHorizontal("admin.info.box", assessableCourseNodeSettings, onKeys, onValues);
 		infoBoxEl.addActionListener(FormEvent.ONCHANGE);
@@ -138,8 +130,8 @@ public class AssessableCourseNodeAdminController extends FormBasicController {
 			courseModule.setDisplayChangeLog(changeLogEl.isSelected(0));
 		} else if (source == disclaimerEnabledEl) {
 			courseModule.setDisclaimerEnabled(disclaimerEnabledEl.isSelected(0));
-		} else if (source == courseDefaultTypeEl) {
-			courseModule.setCourseTypeDefault(courseDefaultTypeEl.getSelectedKey());
+		} else if (source == designEl) {
+			courseModule.setCourseTypeDefault(designEl.getSelectedKey());
 		} else if(inviteeLink == source) {
 			String invitationSettingsPath = "[AdminSite:0][loginadmin:0][Invitation:0]";
 			NewControllerFactory.getInstance().launch(invitationSettingsPath, ureq, getWindowControl());

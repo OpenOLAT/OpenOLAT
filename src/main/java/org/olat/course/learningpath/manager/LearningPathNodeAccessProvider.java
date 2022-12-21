@@ -79,12 +79,6 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		Translator translator = Util.createPackageTranslator(LearningPathNodeConfigController.class, locale);
 		return translator.translate("access.provider.name");
 	}
-	
-	@Override
-	public String getToolTipHelpText(Locale locale) {
-		Translator translator = Util.createPackageTranslator(LearningPathNodeConfigController.class, locale);
-		return translator.translate("access.provider.toolTip");
-	}
 
 	@Override
 	public boolean isSupported(String courseNodeType) {
