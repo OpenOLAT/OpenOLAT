@@ -150,14 +150,14 @@ public class ConfirmExtraTimeController  extends FormBasicController {
 				int time = Integer.parseInt(extraTimeInMinEl.getValue());
 				if(time <= 0) {
 					allOk &= false;
-					extraTimeInMinEl.setErrorKey("form.error.nointeger", null);
+					extraTimeInMinEl.setErrorKey("form.error.nointeger");
 				}
 			} catch(Exception e) {
-				extraTimeInMinEl.setErrorKey("form.error.nointeger", null);
+				extraTimeInMinEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			extraTimeInMinEl.setErrorKey("form.legende.mandatory", null);
+			extraTimeInMinEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

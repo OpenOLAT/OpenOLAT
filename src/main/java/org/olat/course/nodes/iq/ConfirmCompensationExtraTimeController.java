@@ -145,13 +145,13 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 		
 		approvedByEl.clearError();
 		if(!StringHelper.containsNonWhitespace(approvedByEl.getValue())) {
-			approvedByEl.setErrorKey("form.legende.mandatory", null);
+			approvedByEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		approvalEl.clearError();
 		if(approvalEl.getDate() == null) {
-			approvalEl.setErrorKey("form.legende.mandatory", null);
+			approvalEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -161,14 +161,14 @@ public class ConfirmCompensationExtraTimeController  extends FormBasicController
 				int time = Integer.parseInt(extraTimeEl.getValue());
 				if(time <= 0) {
 					allOk &= false;
-					extraTimeEl.setErrorKey("form.error.nointeger", null);
+					extraTimeEl.setErrorKey("form.error.nointeger");
 				}
 			} catch(Exception e) {
-				extraTimeEl.setErrorKey("form.error.nointeger", null);
+				extraTimeEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			extraTimeEl.setErrorKey("form.legende.mandatory", null);
+			extraTimeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

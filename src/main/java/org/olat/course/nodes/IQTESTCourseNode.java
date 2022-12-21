@@ -30,7 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
@@ -52,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
@@ -60,6 +64,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -85,6 +96,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.iq.IQConfirmationMailTemplate;
 import org.olat.course.nodes.iq.IQDueDateConfig;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
@@ -92,6 +104,7 @@ import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
 import org.olat.course.nodes.iq.IQTESTCoachRunController;
 import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
+import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -120,6 +133,7 @@ import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.model.xml.QtiMaxScoreEstimator;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExport;
+import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
@@ -133,10 +147,12 @@ import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.grade.ui.GradeUIFactory;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -187,7 +203,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		Controller controller;
 		// Do not allow guests to start tests
 		Roles roles = ureq.getUserSession().getRoles();
-		Translator trans = Util.createPackageTranslator(IQTESTCourseNode.class, ureq.getLocale());
 		if (roles.isGuestOnly()) {
 			if(isGuestAllowedForQTI21(getReferencedRepositoryEntry())) {
 				controller = new QTI21AssessmentRunController(ureq, wControl, userCourseEnv, this);
@@ -597,6 +612,68 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			IQEditController.removeIQReference(getModuleConfiguration());
 		}
 	}
+	
+	public void sendConfirmationEmail(UserCourseEnvironment assessedUserCourseEnv, AssessmentConfig assessmentConfig, Locale locale) {
+		if(!getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
+			return;
+		}
+		
+		final Translator translator = Util.createPackageTranslator(QTI21AssessmentRunController.class, locale,
+				Util.createPackageTranslator(AssessmentTestDisplayController.class, locale,
+					Util.createPackageTranslator(MSCourseNodeRunController.class, locale,
+						Util.createPackageTranslator(GradeUIFactory.class, locale)))); 
+		final RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		final RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		final Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		
+		// Copy to
+		ContactList bccList = new ContactList("");
+		List<String> copyList = getModuleConfiguration().getList(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_COPY, String.class);
+		Set<Identity> cc = new HashSet<>();
+		if(copyList.contains(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_OWNER)) {
+			cc.addAll(repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name()));
+		}
+		if(copyList.contains(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_ASSIGNED_COACH)) {
+			cc.addAll(repositoryService.getAssignedCoaches(assessedIdentity, courseEntry));
+		}
+		bccList.addAllIdentites(cc);
+		
+		if(copyList.contains(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_CUSTOM)) {
+			String copyCustom = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_COPY_CUSTOM);
+			if(StringHelper.containsNonWhitespace(copyCustom)) {
+				Arrays.stream(copyCustom.replaceAll("\\s", "").split(","))
+					.filter(MailHelper::isValidEmailAddress)
+					.forEach(bccList::add);
+			}
+		}
+
+		// Email
+		String subject = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_SUBJECT);
+		String body = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_BODY);
+		String correctionMode = getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+
+		Translator trans = Util.createPackageTranslator(IQEditController.class, locale);
+		if(StringHelper.containsNonWhitespace(body)) {
+			//
+		} else if(IQEditController.CORRECTION_AUTO.equals(correctionMode)) {
+			body = trans.translate("confirmation.mail.content.auto");
+		} else {
+			body = trans.translate("confirmation.mail.content.manual");
+		}
+
+		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "]");
+		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
+		
+		IQConfirmationMailTemplate mailTemplate = new IQConfirmationMailTemplate(subject, body, url,
+				courseEntry, this, assessedUserCourseEnv, assessmentConfig, translator, locale);
+		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(context, assessedIdentity, mailTemplate, null, null, result);
+		if(bccList.hasAddresses()) {
+			bundle.setContactList(bccList);
+		}
+		mailManager.sendMessageAsync(bundle);
+	}
 
 	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseEnv,
 			Identity coachingIdentity, Role by, Locale locale) {
@@ -611,6 +688,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			visibility = Boolean.TRUE;
 		}
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
 
 		AssessmentTest assessmentTest = loadAssessmentTest(session.getTestEntry());
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
@@ -621,8 +699,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		Boolean passed = session.getPassed();
-		if(session.getManualScore() != null && finalScore != null) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
+		if(finalScore != null) {
 			if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 				if (assessmentConfig.isAutoGrade() || (assessmentEntry != null && StringHelper.containsNonWhitespace(assessmentEntry.getGrade()))) {
@@ -645,6 +722,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
 				assessmentStatus, visibility, null, 1.0d, AssessmentRunStatus.done, session.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, true, by);
+		
+		if(getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
+			sendConfirmationEmail(assessedUserCourseEnv, assessmentConfig, locale);
+		}
 		
 		if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);

@@ -70,6 +70,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_IQCONFIG_TEST = "pane.tab.iqconfig.test";
 	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore"; 
 	private static final String PANE_TAB_GRADING_INFOS = "pane.tab.grading.infos";
+	private static final String PANE_TAB_CONFIRMATION_MAIL = "pane.tab.confirmation.mail";
 
 	/** configuration key: repository sof key reference to qti file*/
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repoSoftkey";
@@ -196,6 +197,15 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT = "different";
 	public static final String CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME = "true";
 
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED = "confirmationEmailEnabled";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_SUBJECT = "confirmationEmailSubject";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_BODY = "confirmationEmailBody";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_COPY = "confirmationEmailCopy";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_COPY_CUSTOM = "confirmationEmailCopyCustom";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_OWNER = "owner";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_ASSIGNED_COACH = "assignedCoach";
+	public static final String CONFIG_KEY_CONFIRMATION_EMAIL_COPY_TO_CUSTOM = "custom";
+
 	
 	private final String[] paneKeys;
 	private final String paneTabIQConfiguration;
@@ -216,6 +226,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	private IQCommunicationConfigurationController communicationConfigurationCtrl;
 	private IQLayoutConfigurationController layoutConfigurationCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
+	private IQConfirmationMailConfigurationController confirmationMailCtrl;
 
 	/**
 	 * Constructor for the IMS QTI edit controller for a test course node
@@ -328,6 +339,9 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
 		gradingInfosCtrl = new GradingInformationsController(ureq, getWindowControl(), referenceEntry);
 		listenTo(gradingInfosCtrl);
+		
+		confirmationMailCtrl = new IQConfirmationMailConfigurationController(ureq, getWindowControl(), courseNode);
+		listenTo(confirmationMailCtrl);
 	}
 
 	@Override
@@ -355,7 +369,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 				configurationCtrl.updateEditController(urequest, false);
 				layoutConfigurationCtrl.updateEditController(urequest);
 			}
-		} else if(source == communicationConfigurationCtrl) {
+		} else if(source == communicationConfigurationCtrl || source == confirmationMailCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -369,10 +383,11 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), "o_sel_qti_layout", layoutConfigurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQ_COMMUNICATION), communicationConfigurationCtrl.getInitialComponent());
 		if (QTI21Constants.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
-			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+			tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		}
-		tabbedPane.addTab(translate(PANE_TAB_GRADING_INFOS) , gradingInfosCtrl.getInitialComponent());
+		tabbedPane.addTab(translate(PANE_TAB_GRADING_INFOS), gradingInfosCtrl.getInitialComponent());
 		updateGradingTab();
+		tabbedPane.addTab(translate(PANE_TAB_CONFIRMATION_MAIL), confirmationMailCtrl.getInitialComponent());
 	}
 	
 	private void updateGradingTab() {

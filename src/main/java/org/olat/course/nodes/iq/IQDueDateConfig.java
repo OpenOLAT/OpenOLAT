@@ -24,8 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.course.duedate.DueDateConfig;
+import org.olat.course.duedate.DueDateService;
+import org.olat.course.nodes.QTICourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
 /**
@@ -128,6 +133,83 @@ public class IQDueDateConfig {
 			dateToCheck.setTime(dateToCheck.getTime() + dateDifference);
 			config.setDateValue(configKey, dateToCheck);
 		}
+	}
+	
+	/**
+	 * Evaluates if the results are visible or not in respect of the configured CONFIG_KEY_DATE_DEPENDENT_RESULTS parameter.<br>
+	 * The results are always visible if not date dependent.
+	 * EndDate could be null, that is there is no restriction for the end date.
+	 * 
+	 * 
+	 * @param courseNode The QTI course node
+	 * @param userCourseEnv The assessed user course environment
+	 * @param passed If passed or not
+	 * @param status The status of the assessment entry
+	 * @return true if the results are visible to the assessed user
+	 */
+	public static boolean isResultVisibleBasedOnResults(QTICourseNode courseNode,
+			UserCourseEnvironment userCourseEnv, boolean passed, AssessmentEntryStatus status) {
+		String showResultsActive = courseNode.getModuleConfiguration()
+				.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
+
+		boolean isVisible;
+		switch (showResultsActive) {
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS: {
+				isVisible = AssessmentEntryStatus.done == status? true: false;
+				break;
+			}
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT: {
+				Date passedStartDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
+				Date passedEndDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
+				Date failedStartDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+				Date failedEndDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+				isVisible = passed ? isNowVisible(passedStartDate, passedEndDate): isNowVisible(failedStartDate, failedEndDate);
+				break;
+			}
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY: {
+				Date failedStartDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+				Date failedEndDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+				isVisible = !passed ? isNowVisible(failedStartDate, failedEndDate): false;
+				break;
+			}
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY: {
+				Date passedStartDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
+				Date passedEndDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
+				isVisible = passed ? isNowVisible(passedStartDate, passedEndDate): false;
+				break;
+			}
+			case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME: {
+				Date startDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_START_DATE);
+				Date endDate = getDueDate(courseNode, userCourseEnv, IQEditController.CONFIG_KEY_RESULTS_END_DATE);
+				isVisible = isNowVisible(startDate, endDate);
+				break;
+			}
+			default:
+				isVisible = false;
+				break;
+		}
+
+		return isVisible;
+	}
+	
+	private static boolean isNowVisible(Date startDate, Date endDate) {
+		boolean isVisible = true;
+		Date currentDate = new Date();
+		if (startDate != null && currentDate.before(startDate)) {
+			isVisible &= false;
+		} 
+		if (endDate != null && currentDate.after(endDate)) {
+			isVisible &= false;
+		}
+		return isVisible;
+	}
+	
+	private static Date getDueDate(QTICourseNode courseNode, UserCourseEnvironment userCourseEnv, String configKey) {
+		DueDateService dueDateService = CoreSpringFactory.getImpl(DueDateService.class);
+		return dueDateService.getDueDate(
+				courseNode.getDueDateConfig(configKey),
+				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
+				userCourseEnv.getIdentityEnvironment().getIdentity());
 	}
 
 }

@@ -320,8 +320,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}
 		
 		// user data
-		if (courseNode instanceof SelfAssessableCourseNode) {
-			SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
+		if (courseNode instanceof SelfAssessableCourseNode acn) {
 			AssessmentEvaluation assessmentEval = acn.getAssessmentEvaluation(userCourseEnv);
 			if (assessmentEval != null) {
 				removeAsListenerAndDispose(assessmentParticipantViewCtrl);
@@ -335,8 +334,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			} else {
 				exposeResults(ureq, false, false, AssessmentEntryStatus.notStarted);
 			}
-		} else if(courseNode instanceof IQTESTCourseNode) {
-			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
+		} else if(courseNode instanceof IQTESTCourseNode testCourseNode) {
 			if (!userCourseEnv.isParticipant()) {
 				mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
 			} else {
@@ -360,7 +358,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				
 				Integer attempts = assessmentEval.getAttempts();
 				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
-				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(passed, assessmentEval.getAssessmentStatus()));
+				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible
+						&& IQDueDateConfig.isResultVisibleBasedOnResults(courseNode, userCourseEnv, passed, assessmentEval.getAssessmentStatus()));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
 				if(deliveryOptions.isDigitalSignature()) {
@@ -491,7 +490,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		boolean showResultsOnHomePage = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_HOME_PAGE);
 		QTI21AssessmentResultsOptions showSummary = deliveryOptions.getAssessmentResultsOptions();
 		mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage));
-		if(showResultsOnHomePage && resultsAvailable && AssessmentEntryStatus.done == status && !showSummary.none() && isResultVisible(passed, status)) {
+		if(showResultsOnHomePage && resultsAvailable && AssessmentEntryStatus.done == status && !showSummary.none()
+				&& IQDueDateConfig.isResultVisibleBasedOnResults(courseNode, userCourseEnv, passed, status)) {
 			mainVC.contextPut("showResultsVisible",Boolean.TRUE);
 			showResultsButton = LinkFactory.createLink("command.showResults", "command.showResults", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 			showResultsButton.setCustomDisplayText(translate("showResults.title"));
@@ -589,68 +589,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			resultPeriodText = translate("showResults.future", formatter.formatDateAndTime(startDate));
 		}
 		return resultPeriodText;
-	}
-	
-	/**
-	 * Evaluates if the results are visble or not in respect of the configured CONFIG_KEY_DATE_DEPENDENT_RESULTS parameter. <br>
-	 * The results are always visible if not date dependent.
-	 * EndDate could be null, that is there is no restriction for the end date.
-	 * 
-	 * @return true if is visible.
-	 */
-	private boolean isResultVisible(boolean passed, AssessmentEntryStatus status) {
-		boolean isVisible = false;
-		String showResultsActive = config.getStringValue(IQEditController.CONFIG_KEY_DATE_DEPENDENT_RESULTS, IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS);
-		Date startDate, endDate;
-		Date passedStartDate, passedEndDate;
-		Date failedStartDate, failedEndDate;
-		
-		switch (showResultsActive) {
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_ALWAYS:
-			isVisible = AssessmentEntryStatus.done == status? true: false;
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_DIFFERENT:
-			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_START_DATE);
-			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_PASSED_END_DATE);
-			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			isVisible = passed ? isResultVisible(passedStartDate, passedEndDate): isResultVisible(failedStartDate, failedEndDate);
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_FAILED_ONLY:
-			failedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			failedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			isVisible = !passed ? isResultVisible(failedStartDate, failedEndDate): false;
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_PASSED_ONLY:
-			passedStartDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_START_DATE);
-			passedEndDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_FAILED_END_DATE);
-			isVisible = passed ? isResultVisible(passedStartDate, passedEndDate): false;
-			break;
-		case IQEditController.CONFIG_VALUE_DATE_DEPENDENT_RESULT_SAME:
-			startDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_START_DATE);
-			endDate = getDueDate(IQEditController.CONFIG_KEY_RESULTS_END_DATE);
-			isVisible = isResultVisible(startDate, endDate);
-			break;
-		default:
-			break;
-		}
-
-		return isVisible;
-	}
-	
-	private boolean isResultVisible(Date startDate, Date endDate) {
-		boolean isVisible = true;
-		Date currentDate = new Date();
-		
-		if (startDate != null && currentDate.before(startDate)) {
-			isVisible &= false;
-		} 
-		
-		if (endDate != null && currentDate.after(endDate)) {
-			isVisible &= false;
-		}
-		
-		return isVisible;
 	}
 	
 	private Date getDueDate(String configKey) {
@@ -1099,7 +1037,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			return;
 		}
 		
-		if(courseNode instanceof IQTESTCourseNode) {
+		if(courseNode instanceof IQTESTCourseNode testNode) {
 			String grade = null;
 			String gradeSystemIdent = null;
 			String performanceClassIdent = null;
@@ -1145,16 +1083,20 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						start, completion, AssessmentRunStatus.done, getIdentity().getKey()),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
 			
+			if(courseNode.getModuleConfiguration().getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
+				testNode.sendConfirmationEmail(userCourseEnv, assessmentConfig, getLocale());
+			}
+			
 			if(IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 				gradingService.assignGrader(testEntry, assessmentEntry, new Date(), true);
 			}
 
 			assessmentNotificationsHandler.markPublisherNews(getIdentity(), userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-		} else if(courseNode instanceof SelfAssessableCourseNode) {
+		} else if(courseNode instanceof SelfAssessableCourseNode selfTestNode) {
 			boolean increment = incrementAttempts.getAndSet(false);
 			if(increment) {
-				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(null, userCourseEnv, Role.user);
+				selfTestNode.incrementUserAttempts(null, userCourseEnv, Role.user);
 			}
 		}
 	}
