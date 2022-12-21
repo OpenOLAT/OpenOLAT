@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -44,6 +45,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.modules.ModuleConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -62,6 +64,9 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 	private MultipleSelectionElement emailCopyEl;
 	
 	private final ModuleConfiguration config;
+
+	@Autowired
+	private HelpModule helpModule;
 	
 	public IQConfirmationMailConfigurationController(UserRequest ureq, WindowControl wControl, AbstractAccessableCourseNode courseNode) {
 		super(ureq, wControl);
@@ -74,7 +79,8 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("confirmation.mail.title");
 		setFormTitleIconCss("o_icon o_icon_mail");
-		setFormDescription("confirmation.mail.description");
+		String helpUrl = helpModule.getManualProvider().getURL(getLocale(), "manual_user/tests/Tests_at_course_level/");
+		setFormDescription("confirmation.mail.description", new String[] { helpUrl });
 		
 		SelectionValues onKeyValues = new SelectionValues();
 		onKeyValues.add(SelectionValues.entry("on", ""));
