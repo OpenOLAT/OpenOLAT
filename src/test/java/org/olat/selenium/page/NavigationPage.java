@@ -165,6 +165,7 @@ public class NavigationPage {
 	
 	public void openCourse(String title) {
 		By courseTab = By.xpath("//li/a[@title='" + title + "']");
+		OOGraphene.waitElementPresence(courseTab, 5, browser);
 		List<WebElement> courseLinks = browser.findElements(courseTab);
 		if(courseLinks.isEmpty() || !courseLinks.get(0).isDisplayed()) {
 			openMoreMenu();

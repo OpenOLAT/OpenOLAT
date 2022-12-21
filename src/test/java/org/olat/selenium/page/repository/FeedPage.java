@@ -145,6 +145,7 @@ public class FeedPage {
 		//wait that the popup is available
 		By postFormBy = By.cssSelector("fieldset.o_sel_feed_form");
 		OOGraphene.waitElement(postFormBy, browser);
+		OOGraphene.waitTinymce(browser);
 
 		By titleBy = By.cssSelector("div.o_sel_feed_title input[type='text']");
 		browser.findElement(titleBy).sendKeys(title);

@@ -49,12 +49,17 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationMessagesPage selectInfoMessages() {
-		selectSystemInfo();
-		
-		By messagesBy = By.cssSelector(".o_sel_sysinfo span.o_tree_level_label_leaf>a");
-		browser.findElement(messagesBy).click();
-		By messagesActiveBy = By.cssSelector(".o_sel_sysinfo span.active.o_tree_level_label_leaf>a");
-		OOGraphene.waitElement(messagesActiveBy, browser);
+		try {
+			selectSystemInfo();
+			
+			By messagesBy = By.cssSelector(".o_sel_sysinfo span.o_tree_level_label_leaf>a");
+			browser.findElement(messagesBy).click();
+			By messagesActiveBy = By.cssSelector(".o_sel_sysinfo span.active.o_tree_level_label_leaf>a");
+			OOGraphene.waitElement(messagesActiveBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Select infos messages", browser);
+			throw e;
+		}
 		return new AdministrationMessagesPage(browser);
 	}
 	

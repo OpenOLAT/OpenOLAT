@@ -140,15 +140,20 @@ public class QuestionPoolPage {
 	 * @return Itself
 	 */
 	public QuestionPoolPage startReviewProcess() {
-		By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
-		OOGraphene.waitElement(startProcessBy, browser);
-		browser.findElement(startProcessBy).click();
-		OOGraphene.waitModalDialog(browser);
-		
-		By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
-		OOGraphene.waitElement(confirmBy, browser);
-		browser.findElement(confirmBy).click();
-		OOGraphene.waitModalDialogDisappears(browser);
+		try {
+			By startProcessBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'process.activate.start.review')]");
+			OOGraphene.waitElement(startProcessBy, browser);
+			browser.findElement(startProcessBy).click();
+			OOGraphene.waitModalDialog(browser);
+			
+			By confirmBy = By.cssSelector("fieldset.o_sel_qpool_confirm_start_form button.btn.btn-primary");
+			OOGraphene.waitElement(confirmBy, browser);
+			browser.findElement(confirmBy).click();
+			OOGraphene.waitModalDialogDisappears(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Start review process", browser);
+			throw e;
+		}
 		return this;
 	}
 	
