@@ -21,7 +21,6 @@ package org.olat.repository.bulk.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -181,15 +180,6 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case lifecycleType: 
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
 					&& isCourse(repositoryEntry);
-		case lifecyclePublicKey: 
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
-					&& isCourse(repositoryEntry);
-		case lifecycleValidFrom: 
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
-					&& isCourse(repositoryEntry);
-		case lifecycleValidTo: 
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
-					&& isCourse(repositoryEntry);
 		case toolSearch:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.search)
 					&& isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
@@ -287,13 +277,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case organisationsRemove:
 			return hasOrganisationsToRemove(repositoryEntry, context.getOrganisationRemoveKeys());
 		case lifecycleType:
-			return hasLifecycleTypeChange(repositoryEntry, context.getLifecycleType());
-		case lifecyclePublicKey:
-			return hasLifecyclePublicKeyChange(repositoryEntry, context.getLifecycleType(), context.getLifecyclePublicKey());
-		case lifecycleValidFrom:
-			return hasLifecycleValidFromChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidFrom());
-		case lifecycleValidTo:
-			return hasLifecycleValidToChange(repositoryEntry, context.getLifecycleType(), context.getLifecycleValidTo());
+			return hasLifecycleTypeChange(repositoryEntry, context);
 		case toolSearch:
 			return context.isToolSearch() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isCourseSearchEnabled();
 		case toolCalendar:
@@ -396,58 +380,19 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		return false;
 	}
 
-	private boolean hasLifecycleTypeChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType) {
+	private boolean hasLifecycleTypeChange(RepositoryEntry repositoryEntry, SettingsContext context) {
+		LifecycleType lifecycleType = context.getLifecycleType();
 		if ((LifecycleType.none == lifecycleType || lifecycleType == null) && repositoryEntry.getLifecycle() == null) {
 			return false;
 		}
 		if (LifecycleType.publicCycle == lifecycleType && repositoryEntry.getLifecycle() != null && !repositoryEntry.getLifecycle().isPrivateCycle()) {
-			return false;
+			return !Objects.equals(context.getLifecyclePublicKey(), repositoryEntry.getLifecycle().getKey());
 		}
 		if (LifecycleType.privateCycle == lifecycleType && repositoryEntry.getLifecycle() != null && repositoryEntry.getLifecycle().isPrivateCycle()) {
-			return false;
+			return !Objects.equals(context.getLifecycleValidFrom(), repositoryEntry.getLifecycle().getValidFrom())
+					&& !Objects.equals(context.getLifecycleValidTo(), repositoryEntry.getLifecycle().getValidTo());
 		}
 		return true;
-	}
-
-	private boolean hasLifecyclePublicKeyChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Long lifecyclePublicKey) {
-		if (LifecycleType.none == lifecycleType || LifecycleType.privateCycle == lifecycleType) {
-			return false;
-		}
-		if (LifecycleType.publicCycle == lifecycleType) {
-			return repositoryEntry.getLifecycle() == null
-					|| repositoryEntry.getLifecycle().isPrivateCycle()
-					|| !Objects.equals(lifecyclePublicKey, repositoryEntry.getLifecycle().getKey());
-		}
-		return !repositoryEntry.getLifecycle().isPrivateCycle()
-				&& !Objects.equals(lifecyclePublicKey, repositoryEntry.getLifecycle().getKey());
-	}
-
-	private boolean hasLifecycleValidFromChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Date lifecycleValidFrom) {
-		if (LifecycleType.none == lifecycleType || LifecycleType.publicCycle == lifecycleType) {
-			return false;
-		}
-		if (LifecycleType.privateCycle == lifecycleType) {
-			return repositoryEntry.getLifecycle() == null
-					|| !repositoryEntry.getLifecycle().isPrivateCycle()
-					|| !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom());
-		}
-		return repositoryEntry.getLifecycle() == null
-				|| (repositoryEntry.getLifecycle().isPrivateCycle()
-						&& !Objects.equals(lifecycleValidFrom, repositoryEntry.getLifecycle().getValidFrom()));
-	}
-
-	private boolean hasLifecycleValidToChange(RepositoryEntry repositoryEntry, LifecycleType lifecycleType, Date lifecycleValidTo) {
-		if (LifecycleType.none == lifecycleType || LifecycleType.publicCycle == lifecycleType) {
-			return false;
-		}
-		if (LifecycleType.privateCycle == lifecycleType) {
-			return repositoryEntry.getLifecycle() == null
-					|| !repositoryEntry.getLifecycle().isPrivateCycle()
-					|| !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo());
-		}
-		return repositoryEntry.getLifecycle() == null
-				|| (repositoryEntry.getLifecycle().isPrivateCycle()
-						&& !Objects.equals(lifecycleValidTo, repositoryEntry.getLifecycle().getValidTo()));
 	}
 
 	private boolean hasToolBlogChanged(RepositoryEntry repositoryEntry, SettingsContext context) {

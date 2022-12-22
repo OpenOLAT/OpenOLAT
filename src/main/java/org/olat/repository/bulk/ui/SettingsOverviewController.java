@@ -283,9 +283,19 @@ public class SettingsOverviewController extends StepFormBasicController {
 				switch (context.getLifecycleType()) {
 				case none: text = translate("settings.bulk.execution.period.none");
 					break;
-				case publicCycle: text = translate("settings.bulk.execution.period.public");
+				case publicCycle: 
+					RepositoryEntryLifecycle lifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
+					String lifecycleName = lifecycle != null? lifecycle.getLabel(): "-";
+					text = translate("settings.bulk.overview.execution.public", lifecycleName);
 					break;
-				case privateCycle: text = translate("settings.bulk.execution.period.private");
+				case privateCycle: 
+					String from = context.getLifecycleValidFrom() != null
+							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
+							: "-";
+					String to = context.getLifecycleValidTo() != null
+							? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
+							: "-";
+					text = translate("settings.bulk.overview.execution.private", from, to);
 					break;
 				default:
 					text = "-";
@@ -293,32 +303,6 @@ public class SettingsOverviewController extends StepFormBasicController {
 				}
 				text = translate("settings.bulk.overview.execution.period", text);
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleType);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.lifecyclePublicKey)) {
-				RepositoryEntryLifecycle lifecycle = lifecycleDao.loadById(context.getLifecyclePublicKey());
-				String text = lifecycle != null? lifecycle.getLabel(): "-";
-				text = translate("settings.bulk.overview.execution.public", text);
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecyclePublicKey);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.lifecycleValidFrom)) {
-				String text = context.getLifecycleValidFrom() != null
-						? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidFrom())
-						: translate("settings.bulk.overview.execution.remove");
-				text = translate("settings.bulk.overview.execution.from", text);
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidFrom);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.lifecycleValidTo)) {
-				String text = context.getLifecycleValidTo() != null
-						? Formatter.getInstance(getLocale()).formatDate(context.getLifecycleValidTo())
-						: translate("settings.bulk.overview.execution.remove");
-				text = translate("settings.bulk.overview.execution.to", text);
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.lifecycleValidTo);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}

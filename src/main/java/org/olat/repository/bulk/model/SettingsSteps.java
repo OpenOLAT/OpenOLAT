@@ -68,10 +68,7 @@ public class SettingsSteps {
 			SettingsBulkEditable.authorRightDownload);
 	private static final Set<SettingsBulkEditable> EDITABLES_EXECUTION = Set.of(
 			SettingsBulkEditable.location,
-			SettingsBulkEditable.lifecycleType,
-			SettingsBulkEditable.lifecyclePublicKey,
-			SettingsBulkEditable.lifecycleValidFrom,
-			SettingsBulkEditable.lifecycleValidTo);
+			SettingsBulkEditable.lifecycleType);
 	private static final Set<SettingsBulkEditable> EDITABLES_TOOLBAR = Set.of(
 			SettingsBulkEditable.toolSearch,
 			SettingsBulkEditable.toolCalendar,

@@ -70,11 +70,8 @@ public class ExecutionController extends StepFormBasicController {
 	private final Map<MultipleSelectionElement, FormLayoutContainer> checkboxContainer = new HashMap<>(checkboxSwitch.size());
 	private MultipleSelectionElement dateTypeCheckboxEl;
 	private SingleSelection dateTypesEl;
-	private MultipleSelectionElement publicDatesCheckboxEl;
 	private SingleSelection publicDatesEl;
-	private MultipleSelectionElement startDateCheckboxEl;
 	private DateChooser startDateEl;
-	private MultipleSelectionElement endDateCheckboxEl;
 	private DateChooser endDateEl;
 	private TextElement locationEl;
 	
@@ -155,13 +152,10 @@ public class ExecutionController extends StepFormBasicController {
 		if (context.getLifecyclePublicKey() != null && publicDatesEl.containsKey(context.getLifecyclePublicKey().toString())) {
 			publicDatesEl.select(context.getLifecyclePublicKey().toString(), true);
 		}
-		publicDatesCheckboxEl = decorate(publicDatesEl, executionCont, SettingsBulkEditable.lifecyclePublicKey);
 		
 		startDateEl = uifactory.addDateChooser("settings.bulk.execution.from", context.getLifecycleValidFrom(), executionCont);
-		startDateCheckboxEl = decorate(startDateEl, executionCont, SettingsBulkEditable.lifecycleValidFrom);
 		
 		endDateEl = uifactory.addDateChooser("settings.bulk.execution.to", context.getLifecycleValidTo(), executionCont);
-		endDateCheckboxEl = decorate(endDateEl, executionCont, SettingsBulkEditable.lifecycleValidTo);
 		
 		locationEl = uifactory.addTextElement("settings.bulk.location", 255, context.getLocation(), executionCont);
 		decorate(locationEl, executionCont, SettingsBulkEditable.location);
@@ -187,30 +181,18 @@ public class ExecutionController extends StepFormBasicController {
 	}
 
 	private void updateLifecycleUI() {
-		updateVisible(publicDatesCheckboxEl, true);
-		updateVisible(startDateCheckboxEl, true);
-		updateVisible(endDateCheckboxEl, true);
+		publicDatesEl.setVisible(false);
+		startDateEl.setVisible(false);
+		endDateEl.setVisible(false);
 		
 		if (dateTypeCheckboxEl.isAtLeastSelected(1) && dateTypesEl.isOneSelected()) {
-			if (LifecycleType.none.name().equals(dateTypesEl.getSelectedKey())) {
-				updateVisible(publicDatesCheckboxEl, false);
-				updateVisible(startDateCheckboxEl, false);
-				updateVisible(endDateCheckboxEl, false);
-			} else if (LifecycleType.publicCycle.name().equals(dateTypesEl.getSelectedKey())) {
-				updateVisible(publicDatesCheckboxEl, true);
-				updateVisible(startDateCheckboxEl, false);
-				updateVisible(endDateCheckboxEl, false);
+			if (LifecycleType.publicCycle.name().equals(dateTypesEl.getSelectedKey())) {
+				publicDatesEl.setVisible(true);
 			} else if (LifecycleType.privateCycle.name().equals(dateTypesEl.getSelectedKey())) {
-				updateVisible(publicDatesCheckboxEl, false);
-				updateVisible(startDateCheckboxEl, true);
-				updateVisible(endDateCheckboxEl, true);
+				startDateEl.setVisible(true);
+				endDateEl.setVisible(true);
 			}
 		}
-	}
-	
-	private void updateVisible(MultipleSelectionElement el, boolean visible) {
-		el.setVisible(visible);
-		((FormItem)el.getUserObject()).setVisible(visible && el.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -242,17 +224,16 @@ public class ExecutionController extends StepFormBasicController {
 			context.setLifecycleType(LifecycleType.valueOf(dateTypesEl.getSelectedKey()));
 		}
 		
-		context.select(SettingsBulkEditable.lifecyclePublicKey, publicDatesEl.isVisible() && publicDatesEl.isOneSelected());
 		if (publicDatesEl.isVisible() && publicDatesEl.isOneSelected()) {
 			context.setLifecyclePublicKey(Long.valueOf(publicDatesEl.getSelectedKey()));
+		} else {
+			context.setLifecyclePublicKey(null);
 		}
 		
-		context.select(SettingsBulkEditable.lifecycleValidFrom, startDateEl.isVisible());
 		if (startDateEl.isVisible()) {
 			context.setLifecycleValidFrom(startDateEl.getDate());
 		}
 		
-		context.select(SettingsBulkEditable.lifecycleValidTo, endDateEl.isVisible());
 		if (endDateEl.isVisible()) {
 			context.setLifecycleValidTo(endDateEl.getDate());
 		}
