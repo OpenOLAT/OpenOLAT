@@ -24,10 +24,10 @@
 
 	function order($obj, settings) {
 		var containerId = '#qtiworks_response_' + settings.responseIdentifier;
-		var sourceList = jQuery(containerId + ' div.source ul');
-		var targetList = jQuery(containerId + ' div.target ul');
-		var sourceContainer = jQuery(containerId + ' div.source ul').get(0);
-		var targetContainer = jQuery(containerId + ' div.target ul').get(0);
+		var sourceList = jQuery(containerId + ' div.source > ul');
+		var targetList = jQuery(containerId + ' div.target > ul');
+		var sourceContainer = jQuery(containerId + ' div.source > ul').get(0);
+		var targetContainer = jQuery(containerId + ' div.target > ul').get(0);
 
 		var drake = dragula([sourceContainer, targetContainer], {
 			copy: function (el, source) {
@@ -48,16 +48,16 @@
 			recalculate(settings);
 			setFlexiFormDirty(settings.formDispatchFieldId);
 		}).on('dragend', function(el) {
-    			jQuery(targetContainer).removeClass('oo-accepted');
+    		jQuery(targetContainer).removeClass('oo-accepted');
 		}).on('out', function(el) {
-    			jQuery(targetContainer).removeClass('oo-accepted');
+    		jQuery(targetContainer).removeClass('oo-accepted');
 		});
 	}
 
 	function recalculate(settings) {
 		var containerId = '#qtiworks_response_' + settings.responseIdentifier;
-		var sourceList = jQuery(containerId + ' div.source ul');
-		var targetList = jQuery(containerId + ' div.target ul');
+		var sourceList = jQuery(containerId + ' div.source > ul');
+		var targetList = jQuery(containerId + ' div.target > ul');
 
 		var targetBox = jQuery(containerId + ' div.target');
 		var hiddenInputContainer = jQuery(containerId + ' div.hiddenInputContainer');

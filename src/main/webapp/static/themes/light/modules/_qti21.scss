@@ -1088,13 +1088,13 @@ table.o_qti_item_kprim {
 		padding: 0;
 		margin-top: 5px;
 		
-		ul {
+		> ul {
 			min-height: 200px;
 		}
 	}
 	
 	div.box.horizontal {
-		ul {
+		> ul {
 			min-height: 50px;
 			width: 100%;
 		}
@@ -1112,7 +1112,7 @@ table.o_qti_item_kprim {
 	}
 	
 	div.box.target {
-		ul {
+		> ul {
 			border: 2px solid $o-qti-order-target-border-color;
 			border-radius: $o-qti-order-border-radius;
 			background: $o-qti-order-target-bg;
@@ -1126,7 +1126,7 @@ table.o_qti_item_kprim {
 	div.box.target.vertical {
 		padding: 6px 0 0 10px;
 		
-		ul {
+		> ul {
 			padding: 10px;
 		}
 	}
@@ -1134,12 +1134,12 @@ table.o_qti_item_kprim {
 	div.box.target.horizontal {
 		padding-top: 10px;
 		
-		ul {
+		> ul {
 			padding: 10px 10px 0 10px;
 		}
 	}
 	
-	div.box.horizontal ul li {
+	div.box.horizontal > ul > li {
 		float: left;
 		width: auto;
 		margin-right: 10px;
@@ -1152,7 +1152,7 @@ table.o_qti_item_kprim {
 		font-size: smaller;
 	}
 
-	ul {
+	div.box > ul {
 		list-style-type: none;
 		margin: 0;
 		padding: 0;
