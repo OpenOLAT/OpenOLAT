@@ -1159,7 +1159,9 @@ public class BusinessGroupTest extends Deployments {
 		}
 		
 		//author check the lists
-		authorGroup.openMembers();
+		authorGroup
+			.openMembers()
+			.assertParticipantNotEmptyList();
 		//must a participant and 2 in waiting list
 		int participants = 0;
 		for(Enrollment enrollment:participantDrivers) {

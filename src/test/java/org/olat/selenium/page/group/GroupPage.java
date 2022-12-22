@@ -141,6 +141,7 @@ public class GroupPage {
 	
 	public GroupPage openMembers() {
 		openMenuItem(membersTool);
+		OOGraphene.waitElement(By.className("o_cmembers"), browser);
 		return this;
 	}
 	
@@ -321,8 +322,13 @@ public class GroupPage {
 	
 	public GroupPage assertParticipantList() {
 		By participantListBy = By.className("o_sel_participants");
-		List<WebElement> participantListEl = browser.findElements(participantListBy);
-		Assert.assertFalse(participantListEl.isEmpty());
+		OOGraphene.waitElement(participantListBy, browser);
+		return this;
+	}
+	
+	public GroupPage assertParticipantNotEmptyList() {
+		By participantListBy = By.xpath("//div[contains(@class,'o_sel_participants')]//div[contains(@class,'o_cmember_info_wrapper')]");
+		OOGraphene.waitElement(participantListBy, browser);
 		return this;
 	}
 	

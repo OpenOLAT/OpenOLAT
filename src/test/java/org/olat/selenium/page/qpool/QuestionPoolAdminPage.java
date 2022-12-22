@@ -64,9 +64,16 @@ public class QuestionPoolAdminPage {
 			browser.findElement(confirmBy).click();
 			OOGraphene.waitModalDialogDisappears(browser);
 			
-			By saveConfigurationBy = By.cssSelector(".o_sel_qpool_buttons button.btn-primary");
-			browser.findElement(saveConfigurationBy).click();
-			OOGraphene.waitBusy(browser);
+			try {
+				By saveConfigurationBy = By.cssSelector(".o_sel_qpool_buttons button.btn-primary");
+				OOGraphene.click(saveConfigurationBy, browser);
+				OOGraphene.waitBusy(browser);
+				By savedConfigurationBy = By.xpath("//fieldset[contains(@class,'o_sel_qpool_buttons')]//button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
+				OOGraphene.waitElement(savedConfigurationBy, browser);
+			} catch (Exception e) {
+				OOGraphene.takeScreenshot("Enable reviews", browser);
+				throw e;
+			}
 		}
 		return this;
 	}

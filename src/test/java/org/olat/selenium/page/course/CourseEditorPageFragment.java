@@ -85,6 +85,7 @@ public class CourseEditorPageFragment {
 	public CourseEditorPageFragment selectRoot() {
 		By rootNodeBy = By.cssSelector("span.o_tree_link.o_tree_l0>a");
 		browser.findElement(rootNodeBy).click();
+		OOGraphene.waitBusyAndScrollTop(browser);
 		By rootNodeActiveBy = By.cssSelector("span.o_tree_link.o_tree_l0.active");
 		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
