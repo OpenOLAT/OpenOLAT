@@ -172,6 +172,7 @@ public class AssessmentToolPage {
 	public AssessmentToolPage updateAssessmentScore(float score) {
 		By scoreBy = By.xpath("//input[contains(@class,'o_sel_assessment_form_score')][@type='text']");
 		browser.findElement(scoreBy).clear();
+		OOGraphene.waitBusy(browser);
 		browser.findElement(scoreBy).sendKeys(Float.toString(score));
 		return this;
 	}

@@ -2084,7 +2084,7 @@ function o_submitByEnter(event) {
 
 function o_ffRegisterSubmit(formId, submElmId){
 	jQuery('#'+formId).data('FlexiSubmit', submElmId);
-}
+}	
 
 function o_ffSetFocusArray(focusArray) {
 	if(focusArray) {
@@ -2105,19 +2105,29 @@ function o_ffSetFocus(formId, formItemId) {
 		var tagName = el.tagName;
 		var focusApplied = false;
 		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
-			var jLastEl = jQuery(el);
+			
 			if(el.classList.contains('o_date_day')) {
+				var jLastEl = jQuery(el);
 				jLastEl.datepicker('option', 'showOn', '');
 				jLastEl.focus();
 				jLastEl.datepicker('option', 'showOn', 'focus');
 				focusApplied = true;
 			} else {
-				if(tagName == "INPUT") {
-					jLastEl.select();
+				if(tagName == "INPUT"
+					&& el.type === "text" && el.value != "") {
+					el.select();
 				}
-				setTimeout(function() {
-					jLastEl.focus();
-				}, 0);
+				if(document.activeElement == null
+					|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
+					el.focus();
+					// Prefer focus directly after DOM replacement but if it's not successful, delay the focus
+					if(document.activeElement == null
+						|| el.getAttribute('id') !== document.activeElement.getAttribute('id')) {
+						setTimeout(function() {
+							el.focus();
+						}, 0);
+					}
+				}
 				focusApplied = true;
 			}
 		} else {
