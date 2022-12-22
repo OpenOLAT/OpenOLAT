@@ -625,12 +625,14 @@ public class QTI21EditForm extends FormBasicController {
 	}
 	
 	private void updateCorrectionWarning() {
-		if (needManualCorrection && correctionModeEl.isKeySelected(IQEditController.CORRECTION_AUTO)) {
-			correctionLayout.setFormWarning(translate("error.manual.auto"));
-		} else if (correctionGrading && !correctionModeEl.isKeySelected(IQEditController.CORRECTION_GRADING)) {
-			correctionLayout.setFormWarning(translate("error.grading.not.grading"));
-		} else {
-			correctionLayout.setFormWarning(null);
+		if (!selfAssessment) {
+			if (needManualCorrection && correctionModeEl.isKeySelected(IQEditController.CORRECTION_AUTO)) {
+				correctionLayout.setFormWarning(translate("error.manual.auto"));
+			} else if (correctionGrading && !correctionModeEl.isKeySelected(IQEditController.CORRECTION_GRADING)) {
+				correctionLayout.setFormWarning(translate("error.grading.not.grading"));
+			} else {
+				correctionLayout.setFormWarning(null);
+			}
 		}
 	}
 

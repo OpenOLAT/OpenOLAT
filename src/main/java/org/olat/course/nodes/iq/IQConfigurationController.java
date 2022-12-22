@@ -100,9 +100,10 @@ public class IQConfigurationController extends BasicController implements Refere
 	
 	private QTI21EditForm mod21ConfigForm;
 	
-	private ICourse course;
-	private ModuleConfiguration moduleConfiguration;
-	private AbstractAccessableCourseNode courseNode;
+	private final ICourse course;
+	private final ModuleConfiguration moduleConfiguration;
+	private final AbstractAccessableCourseNode courseNode;
+	private final boolean selfAssessment;
 
 	@Autowired
 	private QTI21Module qti21Module;
@@ -125,6 +126,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
 		this.course = course;
 		this.courseNode = courseNode;
+		this.selfAssessment = courseNode instanceof IQSELFCourseNode;
 		if (stackPanel != null) {
 			stackPanel.addListener(this);
 		}
@@ -201,18 +203,22 @@ public class IQConfigurationController extends BasicController implements Refere
 			QTI21DeliveryOptions deliveryOptions = qti21service.getDeliveryOptions(re);
 			if(replacedTest) {// set some default settings in case the user don't save the next panel
 				String correctionMode;
+				String infoI18nKey;
 				if(correctionGrading) {
 					correctionMode = IQEditController.CORRECTION_GRADING;
-					showInfo("replaced.grading");
+					infoI18nKey = "replaced.grading";
 				} else if(needManualCorrection) {
 					correctionMode = IQEditController.CORRECTION_MANUAL;
-					showInfo("replaced.manual");
+					infoI18nKey = "replaced.manual";
 				} else if(getPassedType(re, deliveryOptions) == PassedType.manually) {
 					correctionMode = IQEditController.CORRECTION_MANUAL;
-					showInfo("replaced.manual.passed");
+					infoI18nKey = "replaced.manual.passed";
 				} else {
 					correctionMode = IQEditController.CORRECTION_AUTO;
-					showInfo("replaced.auto");
+					infoI18nKey = "replaced.auto";
+				}
+				if (!selfAssessment) {
+					showInfo(infoI18nKey);
 				}
 				moduleConfiguration.setStringValue(IQEditController.CONFIG_CORRECTION_MODE, correctionMode);
 				if(IQEditController.CORRECTION_GRADING.equals(correctionMode) || IQEditController.CORRECTION_MANUAL.equals(correctionMode)) {
@@ -253,7 +259,7 @@ public class IQConfigurationController extends BasicController implements Refere
 			mod21ConfigForm = new QTI21EditForm(ureq, getWindowControl(),
 					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode,
 					NodeAccessType.of(course), deliveryOptions, needManualCorrection, correctionGrading,
-					courseNode instanceof IQSELFCourseNode, min, max);
+					selfAssessment, min, max);
 			mod21ConfigForm.updateUI();
 			listenTo(mod21ConfigForm);
 			myContent.put("iqeditform", mod21ConfigForm.getInitialComponent());
@@ -297,10 +303,12 @@ public class IQConfigurationController extends BasicController implements Refere
 					translate("correction.workflow.on")));
 		}
 		
-		Long sessionsCount = qti21service.getAssessmentTestSessionsCount(
-				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
-				testEntry);
-		labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("num.sessions"), String.valueOf(sessionsCount)));
+		if (!selfAssessment) {
+			Long sessionsCount = qti21service.getAssessmentTestSessionsCount(
+					course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), courseNode.getIdent(),
+					testEntry);
+			labelTexts.add(new IconPanelLabelTextContent.LabelText(translate("num.sessions"), String.valueOf(sessionsCount)));
+		}
 		
 		iconPanelContent.setLabelTexts(labelTexts);
 		
