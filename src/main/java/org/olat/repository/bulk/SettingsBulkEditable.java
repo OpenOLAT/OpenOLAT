@@ -33,7 +33,6 @@ public enum SettingsBulkEditable {
 	expenditureOfWork,
 	location,
 	license,
-	licensor,
 	authorRightReference,
 	authorRightCopy,
 	authorRightDownload,

@@ -23,6 +23,7 @@ import static org.olat.core.util.StringHelper.EMPTY;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -155,22 +156,18 @@ public class SettingsOverviewController extends StepFormBasicController {
 				fields.add(new OverviewField(text, resourceItemName));
 			}
 			if (context.isSelected(SettingsBulkEditable.license)) {
+				String licensor = Objects.requireNonNullElse(context.getLicensor(), "-");
+				String licensorText = translate("settings.bulk.overview.licensor", licensor);
 				LicenseType licenseType = licenseService.loadLicenseTypeByKey(context.getLicenseTypeKey());
 				String text = null;
 				if (licenseService.isFreetext(licenseType)) {
-					text = translate("settings.bulk.overview.license.freetext", licenseType.getName(), Formatter.truncate(context.getFreetext(), 60));
+					text = translate("settings.bulk.overview.license.freetext", licenseType.getName(), Formatter.truncate(context.getFreetext(), 60), licensorText);
 				} else if (licenseType != null) {
-					text = translate("settings.bulk.overview.license.regular", LicenseUIFactory.translate(licenseType, getLocale()));
+					text = translate("settings.bulk.overview.license.regular", LicenseUIFactory.translate(licenseType, getLocale()), licensorText);
 				} else {
 					text = translate("settings.bulk.overview.license.none");
 				}
 				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.license);
-				String resourceItemName = createResourceLink(changes);
-				fields.add(new OverviewField(text, resourceItemName));
-			}
-			if (context.isSelected(SettingsBulkEditable.licensor)) {
-				String text = translate("settings.bulk.overview.licensor", context.getLicensor());
-				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.licensor);
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}

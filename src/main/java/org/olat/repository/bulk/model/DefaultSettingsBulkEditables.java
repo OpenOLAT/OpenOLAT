@@ -160,8 +160,6 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.location);
 		case license:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
-		case licensor:
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case authorRightReference:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.settings);
 		case authorRightCopy:
@@ -259,9 +257,8 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case location:
 			return !Objects.equals(context.getLocation(), repositoryEntry.getLocation());
 		case license:
-			return isLicenseChanged(repositoryEntry, context.getLicenseTypeKey(), context.getFreetext());
-		case licensor:
-			return isLicensorChanged(repositoryEntry, context.getLicensor());
+			return isLicenseChanged(repositoryEntry, context.getLicenseTypeKey(), context.getFreetext()) 
+					|| isLicensorChanged(repositoryEntry, context.getLicensor());
 		case authorRightReference:
 			return repositoryEntry.getCanReference() != context.isAuthorRightReference();
 		case authorRightCopy:

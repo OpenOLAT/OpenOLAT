@@ -153,10 +153,10 @@ public class MetadataController extends StepFormBasicController {
 			
 			String freetext = licenseService.isFreetext(licenseType) ? context.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("settings.bulk.freetext", 4, 72, freetext, metadataCont);
-			updateLicenseUI();
 			
 			licensorEl = uifactory.addTextElement("settings.bulk.licensor", 1000, context.getLicensor(), metadataCont);
-			decorate(licensorEl, metadataCont, SettingsBulkEditable.licensor);
+			
+			updateLicenseUI();
 		}
 	}
 	
@@ -188,6 +188,9 @@ public class MetadataController extends StepFormBasicController {
 		}
 		if (licenseFreetextEl != null) {
 			licenseFreetextEl.setVisible(freetextSelected);
+		}
+		if (licensorEl != null) {
+			licensorEl.setVisible(licenseEl.isVisible());
 		}
 	}
 	
@@ -243,9 +246,10 @@ public class MetadataController extends StepFormBasicController {
 			}
 		}
 		
-		context.select(SettingsBulkEditable.licensor, licensorEl != null && licensorEl.isVisible());
 		if (licensorEl != null && licensorEl.isVisible()) {
 			context.setLicensor(licensorEl.getValue());
+		} else {
+			context.setLicensor(null);
 		}
 		
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

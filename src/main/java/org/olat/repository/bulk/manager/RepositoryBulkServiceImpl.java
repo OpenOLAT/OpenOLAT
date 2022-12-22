@@ -372,13 +372,8 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			}
 			license.setLicenseType(licenseType);
 			license.setFreetext(context.getFreetext());
+			license.setLicensor(context.getLicensor());
 			changed = true;
-		}
-		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.license, repositoryEntry)) {
-			if (license != null) {
-				license.setLicensor(context.getLicensor());
-				changed = true;
-			}
 		}
 		
 		if (changed) {
