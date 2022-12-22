@@ -22,6 +22,7 @@ package org.olat.selenium.page.repository;
 import java.io.File;
 
 import org.junit.Assert;
+import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
@@ -171,7 +172,7 @@ public class AuthoringEnvPage {
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
-		String type = learnPath ? "path" : "classic";
+		String type = learnPath ? CourseModule.COURSE_TYPE_PATH : CourseModule.COURSE_TYPE_CLASSIC;
 		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + type + "']");
 		browser.findElement(typeBy).click();
 		// create the course
