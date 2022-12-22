@@ -231,6 +231,10 @@ public class GTACoachSelectionController extends BasicController implements Acti
 				markedOnly = ((MakedEvent)event).isMarked();
 				initSubscription(ureq);
 			}
+		} else if(source instanceof GTAAssessedBusinessGroupController) {
+			if(event == Event.BACK_EVENT) {
+				back(ureq);
+			}
 		}
 		
 		super.event(ureq, source, event);
@@ -345,7 +349,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		removeAsListenerAndDispose(coachingCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.clone(group), null);
-		coachingCtrl = new GTACoachController(ureq, swControl, courseEnv, gtaNode, coachCourseEnv, group, true, true, false, false);
+		coachingCtrl = new GTAAssessedBusinessGroupController(ureq, swControl, group);
 		listenTo(coachingCtrl);
 		mainVC.put("selection", coachingCtrl.getInitialComponent());
 		return (Activateable2)coachingCtrl;
@@ -372,6 +376,39 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		nextIdentityLink.setEnabled(index + 1 < numOfRows);
 
 		return (Activateable2)coachingCtrl;
+	}
+	
+	private class GTAAssessedBusinessGroupController extends BasicController implements Activateable2 {
+		
+		private final Link backLink;
+		private final GTACoachController groupTaskCtrl;
+		
+		public GTAAssessedBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup assessedBusinessGroup) {
+			super(ureq, wControl);
+			
+			VelocityContainer wrapperVC = createVelocityContainer("coach_wrapper_businessgroup");
+
+			groupTaskCtrl = new GTACoachController(ureq, wControl, courseEnv, gtaNode, coachCourseEnv, assessedBusinessGroup, true, true, false, false);
+			listenTo(groupTaskCtrl);
+			wrapperVC.put("selection", groupTaskCtrl.getInitialComponent());
+			
+			backLink = LinkFactory.createLinkBack(wrapperVC, this);
+			wrapperVC.put("backLink", backLink);
+			
+			putInitialPanel(wrapperVC);
+		}
+
+		@Override
+		public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+			groupTaskCtrl.activate(ureq, entries, state);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(backLink == source) {
+				fireEvent(ureq, Event.BACK_EVENT);
+			}
+		}
 	}
 	
 	/**
