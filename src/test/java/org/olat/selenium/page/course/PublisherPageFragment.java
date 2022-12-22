@@ -19,8 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -153,9 +151,8 @@ public class PublisherPageFragment {
 	
 	public PublisherPageFragment selectCategory(String parentNode, String title) {
 		By addToCatalogBy = By.className("o_sel_publish_add_to_catalog");
-		WebElement addToCatalogButton = browser.findElement(addToCatalogBy);
-		addToCatalogButton.click();
-		OOGraphene.waitBusy(browser);
+		browser.findElement(addToCatalogBy).click();
+		OOGraphene.waitModalDialog(browser, "div.o_sel_catalog_chooser_tree");
 		
 		if(parentNode != null) {
 			selectCatalogNode(parentNode);
@@ -164,23 +161,16 @@ public class PublisherPageFragment {
 		
 		By selectBy = By.cssSelector(".o_sel_catalog_chooser_tree a.o_sel_catalog_add_select");
 		browser.findElement(selectBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogWithDivDisappears(browser, "o_sel_catalog_chooser_tree");
 		return this;
 	}
 	
 	private void selectCatalogNode(String name) {
-		By nodeBy = By.cssSelector("span.o_tree_link>a");
-		
-		WebElement namedNode = null;
-		List<WebElement> nodes = browser.findElements(nodeBy);
-		for(WebElement node:nodes) {
-			if(node.getText().contains(name)) {
-				namedNode = node;
-			}
-		}
-		Assert.assertNotNull(namedNode);
-		namedNode.click();
-		OOGraphene.waitBusy(browser);
+		By nodeBy = By.xpath("//span[contains(@class,'o_tree_link')]/a[span[text()[contains(.,'" + name + "')]]]");
+		OOGraphene.waitElement(nodeBy, browser);
+		browser.findElement(nodeBy).click();
+		By nodeActiveBy = By.xpath("//span[contains(@class,'o_tree_link') and contains(@class,'active')]/a[span[text()[contains(.,'" + name + "')]]]");
+		OOGraphene.waitElement(nodeActiveBy, browser);
 	}
 	
 	public enum Access {

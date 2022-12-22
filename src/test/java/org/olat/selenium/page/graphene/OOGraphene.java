@@ -124,22 +124,24 @@ public class OOGraphene {
 	}
 	
 	public static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration) {
-		try {
-			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal')][div[contains(@class,'modal-dialog')] or div[contains(@class,'modal-backdrop')]]");
-			new WebDriverWait(browser, driverTimeout)
-				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
-				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
-		} catch (Exception e) {
-			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
-			throw e;
-		}
+		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal')][div[contains(@class,'modal-dialog')] or div[contains(@class,'modal-backdrop')]]");
+		waitModalDialogDisappears(browser, timeoutDuration, modalBy);
 	}
 	
 	public static void waitModalDialogWithFieldsetDisappears(WebDriver browser, String fieldsetCssClass) {
+		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
+		waitModalDialogDisappears(browser, timeout, modalBy);
+	}
+	
+	public static void waitModalDialogWithDivDisappears(WebDriver browser, String divCssClass) {
+		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//div[contains(@class,'" + divCssClass + "')]");
+		waitModalDialogDisappears(browser, timeout, modalBy);
+	}
+	
+	private static void waitModalDialogDisappears(WebDriver browser, Duration timeoutDuration, By modalBy) {
 		try {
-			By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]//fieldset[contains(@class,'" + fieldsetCssClass + "')]");
 			new WebDriverWait(browser, driverTimeout)
-				.withTimeout(timeout).pollingEvery(poolingSlow)
+				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
 				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
