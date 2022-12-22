@@ -324,8 +324,21 @@ public class SettingsOverviewController extends StepFormBasicController {
 			addToolbarField(fields, SettingsBulkEditable.toolParticipantInfo, context.isToolParticipantInfo(), "settings.bulk.toolbar.participant.info");
 			addToolbarField(fields, SettingsBulkEditable.toolEmail, context.isToolEmail(), "settings.bulk.toolbar.email");
 			addToolbarField(fields, SettingsBulkEditable.toolTeams, context.isToolTeams(), "settings.bulk.toolbar.teams");
-			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButton, context.isToolBigBlueButton(), "settings.bulk.toolbar.bigbluebutton");
-			addToolbarField(fields, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, context.isToolBigBlueButtonModeratorStartsMeeting(), "settings.bulk.toolbar.bigbluebutton.moderator");
+			if (context.isSelected(SettingsBulkEditable.toolBigBlueButton)) {
+				String text = null;
+				if (context.isToolBigBlueButton()) {
+					text = translate("settings.bulk.overview.toolbar.on", translate("settings.bulk.toolbar.bigbluebutton"));
+					String bbbModeratorText = context.isToolBigBlueButton()
+							? translate("settings.bulk.overview.toolbar.on", translate("settings.bulk.toolbar.bigbluebutton.moderator"))
+							: translate("settings.bulk.overview.toolbar.off", translate("settings.bulk.toolbar.bigbluebutton.moderator"));
+					text = translate("settings.bulk.overview.toolbar.bigbluebutton", text, bbbModeratorText);
+				} else {
+					text = translate("settings.bulk.overview.toolbar.off", translate("settings.bulk.toolbar.bigbluebutton"));
+				}
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.toolBigBlueButton);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
 			addToolbarField(fields, SettingsBulkEditable.toolZoom, context.isToolZoom(), "settings.bulk.toolbar.zoom");
 			if (context.isSelected(SettingsBulkEditable.toolBlog)) {
 				String text = null;

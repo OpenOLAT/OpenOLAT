@@ -478,9 +478,6 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		boolean bigBlueButtonChanged = false;
 		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBigBlueButton, repositoryEntry)) {
 			courseConfig.setBigBlueButtonEnabled(context.isToolBigBlueButton());
-			bigBlueButtonChanged = true;
-		}
-		if (courseConfig.isBigBlueButtonEnabled() && isSelectedAndChanged(context, editables, SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, repositoryEntry)) {
 			courseConfig.setBigBlueButtonModeratorStartsMeeting(context.isToolBigBlueButtonModeratorStartsMeeting());
 			bigBlueButtonChanged = true;
 		}

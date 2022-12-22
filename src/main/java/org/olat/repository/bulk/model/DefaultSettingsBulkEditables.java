@@ -199,9 +199,6 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case toolBigBlueButton:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bigbluebutton)
 					&& toolBigBlueButtonEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
-		case toolBigBlueButtonModeratorStartsMeeting:
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.bigbluebutton)
-					&& toolBigBlueButtonEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
 		case toolZoom:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.zoom)
 					&& toolZoomEnabled && isCourse(repositoryEntry) && !isCourseLocked(repositoryEntry);
@@ -288,9 +285,8 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case toolTeams:
 			return context.isToolTeams() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isTeamsEnabled();
 		case toolBigBlueButton:
-			return context.isToolBigBlueButton() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonEnabled();
-		case toolBigBlueButtonModeratorStartsMeeting:
-			return context.isToolBigBlueButtonModeratorStartsMeeting() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonModeratorStartsMeeting();
+			return context.isToolBigBlueButton() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonEnabled()
+					|| (context.isToolBigBlueButton() && context.isToolBigBlueButtonModeratorStartsMeeting() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isBigBlueButtonModeratorStartsMeeting());
 		case toolZoom:
 			return context.isToolZoom() != reKeyToInfo.get(repositoryEntry.getKey()).getCourseConfig().isZoomEnabled();
 		case toolBlog:

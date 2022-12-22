@@ -48,7 +48,6 @@ public enum SettingsBulkEditable {
 	toolEmail,
 	toolTeams,
 	toolBigBlueButton,
-	toolBigBlueButtonModeratorStartsMeeting,
 	toolZoom,
 	toolBlog,
 	toolWiki,

@@ -76,7 +76,6 @@ public class SettingsSteps {
 			SettingsBulkEditable.toolEmail,
 			SettingsBulkEditable.toolTeams,
 			SettingsBulkEditable.toolBigBlueButton,
-			SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting,
 			SettingsBulkEditable.toolZoom,
 			SettingsBulkEditable.toolBlog,
 			SettingsBulkEditable.toolWiki,

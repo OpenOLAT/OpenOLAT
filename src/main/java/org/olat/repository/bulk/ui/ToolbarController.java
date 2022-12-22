@@ -79,7 +79,6 @@ public class ToolbarController extends StepFormBasicController {
 	private SingleSelection teamsEl;
 	private MultipleSelectionElement bigBlueButtonCheckboxEl;
 	private SingleSelection bigBlueButtonEl;
-	private MultipleSelectionElement bigBlueButtonModeratorStartsMeetingCheckboxEl;
 	private SingleSelection bigBlueButtonModeratorStartsMeetingEl;
 	private SingleSelection zoomEl;
 	private SingleSelection blogEl;
@@ -182,8 +181,6 @@ public class ToolbarController extends StepFormBasicController {
 			
 			bigBlueButtonModeratorStartsMeetingEl = uifactory.addRadiosHorizontal("settings.bulk.toolbar.bigbluebutton.moderator", cont, toolbarSV.keys(), toolbarSV.values());
 			bigBlueButtonModeratorStartsMeetingEl.select(context.isToolBigBlueButtonModeratorStartsMeeting()? KEY_ON: KEY_OFF, true);
-			bigBlueButtonModeratorStartsMeetingCheckboxEl = decorate(bigBlueButtonModeratorStartsMeetingEl, cont,
-					SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting);
 			
 			updateBigBlueButtonUI();
 		}
@@ -257,13 +254,8 @@ public class ToolbarController extends StepFormBasicController {
 			return;
 		}
 		
-		boolean bigBlueButtonOff = bigBlueButtonCheckboxEl.isAtLeastSelected(1) && bigBlueButtonEl.isKeySelected(KEY_OFF);
-		updateVisible(bigBlueButtonModeratorStartsMeetingCheckboxEl, !bigBlueButtonOff);
-	}
-	
-	private void updateVisible(MultipleSelectionElement el, boolean visible) {
-		el.setVisible(visible);
-		((FormItem)el.getUserObject()).setVisible(visible && el.isAtLeastSelected(1));
+		boolean bigBlueButtonEnabled = bigBlueButtonCheckboxEl.isAtLeastSelected(1) && bigBlueButtonEl.isKeySelected(KEY_ON);
+		bigBlueButtonModeratorStartsMeetingEl.setVisible(bigBlueButtonEnabled);
 	}
 	
 	private void updateBlogUI() {
@@ -404,9 +396,10 @@ public class ToolbarController extends StepFormBasicController {
 			context.setToolBigBlueButton(bigBlueButtonEl.isKeySelected(KEY_ON));
 		}
 		
-		context.select(SettingsBulkEditable.toolBigBlueButtonModeratorStartsMeeting, bigBlueButtonModeratorStartsMeetingEl != null && bigBlueButtonModeratorStartsMeetingEl.isVisible());
 		if (bigBlueButtonModeratorStartsMeetingEl != null && bigBlueButtonModeratorStartsMeetingEl.isVisible()) {
 			context.setToolBigBlueButtonModeratorStartsMeeting(bigBlueButtonModeratorStartsMeetingEl.isKeySelected(KEY_ON));
+		} else {
+			context.setToolBigBlueButtonModeratorStartsMeeting(false);
 		}
 		
 		context.select(SettingsBulkEditable.toolZoom, zoomEl != null && zoomEl.isVisible());
