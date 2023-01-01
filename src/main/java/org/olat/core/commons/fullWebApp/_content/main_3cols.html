@@ -1,4 +1,4 @@
-<div id="o_main" class="$mainCssClasses row">
+<div id="o_main" class="$mainCssClasses">
 #if($existsCol1 && $r.visible("col1"))
 	<div id="o_main_left" style="$!col1CustomCSSStyles">
 		<div id="o_main_left_content" class="clearfix"> 
@@ -20,7 +20,7 @@
 #if($existsCol3 && $r.visible("col3"))	
 	<div id="o_main_center"> ## style="$!col3CustomCSSStyles1 $!col3CustomCSSStyles2">
 		<a id="o_content" aria-hidden="true"></a> 
-		<div id="o_main_center_content" class="clearfix o_scrollblock">			          
+		<div id="o_main_center_content" class="clearfix">			          
 	       	<div id="o_main_center_content_inner">
 				$r.render("col3")		
 			</div>
@@ -91,8 +91,8 @@ jQuery().ready(function() {
 		duration = (typeof duration === "undefined") ? 500 : duration;
 		if (!menuState.docked && menuState.open) {
 			var l = jQuery('#o_main_left');
-			jQuery('#o_main_left_content').hide();
 			l.transition({'x': '-' + l.css('width'), 'y': 0, 'left': '5px'}, duration, function() {
+				jQuery('#o_main_left_content').hide();
 				menuState.open = false;
 			});			
 		} 
@@ -107,10 +107,10 @@ jQuery().ready(function() {
 			} catch (e) {}
 
 			jQuery('#o_main_left_toggle').show();
+			jQuery('#o_main').addClass('o_hide_main_left');
 			left.css({position: 'absolute'})
 				.addClass('o_offcanvas')
 				.transition({'y': '-' + offset}, duration, function() {
-					OPOL.adjustHeight();
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
@@ -125,11 +125,11 @@ jQuery().ready(function() {
 			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
 				jQuery('#o_main_left').css({position: 'relative'})
 					.removeClass('o_offcanvas');
-				OPOL.adjustHeight();
 				jQuery('#o_main_left_toggle').hide();
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;
 				o_restoreMenu(100);
+				jQuery('#o_main').removeClass('o_hide_main_left');
 			})			
 		} 
 	};

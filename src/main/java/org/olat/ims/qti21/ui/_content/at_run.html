@@ -65,6 +65,7 @@
 		<div class="o_warning">$r.translate("warning.reset.assessmenttest.data")</div>
 	#end
 	
+	<div id="o_main" class="#if (!$r.visible("qtitree")) o_hide_main_left #end o_hide_main_right">
 	#if($r.visible("qtiResults"))
 		<div id="o_main_center">
 			<a id="o_content" aria-hidden="true"></a>
@@ -98,6 +99,7 @@
 			</div>
 		</div>
 	#end
+	</div>
 </div>
 <script>
 "use strict";
@@ -164,7 +166,6 @@ jQuery().ready(function() {
 			left.css({position: 'absolute'})
 				.addClass('o_offcanvas')
 				.transition({'y': '-' + offset}, duration, function() {
-					OPOL.adjustHeight();
 					// close menu when something happens on the screen
 					jQuery(document).on('click', '.o_tree_link', o_hideMenu);
 					menuState.docked = false;
@@ -179,7 +180,6 @@ jQuery().ready(function() {
 			jQuery('#o_main_left').transition({'y': 0}, duration, function() {
 				jQuery('#o_main_left').css({position: 'relative'})
 					.removeClass('o_offcanvas');
-				OPOL.adjustHeight();
 				jQuery('#o_main_left_toggle').hide();
 				jQuery(document).off('click', '.o_tree_link', o_hideMenu);
 				menuState.docked = true;

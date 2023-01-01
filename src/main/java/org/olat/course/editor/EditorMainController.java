@@ -71,7 +71,6 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -1064,9 +1063,6 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		// do logging
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_CREATED, getClass(),
 				LoggingResourceable.wrap(newNode));
-		// Resize layout columns to make all nodes viewable in the menu column
-		JSCommand resizeCommand = new JSCommand("try { OPOL.adjustHeight(); } catch(e) {if(window.console) console.log(e); }");
-		getWindowControl().getWindowBackOffice().sendCommandTo(resizeCommand);
 	}
 	
 	private void doOpenNodeTypeChooser(UserRequest ureq) {

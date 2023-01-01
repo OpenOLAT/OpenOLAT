@@ -962,7 +962,7 @@ function gototool(toolname) {
 
 function o_viewportHeight() {
 	// based on prototype library
-	var prototypeViewPortHeight = jQuery(document).height()
+	var prototypeViewPortHeight = jQuery(window).height()
 	if (prototypeViewPortHeight > 0) {
 		return prototypeViewPortHeight;
 	} else {
@@ -979,71 +979,15 @@ function o_viewportHeight() {
  *  @author: Florian Gnaegi
  */
 OPOL.getMainColumnsMaxHeight =  function(){
-	var col1Height = 0,
-	col2Height = 0,
-	col3Height = 0,
-	mainInnerHeight = 0,
-	mainHeight = 0,
-	mainDomElement,
-	col1DomElement = jQuery('#o_main_left_content'),
-	col2DomElement = jQuery('#o_main_right_content'),
-	col3DomElement = jQuery('#o_main_center_content');
-	
-	if (col1DomElement != 'undefined' && col1DomElement != null) {
-		col1Height = col1DomElement.outerHeight(true);
-	}
-	if (col2DomElement != 'undefined' && col2DomElement != null){
-		col2Height = col2DomElement.outerHeight(true);
-	}
-	if (col3DomElement != 'undefined' && col3DomElement != null){
-		col3Height = col3DomElement.outerHeight(true);
-	}
-
-	mainInnerHeight = (col1Height > col2Height ? col1Height : col2Height);
-	mainInnerHeight = (mainInnerHeight > col3Height ? mainInnerHeight : col3Height);
-	if (mainInnerHeight > 0) {
-		return mainInnerHeight;
-	} 
-	
-	// fallback, try to get height of main container
-	mainDomElement = jQuery('#o_main');
+	var mainDomElement = jQuery('#o_main');
 	if (mainDomElement != 'undefined' && mainDomElement != null) { 
-		mainHeight = mainDomElement.height();
+		var mainHeight = mainDomElement.height();
+		if (mainHeight > 0) {
+			return mainHeight;
+		} 
 	}
-	if (mainDomElement > 0) {
-		return mainDomElement;
-	} 
 	// fallback to viewport height	
 	return o_viewportHeight();
-};
-
-OPOL.adjustHeight = function() {
-	// Adjust the height of col1 and 3 based on the max column height. 
-	// This is necessary to implement layouts where the two columns have different
-	// backgrounds and to enlarge the menu and content area to always show the whole 
-	// content. It is also required by the left menu off-canvas feature.
-	try {
-		var col1El = jQuery('#o_main_left_content');
-		var col1 = col1El.length == 0 ? 0 : col1El.outerHeight(true);
-		var col2El = jQuery('#o_main_right_content');
-		var col2 = col2El.length == 0 ? 0 : col2El.outerHeight(true);
-		var col3El = jQuery('#o_main_center_content');
-		var col3 = col3El.length == 0 ? 0 : col3El.outerHeight(true);
-		
-		var contentHeight = Math.max(col1, col2, col3);
-		// Assign new column height
-		if (col1El.length > 0) {
-			jQuery('#o_main_left').css({'min-height' : contentHeight + "px"});
-		}
-		if (col2El.length > 0) {
-			jQuery('#o_main_right').css({'min-height' : contentHeight + "px"});
-		}
-		if (col3El.length > 0) {
-			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
-		}
-	} catch (e) {
-		if(window.console)	console.log(e);
-	}
 };
 
 /**
@@ -1112,12 +1056,6 @@ jQuery(window).resize(function() {
 		jQuery(document).trigger("oo.window.resize.after");
 	}, 500);
 });
-
-// execute after each DOM replacement cycle and on initial document load
-jQuery(document).on("oo.window.resize.after", OPOL.adjustHeight);
-jQuery(document).on("oo.dom.replacement.after", OPOL.adjustHeight);
-jQuery().ready(OPOL.adjustHeight);
-
 
 function o_scrollToElement(elem) {
 	try {

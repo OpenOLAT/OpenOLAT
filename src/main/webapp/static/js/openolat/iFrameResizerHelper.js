@@ -13,7 +13,7 @@ function registerIFrame(iFrameId) {
 			iframe.contentDocument.body.style["overflow-x"] = "auto";
 		},
 		resizedCallback: function(iframe) {
-			OPOL.adjustHeight()
+			// nothing to do
 		}
 	});
 }

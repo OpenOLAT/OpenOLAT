@@ -406,17 +406,24 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * @param column
 	 */
 	private void hideCol(boolean hide, int column) {
+		String cssName = "o_hide_main_content";
+		if (column == 1) {
+			cssName = "o_hide_main_left";
+		} if (column == 2) {
+			cssName = "o_hide_main_right";
+		}
+		
 		if (hide) {
 			if (columns[column - 1] == null) {
 				return;
 			} else {
-				mainCssClasses.add("o_hidecol" + column);
+				mainCssClasses.add(cssName);
 			}
 		} else {
 			if (columns[column - 1] == null) {
 				return;
 			} else {
-				mainCssClasses.remove("o_hidecol" + column);
+				mainCssClasses.remove(cssName);
 			}
 		}
 		// add new CSS classes for main container
@@ -469,11 +476,18 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * @param column
 	 */
 	private void setCol(Component newComponent, int column) {
+		String cssName = "o_hide_main_content";
+		if (column == 1) {
+			cssName = "o_hide_main_left";
+		} if (column == 2) {
+			cssName = "o_hide_main_right";
+		}
+
 		Component oldComp = columns[column - 1];
 		// remove old component from velocity first
 		if (oldComp == null) {
 			// css class to indicate if a column is hidden or shown
-			mainCssClasses.remove("o_hidecol" + column);
+			mainCssClasses.remove(cssName);
 		} else {
 			layoutMainVC.remove(oldComp);
 		}
@@ -482,7 +496,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 		if (newComponent == null) {
 			// tell YAML layout via css class on main container to not display this
 			// column: this will adjust margin of col3 in normal setups
-			mainCssClasses.add("o_hidecol" + column);
+			mainCssClasses.add(cssName);
 			layoutMainVC.contextPut("existsCol" + column, Boolean.FALSE);
 		} else {
 			layoutMainVC.contextPut("existsCol" + column, Boolean.TRUE);

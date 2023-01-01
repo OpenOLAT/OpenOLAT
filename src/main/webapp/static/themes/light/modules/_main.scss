@@ -10,19 +10,49 @@
 		/* keep space for #o_toplink */
 		padding-bottom: $line-height-computed * 2;
 		
+		#o_main {		
+			/* Use a 3-cols grid layout with the center column to fill all available space using 1fr.
+			   use an explicit min-width 0 in the minmax(0,1fr) rule in the center column because 
+			   the min-width default value is 'auto' which will cause the cell to expand to the content inner width.
+			   See https://stackoverflow.com/questions/52861086/why-does-minmax0-1fr-work-for-long-elements-while-1fr-doesnt
+			   The left and right col width are defined by the width of the column itself using 'auto'.
+			 */
+			width: 100%;			
+			display: grid;			
+			grid-template-columns: auto minmax(0, 1fr) auto;
+			/* adjust grid when some columns are hidden */
+			&.o_hide_main_left, 
+			&.o_offcanvas {
+				grid-template-columns: minmax(0, 1fr) auto;
+			}
+			&.o_hide_main_right {
+				grid-template-columns: auto minmax(0, 1fr);
+			}
+			&.o_hide_main_left.o_hide_main_right,
+			&.o_offcanvas.o_hide_main_right {
+				grid-template-columns: minmax(0, 1fr);
+			}
+			
+		}
+		
+		/* make columns be more or less window height size */
+		#o_main_left_content,
+		#o_main_center_content,
+		#o_main_right_content { 
+			min-height: calc( 100vh - ($o-navbar-height + 200px + $o-footer-height) );
+		}
+		
 		#o_main_left {
-			float: left;
-			z-index: 2;
 			position: relative;
 			background: $o-main-left-bg;
 			
 			#o_main_left_content {
 				padding: 0 0 0 floor($grid-gutter-width * 0.5);
-				/* no hight - used to calcualte inner content height in OPOL.adjustHeight() function */
 			}			
 
 			#o_main_left_toggle {
 				position: absolute; 
+				z-index: 1;
 				display: none;
 				right: 0; 
 				top: 70px; 
@@ -42,6 +72,7 @@
 			}
 			
 			&.o_offcanvas {
+				z-index: 1;
 				background: #fbfbfb;
 				@include box-shadow(0px 0px 6px 1px rgba(0,0,0,.20));
 				min-width: 250px;
@@ -52,19 +83,15 @@
 			}
 		}
 		#o_main_right {
-			float: right;
-			z-index: 2;
 			position: relative;
 			background: $o-main-right-bg;
 
 			#o_main_right_content {
 				padding: 0 floor($grid-gutter-width * 0.5) 0 0;
-				/* no hight - used to calcualte inner content height in OPOL.adjustHeight() function */
 			}
 		}
 		#o_main_center {
 			position: relative;
-			z-index: 1;
 			background: $o-main-center-bg;
 			
 			h2:first-child {
@@ -77,7 +104,6 @@
 			
 			#o_main_center_content {
 				padding: 0 floor($grid-gutter-width * 0.5);
-				/* no hight - used to calculate inner content height in OPOL.adjustHeight() function */
 				
 				#o_main_center_content_inner {
 					/* space to top link */
