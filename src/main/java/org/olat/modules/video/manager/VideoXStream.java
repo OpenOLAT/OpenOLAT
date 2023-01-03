@@ -28,10 +28,16 @@ import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
+import org.olat.modules.video.VideoSegment;
+import org.olat.modules.video.VideoSegmentCategory;
+import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoQuestionImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
+import org.olat.modules.video.model.VideoSegmentCategoryImpl;
+import org.olat.modules.video.model.VideoSegmentImpl;
+import org.olat.modules.video.model.VideoSegmentsImpl;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
@@ -49,6 +55,8 @@ public class VideoXStream {
 	static {
 		Class<?>[] types = new Class[] {
 				VideoMarker.class, VideoMarkerImpl.class, VideoMarkers.class, VideoMarkersImpl.class,
+				VideoSegment.class, VideoSegmentImpl.class, VideoSegments.class, VideoSegmentsImpl.class,
+				VideoSegmentCategory.class, VideoSegmentCategoryImpl.class,
 				VideoQuestion.class, VideoQuestionImpl.class, VideoQuestions.class, VideoQuestionsImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
@@ -56,6 +64,10 @@ public class VideoXStream {
 
 		xstream.alias("marker", VideoMarkerImpl.class);
 		xstream.alias("markers", VideoMarkers.class);
+
+		xstream.alias("segment", VideoSegmentImpl.class);
+		xstream.alias("segmentCategory", VideoSegmentCategoryImpl.class);
+		xstream.alias("segments", VideoSegments.class);
 
 		xstream.alias("question", VideoQuestionImpl.class);
 		xstream.alias("questions", VideoQuestions.class);

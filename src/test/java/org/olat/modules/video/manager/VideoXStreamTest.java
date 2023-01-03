@@ -33,10 +33,16 @@ import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
+import org.olat.modules.video.VideoSegment;
+import org.olat.modules.video.VideoSegmentCategory;
+import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoQuestionImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
+import org.olat.modules.video.model.VideoSegmentCategoryImpl;
+import org.olat.modules.video.model.VideoSegmentImpl;
+import org.olat.modules.video.model.VideoSegmentsImpl;
 
 /**
  * 
@@ -123,6 +129,61 @@ public class VideoXStreamTest {
 			Assert.assertNotNull(question.getBegin());
 			Assert.assertNotNull(question.getId());
 		} catch(IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+	}
+
+	@Test
+	public void writeRead_segments() {
+		String categoryId = UUID.randomUUID().toString();
+
+		byte[] content = null;
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+			VideoSegmentCategoryImpl category = new VideoSegmentCategoryImpl();
+			category.setId(categoryId);
+			category.setLabel("TC");
+			category.setTitle("Test category");
+			category.setColor("green");
+
+			VideoSegmentImpl segment = new VideoSegmentImpl();
+			segment.setBegin(new Date());
+			segment.setId(UUID.randomUUID().toString());
+			segment.setDuration(1000);
+			segment.setCategoryId(categoryId);
+
+			VideoSegmentsImpl segments = new VideoSegmentsImpl();
+			segments.getCategories().add(category);
+			segments.getSegments().add(segment);
+
+			VideoXStream.toXml(outputStream, segments);
+			content = outputStream.toByteArray();
+		} catch (IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(content);
+
+		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content)) {
+			VideoSegments segments = VideoXStream.fromXml(inputStream, VideoSegments.class);
+
+			Assert.assertNotNull(segments);
+			Assert.assertEquals(1, segments.getCategories().size());
+			Assert.assertEquals(1, segments.getSegments().size());
+
+			VideoSegmentCategory category = segments.getCategories().get(0);
+			Assert.assertNotNull(category);
+			Assert.assertEquals("green", category.getColor());
+			Assert.assertEquals("TC: Test category", category.getLabelAndTitle());
+
+			VideoSegment segment = segments.getSegments().get(0);
+			Assert.assertNotNull(segment);
+			Assert.assertNotNull(segment.getBegin());
+			Assert.assertNotNull(segment.getId());
+			Assert.assertEquals(1000, segment.getDuration());
+			Assert.assertEquals(categoryId, segment.getCategoryId());
+		} catch (IOException e) {
 			log.error("", e);
 			Assert.fail();
 		}
