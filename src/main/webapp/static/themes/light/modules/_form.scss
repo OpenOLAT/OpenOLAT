@@ -627,6 +627,7 @@ legend.control-label {
 	padding: 0 0.5em 0 1px;
 	margin: 0;
 	@extend %o_undecorated;
+	white-space: nowrap;
 	
 	i {
 		color: $o-toggle-color;
