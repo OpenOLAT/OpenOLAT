@@ -23,23 +23,16 @@
 			&.o_hide_main_left, 
 			&.o_offcanvas {
 				grid-template-columns: minmax(0, 1fr) auto;
-				
-				#o_main_center_content {
-					padding-left: 0;
-				}
 			}
 			&.o_hide_main_right {
 				grid-template-columns: auto minmax(0, 1fr);
-				
-				#o_main_center_content {
-					padding-right: 0;
-				}
 			}
 			&.o_hide_main_left.o_hide_main_right,
 			&.o_offcanvas.o_hide_main_right {
 				grid-template-columns: minmax(0, 1fr);
 			}
 			
+			column-gap: floor($grid-gutter-width * 0.5);			
 		}
 		
 		/* make columns be more or less window height size */
@@ -52,10 +45,6 @@
 		#o_main_left {
 			position: relative;
 			background: $o-main-left-bg;
-			
-			#o_main_left_content {
-				padding: 0;
-			}			
 
 			#o_main_left_toggle {
 				position: absolute; 
@@ -82,19 +71,11 @@
 				background: #fbfbfb;
 				@include box-shadow(0px 0px 6px 1px rgba(0,0,0,.20));
 				min-width: 250px;
-				
-				#o_main_left_content { 
-					padding: 0;
-				}
 			}
 		}
 		#o_main_right {
 			position: relative;
 			background: $o-main-right-bg;
-
-			#o_main_right_content {
-				padding: 0;
-			}
 		}
 		#o_main_center {
 			position: relative;
@@ -109,8 +90,6 @@
 			}
 			
 			#o_main_center_content {
-				padding: 0 floor($grid-gutter-width * 0.5);
-				
 				#o_main_center_content_inner {
 					/* space to top link */
 					padding-bottom: floor($grid-gutter-width * 0.5);
