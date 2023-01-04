@@ -50,7 +50,7 @@ public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEn
 
 	@Override
 	public String getLabelI18nKey() {
-		return "rule.lifecycle.validto";
+		return "rule.lifecycle.valid.to";
 	}
 	
 	@Override
@@ -66,6 +66,15 @@ public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEn
 			String currentUnit = r.getRightUnit();
 			String currentValue = r.getRightOperand();
 			
+			if (currentValue == null) {
+				return null;
+			}
+			String i18nBeforeAfter = "after.";
+			if (currentValue.startsWith("-")) {
+				i18nBeforeAfter = "before.";
+				currentValue = currentValue.substring(1);
+			}
+			
 			try {
 				LaunchUnit.valueOf(currentUnit);
 			} catch (Exception e) {
@@ -73,7 +82,7 @@ public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEn
 			}
 			
 			String[] args = new String[] { currentValue };
-			return translator.translate("rule.lifecycle.validto." + currentUnit, args);
+			return translator.translate("rule.lifecycle.valid.to." + i18nBeforeAfter + currentUnit, args);
 		}
 		return null;
 	}

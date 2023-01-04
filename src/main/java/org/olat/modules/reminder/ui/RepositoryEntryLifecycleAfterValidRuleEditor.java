@@ -25,6 +25,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
@@ -46,9 +47,12 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 	private static final String[] unitKeys = new String[]{
 		LaunchUnit.day.name(), LaunchUnit.week.name(), LaunchUnit.month.name(), LaunchUnit.year.name()
 	};
+	private static final String KEY_BEFORE = "before";
+	private static final String KEY_AFTER ="after";
 	
 	private TextElement valueEl;
 	private SingleSelection unitEl;
+	private SingleSelection beforeAfterEl;
 	
 	private final String ruleType;
 	private final String templateName;
@@ -77,8 +81,12 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 			currentValue = r.getRightOperand();
 			currentUnit = r.getRightUnit();
 		}
-
-		valueEl = uifactory.addTextElement("launchvalue".concat(id), null, 128, currentValue, ruleCont);
+		
+		String value = currentValue;
+		if (value != null && value.startsWith("-")) {
+			value = value.substring(1);
+		}
+		valueEl = uifactory.addTextElement("launchvalue".concat(id), null, 128, value, ruleCont);
 		valueEl.setDomReplacementWrapperRequired(false);
 		valueEl.setDisplaySize(3);
 		
@@ -101,7 +109,19 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		if(!unitSelected) {
 			unitEl.select(unitKeys[1], true);	
 		}
-
+		
+		SelectionValues beforeAfterSV = new SelectionValues();
+		beforeAfterSV.add(SelectionValues.entry(KEY_BEFORE, trans.translate("before")));
+		beforeAfterSV.add(SelectionValues.entry(KEY_AFTER, trans.translate("after")));
+		beforeAfterEl = uifactory.addDropdownSingleselect("beforeafter".concat(id), null, ruleCont,
+				beforeAfterSV.keys(), beforeAfterSV.values(), null);
+		beforeAfterEl.setDomReplacementWrapperRequired(false);
+		if (currentValue != null && currentValue.startsWith("-")) {
+			beforeAfterEl.select(KEY_BEFORE, true);
+		} else {
+			beforeAfterEl.select(KEY_AFTER, true);
+		}
+		
 		return ruleCont;
 	}
 
@@ -111,13 +131,13 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		
 		unitEl.clearError();
 		if(!unitEl.isOneSelected()) {
-			unitEl.setErrorKey("form.mandatory.hover", null);
+			unitEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -133,10 +153,14 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 			String value = el.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
 				try {
-					Integer.parseInt(value);
+					Integer intValue = Integer.parseInt(value);
+					if (intValue.intValue() < 0) {
+						allOk = false;
+						el.setErrorKey("error.positive.int");
+					}
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.positive.int");
 				}
 			}
 		}
@@ -149,7 +173,11 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 		ReminderRuleImpl configuredRule = new ReminderRuleImpl();
 		configuredRule.setType(ruleType);
 		configuredRule.setOperator(">");
-		configuredRule.setRightOperand(valueEl.getValue());
+		String value = String.valueOf(Long.valueOf(valueEl.getValue()));
+		if (beforeAfterEl.isKeySelected(KEY_BEFORE)) {
+			value = "-" + value;
+		}
+		configuredRule.setRightOperand(value);
 		configuredRule.setRightUnit(unitEl.getSelectedKey());
 		return configuredRule;
 	}
