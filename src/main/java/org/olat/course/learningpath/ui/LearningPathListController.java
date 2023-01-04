@@ -257,7 +257,7 @@ public class LearningPathListController extends FormBasicController implements T
 				row.setProgressText(translate("fully.assessed"));
 			} else {
 				FormLink progressLink = uifactory.addFormLink("o_progress_" + counter.getAndIncrement(),
-						CMD_RESET_FULLY_ASSESSED, "fully.assessed", null);
+						CMD_RESET_FULLY_ASSESSED, "fully.assessed", tableEl);
 				progressLink.setUserObject(row.getLearningPathNode());
 				row.setProgressLink(progressLink);
 			}
@@ -363,8 +363,7 @@ public class LearningPathListController extends FormBasicController implements T
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == excludedToggleEl) {
 			loadModel();
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink) source;
+		} else if (source instanceof FormLink link) {
 			if (CMD_RESET_FULLY_ASSESSED.equals(link.getCmd())) {
 				doResetFullyAssessed(ureq, link);
 			}else if (CMD_END_DATE.equals(link.getCmd())) {

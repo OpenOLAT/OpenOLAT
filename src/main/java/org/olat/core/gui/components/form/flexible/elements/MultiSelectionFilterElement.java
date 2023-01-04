@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components.form.flexible.elements;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
