@@ -126,6 +126,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 			case lifecycleSoftkey: return item.getLifecycleSoftKey();
 			case lifecycleStart: return item.getLifecycleStart();
 			case lifecycleEnd: return item.getLifecycleEnd();
+			case oerPub: return item.isCanIndexMetadata();
 			case taxonomyLevels: return item.getTaxonomyLevels();
 			case taxonomyPaths: return item.getTaxonomyLevels();
 			case educationalType: return item.getEducationalType();
@@ -199,6 +200,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 		creationDate("table.header.date"),
 		lastUsage("table.header.lastusage"),
 		references("table.header.references"),
+		oerPub("table.header.metadata.oerpub"),
 		deletedBy("table.header.deletedby"),
 		deletionDate("table.header.deletiondate"),
 		mark("table.header.mark"),

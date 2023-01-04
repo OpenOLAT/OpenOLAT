@@ -1,0 +1,1 @@
+alter table o_repositoryentry add canindexmetadata number default 0 not null;

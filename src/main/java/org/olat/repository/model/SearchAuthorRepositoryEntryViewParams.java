@@ -41,6 +41,7 @@ public class SearchAuthorRepositoryEntryViewParams {
 	
 	private Boolean marked;
 	private boolean ownedResourcesOnly;
+	private OERRelease oerRelease = OERRelease.all;
 	private ResourceUsage resourceUsage = ResourceUsage.all;
 	private RepositoryEntryStatusEnum[] status;
 	
@@ -242,6 +243,14 @@ public class SearchAuthorRepositoryEntryViewParams {
 	public void setMarked(Boolean marked) {
 		this.marked = marked;
 	}
+
+	public OERRelease getOerRelease() {
+		return oerRelease;
+	}
+
+	public void setOerRelease(OERRelease oerRelease) {
+		this.oerRelease = oerRelease;
+	}
 	
 	public ResourceUsage getResourceUsage() {
 		return resourceUsage;
@@ -349,5 +358,11 @@ public class SearchAuthorRepositoryEntryViewParams {
 		all,
 		used,
 		notUsed
+	}
+
+	public enum OERRelease {
+		all,
+		released,
+		notReleased
 	}
 }

@@ -558,6 +558,7 @@ public class CoursesWebService {
 			preparedEntry = handler.copy(initialAuthor, src, preparedEntry);
 
 			preparedEntry.setCanDownload(src.getCanDownload());
+			preparedEntry.setCanIndexMetadata(src.getCanIndexMetadata());
 			preparedEntry.setMainLanguage(src.getMainLanguage());
 			if(StringHelper.containsNonWhitespace(softKey)) {
 				preparedEntry.setSoftkey(softKey);

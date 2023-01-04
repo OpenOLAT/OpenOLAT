@@ -353,10 +353,12 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 			canDownload = context.isAuthorRightDownload();
 			changed = true;
 		}
+
+		boolean canIndexMetadata = repositoryEntry.getCanIndexMetadata();
 		
 		if (changed) {
 			return repositoryManager.setAccess(repositoryEntry, repositoryEntry.isPublicVisible(),
-					repositoryEntry.getAllowToLeaveOption(), canCopy, canReference, canDownload, null);
+					repositoryEntry.getAllowToLeaveOption(), canCopy, canReference, canDownload, canIndexMetadata, null);
 		}
 		return repositoryEntry;
 	}

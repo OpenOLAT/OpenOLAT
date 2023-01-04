@@ -320,6 +320,10 @@
 					<constructor-arg index="0" value="OLAT_17.1.5" />
 					<property name="alterDbStatements" value="alter_17_1_0_to_17_1_5.sql" />
 				</bean>
+				<bean id="database_upgrade_17_2_0" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_17.2.0" />
+					<property name="alterDbStatements" value="alter_17_1_x_to_17_2_0.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

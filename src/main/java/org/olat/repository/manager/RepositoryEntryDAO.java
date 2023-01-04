@@ -74,6 +74,15 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 
+	public List<RepositoryEntry> loadForMetaData(String status) {
+		if(status.isEmpty()) return new ArrayList<>(1);
+
+		return dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadRepositoryEntriesForMetaData", RepositoryEntry.class)
+				.setParameter("repoStatus", status)
+				.getResultList();
+	}
+
 	public RepositoryEntry loadForUpdate(RepositoryEntry re) {
 		//first remove it from caches
 		dbInstance.getCurrentEntityManager().detach(re);

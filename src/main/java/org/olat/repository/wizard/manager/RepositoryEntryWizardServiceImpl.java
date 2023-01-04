@@ -177,7 +177,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 		entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());
 		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(), accessAndProps.getSetting(),
 				accessAndProps.isCanCopy(), accessAndProps.isCanReference(), accessAndProps.isCanDownload(),
-				accessAndProps.getOrganisations());
+				accessAndProps.isCanIndexMetadata(), accessAndProps.getOrganisations());
 		
 		if(entry.isPublicVisible()) {
 			for (OfferAccessWithOrganisation offerAccessWithOrganisation : accessAndProps.getOfferAccess()) {

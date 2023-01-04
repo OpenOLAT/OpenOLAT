@@ -74,6 +74,9 @@
 				<entry key="/covid">
 					<ref bean="immunityproofbean" />
 				</entry>
+				<entry key="/oaipmh">
+					<ref bean="oaibean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -305,8 +308,12 @@
 	<bean id="contacttracingbean"
 		  class="org.olat.modules.contacttracing.ContactTracingDispatcher" />
 		  
-	  <bean id="immunityproofbean"
+	<bean id="immunityproofbean"
 		  class="org.olat.modules.immunityproof.ImmunityProofDispatcher" />
+
+	<bean id="oaibean"
+		  class="org.olat.modules.oaipmh.OAIDispatcher"/>
+
 		
 	<!-- podcast media dispatcher -->
 	<bean id="podcastMediaBean" class="org.olat.modules.webFeed.dispatching.FeedMediaDispatcher">

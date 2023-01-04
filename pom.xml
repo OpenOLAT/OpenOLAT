@@ -1915,6 +1915,25 @@
 			<artifactId>jgrapht</artifactId>
 			<version>0.6.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.lyncode</groupId>
+			<artifactId>xml-io</artifactId>
+			<version>1.0.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>wstx-asl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>dom4j</groupId>
+					<artifactId>dom4j</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<!-- Start dependency to qtiworks -->
 		<dependency>
 			<groupId>org.openolat.qtiworks</groupId>

@@ -41,6 +41,7 @@ public class AccessAndProperties {
 	private boolean canCopy;
 	private boolean canReference;
 	private boolean canDownload;
+	private boolean canIndexMetadata;
 	private List<Organisation> organisations;
 	
 	private List<OfferAccessWithOrganisation> offerAccess;
@@ -101,6 +102,14 @@ public class AccessAndProperties {
 
 	public void setCanDownload(boolean canDownload) {
 		this.canDownload = canDownload;
+	}
+
+	public boolean isCanIndexMetadata() {
+		return canIndexMetadata;
+	}
+
+	public void setCanIndexMetadata(boolean canIndexMetadata) {
+		this.canIndexMetadata = canIndexMetadata;
 	}
 	
 	public List<Organisation> getOrganisations() {

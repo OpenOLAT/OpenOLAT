@@ -300,6 +300,23 @@ public class RepositoryEntryDAOTest extends OlatTestCase {
 	}
 
 	@Test
+	public void loadForMetaData() {
+		String status = "published";
+
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry re = repositoryService.create(null, "Rei Ayanami", "-", "Repository entry DAO Test 20", "", null,
+				RepositoryEntryStatusEnum.published, null);
+		re.setCanIndexMetadata(true);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(re);
+
+		List<RepositoryEntry> loadedRe = repositoryEntryDao.loadForMetaData(status);
+		Assert.assertNotNull(loadedRe);
+		Assert.assertEquals(re.getOlatResource(), loadedRe.get(loadedRe.size() - 1).getOlatResource());
+		System.out.println("hib hib: " + org.hibernate.Version.getVersionString());
+	}
+
+	@Test
 	public void loadRepositoryEntriesByExternalId() {
 		String externalId = "myExternalId";
 

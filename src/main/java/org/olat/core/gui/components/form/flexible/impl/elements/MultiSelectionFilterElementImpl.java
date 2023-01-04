@@ -97,10 +97,22 @@ public class MultiSelectionFilterElementImpl extends FormItemImpl implements Mul
 		}
 		updateButtonUI();
 	}
+
+	@Override
+	public void uncheckAll() {
+		selectedKeys = new HashSet<>(3);
+		updateButtonUI();
+		// set container dirty to render new selection
+		component.setDirty(true);
+	}
 	
 	@Override
 	public Set<String> getKeys() {
 		return Set.of(availableValues.keys());
+	}
+
+	public SelectionValues getAvailableValues() {
+		return availableValues;
 	}
 
 	@Override

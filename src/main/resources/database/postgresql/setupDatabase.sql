@@ -509,6 +509,7 @@ create table o_repositoryentry (
    candownload bool not null,
    cancopy bool not null,
    canreference bool not null,
+   canindexmetadata bool not null,
    invitations_owner_enabled bool default false not null,
    lti_deployment_owner_enabled bool default false not null,
    status varchar(16) default 'preparation' not null,

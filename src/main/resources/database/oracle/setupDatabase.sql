@@ -566,6 +566,7 @@ CREATE TABLE o_repositoryentry (
   candownload number NOT NULL,
   cancopy number NOT NULL,
   canreference number NOT NULL,
+  canindexmetadata number NOT NULL,
   invitations_owner_enabled number default 0 not null,
   lti_deployment_owner_enabled number default 0 not null,
   deletiondate date default null,

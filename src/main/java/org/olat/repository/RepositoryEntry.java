@@ -75,6 +75,7 @@ import org.olat.resource.OLATResourceImpl;
 @NamedQuery(name="filterRepositoryEntryMembership", query="select v.key, membership.identity.key from repositoryentry as v inner join v.groups as relGroup inner join relGroup.group as baseGroup inner join baseGroup.members as membership on membership.role in ('owner','coach','participant') where membership.identity.key=:identityKey and v.key in (:repositoryEntryKey)")
 @NamedQuery(name="loadRepositoryEntryByKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.key  = :repoKey")
 @NamedQuery(name="loadRepositoryEntriesByKeys", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.key in (:repoKeys)")
+@NamedQuery(name="loadRepositoryEntriesForMetaData", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType where v.status in (:repoStatus) and v.canIndexMetadata")
 @NamedQuery(name="loadRepositoryEntryByResourceKey", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType  where ores.key = :resourceKey")
 @NamedQuery(name="loadRepositoryEntryByResourceId", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType  where ores.resId=:resId and ores.resName=:resName")
 @NamedQuery(name="loadRepositoryEntryByResourceIds", query="select v from repositoryentry as v inner join fetch v.olatResource as ores inner join fetch v.statistics as statistics left join fetch v.lifecycle as lifecycle left join fetch v.educationalType  where ores.resId in (:resIds) and ores.resName=:resName")
@@ -193,6 +194,8 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	private boolean canReference;
 	@Column(name="candownload", nullable=false, insertable=true, updatable=true)
 	private boolean canDownload;
+	@Column(name="canindexmetadata", nullable=false)
+	private boolean canIndexMetadata;
 	@Column(name="allowToLeave", nullable=true, insertable=true, updatable=true)
 	private String allowToLeave;
 	
@@ -408,24 +411,31 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	}
 
 	/**
-	 * @return Wether this repo entry can be copied.
+	 * @return Whether this repo entry can be copied.
 	 */
 	public boolean getCanCopy() {
 		return canCopy;
 	}
 
 	/**
-	 * @return Wether this repo entry can be referenced by other people.
+	 * @return Whether this repo entry can be referenced by other people.
 	 */
 	public boolean getCanReference() {
 		return canReference;
 	}
 
 	/**
-	 * @return Wether this repo entry can be downloaded.
+	 * @return Whether this repo entry can be downloaded.
 	 */
 	public boolean getCanDownload() {
 		return canDownload;
+	}
+
+	/**
+	 * @return Whether this repo entry can be indexed for metadata harvesting through OAI-PMH.
+	 */
+	public boolean getCanIndexMetadata() {
+		return canIndexMetadata;
 	}
 
 	/**
@@ -440,6 +450,13 @@ public class RepositoryEntry implements CreateInfo, Persistable , RepositoryEntr
 	 */
 	public void setCanReference(boolean b) {
 		canReference = b;
+	}
+
+	/**
+	 * @param canIndexMetadata
+	 */
+	public void setCanIndexMetadata(boolean canIndexMetadata) {
+		this.canIndexMetadata = canIndexMetadata;
 	}
 
 	/**

@@ -751,7 +751,7 @@ public class RepositoryManager {
 	
 	public RepositoryEntry setAccess(final RepositoryEntry re, boolean publicVisible,
 			RepositoryEntryAllowToLeaveOptions leaveSetting, boolean canCopy, boolean canReference, boolean canDownload,
-			List<Organisation> organisations) {
+			boolean canIndexMetadata, List<Organisation> organisations) {
 		RepositoryEntry reloadedRe = repositoryEntryDao.loadForUpdate(re);
 		if(reloadedRe == null) {
 			return null;
@@ -763,6 +763,7 @@ public class RepositoryManager {
 		reloadedRe.setCanCopy(canCopy);
 		reloadedRe.setCanReference(canReference);
 		reloadedRe.setCanDownload(canDownload);
+		reloadedRe.setCanIndexMetadata(canIndexMetadata);
 		
 		if (!publicVisible) {
 			acService.deleteOffers(reloadedRe.getOlatResource());

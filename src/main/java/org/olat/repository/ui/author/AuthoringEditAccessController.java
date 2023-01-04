@@ -148,6 +148,7 @@ public class AuthoringEditAccessController extends BasicController {
 				accessShareCtrl.canCopy(),
 				accessShareCtrl.canReference(),
 				accessShareCtrl.canDownload(),
+				accessShareCtrl.canIndexMetadata(),
 				accessShareCtrl.getSelectedOrganisations());
 		accessShareCtrl.validateOfferAvailable();
 		boolean publicEnabledNow = accessShareCtrl.isPublicVisible() && accessOffersCtrl == null;

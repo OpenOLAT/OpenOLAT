@@ -333,14 +333,14 @@ public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 						RepositoryEntry re = repositoryManager.lookupRepositoryEntry(keyRepo);
 						repositoryService.incrementLaunchCounter(re);
 						if (i % 30 == 0 ) {
-							re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, null);
+							re = repositoryManager.setAccess(re, true, RepositoryEntryAllowToLeaveOptions.afterEndDate, false, false, false, false, null);
 							Assert.assertEquals("Wrong access value", RepositoryEntryAllowToLeaveOptions.afterEndDate, re.getAllowToLeaveOption());
 							Assert.assertEquals("Wrong access value", true, re.isPublicVisible());
 							Assert.assertEquals("Wrong canCopy value", false, re.getCanCopy());
 							Assert.assertEquals("Wrong getCanReference value",false, re.getCanReference());
 							Assert.assertEquals("Wrong getCanDownload value", false, re.getCanDownload());
 						} else 	if (i % 15 == 0 ) {
-							re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, true, null);
+							re = repositoryManager.setAccess(re, false, RepositoryEntryAllowToLeaveOptions.atAnyTime, false, true, true, true, null);
 							Assert.assertEquals("Wrong access value", RepositoryEntryAllowToLeaveOptions.atAnyTime, re.getAllowToLeaveOption());
 							Assert.assertEquals("Wrong access value", false, re.isPublicVisible());
 							Assert.assertEquals("Wrong canCopy value", false, re.getCanCopy());

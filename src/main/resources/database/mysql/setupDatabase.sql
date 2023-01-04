@@ -521,6 +521,7 @@ create table if not exists o_repositoryentry (
    candownload bit not null,
    cancopy bit not null,
    canreference bit not null,
+   canindexmetadata bit not null,
    invitations_owner_enabled bool default false not null,
    lti_deployment_owner_enabled bool default false not null,
    deletiondate datetime default null,

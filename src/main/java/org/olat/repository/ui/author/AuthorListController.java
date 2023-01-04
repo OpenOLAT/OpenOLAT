@@ -230,6 +230,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	private FormLink copyButton;
 	private FormLink selectButton;
 	private FormLink settingsButton;
+	private FormLink indexMetadataButton;
 	private FormLink deleteButton;
 	private FormLink restoreButton;
 	private FormLink sendMailButton;
@@ -525,6 +526,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 					true, OrderBy.references.name()));
 		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
+				false, null));
 		
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
@@ -727,6 +730,13 @@ public class AuthorListController extends FormBasicController implements Activat
 			filters.add(new FlexiTableMultiSelectionFilter(translate("cif.organisations"),
 				AuthorSourceFilter.ORGANISATION.name(), organisationValues, false));
 		}
+
+		// OER-release
+		SelectionValues oerValues = new SelectionValues();
+		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), "Freigegeben"));
+		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), "Nicht freigegeben"));
+		filters.add(new FlexiTableSingleSelectionFilter("Freigabe externer OER Katalog",
+				AuthorSourceFilter.OERRELASE.name(), oerValues, false));
 		
 		// taxonomy
 		if (taxonomyEnabled) {
@@ -791,6 +801,8 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(modifyOwnersButton);
 			settingsButton = uifactory.addFormLink("settings.bulk", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(settingsButton);
+			indexMetadataButton = uifactory.addFormLink("details.index.metadata", formLayout, Link.BUTTON);
+			tableEl.addBatchButton(indexMetadataButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(copyButton);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
@@ -1102,72 +1114,81 @@ public class AuthorListController extends FormBasicController implements Activat
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
-		} else if(deleteButton == source) {
+		} else if (indexMetadataButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
-			if(!rows.isEmpty()) {
+			if (!rows.isEmpty()) {
+				for (AuthoringEntryRow row : rows) {
+					doIndexMetadata(row);
+				}
+			} else {
+				showWarning("bulk.update.nothing.selected");
+			}
+		} else if (deleteButton == source) {
+			List<AuthoringEntryRow> rows = getMultiSelectedRows();
+			if (!rows.isEmpty()) {
 				doDelete(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
-		} else if(restoreButton == source) {
+		} else if (restoreButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
-			if(!rows.isEmpty()) {
+			if (!rows.isEmpty()) {
 				doRestore(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
-		} else if(deletePermanentlyButton == source) {
+		} else if (deletePermanentlyButton == source) {
 			List<AuthoringEntryRow> rows = getMultiSelectedRows();
-			if(!rows.isEmpty()) {
+			if (!rows.isEmpty()) {
 				doDeletePermanently(ureq, rows);
 			} else {
 				showWarning("bulk.update.nothing.selected");
 			}
-		} else if(importLink == source) {
+		} else if (importLink == source) {
 			doImport(ureq);
-		} else if(importUrlLink == source) {
+		} else if (importUrlLink == source) {
 			doImportUrl(ureq);
-		} else if(selectButton == source) {
+		} else if (selectButton == source) {
 			fireEvent(ureq, new AuthoringEntryRowsListSelectionEvent(getMultiSelectedRows()));
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink) source;
 			String cmd = link.getCmd();
-			if("mark".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
+			if ("mark".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
+				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
 				boolean marked = doMark(ureq, row);
 				link.setIconLeftCSS(marked ? "o_icon o_icon_bookmark o_icon-lg" : "o_icon o_icon_bookmark_add o_icon-lg");
 				link.setTitle(translate(marked ? "details.bookmark.remove" : "details.bookmark"));
 				link.getComponent().setDirty(true);
 				row.setMarked(marked);
-			} else if("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
+			} else if ("tools".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
+				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
 				doOpenTools(ureq, row, link);
-			} else if(("infos".equals(cmd) || "details".equals(cmd)) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
+			} else if (("infos".equals(cmd) || "details".equals(cmd)) && link.getUserObject() instanceof AuthoringEntryRow) {
+				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
 				doOpenInfos(ureq, row, link);
-			} else if("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
-				AuthoringEntryRow row = (AuthoringEntryRow)link.getUserObject();
+			} else if ("references".equals(cmd) && link.getUserObject() instanceof AuthoringEntryRow) {
+				AuthoringEntryRow row = (AuthoringEntryRow) link.getUserObject();
 				doOpenReferences(ureq, row, link);
-			} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof RepositoryHandler) {
-				RepositoryHandler handler = (RepositoryHandler)((FormLink)source).getUserObject();
-				if(handler != null) {
+			} else if (source instanceof FormLink && ((FormLink) source).getUserObject() instanceof RepositoryHandler) {
+				RepositoryHandler handler = (RepositoryHandler) ((FormLink) source).getUserObject();
+				if (handler != null) {
 					doCreate(ureq, handler);
 				}
 			}
-		} else if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+		} else if (source == tableEl) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent) event;
 				String cmd = se.getCommand();
 				AuthoringEntryRow row = model.getObject(se.getIndex());
-				if("details".equals(cmd)) {
+				if ("details".equals(cmd)) {
 					launchDetails(ureq, row);
-				} else if("edit".equals(cmd)) {
+				} else if ("edit".equals(cmd)) {
 					launchEditor(ureq, row);
-				} else if("select".equals(cmd)) {
+				} else if ("select".equals(cmd)) {
 					launch(ureq, row);
 				}
-			} else if(event instanceof FlexiTableFilterTabEvent) {
-				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				doSelectFilterTab(((FlexiTableFilterTabEvent) event).getTab());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -1742,6 +1763,16 @@ public class AuthorListController extends FormBasicController implements Activat
 			cmc.activate();
 		}
 	}
+
+	protected void doIndexMetadata(AuthoringEntryRow row) {
+		RepositoryEntry entry = repositoryService.loadByKey(row.getKey());
+		if (entry.getCanIndexMetadata()) {
+			entry.setCanIndexMetadata(false);
+		} else {
+			entry.setCanIndexMetadata(true);
+		}
+		reloadRows();
+	}
 	
 	protected void doDownload(UserRequest ureq, AuthoringEntryRow row) {
 		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(row.getResourceType());
@@ -2120,6 +2151,10 @@ public class AuthorListController extends FormBasicController implements Activat
 				if(canClose || !deleteManaged) {
 					links.add("-");
 				}
+
+				addLink("details.index.metadata", "indexMetadata", "o_icon o_icon-fw o_icon_share", null, links);
+
+				links.add("-");
 				
 				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				if(closed && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
@@ -2171,6 +2206,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					doConvertToLearningPath(ureq, row);
 				} else if("download".equals(cmd)) {
 					doDownload(ureq, row);
+				} else if ("indexMetadata".equals(cmd)) {
+					doIndexMetadata(row);
 				} else if("close".equals(cmd)) {
 					doCloseResource(ureq, row);
 				} else if("override-close".equals(cmd)) {

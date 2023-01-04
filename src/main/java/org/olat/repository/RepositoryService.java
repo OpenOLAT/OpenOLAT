@@ -68,6 +68,8 @@ public interface RepositoryService {
 	
 	public List<RepositoryEntry> loadByKeys(Collection<Long> keys);
 
+	public List<RepositoryEntry> loadRepositoryForMetadata(String status);
+
 	public RepositoryEntry loadByResourceKey(Long key);
 
 	public List<RepositoryEntry> loadRepositoryEntriesByExternalId(String externalId);

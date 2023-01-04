@@ -1,0 +1,1 @@
+alter table o_repositoryentry add column canindexmetadata bool default false not null;

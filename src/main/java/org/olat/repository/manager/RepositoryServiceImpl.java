@@ -204,6 +204,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		re.setCreationDate(now);
 		re.setLastModified(now);
 		re.setEntryStatus(status);
+		re.setCanIndexMetadata(false);
 		re.setCanDownload(false);
 		re.setCanCopy(false);
 		re.setCanReference(false);
@@ -357,6 +358,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<RepositoryEntry> loadByKeys(Collection<Long> keys) {
 		return repositoryEntryDAO.loadByKeys(keys);
+	}
+
+	@Override
+	public List<RepositoryEntry> loadRepositoryForMetadata(String status) {
+		return repositoryEntryDAO.loadForMetaData(status);
 	}
 
 	@Override

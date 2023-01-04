@@ -166,6 +166,7 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 		DESCRIPTION,
 		TECHNICALTYPE,
 		EDUCATIONALTYPE,
+		OERRELASE,
 		TAXONOMYLEVEL,
 		LICENSE,
 		USAGE,
@@ -211,6 +212,14 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			case EDUCATIONALTYPE:
 				List<Long> educationalTypes = ((FlexiTableMultiSelectionFilter)filter).getLongValues();
 				searchParams.setEducationalTypeKeys(educationalTypes);
+				break;
+			case OERRELASE:
+				String oerKey = filter.getValue();
+				if (StringHelper.containsNonWhitespace(oerKey)) {
+					searchParams.setOerRelease(SearchAuthorRepositoryEntryViewParams.OERRelease.valueOf(oerKey));
+				} else {
+					searchParams.setOerRelease(null);
+				}
 				break;
 			case TAXONOMYLEVEL:
 				List<String> taxonomyLevelKeys = ((FlexiTableMultiSelectionFilter)filter).getValues();
@@ -319,6 +328,8 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			// Taxonomy Level
 			List<TaxonomyLevel> taxonomyLevels = entryKeyToTaxonomyLevels.get(entry.getKey());
 			row.setTaxonomyLevels(taxonomyLevels);
+
+			row.setCanIndexMetadata(repositoryService.loadByKey(entry.getKey()).getCanIndexMetadata());
 			
 			// license
 			ResourceLicense license = licenses.get(new Resourceable(entry.getOlatResource()));

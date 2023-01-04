@@ -29,6 +29,7 @@
 	<import resource="classpath:/org/olat/modules/message/_spring/assessmentMessageContext.xml"/>
 	<import resource="classpath:/org/olat/modules/zoom/_spring/zoomContext.xml"/>
 	<import resource="classpath:/org/olat/modules/audiovideorecording/_spring/audioVideoRecordingContext.xml"/>
+	<import resource="classpath:/org/olat/modules/oaipmh/_spring/oaipmhContext.xml"/>
 
 	<!-- Forum admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
@@ -179,6 +180,9 @@
 	
 	<bean id="gotoRefreshJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
 	  <property name="jobClass" value="org.olat.modules.gotomeeting.manager.GoToRefreshJob" />
+	</bean>
+
+	<bean id="OAIService" class="org.olat.modules.oaipmh.OAIServiceImpl">
 	</bean>
 	
 	<!-- Portfolio admin. panel -->

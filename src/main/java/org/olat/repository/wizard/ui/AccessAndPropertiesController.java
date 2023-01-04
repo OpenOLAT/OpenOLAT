@@ -129,6 +129,7 @@ public class AccessAndPropertiesController extends StepFormBasicController {
 		accessProperties.setSetting(accessShareCtrl.getSelectedLeaveSetting());
 		accessProperties.setCanCopy(accessShareCtrl.canCopy());
 		accessProperties.setCanDownload(accessShareCtrl.canDownload());
+		accessProperties.setCanIndexMetadata(accessShareCtrl.canIndexMetadata());
 		accessProperties.setCanReference(accessShareCtrl.canReference());
 		accessProperties.setOrganisations(accessShareCtrl.getSelectedOrganisations());
 		if (accessProperties.isPublicVisible()) {

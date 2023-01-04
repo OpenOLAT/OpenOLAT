@@ -25,11 +25,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -54,6 +57,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
 import org.olat.modules.catalog.ui.CatalogMainController;
+import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyModule;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -69,13 +73,13 @@ import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 5 Nov 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class AuthoringEditAccessShareController extends FormBasicController {
-	
+
 	private static final String[] leaveKeys = new String[]{
 			RepositoryEntryAllowToLeaveOptions.atAnyTime.name(),
 			RepositoryEntryAllowToLeaveOptions.afterEndDate.name(),
@@ -86,23 +90,26 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private static final String KEY_REFERENCE = "reference";
 	private static final String KEY_COPY = "copy";
 	private static final String KEY_DOWNLOAD = "download";
+	private static final String KEY_INDEXING = "indexing";
 	private static final String[] accessKey = new String[] { KEY_PRIVATE, KEY_PUBLIC };
-	
+
 	private SingleSelection accessEl;
 	private FormLayoutContainer repoLinkCont;
 	private FormLayoutContainer catalogLinksCont;
+	private FormLayoutContainer oaiCont;
 	private FormLink showMicrositeLinks;
 	private SingleSelection leaveEl;
 	private SingleSelection statusEl;
 	private MultiSelectionFilterElement organisationsEl;
 	private SelectionElement authorCanEl;
-	
+	private SelectionElement enableMetadataIndexingEl;
+
 	private final boolean status;
 	private final boolean embbeded;
 	private final boolean readOnly;
 	private RepositoryEntry entry;
 	private List<Organisation> repositoryEntryOrganisations;
-	
+
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -119,7 +126,11 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private CatalogV2Module catalogModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
-	
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private OAIPmhModule oaiPmhModule;
+
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -128,11 +139,11 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		this.readOnly = readOnly;
 		embbeded = false;
 		status = false;
-		
+
 		initForm(ureq);
 		validateOfferAvailable();
 	}
-	
+
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, Form rootForm) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, rootForm);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -141,14 +152,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		this.readOnly = false;
 		embbeded = true;
 		status = true;
-		
+
 		initForm(ureq);
 	}
-	
+
 	public boolean isPublicVisible() {
 		return accessEl.isOneSelected() && accessEl.isKeySelected(KEY_PUBLIC);
 	}
-	
+
 	public boolean canCopy() {
 		return authorCanEl.isKeySelected(KEY_COPY);
 	}
@@ -160,15 +171,19 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	public boolean canDownload() {
 		return authorCanEl.isKeySelected(KEY_DOWNLOAD);
 	}
-	
+
+	public boolean canIndexMetadata() {
+		return enableMetadataIndexingEl.isKeySelected(KEY_INDEXING);
+	}
+
 	public RepositoryEntryStatusEnum getEntryStatus() {
 		return RepositoryEntryStatusEnum.valueOf(statusEl.getSelectedKey());
 	}
-	
+
 	public RepositoryEntry getEntry() {
 		return entry;
 	}
-	
+
 	public RepositoryEntryAllowToLeaveOptions getSelectedLeaveSetting() {
 		RepositoryEntryAllowToLeaveOptions setting;
 		if(leaveEl.isOneSelected()) {
@@ -178,12 +193,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		return setting;
 	}
-	
+
 	public List<Organisation> getSelectedOrganisations() {
 		if(organisationsEl == null || !organisationsEl.isVisible()) {
 			return repositoryEntryOrganisations;
 		}
-		
+
 		List<Organisation> organisations = new ArrayList<>();
 
 		Set<String> organisationKeys = organisationsEl.getKeys();
@@ -209,21 +224,21 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		return organisations;
 	}
-	
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("details.access");
 		setFormContextHelp("manual_user/course_create/Access_configuration/#access-configuration");
 		formLayout.setElementCssClass("o_sel_repo_access_configuration");
-		
+
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
-		
+
 		initStatus(generalCont);
 		statusEl.setVisible(status);
 		statusEl.setEnabled(!readOnly);
-		
+
 		String[] accessValues = new String[] {
 				getAccessTranslatedValue("rentry.access.type.private", "rentry.access.type.private.explain", "o_icon-fw o_icon_locked"),
 				getAccessTranslatedValue("rentry.access.type.public", "rentry.access.type.public.explain", "o_icon-fw o_icon_unlocked")
@@ -238,39 +253,39 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		} else {
 			accessEl.select(KEY_PRIVATE, true);
 		}
-		
+
 		repoLinkCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/repo_links.html");
 		repoLinkCont.setLabel("cif.repo.link", null);
 		repoLinkCont.setRootForm(mainForm);
 		generalCont.add("repoLink", repoLinkCont);
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
 		repoLinkCont.contextPut("repoLink", new ExtLink(entry.getKey().toString(), url, null));
-		
+
 		catalogLinksCont = FormLayoutContainer.createCustomFormLayout("catalogLinks", getTranslator(), velocity_root + "/catalog_links.html");
 		catalogLinksCont.setLabel("cif.catalog.links", null);
 		catalogLinksCont.setRootForm(mainForm);
 		generalCont.add("catalogLinks", catalogLinksCont);
-		
+
 		showMicrositeLinks = uifactory.addFormLink("show.additional", "nodeConfigForm.show.additional", null, catalogLinksCont, Link.LINK);
 		showMicrositeLinks.setIconLeftCSS("o_icon o_icon-lg o_icon_open_togglebox");
-		
+
 		updateCatalogLinksUI();
-		
+
 		initLeaveOption(generalCont);
-		
+
 		uifactory.addSpacerElement("author.config", generalCont, false);
-		
+
 		UserSession usess = ureq.getUserSession();
 		initFormOrganisations(generalCont, usess);
 		organisationsEl.setVisible(organisationModule.isEnabled());
 		organisationsEl.setEnabled(!readOnly);
-		
+
 		final boolean managedSettings = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.settings);
 		boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
 		boolean supportsDownload = handlerFactory.getRepositoryHandler(entry).supportsDownload();
-		
+
 		SelectionValues canSV = new SelectionValues();
 		canSV.add(SelectionValues.entry(KEY_REFERENCE, translate("cif.canReference")));
 		canSV.add(SelectionValues.entry(KEY_COPY, translate("cif.canCopy")));
@@ -279,11 +294,37 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		authorCanEl = uifactory.addCheckboxesVertical("cif.author.can", generalCont, canSV.keys(), canSV.values(), 1);
 		authorCanEl.setEnabled(!managedSettings && !closedOrDeleted && !readOnly);
-		authorCanEl.select(KEY_REFERENCE, entry.getCanReference()); 
-		authorCanEl.select(KEY_COPY, entry.getCanCopy()); 
+		authorCanEl.select(KEY_REFERENCE, entry.getCanReference());
+		authorCanEl.select(KEY_COPY, entry.getCanCopy());
 		if (supportsDownload) {
-			authorCanEl.select(KEY_DOWNLOAD, entry.getCanDownload()); 
+			authorCanEl.select(KEY_DOWNLOAD, entry.getCanDownload());
 		}
+
+		SelectionValues metadataSV = new SelectionValues();
+		metadataSV.add(SelectionValues.entry(KEY_INDEXING, translate("cif.indexing.enabled")));
+
+		enableMetadataIndexingEl = uifactory.addCheckboxesVertical("cif.metadata.enabled", generalCont, metadataSV.keys(), metadataSV.values(), 1);
+		enableMetadataIndexingEl.select(KEY_INDEXING, entry.getCanIndexMetadata());
+		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
+		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
+
+		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
+		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
+		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
+		boolean isEntryLicenseAllowedForIndexing = licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString());
+		List<String> allowedLicenses = licenseRestrictions.stream().map(l -> licenseService.loadLicenseTypeByKey(l).getName()).toList();
+
+		oaiCont = FormLayoutContainer.createVerticalFormLayout("oaiIndexingWarning", getTranslator());
+		oaiCont.setFormWarning(translate("cif.metadata.warning",
+				isEntryPublished ? null : "<li>Status: Freigegeben</li>",
+				!isEntryLicenseAllowedForIndexing ? "<li>Lizenzvoraussetzungen: " +
+						allowedLicenses.toString()
+								.replace("[", "")
+								.replace("]", "")
+						+ "</li>" : ""));
+		generalCont.add("oaiIndexingWarning", oaiCont);
+
+		updateIndexMetadataWarningUI();
 
 		if(!embbeded && !readOnly) {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -293,7 +334,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
 	}
-	
+
 	private String getAccessTranslatedValue(String i18nKey, String explanationI18nKey, String iconCssClass) {
 		StringBuilder sb = new StringBuilder(128);
 		sb.append("<i class='o_icon o_icon-fq ").append(iconCssClass).append("'> </i> ")
@@ -301,14 +342,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		  .append(translate(explanationI18nKey)).append("</small>");
 		return sb.toString();
 	}
-	
+
 	private void initStatus(FormItemContainer formLayout) {
 		// make configuration read only when managed by external system
 		final boolean managedAccess = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.access);
 		final boolean closedOrDeleted = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.trash
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.deleted;
-		
+
 		String[] publishedKeys;
 		String[] publishedValues;
 		if(closedOrDeleted) {
@@ -342,14 +383,14 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			statusEl.addActionListener(FormEvent.ONCHANGE);
 		}
 	}
-	
+
 	private void initLeaveOption(FormItemContainer formLayout) {
 		String[] leaveValues = new String[]{
 				translate("rentry.leave.atanytime"),
 				translate("rentry.leave.afterenddate"),
 				translate("rentry.leave.never")
 		};
-		
+
 		final boolean managedLeaving = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.membersmanagement);
 		leaveEl = uifactory.addRadiosVertical("entry.leave", "rentry.leave.option", formLayout, leaveKeys, leaveValues);
 		boolean found = false;
@@ -369,7 +410,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		}
 		leaveEl.setEnabled(!managedLeaving && !readOnly);
 	}
-	
+
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
 		Roles roles = usess.getRoles();
 		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
@@ -378,18 +419,18 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		List<Organisation> reOrganisations = repositoryService.getOrganisations(entry);
 		repositoryEntryOrganisations = new ArrayList<>(reOrganisations);
-		
+
 		for(Organisation reOrganisation:reOrganisations) {
 			if(reOrganisation != null && !organisationList.contains(reOrganisation)) {
 				organisationList.add(reOrganisation);
 			}
 		}
-		
+
 		SelectionValues organisationSV = OrganisationUIFactory.createSelectionValues(organisationList);
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "cif.organisations", formLayout, getWindowControl(), organisationSV);
 		reOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
-	
+
 	public void validateOfferAvailable() {
 		setFormWarning(null);
 		if (accessEl.isKeySelected(KEY_PUBLIC)) {
@@ -410,18 +451,24 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			}
 		} else if (source == statusEl) {
 			fireEvent(ureq, new StatusEvent(getEntryStatus()));
+		} else if (source == enableMetadataIndexingEl) {
+			updateIndexMetadataWarningUI();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
+	private void updateIndexMetadataWarningUI() {
+		oaiCont.setVisible(enableMetadataIndexingEl.isSelected(0) && entry.getEntryStatus() != RepositoryEntryStatusEnum.published);
+	}
+
 	private void updateCatalogLinksUI() {
 		catalogLinksCont.setVisible(catalogModule.isEnabled() && accessEl.isKeySelected(KEY_PUBLIC));
-		
+
 		if (catalogLinksCont.isVisible()) {
 			String url = Settings.getServerContextPathURI() + "/url/Catalog/0/" + CatalogMainController.ORES_TYPE_SEARCH
 					+ "/0/" + CatalogMainController.ORES_TYPE_INFOS + "/" + entry.getKey();
 			catalogLinksCont.contextPut("searchLink", new ExtLink(entry.getKey().toString(), url, null));
-			
+
 			showMicrositeLinks.setVisible(false);
 			if (taxonomyModule.isEnabled()) {
 				HashSet<TaxonomyLevel> taxonomyLevels = new HashSet<>(repositoryService.getTaxonomy(entry));
@@ -444,7 +491,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
 			if(organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
@@ -452,13 +499,13 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				allOk &= false;
 			}
 		}
-		
+
 		accessEl.clearError();
 		if(!accessEl.isOneSelected()) {
 			accessEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
-		
+
 		return allOk;
 	}
 
@@ -471,43 +518,43 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
-	
+
 	public static class PublicVisibleEvent extends Event {
 
 		private static final long serialVersionUID = 2663359793325512923L;
 		private final boolean publicVisible;
-		
+
 		public PublicVisibleEvent(boolean publicVisible) {
 			super("public-visible");
 			this.publicVisible = publicVisible;
 		}
-		
+
 		public boolean isPublicVisible() {
 			return publicVisible;
 		}
 	}
-	
+
 	public static class StatusEvent extends Event {
 
 		private static final long serialVersionUID = 2757546613805700985L;
 		private final RepositoryEntryStatusEnum status;
-		
+
 		public StatusEvent(RepositoryEntryStatusEnum status) {
 			super("public-visible");
 			this.status = status;
 		}
-		
+
 		public RepositoryEntryStatusEnum getStatus() {
 			return status;
 		}
 	}
-	
+
 	public static class ExtLink {
-		
+
 		private final String key;
 		private final String url;
 		private final String name;
-		
+
 		public ExtLink(String key, String url, String name) {
 			this.key = key;
 			this.url = url;
@@ -525,6 +572,6 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		public String getName() {
 			return name;
 		}
-		
+
 	}
  }

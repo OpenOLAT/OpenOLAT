@@ -988,7 +988,7 @@ public class RepositoryEntryWebService {
 					});
 			acService.updateOfferOrganisations(offer, rootOrganisations);
 			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
-					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
+					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), entry.getCanIndexMetadata(), null);
 			updated = true;
 		} else {
 			List<Offer> offers = acService.getOffers(entry, true, false, null, false, null);
@@ -1021,7 +1021,7 @@ public class RepositoryEntryWebService {
 				});
 			
 			entry = repositoryManager.setAccess(entry, true, entry.getAllowToLeaveOption(),
-					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), null);
+					entry.getCanCopy(), entry.getCanReference(), entry.getCanDownload(), entry.getCanIndexMetadata(), null);
 		} else {
 			List<Offer> offers = acService.getOffers(entry, true, false, null, false, null);
 			for(Offer offer:offers) {

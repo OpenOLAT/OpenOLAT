@@ -82,6 +82,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 	
 	private boolean openAccess;
 	private boolean guestAccess;
+	private boolean canIndexMetadata;
 	private List<PriceMethod> accessTypes;
 	private List<TaxonomyLevel> taxonomyLevels;
 	private final RepositoryEntryEducationalType educationalType;
@@ -262,6 +263,14 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 
 	public void setGuestAccess(boolean guestAccess) {
 		this.guestAccess = guestAccess;
+	}
+
+	public boolean isCanIndexMetadata() {
+		return canIndexMetadata;
+	}
+
+	public void setCanIndexMetadata(boolean canIndexMetadata) {
+		this.canIndexMetadata = canIndexMetadata;
 	}
 
 	public List<PriceMethod> getAccessTypes() {
