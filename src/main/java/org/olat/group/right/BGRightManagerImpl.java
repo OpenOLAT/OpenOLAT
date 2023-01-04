@@ -145,7 +145,6 @@ public class BGRightManagerImpl implements BGRightManager {
 	public List<BGRights> findBGRights(List<Group> baseGroups, OLATResource resource) {
 		List<Grant> grants = groupDao.getGrants(baseGroups, resource);
 
-		List<BGRights> rights = new ArrayList<>();
 		Map<BGRights,BGRights> rightsMap = new HashMap<>();
 		for (Grant grant:grants) {
 			String right = grant.getPermission();
@@ -161,11 +160,10 @@ public class BGRightManagerImpl implements BGRightManager {
 				BGRights wrapper = new BGRightsImpl(grant.getGroup(), role);
 				wrapper = rightsMap.computeIfAbsent(wrapper, w -> w);
 				wrapper.getRights().add(right);
-				rights.add(wrapper);
 			}
 		}
 
-		return rights;
+		return new ArrayList<>(rightsMap.values());
 	}
 	
 	private List<OLATResource> findResources(Group group) {

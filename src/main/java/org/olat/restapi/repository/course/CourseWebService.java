@@ -270,6 +270,21 @@ public class CourseWebService {
 	}
 	
 	/**
+	 * To get the web service for the course rights.
+	 * 
+	 * @param request
+	 * @return The web service to manage the course rights
+	 */
+	@Path("rights")
+	public CourseRightsWebService getRightsWebService(@Context HttpServletRequest request) {
+		RepositoryEntry courseRe = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		boolean admin = isManager(request) || isAuthor(request);
+		CourseRightsWebService service = new CourseRightsWebService(courseRe, admin);
+		CoreSpringFactory.autowireObject(service);
+		return service;
+	}
+	
+	/**
 	 * To get the web service to manage the assessment modes of a specific course.
 	 * 
 	 * @param request the request
