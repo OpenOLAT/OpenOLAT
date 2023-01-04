@@ -69,8 +69,11 @@ public class MetadataItems implements Item {
             setSpec = getSetSpecByRepositoryEntry(repositoryEntry, license, organisationList);
 
             if (license != null) {
-                // TODO Freetext
-                rights += license.getLicenseType() == null ? "" : license.getLicenseType().getName();
+                if (license.getLicenseType().getName().equals("freetext")) {
+                    rights += license.getLicenseType() == null ? "" : license.getFreetext();
+                } else {
+                    rights += license.getLicenseType() == null ? "" : license.getLicenseType().getName();
+                }
                 rights += license.getLicensor() == null ? "" : " - " + license.getLicensor();
             }
 
@@ -112,14 +115,19 @@ public class MetadataItems implements Item {
             organisationList.add(repositoryEntry.getOrganisations().stream().findAny().get().getOrganisation());
 
             if (oaiPmhModule.isLicenseAllow() &&
-                    license.getLicenseType().getName().equals("no.license")) {
+                    (license == null ||
+                            license.getLicenseType().getName().equals("no.license"))) {
                 continue;
             }
 
             setSpec = getSetSpecByRepositoryEntry(repositoryEntry, license, organisationList);
 
             if (license != null) {
-                licenseName = license.getLicenseType() == null ? "" : license.getLicenseType().getName();
+                if (license.getLicenseType().getName().equals("freetext")) {
+                    licenseName = license.getLicenseType() == null ? "" : license.getFreetext();
+                } else {
+                    licenseName = license.getLicenseType() == null ? "" : license.getLicenseType().getName();
+                }
                 licensor = license.getLicensor() == null ? "" : license.getLicensor();
             }
 
