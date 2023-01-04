@@ -79,7 +79,7 @@ public class OLATUpgrade_16_1_2 extends OLATUpgrade {
 
 		// OLATUpgrade_15_pre_6_ae has only to run if this upgrade (OLATUpgrade_15_pre_0) 
 		// is run before the fix for the completion of assessment entries of conventional courses.
-		upgradeManager.setUpgradesHistory(uhd, OLATUpgrade_15_pre_6_ae.VERSION);
+		upgradeManager.setUpgradesHistory(uhd, "OLAT_15.pre.6.ae");
 		
 		if(allOk) {
 			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_16_1_2 successfully!");

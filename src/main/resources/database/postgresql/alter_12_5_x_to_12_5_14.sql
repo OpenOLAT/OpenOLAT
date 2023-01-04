@@ -1,1 +1,0 @@
-alter table o_temporarykey alter column email type varchar(2000);

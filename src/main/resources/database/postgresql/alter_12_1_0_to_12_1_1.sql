@@ -1,1 +1,0 @@
-alter table o_feed alter column f_description type text;

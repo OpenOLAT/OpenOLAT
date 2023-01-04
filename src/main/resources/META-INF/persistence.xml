@@ -16,14 +16,6 @@
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 
-		<!-- Start upgraders mapping -->
-		<mapping-file>org/olat/upgrade/model/RepositoryEntryUpgrade.hbm.xml</mapping-file>
-		<class>org.olat.upgrade.model.UpgradeTaxonomyLevel</class>
-		<class>org.olat.upgrade.model.UpgradeQuestionItem</class>
-		<class>org.olat.upgrade.model.CurriculumElementPos</class>
-		<class>org.olat.upgrade.model.UpgradeCatalogEntry</class>
-		<!-- End upgraders mapping -->
-
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.AuthenticationImpl</class>
