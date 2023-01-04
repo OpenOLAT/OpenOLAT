@@ -55,18 +55,16 @@ public class RepositoryEntryLifecycleAfterValidRuleEditor extends RuleEditorFrag
 	private SingleSelection beforeAfterEl;
 	
 	private final String ruleType;
-	private final String templateName;
 	
-	public RepositoryEntryLifecycleAfterValidRuleEditor(ReminderRule rule, String ruleType, String templateName) {
+	public RepositoryEntryLifecycleAfterValidRuleEditor(ReminderRule rule, String ruleType) {
 		super(rule);
 		this.ruleType = ruleType;
-		this.templateName = templateName;
 	}
 
 	@Override
 	public FormItem initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		String page = Util.getPackageVelocityRoot(this.getClass()) + templateName;
+		String page = Util.getPackageVelocityRoot(this.getClass()) + "/before_after.html";
 		String id = Long.toString(CodeHelper.getRAMUniqueID());
 		
 		Translator trans = formLayout.getTranslator();

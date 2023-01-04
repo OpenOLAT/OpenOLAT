@@ -235,4 +235,55 @@ public class ReminderRuleDAO {
 		}
 		return dateMap;
 	}
+
+	public Map<Long, Date> getCertificateCreateDates(RepositoryEntry entry, List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) {
+			return Map.of();
+		}
+
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.identityKey, max(data.creationDate)");
+		sb.append("  from certificatelight data");
+		sb.and().append(" data.olatResourceKey = :olatResourceKey");
+		if(identities.size() < IN_CLAUSE_MAX) {
+			sb.append(" and data.identityKey in (:identityKeys)");
+		}
+		sb.groupBy().append("data.identityKey");
+		
+		Set<Long> identityKeySet = null;
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("olatResourceKey", entry.getOlatResource().getKey());
+		if(identities.size() < IN_CLAUSE_MAX) {
+			query.setParameter("identityKeys", PersistenceHelper.toKeys(identities));
+		} else {
+			identityKeySet = new HashSet<>(PersistenceHelper.toKeys(identities));
+		}
+
+		List<Object[]> infoList = query.getResultList();
+		Map<Long,Date> dateMap = new HashMap<>();
+		for(Object[] infos:infoList) {
+			Long identityKey = (Long)infos[0];
+			if(identityKeySet == null || identityKeySet.contains(identityKey)) {
+				Date lastAttempt = (Date)infos[1];
+				dateMap.put(identityKey, lastAttempt);
+			}
+		}
+		return dateMap;
+	}
+
+	public List<Long> getNextRecertificationBefore(RepositoryEntry entry, Date referenceDate) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select data.identityKey");
+		sb.append("  from certificatelight data");
+		sb.and().append("data.olatResourceKey = :olatResourceKey");
+		sb.groupBy().append("data.identityKey");
+		sb.append(" having max(data.nextRecertificationDate) <= :referenceDate");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("olatResourceKey", entry.getOlatResource().getKey())
+				.setParameter("referenceDate", referenceDate)
+				.getResultList();
+	}
 }

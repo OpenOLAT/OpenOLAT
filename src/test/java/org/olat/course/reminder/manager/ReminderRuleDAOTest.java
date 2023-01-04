@@ -33,6 +33,11 @@ import java.util.Set;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
+import org.olat.course.certificate.Certificate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.model.CertificateConfig;
+import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.reminder.rule.PassedRuleSPI.Status;
@@ -55,6 +60,8 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	
 	@Autowired
 	private ReminderRuleDAO sut;
@@ -319,5 +326,72 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		assertThat(lastAttemptsDates.get(identity1.getKey())).isCloseTo(date1, 1000);
 		assertThat(lastAttemptsDates.get(identity2.getKey())).isCloseTo(date2, 1000);
 	}
+	
+	@Test
+	public void shouldLoadCertificateCreateDates() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity1);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(identity4);
+		dbInstance.commitAndCloseSession();
+		
+		CertificateConfig config = CertificateConfig.builder().build();
+		certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
+		certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
+		certificatesManager.generateCertificate(new CertificateInfos(identity2, null, null, null, null), entry, null, config);
+		certificatesManager.generateCertificate(new CertificateInfos(identity4, null, null, null, null), entry2, null, config);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long,Date> certificateCreateDates = sut.getCertificateCreateDates(entry, List.of(identity1, identity2, identity3));
+		
+		assertThat(certificateCreateDates.keySet()).containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey());
+	}
+	
+	@Test
+	public void shouldLoadNextRecertificationBefore() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity1);
+		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(identity4);
+		dbInstance.commitAndCloseSession();
+		
+		Date now = new Date();
+		CertificateConfig config = CertificateConfig.builder().build();
+		Certificate certificate11 = certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
+		certificate11.setNextRecertificationDate(DateUtils.addDays(now, -10));
+		dbInstance.getCurrentEntityManager().persist(certificate11);
+		Certificate certificate12 = certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
+		certificate12.setNextRecertificationDate(DateUtils.addDays(now, -5));
+		dbInstance.getCurrentEntityManager().persist(certificate12);
+		Certificate certificate21 = certificatesManager.generateCertificate(new CertificateInfos(identity2, null, null, null, null), entry, null, config);
+		certificate21.setNextRecertificationDate(DateUtils.addDays(now, -2));
+		dbInstance.getCurrentEntityManager().persist(certificate21);
+		// Last after reference date
+		Certificate certificate31 = certificatesManager.generateCertificate(new CertificateInfos(identity3, null, null, null, null), entry, null, config);
+		certificate31.setNextRecertificationDate(DateUtils.addDays(now, -2));
+		dbInstance.getCurrentEntityManager().persist(certificate31);
+		Certificate certificate32 = certificatesManager.generateCertificate(new CertificateInfos(identity3, null, null, null, null), entry, null, config);
+		certificate32.setNextRecertificationDate(DateUtils.addDays(now, 5));
+		dbInstance.getCurrentEntityManager().persist(certificate32);
+		// Not recertification date
+		Certificate certificate41 = certificatesManager.generateCertificate(new CertificateInfos(identity4, null, null, null, null), entry, null, config);
+		certificate41.setNextRecertificationDate(null);
+		dbInstance.getCurrentEntityManager().persist(certificate41);
+		// Other entry
+		Certificate certificate51 = certificatesManager.generateCertificate(new CertificateInfos(identity5, null, null, null, null), entry2, null, config);
+		certificate51.setNextRecertificationDate(DateUtils.addDays(now, -5));
+		dbInstance.getCurrentEntityManager().persist(certificate51);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> recertificationBefore = sut.getNextRecertificationBefore(entry, now);
+		
+		assertThat(recertificationBefore).containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey());
+	}
+
 
 }

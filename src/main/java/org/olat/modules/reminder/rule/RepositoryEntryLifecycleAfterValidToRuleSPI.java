@@ -94,7 +94,7 @@ public class RepositoryEntryLifecycleAfterValidToRuleSPI implements RepositoryEn
 	
 	@Override
 	public RuleEditorFragment getEditorFragment(ReminderRule rule, RepositoryEntry entry) {
-		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName(), "/repo_valid_to.html");
+		return new RepositoryEntryLifecycleAfterValidRuleEditor(rule, this.getClass().getSimpleName());
 	}
 
 	@Override
