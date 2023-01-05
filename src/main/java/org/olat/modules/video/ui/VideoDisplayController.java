@@ -309,7 +309,6 @@ public class VideoDisplayController extends BasicController {
 	/**
 	 * Reload the video, e.g. when new captions or transcoded versions are available
 	 * @param ureq
-	 * @param currentTime The start time in seconds (optional)
 	 */
 	protected void reloadVideo(UserRequest ureq) {
 		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
@@ -865,8 +864,8 @@ public class VideoDisplayController extends BasicController {
 	 * Set and enable the replay feature for a certain position. The position is
 	 * defined by the percentage of the video time already watched.
 	 * 
-	 * @param completion Value between 0 (0% watched) and 1 (100% watched) to
-	 *                   indicate the progress.
+	 * @param playProgress Value between 0 (0% watched) and 1 (100% watched) to
+	 *                     indicate the progress.
 	 */
 	public void setPlayProgress(Double playProgress) {
 		// only set play position when in between of the video
@@ -879,6 +878,10 @@ public class VideoDisplayController extends BasicController {
 			// as soon as it works the enableResumeDialog flag can be removed
 			mainVC.contextPut("enableResumeDialog", Boolean.valueOf(videoMetadata.getUrl() == null));		
 		}
+	}
+
+	public void forceReload() {
+		mainVC.contextPut("addForceReload", "?t=" + CodeHelper.getRAMUniqueID());
 	}
 	
 	
