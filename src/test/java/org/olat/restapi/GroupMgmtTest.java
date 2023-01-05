@@ -71,6 +71,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.manager.BusinessGroupRelationDAO;
@@ -129,6 +130,8 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -715,6 +718,25 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
 		Assert.assertNotNull(lifecycleVo);
 		Assert.assertEquals(BusinessGroupStatusEnum.active.name(), lifecycleVo.getStatus());
+	}
+	
+	@Test
+	public void getGroupDeletedStatus() throws IOException, URISyntaxException {
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner1, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+		businessGroupLifecycleManager.deleteBusinessGroupSoftly(businessGroup, owner1, false);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
+		Assert.assertNotNull(lifecycleVo);
+		Assert.assertEquals(BusinessGroupStatusEnum.trash.name(), lifecycleVo.getStatus());
 	}
 	
 	@Test

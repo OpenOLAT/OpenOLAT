@@ -596,8 +596,22 @@ public class LearningGroupWebService {
 
 		Identity identity = RestSecurityHelper.getIdentity(request);
 		BusinessGroupStatusEnum status = BusinessGroupStatusEnum.valueOf(newStatus);
-		BusinessGroup updateBg = businessGroupLifecycleManager.changeBusinessGroupStatus(bg, status, identity, false);
-		GroupLifecycleVO savedVO = GroupLifecycleVO.valueOf(updateBg);
+		if(status != bg.getGroupStatus()) {
+			switch(status) {
+				case active:
+					bg = businessGroupLifecycleManager.reactivateBusinessGroup(bg, identity, false);
+					break;
+				case inactive:
+					bg = businessGroupLifecycleManager.inactivateBusinessGroup(bg, identity, false);
+					break;
+				case trash:
+					bg = businessGroupLifecycleManager.deleteBusinessGroupSoftly(bg, identity, false);
+					break;
+				default: break;
+			}
+		}
+		
+		GroupLifecycleVO savedVO = GroupLifecycleVO.valueOf(bg);
 		return Response.ok(savedVO).build();
 	}
 	
