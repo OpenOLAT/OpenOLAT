@@ -75,6 +75,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupAddResponse;
 import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumWebService;
@@ -82,6 +83,7 @@ import org.olat.modules.wiki.restapi.GroupWikiWebService;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
+import org.olat.restapi.support.vo.GroupLifecycleVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
@@ -531,6 +533,72 @@ public class LearningGroupWebService {
 				ownersPublic, participantsPublic, waitingListPublic,
 				bg.isDownloadMembersLists());
 		return Response.ok().build();
+	}
+	
+	@GET
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("{groupKey}/status")
+	@Operation(summary = "Get the status of a business group by id", description = "Get the status of a business group by id. The possible status are:\n" + 
+			" <ul>\n" + 
+			"  <li>active</li>\n" + 
+			"  <li>inactive</li>\n" + 
+			"  <li>trash</li>\n" + 
+			"  <li>deleted</li>\n" +
+			" </ul>\n")
+	@ApiResponse(responseCode = "200", description = "The status of the business group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupLifecycleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupLifecycleVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group not found")
+	public Response getGroupStatus(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		if(!isGroupManager(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		
+		GroupLifecycleVO vo = GroupLifecycleVO.valueOf(bg);
+		return Response.ok(vo).build();
+	}
+	
+	@POST
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Path("{groupKey}/status")
+	@Operation(summary = "Change the status of a business group by id", description = "Change the status of a business group by id. The possible status are:\n" + 
+			" <ul>\n" + 
+			"  <li>active</li>\n" + 
+			"  <li>inactive</li>\n" + 
+			"  <li>trash</li>\n" + 
+			"  <li>deleted</li>\n" +
+			" </ul>\n")
+	@ApiResponse(responseCode = "200", description = "The metadatas of the business group", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = GroupLifecycleVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupLifecycleVO.class)) })
+	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The business group not found")
+	public Response postGroupStatus(@PathParam("groupKey") Long groupKey,
+			@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
+		if(!isGroupManager(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+		
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return Response.serverError().status(Status.NOT_FOUND).build();
+		}
+		if(!BusinessGroupStatusEnum.isValid(newStatus)) {
+			return Response.serverError().status(Status.BAD_REQUEST).build();
+		}
+		
+
+		Identity identity = RestSecurityHelper.getIdentity(request);
+		BusinessGroupStatusEnum status = BusinessGroupStatusEnum.valueOf(newStatus);
+		BusinessGroup updateBg = businessGroupLifecycleManager.changeBusinessGroupStatus(bg, status, identity, false);
+		GroupLifecycleVO savedVO = GroupLifecycleVO.valueOf(updateBg);
+		return Response.ok(savedVO).build();
 	}
 	
 	/**
