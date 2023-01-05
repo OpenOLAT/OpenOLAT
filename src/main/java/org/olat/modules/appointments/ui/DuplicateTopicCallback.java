@@ -34,6 +34,7 @@ import org.olat.modules.appointments.Appointment;
 import org.olat.modules.appointments.AppointmentsService;
 import org.olat.modules.appointments.Topic;
 import org.olat.modules.appointments.TopicLight;
+import org.olat.modules.appointments.TopicLight.Type;
 import org.olat.modules.bigbluebutton.BigBlueButtonMeeting;
 import org.olat.modules.bigbluebutton.ui.BigBlueButtonUIHelper;
 import org.olat.modules.teams.TeamsMeeting;
@@ -88,7 +89,10 @@ public class DuplicateTopicCallback implements StepRunnerCallback {
 		appointment.setDetails(appointmentInput.getAppointment().getDetails());
 		appointment.setEnd(appointmentInput.getEnd());
 		appointment.setLocation(appointmentInput.getAppointment().getLocation());
-		appointment.setMaxParticipations(appointmentInput.getAppointment().getMaxParticipations());
+		Integer maxParticipations = Type.finding == topic.getType()
+				? null
+				: appointmentInput.getAppointment().getMaxParticipations();
+		appointment.setMaxParticipations(maxParticipations);
 		appointment.setStart(appointmentInput.getStart());
 		appointment = getAppointmentsService().saveAppointment(appointment);
 		

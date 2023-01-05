@@ -585,5 +585,28 @@ public class AppointmentDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(bbbAppointment1, bbbAppointment2, teamsAppointment)
 				.doesNotContain(appointmentNoMeeting);
 	}
+	
+	@Test
+	public void shouldLoadByWithMaxParticipations() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Topic topic = topicDao.createTopic(entry, random());
+		Appointment appointment1 = sut.createAppointment(topic);
+		appointment1.setMaxParticipations(Integer.valueOf(1));
+		sut.saveAppointment(appointment1);
+		Appointment appointment2 = sut.createAppointment(topic);
+		appointment2.setMaxParticipations(Integer.valueOf(10));
+		sut.saveAppointment(appointment2);
+		Appointment appointment3 = sut.createAppointment(topic);
+		appointment3.setMaxParticipations(null);
+		sut.saveAppointment(appointment3);
+		dbInstance.commitAndCloseSession();
+		
+		AppointmentSearchParams params = new AppointmentSearchParams();
+		params.setTopic(topic);
+		params.setWithMaxParticipants(true);
+		List<Appointment> appointments = sut.loadAppointments(params);
+		
+		assertThat(appointments).containsExactlyInAnyOrder(appointment1, appointment2);
+	}
 
 }

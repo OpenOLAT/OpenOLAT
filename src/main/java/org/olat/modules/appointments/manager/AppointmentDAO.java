@@ -269,6 +269,9 @@ class AppointmentDAO {
 		if (params.hasMeeting()) {
 			sb.and().append("(appointment.bbbMeeting.key is not null or appointment.teamsMeeting.key is not null)");
 		}
+		if (params.isWithMaxParticipants()) {
+			sb.and().append("appointment.maxParticipations is not null");
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, AppointmentSearchParams params) {

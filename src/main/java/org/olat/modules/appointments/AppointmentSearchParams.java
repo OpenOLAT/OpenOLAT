@@ -47,6 +47,7 @@ public class AppointmentSearchParams {
 	private BigBlueButtonMeeting bbbMeeting;
 	private TeamsMeeting teamsMeeting;
 	private boolean hasMeeting;
+	private boolean withMaxParticipations;
 	private boolean fetchTopic;
 	private boolean fetchEntry;
 	private boolean fetchMeetings;
@@ -135,6 +136,14 @@ public class AppointmentSearchParams {
 
 	public void setHasMeeting(boolean hasMeeting) {
 		this.hasMeeting = hasMeeting;
+	}
+
+	public boolean isWithMaxParticipants() {
+		return withMaxParticipations;
+	}
+
+	public void setWithMaxParticipants(boolean withMaxParticipations) {
+		this.withMaxParticipations = withMaxParticipations;
 	}
 
 	public boolean isFetchTopic() {
