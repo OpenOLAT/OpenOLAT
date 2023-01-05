@@ -205,7 +205,14 @@ public interface VideoManager {
 	 * @return VFSContainer
 	 */
 	public VFSContainer getMasterContainer(OLATResource videoResource);
-	
+
+	/**
+	 * Get the container holding thumbnails for this video resource
+	 * @param videoResource The video resource
+	 * @return VFSContainer
+	 */
+	VFSContainer getThumbnailsContainer(OLATResource videoResource);
+
 	/**
 	 * Get the container where all the transcoded videos are stored
 	 * @param videoResource
@@ -344,6 +351,10 @@ public interface VideoManager {
 	public VideoMarkers loadMarkers(OLATResource olatResource);
 	
 	public void saveMarkers(VideoMarkers markers, OLATResource olatResource);
+
+	VideoSegments loadSegments(OLATResource olatResource);
+
+	void saveSegments(VideoSegments segments, OLATResource olatResource);
 	
 	public VideoQuestions loadQuestions(OLATResource videoResource);
 

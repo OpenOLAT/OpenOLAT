@@ -89,11 +89,13 @@ import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
+import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
+import org.olat.modules.video.model.VideoSegmentsImpl;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 import org.olat.modules.video.ui.VideoChapterTableRow;
@@ -128,11 +130,13 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String FILENAME_VIDEO_MP4 = "video.mp4";
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_MARKERS_XML = "markers.xml";
+	private static final String FILENAME_SEGMENTS_XML = "segments.xml";
 	private static final String FILENAME_QUESTIONS_XML = "questions.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	
 	private static final String DIRNAME_MASTER = "master";
 	private static final String DIRNAME_QUESTIONS = "qti21";
+	private static final String DIRNAME_THUMBNAILS = "thumbnails";
 	
 	public static final String TRACK = "track_";
 
@@ -193,7 +197,7 @@ public class VideoManagerImpl implements VideoManager {
 	 * Sets the posterframe resize uploadfile. Tries to fit image to dimensions of video.
 	 *
 	 * @param videoResource the video resource
-	 * @param posterframe the newPosterFile
+	 * @param newPosterFile the newPosterFile
 	 * @param changedBy
 	 */
 	@Override
@@ -298,7 +302,7 @@ public class VideoManagerImpl implements VideoManager {
 
 	/**
 	 * write the the given frame at frameNumber in the frame leaf
-	 * @param videoResource videoresource
+	 * @param video the source video
 	 * @param frameNumber the frameNumber at which the frame should be taken from
 	 * @param frame the VFSLeaf to write the picked image to
 	 */
@@ -606,7 +610,13 @@ public class VideoManagerImpl implements VideoManager {
 		VFSContainer baseContainer =  FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_MASTER);
 	}
-	
+
+	@Override
+	public VFSContainer getThumbnailsContainer(OLATResource videoResource) {
+		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_THUMBNAILS);
+	}
+
 	@Override
 	public VFSContainer getTranscodingContainer(OLATResource videoResource) {
 		VFSContainer baseContainer = videoModule.getTranscodingBaseContainer();
@@ -1082,8 +1092,7 @@ public class VideoManagerImpl implements VideoManager {
 	/**
 	 * reads an existing webvtt file to provide for display and to further process.
 	 *
-	 * @param List<VideoChapterTableRow> chapters the chapters
-	 * @param OLATResource videoResource the video resource
+	 * @param videoResource the video resource
 	 */
 	@Override
 	public List<VideoChapterTableRow> loadChapters(OLATResource videoResource) {
@@ -1155,7 +1164,37 @@ public class VideoManagerImpl implements VideoManager {
 			}
 		}
 	}
-	
+
+	@Override
+	public VideoSegments loadSegments(OLATResource olatResource) {
+		VFSContainer vfsContainer = getMasterContainer(olatResource);
+		VFSItem segmentsItem = vfsContainer.resolve(FILENAME_SEGMENTS_XML);
+		if (segmentsItem instanceof VFSLeaf segmentsLeaf) {
+			try (InputStream in = segmentsLeaf.getInputStream()) {
+				return VideoXStream.fromXml(in, VideoSegments.class);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return new VideoSegmentsImpl();
+	}
+
+	@Override
+	public void saveSegments(VideoSegments segments, OLATResource olatResource) {
+		VFSContainer vfsContainer = getMasterContainer(olatResource);
+		VFSItem segmentsItem = vfsContainer.resolve(FILENAME_SEGMENTS_XML);
+		if (segmentsItem == null) {
+			segmentsItem = vfsContainer.createChildLeaf(FILENAME_SEGMENTS_XML);
+		}
+		if (segmentsItem instanceof VFSLeaf segmentsLeaf) {
+			try (OutputStream out = segmentsLeaf.getOutputStream(false)) {
+				VideoXStream.toXml(out, segments);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
 	@Override
 	public VideoQuestions loadQuestions(OLATResource videoResource) {
 		VFSContainer vfsContainer = getMasterContainer(videoResource);
