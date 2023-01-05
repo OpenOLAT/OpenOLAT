@@ -89,22 +89,25 @@ public class CollaborationToolsFactory {
 	 * configuration.
 	 */
 	public synchronized void initAvailableTools() {
-		ArrayList<String> toolArr = new ArrayList<>();
+		List<String> toolArr = new ArrayList<>();
 		toolArr.add(CollaborationTools.TOOL_NEWS);
-		toolArr.add(CollaborationTools.TOOL_CONTACT);
 		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		if(calendarModule.isEnabled() && calendarModule.isEnableGroupCalendar()) {
 			toolArr.add(CollaborationTools.TOOL_CALENDAR);
 		}
+		toolArr.add(CollaborationTools.TOOL_CONTACT);
 		toolArr.add(CollaborationTools.TOOL_FOLDER);
 		toolArr.add(CollaborationTools.TOOL_FORUM);
+		
 		if (CoreSpringFactory.getImpl(InstantMessagingModule.class).isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_CHAT);
 		}
+		
 		WikiModule wikiModule = CoreSpringFactory.getImpl(WikiModule.class); 
 		if (wikiModule.isWikiEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_WIKI);			
 		}
+		
 		PortfolioV2Module portfolioV2Module = CoreSpringFactory.getImpl(PortfolioV2Module.class);
 		if (portfolioV2Module.isEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_PORTFOLIO);

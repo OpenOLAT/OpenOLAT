@@ -71,7 +71,9 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupLifecycleManager;
 import org.olat.group.BusinessGroupService;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -86,6 +88,7 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
+import org.olat.restapi.support.vo.GroupLifecycleVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatRestTestCase;
@@ -127,6 +130,8 @@ public class GroupMgmtTest extends OlatRestTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
+	@Autowired
+	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
 	
 	/**
 	 * Set up a course with learn group and group area
@@ -696,6 +701,60 @@ public class GroupMgmtTest extends OlatRestTestCase {
 		CollaborationTools reloadedCollabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
 		String deletedNews = reloadedCollabTools.lookupNews();
 		assertNull(deletedNews);
+	}
+	
+	@Test
+	public void getGroupStatus() throws IOException, URISyntaxException {
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
+		Assert.assertNotNull(lifecycleVo);
+		Assert.assertEquals(BusinessGroupStatusEnum.active.name(), lifecycleVo.getStatus());
+	}
+	
+	@Test
+	public void getGroupDeletedStatus() throws IOException, URISyntaxException {
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(owner1, "rest-g10", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+		businessGroupLifecycleManager.deleteBusinessGroupSoftly(businessGroup, owner1, false);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
+		Assert.assertNotNull(lifecycleVo);
+		Assert.assertEquals(BusinessGroupStatusEnum.trash.name(), lifecycleVo.getStatus());
+	}
+	
+	@Test
+	public void updateGroupStatus() throws IOException, URISyntaxException {
+		BusinessGroup businessGroup = businessGroupService.createBusinessGroup(null, "rest-g11", null, BusinessGroup.BUSINESS_TYPE, 0, 10, false, false, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + businessGroup.getKey() + "/status").build();
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addEntity(method, new BasicNameValuePair("newStatus", "inactive"));
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		GroupLifecycleVO lifecycleVo = conn.parse(response, GroupLifecycleVO.class);
+		Assert.assertNotNull(lifecycleVo);
+		Assert.assertEquals(BusinessGroupStatusEnum.inactive.name(), lifecycleVo.getStatus());
 	}
 	
 	@Test
