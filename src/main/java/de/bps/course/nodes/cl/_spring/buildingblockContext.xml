@@ -6,9 +6,14 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean id="cl" class="de.bps.course.nodes.cl.ChecklistCourseNodeConfiguration" scope="prototype">
-		<property name="enabled" value="${course.node.checklist.enabled}" />
-		<property name="deprecated" value="${course.node.checklist.deprecated}" />
-	<property name="order"   value="220" />
+		<property name="enabled" value="false" />
+		<property name="deprecated" value="false" />
+		<property name="order" value="220" />
+		<property name="alternativeCourseNodes">
+			<list>
+				<value>checklist</value>
+			</list>
+		</property>
 	</bean>
 	
 </beans>

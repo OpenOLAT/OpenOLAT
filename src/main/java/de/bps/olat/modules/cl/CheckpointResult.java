@@ -19,11 +19,7 @@
  */
 package de.bps.olat.modules.cl;
 
-import java.io.Serializable;
 import java.util.Date;
-
-import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.id.ModifiedInfo;
 
 /**
  * Description:<br>
@@ -33,24 +29,41 @@ import org.olat.core.id.ModifiedInfo;
  * Initial Date:  23.07.2009 <br>
  * @author bja <bja@bps-system.de>
  */
-public class CheckpointResult extends PersistentObject implements ModifiedInfo, Serializable {
+public class CheckpointResult {
+	
+	private Long key = null;
+	private int version = 0;
+	protected Date creationDate;
 	
 	private Date lastModified;
 	private boolean result;
 	private Long identityId;
 	private Checkpoint checkpoint;
+	
+	public Long getKey() {
+		return key;
+	}
 
-	public CheckpointResult() {
-		//
+	public void setKey(Long key) {
+		this.key = key;
 	}
-	
-	public CheckpointResult(Checkpoint checkpoint, Long identityId, boolean result) {
-		this.checkpoint = checkpoint;
-		this.identityId = identityId;
-		this.result = result;
-		this.lastModified = new Date();
+
+	public int getVersion() {
+		return version;
 	}
-	
+
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	public Checkpoint getCheckpoint() {
 		return checkpoint;
 	}
@@ -59,46 +72,27 @@ public class CheckpointResult extends PersistentObject implements ModifiedInfo, 
 		this.checkpoint = checkpoint;
 	}
 
-	/**
-	 * @return Returns the lastModified.
-	 */
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * @return Returns the result.
-	 */
 	public boolean getResult() {
 		return result;
 	}
 
-	/**
-	 * @return Returns the identityId.
-	 */
 	public Long getIdentityId() {
 		return identityId;
 	}
 
-	/**
-	 * @param lastModified The lastModified to set.
-	 */
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
 	}
 
-	/**
-	 * @param result The result to set.
-	 */
 	public void setResult(boolean result) {
 		this.result = result;
 	}
 
-	/**
-	 * @param identityId The identityId to set.
-	 */
 	public void setIdentityId(Long identityId) {
 		this.identityId = identityId;
 	}
-	
 }

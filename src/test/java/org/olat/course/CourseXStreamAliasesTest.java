@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.thoughtworks.xstream.XStream;
 
 /**
+ * This only checks if the XML files are can be unmarshalled with our XStream configuration
  * 
  * Initial date: 24.06.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -112,8 +113,8 @@ public class CourseXStreamAliasesTest {
 	public void readEditorTreeModelWithEdu() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_edu.xml");
-		Object runStructure = xStream.fromXML(in);
-		Assert.assertNotNull(runStructure);
+		Object editorModel = xStream.fromXML(in);
+		Assert.assertNotNull(editorModel);
 		in.close();
 	}
 	
@@ -126,8 +127,22 @@ public class CourseXStreamAliasesTest {
 	public void readEditorTreeModelWithOpencastLiveStream() throws IOException {
 		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
 		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_opencast_livestream.xml");
-		Object runStructure = xStream.fromXML(in);
-		Assert.assertNotNull(runStructure);
+		Object editorModel = xStream.fromXML(in);
+		Assert.assertNotNull(editorModel);
+		in.close();
+	}
+	
+	/**
+	 * Check the deleted old checklist course element.
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void readEditorTreeModelWithChecklist() throws IOException {
+		XStream xStream = CourseXStreamAliases.getReadCourseXStream();
+		InputStream in = CourseXStreamAliasesTest.class.getResourceAsStream("editortreemodel_checklist.xml");
+		Object editorModel = xStream.fromXML(in);
+		Assert.assertNotNull(editorModel);
 		in.close();
 	}
 
