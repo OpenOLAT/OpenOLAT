@@ -497,6 +497,20 @@ public class AppointmentsServiceImpl implements AppointmentsService, BigBlueButt
 	}
 	
 	@Override
+	public void doAdjustMaxNumParticipants(Topic topic) {
+		if (Type.finding == topic.getType()) {
+			AppointmentSearchParams params = new AppointmentSearchParams();
+			params.setTopic(topic);
+			params.setWithMaxParticipants(true);
+			List<Appointment> appointments = appointmentDao.loadAppointments(params);
+			appointments.forEach(appointment -> {
+				appointment.setMaxParticipations(null);
+				appointmentDao.saveAppointment(appointment);
+			});
+		}
+	}
+	
+	@Override
 	public void confirmAppointment(Appointment appointment) {
 		AppointmentSearchParams appointmentParams = new AppointmentSearchParams();
 		appointmentParams.setAppointment(appointment);

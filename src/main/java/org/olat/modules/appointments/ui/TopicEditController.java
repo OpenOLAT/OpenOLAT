@@ -78,6 +78,7 @@ public class TopicEditController extends AbstractTopicController {
 	protected void formOK(UserRequest ureq) {
 		doSaveTopic();
 		doSaveOrgianzers();
+		appointmentsService.doAdjustMaxNumParticipants(topic);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

@@ -105,6 +105,8 @@ public interface AppointmentsService {
 
 	public Appointment saveAppointment(Appointment appointment);
 
+	public void doAdjustMaxNumParticipants(Topic topic);
+
 	public void confirmAppointment(Appointment appointment);
 
 	public void unconfirmAppointment(Appointment appointment);
