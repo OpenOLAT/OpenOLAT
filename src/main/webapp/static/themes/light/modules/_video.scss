@@ -50,8 +50,8 @@
 .o_video_listing {
 	
 	.o_table_body.container-fluid {
-		padding-right: 0px;
-		padding-left: 0px;
+		padding-right: 0;
+		padding-left: 0;
 	}
 	
 	.o_video_entry {
@@ -463,7 +463,7 @@
 .o_video_channel {
 	position: relative;
 
-	.o_video_annotation.o_video_selected {
+	.o_video_timeline_event.o_video_selected {
 		border-color: $brand-primary;
 	}
 }
@@ -475,7 +475,7 @@
 }
 
 .o_video_channel_label {
-	width: 60px;
+	width: 50px;
 	padding: 5px;
 }
 
@@ -483,7 +483,7 @@
 	background-color: $gray-lighter;
 }
 
-.o_video_annotation {
+.o_video_timeline_event {
 	position: absolute;
 	display: inline-block;
 	z-index: 1;
@@ -507,6 +507,72 @@
 		outline: 1px solid $brand-primary;
 	}
 
+	&.o_video_marker_gray {
+		background-color: $o-video-gray-color;
+		border-color: darken($o-video-gray-color, 16);
+	}
+	&.o_video_marker_blue {
+		background-color: $o-selection-light-blue;
+		border-color: darken($o-selection-light-blue, 16);
+	}
+	&.o_video_marker_green {
+		background-color: $o-selection-light-green;
+		border-color: darken($o-selection-light-green, 16);
+	}
+	&.o_video_marker_yellow {
+		background-color: $o-selection-yellow;
+		border-color: darken($o-selection-yellow, 16);
+	}
+	&.o_video_marker_red {
+		background-color: $o-selection-red;
+		border-color: darken($o-selection-red, 16);
+	}
+}
+
+.o_video_timeline_tools {
+	display: flex;
+
+	a {
+		color: $text-color;
+		margin-right: 3px;
+	}
+
+	.o_slider_wrapper {
+		width: 100px;
+	}
+}
+
+.o_video_timeline_slider {
+
+	.o_has_value.ui-slider.ui-slider-horizontal.ui-widget-content {
+		left: 10%;
+		top: .66em;
+		height: .2em;
+		width: 80%;
+		border: none;
+		background: $gray;
+
+		.ui-slider-handle {
+			border-color: $gray;
+			background-color: $gray;
+			outline: 0;
+			width: 0.8em;
+			height: 0.8em;
+			border-radius: 50%;
+			translate: 3px;
+		}
+	}
+}
+
+.o_video_color_circle {
+	width: 16px;
+	height: 16px;
+	border-style: solid;
+	border-radius: 8px;
+	border-width: 1px;
+}
+
+.o_video_colored_area {
 	&.o_video_marker_gray {
 		background-color: $o-video-gray-color;
 		border-color: darken($o-video-gray-color, 16);
