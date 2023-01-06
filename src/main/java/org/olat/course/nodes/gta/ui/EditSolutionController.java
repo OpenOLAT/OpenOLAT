@@ -116,16 +116,16 @@ public class EditSolutionController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.mandatory.hover", null);
+			titleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
+			fileEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
-			fileEl.setErrorKey("error.file.invalid", null);
+			fileEl.setErrorKey("error.file.invalid");
 			allOk = false;
 		}
 

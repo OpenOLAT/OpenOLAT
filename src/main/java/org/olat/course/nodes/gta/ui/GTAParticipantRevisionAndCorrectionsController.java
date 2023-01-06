@@ -76,6 +76,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -417,7 +418,9 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 			
 			String subject = translate("submission.mail.subject");
 			File[] files = TaskHelper.getDocuments(submitDirectory);
-			MailTemplate template = new GTAMailTemplate(subject, body, files, getIdentity(), getTranslator());
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			MailTemplate template = new GTAMailTemplate(subject, body, files, courseEntry, gtaNode,
+					getIdentity(), getTranslator());
 			
 			MailerResult result = new MailerResult();
 			MailBundle[] bundles = mailManager.makeMailBundles(context, recipientsTO, template, null, UUID.randomUUID().toString(), result);

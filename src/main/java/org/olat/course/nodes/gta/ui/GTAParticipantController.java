@@ -450,7 +450,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			
 			String subject = translate("submission.mail.subject");
 			File[] files = TaskHelper.getDocuments(submitDirectory);
-			MailTemplate template = new GTAMailTemplate(subject, body, files, getIdentity(), getTranslator());
+			MailTemplate template = new GTAMailTemplate(subject, body, files, courseEntry, gtaNode,
+					getIdentity(), getTranslator());
 			
 			MailerResult result = new MailerResult();
 			MailBundle[] bundles = mailManager.makeMailBundles(context, recipientsTO, template, null, UUID.randomUUID().toString(), result);

@@ -144,22 +144,22 @@ public class NewSolutionController extends FormBasicController {
 		filenameEl.clearError();
 		String val = filenameEl.getValue();
 		if(!StringHelper.containsNonWhitespace(val)) {
-			filenameEl.setErrorKey("form.legende.mandatory", null);
+			filenameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			String filename = getFilename();
 			if(documentContainer.resolve(filename) != null) {
-				filenameEl.setErrorKey("error.file.exists", new String[]{filename});
+				filenameEl.setErrorKey("error.file.exists", filename);
 				allOk &= false;
 			} else if (!FileUtils.validateFilename(filename)) {
-				filenameEl.setErrorKey("error.file.invalid", null);
+				filenameEl.setErrorKey("error.file.invalid");
 				allOk &= false;
 			}
 		}
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.mandatory.hover", null);
+			titleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 

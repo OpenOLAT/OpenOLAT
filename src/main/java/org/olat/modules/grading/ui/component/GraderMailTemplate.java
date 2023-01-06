@@ -371,10 +371,4 @@ public class GraderMailTemplate extends MailTemplate {
 		putVariablesInMailContext(vContext, CORRECTION_URL, correctionUrl);
 		putVariablesInMailContext(vContext, "correctionURL", correctionUrl);
 	}
-	
-	private void putVariablesInMailContext(VelocityContext vContext, String key, String value) {
-		vContext.put(key, value);
-		vContext.put(key.toLowerCase(), value);
-	}
-
 }

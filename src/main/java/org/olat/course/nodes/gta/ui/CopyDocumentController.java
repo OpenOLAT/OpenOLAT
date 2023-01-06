@@ -230,20 +230,20 @@ public class CopyDocumentController extends FormBasicController {
 		
 		sourceFileEl.clearError();
 		if (!sourceFileEl.isOneSelected()) {
-			filenameEl.setErrorKey("form.legende.mandatory", null);
+			filenameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		filenameEl.clearError();
 		String val = filenameEl.getValue();
 		if(!StringHelper.containsNonWhitespace(val)) {
-			filenameEl.setErrorKey("form.legende.mandatory", null);
+			filenameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			String filename = getFilename();
 			filenameEl.setValue(filename); // Maybe the filename was normalized
 			if(targetContainer.resolve(filename) != null) {
-				filenameEl.setErrorKey("error.file.exists", new String[]{filename});
+				filenameEl.setErrorKey("error.file.exists", filename);
 				allOk &= false;
 			}
 		}

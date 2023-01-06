@@ -77,6 +77,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		this.config = config;
 		
 		initForm(ureq);
+		updateUI();
 	}
 
 	@Override
@@ -148,10 +149,14 @@ public class GTASubmissionEditController extends FormBasicController {
 		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, maxVal, configCont);
 
 		//confirmation
-		FormLayoutContainer confirmationCont = FormLayoutContainer.createDefaultFormLayout("confirmation", getTranslator());
+		FormLayoutContainer confirmationCont = uifactory.addDefaultFormLayout("confirmation", null, formLayout);
 		confirmationCont.setFormTitle(translate("confirmation.title"));
-		confirmationCont.setRootForm(mainForm);
-		formLayout.add(confirmationCont);
+		confirmationCont.setFormInfo(translate("confirmation.hint"));
+		
+		emailConfirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "submission.email.confirmation", confirmationCont, enableKeys, enableValues);
+		emailConfirmationEl.addActionListener(FormEvent.ONCHANGE);
+		boolean confirm = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION);
+		emailConfirmationEl.select(enableKeys[0], confirm);
 		
 		String text = config.getStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT);
 		if(!StringHelper.containsNonWhitespace(text)) {
@@ -160,22 +165,17 @@ public class GTASubmissionEditController extends FormBasicController {
 		textEl = uifactory.addRichTextElementForStringDataMinimalistic("text", "submission.text", text, 10, -1, confirmationCont, getWindowControl());
 		textEl.setMandatory(true);
 		MailHelper.setVariableNamesAsHelp(textEl, GTAMailTemplate.variableNames(), getLocale());
-		
-		emailConfirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "submission.email.confirmation", confirmationCont, enableKeys, enableValues);
-		boolean confirm = config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION);
-		emailConfirmationEl.select(enableKeys[0], confirm);
-		
+
 		//save
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		confirmationCont.add(buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, confirmationCont);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (avModule.isVideoRecordingEnabled() && source == allowVideoRecordingsEl /* || source == allowAudioRecordingsEl */) {//TODO OO-6508
+		if (source == allowVideoRecordingsEl || source == emailConfirmationEl
+				/* || source == allowAudioRecordingsEl */) {//TODO OO-6508
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -185,6 +185,8 @@ public class GTASubmissionEditController extends FormBasicController {
 		boolean allowVideoRecordings = avModule.isVideoRecordingEnabled() && allowVideoRecordingsEl.isAtLeastSelected(1);
 		maxVideoDurationEl.setVisible(allowVideoRecordings);
 		videoQualityEl.setVisible(allowVideoRecordings);
+		
+		textEl.setVisible(emailConfirmationEl.isAtLeastSelected(1));
 
 		//TODO OO-6508 boolean allowAudioRecordings = allowAudioRecordingsEl.isAtLeastSelected(1);
 		//TODO OO-6508 maxAudioDurationEl.setVisible(allowAudioRecordings);
@@ -197,8 +199,8 @@ public class GTASubmissionEditController extends FormBasicController {
 		embeddedEditorEl.clearError();
 		externalEditorEl.clearError();
 		if(!externalEditorEl.isAtLeastSelected(1) && !embeddedEditorEl.isAtLeastSelected(1)) {
-			externalEditorEl.setErrorKey("error.editor.atLeastOne", null);
-			embeddedEditorEl.setErrorKey("error.editor.atLeastOne", null);
+			externalEditorEl.setErrorKey("error.editor.atLeastOne");
+			embeddedEditorEl.setErrorKey("error.editor.atLeastOne");
 			allOk &= false;
 		}
 
@@ -207,7 +209,7 @@ public class GTASubmissionEditController extends FormBasicController {
 		
 		if(allOk && StringHelper.isLong(minNumberOfDocsEl.getValue()) && StringHelper.isLong(maxNumberOfDocsEl.getValue())
 				&& Long.parseLong(minNumberOfDocsEl.getValue()) > Long.parseLong(maxNumberOfDocsEl.getValue())) {
-			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents", null);
+			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents");
 			allOk &= false;	
 		}
 		return allOk;
@@ -222,13 +224,13 @@ public class GTASubmissionEditController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(maxVal);
 				if(val <= 0 || val > 12) {
-					numberEl.setErrorKey("error.number.format", null);
+					numberEl.setErrorKey("error.number.format");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				//can happen
 				allOk &= false;
-				numberEl.setErrorKey("error.number.format", null);
+				numberEl.setErrorKey("error.number.format");
 			}
 		}
 		
@@ -265,11 +267,15 @@ public class GTASubmissionEditController extends FormBasicController {
 
 		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
 		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);
-		
+
 		String text = textEl.getValue();
-		config.setStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT, text);
 		boolean emailConfirmation = emailConfirmationEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION, emailConfirmation);
+		if(emailConfirmation && StringHelper.containsNonWhitespace(text)) {
+			config.setStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT, text);
+		} else {
+			config.remove(GTACourseNode.GTASK_SUBMISSION_TEXT);
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

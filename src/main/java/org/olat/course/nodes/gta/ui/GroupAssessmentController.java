@@ -754,11 +754,11 @@ public class GroupAssessmentController extends FormBasicController {
 			try {
 				float score = Float.parseFloat(value);
 				if(score < 0.0f) {
-					scoreEl.setErrorKey("error.score.format", null);
+					scoreEl.setErrorKey("error.score.format");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				scoreEl.setErrorKey("error.score.format", null);
+				scoreEl.setErrorKey("error.score.format");
 				allOk &= false;
 			}
 		}

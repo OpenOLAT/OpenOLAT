@@ -22,15 +22,18 @@ package org.olat.course.nodes.gta.ui;
 import java.io.File;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailTemplate;
+import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -44,22 +47,27 @@ public class GTAMailTemplate extends MailTemplate {
 	private static final String FILENAME = "filename";
 	private static final String DATE = "date";
 	private static final String TIME = "time";
-	private static final Set<String> VARIABLE_NAMES = new HashSet<>();
-	 
-	static {
-		VARIABLE_NAMES.addAll(getStandardIdentityVariableNames());
-		VARIABLE_NAMES.add(NUMBER_OF_FILES);
-		VARIABLE_NAMES.add(FILENAME);
-		VARIABLE_NAMES.add(DATE);
-		VARIABLE_NAMES.add(TIME);
-	}
+	private static final String COURSE_URL = "courseURL";
+	private static final String COURSE_NAME = "courseName";
+	private static final String COURSE_ELEMENT_NAME = "courseElementName";
+	private static final String COURSE_ELEMENT_TITLE = "courseElementTitle";
+	private static final String COURSE_ELEMENT_SHORT_TITLE = "courseElementShortTitle";
 
-	private final Identity identity;
-	private final File[] files;
-	private final Translator translator;
+	private static final Set<String> VARIABLE_NAMES = Set.of(NUMBER_OF_FILES, FILENAME, DATE, TIME,
+			COURSE_URL, COURSE_NAME, COURSE_ELEMENT_NAME, COURSE_ELEMENT_TITLE, COURSE_ELEMENT_SHORT_TITLE);
 	
-	public GTAMailTemplate(String subject, String body, File[] files, Identity identity, Translator translator) {
+	private final File[] files;
+	private final Identity identity;
+	private final Translator translator;
+	private final CourseNode courseNode;
+	private final RepositoryEntry courseEntry;
+	
+	public GTAMailTemplate(String subject, String body, File[] files,
+			RepositoryEntry courseEntry, CourseNode courseNode,
+			Identity identity, Translator translator) {
 		super(subject, body, null);
+		this.courseEntry = courseEntry;
+		this.courseNode = courseNode;
 		this.translator = translator;
 		this.identity = identity;
 		this.files = files;
@@ -74,7 +82,7 @@ public class GTAMailTemplate extends MailTemplate {
 		Locale locale = translator.getLocale();
 		//compatibility with the old TA
 		fillContextWithStandardIdentityValues(context, identity, translator.getLocale());
-		context.put(NUMBER_OF_FILES, files == null ? "0" : Integer.toString(files.length));
+		putVariablesInMailContext(context, NUMBER_OF_FILES, files == null ? "0" : Integer.toString(files.length));
 
 		if(files != null && files.length > 0) {
 			StringBuilder sb = new StringBuilder();
@@ -91,5 +99,26 @@ public class GTAMailTemplate extends MailTemplate {
 		Formatter f = Formatter.getInstance(locale);
 		context.put(DATE, f.formatDate(now));
 		context.put(TIME, f.formatTime(now));
+		
+		if(courseEntry != null) {
+			putVariablesInMailContext(context, COURSE_NAME, courseEntry.getDisplayname());
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
+			if(courseNode != null) {
+				url += "/CourseNode/" + courseNode.getIdent();
+			}
+			String link = "<a href='" + url + "'>" + url + "</a>";
+			putVariablesInMailContext(context, COURSE_URL, link);
+			putVariablesInMailContext(context, "courseUrl", link);
+		}
+		
+		if(courseNode != null) {
+			String title = courseNode.getLongTitle();
+			if(!StringHelper.containsNonWhitespace(title)) {
+				title = courseNode.getShortTitle();
+			}
+			putVariablesInMailContext(context, COURSE_ELEMENT_NAME, title);
+			putVariablesInMailContext(context, COURSE_ELEMENT_TITLE, title);
+			putVariablesInMailContext(context, COURSE_ELEMENT_SHORT_TITLE, courseNode.getShortTitle());
+		}
 	}
 }

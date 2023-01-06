@@ -100,7 +100,7 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 		
 		if(allOk && StringHelper.isLong(minNumberOfDocsEl.getValue()) && StringHelper.isLong(maxNumberOfDocsEl.getValue())
 				&& Long.parseLong(minNumberOfDocsEl.getValue()) > Long.parseLong(maxNumberOfDocsEl.getValue())) {
-			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents", null);
+			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents");
 			allOk &= false;	
 		}
 		
@@ -116,13 +116,13 @@ public class GTARevisionAndCorrectionEditController extends FormBasicController 
 			try {
 				int val = Integer.parseInt(maxVal);
 				if(val <= 0 || val > 12) {
-					numberEl.setErrorKey("error.number.format", null);
+					numberEl.setErrorKey("error.number.format");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				//can happen
 				allOk &= false;
-				numberEl.setErrorKey("error.number.format", null);
+				numberEl.setErrorKey("error.number.format");
 			}
 		}
 		

@@ -122,22 +122,22 @@ public class EditTaskController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.mandatory.hover", null);
+			titleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
+			fileEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
-			fileEl.setErrorKey("error.file.invalid", null);
+			fileEl.setErrorKey("error.file.invalid");
 			allOk = false;
 		} else if(!replaceFile && fileEl.getUploadFile() != null) {
 			String filename = fileEl.getUploadFileName();
 			File target = new File(taskContainer, filename);
 			if(target.exists()) {
-				fileEl.setErrorKey("error.file.exists", new String[]{ filename });
+				fileEl.setErrorKey("error.file.exists", filename);
 				allOk &= false;
 			}
 		} else if(replaceFile && fileEl.getUploadFile() != null) {
@@ -145,7 +145,7 @@ public class EditTaskController extends FormBasicController {
 			if(currentDefinitions != null) {
 				for(TaskDefinition definition:currentDefinitions) {
 					if(filename.equals(definition.getFilename()) && !task.getTitle().equals(definition.getTitle())) {
-						fileEl.setErrorKey("error.file.exists", new String[]{ filename });
+						fileEl.setErrorKey("error.file.exists", filename);
 						allOk &= false;
 					}
 				}

@@ -396,7 +396,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		typeEl.clearError();
 		if(!typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.mandatory.hover", null);
+			typeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -417,7 +417,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		
 		solutionVisibleToAllEl.clearError();
 		if(solutionVisibleToAllEl.isVisible() && !solutionVisibleToAllEl.isOneSelected()) {
-			typeEl.setErrorKey("form.mandatory.hover", null);
+			typeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
@@ -426,7 +426,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 				&& !reviewEl.isAtLeastSelected(1) && !revisionEl.isAtLeastSelected(1)
 				&& !sampleEl.isAtLeastSelected(1) && !gradingEl.isAtLeastSelected(1)) {
 
-			taskAssignmentEl.setErrorKey("error.select.atleastonestep", null);
+			taskAssignmentEl.setErrorKey("error.select.atleastonestep");
 			allOk &= false;
 		}
 
@@ -452,7 +452,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void doConfirmChanges(UserRequest ureq) {
 		String title = translate("warning.tasks.in.process.title");
 		String url = helpModule.getManualProvider().getURL(getLocale(), "manual_user/task/Task_-_Further_Configurations/");
-		String text = translate("warning.tasks.in.process.text", new String[]{ url });
+		String text = translate("warning.tasks.in.process.text", url);
 		confirmChangesCtrl = activateOkCancelDialog(ureq, title, text, confirmChangesCtrl);
 	}
 	

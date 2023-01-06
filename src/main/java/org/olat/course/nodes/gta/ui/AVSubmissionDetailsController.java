@@ -75,15 +75,15 @@ public class AVSubmissionDetailsController extends FormBasicController {
 
 		fileNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("form.mandatory.hover", null);
+			fileNameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (!FileUtils.validateFilename(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("error.file.invalid", null);
+			fileNameEl.setErrorKey("error.file.invalid");
 			allOk &= false;
 		} else {
 			VFSItem item = documentsContainer.resolve(fileNameEl.getValue());
 			if (item != null && item.exists()) {
-				fileNameEl.setErrorKey("error.file.exists", new String[] { fileNameEl.getValue() });
+				fileNameEl.setErrorKey("error.file.exists", fileNameEl.getValue());
 				allOk &= false;
 			}
 		}

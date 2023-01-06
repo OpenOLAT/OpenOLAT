@@ -380,7 +380,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	
 	private class GTAAssessedBusinessGroupController extends BasicController implements Activateable2 {
 		
-		private final Link backLink;
+		private final Link bLink;
 		private final GTACoachController groupTaskCtrl;
 		
 		public GTAAssessedBusinessGroupController(UserRequest ureq, WindowControl wControl, BusinessGroup assessedBusinessGroup) {
@@ -392,8 +392,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			listenTo(groupTaskCtrl);
 			wrapperVC.put("selection", groupTaskCtrl.getInitialComponent());
 			
-			backLink = LinkFactory.createLinkBack(wrapperVC, this);
-			wrapperVC.put("backLink", backLink);
+			bLink = LinkFactory.createLinkBack(wrapperVC, this);
+			wrapperVC.put("backLink", bLink);
 			
 			putInitialPanel(wrapperVC);
 		}
@@ -405,7 +405,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
-			if(backLink == source) {
+			if(bLink == source) {
 				fireEvent(ureq, Event.BACK_EVENT);
 			}
 		}

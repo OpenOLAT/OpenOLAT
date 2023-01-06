@@ -88,26 +88,26 @@ public class AVTaskDefinitionController extends FormBasicController {
 
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.mandatory.hover", null);
+			titleEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 
 		fileNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("form.mandatory.hover", null);
+			fileNameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (!FileUtils.validateFilename(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("error.file.invalid", null);
+			fileNameEl.setErrorKey("error.file.invalid");
 			allOk &= false;
 		} else {
 			VFSItem item = tasksContainer.resolve(fileNameEl.getValue());
 			if (item != null && item.exists()) {
-				fileNameEl.setErrorKey("error.file.exists", new String[] { fileNameEl.getValue() });
+				fileNameEl.setErrorKey("error.file.exists", fileNameEl.getValue());
 				allOk &= false;
 			} else if (existingDefinitions != null) {
 				for (TaskDefinition currentDefinition : existingDefinitions) {
 					if (fileNameEl.getValue().equals(currentDefinition.getFilename())) {
-						fileNameEl.setErrorKey("error.file.exists", new String[] { fileNameEl.getValue() });
+						fileNameEl.setErrorKey("error.file.exists", fileNameEl.getValue());
 						allOk &= false;
 					}
 				}

@@ -218,4 +218,9 @@ public abstract class MailTemplate {
 		vContext.put(LAST_NAME, user.getProperty(UserConstants.LASTNAME, locale));
 		vContext.put(EMAIL, UserManager.getInstance().getUserDisplayEmail(identity, locale));
 	}
+	
+	protected static void putVariablesInMailContext(VelocityContext vContext, String key, String value) {
+		vContext.put(key, value);
+		vContext.put(key.toLowerCase(), value);
+	}
 }

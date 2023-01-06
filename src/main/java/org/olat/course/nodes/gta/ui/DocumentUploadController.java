@@ -98,21 +98,21 @@ public class DocumentUploadController extends FormBasicController {
 
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
+			fileEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && !FileUtils.validateFilename(fileEl.getUploadFileName())) {
-			fileEl.setErrorKey("error.file.invalid", null);
+			fileEl.setErrorKey("error.file.invalid");
 			allOk &= false;
 		} else if (fileEl.getUploadFile() != null && fileEl.getUploadFile().length() == 0) {
-			fileEl.setErrorKey("error.file.empty", null);
+			fileEl.setErrorKey("error.file.empty");
 			allOk &= false;
 		} else if(fileToReplace == null && documentsContainer != null
 				&& documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
-			fileEl.setErrorKey("error.file.exists", new String[]{ fileEl.getUploadFileName() });
+			fileEl.setErrorKey("error.file.exists", fileEl.getUploadFileName());
 			allOk &= false;
 		} else if(fileToReplace != null && !fileToReplace.getName().equals(fileEl.getUploadFileName())
 				&& documentsContainer != null && documentsContainer.resolve(fileEl.getUploadFileName()) != null) {
-			fileEl.setErrorKey("error.file.exists", new String[]{ fileEl.getUploadFileName() });
+			fileEl.setErrorKey("error.file.exists", fileEl.getUploadFileName());
 			allOk &= false;
 		}
 		return allOk;
