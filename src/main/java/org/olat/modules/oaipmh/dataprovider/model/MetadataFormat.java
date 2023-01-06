@@ -10,16 +10,16 @@
 
 package org.olat.modules.oaipmh.dataprovider.model;
 
-import org.olat.modules.oaipmh.dataprovider.model.conditions.Condition;
-
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
+
+import org.olat.core.util.xml.XMLFactories;
+import org.olat.modules.oaipmh.dataprovider.model.conditions.Condition;
 
 public class MetadataFormat {
     public static Transformer identity () {
         try {
-            return TransformerFactory.newInstance().newTransformer();
+            return XMLFactories.newTransformerFactory().newTransformer();
         } catch (TransformerConfigurationException e) {
             throw new RuntimeException(e);
         }

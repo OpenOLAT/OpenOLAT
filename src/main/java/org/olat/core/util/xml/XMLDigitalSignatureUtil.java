@@ -94,6 +94,8 @@ public class XMLDigitalSignatureUtil {
 	
 	private static final Logger log = Tracing.createLoggerFor(XMLDigitalSignatureUtil.class);
 	
+	private static final String SECURE_VALIDATION = "org.jcp.xml.dsig.secureValidation";
+	
 	/**
 	 * Validate a XML file with a XML Digital Signature saved in an external file.
 	 * 
@@ -108,7 +110,7 @@ public class XMLDigitalSignatureUtil {
 	 * @throws MarshalException
 	 * @throws XMLSignatureException
 	 */
-	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile, PublicKey publicKey)
+	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile, PublicKey publicKey, Boolean strictValidation)
 	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException { 
 		Document doc = getDocument(xmlSignatureFile);
 		Element signatureEl = getSignatureElement(doc);
@@ -119,7 +121,7 @@ public class XMLDigitalSignatureUtil {
 		DOMValidateContext validContext = new DOMValidateContext(publicKey, signatureEl);
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
-		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE);//TODO jee
+		validContext.setProperty(SECURE_VALIDATION, strictValidation);
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
@@ -153,7 +155,7 @@ public class XMLDigitalSignatureUtil {
 	 * @throws MarshalException
 	 * @throws XMLSignatureException
 	 */
-	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile)
+	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile, Boolean strictValidation)
 	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException {  
 
 		Document doc = getDocument(xmlSignatureFile);
@@ -165,7 +167,7 @@ public class XMLDigitalSignatureUtil {
 		DOMValidateContext validContext = new DOMValidateContext(new X509KeySelector(), nl.item(0));
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
-		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE); //TODO jee
+		validContext.setProperty(SECURE_VALIDATION, strictValidation);
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
@@ -186,7 +188,7 @@ public class XMLDigitalSignatureUtil {
 		return validFlag;
 	}
 	
-	public static boolean validate(File signedXmlFile, PublicKey publicKey)
+	public static boolean validate(File signedXmlFile, PublicKey publicKey, Boolean strictValidation)
 	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException {  
 
 		Document doc = getDocument(signedXmlFile);
@@ -197,7 +199,7 @@ public class XMLDigitalSignatureUtil {
         }
         
 		DOMValidateContext validContext = new DOMValidateContext(publicKey, nl.item(0));
-		validContext.setProperty("org.jcp.xml.dsig.secureValidation", Boolean.FALSE);//TODO jee
+		validContext.setProperty(SECURE_VALIDATION, strictValidation);
 
 		XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = fac.unmarshalXMLSignature(validContext);
@@ -448,8 +450,7 @@ public class XMLDigitalSignatureUtil {
 			if(nl.getLength() == 1) {
 				Node element = nl.item(0);
 				for(Node child=element.getFirstChild(); child != null; child = child.getNextSibling()) {
-					if(child instanceof Text) {
-						Text text = (Text)child;
+					if(child instanceof Text text) {
 						sb.append(text.getTextContent());	
 					}
 				}

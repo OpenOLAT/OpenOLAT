@@ -965,10 +965,10 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				
 			if(kp == null) {
 				// validate document against signature
-				if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature)) {
+				if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature, Boolean.FALSE)) {
 					return new DigitalSignatureValidation(DigitalSignatureValidation.Message.validItself, true);
 				}
-			} else if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature, kp.getX509Cert().getPublicKey())) {
+			} else if(XMLDigitalSignatureUtil.validate(uri, assessmentResult, xmlSignature, kp.getX509Cert().getPublicKey(), Boolean.FALSE)) {
 				// validate document against signature but use the public key of the certificate
 				return new DigitalSignatureValidation(DigitalSignatureValidation.Message.validCertificate, true);
 			}

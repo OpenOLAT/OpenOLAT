@@ -65,7 +65,7 @@ implements SortableFlexiTableDataModel<ExportRow> {
 		switch(COLS[col]) {
 			case title: return row.getTitle();
 			case creationDate: return row.getCreationDate();
-			case creator: getCreator();
+			case creator: return getCreator();
 			default: return "ERROR";
 		}
 	}

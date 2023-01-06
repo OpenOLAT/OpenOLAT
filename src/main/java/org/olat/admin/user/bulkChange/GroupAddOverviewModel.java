@@ -77,6 +77,7 @@ public class GroupAddOverviewModel extends DefaultFlexiTableDataModel<BusinessGr
 				else if(ownGroupIDs.contains(key)) {
 					return translator.translate("owner");
 				}
+				return null;
 			case 3: // send email
 				if (mailGroupIDs != null && mailGroupIDs.contains(key)){
 					return translator.translate("yes");

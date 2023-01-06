@@ -85,7 +85,7 @@ public class XMLDigitalSignatureUtilTest {
 		Assert.assertTrue(xmlSignatureFile.length() > 0);
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 
 		//clean up
@@ -109,7 +109,7 @@ public class XMLDigitalSignatureUtilTest {
 		String xmlUri = "file:/Users/srosse/Developer/Work/ws_14_branches/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
 
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -129,7 +129,7 @@ public class XMLDigitalSignatureUtilTest {
 		String xmlUri = "file:/Users/srosse/Developer/Work/ws_14_branches/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -149,7 +149,7 @@ public class XMLDigitalSignatureUtilTest {
 		String xmlUri = "file:/Users/srosse/Developer/Work/ws_sidedfeatures/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -168,7 +168,7 @@ public class XMLDigitalSignatureUtilTest {
 		Assert.assertTrue(xmlSignatureFile.length() > 0);
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 
 		//clean up
@@ -201,7 +201,7 @@ public class XMLDigitalSignatureUtilTest {
 		Assert.assertTrue(xmlSignatureFile.length() > 0);
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 		
 		//load the signature and check that the course info and the Signature is there
@@ -231,7 +231,7 @@ public class XMLDigitalSignatureUtilTest {
 		URL xmlTamperedUrl = XMLDigitalSignatureUtilTest.class.getResource("assessmentResult_tampered.xml");
 		File xmlTamperedFile = new File(xmlTamperedUrl.toURI());
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlTamperedFile, xmlSignatureFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertFalse(valid);
 
 		//clean up
@@ -252,7 +252,7 @@ public class XMLDigitalSignatureUtilTest {
 		Assert.assertTrue(xmlSignedFile.length() > 0);
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 
 		//clean up
@@ -266,7 +266,7 @@ public class XMLDigitalSignatureUtilTest {
 		File xmlSignedFile = new File(xmlSignedUrl.toURI());
 
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -277,7 +277,7 @@ public class XMLDigitalSignatureUtilTest {
 		File xmlSignedFile = new File(xmlSignedUrl.toURI());
 
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -288,7 +288,7 @@ public class XMLDigitalSignatureUtilTest {
 		File xmlSignedFile = new File(xmlSignedUrl.toURI());
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 	}
 	
@@ -314,7 +314,7 @@ public class XMLDigitalSignatureUtilTest {
 		
 		//the xml is signed and valid
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertTrue(valid);
 		
 		//change it a little bit
@@ -326,7 +326,7 @@ public class XMLDigitalSignatureUtilTest {
 		FileUtils.save(xmlRogueFile, rogueXml, "UTF-8");
 		//the xml is not valid
 		boolean validity = XMLDigitalSignatureUtil.validate(xmlRogueFile,
-				certificateInfo.getX509Cert().getPublicKey());
+				certificateInfo.getX509Cert().getPublicKey(), Boolean.FALSE);
 		Assert.assertFalse(validity);
 		
 		//clean up

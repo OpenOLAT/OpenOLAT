@@ -49,6 +49,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.xml.XMLConstants;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -115,6 +117,8 @@ public final class XMLUtils {
 	public static Document readXMLFile(File file) throws IOException, JDOMException {
 		Document doc = null;
 		SAXBuilder builder = new SAXBuilder();
+		builder.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+		builder.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 		builder.setExpandEntities(false);
 		// This allows UNC mapped locations to load
 		doc = builder.build(new FileInputStream(file));

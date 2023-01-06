@@ -47,6 +47,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
+
 /**
  * A URL/Path representaion of a File.
  * For each platform and for each Browser there are problems.  Some OSs like to have
@@ -58,6 +61,7 @@ import java.net.URL;
  */
 class FilePath
 {
+	private static final Logger log = Tracing.createLoggerFor(FilePath.class);
 	
 	/**
 	 * The File this represents
@@ -108,7 +112,7 @@ class FilePath
             path = url.getPath();
         }
         catch(MalformedURLException ex) {
-            ex.printStackTrace();
+        	log.error("", ex);
         }
         
 		// Params
@@ -161,7 +165,6 @@ class FilePath
 	 * @return the File as a String Path
 	 */
 	public String getPath() {
-		String path = _file.getAbsolutePath();
-		return path;
+		return _file.getAbsolutePath();
 	}
 }

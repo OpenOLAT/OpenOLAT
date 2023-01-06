@@ -128,7 +128,7 @@ public class SetupPropertiesController extends FormBasicController {
 		defaultPropsTableEl.setSearchEnabled(true);
 		defaultPropsTableEl.setShowAllRowsEnabled(true);
 
-		initFilters(defaultPropsTableEl);
+		initFilters();
 
 	}
 
@@ -137,7 +137,7 @@ public class SetupPropertiesController extends FormBasicController {
 		//
 	}
 
-	private void initFilters(FlexiTableElement tableElement) {
+	private void initFilters() {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("filter.show.all"), OlatPropertiesFilter.showAll.name(), true));
 		filters.add(new FlexiTableFilter(translate("filter.show.overwritten.only"), OlatPropertiesFilter.showOverwrittenOnly.name()));
