@@ -170,6 +170,14 @@ public interface LicenseService {
 	 * @return the license type or null if no license type was found for the key
 	 */
 	public LicenseType loadLicenseTypeByKey(String licenseTypeKey);
+	
+	/**
+	 * Load licenses types by their keys.
+	 * 
+	 * @param keys A list of key of the license type as a String
+	 * @return A list of licenses types or an empty list if no license type was found for the keys
+	 */
+	public List<LicenseType> loadLicensesTypesByKeys(List<String> keys);
 
 
 	/**

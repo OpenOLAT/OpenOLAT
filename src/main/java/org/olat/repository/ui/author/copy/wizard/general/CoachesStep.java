@@ -145,7 +145,7 @@ public class CoachesStep extends BasicStep {
 			
 			if (!coachesCopyModeEl.isOneSelected()) {
 				allOk &= false;
-				coachesCopyModeEl.setErrorKey("error.select", null);
+				coachesCopyModeEl.setErrorKey("error.select");
 			}
 			
 			return allOk;

@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.license.manager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -174,6 +176,17 @@ class LicenseServiceImpl implements LicenseService {
 			// bad luck
 		}
 		return licenseTypeDao.loadLicenseTypeByKey(key);
+	}
+	
+	@Override
+	public List<LicenseType> loadLicensesTypesByKeys(List<String> keys) {
+		if (keys == null || keys.isEmpty()) return new ArrayList<>();
+		
+		List<Long> keysAsLong = keys.stream()
+				.filter(StringHelper::isLong)
+				.map(Long::parseLong)
+				.toList();
+		return licenseTypeDao.loadLicensesTypesByKeys(keysAsLong);
 	}
 	
 	@Override

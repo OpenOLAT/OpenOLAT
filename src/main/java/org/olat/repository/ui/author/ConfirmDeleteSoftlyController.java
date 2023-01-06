@@ -131,7 +131,7 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("details.delete.acknowledge.error", null);
+			acknowledgeEl.setErrorKey("details.delete.acknowledge.error");
 			allOk &= false;
 		}
 		

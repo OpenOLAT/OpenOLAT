@@ -203,12 +203,12 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 		organisationEl.clearError();
 		if(organisationEl.isVisible() && !organisationEl.isOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory", null);
+			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if (!StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
-			displaynameEl.setErrorKey("form.legende.mandatory", null);
+			displaynameEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else if (displaynameEl.hasError()) {
 			allOk = false;
@@ -239,7 +239,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			}
 			if(handlers.isEmpty()) {
 				allOk = false;
-				uploadFileEl.setErrorKey("add.failed", new String[] {});
+				uploadFileEl.setErrorKey("add.failed");
 			}
 		}
 		

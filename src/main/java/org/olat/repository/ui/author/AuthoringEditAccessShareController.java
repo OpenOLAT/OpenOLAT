@@ -31,6 +31,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -52,6 +53,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.modules.catalog.CatalogV2Module;
@@ -311,7 +313,11 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
 		boolean isEntryLicenseAllowedForIndexing = licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString());
-		List<String> allowedLicenses = licenseRestrictions.stream().map(l -> licenseService.loadLicenseTypeByKey(l).getName()).toList();
+		List<LicenseType> allowedLicensesTypes = licenseService.loadLicensesTypesByKeys(licenseRestrictions);
+		List<String> allowedLicenses = allowedLicensesTypes.stream()
+				.filter(type -> StringHelper.containsNonWhitespace(type.getName()))
+				.map(LicenseType::getName)
+				.toList();
 
 		oaiCont = FormLayoutContainer.createVerticalFormLayout("oaiIndexingWarning", getTranslator());
 		oaiCont.setFormWarning(translate("cif.metadata.warning",
@@ -329,8 +335,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			buttonsCont.setRootForm(mainForm);
 			generalCont.add("buttons", buttonsCont);
-			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 			uifactory.addFormSubmitButton("save", buttonsCont);
+			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
 

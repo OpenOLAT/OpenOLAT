@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.license.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -103,6 +104,16 @@ public class LicenseTypeDAO {
 				.setParameter("licensetypeKey", key)
 				.getResultList();
 		return licenseTypes == null || licenseTypes.isEmpty() ? null : licenseTypes.get(0);
+	}
+	
+	List<LicenseType> loadLicensesTypesByKeys(List<Long> keys) {
+		if (keys == null || keys.isEmpty()) return new ArrayList<>();
+		
+		String query = "select licensetype from licensetype licensetype where licensetype.key in (:keys)";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, LicenseType.class)
+				.setParameter("keys", keys)
+				.getResultList();
 	}
 
 	LicenseType loadLicenseTypeByName(String name) {

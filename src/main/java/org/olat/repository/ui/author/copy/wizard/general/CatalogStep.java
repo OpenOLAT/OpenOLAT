@@ -125,7 +125,7 @@ public class CatalogStep extends BasicStep {
 			
 			if (!catalogCopyModeEl.isOneSelected()) {
 				allOk &= false;
-				catalogCopyModeEl.setErrorKey("error.select", null);
+				catalogCopyModeEl.setErrorKey("error.select");
 			}
 			
 			return allOk;

@@ -182,14 +182,14 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("details.delete.acknowledge.error", null);
+			acknowledgeEl.setErrorKey("details.delete.acknowledge.error");
 			allOk &= false;
 		}
 		
 		deleteReferencesEl.clearError();
 		if(deleteReferencesEl.isEnabled() && deleteReferencesEl.isVisible()) {
 			if(!deleteReferencesEl.isOneSelected()) {
-				deleteReferencesEl.setErrorKey("form.mandatory.hover", null);
+				deleteReferencesEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
 		}
