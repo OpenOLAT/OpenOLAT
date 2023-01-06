@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.security.Security;
@@ -232,15 +233,19 @@ public class PersistedProperties implements Initializable, Destroyable{
 
 				if(secured) {
 					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
-					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
+					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING", "BC");
 					cipher.init(Cipher.DECRYPT_MODE, key, random);
 					is =  new CipherInputStream(is, cipher);
 				}
 				
 				configuredProperties.load(is);
+				
+				if(secured) {
+					System.out.println(configuredProperties);
+				}
 				is.close();
 			} catch (Exception e) {
-				log.error("Could not load config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
+				log.error("Could not load config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
 			}
 		}
 	}
@@ -597,8 +602,8 @@ public class PersistedProperties implements Initializable, Destroyable{
 	private static final SecureRandom random = new SecureRandom();
   
 	private static SecretKey generateKey(String passphrase) throws Exception {
-		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(), iterations, keyLength);
-		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC");
+		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), iterations, keyLength);
+		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC", "BC");
 		return keyFactory.generateSecret(keySpec);
 	}
 }
