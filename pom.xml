@@ -72,7 +72,7 @@
 		<org.slf4j>2.0.6</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.3.2.Final</io.undertow>
+		<io.undertow>2.3.3.Final</io.undertow>
 		<jackson.version>2.14.1</jackson.version>
 		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.31</com.mysql.version>
@@ -1778,7 +1778,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.7</version>
+			<version>3.2.8</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2448,13 +2448,13 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.23.1</version>
+			<version>3.24.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
-			<version>2.7.22</version>
+			<version>4.11.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
