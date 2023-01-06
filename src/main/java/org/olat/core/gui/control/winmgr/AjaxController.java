@@ -30,10 +30,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -63,20 +59,18 @@ import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
-import org.olat.core.gui.render.StringOutput;
-import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Description:<br> - to be used by the windowmanager only! - this controller
@@ -96,8 +90,8 @@ public class AjaxController extends DefaultController {
 	private final Panel pollperiodPanel;
 	// protected only for performance improvement
 	protected List<WindowCommand> windowcommands = new ArrayList<>(3);
-	private final Mapper m, sbm;
-	private final MapperKey mKey, sbmKey;
+	private final Mapper m;
+	private final MapperKey mKey;
 	
 	private static final int DEFAULT_POLLPERIOD = 5000;//reasonable default value
 	private int pollperiod = DEFAULT_POLLPERIOD;//reasonable default value
@@ -190,47 +184,6 @@ public class AjaxController extends DefaultController {
 		
 		// either turn ajax on or off
 		setAjaxEnabled(ajaxEnabled);
-		
-		// The following is for the "standby page"
-		final Locale flocale = ureq.getLocale();
-		
-		sbm = new Mapper() {
-			
-			Translator t = Util.createPackageTranslator(ChiefController.class, flocale);
-			@Override
-			public MediaResource handle(String relPath, HttpServletRequest request) {
-				StringMediaResource smr = new StringMediaResource();
-				smr.setContentType("text/html;charset=utf-8");
-				smr.setEncoding("utf-8");
-				try(StringOutput slink = new StringOutput(50);
-						StringOutput blink = new StringOutput(50)) {
-
-					StaticMediaDispatcher.renderStaticURI(slink, null);
-					//slink now holds static url base like /olat/raw/700/
-					
-					URLBuilder ubu = new URLBuilder(WebappHelper.getServletContextPath() + DispatcherModule.PATH_AUTHENTICATED, "1", "1", csrfToken);
-					ubu.buildURI(blink, null, null);
-					//blink holds the link back to olat like /olat/auth/1%3A1%3A0%3A0%3A0/
-		
-					String p = FileUtils.load(getClass().getResourceAsStream("_content/standby.html"), WebappHelper.getDefaultCharset());
-					p = p.replace("_staticLink_",	slink.toString());
-					p = p.replace("_pageTitle_",	t.translate("standby.page.title"));
-					p = p.replace("_pageHeading_",	t.translate("standby.page.heading"));
-					p = p.replace("_Message_",		t.translate("standby.page.message"));
-					p = p.replace("_Button_",		t.translate("standby.page.button"));
-					p = p.replace("_linkTitle_",	t.translate("standby.page.button.title"));
-					p = p.replace("_olatUrl_",		blink.toString());
-					
-					smr.setData(p);
-					
-				} catch (Exception e) {
-					smr.setData(e.toString());
-				}
-				return smr;
-			}
-		};
-		sbmKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), sbm);
-		myContent.contextPut("sburi", sbmKey.getUrl());
 	}
 
 	@Override
@@ -405,8 +358,6 @@ public class AjaxController extends DefaultController {
 	protected void doDispose() {
 		List<MapperKey> mappers = new ArrayList<>();
 		mappers.add(mKey);
-		mappers.add(sbmKey);
-		CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
 		if (ajaxEnabled && pollCount == 0) {
 			//the controller should be older than 40s otherwise poll may not started yet
 			if ((System.currentTimeMillis() - creationTime) > 40000) log.warn("Client did not send a single polling request though ajax is enabled!");

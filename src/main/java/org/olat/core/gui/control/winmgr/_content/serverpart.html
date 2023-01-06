@@ -86,7 +86,6 @@ function onPollFailure(response) {
   pollError++;
   if(response.status == 404) { 
 	  ## Not found - happens when user opened a second window and logged in while in the first window the poller is still running. 
-	  ## Note: when in standby-mode this does not happen as the user session is still valid and the standby document exists.
 	  ## Only solution: stop poller as this triggers some fancy ***.dms file downloads
 	  o_info.poller.cancel(); 
   }

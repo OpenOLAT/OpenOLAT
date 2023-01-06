@@ -108,7 +108,7 @@ $r.renderHeaderIncludes()
 	<div id="o_main_container" class="o_container_offcanvas container-fluid">
 	
 		## BEGIN ERROR AREA	
-		<div id="o_main" class="o_exception">
+		<div id="o_main" class="o_exception o_hide_main_left o_hide_main_right"><div id="o_main_center">
 			<div class="jumbotron">
   				<h1>$r.translate("error.header")</h1>
 				<img src="$r.staticLink("images/transparent.gif")" class="o_visual img-rounded pull-right" alt="" />
@@ -166,7 +166,7 @@ $r.translate('error.time') ${time}
 		
 		<a id="o_toplink" href="#o_top" onclick="o_scrollToElement('#o_top');" title="$r.translateInAttribute("top.alt")">
 			<i class="o_icon o_icon_top"></i> $r.translate("top")</a>	
-	</div>
+	</div></div>
 </div>
 ## END #o_main -----
 
