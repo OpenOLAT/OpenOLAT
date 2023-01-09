@@ -96,6 +96,7 @@ public class BGAreaImpl implements Persistable, BGArea {
 		setName(name);
 		setResource(resource);
 		setDescription(description);
+		setCreationDate(new Date());
 	}
 	
 	@Override

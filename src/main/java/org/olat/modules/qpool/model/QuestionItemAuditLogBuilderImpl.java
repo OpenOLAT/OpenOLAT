@@ -19,6 +19,8 @@
  */
 package org.olat.modules.qpool.model;
 
+import java.util.Date;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseService;
@@ -93,6 +95,7 @@ public class QuestionItemAuditLogBuilderImpl implements QuestionItemAuditLogBuil
 	@Override
 	public QuestionItemAuditLog create() {
 		QuestionItemAuditLogImpl auditLog = new QuestionItemAuditLogImpl();
+		auditLog.setCreationDate(new Date());
 		auditLog.setAuthorKey(authorKey);
 		auditLog.setAction(action.name());
 		auditLog.setQuestionItemKey(questionItemKey);

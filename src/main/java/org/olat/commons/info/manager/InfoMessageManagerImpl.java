@@ -60,6 +60,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		if(ores == null) throw new NullPointerException("OLAT Resourceable cannot be null");
 		
 		InfoMessageImpl info = new InfoMessageImpl();
+		info.setCreationDate(new Date());
 		info.setResId(ores.getResourceableId());
 		info.setResName(ores.getResourceableTypeName());
 		info.setResSubPath(subPath);
@@ -70,8 +71,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 	@Override
 	public void saveInfoMessage(InfoMessage infoMessage) {
-		if(infoMessage instanceof InfoMessageImpl) {
-			InfoMessageImpl impl = (InfoMessageImpl)infoMessage;
+		if(infoMessage instanceof InfoMessageImpl impl) {
 			if(impl.getKey() == null) {
 				dbInstance.saveObject(impl);
 			} else {
@@ -82,8 +82,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 	@Override
 	public void deleteInfoMessage(InfoMessage infoMessage) {
-		if(infoMessage instanceof InfoMessageImpl) {
-			InfoMessageImpl impl = (InfoMessageImpl)infoMessage;
+		if(infoMessage instanceof InfoMessageImpl impl) {
 			if(impl.getKey() != null) {
 				dbInstance.deleteObject(impl);
 			}

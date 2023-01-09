@@ -21,20 +21,6 @@ package org.olat.resource.accesscontrol.model;
 
 import java.util.Date;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.Version;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.IdentityImpl;
@@ -45,15 +31,26 @@ import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceImpl;
 import org.olat.resource.accesscontrol.ResourceReservation;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Entity(name="resourcereservation")
 @Table(name="o_ac_reservation")
-@NamedQueries({
-	@NamedQuery(name="loadReservationsByIdentity",query="select reservation from resourcereservation as reservation where reservation.identity.key=:identityKey")
-})
+@NamedQuery(name="loadReservationsByIdentity",query="select reservation from resourcereservation as reservation where reservation.identity.key=:identityKey")
 public class ResourceReservationImpl implements CreateInfo, Persistable, ResourceReservation {
 
 	private static final long serialVersionUID = 2200260145344478778L;

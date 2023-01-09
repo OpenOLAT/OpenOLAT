@@ -64,7 +64,8 @@ public class OpenMeetingsDAO {
 	public OpenMeetingsRoomReference createReference(final BusinessGroup group, final OLATResourceable courseResource, String subIdentifier, OpenMeetingsRoom room) {
 		String serialized = serializeRoom(room);
 		OpenMeetingsRoomReference ref = new OpenMeetingsRoomReference();
-		ref.setLastModified(new Date());
+		ref.setCreationDate(new Date());
+		ref.setLastModified(ref.getCreationDate());
 		ref.setRoomId(room.getRoomId());
 		ref.setConfig(serialized);
 		ref.setGroup(group);

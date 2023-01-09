@@ -851,6 +851,8 @@ public class ForumManager {
 	 */
 	public Message createMessage(Forum forum, Identity creator, boolean guest) {
 		MessageImpl message = new MessageImpl();
+		message.setCreationDate(new Date());
+		message.setLastModified(message.getCreationDate());
 		message.setForum(forum);
 		if(guest) {
 			message.setGuest(guest);

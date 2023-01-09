@@ -95,6 +95,7 @@ public class OLATResourceImpl implements Persistable, OLATResource {
 		if (id == null) id = NULLVALUE;
 		resId = id;
 		resName = typeName;
+		setCreationDate(new Date());
 	}
 
 	OLATResourceImpl(OLATResourceable resourceable) {
@@ -102,6 +103,7 @@ public class OLATResourceImpl implements Persistable, OLATResource {
 		if (id == null) id = NULLVALUE;
 		resId = id;
 		resName = resourceable.getResourceableTypeName();
+		setCreationDate(new Date());
 	}
 	
 	@Override

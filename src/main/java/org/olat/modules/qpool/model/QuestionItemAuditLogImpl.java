@@ -168,8 +168,7 @@ public class QuestionItemAuditLogImpl implements QuestionItemAuditLog, Persistab
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof QuestionItemAuditLogImpl) {
-			QuestionItemAuditLogImpl auditLog = (QuestionItemAuditLogImpl)obj;
+		if(obj instanceof QuestionItemAuditLogImpl auditLog) {
 			return key != null && key.equals(auditLog.getKey());
 		}
 		return super.equals(obj);

@@ -26,16 +26,15 @@
 
 package org.olat.course.statistic.hourofday;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.Persistable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Parameter;
-import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.id.Persistable;
 
 /**
  * Hibernate object representing an entry in the o_stat_hourofday table.
@@ -45,7 +44,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="hourofdaystat")
 @Table(name="o_stat_hourofday")
-public class HourOfDayStat extends PersistentObject {
+public class HourOfDayStat implements Persistable {
 
 	private static final long serialVersionUID = -5831961644323028397L;
 
@@ -75,6 +74,15 @@ public class HourOfDayStat extends PersistentObject {
 	// for hibernate	
 	}
 	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	public long getResId() {
 		return resId;
 	}
@@ -117,8 +125,7 @@ public class HourOfDayStat extends PersistentObject {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof HourOfDayStat) {
-			HourOfDayStat stat = (HourOfDayStat)obj;
+		if(obj instanceof HourOfDayStat stat) {
 			return getKey() != null && getKey().equals(stat.getKey());
 		}
 		return super.equals(obj);

@@ -107,6 +107,7 @@ public class LockImpl implements Persistable, CreateInfo {
 		this.asset = asset;
 		this.owner = owner;
 		this.windowId = windowId;
+		setCreationDate(new Date());
 	}
 	
 	@Override

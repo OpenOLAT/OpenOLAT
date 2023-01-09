@@ -20,7 +20,9 @@
 package org.olat.admin.setup;
 
 import java.util.ArrayList;
+import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -29,7 +31,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -128,6 +129,7 @@ public class SetupModule extends AbstractSpringModule {
 		if (identity == null) {
 			// Create new user and subject
 			UserImpl newUser = new UserImpl();
+			newUser.setCreationDate(new Date());
 			newUser.setFirstName(user.getFirstName());
 			newUser.setLastName(user.getLastName());
 			newUser.setEmail(user.getEmail());

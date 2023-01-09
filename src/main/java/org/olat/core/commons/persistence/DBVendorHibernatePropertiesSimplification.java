@@ -25,7 +25,6 @@
 package org.olat.core.commons.persistence;
 
 import static org.hibernate.cfg.AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE;
-import static org.hibernate.cfg.AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,13 +77,6 @@ public class DBVendorHibernatePropertiesSimplification extends Properties {
 				properties.put(QUERY_PLAN_CACHE_MAX_SIZE, "512");
 			} else if(mem == MemorySize.medium) {
 				properties.put(QUERY_PLAN_CACHE_MAX_SIZE, "1024");
-			}
-		} else if(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE.equals(key)) {
-			MemorySize mem = getMaxMemoryAvailable();
-			if(mem == MemorySize.small) {
-				properties.put(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, "32");
-			} else if(mem == MemorySize.medium) {
-				properties.put(QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, "64");
 			}
 		}
 	}

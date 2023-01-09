@@ -5,8 +5,6 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="AuditInterceptor" class="org.olat.core.commons.persistence.AuditInterceptor" />
-
 	<bean id="database" class="org.olat.core.commons.persistence.DBImpl" destroy-method="destroy" depends-on="databaseUpgrader">
 		<constructor-arg index="0" ref="${db.vendor}_${db.source}_HibernateProperties"/>
 		<property name="dbVendor" value="${db.vendor}" />

@@ -46,9 +46,10 @@ public class ACReservationDAO {
 	
 	public ResourceReservation createReservation(Identity identity, String type, Date expirationDate, OLATResource resource) {
 		ResourceReservationImpl reservation = new ResourceReservationImpl();
+		reservation.setCreationDate(new Date());
+		reservation.setLastModified(reservation.getCreationDate());
 		reservation.setIdentity(identity);
 		reservation.setResource(resource);
-		reservation.setLastModified(new Date());
 		reservation.setExpirationDate(expirationDate);
 		reservation.setType(type);
 		dbInstance.getCurrentEntityManager().persist(reservation);
@@ -56,7 +57,7 @@ public class ACReservationDAO {
 	}
 	
 	public ResourceReservation loadReservation(IdentityRef identity, OLATResource resource) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key=:resourceKey and reservation.identity.key=:identityKey");
 		
@@ -69,7 +70,7 @@ public class ACReservationDAO {
 	}
 	
 	public List<ResourceReservation> loadReservations(List<OLATResource> resources) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select reservation from resourcereservation as reservation ")
 		  .append(" where reservation.resource.key in (:resourceKey)");
 		

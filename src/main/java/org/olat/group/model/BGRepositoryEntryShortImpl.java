@@ -19,7 +19,7 @@
  */
 package org.olat.group.model;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.id.Persistable;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 
@@ -30,10 +30,11 @@ import org.olat.repository.RepositoryEntryStatusEnum;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class BGRepositoryEntryShortImpl extends PersistentObject implements RepositoryEntryShort {
+public class BGRepositoryEntryShortImpl implements Persistable, RepositoryEntryShort {
 	
 	private static final long serialVersionUID = -1620571782903602033L;
 
+	private Long key;
 	private String displayname;
 	
 	public BGRepositoryEntryShortImpl() {
@@ -44,7 +45,16 @@ public class BGRepositoryEntryShortImpl extends PersistentObject implements Repo
 		setKey(key);
 		this.displayname = displayname;
 	}
-	
+
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
 	@Override
 	public String getDisplayname() {
 		return displayname;
@@ -70,10 +80,14 @@ public class BGRepositoryEntryShortImpl extends PersistentObject implements Repo
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof BGRepositoryEntryShortImpl) {
-			BGRepositoryEntryShortImpl re = (BGRepositoryEntryShortImpl)obj;
+		if(obj instanceof BGRepositoryEntryShortImpl re) {
 			return getKey() != null && getKey().equals(re.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

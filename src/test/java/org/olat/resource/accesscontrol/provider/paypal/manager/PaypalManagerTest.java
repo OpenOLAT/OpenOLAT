@@ -96,7 +96,7 @@ public class PaypalManagerTest extends OlatTestCase {
 		
 		PaypalTransaction loadedTransaction = paypalManager.loadTransactionByInvoiceId(order.getOrderNr());
 		Assert.assertNotNull(loadedTransaction);
-		Assert.assertEquals(price.getAmount(), loadedTransaction.getSecurePrice().getAmount());
+		Assert.assertEquals(price.getAmount().doubleValue(), loadedTransaction.getSecurePrice().getAmount().doubleValue(), 0.00001);
 		Assert.assertEquals(price.getCurrencyCode(), loadedTransaction.getSecurePrice().getCurrencyCode());
 	}
 	
@@ -136,7 +136,7 @@ public class PaypalManagerTest extends OlatTestCase {
 		Assert.assertEquals(transaction, transactionBySuccess);
 		
 		// Check some details
-		Assert.assertEquals(price.getAmount(), transactionBySuccess.getSecurePrice().getAmount());
+		Assert.assertEquals(price.getAmount().doubleValue(), transactionBySuccess.getSecurePrice().getAmount().doubleValue(), 0.00001);
 		Assert.assertEquals(price.getCurrencyCode(), transactionBySuccess.getSecurePrice().getCurrencyCode());
 	}
 	

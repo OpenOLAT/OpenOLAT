@@ -64,6 +64,7 @@ public class MapperDAO {
 		PersistedMapper m = new PersistedMapper();
 		m.setMapperId(mapperId);
 		Date currentDate = new Date();
+		m.setCreationDate(currentDate);
 		m.setLastModified(currentDate);
 		if(expirationTime > 0) {
 			Calendar cal = Calendar.getInstance();
