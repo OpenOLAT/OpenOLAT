@@ -365,19 +365,13 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		Certificate certificate11 = certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
 		certificate11.setNextRecertificationDate(DateUtils.addDays(now, -10));
 		dbInstance.getCurrentEntityManager().persist(certificate11);
-		Certificate certificate12 = certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
-		certificate12.setNextRecertificationDate(DateUtils.addDays(now, -5));
-		dbInstance.getCurrentEntityManager().persist(certificate12);
 		Certificate certificate21 = certificatesManager.generateCertificate(new CertificateInfos(identity2, null, null, null, null), entry, null, config);
 		certificate21.setNextRecertificationDate(DateUtils.addDays(now, -2));
 		dbInstance.getCurrentEntityManager().persist(certificate21);
 		// Last after reference date
 		Certificate certificate31 = certificatesManager.generateCertificate(new CertificateInfos(identity3, null, null, null, null), entry, null, config);
-		certificate31.setNextRecertificationDate(DateUtils.addDays(now, -2));
+		certificate31.setNextRecertificationDate(DateUtils.addDays(now, 5));
 		dbInstance.getCurrentEntityManager().persist(certificate31);
-		Certificate certificate32 = certificatesManager.generateCertificate(new CertificateInfos(identity3, null, null, null, null), entry, null, config);
-		certificate32.setNextRecertificationDate(DateUtils.addDays(now, 5));
-		dbInstance.getCurrentEntityManager().persist(certificate32);
 		// Not recertification date
 		Certificate certificate41 = certificatesManager.generateCertificate(new CertificateInfos(identity4, null, null, null, null), entry, null, config);
 		certificate41.setNextRecertificationDate(null);

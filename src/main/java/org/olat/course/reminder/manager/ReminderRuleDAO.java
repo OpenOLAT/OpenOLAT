@@ -276,9 +276,9 @@ public class ReminderRuleDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select data.identityKey");
 		sb.append("  from certificatelight data");
+		sb.and().append("data.last=true");
 		sb.and().append("data.olatResourceKey = :olatResourceKey");
-		sb.groupBy().append("data.identityKey");
-		sb.append(" having max(data.nextRecertificationDate) <= :referenceDate");
+		sb.and().append("data.nextRecertificationDate <= :referenceDate");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
