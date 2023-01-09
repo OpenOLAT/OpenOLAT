@@ -27,46 +27,110 @@ package org.olat.properties;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * Initial Date:  Mar 10, 2004
  *
  * @author Mike Stock
- * 
- * Comment:  
- * 
  */
-public class Property extends PersistentObject implements ModifiedInfo {
+@Entity(name="property")
+@Table(name="o_property")
+public class Property implements Persistable, CreateInfo, ModifiedInfo {
 
 	private static final long serialVersionUID = -7029205250635324093L;
 
 	/** max length of a category */
 	public static final int CATEGORY_MAX_LENGHT = 33;
-    
-	private Identity identity;
-	private BusinessGroup grp;
-	private String resourceTypeName;
-	private Long resourceTypeId;
-	private String category;
-	private String name;
-	private Float floatValue;
-	private Long 	longValue;
-	private String stringValue;
-	private String textValue;
-	private Date lastModified;
-
 	private static final int RESOURCETYPENAME_MAXLENGTH = 50;
 
-	/**
-	 * 
-	 */
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+
+	@Column(name="resourcetypename", nullable=false, insertable=true, updatable=true)
+	private String resourceTypeName;
+	@Column(name="resourcetypeid", nullable=false, insertable=true, updatable=true)
+	private Long resourceTypeId;
+	@Column(name="category", nullable=false, insertable=true, updatable=true)
+	private String category;
+	@Column(name="name", nullable=false, insertable=true, updatable=true)
+	private String name;
+	@Column(name="floatvalue", nullable=false, insertable=true, updatable=true)
+	private Float floatValue;
+	@Column(name="longvalue", nullable=false, insertable=true, updatable=true)
+	private Long longValue;
+	@Column(name="stringvalue", nullable=false, insertable=true, updatable=true)
+	private String stringValue;
+	@Column(name="textvalue", nullable=false, insertable=true, updatable=true)
+	private String textValue;
+
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="identity", nullable=true, insertable=true, updatable=true)
+	private Identity identity;
+	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=true)
+	@JoinColumn(name="grp", nullable=true, insertable=true, updatable=true)
+	private BusinessGroup grp;
+
 	Property() { 
-	    // notthing to do 
+	    // nothing to do 
+	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	/**
@@ -195,34 +259,22 @@ public class Property extends PersistentObject implements ModifiedInfo {
 		return resourceTypeName;
 	}
 
-	/**
-	 * @param long1
-	 */
 	public void setResourceTypeId(Long long1) {
 		resourceTypeId = long1;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setResourceTypeName(String string) {
 		if (string != null && string.length() > RESOURCETYPENAME_MAXLENGTH)
 			throw new AssertException("resourcetypename of o_property too long");
 		resourceTypeName = string;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
+	@Override
 	public Date getLastModified() {
 		return lastModified;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
+	@Override
 	public void setLastModified(Date date) {
 		this.lastModified = date;
 	}
@@ -237,10 +289,14 @@ public class Property extends PersistentObject implements ModifiedInfo {
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof Property) {
-			Property prop = (Property)obj;
+		if(obj instanceof Property prop) {
 			return getKey() != null && getKey().equals(prop.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

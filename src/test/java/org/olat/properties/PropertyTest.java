@@ -382,33 +382,33 @@ public class PropertyTest extends OlatTestCase {
 	  // The declaration syntax for a DECIMAL column is DECIMAL(M,D). The ranges of values for the arguments in MySQL 5.1 are as follows:
 	  // M is the maximum number of digits (the precision). It has a range of 1 to 65. (Older versions of MySQL allowed a range of 1 to 254.)
 	  // D is the number of digits to the right of the decimal point (the scale). It has a range of 0 to 30 and must be no larger than M.
-		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(-floatMaxValue), Long.valueOf(123456), "stringValue", "textValue");
+		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", Float.valueOf((float)-floatMaxValue), Long.valueOf(123456), "stringValue", "textValue");
 		pm.saveProperty(original);
 		dbInstance.commitAndCloseSession();
 		copy = pm.findProperty(identity, group, res, "cat", "TestProperty");//this one failes at the moment for hsqldb with: incompatible data type in conversion: from SQL type DECIMAL to java.lang.Double, value: -9999999790214767953607394487959552.000000000000000000000000000000
-		assertTrue(original.getFloatValue().floatValue() == copy.getFloatValue().floatValue());
+		Assert.assertEquals(original.getFloatValue().floatValue(), copy.getFloatValue().floatValue(), 0.00001);
 	    pm.deleteProperties(identity, group, res, "cat", "TestProperty");
 
-		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(floatMaxValue), Long.valueOf(123456), "stringValue", "textValue");
+		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", Float.valueOf((float)floatMaxValue), Long.valueOf(123456), "stringValue", "textValue");
 		pm.saveProperty(original);
 		dbInstance.commitAndCloseSession();
 		copy = pm.findProperty(identity, group, res, "cat", "TestProperty");		
-		assertTrue(original.getFloatValue().floatValue() == copy.getFloatValue().floatValue());
+		Assert.assertEquals(original.getFloatValue().floatValue(), copy.getFloatValue().floatValue(), 0.00001);
 	    pm.deleteProperties(identity, group, res, "cat", "TestProperty");
 
 		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", Float.valueOf(Long.MAX_VALUE), Long.valueOf(123456), "stringValue", "textValue");
 		pm.saveProperty(original);
 		dbInstance.commitAndCloseSession();
 		copy = pm.findProperty(identity, group, res, "cat", "TestProperty");		
-		assertTrue(original.getFloatValue().floatValue() == copy.getFloatValue().floatValue());
+		Assert.assertEquals(original.getFloatValue().floatValue(), copy.getFloatValue().floatValue(), 0.00001);
 	    pm.deleteProperties(identity, group, res, "cat", "TestProperty");
 
-		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", new Float(Long.MIN_VALUE), Long.valueOf(123456), "stringValue", "textValue");
+		original = pm.createPropertyInstance(identity, group, res, "cat", "TestProperty", Float.valueOf(Long.MIN_VALUE), Long.valueOf(123456), "stringValue", "textValue");
 		pm.saveProperty(original);
 		dbInstance.commitAndCloseSession();
 		copy = pm.findProperty(identity, group, res, "cat", "TestProperty");		
-		assertTrue(original.getFloatValue().floatValue() == copy.getFloatValue().floatValue());
-	  pm.deleteProperties(identity, group, res, "cat", "TestProperty");
+		Assert.assertEquals(original.getFloatValue().floatValue(), copy.getFloatValue().floatValue(), 0.00001);
+		pm.deleteProperties(identity, group, res, "cat", "TestProperty");
 	    
 	}
 	

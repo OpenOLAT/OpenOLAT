@@ -154,8 +154,8 @@ public class PropertyManager implements UserDataDeletable {
 	 * @return Found property or null if no match.
 	 */
 	public Property findUserProperty(Identity identity, String category, String name) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(Property.class.getName()).append(" as v ")
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select v from property as v")
 		  .append(" inner join fetch v.identity identity ")
 		  .append(" where identity.key=:identityKey and v.category=:cat and v.name=:name and v.grp is null and v.resourceTypeName is null and v.resourceTypeId is null");
 		
@@ -167,7 +167,7 @@ public class PropertyManager implements UserDataDeletable {
 				.getResultList();
 
 		if (props == null || props.size() != 1) {
-			if(log.isDebugEnabled()) log.debug("Could not find property: " + name);
+			if(log.isDebugEnabled()) log.debug("Could not find property: {}", name);
 			return null;
 		}
 		return props.get(0);
@@ -182,8 +182,8 @@ public class PropertyManager implements UserDataDeletable {
 	 * @return
 	 */
 	public List<Property> findAllUserProperties(IdentityRef identity, String category, String name) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(Property.class.getName()).append(" as v ")
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select v from property as v")
 		  .append(" inner join v.identity identity ")
 		  .append(" where identity.key=:identityKey and v.category=:cat and v.name=:name");
 		
@@ -279,9 +279,9 @@ public class PropertyManager implements UserDataDeletable {
 	private <U> TypedQuery<U> createQueryListProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId,
 			String category, String name, Long longValue, String stringValue, Class<U> resultClass) {
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		if(Number.class.equals(resultClass)) {
-			sb.append("select count(v) from ").append(Property.class.getName()).append(" as v ");
+			sb.append("select count(v) from property as v");
 			if (identity != null) {
 				sb.append(" inner join v.identity identity ");
 			}
@@ -289,7 +289,7 @@ public class PropertyManager implements UserDataDeletable {
 				sb.append(" inner join v.grp grp ");
 			}
 		} else {
-			sb.append("select v from ").append(Property.class.getName()).append(" as v ");
+			sb.append("select v from property as v");
 			if (identity != null) {
 				sb.append(" inner join fetch v.identity identity ");
 			}
@@ -371,7 +371,7 @@ public class PropertyManager implements UserDataDeletable {
 	 */
 	public int deleteProperties(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("delete from ").append(Property.class.getName()).append(" as v where ");
+		sb.append("delete from property as v where ");
 
 		boolean and = false;
 		if (identity != null) {
@@ -453,8 +453,8 @@ public class PropertyManager implements UserDataDeletable {
 	 * @return List of properties
 	 */
 	public List<Property> findProperties(Identity identity, BusinessGroup grp, String resourceTypeName, Long resourceTypeId, String category, String name) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select v from ").append(Property.class.getName()).append(" as v ");
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select v from property as v");
 		  
 		if (identity != null) {
 			sb.append(" inner join fetch v.identity identity where identity.key=:identityKey");
@@ -533,8 +533,8 @@ public class PropertyManager implements UserDataDeletable {
 	 * @return List of identities
 	 */
 	public List<Identity> findIdentitiesWithProperty(String resourceTypeName, Long resourceTypeId, String category, String name, boolean matchNullValues) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct i from ").append(Property.class.getName()).append(" as p")
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select distinct i from property as p")
 		  .append(" inner join p.identity i");
 		
 		boolean and = false;
@@ -593,8 +593,8 @@ public class PropertyManager implements UserDataDeletable {
 	public Property findProperty(Identity identity, BusinessGroup grp, OLATResourceable resourceable, String category, String name) {
 		
 		List<Property> props = findProperties(identity, grp, resourceable, category, name);
-		if (props == null || props.size() == 0) {
-			if(log.isDebugEnabled()) log.debug("Could not find property: " + name);
+		if (props == null || props.isEmpty()) {
+			if(log.isDebugEnabled()) log.debug("Could not find property: {}", name);
 			return null;
 		}
 		else if (props.size() > 1) {
@@ -668,7 +668,7 @@ public class PropertyManager implements UserDataDeletable {
 	 */
 	public Property findProperty(BusinessGroupRef businessGroup, OLATResourceable resourceable, String category, String name) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("select p from ").append(Property.class.getName()).append(" as p")
+		sb.append("select p from property as p")
 		  .append(" where p.category=:category and p.name=:name")
 		  .append(" and p.grp.key=:groupKey")
 		  .append(" and p.resourceTypeName=:resourceTypeName and p.resourceTypeId=:resourceableId");
@@ -698,8 +698,8 @@ public class PropertyManager implements UserDataDeletable {
 			return Collections.emptyList();
 		}
 
-		StringBuilder query = new StringBuilder();
-		query.append("select p from ").append(Property.class.getName()).append(" as p")
+		StringBuilder query = new StringBuilder(128);
+		query.append("select p from property as p")
 			.append(" inner join fetch p.identity identity ")
 			.append(" where identity in (:identities)");
 		if (resourceable != null) {
@@ -714,7 +714,7 @@ public class PropertyManager implements UserDataDeletable {
 		
 		TypedQuery<Property> dbQuery = DBFactory.getInstance().getCurrentEntityManager()
 				.createQuery(query.toString(), Property.class)
-				.setParameter("identities", identities);;
+				.setParameter("identities", identities);
 		if (resourceable != null) {
 			dbQuery.setParameter("resourceTypeName", resourceable.getResourceableTypeName());
 			dbQuery.setParameter("resourceableId", resourceable.getResourceableId());
@@ -725,8 +725,7 @@ public class PropertyManager implements UserDataDeletable {
 		if (name != null) {
 			dbQuery.setParameter("name", name);
 		}
-		List<Property> props = dbQuery.getResultList();
-		return props;
+		return dbQuery.getResultList();
 	}
 	
 	/**
@@ -742,7 +741,7 @@ public class PropertyManager implements UserDataDeletable {
 		}
 
 		StringBuilder query = new StringBuilder();
-		query.append("select p from ").append(Property.class.getName()).append(" as p")
+		query.append("select p from property as p")
 			.append(" where p.resourceTypeName=:resourceTypeName and p.resourceTypeId in (:resourceableIds)");
 
 		if (category != null) {
@@ -763,8 +762,7 @@ public class PropertyManager implements UserDataDeletable {
 			dbQuery.setParameter("name", name);
 		}
 
-		List<Property> props = dbQuery.getResultList();
-		return props;
+		return dbQuery.getResultList();
 	}
 	
 	/**
@@ -804,7 +802,7 @@ public class PropertyManager implements UserDataDeletable {
 	 */
 	public List<String> getAllResourceTypeNames() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select distinct v.resourceTypeName from ").append(Property.class.getName()).append(" as v where v.resourceTypeName is not null");
+		sb.append("select distinct v.resourceTypeName from property as v where v.resourceTypeName is not null");
 		return DBFactory.getInstance().getCurrentEntityManager().createQuery(sb.toString(), String.class).getResultList();
 	}
 

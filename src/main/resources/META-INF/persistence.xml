@@ -8,7 +8,7 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
 		
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
+		
 
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
@@ -32,6 +32,7 @@
 		<class>org.olat.basesecurity.model.IdentityToIdentityRelationImpl</class>
 		<class>org.olat.core.dispatcher.mapper.model.PersistedMapper</class>
 		<class>org.olat.core.logging.activity.LoggingObject</class>
+		<class>org.olat.properties.Property</class>
 		<class>org.olat.commons.calendar.model.ImportedCalendar</class>
 		<class>org.olat.commons.calendar.model.ImportedToCalendar</class>
 		<class>org.olat.commons.calendar.model.CalendarUserConfiguration</class>
