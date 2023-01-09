@@ -8,8 +8,6 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
 		
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
-		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
 
 		<class>org.olat.basesecurity.IdentityImpl</class>
@@ -98,6 +96,8 @@
 		<class>org.olat.course.nodes.livestream.model.UrlTemplateImpl</class>
 		<class>org.olat.course.nodes.practice.model.PracticeResourceImpl</class>
 		<class>org.olat.course.nodes.practice.model.PracticeAssessmentItemGlobalRefImpl</class>
+		<class>org.olat.course.nodes.projectbroker.datamodel.ProjectImpl</class>
+		<class>org.olat.course.nodes.projectbroker.datamodel.ProjectBrokerImpl</class>
 		<class>org.olat.course.certificate.model.CertificateImpl</class>
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>

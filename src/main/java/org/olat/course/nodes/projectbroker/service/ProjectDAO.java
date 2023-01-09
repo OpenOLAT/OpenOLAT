@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
-import org.olat.course.nodes.projectbroker.datamodel.ProjectImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -48,8 +47,8 @@ public class ProjectDAO {
 	 * @return The project
 	 */
 	public Project loadProject(Long projectKey) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select project from ").append(ProjectImpl.class.getName()).append(" as project ")
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select project from pbrokerproject as project ")
 		  .append(" left join fetch project.projectGroup pGroup")
 		  .append(" left join fetch pGroup.baseGroup bGroup")
 		  .append(" left join fetch project.candidateGroup cGroup")

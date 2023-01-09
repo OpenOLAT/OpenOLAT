@@ -44,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -86,7 +85,6 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 	private TextElement projectTitle;	
 	private RichTextElement projectDescription;
 	private IntegerElement maxMembers;
-	private StaticTextElement projectState;
 	private FormLayoutContainer stateLayout;
 	private FileElement attachmentFileName;
 
@@ -107,8 +105,8 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 
 	private FormLink removeAttachmentLink;
 
-	private final static String[] keys = new String[] { "form.modules.enabled.yes" };
-	private final static String[] values = new String[] { "" };
+	private static final String[] keys = new String[] { "form.modules.enabled.yes" };
+	private static final String[] values = new String[] { "" };
 	private static final int MAX_MEMBERS_DEFAULT = 1;
 
 	@Autowired
@@ -142,25 +140,25 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		for (Project.EventType eventType : eventStartElementList.keySet()) {
 			Date startDate = eventStartElementList.get(eventType).getDate();
 			Date endDate   = eventEndElementList.get(eventType).getDate();
-			getLogger().debug("validate startDate=" + startDate + " enddate=" + endDate);
+			getLogger().debug("validate startDate={} enddate={}", startDate, endDate);
 			if ( (startDate != null) && (endDate != null) && startDate.after(endDate) ) {
-				eventStartElementList.get(eventType).setErrorKey("from.error.date.start.after.end", null);
+				eventStartElementList.get(eventType).setErrorKey("from.error.date.start.after.end");
 				return false;
 			}
 		}
 		if (  !project.getTitle().equals(projectTitle.getValue()) 
 				&& projectBrokerManager.existProjectName(project.getProjectBroker().getKey(), projectTitle.getValue()) ) {		
-			projectTitle.setErrorKey("form.error.project.title.already.exist", null);
+			projectTitle.setErrorKey("form.error.project.title.already.exist");
 			return false;
 		}
 		if (projectTitle.getValue().trim().isEmpty()) {
-			projectTitle.setErrorKey("form.error.project.title.is.empty", null);
+			projectTitle.setErrorKey("form.error.project.title.is.empty");
 			return false;
 		}
 		
 		// http://jira.openolat.org/browse/OO-131  check for too long filename
 		if (attachmentFileName.getUploadFileName() != null && attachmentFileName.getUploadFileName().length() > 99) {
-			attachmentFileName.setErrorKey("form.error.project.filenametoolong", null);
+			attachmentFileName.setErrorKey("form.error.project.filenametoolong");
 			return false;
 		}
 		return true;
@@ -199,8 +197,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		stateLayout.setLabel("detailsform.state.label", null);
 		formLayout.add(stateLayout);
 		String stateValue = getTranslator().translate(projectBrokerManager.getStateFor(project,ureq.getIdentity(),projectBrokerModuleConfiguration));
-		projectState = uifactory.addStaticTextElement("detailsform.state", stateValue + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", stateLayout);
-		projectState.setLabel(null, null);
+		uifactory.addStaticTextElement("detailsform.state", null, stateValue + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;", stateLayout);
 
 		String keyDetailsformMax = null;
 		if (projectBrokerModuleConfiguration.isAcceptSelectionManually()) {
@@ -364,11 +361,9 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		int index = 0;
 		for (FormItem element : customfieldElementList) {
 			String value = "";
-			if (element instanceof TextElement) {
-				TextElement textElement = (TextElement)element;
+			if (element instanceof TextElement textElement) {
 				value = textElement.getValue(); 
-			} else if (element instanceof SingleSelection) {
-				SingleSelection selectionElement = (SingleSelection)element;
+			} else if (element instanceof SingleSelection selectionElement) {
 				if (!selectionElement.getSelectedKey().equals(DROPDOWN_NO_SELECETION)) {
 					value = selectionElement.getValue(selectionElement.getSelected());
 				} else {

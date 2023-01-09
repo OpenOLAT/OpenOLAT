@@ -30,27 +30,48 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.SecurityGroup;
+import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.commons.lifecycle.LifeCycleEntry;
 import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.PersistentObject;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupImpl;
 import org.olat.group.BusinessGroupService;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapKeyColumn;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 
 /**
  * 
  * @author guretzki
  */
-
-public class ProjectImpl extends PersistentObject implements Project {
+@Entity(name="pbrokerproject")
+@Table(name="o_projectbroker_project")
+public class ProjectImpl implements CreateInfo, Persistable, Project {
 
 	private static final Logger log = Tracing.createLoggerFor(ProjectImpl.class);
 	
@@ -61,23 +82,60 @@ public class ProjectImpl extends PersistentObject implements Project {
 	private static final String EVENT_START = "event_start";
 	private static final String EVENT_END   = "event_end";
 
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="project_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
 	
-	private String        title;
-	private String        description;
-	private String        state;
-	private int           maxMembers;
-	private BusinessGroup projectGroup; 
-	private String        attachmentFileName;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="title", nullable=true, insertable=true, updatable=true)
+	private String title;
+	@Column(name="description", nullable=true, insertable=true, updatable=true)
+	private String description;
+	@Column(name="state", nullable=true, insertable=true, updatable=true)
+	private String state;
+	@Column(name="maxmembers", nullable=true, insertable=true, updatable=true)
+	private int maxMembers;
+	@Column(name="attachmentfilename", nullable=false, insertable=true, updatable=true)
+	private String attachmentFileName;
+	@Column(name="mailnotificationenabled", nullable=false, insertable=true, updatable=true)
+	private boolean mailNotificationEnabled;
+	
+	@ManyToOne(targetEntity=ProjectBrokerImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="projectbroker_fk", nullable=false, insertable=true, updatable=false)
 	private ProjectBroker projectBroker;
+	@ManyToOne(targetEntity=SecurityGroupImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="candidategroup_fk", nullable=false, insertable=true, updatable=false)
 	private SecurityGroup candidateGroup;
-	private boolean       mailNotificationEnabled;
+	@ManyToOne(targetEntity=BusinessGroupImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="projectgroup_fk", nullable=false, insertable=true, updatable=false)
+	private BusinessGroup projectGroup; 
 	
+	@ElementCollection(fetch=FetchType.EAGER)
+    @CollectionTable(name = "o_projectbroker_customfields", 
+      joinColumns = {@JoinColumn(name = "fk_project_id", referencedColumnName = "project_id")})
+    @MapKeyColumn(name = "propname")
+    @Column(name = "propvalue")
 	private Map<String, String> customfields;
 		
 	/**
 	 * Default constructor needs by hibernate
 	 */
 	public ProjectImpl () {
+		//
 	}
 	
 	/**
@@ -104,11 +162,25 @@ public class ProjectImpl extends PersistentObject implements Project {
 		this.projectBroker = projectBroker;
 		this.candidateGroup = candidateGroup;
 	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
 
+	public void setKey(Long key) {
+		this.key = key;
+	}
 
-	//////////
-	// GETTER
-	//////////
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	@Override
 	public String getTitle() {
 		return title;
@@ -232,28 +304,6 @@ public class ProjectImpl extends PersistentObject implements Project {
 	}
 
 	@Override
-	public String toString() {
-		return "Project [title=" + getTitle() + ", description=" + getDescription() + ", state=" + getState() + "] " + super.toString();
-	}
-	
-	@Override
-	public int hashCode() {
-		return getKey() == null ? 82301 : getKey().hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		if(obj instanceof Project) {
-			Project project = (Project)obj;
-			return getKey() != null && getKey().equals(project.getKey());	
-		}
-		return false;
-	}
-
-	@Override
 	public void setAttachedFileName(String attachmentFileName) {
 		this.attachmentFileName = attachmentFileName;
 	}
@@ -305,13 +355,13 @@ public class ProjectImpl extends PersistentObject implements Project {
 			lifeCycleManager.markTimestampFor(projectEvent.getStartDate(), projectEvent.getEventType().toString(), EVENT_START);
 		} else {
 			lifeCycleManager.deleteTimestampFor(projectEvent.getEventType().toString(), EVENT_START);
-			log.debug(EVENT_START + " delete timestamp for " + projectEvent.getEventType());
+			log.debug("{} delete timestamp for {}", EVENT_START, projectEvent.getEventType());
 		}
 		if (projectEvent.getEndDate() != null) {
 			lifeCycleManager.markTimestampFor(projectEvent.getEndDate(), projectEvent.getEventType().toString(), EVENT_END);
 		} else {
 			lifeCycleManager.deleteTimestampFor(projectEvent.getEventType().toString(), EVENT_END);
-			log.debug(EVENT_END + "delete timestamp for " + projectEvent.getEventType());
+			log.debug("{} delete timestamp for {}", EVENT_END, projectEvent.getEventType());
 		}
 
 	}
@@ -329,5 +379,31 @@ public class ProjectImpl extends PersistentObject implements Project {
 	public void setMailNotificationEnabled(boolean mailNotificationEnabled) {
 		this.mailNotificationEnabled = mailNotificationEnabled;
 	}
+	
 
+	@Override
+	public String toString() {
+		return "Project [title=" + getTitle() + ", description=" + getDescription() + ", state=" + getState() + "] " + super.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 82301 : getKey().hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof Project project) {
+			return getKey() != null && getKey().equals(project.getKey());	
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
+	}
 }

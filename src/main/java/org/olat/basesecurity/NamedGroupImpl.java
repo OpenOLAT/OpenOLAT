@@ -144,7 +144,7 @@ public class NamedGroupImpl implements NamedGroup, Persistable, CreateInfo {
 	
 	@Override
 	public int hashCode() {
-		return key == null ? 92867 : key.hashCode();
+		return getKey() == null ? 92867 : getKey().hashCode();
 	}
 
 	@Override
