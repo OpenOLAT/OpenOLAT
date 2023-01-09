@@ -8,7 +8,6 @@
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
 		
 		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
-		<mapping-file>org/olat/basesecurity/NamedGroupImpl.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/Project.hbm.xml</mapping-file>
 		<mapping-file>org/olat/course/nodes/projectbroker/datamodel/ProjectBroker.hbm.xml</mapping-file>
 		<mapping-file>org/olat/properties/Property.hbm.xml</mapping-file>
@@ -16,6 +15,7 @@
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
 		<class>org.olat.basesecurity.AuthenticationImpl</class>
+		<class>org.olat.basesecurity.NamedGroupImpl</class>
 		<class>org.olat.basesecurity.SecurityGroupImpl</class>
 		<class>org.olat.basesecurity.SecurityGroupMembershipImpl</class>
 		<class>org.olat.basesecurity.model.GroupImpl</class>

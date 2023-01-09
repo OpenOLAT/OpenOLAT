@@ -24,10 +24,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.TypedQuery;
-
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
-import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
@@ -35,11 +33,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -178,7 +177,7 @@ public class SecurityGroupDAO implements UserDataDeletable {
 
 	public SecurityGroup findSecurityGroupByName(String securityGroupName) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("select sgi from ").append(NamedGroupImpl.class.getName()).append(" as ngroup ")
+		sb.append("select sgi from bnamedgroup as ngroup ")
 		  .append(" inner join ngroup.securityGroup sgi")
 		  .append(" where ngroup.groupName=:groupName");
 

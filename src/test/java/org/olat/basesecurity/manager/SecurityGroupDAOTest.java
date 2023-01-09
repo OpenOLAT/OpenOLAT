@@ -26,8 +26,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
@@ -252,5 +254,17 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		boolean membership = securityGroupDao.isIdentityInSecurityGroup(id, secGroup);
 		Assert.assertFalse(membership);
 	}
-
+	
+	@Test
+	public void createNamedGroup() {
+		String name = RandomStringUtils.randomAlphanumeric(12);
+		SecurityGroup secG = securityGroupDao.createAndPersistSecurityGroup();
+		NamedGroupImpl ngi = new NamedGroupImpl(name, secG);
+		dbInstance.saveObject(ngi);
+		dbInstance.commitAndCloseSession();
+		
+		SecurityGroup secGroup = securityGroupDao.findSecurityGroupByName(name);
+		Assert.assertNotNull(secGroup);
+		Assert.assertEquals(secG, secGroup);
+	}
 }

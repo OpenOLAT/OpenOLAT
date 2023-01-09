@@ -25,14 +25,58 @@
 
 package org.olat.basesecurity;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import java.util.Date;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * 
  * @author Felix Jost
  */
-public class NamedGroupImpl extends PersistentObject implements NamedGroup {
+@Entity(name="bnamedgroup")
+@Table(name="o_bs_namedgroup")
+public class NamedGroupImpl implements NamedGroup, Persistable, CreateInfo {
+	
+	private static final long serialVersionUID = -4580055192606574252L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+
+	@Column(name="groupname", nullable=true, insertable=true, updatable=true)
 	private String groupName;
+	@ManyToOne(targetEntity=SecurityGroupImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="secgroup_id", nullable=false, insertable=true, updatable=false)
 	private SecurityGroup securityGroup;
 
 	/**
@@ -46,17 +90,31 @@ public class NamedGroupImpl extends PersistentObject implements NamedGroup {
 		this.groupName = groupName;
 		this.securityGroup = securityGroup;
 	}
+	
+	@Override
+	public Long getKey() {
+		return key;
+	}
 
-	/**
-	 * @return String
-	 */
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
 	public String getGroupName() {
 		return groupName;
 	}
 
-	/**
-	 * @return SecurityGroup
-	 */
+	@Override
 	public SecurityGroup getSecurityGroup() {
 		return securityGroup;
 	}
@@ -66,7 +124,7 @@ public class NamedGroupImpl extends PersistentObject implements NamedGroup {
 	 * 
 	 * @param groupName
 	 */
-	private void setGroupName(String groupName) {
+	public void setGroupName(String groupName) {
 		this.groupName = groupName;
 	}
 
@@ -75,15 +133,34 @@ public class NamedGroupImpl extends PersistentObject implements NamedGroup {
 	 * 
 	 * @param securityGroup
 	 */
-	private void setSecurityGroup(SecurityGroup securityGroup) {
+	public void setSecurityGroup(SecurityGroup securityGroup) {
 		this.securityGroup = securityGroup;
 	}
 
-	/**
-	 * @see org.olat.core.commons.persistence.PersistentObject#toString()
-	 */
+	@Override
 	public String toString() {
 		return "groupname:" + groupName + ", " + super.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return key == null ? 92867 : key.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof NamedGroupImpl grp) {
+			return getKey() != null && getKey().equals(grp.getKey());
+		}
+		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 
 }
