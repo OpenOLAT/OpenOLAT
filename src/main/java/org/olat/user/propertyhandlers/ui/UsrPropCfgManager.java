@@ -103,7 +103,7 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 
 	@Autowired
 	public UsrPropCfgManager(CoordinatorManager coordinatorManager, UserManager userManager) {
-		super(coordinatorManager, "com.frentix.olat.admin.userproperties.UsrPropCfgManager", false);
+		super(coordinatorManager, "com.frentix.olat.admin.userproperties.UsrPropCfgManager");
 		this.userManager = userManager;
 		allUserPropertyHandlersFromXML = userManager.getUserPropertiesConfig().getAllUserPropertyHandlers();
 	}

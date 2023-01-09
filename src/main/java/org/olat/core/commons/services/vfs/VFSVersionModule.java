@@ -49,7 +49,7 @@ public class VFSVersionModule extends AbstractSpringModule implements ConfigOnOf
 
 	@Autowired
 	public VFSVersionModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager, "org.olat.core.util.vfs.version.SimpleVersionConfig", false);
+		super(coordinatorManager, "org.olat.core.util.vfs.version.SimpleVersionConfig");
 	}
 
 	@Override

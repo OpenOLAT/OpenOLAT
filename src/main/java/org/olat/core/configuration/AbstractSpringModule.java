@@ -61,6 +61,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	private final PersistedProperties moduleConfigProperties;
 	
 	private static final Map<Class<?>,AtomicInteger> starts = new HashMap<>();
+	private static final String PROPERTIES_SALT = "A long, but constant phrase that will be used each time as the salt.";
 
 	public AbstractSpringModule(CoordinatorManager coordinatorManager) {
 		moduleConfigProperties = new PersistedProperties(coordinatorManager, this);
@@ -71,8 +72,17 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 		}
 	}
 	
+	public AbstractSpringModule(CoordinatorManager coordinatorManager, String path) {
+		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, path, false, null);
+		if(!starts.containsKey(this.getClass())) {
+			starts.put(this.getClass(), new AtomicInteger(1));
+		} else {
+			starts.get(this.getClass()).incrementAndGet();
+		}
+	}
+	
 	public AbstractSpringModule(CoordinatorManager coordinatorManager, boolean secured) {
-		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, secured);
+		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, secured, PROPERTIES_SALT);
 		if(!starts.containsKey(this.getClass())) {
 			starts.put(this.getClass(), new AtomicInteger(1));
 		} else {
@@ -81,7 +91,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	}
 	
 	public AbstractSpringModule(CoordinatorManager coordinatorManager, String path, boolean secured) {
-		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, path, secured);
+		moduleConfigProperties = new PersistedProperties(coordinatorManager, this, path, secured, PROPERTIES_SALT);
 		if(!starts.containsKey(this.getClass())) {
 			starts.put(this.getClass(), new AtomicInteger(1));
 		} else {

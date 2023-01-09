@@ -48,7 +48,7 @@ public class CoachingModule  extends AbstractSpringModule implements ConfigOnOff
 	
 	@Autowired
 	public CoachingModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager, "com.frentix.olat.coach.CoachingModule", false);
+		super(coordinatorManager, "com.frentix.olat.coach.CoachingModule");
 	}
 	
 	@Override

@@ -58,7 +58,7 @@ public class LibraryModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Autowired
 	public LibraryModule(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager, "com.frentix.olat.library.LibraryManager", false);
+		super(coordinatorManager, "com.frentix.olat.library.LibraryManager");
 	}
 
 	@Override

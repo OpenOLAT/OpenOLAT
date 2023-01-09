@@ -64,7 +64,7 @@ public class UsrPropHandlerCfgFactory extends AbstractSpringModule {
 
 	@Autowired
 	public UsrPropHandlerCfgFactory(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager, "com.frentix.olat.admin.userproperties.UsrPropHandlerCfgFactory", false);
+		super(coordinatorManager, "com.frentix.olat.admin.userproperties.UsrPropHandlerCfgFactory");
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public class GUISettings extends AbstractSpringModule {
 	
 	@Autowired
 	public GUISettings(CoordinatorManager coordinatorManager) {
-		super(coordinatorManager, "org.olat.core.helpers.Settings", false);
+		super(coordinatorManager, "org.olat.core.helpers.Settings");
 	}
 
 	@Override

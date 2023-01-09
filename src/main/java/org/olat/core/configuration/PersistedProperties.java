@@ -28,7 +28,6 @@ package org.olat.core.configuration;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -142,6 +141,10 @@ public class PersistedProperties implements Initializable, Destroyable{
 
 	private static final Logger log = Tracing.createLoggerFor(PersistedProperties.class);
 	
+	private static final int ITERATIONS = 2000;
+	private static final int KEY_LENGTH = 128;
+	private static final SecureRandom random = new SecureRandom();
+	
 	// base directory where all system config files are located
 	private File configurationPropertiesFile;
 	// the properties loaded from disk
@@ -158,6 +161,7 @@ public class PersistedProperties implements Initializable, Destroyable{
 	private final boolean secured;
 	private final String filename;
 	private String userDataDirectory;
+	private final String salt;
 	
 	static {
 		Security.addProvider(new BouncyCastleProvider());
@@ -167,18 +171,20 @@ public class PersistedProperties implements Initializable, Destroyable{
 		this(CoordinatorManager.getInstance(), listener);
 	}
 	
-	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, boolean secured) {
+	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, boolean secured, String salt) {
 		this.coordinatorManager = coordinatorManager;
 		this.propertiesChangedEventListener = listener;
 		this.filename = propertiesChangedEventListener.getClass().getCanonicalName() + ".properties";
 		this.secured = secured;
+		this.salt = salt;
 	}
 	
-	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, String filename, boolean secured) {
+	public PersistedProperties(CoordinatorManager coordinatorManager, GenericEventListener listener, String filename, boolean secured, String salt) {
 		this.coordinatorManager = coordinatorManager;
 		this.propertiesChangedEventListener = listener;
 		this.filename = filename + ".properties";
 		this.secured = secured;
+		this.salt = salt;
 	}
 	
 	/**
@@ -192,6 +198,7 @@ public class PersistedProperties implements Initializable, Destroyable{
 		this.propertiesChangedEventListener = listener;
 		this.filename= propertiesChangedEventListener.getClass().getCanonicalName()	+ ".properties";
 		this.secured = false;
+		this.salt = null;
 	}
 	
 	public void setUserDataDirectory(String directory) {
@@ -227,25 +234,19 @@ public class PersistedProperties implements Initializable, Destroyable{
 	public void loadPropertiesFromFile() {
 		// Might get an event after beeing disposed. Should not be the case, but you never know with multi user events accross nodes.
 		if (propertiesChangedEventListener != null && configurationPropertiesFile.exists()) {
-			InputStream is;
-			try {
-				is = new FileInputStream(configurationPropertiesFile);
-
-				if(secured) {
-					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
-					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING", "BC");
-					cipher.init(Cipher.DECRYPT_MODE, key, random);
-					is =  new CipherInputStream(is, cipher);
+			if(secured) {
+				try(InputStream in = new FileInputStream(configurationPropertiesFile);
+						InputStream is = new CipherInputStream(in, newCipher(Cipher.DECRYPT_MODE, "rk6R9pQy7dg3usJk", salt))) {
+					configuredProperties.load(is);
+				} catch (Exception e) {
+					log.error("Could not load config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
 				}
-				
-				configuredProperties.load(is);
-				
-				if(secured) {
-					System.out.println(configuredProperties);
+			} else {
+				try(InputStream is = new FileInputStream(configurationPropertiesFile)) {
+					configuredProperties.load(is);
+				} catch (Exception e) {
+					log.error("Could not load config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
 				}
-				is.close();
-			} catch (Exception e) {
-				log.error("Could not load config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
 			}
 		}
 	}
@@ -391,7 +392,7 @@ public class PersistedProperties implements Initializable, Destroyable{
 		if ((stringValue != null) && stringValue.trim().equalsIgnoreCase("FALSE")) { return false; }
 		// 3) Not even a value found in the fallback, return false
 		if(log.isDebugEnabled()) {
-			log.warn("No value found for boolean property::" + propertyName + ", using value=false instead");
+			log.warn("No value found for boolean property::{}, using value=false instead", propertyName);
 		}
 		return false;
 	}
@@ -525,38 +526,30 @@ public class PersistedProperties implements Initializable, Destroyable{
 		// Only save when there is something to save
 		synchronized (configuredProperties) { // make read/write save in VM
 			if (!propertiesDirty) return;
-			// Set the default language
-			OutputStream fileStream = null;
-			try {
-				if (!configurationPropertiesFile.exists()) {
-					File directory = configurationPropertiesFile.getParentFile();
-					if (!directory.exists()) directory.mkdirs();
-				}
-				fileStream = new FileOutputStream(configurationPropertiesFile);
-				
-				if(secured) {
-					SecretKey key = generateKey("rk6R9pQy7dg3usJk");
-					Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING");
-		        	cipher.init(Cipher.ENCRYPT_MODE, key, random);
-		        	fileStream =  new CipherOutputStream(fileStream, cipher);	
-				}
-				
-				configuredProperties.store(fileStream, null);
-				// Flush and close before sending events to other nodes to make changes appear on other node
-				fileStream.flush();
-				fileStream.close();
-				// Notify other cluster nodes about changed configuration
-				PersistedPropertiesChangedEvent changedConfigEvent = new PersistedPropertiesChangedEvent(configuredProperties);
-				coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(changedConfigEvent, PROPERTIES_CHANGED_EVENT_CHANNEL);
-			} catch (Exception e) {
-				log.error("Could not write config file from path::" + configurationPropertiesFile.getAbsolutePath(), e);
-			} finally {
-				try {
-					if (fileStream != null ) fileStream.close();
-				} catch (IOException e) {
-					log.error("Could not close stream after storing config to file::" + configurationPropertiesFile.getAbsolutePath(), e);
-				}
+			
+			if (!configurationPropertiesFile.exists()) {
+				File directory = configurationPropertiesFile.getParentFile();
+				if (!directory.exists()) directory.mkdirs();
 			}
+			
+			if(secured) {
+				try(OutputStream out = new FileOutputStream(configurationPropertiesFile);
+						OutputStream fileStream =  new CipherOutputStream(out, newCipher(Cipher.ENCRYPT_MODE, "rk6R9pQy7dg3usJk", salt));) {
+					configuredProperties.store(fileStream, null);
+					fileStream.flush();
+				} catch (Exception e) {
+					log.error("Could not write secure config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
+				}
+			} else {
+				try(OutputStream fileStream = new FileOutputStream(configurationPropertiesFile);) {
+					configuredProperties.store(fileStream, null);
+					fileStream.flush();
+				} catch (Exception e) {
+					log.error("Could not write config file from path::{}", configurationPropertiesFile.getAbsolutePath(), e);
+				}	
+			}
+			PersistedPropertiesChangedEvent changedConfigEvent = new PersistedPropertiesChangedEvent(configuredProperties);
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(changedConfigEvent, PROPERTIES_CHANGED_EVENT_CHANNEL);
 			// Reset for next save cycle
 			propertiesDirty = false;
 		}
@@ -594,16 +587,14 @@ public class PersistedProperties implements Initializable, Destroyable{
 		}		
 		return tmp;
 	}
-
   
-	private static final String salt = "A long, but constant phrase that will be used each time as the salt.";
-	private static final int iterations = 2000;
-	private static final int keyLength = 128;
-	private static final SecureRandom random = new SecureRandom();
-  
-	private static SecretKey generateKey(String passphrase) throws Exception {
-		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), iterations, keyLength);
+	protected static Cipher newCipher(int opmode, String passphrase, String salt) throws Exception {
+		PBEKeySpec keySpec = new PBEKeySpec(passphrase.toCharArray(), salt.getBytes(StandardCharsets.UTF_8), ITERATIONS, KEY_LENGTH);
 		SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBEWITHSHA256AND128BITAES-CBC-BC", "BC");
-		return keyFactory.generateSecret(keySpec);
+		SecretKey key = keyFactory.generateSecret(keySpec);
+		
+		Cipher cipher = Cipher.getInstance("AES/CTR/NOPADDING", "BC");
+		cipher.init(opmode, key, random);
+		return cipher;
 	}
 }
