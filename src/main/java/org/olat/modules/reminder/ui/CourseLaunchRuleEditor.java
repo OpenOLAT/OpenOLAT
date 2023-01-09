@@ -107,13 +107,13 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 		
 		unitEl.clearError();
 		if(!unitEl.isOneSelected()) {
-			unitEl.setErrorKey("form.mandatory.hover", null);
+			unitEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		valueEl.clearError();
 		if(!StringHelper.containsNonWhitespace(valueEl.getValue())) {
-			valueEl.setErrorKey("form.mandatory.hover", null);
+			valueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		} else {
 			allOk &= validateInt(valueEl);
@@ -129,10 +129,14 @@ public class CourseLaunchRuleEditor extends RuleEditorFragment {
 			String value = el.getValue();
 			if(StringHelper.containsNonWhitespace(value)) {
 				try {
-					Integer.parseInt(value);
+					Integer intValue = Integer.parseInt(value);
+					if (intValue.intValue() < 0) {
+						allOk = false;
+						el.setErrorKey("error.positive.int");
+					}
 				} catch(Exception e) {
 					allOk = false;
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.positive.int");
 				}
 			}
 		}

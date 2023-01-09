@@ -129,7 +129,7 @@ public class NextRecertificationDateSPI implements IdentitiesProviderRuleSPI {
 			
 			int distance = Integer.parseInt(r.getRightOperand());
 			LaunchUnit unit = LaunchUnit.valueOf(r.getRightUnit());
-			Date referenceDate = getDate(new Date(), distance, unit);
+			Date referenceDate = getDate(new Date(), -distance, unit);
 			List<Long> recertIdentityKeys = helperDao.getNextRecertificationBefore(entry, referenceDate);
 			
 			List<Identity> identities = repositoryEntryRelationDao.getMembers(entry, RepositoryEntryRelationType.all,
@@ -140,6 +140,7 @@ public class NextRecertificationDateSPI implements IdentitiesProviderRuleSPI {
 					identityIt.remove();
 				}
 			}
+			return identities;
 		}
 		return new ArrayList<>(0);
 	}
