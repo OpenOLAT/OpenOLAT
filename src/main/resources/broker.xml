@@ -1,17 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration xmlns="urn:activemq" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:activemq /schema/artemis-configuration.xsd">
 	<core xmlns="urn:activemq:core">
+	
+		<journal-type>NIO</journal-type>
+		<journal-min-files>2</journal-min-files>
+		<journal-pool-files>5</journal-pool-files>
+		<journal-file-size>25Mb</journal-file-size>
+		
 		<!-- //TODO jee add security -->
 		<security-enabled>false</security-enabled>
 		<persistence-enabled>false</persistence-enabled>
 		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
 		<graceful-shutdown-timeout>2000</graceful-shutdown-timeout>
 		
-		<journal-type>NIO</journal-type>
 		<message-expiry-scan-period>-1</message-expiry-scan-period>
 		
 		<acceptors>
 			<acceptor name="in-vm">vm://0</acceptor>
 		</acceptors>
+		
+		<address-settings>
+			<address-setting match="#">
+				<auto-create-queues>true</auto-create-queues>
+				<dead-letter-address>DLQ</dead-letter-address>
+				<expiry-address>ExpiryQueue</expiry-address>
+				<redelivery-delay>0</redelivery-delay>
+				<max-size-bytes>10Mb</max-size-bytes>
+				<message-counter-history-day-limit>10</message-counter-history-day-limit>
+				<address-full-policy>BLOCK</address-full-policy>
+			</address-setting>
+		</address-settings>
 	</core>
 </configuration>
