@@ -195,7 +195,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 
 		currencyEl.clearError();
 		if(enableEl.isAtLeastSelected(1) && !currencyEl.isOneSelected()) {
-			currencyEl.setErrorKey("form.legende.mandatory", null);
+			currencyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -210,7 +210,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		element.clearError();
 		if(enableEl.isAtLeastSelected(1)
 				&& !StringHelper.containsNonWhitespace(element.getValue())) {
-			element.setErrorKey("form.legende.mandatory", null);
+			element.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -251,7 +251,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 						acModule.setVat(new BigDecimal(vatRate));
 					} catch (Exception e) {
 						//error
-						vatRateEl.setErrorKey("", null);
+						vatRateEl.setErrorKey("");
 					}
 				} else {
 					acModule.setVat(BigDecimal.ZERO);

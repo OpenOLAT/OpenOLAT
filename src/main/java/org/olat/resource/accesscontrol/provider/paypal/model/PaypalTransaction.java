@@ -22,11 +22,27 @@ package org.olat.resource.accesscontrol.provider.paypal.model;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Target;
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.Price;
 import org.olat.resource.accesscontrol.model.PSPTransaction;
 import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
+import org.olat.resource.accesscontrol.model.PriceImpl;
+
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.Version;
 
 /**
  * 
@@ -37,39 +53,101 @@ import org.olat.resource.accesscontrol.model.PSPTransactionStatus;
  * Initial Date:  26 mai 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PaypalTransaction extends PersistentObject implements PSPTransaction {
+@Entity(name="paypaltransaction")
+@Table(name="o_ac_paypal_transaction")
+public class PaypalTransaction implements CreateInfo, Persistable, PSPTransaction {
 	
 	private static final long serialVersionUID = -8111089587194349398L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="transaction_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	
+	@Column(name="pay_key", nullable=false, insertable=true, updatable=true)
 	private String payKey;
+	@Column(name="ref_no", nullable=false, insertable=true, updatable=true)
 	private String refNo;
+	@Column(name="trx_status", nullable=false, insertable=true, updatable=true)
 	private String status;
+	@Column(name="success_uuid", nullable=false, insertable=true, updatable=true)
 	private String secureSuccessUUID;
+	@Column(name="cancel_uuid", nullable=false, insertable=true, updatable=true)
 	private String secureCancelUUID;
+	
+	@Embedded
+	@Target(PriceImpl.class)
+    @AttributeOverride(name="amount", column = @Column(name="amount_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="amount_currency_code"))
 	private Price securePrice;
-	
+
+	@Column(name="order_id", nullable=false, insertable=true, updatable=true)
 	private Long orderId;
+	@Column(name="order_part_id", nullable=false, insertable=true, updatable=true)
 	private Long orderPartId;
+	@Column(name="method_id", nullable=false, insertable=true, updatable=true)
 	private Long methodId;
-	
+
+	@Column(name="ack", nullable=true, insertable=true, updatable=true)
 	private String ack;
+	@Column(name="build", nullable=false, insertable=true, updatable=true)
 	private String build;
+	@Column(name="coorelation_id", nullable=false, insertable=true, updatable=true)
 	private String coorelationId;
+	@Column(name="pay_response_date", nullable=false, insertable=true, updatable=true)
 	private Date payResponseDate;
+	@Column(name="payment_exec_status", nullable=false, insertable=true, updatable=true)
 	private String paymentExecStatus;
 	
 	//IPN
+	@Column(name="ipn_transaction_id", nullable=false, insertable=true, updatable=true)
 	private String transactionId;
+	@Column(name="ipn_sender_transaction_id", nullable=false, insertable=true, updatable=true)
 	private String senderTransactionId;
+	@Column(name="ipn_sender_email", nullable=false, insertable=true, updatable=true)
 	private String senderEmail;
 	
-	
+	@Column(name="ipn_verify_sign", nullable=false, insertable=true, updatable=true)
 	private String verifySign;
+	@Column(name="ipn_sender_transaction_status", nullable=false, insertable=true, updatable=true)
 	private String senderTransactionStatus;
+	@Column(name="ipn_transaction_status", nullable=false, insertable=true, updatable=true)
 	private String transactionStatus;
+	@Column(name="ipn_pending_reason", nullable=false, insertable=true, updatable=true)
 	private String pendingReason;
-
 	
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
 	public String getPayKey() {
 		return payKey;
 	}
@@ -348,10 +426,14 @@ public class PaypalTransaction extends PersistentObject implements PSPTransactio
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PaypalTransaction) {
-			PaypalTransaction transaction = (PaypalTransaction)obj;
-			return equalsByPersistableKey(transaction);
+		if(obj instanceof PaypalTransaction transaction) {
+			return getKey() != null && getKey().equals(transaction.getKey());
 		}
 		return false;
+	}
+	
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }

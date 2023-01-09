@@ -6,9 +6,6 @@
         http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
 	<persistence-unit name="default">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> 
-		
-		<mapping-file>org/olat/resource/accesscontrol/provider/paypal/model/PaypalTransaction.hbm.xml</mapping-file>
-		
 
 		<class>org.olat.basesecurity.IdentityImpl</class>
 		<class>org.olat.basesecurity.IdentityShort</class>
@@ -145,6 +142,7 @@
 		<class>org.olat.resource.accesscontrol.model.TokenAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.auto.model.AdvanceOrderImpl</class>
+		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransaction</class>
 		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod</class>
 		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionImpl</class>

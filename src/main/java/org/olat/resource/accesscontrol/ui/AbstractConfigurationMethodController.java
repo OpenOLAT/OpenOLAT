@@ -209,14 +209,14 @@ public abstract class AbstractConfigurationMethodController extends FormBasicCon
 		
 		datesEl.clearError();
 		if (datesEl.getDate() != null && datesEl.getSecondDate() != null && datesEl.getDate().compareTo(datesEl.getSecondDate()) > 0) {
-			datesEl.setErrorKey("date.error", null);
+			datesEl.setErrorKey("date.error");
 			allOk = false;
 		}
 		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
 			if (organisationsEl.getSelectedKeys().isEmpty()) {
-				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}

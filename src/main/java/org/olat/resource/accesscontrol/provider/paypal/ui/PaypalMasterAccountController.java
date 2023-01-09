@@ -191,7 +191,7 @@ public class PaypalMasterAccountController extends FormBasicController {
 				acModule.setVat(new BigDecimal(vatRate));
 			} catch (Exception e) {
 				//error
-				vatRateEl.setErrorKey("", null);
+				vatRateEl.setErrorKey("");
 			}
 		} else {
 			acModule.setVat(BigDecimal.ZERO);

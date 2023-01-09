@@ -161,7 +161,7 @@ public class OpenAccessOfferController extends FormBasicController {
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
 			if (organisationsEl.getSelectedKeys().isEmpty()) {
-				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}

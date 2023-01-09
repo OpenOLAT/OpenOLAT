@@ -545,7 +545,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 	/*
 	 * @return
 	 */
-	private PaypalTransaction createAndPersistTransaction(Price amount, Order order, OrderPart part, AccessMethod method) {
+	protected PaypalTransaction createAndPersistTransaction(Price amount, Order order, OrderPart part, AccessMethod method) {
 		PaypalTransaction transaction = new PaypalTransaction();
 		transaction.setRefNo(order.getOrderNr());
 		transaction.setSecureSuccessUUID(UUID.randomUUID().toString().replace("-", ""));

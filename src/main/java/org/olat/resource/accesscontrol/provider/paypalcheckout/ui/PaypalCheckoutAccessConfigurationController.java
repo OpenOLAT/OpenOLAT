@@ -135,24 +135,24 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 		try {
 			priceDbl = Double.parseDouble(priceStr);
 			if(priceDbl <= 0.0d) {
-				priceEl.setErrorKey("price.error", null);
+				priceEl.setErrorKey("price.error");
 				allOk = false;
 			} 			
 		} catch(Exception e) {
-			priceEl.setErrorKey("price.error", null);
+			priceEl.setErrorKey("price.error");
 			allOk = false;
 		}
 		
 		try {
 			PriceFormat.format(BigDecimal.valueOf(priceDbl));
 		} catch (Exception e) {
-			priceEl.setErrorKey("price.error", null);
+			priceEl.setErrorKey("price.error");
 			allOk = false;
 		}
 
 		currencyEl.clearError();
 		if(!currencyEl.isOneSelected()) {
-			currencyEl.setErrorKey("currency.error", null);
+			currencyEl.setErrorKey("currency.error");
 			allOk = false;
 		}
 

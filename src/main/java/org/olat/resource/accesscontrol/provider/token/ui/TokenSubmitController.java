@@ -72,7 +72,7 @@ public class TokenSubmitController extends FormBasicController implements Contro
 		String token = tokenEl.getValue();
 		tokenEl.clearError();
 		if (token == null || token.length() < 2) {
-			tokenEl.setErrorKey("invalid.token.format", null);
+			tokenEl.setErrorKey("invalid.token.format");
 			allOk = false;
 		}
 		
