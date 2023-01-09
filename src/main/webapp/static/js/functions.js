@@ -2188,7 +2188,7 @@ function showMessageBox(type, title, message, buttonCallback) {
 		showInfoBox(title, message);
 		return null;
 	} else {
-		var content = '<div id="myFunctionalModal" class="modal fade" role="dialog"><div class="modal-dialog"><div class="modal-content">';
+		var content = '<div id="myFunctionalModal" class="modal fade" tabindex="-1" role="dialog"><div class="modal-dialog"><div class="modal-content">';
 		content += '<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         content += '<h4 class="modal-title">' + title + '</h4></div>';	
 		content += '<div class="modal-body alert ';
@@ -2534,6 +2534,17 @@ function o_doPrint() {
  * The escape key event loop for OpenOlat components 
  */
 function o_doEscapeDispatch(event) {
+	// Ignore when target is a standard form selection element
+	// Note: we can not know if the selection dropdown is actually opened or not. We opt 
+	// for this scenario to prevent unintended data loss when user just want to close the dropdown.
+	if (event.target.type.startsWith("select")) {
+		return;
+	}
+	// Ignore when target is a datepicker, close datepicker instead.
+	if (jQuery(event.target).hasClass('hasDatepicker')) {
+		return;
+	}
+	
 	// Check if we are in a multilayered OpenOlat dialog, callout or modal dialog
 	var lastDialog = jQuery('.o_layered_panel, .o_ltop_modal_panel, .ui-dialog').last();
 	if (lastDialog.length > 0) {
