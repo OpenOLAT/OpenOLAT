@@ -178,7 +178,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					timescale = 1;
 				}				
 				// Simple calculation. Ignore NTSC and other issues for now
-				return duration / timescale * 1000l;
+				return 1000L * duration / timescale;
 			} catch (Exception | AssertionError e) {
 				log.error("Cannot extract duration of: {}", media, e);
 			}
