@@ -48,7 +48,7 @@ import jakarta.persistence.Version;
  * @author Andreas
  *
  */
-@Entity
+@Entity(name="olatresource")
 @Table(name="o_olatresource")
 public class OLATResourceImpl implements Persistable, OLATResource {
 

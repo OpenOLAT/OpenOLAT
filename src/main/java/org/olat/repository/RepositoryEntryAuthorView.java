@@ -43,6 +43,8 @@ public interface RepositoryEntryAuthorView extends OLATResourceable, RepositoryE
 	
 	public RepositoryEntryManagedFlag[] getManagedFlags();
 	
+	public boolean isCanIndexMetadata();
+	
 	public String getTechnicalType();
 
 	public String getAuthor();

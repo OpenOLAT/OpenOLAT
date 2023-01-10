@@ -24,7 +24,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -120,10 +119,8 @@ public class OfferImpl implements Persistable, Offer, ModifiedInfo {
 	private String description;
 	
 	@Embedded
-    @AttributeOverrides( {
-    	@AttributeOverride(name="amount", column = @Column(name="price_amount") ),
-    	@AttributeOverride(name="currencyCode", column = @Column(name="price_currency_code") )
-    })
+    @AttributeOverride(name="amount", column = @Column(name="price_amount"))
+    @AttributeOverride(name="currencyCode", column = @Column(name="price_currency_code"))
 	private PriceImpl price;
 	
 	@ManyToOne(targetEntity=OLATResourceImpl.class,fetch=FetchType.LAZY,optional=true)

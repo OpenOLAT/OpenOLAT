@@ -328,8 +328,6 @@ public class AuthoringEntryDataSource implements FlexiTableDataSourceDelegate<Au
 			// Taxonomy Level
 			List<TaxonomyLevel> taxonomyLevels = entryKeyToTaxonomyLevels.get(entry.getKey());
 			row.setTaxonomyLevels(taxonomyLevels);
-
-			row.setCanIndexMetadata(repositoryService.loadByKey(entry.getKey()).getCanIndexMetadata());
 			
 			// license
 			ResourceLicense license = licenses.get(new Resourceable(entry.getOlatResource()));

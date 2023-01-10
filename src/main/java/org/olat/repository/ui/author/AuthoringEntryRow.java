@@ -122,6 +122,7 @@ public class AuthoringEntryRow implements RepositoryEntryLight {
 		
 		status = view.getEntryStatus();
 		publicVisible = view.isPublicVisible();
+		canIndexMetadata = view.isCanIndexMetadata();
 		
 		olatResource = OresHelper.clone(view.getOlatResource());
 		

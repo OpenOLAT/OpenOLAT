@@ -56,6 +56,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	
 	private final RepositoryEntryStatusEnum status;
 	private final boolean publicVisible;
+	private final boolean canIndexMetadata;
 	
 	private final Date lastUsage;
 	
@@ -89,6 +90,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		location = re.getLocation();
 		educationalType = re.getEducationalType();
 		
+		
 		softkey = re.getSoftkey();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
@@ -96,6 +98,7 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 		
 		status = re.getEntryStatus();
 		publicVisible = re.isPublicVisible();
+		canIndexMetadata = re.getCanIndexMetadata();
 		
 		lastUsage = re.getStatistics().getLastUsage();
 		
@@ -202,6 +205,11 @@ public class RepositoryEntryAuthorImpl implements RepositoryEntryAuthorView {
 	@Override
 	public boolean isPublicVisible() {
 		return publicVisible;
+	}
+
+	@Override
+	public boolean isCanIndexMetadata() {
+		return canIndexMetadata;
 	}
 
 	@Override
