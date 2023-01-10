@@ -50,6 +50,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.manager.OrganisationDAO;
@@ -118,6 +119,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	@Autowired
 	private LDAPSyncConfiguration syncConfiguration;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
@@ -167,6 +170,13 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		// historic
 		Identity identity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
 		Assert.assertNotNull(identity);
+		
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		List<Organisation> organisationsAsUsers = organisationService.getOrganisations(identity, OrganisationRoles.user);
+		assertThat(organisationsAsUsers)
+			.isNotEmpty()
+			.hasSize(1)
+			.containsExactlyInAnyOrder(defOrganisation);
 	}
 	
 	/**
