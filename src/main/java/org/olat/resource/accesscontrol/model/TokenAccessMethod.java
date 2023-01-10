@@ -20,10 +20,10 @@
 
 package org.olat.resource.accesscontrol.model;
 
+import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
+
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-
-import org.olat.resource.accesscontrol.provider.token.TokenAccessHandler;
 
 
 /**
@@ -64,5 +64,21 @@ public class TokenAccessMethod extends AbstractAccessMethod {
 	@Override
 	public boolean isVisibleInGui() {
 		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 2980194 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof TokenAccessMethod method) {
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
 	}
 }

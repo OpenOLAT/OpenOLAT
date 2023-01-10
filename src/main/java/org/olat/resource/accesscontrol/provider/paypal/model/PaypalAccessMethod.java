@@ -20,11 +20,11 @@
 
 package org.olat.resource.accesscontrol.provider.paypal.model;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-
 import org.olat.resource.accesscontrol.model.AbstractAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalAccessHandler;
+
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
 
 /**
@@ -65,5 +65,21 @@ public class PaypalAccessMethod extends AbstractAccessMethod {
 	@Override
 	public boolean isVisibleInGui() {
 		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -130581 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof PaypalAccessMethod method) {
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
 	}
 }

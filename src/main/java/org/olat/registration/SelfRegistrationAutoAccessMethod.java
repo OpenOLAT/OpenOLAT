@@ -19,10 +19,10 @@
  */
 package org.olat.registration;
 
+import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
+
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-
-import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
 
 /**
  * Initial date: 05.04.2021<br>
@@ -38,6 +38,22 @@ public class SelfRegistrationAutoAccessMethod extends AutoAccessMethod {
 	@Override
 	public String getType() {
 		return SelfRegistrationAutoAccessHandler.METHOD_TYPE;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -42368 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof SelfRegistrationAutoAccessMethod method) {
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
 	}
 
 }

@@ -171,8 +171,7 @@ public abstract class AbstractAccessMethod implements Persistable, AccessMethod,
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof AccessMethod) {
-			AccessMethod method = (AccessMethod)obj;
+		if(obj instanceof AccessMethod method) {
 			return getKey() != null && getKey().equals(method.getKey());
 		}
 		return false;

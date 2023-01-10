@@ -19,10 +19,10 @@
  */
 package org.olat.shibboleth.manager;
 
+import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
+
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-
-import org.olat.resource.accesscontrol.provider.auto.model.AutoAccessMethod;
 
 /**
  *
@@ -41,5 +41,19 @@ public class ShibbolethAutoAccessMethod extends AutoAccessMethod {
 		return ShibbolethAutoAccessHandler.METHOD_TYPE;
 	}
 
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 238490 : getKey().hashCode();
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof ShibbolethAutoAccessMethod method) {
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
+	}
 }

@@ -20,10 +20,10 @@
 
 package org.olat.resource.accesscontrol.model;
 
+import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
+
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-
-import org.olat.resource.accesscontrol.provider.free.FreeAccessHandler;
 
 
 /**
@@ -64,5 +64,21 @@ public class FreeAccessMethod extends AbstractAccessMethod {
 	@Override
 	public boolean isVisibleInGui() {
 		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 2489579 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof FreeAccessMethod method) {
+			return getKey() != null && getKey().equals(method.getKey());
+		}
+		return false;
 	}
 }

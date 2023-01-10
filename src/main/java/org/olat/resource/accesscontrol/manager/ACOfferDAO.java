@@ -58,8 +58,9 @@ public class ACOfferDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select offer, access");
 		sb.append("  from acoffer offer");
-		sb.append("  left join acofferaccess access");
-		sb.append("    on access.offer.key = offer.key ");
+		sb.append("  left join acofferaccess access")
+		  .append("    on access.offer.key = offer.key ");
+		sb.append("  left join fetch access.method accessMethod");
 		sb.append("  left join offer.resource resource");
 		if (organisations != null && !organisations.isEmpty()) {
 			sb.append(" left join offertoorganisation oto");
