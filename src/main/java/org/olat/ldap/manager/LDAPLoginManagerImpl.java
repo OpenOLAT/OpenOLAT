@@ -576,6 +576,14 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		
 		// check WebDAV authentication
 		CoreSpringFactory.getImpl(OLATAuthManager.class).synchronizeCredentials(identity, identity);
+		
+		// Check that the user is at least in 1 organisation
+		if(!syncConfiguration.syncOrganisationWithLDAPGroup()) {
+			List<Organisation> organisationAsUsers = organisationService.getOrganisations(identity, OrganisationRoles.user);
+			if(organisationAsUsers.isEmpty()) {
+				organisationService.addMember(identity, OrganisationRoles.user);
+			}
+		}
 		return identity;
 	}
 
@@ -677,11 +685,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		Identity identity;
 		if(syncConfiguration.syncOrganisationWithLDAPGroup()) {
 			// Organization will be added at a later stage
-			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, uid, null, user,
-					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, null, null, null);
-		} else {
 			identity = securityManager.createAndPersistIdentityAndUser(identityName, uid, null, user,
 					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, null, null);
+		} else {
+			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, uid, null, user,
+					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uid, null, null, null);
 		}
 		log.info("Created LDAP user username::{}", uid);
 		return identity;
