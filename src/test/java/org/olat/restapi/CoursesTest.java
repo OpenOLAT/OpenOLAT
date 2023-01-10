@@ -709,6 +709,11 @@ public class CoursesTest extends OlatRestTestCase {
 	public void testCopyCourse_withMetadata() throws IOException, URISyntaxException {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		
+		RepositoryEntryEducationalType educationalType = repositoryManager.createEducationalType(UUID.randomUUID().toString());
+		entry = repositoryManager.setDescriptionAndName(entry, entry.getDisplayname(),
+				null, entry.getDescription(), entry.getAuthors(), null, null, null, null, null, null, null, null, null, null, educationalType);
+		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(entry);
 
 		conn = new RestConnection();
@@ -746,6 +751,7 @@ public class CoursesTest extends OlatRestTestCase {
 		Assert.assertEquals("Basel", re.getLocation());
 		Assert.assertEquals("825762", re.getExternalId());
 		Assert.assertEquals("AC-825762", re.getExternalRef());
+		Assert.assertEquals(educationalType, re.getEducationalType());
 	}
 
 	protected List<CourseVO> parseCourseArray(HttpEntity entity) {
