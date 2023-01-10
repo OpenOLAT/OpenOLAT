@@ -31,6 +31,7 @@ public class VideoSegmentCategoryImpl implements VideoSegmentCategory {
 	private String title;
 	private String label;
 	private String color;
+	private int sortOrder;
 
 	@Override
 	public String getId() {
@@ -74,5 +75,15 @@ public class VideoSegmentCategoryImpl implements VideoSegmentCategory {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	@Override
+	public int getSortOrder() {
+		return sortOrder;
+	}
+
+	@Override
+	public void setSortOrder(int sortOrder) {
+		this.sortOrder = sortOrder;
 	}
 }

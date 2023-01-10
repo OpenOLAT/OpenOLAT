@@ -145,6 +145,7 @@ public class VideoXStreamTest {
 			category.setLabel("TC");
 			category.setTitle("Test category");
 			category.setColor("green");
+			category.setSortOrder(123);
 
 			VideoSegmentImpl segment = new VideoSegmentImpl();
 			segment.setBegin(new Date());
@@ -176,6 +177,7 @@ public class VideoXStreamTest {
 			Assert.assertNotNull(category);
 			Assert.assertEquals("green", category.getColor());
 			Assert.assertEquals("TC: Test category", category.getLabelAndTitle());
+			Assert.assertEquals(123, category.getSortOrder());
 
 			VideoSegment segment = segments.getSegments().get(0);
 			Assert.assertNotNull(segment);
