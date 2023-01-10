@@ -1,0 +1,47 @@
+<style>
+	table.o_video_category_container {
+		margin: 10px auto;
+		width: 90%;
+		border-spacing: 10px;
+		border-collapse: separate;
+	}
+	.o_color_button_placeholder {
+		display: inline-block;
+		width: 34px;
+		height: 34px;
+	}
+</style>
+
+<div class="o_form">
+	<table class="o_video_category_container">
+		<thead>
+		<tr>
+			<th></th>
+			<th></th>
+			<th>$r.translate("form.segment.category.color")</th>
+			<th><i class="o_icon o_icon_mandatory" title="$r.translate('form.mandatory.hover')"></i>$r.translate("form.segment.category.label")</th>
+			<th><i class="o_icon o_icon_mandatory" title="$r.translate('form.mandatory.hover')"></i>$r.translate("form.segment.category.title")</th>
+			<th></th>
+			<th></th>
+		</tr>
+		</thead>
+		<tbody>
+		#foreach ($category in $categories)
+		<tr>
+			<td>$r.render(${category.getMoveUpLink().getComponent().getComponentName()})</td>
+			<td>$r.render(${category.getMoveDownLink().getComponent().getComponentName()})</td>
+			<td><div class="o_color_button_placeholder o_video_colored_area ${category.getColor()}"></div></td>
+			<td>$r.render(${category.getLabel().getComponent().getComponentName()})</td>
+			<td>$r.render(${category.getTitle().getComponent().getComponentName()})</td>
+			<td>$r.render(${category.getAddButton().getComponent().getComponentName()})</td>
+			<td>$r.render(${category.getDeleteButton().getComponent().getComponentName()})</td>
+		</tr>
+		#end
+
+		<tr>
+			<td colspan="3"></td>
+			<td colspan="4">$r.render("save") $r.render("cancel")</td>
+		</tr>
+		</tbody>
+	</table>
+</div>

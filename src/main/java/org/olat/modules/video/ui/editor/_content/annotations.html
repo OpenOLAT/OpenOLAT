@@ -1,0 +1,37 @@
+<div class="o_video_edit_annotation o_form form-horizontal">
+	<div class="form-group row clearfix">
+		<div class="col-xs-3"></div>
+		<div class="col-xs-4">$r.render("annotations")</div>
+		<div class="col-xs-5 text-right">$r.render("addAnnotation")</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("start", "label", "col-xs-3")
+		<div class="col-xs-4">
+			<div style="width: 45%; display: inline-block;">$r.render("start")</div>
+			<div style="width: 5%; display: inline-block; text-align: center;">-</div>
+			<div style="width: 45%; display: inline-block; float: right;">$r.render("end")</div>
+		</div>
+		$r.render("duration", "label", "col-xs-3")
+		<div class="col-xs-2">$r.render("duration")</div>
+		<div class="o_form_example help-block col-xs-offset-10 col-xs-2">$r.render("duration", "example")</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("text", "label", "col-xs-3")
+		<div class="col-xs-9">$r.render("text")</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("color", "label", "col-xs-3")
+		<div class="col-xs-9">$r.render("color")</div>
+	</div>
+	<div class="form-group row clearfix">
+		$r.render("fontSize", "label", "col-xs-3")
+		<div class="col-xs-7">$r.render("fontSize")</div>
+		<div class="col-xs-2">$r.render("fontSizeValue")</div>
+		<div class="o_form_example help-block col-xs-offset-10 col-xs-2">$r.render("fontSizeValue", "example")</div>
+	</div>
+	<div class="form-group row clearfix">
+		<div class="col-xs-offset-3 col-xs-9">
+			$r.render("save") $r.render("cancel")
+		</div>
+	</div>
+</div>

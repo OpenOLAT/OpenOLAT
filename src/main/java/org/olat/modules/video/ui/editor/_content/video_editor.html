@@ -1,0 +1,75 @@
+<style>
+	#o_video_editor_video {
+		overflow: hidden;
+	}
+
+	#o_video_editor_detail {
+	}
+
+	#o_video_editor_master {
+	}
+</style>
+
+<div id="o_video_editor" class="o_video_editor row clearfix">
+	<div id="o_video_editor_video" class="col-xs-12 col-sm-6">$r.render("video")</div>
+	<div id="o_video_editor_detail" class="col-xs-12 col-sm-6">$r.render("detail")</div>
+	<div id="o_video_editor_master" class="col-xs-12">$r.render("master")</div>
+</div>
+
+<script>
+	var videoEditor = jQuery('#o_video_editor');
+
+	function resize() {
+		#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
+		var videoWidth = $videoWidth;
+		var videoHeight = $videoHeight;
+		var aspectRatio = videoWidth / videoHeight;
+		#else
+		var aspectRatio = 1.778;
+		#end
+
+		var videoEditor = jQuery('#o_video_editor');
+		var toolbar = jQuery('#o_main_toolbar');
+		var footer = jQuery('#o_footer_wrapper');
+		var video = jQuery('#o_video_editor_video');
+		var detail = jQuery('#o_video_editor_detail');
+		var master = jQuery('#o_video_editor_master');
+
+		if (!(videoEditor && toolbar && footer && video && detail && master)) {
+			return;
+		}
+
+		var availableWidth = videoEditor.width() + parseInt(videoEditor.css('margin-left'), 10)
+			+ parseInt(videoEditor.css('margin-right'), 10);
+		var videoViewWidth = Math.floor(availableWidth / 2) - 30;
+		var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
+		video.width(videoViewWidth);
+		video.height(videoViewHeight);
+		window.dispatchEvent(new Event('resize'));
+
+		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'availableWidth', availableWidth);
+
+		// var toolbarOffset = toolbar.offset();
+		// var toolbarTop = toolbarOffset.top;
+		// var footerOffset = footer.offset();
+		// var footerTop = Math.min(footerOffset.top, window.innerHeight);
+		// var toolbarHeight = toolbar.height();
+		// var goToTopHeightPlusMargins = 80;
+		// var availableHeight = footerTop - toolbarTop - toolbarHeight - goToTopHeightPlusMargins;
+		//
+		// var	unitHeight = Math.floor(availableHeight / 2);
+		// var unitWidth = Math.floor(availableWidth / 2) - 30;
+		//
+
+		//
+		// detail.height(unitHeight);
+		// detail.width(unitWidth * 2 - unitHeight * aspectRatio);
+		//
+		// master.width(unitWidth * 2);
+		// master.height(unitHeight);
+	}
+
+	resize();
+	//window.addEventListener("resize", resize);
+	new ResizeObserver(resize).observe(videoEditor[0]);
+</script>
