@@ -200,9 +200,9 @@ public class OAIPmhAdminController extends FormBasicController {
             oaiPmhModule.setApiTypeLearningResource(apiTypeEl.isKeySelected("oai.api.type.learningResource"));
             oaiPmhModule.setApiTypeRelease(apiTypeEl.isKeySelected("oai.api.type.release"));
         }
-        if (searchEnginePublishEl.isEnabled()) {
+        /*if (searchEnginePublishEl.isEnabled()) {
             oaiPmhModule.setSearchEngineEnabled(searchEnginePublishEl.isSelected(0));
-        }
+        }*/
     }
 
     @Override
