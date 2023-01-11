@@ -103,13 +103,13 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	}
 	
 	private final File extractIOFile(VFSLeaf leaf) {
-		if(leaf instanceof NamedLeaf) {
-			leaf = ((NamedLeaf)leaf).getDelegate();
+		if(leaf instanceof NamedLeaf namedLeaf) {
+			leaf = namedLeaf.getDelegate();
 		}
 		
 		File file = null;
-		if(leaf instanceof LocalImpl) {
-			file = ((LocalImpl)leaf).getBasefile();
+		if(leaf instanceof LocalImpl localLeaf) {
+			file = localLeaf.getBasefile();
 		}
 		return file;
 	}
@@ -125,7 +125,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		if(isSameFormat(file, null, thumbnailFile)) {
 			String extension = FileUtils.getFileSuffix(file.getName());
 			imageInfos = getImageInfos(file, extension);
-			if(imageInfos.getWidth() <= maxWidth && imageInfos.getHeight() <= maxHeight) {
+			if(imageInfos != null && imageInfos.getWidth() <= maxWidth && imageInfos.getHeight() <= maxHeight) {
 				FileUtils.copyFileToFile(file, thumbnailFile, false);
 				return new FinalSize(imageInfos.getWidth(), imageInfos.getHeight());
 			}
@@ -307,8 +307,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 					int stopIndex = verbose.indexOf(' ', sizeIndex);
 					if(stopIndex > sizeIndex) {
 						String sizeStr = verbose.substring(sizeIndex + 2, stopIndex);
-						FinalSize size = extractSizeFromChuck(sizeStr);
-						return size;
+						return extractSizeFromChuck(sizeStr);
 					}
 				// no scaling apparently, try to find the size
 				} else {

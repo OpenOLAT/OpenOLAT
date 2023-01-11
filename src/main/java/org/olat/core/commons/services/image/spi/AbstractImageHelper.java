@@ -242,8 +242,14 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 		if(!StringHelper.containsNonWhitespace(sourceExt)) {
 			sourceExt = FileUtils.getFileSuffix(source.getName());
 		}
+		if("jpeg".equals(sourceExt)) {
+			sourceExt = "jpg";
+		}
 		String scaledExt = getImageFormat(scaled);
-		return (sourceExt != null && sourceExt.equals(scaledExt));
+		if("jpeg".equals(scaledExt)) {
+			scaledExt = "jpg";
+		}
+		return sourceExt != null && sourceExt.equals(scaledExt);
 	}
 	
 	protected static String getImageFormat(File image) {

@@ -302,8 +302,8 @@ public class RepositoryEntryInfoController extends FormBasicController {
 				showWarning("cif.error.image");
 			} else {
 				VFSLeaf image = repositoryManager.getImage(repositoryEntry);
-				if(image instanceof  LocalFileImpl) {
-					fileUpload.setInitialFile(((LocalFileImpl)image).getBasefile());
+				if(image instanceof  LocalFileImpl localImage) {
+					fileUpload.setInitialFile(localImage.getBasefile());
 				}
 			}
 			tmpContainer.deleteSilently();
