@@ -215,14 +215,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 					new NameValuePair("cid", event.name()), new NameValuePair("item", key)))
 			  .append(" class='o_sel_assessmentitem'>");
 		}
-		String title;
-		if(component.isShowTitles()) {
-			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
-		} else {
-			int num = component.getCandidateSessionContext().getNumber(itemNode);
-			title = translator.translate("question.title", Integer.toString(num));
-		}
-		title = breakTitle(title);
+		String title = getTitle(component, itemNode, translator);
 		sb.append("<span class='questionTitle'>").append(title).append("</span>");
 
 		if(event == null) {
@@ -231,6 +224,17 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 			sb.append("</a>");
 		}
 		return event;
+	}
+	
+	private String getTitle(AssessmentTreeComponent component, TestPlanNode itemNode, Translator translator) {
+		String title;
+		if(component.isShowTitles()) {
+			title = StringHelper.escapeHtml(itemNode.getSectionPartTitle());
+		} else {
+			int num = component.getCandidateSessionContext().getNumber(itemNode);
+			title = translator.translate("question.title", Integer.toString(num));
+		}
+		return breakTitle(title);
 	}
 	
 	private String breakTitle(String title) {
@@ -252,6 +256,10 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		Form form = component.getQtiItem().getRootForm();
 		String dispatchId = component.getQtiItem().getFormDispatchId();
 		boolean mark = component.getCandidateSessionContext().isMarked(key);
+
+		String title = getTitle(component, itemNode, translator);
+		String ariaLabelI18n = mark ? "assessment.item.mark.remove" : "assessment.item.mark.add";
+		String ariaLabel = StringHelper.escapeHtml(translator.translate(ariaLabelI18n, title));
 		
 		sb.append("<a href='javascript:;' onclick=\"")
 		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
@@ -266,6 +274,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		  .append("; o_toggleMark(this); return false; }\" ")
 		  .append(" class='o_assessmentitem_marks'><i class='o_icon ")
 		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)
+		  .append("' aria-label='").appendHtmlAttributeEscaped(ariaLabel)
 		  .append("' title='").append(StringHelper.escapeHtml(translator.translate("assessment.item.mark"))).append("'>&nbsp;</i></a>");
 	}
 	
@@ -277,8 +286,7 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		//attempts
 		int numOfAttempts = itemSessionState.getNumAttempts();
 		int maxAttempts = 0;
-		if(itemProcessingContext instanceof ItemSessionController) {
-			ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
+		if(itemProcessingContext instanceof ItemSessionController itemSessionController) {
 			maxAttempts = itemSessionController.getItemSessionControllerSettings().getMaxAttempts();
 		}		
 		sb.append("<span class='o_assessmentitem_attempts ");
