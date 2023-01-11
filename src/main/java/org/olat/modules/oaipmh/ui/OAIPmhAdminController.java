@@ -137,6 +137,7 @@ public class OAIPmhAdminController extends FormBasicController {
         apiTypeEl.select(apiTypeKeys[3], oaiPmhModule.isApiTypeLearningResource());
         apiTypeEl.select(apiTypeKeys[4], oaiPmhModule.isApiTypeRelease());
 
+        /* TODO Not implemented yet
         // search engine
         FormLayoutContainer searchEngineCont = FormLayoutContainer.createDefaultFormLayout("oaiSearchEngine", getTranslator());
         searchEngineCont.setRootForm(mainForm);
@@ -144,11 +145,11 @@ public class OAIPmhAdminController extends FormBasicController {
         formLayout.add(searchEngineCont);
 
         searchEnginePublishEl = uifactory.addCheckboxesHorizontal("searchEngine.label", searchEngineCont, keys, new String[]{translate("searchEngine.enable")});
-        searchEnginePublishEl.select(keys[0], oaiPmhModule.isSearchEngineEnabled());
+        searchEnginePublishEl.select(keys[0], oaiPmhModule.isSearchEngineEnabled());*/
 
         FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
         buttonsCont.setRootForm(mainForm);
-        searchEngineCont.add(buttonsCont);
+        apiCont.add(buttonsCont);
         uifactory.addFormSubmitButton("save", buttonsCont);
         uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
     }
