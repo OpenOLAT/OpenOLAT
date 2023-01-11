@@ -917,44 +917,32 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	private void sendJmsCertificateFile(Certificate certificate, CertificateTemplate template, Float score,
 			Float maxScore, Boolean passed, Double completion, CertificateConfig config) {
-		QueueSender sender;
-		QueueSession session = null;
-		try  {
-			JmsCertificateWork workUnit = new JmsCertificateWork();
-			workUnit.setCertificateKey(certificate.getKey());
-			if(template != null) {
-				workUnit.setTemplateKey(template.getKey());
-			}
-			workUnit.setScore(score);
-			workUnit.setMaxScore(maxScore);
-			workUnit.setPassed(passed);
-			workUnit.setCompletion(completion);
-			workUnit.setConfig(config);
-			
-			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+		
+		JmsCertificateWork workUnit = new JmsCertificateWork();
+		workUnit.setCertificateKey(certificate.getKey());
+		if(template != null) {
+			workUnit.setTemplateKey(template.getKey());
+		}
+		workUnit.setScore(score);
+		workUnit.setMaxScore(maxScore);
+		workUnit.setPassed(passed);
+		workUnit.setCompletion(completion);
+		workUnit.setConfig(config);
+
+		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+				QueueSender sender = session.createSender(getJmsQueue())) {
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
-
-			sender = session.createSender(getJmsQueue());
-			sender.send( message );
+			sender.send(message);
 		} catch (JMSException e) {
 			log.error("", e);
-		} finally {
-			if(session != null) {
-				try {
-					session.close();
-				} catch (JMSException e) {
-					//last hope
-				}
-			}
 		}
 	}
 	
 	@Override
 	public void onMessage(Message message) {
-		if(message instanceof ObjectMessage) {
+		if(message instanceof ObjectMessage objMsg) {
 			try {
-				ObjectMessage objMsg = (ObjectMessage)message;
 				JmsCertificateWork workUnit = (JmsCertificateWork)objMsg.getObject();
 				doCertificate(workUnit);
 				message.acknowledge();

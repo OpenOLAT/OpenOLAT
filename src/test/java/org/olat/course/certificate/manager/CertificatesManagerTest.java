@@ -41,6 +41,8 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.EmailStatus;
+import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -263,7 +265,6 @@ public class CertificatesManagerTest extends OlatTestCase {
 		waitCertificate(certificate2.getKey());
 
 		dbInstance.commitAndCloseSession();
-		sleep(2000);
 
 		Calendar lastestNews = Calendar.getInstance();
 		lastestNews.add(Calendar.DATE, -1);
@@ -459,14 +460,20 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertEquals(entry.getOlatResource(), ((CertificateImpl)reloadedCertificate).getOlatResource());
 	}
 	
-	
+	/**
+	 * Wait that the certificate is generated, email sent, and flag last set.
+	 * 
+	 * @param certificateKey The primary key of the certificate
+	 */
 	private void waitCertificate(Long certificateKey) {
 		//wait until the certificate is created
 		waitForCondition(new Callable<Boolean>() {
 			@Override
 			public Boolean call() throws Exception {
 				Certificate reloadedCertificate = certificatesManager.getCertificateById(certificateKey);
-				return CertificateStatus.ok.equals(reloadedCertificate.getStatus());
+				return CertificateStatus.ok.equals(reloadedCertificate.getStatus())
+						&& ((AbstractCertificate)reloadedCertificate).isLast()
+						&& EmailStatus.ok.equals(((AbstractCertificate)reloadedCertificate).getEmailStatus());
 			}
 		}, 30000);
 	}
