@@ -113,6 +113,24 @@ public enum OrganisationRoles {
 				user };
 	}
 	
+	public static OrganisationRoles[] managersRoles() {
+		return new OrganisationRoles[]{
+				sysadmin,
+				administrator,
+				usermanager,
+				rolesmanager,
+				learnresourcemanager,
+				lecturemanager,
+				groupmanager,
+				poolmanager,
+				curriculummanager,
+				qualitymanager,
+				linemanager,
+				principal,
+				author,
+			};
+	}
+	
 	/**
 	 * @param role The role to check
 	 * @return true if the role is by default inherited in the organisation tree

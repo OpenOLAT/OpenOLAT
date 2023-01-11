@@ -1489,39 +1489,40 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 
 	private void syncRole(List<OrganisationRoles> synchronizedRoles, boolean fullSync,
 			Identity identity, Organisation organisation, List<OrganisationRoles> ldapRoles) {
-		
 		Roles roles = securityManager.getRoles(identity);
-
-		boolean author = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.author, roles.isAuthor());
-		boolean groupManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.groupmanager, roles.isGroupManager());
-		boolean poolManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.poolmanager, roles.isPoolManager());
-		boolean curriculumManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.curriculummanager, roles.isCurriculumManager());
-		boolean userManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.usermanager, roles.isUserManager());
-		boolean learnResourceManager = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.learnresourcemanager, roles.isLearnResourceManager());
-		boolean administrator = syncRole(synchronizedRoles, fullSync, ldapRoles, OrganisationRoles.administrator, roles.isAdministrator());
-
-		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, true,
-				author, groupManager, poolManager, curriculumManager, userManager, learnResourceManager, administrator);
-		securityManager.updateRoles(null, identity, modifiedRoles);
+		RolesByOrganisation rolesBy = roles.getRoles(organisation);
+		if(rolesBy == null) {
+			rolesBy = new RolesByOrganisation(organisation, List.of(OrganisationRoles.user));
+		} else if(!rolesBy.hasRole(OrganisationRoles.user)) {
+			rolesBy = RolesByOrganisation.enhance(rolesBy, List.of(OrganisationRoles.user), List.of());
+		}
+		
+		for(OrganisationRoles roleToModify:OrganisationRoles.managersRoles()) {
+			rolesBy = syncRole(synchronizedRoles, fullSync, ldapRoles, roleToModify, rolesBy);
+		}
+		securityManager.updateRoles(null, identity, rolesBy);
 	}
 	
 	private void unsyncRole(IdentityRef identityRef, Organisation organisation) {
 		Identity identity = securityManager.loadIdentityByKey(identityRef.getKey());
-		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(organisation, false, false, false,
-				false, false, false, false, false, false, false);
+		RolesByOrganisation modifiedRoles = RolesByOrganisation.empty(organisation);
 		securityManager.updateRoles(null, identity, modifiedRoles);
 	}
 	
-	private boolean syncRole(List<OrganisationRoles> synchronizedRoles, boolean fullSync, List<OrganisationRoles> ldapRoles,
-			OrganisationRoles roleToModify, boolean currentValue) {
+	private RolesByOrganisation syncRole(List<OrganisationRoles> synchronizedRoles, boolean fullSync, List<OrganisationRoles> ldapRoles,
+			OrganisationRoles roleToModify, RolesByOrganisation rolesBy) {
 		if(synchronizedRoles.contains(roleToModify)) {
 			if(fullSync) {
-				currentValue = ldapRoles.contains(roleToModify);
-			} else {
-				currentValue |= ldapRoles.contains(roleToModify);
-			}	
+				if(ldapRoles.contains(roleToModify)) {
+					rolesBy = RolesByOrganisation.enhance(rolesBy, List.of(roleToModify), List.of());
+				} else {
+					rolesBy = RolesByOrganisation.enhance(rolesBy, List.of(), List.of(roleToModify));
+				}
+			} else if(ldapRoles.contains(roleToModify)) {
+				rolesBy = RolesByOrganisation.enhance(rolesBy, List.of(roleToModify), List.of());
+			}
 		}
-		return currentValue;
+		return rolesBy;
 	}
 	
 	private void doBatchSyncDeletedUsers(LdapContext ctx, String sinceSentence) {
