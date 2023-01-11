@@ -110,7 +110,7 @@
 			<tbody>
 			#foreach($sourceChoice in $orderedSet1)
 				<tr>
-					<th scope="rows">${r.renderFlowStatics($sourceChoice.getFlowStatics())}</th>
+					<th scope="row">${r.renderFlowStatics($sourceChoice.getFlowStatics())}</th>
 					#set($sourceIndex = ${foreach.index})
 					#foreach($targetChoice in $orderedSet2)
 						<td class="o_sel_match_${sourceIndex}_${foreach.index}">

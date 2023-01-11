@@ -15,12 +15,13 @@
 	<table id="qti_container_${responseIdentifier}" class="table">
 		<thead>
 			<tr>
-				#if($sourceLeft)
-					<th scope="col" class="o_match_true_false_answer"> </th>
-				#end
-				
-            	#foreach($choice2 in $orderedSet2)
-				<th scope="col" class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
+			#if($sourceLeft)
+				<td class="o_match_true_false_answer"></td>
+			#end
+			
+           	#foreach($choice2 in $orderedSet2)
+            	#set($set2Identifier = $r.toString($choice2.identifier))
+				<th id="${set2Identifier}" scope="col" class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
 				#if($foreach.index == 0)
 					$r.translate("match.unanswered")
 				#elseif($foreach.index == 1)
@@ -28,11 +29,11 @@
 				#else
 					$r.translate("match.false")
 				#end</th>
-				#end
-				
-				#if(!$sourceLeft)
-					<th scope="col" class="o_match_true_false_answer"> </th>
-				#end
+			#end
+			
+			#if(!$sourceLeft)
+				<td class="o_match_true_false_answer"></td>
+			#end
 			</tr>
         </thead>
 		<tbody>
@@ -40,7 +41,7 @@
 			#set($set1Identifier = $r.toString($choice1.identifier))
             <tr>
             	#if($sourceLeft)
-            		<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+            		<td id="${set1Identifier}" class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
             	#end
             
 				#foreach($choice2 in $orderedSet2)
@@ -48,14 +49,14 @@
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
 					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                 	<td class="#if($foreach.index == 0) o_match_true_false_unanswered #elseif($foreach.index == 1) o_match_true_false_right #else o_match_true_false_wrong #end">
-                  	<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
+                  	<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set2Identifier} ${set1Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked, $responseValue) || $r.trueFalseDefault($responseChecked, $set2Identifier, $interaction)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
                 		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
                 		$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
                 	</td>
 				#end
 				
 				#if(!$sourceLeft)
-					<td class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
+					<td id="${set1Identifier}" class="o_match_true_false_answer">$r.renderFlowStatics($choice1.getFlowStatics())</td>
 				#end
             </tr>
 		#end

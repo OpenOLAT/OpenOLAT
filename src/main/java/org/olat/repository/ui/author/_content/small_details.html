@@ -6,7 +6,7 @@
 	<table class="table"><tbody>
 		#if($v.lifecycle || $v.lifecycle.softKey || $v.lifecycle.label || $row.lifecycle.start || $row.lifecycle.end)
 		<tr>
-			<th scope="rows">$r.translateInAttribute("cif.dates")</th>
+			<th scope="row">$r.translateInAttribute("cif.dates")</th>
 			<td><i class="o_icon o_icon_lifecycle_date"> </i> 
 				#if(!$v.lifecycle.privateCycle)
 					#if($v.lifecycle.softKey and !$v.lifecycle.softKey.isEmpty()) $r.escapeHtml($v.lifecycle.softKey)
@@ -20,24 +20,24 @@
 		#end
 		#if($r.isNotEmpty($v.mainLanguage))
 		<tr>
-			<th scope="rows">$r.translateInAttribute("cif.mainLanguage")</th>
+			<th scope="row">$r.translateInAttribute("cif.mainLanguage")</th>
 			<td><i class="o_icon o_icon_language"> </i> $r.escapeHtml($v.mainLanguage)</td>
 		</tr>
 		#end
 		#if($r.isNotEmpty($initialAuthor))
 		<tr>
-			<th scope="rows">$r.translate("cif.initialAuthor")</th>
+			<th scope="row">$r.translate("cif.initialAuthor")</th>
 			<td>$r.escapeHtml($initialAuthor)</td>
 		</tr>
 		#end
 		#if($r.isNotEmpty($v.authors))
 		<tr>
-			<th scope="rows">$r.translate("cif.authors")</th>
+			<th scope="row">$r.translate("cif.authors")</th>
 			<td>$r.escapeHtml($v.authors)</td>
 		</tr>
 		#end
 		<tr>
-			<th scope="rows">$r.translate("cif.owners")</th>
+			<th scope="row">$r.translate("cif.owners")</th>
 			<td><ul class="list-unstyled">
 			#foreach($owner in $owners)
 				<li>$r.escapeHtml($owner)</li>
@@ -46,7 +46,7 @@
 		</tr>
 		#if($r.isNotEmpty($referenceDetails))
 		<tr>
-			<th scope="rows">$r.translate("details.referenceinfoheader")</th>
+			<th scope="row">$r.translate("details.referenceinfoheader")</th>
 			<td><ul class="list-unstyled">
 			#foreach($reference in $referenceDetails)
 				<li>$reference</li>

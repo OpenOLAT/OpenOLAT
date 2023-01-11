@@ -12,7 +12,7 @@
 	#foreach($sourceChoice in $sourceChoices)
 		<tr>
 			#if($r.isTrue($sourceLeft)) 
-				<th scope="rows">${r.render($sourceChoice.getSummaryEl())}</th>
+				<th scope="row">${r.render($sourceChoice.getSummaryEl())}</th>
 			#end
 			#set($sourceIndex = ${foreach.index})
 			#foreach($targetChoice in $targetChoices)
@@ -28,7 +28,7 @@
 				</td>
 			#end
 			#if($r.isFalse($sourceLeft)) 
-				<th scope="rows">${r.render($sourceChoice.getSummaryEl())}</th>
+				<th scope="row">${r.render($sourceChoice.getSummaryEl())}</th>
 			#end
 		</tr>
 	#end

@@ -14,23 +14,24 @@
 	<table id="qti_container_${responseIdentifier}" class="table">
 		<thead>
 			<tr>
-				<th scope="cols"> </th>
+				<td></td>
             	#foreach($choice2 in $orderedSet2)
-				<th scope="cols">$r.renderFlowStatics($choice2.getFlowStatics())</th>
-			#end
+            		#set($set2Identifier = $r.toString($choice2.identifier))
+					<th id="${set2Identifier}" scope="col">$r.renderFlowStatics($choice2.getFlowStatics())</th>
+				#end
 			</tr>
         </thead>
 		<tbody>
 		#foreach($choice1 in $orderedSet1)
 			#set($set1Identifier = $r.toString($choice1.identifier))
             <tr>
-				<th scope="rows">$r.renderFlowStatics($choice1.getFlowStatics())</th>
+				<th id="${set1Identifier}" scope="row">$r.renderFlowStatics($choice1.getFlowStatics())</th>
 				#foreach($choice2 in $orderedSet2)
 					#set($set2Identifier = $r.toString($choice2.identifier))
 					#set($responseValue = $set1Identifier + " " + $set2Identifier)
 					#set($responseChecked = $r.getResponseValue($interaction.responseIdentifier))
                 	<td class="control">
-                  		<input id="oo_${set1Identifier}_${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
+                  		<input id="oo_${set1Identifier}_${set2Identifier}" aria-labelledby="${set1Identifier} ${set2Identifier}" type="checkbox" name="qtiworks_response_${responseIdentifier}" value="${responseValue}" #if($r.valueContains($responseChecked,$responseValue)) checked #end #if($r.isItemSessionEnded()) disabled #end/><i> </i>
                 		$r.appendFlexiFormDirtyForCheckbox("oo_${set1Identifier}_${set2Identifier}")
                 		$r.renderDirectedScoreAttribute($interaction, $choice1.identifier, $choice2.identifier)
                 	</td>
