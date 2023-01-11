@@ -61,6 +61,7 @@ import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Encoder.Algorithm;
@@ -171,12 +172,13 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Identity identity = userManager.findUniqueIdentityByEmail("hhuerlimann@openolat.com");
 		Assert.assertNotNull(identity);
 		
-		Organisation defOrganisation = organisationService.getDefaultOrganisation();
 		List<Organisation> organisationsAsUsers = organisationService.getOrganisations(identity, OrganisationRoles.user);
 		assertThat(organisationsAsUsers)
 			.isNotEmpty()
-			.hasSize(1)
-			.containsExactlyInAnyOrder(defOrganisation);
+			.hasSizeGreaterThanOrEqualTo(1)
+			.map(Organisation::getIdentifier)
+			.containsAnyOf(OrganisationService.DEFAULT_ORGANISATION_IDENTIFIER, LDAPLoginManagerImpl.LOST_AND_FOUND_ORGANISATION);
+			
 	}
 	
 	/**
@@ -552,6 +554,60 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertEquals("ahentschel", reloadIdentity.getUser().getProperty(UserConstants.NICKNAME, null));
 	}
 	
+	/**
+	 * Check that the sync method doesn't modify the user roles:<br>
+	 * https://jira.openolat.org/browse/OO-6701
+	 * 
+	 * @throws LDAPException
+	 */
+	@Test
+	public void doSyncUserWithWithGroups() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+
+		// sync single user
+		Identity identity = userManager.findUniqueIdentityByEmail("ahentschel@openolat.com");
+		Assert.assertNotNull(identity);
+		Assert.assertNotEquals("ahentschel", identity.getName());
+		
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RolesByOrganisation adminRoles = RolesByOrganisation.roles(defOrganisation,
+				false, false, false, false, true, true, true, true, true, true, true);
+		securityManager.updateRoles(identity, identity, adminRoles);
+		dbInstance.commitAndCloseSession();
+		
+		// make a change
+		String dn = "uid=ahentschel,ou=person,dc=olattest,dc=org";
+		List<Modification> modifications = new ArrayList<>();
+		modifications.add(new Modification(ModificationType.REPLACE, "sn", "Herschell"));
+		embeddedLdapRule.ldapConnection().modify(dn, modifications);
+		
+		// simple sync
+		ldapManager.syncUser(identity);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertNotNull(reloadIdentity);
+		Assert.assertNotEquals("ahentschel", reloadIdentity.getName());
+		Assert.assertEquals(identity, reloadIdentity);
+		Assert.assertEquals("Alessandro", reloadIdentity.getUser().getFirstName());
+		Assert.assertEquals("Herschell", reloadIdentity.getUser().getLastName());
+		Assert.assertEquals("ahentschel@openolat.com", reloadIdentity.getUser().getEmail());
+		Assert.assertEquals("ahentschel", reloadIdentity.getUser().getProperty(UserConstants.NICKNAME, null));
+		
+		Roles roles = securityManager.getRoles(reloadIdentity);
+		Assert.assertFalse(roles.hasRole(defOrganisation, OrganisationRoles.author));
+		Assert.assertFalse(roles.hasRole(defOrganisation, OrganisationRoles.lecturemanager));
+		
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.learnresourcemanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.groupmanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.poolmanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.curriculummanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.usermanager));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.sysadmin));
+		Assert.assertTrue(roles.hasRole(defOrganisation, OrganisationRoles.administrator));
+	}
+	
 	@Test
 	public void syncUserGroups() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
@@ -860,6 +916,74 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		assertThat(notReallyManagers)
 			.isNotNull()
 			.isEmpty();
+	}
+	
+	/**
+	 * Not all roles are synched by the LDAP synchronization. This check especially
+	 * the roles of a specific user (V. Ferro) at level default organisation and
+	 * the synchronized organisation.
+	 * 
+	 * @throws LDAPException
+	 */
+	@Test
+	public void syncOrganisationsRolesNotSynched() throws LDAPException {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapOrganisationsGroupFilter("(&(objectClass=groupOfNames)(|(cn=ldaporganisation)(cn=ldapempty)))");
+		syncConfiguration.setLdapOrganisationsGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		syncConfiguration.setLdapGroupFilter("(&(objectClass=groupOfNames)(cn=ldapcoaching))");
+		syncConfiguration.setUserManagerRoleAttribute("employeeNumber");
+		syncConfiguration.setUserManagerRoleValue("usermanager");
+		
+		// give Ferro system administrator rights
+		Identity id = securityManager.findIdentityByLogin("vferro");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RolesByOrganisation adminRoles = RolesByOrganisation.roles(defOrganisation,
+				false, false, false, false, false, false, false, false, false, false, true);
+		securityManager.updateRoles(id, id, adminRoles);
+		dbInstance.commitAndCloseSession();
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		SearchOrganisationParameters params = new SearchOrganisationParameters();
+		params.setExternalId("ldaporganisation");
+		List<Organisation> ldapOrganisations = organisationDao.findOrganisations(params);
+		assertThat(ldapOrganisations)
+			.isNotNull()
+			.hasSize(1)
+			.map(Organisation::getDisplayName)
+			.containsExactlyInAnyOrder("ldaporganisation");
+		
+		// Check roles of V. Ferro in default organisation and in LDAP organisation
+		Roles idRoles =securityManager.getRoles(id);
+		RolesByOrganisation defRoles = idRoles.getRoles(defOrganisation);
+		Assert.assertFalse(defRoles.isUserManager());
+		Assert.assertFalse(defRoles.isAdministrator());
+		Assert.assertTrue(defRoles.isSystemAdministrator());
+		
+		RolesByOrganisation ldapRoles = idRoles.getRoles(ldapOrganisations.get(0));
+		Assert.assertTrue(ldapRoles.isUserManager());
+		Assert.assertFalse(ldapRoles.isAdministrator());
+		Assert.assertTrue(ldapRoles.isSystemAdministrator());// inherited from default
+
+		// A configuration which match nobody
+		syncConfiguration.setUserManagerRoleValue("notreallymanager");
+		
+		allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+
+		// check roles again after unsync
+		Roles id2Roles =securityManager.getRoles(id);
+		RolesByOrganisation def2Roles = id2Roles.getRoles(defOrganisation);
+		Assert.assertFalse(def2Roles.isUserManager());
+		Assert.assertFalse(def2Roles.isAdministrator());
+		Assert.assertTrue(def2Roles.isSystemAdministrator());
+		
+		RolesByOrganisation ldap2Roles = id2Roles.getRoles(ldapOrganisations.get(0));
+		Assert.assertFalse(ldap2Roles.isUserManager());
+		Assert.assertFalse(ldap2Roles.isAdministrator());
+		Assert.assertTrue(ldap2Roles.isSystemAdministrator());// inherited from default
 	}
 	
 	/**

@@ -467,7 +467,7 @@ public class UserWebService {
 		RolesByOrganisation modifiedRoles = RolesByOrganisation.roles(defOrganisation,
 				roles.isGuestOnly(), roles.isInvitee(), userRole, roles.isAuthor(),
 				roles.isGroupManager(), roles.isPoolAdmin(), roles.isCurriculumManager(),
-				roles.isUserManager(), roles.isInstitutionalResourceManager(), roles.isOlatAdmin());
+				roles.isUserManager(), roles.isInstitutionalResourceManager(), roles.isOlatAdmin(), roles.isSystemAdmin());
 		securityManager.updateRoles(actingIdentity, identity, modifiedRoles);
 		dbInstance.commit();// make sure all is committed before loading the roles again
 		Roles updatedRoles = securityManager.getRoles(identity);

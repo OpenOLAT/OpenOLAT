@@ -48,7 +48,11 @@ public class RolesByOrganisation implements Serializable {
 	}
 	
 	public RolesByOrganisation(OrganisationRef organisation, List<OrganisationRoles> roles) {
-		this(organisation, roles == null ? new OrganisationRoles[0] : roles.toArray(new OrganisationRoles[roles.size()]));
+		this(organisation, roles == null ? OrganisationRoles.EMPTY_ROLES : roles.toArray(new OrganisationRoles[roles.size()]));
+	}
+	
+	public static RolesByOrganisation empty(OrganisationRef organisation) {
+		return new RolesByOrganisation(organisation, OrganisationRoles.EMPTY_ROLES);
 	}
 	
 	public static RolesByOrganisation enhance(RolesByOrganisation original, List<OrganisationRoles> rolesToAdd, List<OrganisationRoles> rolesToRemove) {
@@ -74,7 +78,8 @@ public class RolesByOrganisation implements Serializable {
 	public static RolesByOrganisation roles(OrganisationRef org,
 			boolean guest, boolean invitee, boolean user, boolean author,
 			boolean groupManager, boolean poolManager, boolean curriculummanager,
-			boolean usermanager, boolean learnresourcemanager, boolean admin) {
+			boolean usermanager, boolean learnresourcemanager,
+			boolean admin, boolean sysAdmin) {
 		
 		List<OrganisationRoles> roleList = new ArrayList<>();
 		if(guest) {
@@ -106,6 +111,9 @@ public class RolesByOrganisation implements Serializable {
 			}
 			if(admin) {
 				roleList.add(OrganisationRoles.administrator);
+			}
+			if(sysAdmin) {
+				roleList.add(OrganisationRoles.sysadmin);
 			}
 		}
 		return new RolesByOrganisation(org, roleList.toArray(new OrganisationRoles[roleList.size()]));
@@ -160,7 +168,7 @@ public class RolesByOrganisation implements Serializable {
 	}
 	
 	public boolean isRolesManager() {
-		return hasRole(OrganisationRoles.usermanager);
+		return hasRole(OrganisationRoles.rolesmanager);
 	}
 	
 	public boolean isPoolManager() {
@@ -177,6 +185,10 @@ public class RolesByOrganisation implements Serializable {
 	
 	public boolean isAdministrator() {
 		return hasRole(OrganisationRoles.administrator);
+	}
+	
+	public boolean isSystemAdministrator() {
+		return hasRole(OrganisationRoles.sysadmin);
 	}
 	
 	public boolean hasRole(OrganisationRoles role) {
