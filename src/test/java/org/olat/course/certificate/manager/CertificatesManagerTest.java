@@ -130,6 +130,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
+		waitCertificate(certificate.getKey());
+		
 		//full
 		Certificate reloadedCertificate = certificatesManager.getCertificateById(certificate.getKey());
 		Assert.assertNotNull(reloadedCertificate);
@@ -171,6 +173,8 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Assert.assertNotNull(certificate);
 		dbInstance.commitAndCloseSession();
 		
+		waitCertificate(certificate.getKey());
+		
 		//per resource
 		Certificate reloadedCertificate = certificatesManager.getLastCertificate(identity, entry.getOlatResource().getKey());
 		Assert.assertNotNull(reloadedCertificate);
@@ -207,6 +211,9 @@ public class CertificatesManagerTest extends OlatTestCase {
 		Certificate certificate2 = certificatesManager.generateCertificate(certificateInfos2, entry, null, config);
 		Assert.assertNotNull(certificate2);
 		dbInstance.commitAndCloseSession();
+		
+		waitCertificate(certificate1.getKey());
+		waitCertificate(certificate2.getKey());
 		
 		Calendar lastestNews = Calendar.getInstance();
 		lastestNews.add(Calendar.HOUR_OF_DAY, -1);
