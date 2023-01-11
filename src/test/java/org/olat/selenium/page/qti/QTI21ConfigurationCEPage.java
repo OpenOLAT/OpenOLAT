@@ -178,7 +178,9 @@ public class QTI21ConfigurationCEPage {
 	public QTI21ConfigurationCEPage saveConfiguration() {
 		By saveBy = By.cssSelector(".o_qti_21_configuration button");
 		browser.findElement(saveBy).click();
-		OOGraphene.waitBusy(browser);
+		By dirtySaveBy = By.xpath("//fieldset[contains(@class,'o_qti_21_configuration')]//button[contains(@class,'btn-primary') and not(contains(@class,'o_button_dirty'))]");
+		OOGraphene.waitElement(dirtySaveBy, browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
