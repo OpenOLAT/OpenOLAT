@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
+import org.olat.selenium.page.course.ZoomSettingsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
 import org.olat.selenium.page.library.LibraryAdminPage;
@@ -233,6 +234,28 @@ public class AdministrationPage {
 		By bbbConfigBy = By.cssSelector("fieldset.o_sel_bbb_admin_configuration");
 		OOGraphene.waitElement(bbbConfigBy, browser);
 		return new BigBlueButtonSettingsPage(browser);
+	}
+	
+	public ZoomSettingsPage openLti13Settings() {
+		selectExternalTools();
+		
+		By ltiBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(ltiBy, browser);
+		browser.findElement(ltiBy).click();
+		By ltiConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
+		OOGraphene.waitElement(ltiConfigBy, browser);
+		return new ZoomSettingsPage(browser);
+	}
+	
+	public ZoomSettingsPage openZoomSettings() {
+		selectExternalTools();
+		
+		By zoomBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(zoomBy, browser);
+		browser.findElement(zoomBy).click();
+		By zoomConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
+		OOGraphene.waitElement(zoomConfigBy, browser);
+		return new ZoomSettingsPage(browser);
 	}
 	
 	private void openSubMenu(String liClass) {

@@ -60,6 +60,8 @@ public class LibraryWizardPage {
 		By folderBy = By.xpath("//div[contains(@class,'o_wizard')]//span[contains(@class,'o_tree_link')][a/span[text()[contains(.,'" + folder + "')]]]/input[@type='checkbox']");
 		WebElement folderEl = browser.findElement(folderBy);
 		OOGraphene.check(folderEl, Boolean.TRUE);
+		By rootBy = By.cssSelector("div.o_wizard span.o_tree_l0>input[type='checkbox']:indeterminate");
+		OOGraphene.waitElement(rootBy, browser);
 		return this;
 	}
 	
