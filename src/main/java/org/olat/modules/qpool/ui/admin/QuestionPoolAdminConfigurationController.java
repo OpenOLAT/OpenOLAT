@@ -253,7 +253,7 @@ public class QuestionPoolAdminConfigurationController extends FormBasicControlle
 		
 		taxonomyTreeEl.clearError();
 		if(!taxonomyTreeEl.isOneSelected()) {
-			taxonomyTreeEl.setErrorKey("form.legende.mandatory", null);
+			taxonomyTreeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

@@ -31,7 +31,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -54,20 +53,18 @@ import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
  */
 @Entity(name="advanceOrder")
 @Table(name="o_ac_auto_advance_order")
-@NamedQueries({
-	@NamedQuery(name="exists", query=
-			  "select count(*) "
-			+ "from advanceOrder ao "
-			+ "where ao.identity.key =:identityKey "
-			+ "and ao.identifierKey =:identifierKey "
-			+ "and ao.identifierValue =:identifierValue "
-			+ "and ao.method.key =:methodKey"),
-	@NamedQuery(name="deleteByKey", query =
-			  "delete from advanceOrder ao where ao.key=:key"),
-	@NamedQuery(name="deleteByIdentity", query =
-			  "delete from advanceOrder ao"
-			+ " where ao.identity.key=:identityKey")
-})
+@NamedQuery(name="exists", query=
+		  "select count(*) "
+		+ "from advanceOrder ao "
+		+ "where ao.identity.key =:identityKey "
+		+ "and ao.identifierKey =:identifierKey "
+		+ "and ao.identifierValue =:identifierValue "
+		+ "and ao.method.key =:methodKey")
+@NamedQuery(name="deleteByKey", query =
+		  "delete from advanceOrder ao where ao.key=:key")
+@NamedQuery(name="deleteByIdentity", query =
+		  "delete from advanceOrder ao"
+		+ " where ao.identity.key=:identityKey")
 public class AdvanceOrderImpl implements Persistable, AdvanceOrder {
 
 	private static final long serialVersionUID = -536425559285612562L;

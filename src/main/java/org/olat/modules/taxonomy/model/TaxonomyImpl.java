@@ -29,7 +29,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -49,10 +48,8 @@ import org.olat.modules.taxonomy.TaxonomyManagedFlag;
  */
 @Entity(name="ctaxonomy")
 @Table(name="o_tax_taxonomy")
-@NamedQueries({
-		@NamedQuery(name="loadTaxonomyByKey", query="select taxonomy from ctaxonomy taxonomy inner join fetch taxonomy.group as bGroup where taxonomy.key=:taxonomyKey"),
-		@NamedQuery(name="loadAllTaxonomy", query="select taxonomy from ctaxonomy taxonomy inner join fetch taxonomy.group as bGroup")
-})
+@NamedQuery(name="loadTaxonomyByKey", query="select taxonomy from ctaxonomy taxonomy inner join fetch taxonomy.group as bGroup where taxonomy.key=:taxonomyKey")
+@NamedQuery(name="loadAllTaxonomy", query="select taxonomy from ctaxonomy taxonomy inner join fetch taxonomy.group as bGroup")
 public class TaxonomyImpl implements Persistable, Taxonomy {
 
 	private static final long serialVersionUID = -8728887923293798226L;

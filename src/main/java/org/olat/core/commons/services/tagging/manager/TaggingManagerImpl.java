@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.tagging.manager;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +29,13 @@ import java.util.Set;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.model.Tag;
 import org.olat.core.commons.services.tagging.model.TagImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -194,10 +195,11 @@ public class TaggingManagerImpl implements TaggingManager {
 		}
 		if (tag.length() > 128){
 			// truncate
-			log.warn("tag was too long, truncated to 128 chars. Original: " + tag);
+			log.warn("tag was too long, truncated to 128 chars. Original: {}", tag);
 			tag = tag.substring(0, 125) + "...";
 		}
 		TagImpl t = new TagImpl();
+		t.setCreationDate(new Date());
 		t.setAuthor(author);
 		t.setTag(tag.trim());
 		t.setResId(ores.getResourceableId());
@@ -241,7 +243,7 @@ public class TaggingManagerImpl implements TaggingManager {
 		}
 		
 		int tagsDeleted = query.executeUpdate();
-		log.info(Tracing.M_AUDIT, "Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
+		log.info(Tracing.M_AUDIT, "Deleted {} tags of resource: {} :: {}", tagsDeleted, ores.getResourceableTypeName(), ores.getResourceableId());
 	}
 
 	@Override

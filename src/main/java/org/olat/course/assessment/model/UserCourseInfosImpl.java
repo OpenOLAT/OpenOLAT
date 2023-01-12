@@ -28,7 +28,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -46,9 +45,7 @@ import org.olat.resource.OLATResourceImpl;
 
 @Entity(name="usercourseinfos")
 @Table(name="o_as_user_course_infos")
-@NamedQueries({
-	@NamedQuery(name="updateLaunchDates", query="update usercourseinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and resource.key=:resourceKey")
-})
+@NamedQuery(name="updateLaunchDates", query="update usercourseinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and resource.key=:resourceKey")
 public class UserCourseInfosImpl implements UserCourseInformations, Persistable, ModifiedInfo {
 
 	private static final long serialVersionUID = -6933599547069673655L;

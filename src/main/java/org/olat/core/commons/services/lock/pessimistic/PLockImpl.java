@@ -31,7 +31,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -51,9 +50,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="plock")
 @Table(name="o_plock")
-@NamedQueries({
-	@NamedQuery(name="loadByPLockByAsset", query="select lock from plock as lock where lock.asset=:asset")
-})
+@NamedQuery(name="loadByPLockByAsset", query="select lock from plock as lock where lock.asset=:asset")
 public class PLockImpl implements PLock, CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 1954725655490667921L;

@@ -32,7 +32,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -56,10 +55,8 @@ import org.olat.core.logging.AssertException;
  */
 @Entity(name="note")
 @Table(name="o_note")
-@NamedQueries({
-	@NamedQuery(name="noteByOwner", query="select n from note as n inner join fetch n.owner as noteowner where noteowner.key=:noteowner"),
-	@NamedQuery(name="noteByOwnerAndResource", query="select n from note as n where n.owner.key=:ownerKey and n.resourceTypeName=:resName and n.resourceTypeId=:resId")
-})
+@NamedQuery(name="noteByOwner", query="select n from note as n inner join fetch n.owner as noteowner where noteowner.key=:noteowner")
+@NamedQuery(name="noteByOwnerAndResource", query="select n from note as n where n.owner.key=:ownerKey and n.resourceTypeName=:resName and n.resourceTypeId=:resId")
 public class NoteImpl implements Note, Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -403450817851666464L;

@@ -91,7 +91,7 @@ public class ImportController extends FormBasicController {
 		
 		fileEl.clearError();
 		if(fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.mandatory.hover", null);
+			fileEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		return allOk;

@@ -28,7 +28,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -49,11 +48,8 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="importedcal")
 @Table(name="o_cal_import")
-@NamedQueries({
-	@NamedQuery(name="importedCalendarByIdentityCalendarIdAndType",
-			query="select cal from importedcal cal where cal.identity.key=:identityKey and cal.calendarId=:calendarId and cal.type=:type"),
-	
-})
+@NamedQuery(name="importedCalendarByIdentityCalendarIdAndType",
+			query="select cal from importedcal cal where cal.identity.key=:identityKey and cal.calendarId=:calendarId and cal.type=:type")
 public class ImportedCalendar implements ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = 8800143218824364514L;

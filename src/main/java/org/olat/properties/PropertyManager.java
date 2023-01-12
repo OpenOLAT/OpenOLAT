@@ -86,7 +86,7 @@ public class PropertyManager implements UserDataDeletable {
 	public Property createPropertyInstance(Identity identity, BusinessGroup group, OLATResourceable olatResourceable, 
 		String category, String name,	Float floatValue, Long longValue, String stringValue, String textValue) {
 		
-		Property p = new Property();
+		Property p = createProperty();
 		p.setIdentity(identity);
 		p.setGrp(group);
 		if (olatResourceable != null) {
@@ -822,7 +822,9 @@ public class PropertyManager implements UserDataDeletable {
 	}
 
 	public Property createProperty() {
-		return new Property();
+		Property prop = new Property();
+		prop.setCreationDate(new Date());
+		return prop;
 	}
 
 	private boolean and(StringBuilder sb, boolean and) {

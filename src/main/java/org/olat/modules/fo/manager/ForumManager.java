@@ -1309,6 +1309,7 @@ public class ForumManager {
 	public void markNewMessageAsRead(Identity identity, Forum forum, Message msg) {		
 		//Check if the message was not already deleted
 		ReadMessageImpl readMessage = new ReadMessageImpl();
+		readMessage.setCreationDate(new Date());
 		readMessage.setIdentity(identity);
 		readMessage.setMessage(msg);
 		readMessage.setForum(forum);
@@ -1326,6 +1327,7 @@ public class ForumManager {
 		Message retrievedMessage = loadMessage(msg.getKey());
 		if(retrievedMessage != null) {
 			ReadMessageImpl readMessage = new ReadMessageImpl();
+			readMessage.setCreationDate(new Date());
 			readMessage.setIdentity(identity);
 			if(msg instanceof MessageLightImpl) {
 				readMessage.setMessage(msg);

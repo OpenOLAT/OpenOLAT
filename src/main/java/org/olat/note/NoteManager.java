@@ -33,12 +33,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
@@ -88,7 +88,9 @@ public class NoteManager implements UserDataDeletable, UserDataExportable {
 	 * @return the note
 	 */
 	private Note createNote(Identity owner, String resourceTypeName, Long resourceTypeId) {
-		Note n = new NoteImpl();
+		NoteImpl n = new NoteImpl();
+		n.setCreationDate(new Date());
+		n.setLastModified(n.getCreationDate());
 		n.setOwner(owner);
 		n.setResourceTypeName(resourceTypeName);
 		n.setResourceTypeId(resourceTypeId);

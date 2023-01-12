@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -41,66 +40,67 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OrganisationRoleRightDAOTest extends OlatTestCase {
+	
     @Autowired
     private DB dbInstance;
     @Autowired
     private OrganisationService organisationService;
 
-    private Organisation root1;
-    private Organisation root2;
-    private Organisation child;
-
-    @Before
-    public void createOrganisations() {
-        root1 = organisationService.createOrganisation("root1", null, null, null, null);
-        root2 = organisationService.createOrganisation("root2", null, null, null, null);
-        child = organisationService.createOrganisation("child", null, null, root1, null);
-        dbInstance.commitAndCloseSession();
-    }
-
     @Test
     public void loadNotDefinedRights() {
-        List<RightProvider> rights = organisationService.getGrantedOrganisationRights(root1, OrganisationRoles.linemanager);
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 1", "Org-role-rights 1", null, null, null);
+    	dbInstance.commitAndCloseSession();
+    	
+        List<RightProvider> rights = organisationService.getGrantedOrganisationRights(root, OrganisationRoles.linemanager);
         Assert.assertNotNull(rights);
-        Assert.assertEquals(0, rights.size());
+        Assert.assertTrue(rights.isEmpty());
     }
 
     @Test
     public void setRightsForRole() {
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 2", "Org-role-rights 2", null, null, null);
+    	dbInstance.commitAndCloseSession();
+    	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
-        Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
+        Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toSet());
+        organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
+        dbInstance.commitAndCloseSession();
 
-        organisationService.setGrantedOrganisationRights(root1, OrganisationRoles.linemanager, selectedRights);
-
-        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root1, OrganisationRoles.linemanager);
-
+        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root, OrganisationRoles.linemanager);
         Assert.assertNotNull(rightsFromOrgRole);
         Assert.assertEquals(allRights.size(), rightsFromOrgRole.size());
     }
 
     @Test
     public void getRightsForChildOrganisation() {
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 3", "Org-role-rights 3", null, null, null);
+    	Organisation child = organisationService.createOrganisation("Org-role-rights 3.1", "Org-role-rights 3.1", null, root, null);
+    	dbInstance.commitAndCloseSession();
+    	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
         Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
-
-        organisationService.setGrantedOrganisationRights(root1, OrganisationRoles.linemanager, selectedRights);
+        organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
+        dbInstance.commitAndCloseSession();
 
         List<RightProvider> rightsFromChild = organisationService.getGrantedOrganisationRights(child, OrganisationRoles.linemanager);
-
         Assert.assertNotNull(rightsFromChild);
         Assert.assertEquals(allRights.size(), rightsFromChild.size());
     }
 
     @Test
     public void moveOrganisation() {
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 4.1", "Org-role-rights 4.1", null, null, null);
+    	Organisation rootAlt = organisationService.createOrganisation("Org-role-rights 4.2", "Org-role-rights 4.2", null, null, null);
+    	dbInstance.commitAndCloseSession();
+    	
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
         Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
 
-        organisationService.setGrantedOrganisationRights(root2, OrganisationRoles.linemanager, selectedRights);
+        organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
 
-        organisationService.moveOrganisation(root2, root1);
+        organisationService.moveOrganisation(root, rootAlt);
 
-        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root2, OrganisationRoles.linemanager);
+        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(rootAlt, OrganisationRoles.linemanager);
 
         Assert.assertNotNull(rightsFromOrgRole);
         Assert.assertEquals(0, rightsFromOrgRole.size());
@@ -108,14 +108,15 @@ public class OrganisationRoleRightDAOTest extends OlatTestCase {
 
     @Test
     public void deleteOrganisation() {
+    	Organisation root = organisationService.createOrganisation("Org-role-rights 5", "Org-role-rights 5", null, null, null);
         List<RightProvider> allRights = organisationService.getAllOrganisationRights(OrganisationRoles.linemanager);
         Collection<String> selectedRights = allRights.stream().map(RightProvider::getRight).collect(Collectors.toList());
 
-        organisationService.setGrantedOrganisationRights(root1, OrganisationRoles.linemanager, selectedRights);
+        organisationService.setGrantedOrganisationRights(root, OrganisationRoles.linemanager, selectedRights);
 
-        organisationService.deleteOrganisation(root1, null);
+        organisationService.deleteOrganisation(root, null);
 
-        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root1, OrganisationRoles.linemanager);
+        List<RightProvider> rightsFromOrgRole = organisationService.getGrantedOrganisationRights(root, OrganisationRoles.linemanager);
 
         Assert.assertNotNull(rightsFromOrgRole);
         Assert.assertEquals(0, rightsFromOrgRole.size());

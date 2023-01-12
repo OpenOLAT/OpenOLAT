@@ -76,8 +76,7 @@ public class ReviewStartController extends FormBasicController {
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("process.start.review.taxonomy.level", formLayout,
 				qpoolTaxonomyTreeBuilder.getSelectableKeys(), qpoolTaxonomyTreeBuilder.getSelectableValues(), null);
 		taxonomyLevelEl.setMandatory(true);
-		if (item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl) item;
+		if (item instanceof QuestionItemImpl itemImpl) {
 			TaxonomyLevel selectedTaxonomyLevel = itemImpl.getTaxonomyLevel();
 			if(selectedTaxonomyLevel != null) {
 				String selectedTaxonomyLevelKey = String.valueOf(selectedTaxonomyLevel.getKey());
@@ -100,7 +99,7 @@ public class ReviewStartController extends FormBasicController {
 		boolean allOk = true;
 
 		if (!taxonomyLevelEl.isOneSelected() || NO_TAXONOMY_LEVEL_KEY.equals(taxonomyLevelEl.getSelectedKey())) {
-			taxonomyLevelEl.setErrorKey("form.mandatory.hover", null);
+			taxonomyLevelEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		

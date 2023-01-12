@@ -21,6 +21,10 @@ package org.olat.modules.portfolio.model;
 
 import java.util.Date;
 
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Persistable;
+import org.olat.modules.portfolio.Category;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,10 +33,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Persistable;
-import org.olat.modules.portfolio.Category;
 
 /**
  * 
@@ -57,6 +57,10 @@ public class CategoryImpl implements Persistable, CreateInfo, Category {
 
 	@Column(name="p_name", nullable=false, insertable=true, updatable=true)
 	private String name;
+	
+	public CategoryImpl() {
+		//
+	}
 
 	@Override
 	public Long getKey() {
@@ -98,9 +102,8 @@ public class CategoryImpl implements Persistable, CreateInfo, Category {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CategoryImpl) {
-			CategoryImpl category = (CategoryImpl)obj;
-			return key != null && key.equals(category.getKey());
+		if(obj instanceof CategoryImpl category) {
+			return getKey() != null && getKey().equals(category.getKey());
 		}
 		return false;
 	}

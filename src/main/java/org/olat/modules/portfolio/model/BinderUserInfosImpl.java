@@ -29,7 +29,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -44,11 +43,8 @@ import org.olat.modules.portfolio.BinderUserInformations;
 
 @Entity(name="pfbinderuserinfos")
 @Table(name="o_pf_binder_user_infos")
-@NamedQueries({
-	@NamedQuery(name="loadBinderUserInfosByBinderAndIdentity", query="select infos from pfbinderuserinfos as infos where infos.identity.key=:identityKey and infos.binder.key=:binderKey"),
-	@NamedQuery(name="updateBinderLaunchDates", query="update pfbinderuserinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and binder.key=:binderKey")
-
-})
+@NamedQuery(name="loadBinderUserInfosByBinderAndIdentity", query="select infos from pfbinderuserinfos as infos where infos.identity.key=:identityKey and infos.binder.key=:binderKey")
+@NamedQuery(name="updateBinderLaunchDates", query="update pfbinderuserinfos set visit=visit+1, recentLaunch=:now, lastModified=:now where identity.key=:identityKey and binder.key=:binderKey")
 public class BinderUserInfosImpl implements BinderUserInformations, Persistable {
 
 	private static final long serialVersionUID = 3837878861740933933L;

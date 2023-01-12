@@ -139,7 +139,7 @@ public class ConversionConfirmationController extends FormBasicController {
 		
 		formatEl.clearError();
 		if(!formatEl.isOneSelected()) {
-			formatEl.setErrorKey("form.legende.mandatory", null);
+			formatEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

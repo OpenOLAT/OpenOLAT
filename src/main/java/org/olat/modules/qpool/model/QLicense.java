@@ -25,7 +25,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -44,11 +43,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="qlicense")
 @Table(name="o_qp_license")
-@NamedQueries({
-	@NamedQuery(name="loadQLicenses", query="select license from qlicense license"),
-	@NamedQuery(name="loadQLicenseById", query="select license from qlicense license where license.key=:licenseKey"),
-	@NamedQuery(name="loadQLicenseByLicenseKey", query="select license from qlicense license where license.licenseKey=:licenseKey")
-})
+@NamedQuery(name="loadQLicenses", query="select license from qlicense license")
+@NamedQuery(name="loadQLicenseById", query="select license from qlicense license where license.key=:licenseKey")
+@NamedQuery(name="loadQLicenseByLicenseKey", query="select license from qlicense license where license.licenseKey=:licenseKey")
 public class QLicense implements CreateInfo, Persistable {
 
 	private static final long serialVersionUID = -5165837831689041061L;

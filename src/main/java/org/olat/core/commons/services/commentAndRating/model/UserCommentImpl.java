@@ -113,6 +113,7 @@ public class UserCommentImpl implements Persistable, CreateInfo, UserComment {
 		this.resName = ores.getResourceableTypeName();
 		this.resId = ores.getResourceableId();
 		this.resSubPath = subpath;
+		setCreationDate(new Date());
 	}
 
 	@Override

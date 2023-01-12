@@ -93,13 +93,14 @@ public class LifeCycleEntry implements Persistable, CreateInfo {
 	}
 
 	LifeCycleEntry(Date lifeCycleDate, String persistentObjectTypeName, Long persistentObjectRef) { 
-		this.setPersistentTypeName(persistentObjectTypeName);
-		this.setPersistentRef(persistentObjectRef);
+		setPersistentTypeName(persistentObjectTypeName);
+		setPersistentRef(persistentObjectRef);
 		if (lifeCycleDate == null) {
-			this.lcTimestamp = new Date();
+			lcTimestamp = new Date();
 		} else {
-			this.lcTimestamp = lifeCycleDate;
+			lcTimestamp = lifeCycleDate;
 		}
+		setCreationDate(new Date());
 	}
 
 	@Override

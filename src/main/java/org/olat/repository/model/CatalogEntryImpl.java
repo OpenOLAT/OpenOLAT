@@ -284,9 +284,9 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	@Override
 	public Long getResourceableId() {
-		Long key = getKey();
-		if (key == null) throw new AssertException("no key yet!");
-		return key;
+		Long k = getKey();
+		if (k == null) throw new AssertException("no key yet!");
+		return k;
 	}
 	
 	@Override
@@ -299,8 +299,7 @@ public class CatalogEntryImpl implements CatalogEntry {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof CatalogEntry) {
-			CatalogEntry entry = (CatalogEntry)obj;
+		if(obj instanceof CatalogEntry entry) {
 			return getKey() != null && getKey().equals(entry.getKey());
 		}
 		return false;
@@ -308,12 +307,16 @@ public class CatalogEntryImpl implements CatalogEntry {
 
 	@Override
 	public Date getCreationDate() {
-		return this.creationDate;
+		return creationDate;
+	}
+	
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
 	}
 
 	@Override
 	public Long getKey() {
-		return this.key;
+		return key;
 	}
 
 	@Override

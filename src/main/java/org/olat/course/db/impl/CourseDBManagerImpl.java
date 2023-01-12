@@ -20,11 +20,8 @@
  */
 package org.olat.course.db.impl;
 
+import java.util.Date;
 import java.util.List;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.Query;
-import jakarta.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -40,6 +37,10 @@ import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -125,14 +126,12 @@ public class CourseDBManagerImpl extends AbstractSpringModule implements CourseD
 	
 	@Override
 	public CourseDBEntry getValue(ICourse course, Identity identity, String category, String name) {
-		CourseDBEntry entry = loadEntry(course.getResourceableId(), identity, category, name);
-		return entry;
+		return loadEntry(course.getResourceableId(), identity, category, name);
 	}
 
 	@Override
 	public CourseDBEntry getValue(Long courseResourceableId, Identity identity, String category, String name) {
-		CourseDBEntry entry = loadEntry(courseResourceableId, identity, category, name);
-		return entry;
+		return loadEntry(courseResourceableId, identity, category, name);
 	}
 
 	@Override
@@ -170,6 +169,8 @@ public class CourseDBManagerImpl extends AbstractSpringModule implements CourseD
 		CourseDBEntryImpl entry = loadEntry(course.getResourceableId(), identity, category, name);
 		if(entry == null) {
 			entry = new CourseDBEntryImpl();
+			entry.setCreationDate(new Date());
+			entry.setLastModified(entry.getCreationDate());
 			entry.setCourseKey(course.getResourceableId());
 			entry.setIdentity(identity);
 			entry.setName(name);

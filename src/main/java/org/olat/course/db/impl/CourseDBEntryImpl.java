@@ -93,6 +93,10 @@ public class CourseDBEntryImpl implements Persistable, CourseDBEntry {
 	@Column(name="textvalue", nullable=true, insertable=true, updatable=true)
 	private String textValue;
 	
+	public CourseDBEntryImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;
@@ -163,21 +167,21 @@ public class CourseDBEntryImpl implements Persistable, CourseDBEntry {
 
 	@Override
 	public void setValue(Object value) {
-		if(value instanceof Long) {
-			setLongValue((Long)value);
-		} else if (value instanceof Float) {
-			setFloatValue((Float)value);
-		} else if (value instanceof String) {
-			if (((String) value).length() <= 255) {
+		if(value instanceof Long l) {
+			setLongValue(l);
+		} else if (value instanceof Float f) {
+			setFloatValue(f);
+		} else if (value instanceof String str) {
+			if (str.length() <= 255) {
 				// db field for string value limited to 255
 				// reset text value to null for updating of previously long text to short strings
-				setStringValue((String)value);				
+				setStringValue(str);				
 				setTextValue(null);
 			} else {
 				// fallback to text for oversized strings
 				// reset string value to null for updating of previously short strings to long texts
 				setStringValue(null);
-				setTextValue((String)value);				
+				setTextValue(str);				
 			}
 		}
 	}

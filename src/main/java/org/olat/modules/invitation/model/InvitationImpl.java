@@ -283,8 +283,7 @@ public class InvitationImpl implements Persistable, Invitation {
 	public boolean equals(Object obj) {
 		if(this == obj) {
 			return true;
-		} else if (obj instanceof InvitationImpl) {
-			InvitationImpl invitation = (InvitationImpl)obj;
+		} else if (obj instanceof InvitationImpl invitation) {
 			return getKey() != null && getKey().equals(invitation.getKey());
 		}
 		return false;

@@ -84,6 +84,10 @@ public class ReadMessageImpl implements CreateInfo, Persistable {
 	@ManyToOne(targetEntity=ForumImpl.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="forum_id", nullable=true, insertable=true, updatable=false)
 	private Forum forum;
+	
+	public ReadMessageImpl() {
+		//
+	}
 
 	@Override
 	public Long getKey() {

@@ -161,6 +161,7 @@ public class ProjectImpl implements CreateInfo, Persistable, Project {
 		this.mailNotificationEnabled = true;
 		this.projectBroker = projectBroker;
 		this.candidateGroup = candidateGroup;
+		setCreationDate(new Date());
 	}
 	
 	@Override

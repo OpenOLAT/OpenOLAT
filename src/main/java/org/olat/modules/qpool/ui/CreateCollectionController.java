@@ -77,15 +77,16 @@ public class CreateCollectionController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String name = nameEl.getValue();
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(name)) {
-			nameEl.setErrorKey("form.mandatory.hover", null);
+			nameEl.setErrorKey("form.mandatory.hover");
+			allOk &= false;
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

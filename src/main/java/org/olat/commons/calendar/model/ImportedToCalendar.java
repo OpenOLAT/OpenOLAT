@@ -25,7 +25,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -44,11 +43,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="importedtocal")
 @Table(name="o_cal_import_to")
-@NamedQueries({
-	@NamedQuery(name="importedToCalendarByIdTypeAndUrl", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType and cal.url=:url"),
-	@NamedQuery(name="importedToCalendarByIdAndType", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType"),
-	@NamedQuery(name="importedToCalendars", query="select cal from importedtocal cal")
-})
+@NamedQuery(name="importedToCalendarByIdTypeAndUrl", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType and cal.url=:url")
+@NamedQuery(name="importedToCalendarByIdAndType", query="select cal from importedtocal cal where cal.toCalendarId=:toCalendarId and cal.toType=:toType")
+@NamedQuery(name="importedToCalendars", query="select cal from importedtocal cal")
 public class ImportedToCalendar implements ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = -1026023143604898592L;

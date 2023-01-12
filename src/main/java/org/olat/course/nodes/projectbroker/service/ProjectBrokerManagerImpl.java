@@ -128,7 +128,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 
 	@Override
 	public ProjectBroker createAndSaveProjectBroker() {
-		ProjectBroker projectBroker = new ProjectBrokerImpl();
+		ProjectBrokerImpl projectBroker = new ProjectBrokerImpl();
+		projectBroker.setCreationDate(new Date());
 		dbInstance.saveObject(projectBroker);
 		return projectBroker;
 	}

@@ -94,6 +94,7 @@ public class BGtoAreaRelationImpl implements Persistable, BGtoAreaRelation {
 	BGtoAreaRelationImpl(BGArea groupArea, BusinessGroup businessGroup) {
 		setBusinessGroup(businessGroup);
 		setGroupArea(groupArea);
+		setCreationDate(new Date());
 	}
 	
 	@Override

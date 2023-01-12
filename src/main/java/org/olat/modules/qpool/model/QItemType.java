@@ -25,7 +25,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -44,11 +43,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="qitemtype")
 @Table(name="o_qp_item_type")
-@NamedQueries({
-	@NamedQuery(name="loadQItemTypes", query="select itemtype from qitemtype itemtype"),
-	@NamedQuery(name="loadQItemTypeById", query="select itemtype from qitemtype itemtype where itemtype.key=:itemTypeKey"),
-	@NamedQuery(name="loadQItemTypeByType", query="select itemtype from qitemtype itemtype where itemtype.type=:itemType")
-})
+@NamedQuery(name="loadQItemTypes", query="select itemtype from qitemtype itemtype")
+@NamedQuery(name="loadQItemTypeById", query="select itemtype from qitemtype itemtype where itemtype.key=:itemTypeKey")
+@NamedQuery(name="loadQItemTypeByType", query="select itemtype from qitemtype itemtype where itemtype.type=:itemType")
 public class QItemType implements CreateInfo, Persistable {
 
 	private static final long serialVersionUID = -3853789181651253873L;

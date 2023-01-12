@@ -89,6 +89,7 @@ public class NamedGroupImpl implements NamedGroup, Persistable, CreateInfo {
 	public NamedGroupImpl(String groupName, SecurityGroup securityGroup) {
 		this.groupName = groupName;
 		this.securityGroup = securityGroup;
+		setCreationDate(new Date());
 	}
 	
 	@Override

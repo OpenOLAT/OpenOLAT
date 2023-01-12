@@ -86,7 +86,7 @@ public class DeleteConfirmationController extends FormBasicController {
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("confirm.delete.confirmation.error", null);
+			confirmationEl.setErrorKey("confirm.delete.confirmation.error");
 			allOk &= false;
 		}
 		

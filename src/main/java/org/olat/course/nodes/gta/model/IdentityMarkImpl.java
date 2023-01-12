@@ -29,7 +29,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -49,30 +48,28 @@ import org.olat.course.nodes.gta.TaskList;
  */
 @Entity(name="gtaMark")
 @Table(name="o_gta_mark")
-@NamedQueries({
-	@NamedQuery(name="loadByMarker", query=
-			  "select mark"
-			+ "  from gtaMark mark"
-			+ " where mark.taskList.key=:taskListKey"
-			+ "   and mark.marker.key=:markerKey"),
-	@NamedQuery(name="loadByMarkerAndParticipant", query=
-			  "select mark"
-			+ "  from gtaMark mark"
-			+ " where mark.taskList.key=:taskListKey"
-			+ "   and mark.marker.key=:markerKey"
-			+ "   and mark.participant.key=:participantKey"),
-	@NamedQuery(name="deleteByMarker", query =
-			  "delete from gtaMark mark"
-			+ " where mark.taskList.key=:taskListKey"
-			+ "   and mark.marker.key=:markerKey"
-			+ "   and mark.participant.key=:participantKey"),
-	@NamedQuery(name="deleteByTaskList", query =
-			  "delete from gtaMark mark"
-			+ " where mark.taskList.key=:taskListKey"),
-	@NamedQuery(name="deleteByTaskKeys", query =
-			  "delete from gtaMark mark"
-			+ " where mark.key in (:taskKeys)")
-})
+@NamedQuery(name="loadByMarker", query=
+		  "select mark"
+		+ "  from gtaMark mark"
+		+ " where mark.taskList.key=:taskListKey"
+		+ "   and mark.marker.key=:markerKey")
+@NamedQuery(name="loadByMarkerAndParticipant", query=
+		  "select mark"
+		+ "  from gtaMark mark"
+		+ " where mark.taskList.key=:taskListKey"
+		+ "   and mark.marker.key=:markerKey"
+		+ "   and mark.participant.key=:participantKey")
+@NamedQuery(name="deleteByMarker", query =
+		  "delete from gtaMark mark"
+		+ " where mark.taskList.key=:taskListKey"
+		+ "   and mark.marker.key=:markerKey"
+		+ "   and mark.participant.key=:participantKey")
+@NamedQuery(name="deleteByTaskList", query =
+		  "delete from gtaMark mark"
+		+ " where mark.taskList.key=:taskListKey")
+@NamedQuery(name="deleteByTaskKeys", query =
+		  "delete from gtaMark mark"
+		+ " where mark.key in (:taskKeys)")
 public class IdentityMarkImpl implements IdentityMark, Persistable {
 
 	private static final long serialVersionUID = 5984891452227836907L;

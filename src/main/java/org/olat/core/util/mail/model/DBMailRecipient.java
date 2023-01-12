@@ -88,10 +88,6 @@ public class DBMailRecipient implements Persistable, CreateInfo {
 		//make Hibernate happy
 	}
 	
-	public DBMailRecipient(Identity recipient) {
-		this.recipient = recipient;
-	}
-	
 	@Override
 	public Long getKey() {
 		return key;

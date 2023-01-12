@@ -47,6 +47,8 @@ import org.olat.user.UserManager;
  */
 public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight> {
 	
+	private static final Columns[] COLS = Columns.values();
+	
 	private boolean outbox;
 	private List<DBMailLight> mails;
 	private List<DBMailLight> filteredMails;
@@ -78,9 +80,8 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 	@Override
 	public Object getValueAt(int row, int col) {
 		DBMailLight mail = filteredMails == null ? mails.get(row) : filteredMails.get(row);
-		Columns[] cols = Columns.values();
-		if(col < cols.length) {
-			switch(cols[col]) {
+		if(col < COLS.length) {
+			switch(COLS[col]) {
 				case read: {
 					for(DBMailRecipient recipient:mail.getRecipients()) {
 						if(recipient != null && recipient.getRecipient() != null && recipient.getRecipient().equalsByPersistableKey(identity)) {
@@ -108,10 +109,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 					return null;
 				}
 				case subject: return mail.getSubject();
-				case receivedDate:
-				case sendDate: {
-					return mail.getCreationDate();
-				}
+				case receivedDate, sendDate: return mail.getCreationDate();
 				case from: {
 					DBMailRecipient from = mail.getFrom();
 					if(from != null ) {
@@ -159,10 +157,7 @@ public class MailDataModel implements TableDataModelWithMarkableRows<DBMailLight
 		mails = objects;
 		filteredMails = null;
 	}
-		
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModelWithMarkableRows#getRowCssClass(int)
-	 */
+	
 	@Override
 	public String getRowCssClass(int row) {
 		if(outbox) return null;

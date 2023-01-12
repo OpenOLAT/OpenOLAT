@@ -74,12 +74,12 @@ public class QItemTypeEditController extends FormBasicController {
 
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.mandatory.hover", null);
+			nameEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		} else if(itemType == null) {
 			QItemType type = qpoolService.getItemType(nameEl.getValue());
 			if(type != null) {
-				nameEl.setErrorKey("error.item.type.unique", null);
+				nameEl.setErrorKey("error.item.type.unique");
 				allOk = false;
 			}
 		}

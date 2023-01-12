@@ -30,7 +30,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -54,10 +53,7 @@ import org.olat.repository.RepositoryEntry;
 
 @Entity(name="reminder")
 @Table(name="o_rem_reminder")
-@NamedQueries({
-	@NamedQuery(name="loadReminderByKey", query="select rem from reminder rem left join fetch rem.entry as v where rem.key=:reminderKey")
-	
-})
+@NamedQuery(name="loadReminderByKey", query="select rem from reminder rem left join fetch rem.entry as v where rem.key=:reminderKey")
 public class ReminderImpl implements Reminder, Persistable {
 
 	private static final long serialVersionUID = 2273068238347207165L;

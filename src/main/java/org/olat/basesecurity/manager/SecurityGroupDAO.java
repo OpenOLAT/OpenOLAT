@@ -56,6 +56,7 @@ public class SecurityGroupDAO implements UserDataDeletable {
 
 	public SecurityGroup createAndPersistSecurityGroup() {
 		SecurityGroupImpl sgi = new SecurityGroupImpl();
+		sgi.setCreationDate(new Date());
 		dbInstance.saveObject(sgi);
 		return sgi;
 	}

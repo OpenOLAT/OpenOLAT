@@ -298,7 +298,7 @@ public class RightsMetadataEditController extends FormBasicController {
 		if (licenseEl != null) {
 			licenseEl.clearError();
 			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
-				licenseEl.setErrorKey("form.legende.mandatory", null);
+				licenseEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -308,8 +308,7 @@ public class RightsMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if(item instanceof QuestionItemImpl) {
-			QuestionItemImpl itemImpl = (QuestionItemImpl)item;
+		if(item instanceof QuestionItemImpl itemImpl) {
 			QuestionItemAuditLogBuilder builder = qpoolService.createAuditLogBuilder(getIdentity(),
 					Action.UPDATE_QUESTION_ITEM_METADATA);
 			builder.withBefore(itemImpl);

@@ -23,7 +23,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
@@ -45,9 +44,7 @@ import org.olat.group.BusinessGroupShort;
  */
 @Entity(name="businessgroupshort")
 @Table(name="o_gp_business")
-@NamedQueries({
-	@NamedQuery(name="loadBusinessGroupShortByIds",query="select bgi from businessgroupshort bgi where bgi.key in (:ids)")
-})
+@NamedQuery(name="loadBusinessGroupShortByIds",query="select bgi from businessgroupshort bgi where bgi.key in (:ids)")
 public class BusinessGroupShortImpl implements Persistable, BusinessGroupShort {
 
 	private static final long serialVersionUID = -5404538852842562897L;

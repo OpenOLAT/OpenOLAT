@@ -28,7 +28,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -49,10 +48,7 @@ import org.olat.modules.taxonomy.TaxonomyLevelType;
  */
 @Entity(name="ctaxonomylevel")
 @Table(name="o_tax_taxonomy_level")
-@NamedQueries({
-	@NamedQuery(name="loadTaxonomyLevelsByKey", query="select level from ctaxonomylevel as level left join fetch level.parent parent left join fetch level.type type inner join fetch level.taxonomy taxonomy where level.key=:levelKey")
-	
-})
+@NamedQuery(name="loadTaxonomyLevelsByKey", query="select level from ctaxonomylevel as level left join fetch level.parent parent left join fetch level.type type inner join fetch level.taxonomy taxonomy where level.key=:levelKey")
 public class TaxonomyLevelImpl implements Persistable, ModifiedInfo, TaxonomyLevel {
 
 	private static final long serialVersionUID = 7873564059919461651L;

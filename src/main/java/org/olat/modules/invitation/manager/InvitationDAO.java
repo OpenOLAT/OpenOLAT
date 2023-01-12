@@ -20,6 +20,7 @@
 package org.olat.modules.invitation.manager;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +67,7 @@ public class InvitationDAO {
 	
 	public Invitation createInvitation(InvitationTypeEnum type) {
 		InvitationImpl invitation = new InvitationImpl();
+		invitation.setCreationDate(new Date());
 		invitation.setToken(UUID.randomUUID().toString());
 		invitation.setType(type);
 		invitation.setStatus(InvitationStatusEnum.active);

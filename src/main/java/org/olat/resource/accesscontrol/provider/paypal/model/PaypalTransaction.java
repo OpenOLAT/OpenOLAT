@@ -130,6 +130,10 @@ public class PaypalTransaction implements CreateInfo, Persistable, PSPTransactio
 	@Column(name="ipn_pending_reason", nullable=false, insertable=true, updatable=true)
 	private String pendingReason;
 	
+	public PaypalTransaction() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

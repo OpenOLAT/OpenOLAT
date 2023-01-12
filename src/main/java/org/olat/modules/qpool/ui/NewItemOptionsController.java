@@ -145,7 +145,7 @@ public class NewItemOptionsController extends FormBasicController {
 		
 		typeEl.clearError();
 		if(!typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.mandatory.hover", null);
+			typeEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		return allOk;

@@ -72,6 +72,10 @@ public class SecurityGroupImpl implements Persistable, SecurityGroup {
 	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
 	private Date creationDate;
 	
+	public SecurityGroupImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

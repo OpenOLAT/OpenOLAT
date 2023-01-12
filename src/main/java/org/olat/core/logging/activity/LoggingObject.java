@@ -180,6 +180,7 @@ public class LoggingObject implements CreateInfo, Persistable {
 		this.actionVerb=actionVerb;
 		this.actionObject=actionObject;
 		this.userId = identityKey;
+		setCreationDate(new Date());
 	}
 
 	/**

@@ -30,12 +30,10 @@ import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -79,6 +77,9 @@ import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Description: <br>
@@ -133,7 +134,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public CatalogEntry createCatalogEntry() {
 		CatalogEntryImpl entry = new CatalogEntryImpl();
-		
+		entry.setCreationDate(new Date());
 		entry.setOwnerGroup(securityGroupDao.createAndPersistSecurityGroup());
 		return entry;
 	}

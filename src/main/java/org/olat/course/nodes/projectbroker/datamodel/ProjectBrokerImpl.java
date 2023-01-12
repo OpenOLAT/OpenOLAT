@@ -77,6 +77,9 @@ public class ProjectBrokerImpl implements CreateInfo, Persistable, ProjectBroker
 	@Transient
 	private List<Project> projectList;
 	
+	public ProjectBrokerImpl() {
+		//
+	}
 	
 	@Override
 	public Long getKey() {

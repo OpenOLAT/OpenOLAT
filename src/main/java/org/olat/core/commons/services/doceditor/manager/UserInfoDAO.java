@@ -52,8 +52,7 @@ public class UserInfoDAO {
 	}
 	
 	public UserInfo save(UserInfo userInfo) {
-		if (userInfo instanceof UserInfoImpl) {
-			UserInfoImpl userInfoImpl = (UserInfoImpl) userInfo;
+		if (userInfo instanceof UserInfoImpl userInfoImpl) {
 			userInfoImpl.setLastModified(new Date());
 			return dbInstance.getCurrentEntityManager().merge(userInfoImpl);
 		}

@@ -963,6 +963,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			DBMailImpl mail = new DBMailImpl();
 			mail.setCreationDate(new Date());
 			mail.setLastModified(mail.getCreationDate());
+			mail.setRecipients(new ArrayList<>());
 			if(result == null) {
 				result = new MailerResult();
 			}
@@ -975,6 +976,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			
 			if(fromId != null) {
 				DBMailRecipient fromRecipient = new DBMailRecipient();
+				fromRecipient.setCreationDate(new Date());
 				fromRecipient.setRecipient(fromId);
 				if(StringHelper.containsNonWhitespace(from)) {
 					fromRecipient.setEmailAddress(from);
@@ -997,6 +999,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					fromAddress = createFromAddress(from, result);
 				}
 				DBMailRecipient fromRecipient = new DBMailRecipient();
+				fromRecipient.setCreationDate(new Date());
 				fromRecipient.setEmailAddress(from);
 				fromRecipient.setVisible(Boolean.TRUE);
 				fromRecipient.setMarked(Boolean.FALSE);
@@ -1054,6 +1057,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			DBMailRecipient recipientTo = null;
 			if(toId != null) {
 				recipientTo = new DBMailRecipient();
+				recipientTo.setCreationDate(new Date());
 				if(toId instanceof IdentityImpl) {
 					recipientTo.setRecipient(toId);
 				} else {
@@ -1068,6 +1072,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				recipientTo.setRead(Boolean.FALSE);
 			} else if (StringHelper.containsNonWhitespace(to)) {
 				recipientTo = new DBMailRecipient();
+				recipientTo.setCreationDate(new Date());
 				recipientTo.setEmailAddress(to);
 				recipientTo.setVisible(Boolean.TRUE);
 				recipientTo.setDeleted(Boolean.TRUE);
@@ -1253,6 +1258,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 				for(String email:contactList.getStringEmails().values()) {
 					DBMailRecipient recipient = new DBMailRecipient();
+					recipient.setCreationDate(new Date());
 					recipient.setEmailAddress(email);
 					recipient.setGroup(contactList.getName());
 					recipient.setVisible(visible);
@@ -1268,6 +1274,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				
 				for(Identity identityEmail:contactList.getIdentiEmails().values()) {
 					DBMailRecipient recipient = new DBMailRecipient();
+					recipient.setCreationDate(new Date());
 					if(identityEmail instanceof IdentityImpl) {
 						recipient.setRecipient(identityEmail);
 					} else {

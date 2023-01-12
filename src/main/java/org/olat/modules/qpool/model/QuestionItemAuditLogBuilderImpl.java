@@ -87,8 +87,8 @@ public class QuestionItemAuditLogBuilderImpl implements QuestionItemAuditLogBuil
 	}
 
 	@Override
-	public QuestionItemAuditLogBuilder withMessage(String message) {
-		this.message = message;
+	public QuestionItemAuditLogBuilder withMessage(String text) {
+		this.message = text;
 		return this;
 	}
 

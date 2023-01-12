@@ -159,15 +159,15 @@ public class ReviewProcessAdminController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(el.getValue());
 				if(val <= 0) {
-					el.setErrorKey("error.integer.positive", null);
+					el.setErrorKey("error.integer.positive");
 					allOk &= false;
 				}
 			} catch (Exception e) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -180,7 +180,7 @@ public class ReviewProcessAdminController extends FormBasicController {
 		el.clearError();
 		Integer lowerLimit = Float.valueOf(el.getCurrentRating()).intValue();
 		if(lowerLimit <= 0) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

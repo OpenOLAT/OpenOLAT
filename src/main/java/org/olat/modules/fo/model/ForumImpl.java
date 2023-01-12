@@ -52,7 +52,6 @@ import org.olat.modules.fo.Forum;
  */
 @Entity(name="forum")
 @Table(name="o_forum")
-//@NamedQueries({})
 public class ForumImpl implements Forum, CreateInfo, Persistable{
 
 	private static final long serialVersionUID = 3240047228287740990L;

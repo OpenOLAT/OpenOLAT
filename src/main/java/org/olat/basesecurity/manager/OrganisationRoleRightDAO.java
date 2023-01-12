@@ -20,6 +20,7 @@
 package org.olat.basesecurity.manager;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationRoleRight;
@@ -43,7 +44,7 @@ public class OrganisationRoleRightDAO {
     private DB dbInstance;
 
     public List<String> getGrantedOrganisationRights(Organisation organisation, OrganisationRoles role) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(128);
         sb.append("select roleRight.right from organisationroleright as roleRight")
                 .append(" inner join roleRight.organisation org")
                 .append(" where org.key=:organisationKey and roleRight.role=:organisationRole");
@@ -56,7 +57,7 @@ public class OrganisationRoleRightDAO {
     }
 
     public void deleteGrantedOrganisationRights(Organisation organisation, OrganisationRoles role, Collection<String> deleteRights) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(128);
         sb.append("delete from organisationroleright as orgRight")
                 .append(" where orgRight.organisation.key=:orgKey")
                 .append(" and orgRight.right in (:deleteRights)")
@@ -71,7 +72,8 @@ public class OrganisationRoleRightDAO {
     }
 
     public OrganisationRoleRight createOrganisationRoleRight(Organisation organisation, OrganisationRoles role, String right) {
-        OrganisationRoleRight newRight = new OrganisationRoleRightImpl();
+        OrganisationRoleRightImpl newRight = new OrganisationRoleRightImpl();
+        newRight.setCreationDate(new Date());
         newRight.setOrganisation(organisation);
         newRight.setRole(role);
         newRight.setRight(right);

@@ -28,7 +28,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -49,9 +48,7 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="caluserconfig")
 @Table(name="o_cal_use_config")
-@NamedQueries({
-	@NamedQuery(name="loadCalUserConfigByIdentityAndCalendar", query="select conf from caluserconfig conf where conf.identity.key=:identityKey and conf.calendarId=:calendarId and conf.type=:type")
-})
+@NamedQuery(name="loadCalUserConfigByIdentityAndCalendar", query="select conf from caluserconfig conf where conf.identity.key=:identityKey and conf.calendarId=:calendarId and conf.type=:type")
 public class CalendarUserConfiguration implements ModifiedInfo, Persistable  {
 
 	private static final long serialVersionUID = -3206707703546422555L;
