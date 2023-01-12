@@ -144,9 +144,11 @@ public class IdentityCertificatesController extends BasicController implements G
 			String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 			String url = DownloadCertificateCellRenderer.getUrl(certificate);
 			boolean needRecertification = false;
-			if(certificate.getNextRecertificationDate() != null && certificate.getNextRecertificationDate().compareTo(now) < 0) {
-				needRecertification = true; //only check the last one???
-				displayName += " <small>" + translate("certificate.valid.until", formatter.formatDate(certificate.getCreationDate())) + "</small>";
+			if(certificate.getNextRecertificationDate() != null) {
+				displayName += " <small>" + translate("certificate.valid.until", formatter.formatDate(certificate.getNextRecertificationDate())) + "</small>";
+				if (certificate.getNextRecertificationDate().compareTo(now) < 0) {
+					needRecertification = true; //only check the last one???
+				}
 			}
 			
 			Links links = new Links(url, displayName, certificate.getStatus().name(), needRecertification);

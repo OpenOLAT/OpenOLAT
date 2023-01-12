@@ -356,21 +356,23 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identity4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity identity5 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity identity6 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity1);
 		RepositoryEntry entry2 = JunitTestHelper.deployBasicCourse(identity4);
 		dbInstance.commitAndCloseSession();
 		
-		Date now = new Date();
+		Date dueDate = new Date();
+		dueDate = DateUtils.setTime(dueDate, 4, 1, 1);
 		CertificateConfig config = CertificateConfig.builder().build();
 		Certificate certificate11 = certificatesManager.generateCertificate(new CertificateInfos(identity1, null, null, null, null), entry, null, config);
-		certificate11.setNextRecertificationDate(DateUtils.addDays(now, -10));
+		certificate11.setNextRecertificationDate(DateUtils.addDays(dueDate, -10));
 		dbInstance.getCurrentEntityManager().persist(certificate11);
 		Certificate certificate21 = certificatesManager.generateCertificate(new CertificateInfos(identity2, null, null, null, null), entry, null, config);
-		certificate21.setNextRecertificationDate(DateUtils.addDays(now, -2));
+		certificate21.setNextRecertificationDate(DateUtils.addDays(dueDate, -2));
 		dbInstance.getCurrentEntityManager().persist(certificate21);
 		// Last after reference date
 		Certificate certificate31 = certificatesManager.generateCertificate(new CertificateInfos(identity3, null, null, null, null), entry, null, config);
-		certificate31.setNextRecertificationDate(DateUtils.addDays(now, 5));
+		certificate31.setNextRecertificationDate(DateUtils.addDays(dueDate, 5));
 		dbInstance.getCurrentEntityManager().persist(certificate31);
 		// Not recertification date
 		Certificate certificate41 = certificatesManager.generateCertificate(new CertificateInfos(identity4, null, null, null, null), entry, null, config);
@@ -378,14 +380,17 @@ public class ReminderRuleDAOTest extends OlatTestCase {
 		dbInstance.getCurrentEntityManager().persist(certificate41);
 		// Other entry
 		Certificate certificate51 = certificatesManager.generateCertificate(new CertificateInfos(identity5, null, null, null, null), entry2, null, config);
-		certificate51.setNextRecertificationDate(DateUtils.addDays(now, -5));
+		certificate51.setNextRecertificationDate(DateUtils.addDays(dueDate, -5));
 		dbInstance.getCurrentEntityManager().persist(certificate51);
+		// Compare date onyl, no time
+		Certificate certificate61 = certificatesManager.generateCertificate(new CertificateInfos(identity6, null, null, null, null), entry, null, config);
+		certificate61.setNextRecertificationDate(DateUtils.addHours(dueDate, 2));
+		dbInstance.getCurrentEntityManager().persist(certificate61);
 		dbInstance.commitAndCloseSession();
 		
-		List<Long> recertificationBefore = sut.getNextRecertificationBefore(entry, now);
+		List<Long> recertificationBefore = sut.getNextRecertificationBefore(entry, dueDate);
 		
-		assertThat(recertificationBefore).containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey());
+		assertThat(recertificationBefore).containsExactlyInAnyOrder(identity1.getKey(), identity2.getKey(), identity6.getKey());
 	}
-
 
 }

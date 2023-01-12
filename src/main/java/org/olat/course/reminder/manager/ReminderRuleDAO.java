@@ -278,7 +278,7 @@ public class ReminderRuleDAO {
 		sb.append("  from certificatelight data");
 		sb.and().append("data.last=true");
 		sb.and().append("data.olatResourceKey = :olatResourceKey");
-		sb.and().append("data.nextRecertificationDate <= :referenceDate");
+		sb.and().append("date(data.nextRecertificationDate) <= date(:referenceDate)");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
