@@ -11,13 +11,17 @@
 </style>
 
 <div id="o_video_editor" class="o_video_editor row clearfix">
+	#if ($r.available("editQuestion"))
+	<div id="o_video_editor_edit_question" class="col-xs-12">$r.render("editQuestion")</div>
+	#else
 	<div id="o_video_editor_video" class="col-xs-12 col-sm-6">$r.render("video")</div>
 	<div id="o_video_editor_detail" class="col-xs-12 col-sm-6">$r.render("detail")</div>
 	<div id="o_video_editor_master" class="col-xs-12">$r.render("master")</div>
+	#end
 </div>
 
 <script>
-	var videoEditor = jQuery('#o_video_editor');
+	var globalVideoEditor = jQuery('#o_video_editor');
 
 	function resize() {
 		#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
@@ -71,5 +75,5 @@
 
 	resize();
 	//window.addEventListener("resize", resize);
-	new ResizeObserver(resize).observe(videoEditor[0]);
+	new ResizeObserver(resize).observe(globalVideoEditor[0]);
 </script>

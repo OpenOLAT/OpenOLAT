@@ -62,6 +62,15 @@ public class TimelineModelTest extends OlatTestCase {
 	}
 
 	@Test
+	public void testSimpleLaneDistribution() {
+		List<TimelineRow> events = new ArrayList<>();
+		events.add(new TimelineRow(UUID.randomUUID().toString(), 16000, 1, TimelineEventType.QUIZ, "q1", ""));
+		List<List<TimelineRow>> lanes = TimelineModel.distributeToLanes(events);
+		Assert.assertEquals(1, lanes.size());
+		Assert.assertEquals(1, lanes.get(0).size());
+	}
+
+	@Test
 	public void testComplexLaneDistribution() {
 		List<TimelineRow> events = new ArrayList<>();
 

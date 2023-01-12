@@ -73,15 +73,15 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private static final String THUMBNAIL_BASE_FILE_NAME = "thumbnail_";
 
 	private final String videoElementId;
-	private VFSContainer thumbnailsContainer;
-	private VFSLeaf videoFile;
-	private long videoFrameCount;
+	private final VFSContainer thumbnailsContainer;
+	private final VFSLeaf videoFile;
+	private final long videoFrameCount;
 	private final long videoDurationInMillis;
 	private int fps;
-	private Size movieSize;
+	private final Size movieSize;
 
 	private final VideoMeta videoMetadata;
-	private TimelineDataSource timelineDataSource;
+	private final TimelineDataSource timelineDataSource;
 	private TimelineModel timelineModel;
 	private FlexiTableElement timelineTableEl;
 
@@ -219,16 +219,20 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			}
 		} else if (source == timelineTableEl) {
 			if (event instanceof FormEvent) {
-				if (event.getCommand() == "ONCLICK") {
+				if ("ONCLICK".equals(event.getCommand())) {
+					String questionId = ureq.getParameter("questionId");
+					if (questionId != null) {
+						timelineModel.getQuestionRow(questionId)
+								.ifPresent(q->fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
+					}
 					String annotationId = ureq.getParameter("annotationId");
 					if (annotationId != null) {
 						fireEvent(ureq, new AnnotationSelectedEvent(annotationId));
 					}
 					String chapterId = ureq.getParameter("chapterId");
 					if (chapterId != null) {
-						timelineModel.getChapterRow(chapterId).ifPresent((c) -> {
-							fireEvent(ureq, new ChapterSelectedEvent(c.getId(), c.getStartTime()));
-						});
+						timelineModel.getChapterRow(chapterId)
+								.ifPresent(c -> fireEvent(ureq, new ChapterSelectedEvent(c.getId(), c.getStartTime())));
 					}
 				}
 			}

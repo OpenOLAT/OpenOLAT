@@ -44,6 +44,8 @@ public class VideoEditorController extends BasicController {
 	private final DetailsController detailsController;
 	private final MasterController masterController;
 
+	private EditQuestionController editQuestionController;
+
 	@Autowired
 	private VideoManager videoManager;
 
@@ -96,19 +98,28 @@ public class VideoEditorController extends BasicController {
 				this.currentTimeCode = currentTimeCode;
 				detailsController.setCurrentTimeCode(currentTimeCode);
 			}
-		}
-		if (detailsController == source) {
+		} else if (detailsController == source) {
 			if (event == AnnotationsController.RELOAD_MARKERS_EVENT) {
 				videoController.reloadMarkers();
 				masterController.reload();
 			} else if (event == ChaptersController.RELOAD_CHAPTERS_EVENT) {
 				videoController.reloadChapters();
 				masterController.reload();
+			} else if (event == QuizController.RELOAD_QUESTIONS_EVENT) {
+				masterController.reload();
+			} else if (event instanceof EditQuestionEvent) {
+				if (editQuestionController == null) {
+					EditQuestionEvent editQuestionEvent = (EditQuestionEvent) event;
+					editQuestionController = new EditQuestionController(ureq, getWindowControl(),
+							editQuestionEvent.getQuestion(), editQuestionEvent.getQuestionId(),
+							editQuestionEvent.getRepositoryEntry());
+					listenTo(editQuestionController);
+				}
+				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
 			} else if (event instanceof AnnotationSelectedEvent) {
 			} else if (event instanceof SegmentSelectedEvent) {
 			}
-		}
-		if (masterController == source) {
+		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent) {
 				detailsController.setAnnotationId(((AnnotationSelectedEvent)event).getAnnotationId());
 				detailsController.showAnnotations(ureq);
@@ -116,7 +127,16 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof ChapterSelectedEvent) {
 				detailsController.showChapters(ureq);
 				videoController.selectTime(((ChapterSelectedEvent) event).getStartTimeInMillis() / 1000);
+			} else if (event instanceof QuestionSelectedEvent) {
+				detailsController.showQuiz(ureq);
+				videoController.selectTime(((QuestionSelectedEvent) event).getStartTimeInMillis() / 1000);
 			}
+		} else if (editQuestionController == source) {
+			String questionId = editQuestionController.getQuestionId();
+			removeAsListenerAndDispose(editQuestionController);
+			editQuestionController = null;
+			mainVC.remove("editQuestion");
+			detailsController.updateQuestion(questionId);
 		}
 	}
 }

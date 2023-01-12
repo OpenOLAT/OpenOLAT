@@ -66,7 +66,7 @@ public class DetailsController extends BasicController {
 		listenTo(segmentController);
 		tabbedPane.addTab(translate("video.editor.panes.segments"), segmentController);
 
-		quizController = new QuizController(ureq, wControl);
+		quizController = new QuizController(ureq, wControl, repositoryEntry, videoElementId);
 		listenTo(quizController);
 		tabbedPane.addTab(translate("video.editor.panes.quiz"), quizController);
 
@@ -87,11 +87,14 @@ public class DetailsController extends BasicController {
 			fireEvent(ureq, event);
 		} else if (source instanceof SegmentController) {
 			fireEvent(ureq, event);
+		} else if (source instanceof QuizController) {
+			fireEvent(ureq, event);
 		}
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		annotationsController.setCurrentTimeCode(currentTimeCode);
+		quizController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void setAnnotationId(String annotationId) {
@@ -104,5 +107,17 @@ public class DetailsController extends BasicController {
 
 	public void showChapters(UserRequest ureq) {
 		tabbedPane.setSelectedPane(ureq, 0);
+	}
+
+	public void showSegments(UserRequest ureq) {
+		tabbedPane.setSelectedPane(ureq, 2);
+	}
+
+	public void showQuiz(UserRequest ureq) {
+		tabbedPane.setSelectedPane(ureq, 3);
+	}
+
+	public void updateQuestion(String questionId) {
+		quizController.updateQuestion(questionId);
 	}
 }

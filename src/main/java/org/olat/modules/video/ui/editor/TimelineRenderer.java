@@ -231,6 +231,9 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		for (List<TimelineRow> eventsByLane : eventsByLanes) {
 			for (TimelineRow event : eventsByLane) {
 				switch (type) {
+					case QUIZ:
+						renderQuestion(s, ftC, theForm, timelineModel, event, y, "questionId");
+						break;
 					case ANNOTATION:
 						renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
 						break;
@@ -246,6 +249,26 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		}
 	}
 
+	private void renderQuestion(StringOutput s, FlexiTableComponent ftC, Form form, TimelineModel timelineModel,
+								TimelineRow event, int y, String idParameterName) {
+		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
+		if (x == 0) {
+			x += 1;
+		}
+		s.append("<div class=\"o_video_question ").append(event.getColor()).append("\" style=\"left: ").append(x - 11).append("px; top: ").append(y - 1)
+				.append("px; \" onclick=\"")
+				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
+				.append("jQuery(this).addClass('o_video_selected'); ")
+				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
+						false, false, false,
+						new NameValuePair(idParameterName, event.getId())))
+				.append("\">")
+				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
+						"<path d=\"M284.3 11.7c-15.6-15.6-40.9-15.6-56.6 0l-216 216c-15.6 15.6-15.6 40.9 0 56.6l216 216c15.6 15.6 40.9 15.6 56.6 0l216-216c15.6-15.6 15.6-40.9 0-56.6l-216-216z\"/>" +
+						"</svg>")
+				.append("</div>");
+	}
+
 	private void renderEvent(StringOutput s, FlexiTableComponent ftC, Form form, TimelineModel timelineModel,
 							 TimelineRow event, int y, String cssClass, String idParameterName) {
 		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
@@ -259,7 +282,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("\" style=\"left: ").append(x).append("px; width: ").append(width).append("px; ")
 				.append("top: ").append(y).append("px;")
 				.append("\" onclick=\"")
-				.append("jQuery('.o_video_timeline_event').removeClass('o_video_selected'); ")
+				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
 						false, false, false,

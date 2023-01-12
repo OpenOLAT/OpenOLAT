@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
+import org.olat.modules.video.VideoQuestion;
+import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoChapterTableRow;
@@ -58,6 +60,12 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 
 	public void loadRows() {
 		rows = new ArrayList<>();
+
+		VideoQuestions videoQuestions = videoManager.loadQuestions(olatResource);
+		for (VideoQuestion videoQuestion : videoQuestions.getQuestions()) {
+			rows.add(new TimelineRow(videoQuestion.getId(), videoQuestion.getBegin().getTime(), 1000,
+					TimelineEventType.QUIZ, videoQuestion.getTitle(), videoQuestion.getStyle()));
+		}
 
 		VideoSegments videoSegments = videoManager.loadSegments(olatResource);
 		for (VideoSegment videoSegment : videoSegments.getSegments()) {

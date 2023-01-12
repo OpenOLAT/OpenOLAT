@@ -207,6 +207,13 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 				.findFirst();
 	}
 
+	public Optional<TimelineRow> getQuestionRow(String questionId) {
+		return getObjects()
+				.stream()
+				.filter((r) -> r.getType() == TimelineEventType.QUIZ && r.getId().equals(questionId))
+				.findFirst();
+	}
+
 	public void setMediaUrl(String mediaUrl) {
 		this.mediaUrl = mediaUrl;
 	}
