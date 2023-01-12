@@ -112,6 +112,8 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 //			}
 			sb.append("</div>");
 		}
+		
+		setHeadersRendered(ftE);
 
 		//source
 		if (source.isEnabled()) {

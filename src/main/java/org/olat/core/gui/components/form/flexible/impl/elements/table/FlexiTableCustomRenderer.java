@@ -90,6 +90,8 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 			sb.append("</div>");
 		}
 		
+		setHeadersRendered(ftE);
+		
 		//source
 		if (source.isEnabled()) {
 			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
@@ -99,6 +101,12 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer {
 	@Override
 	protected void renderHeaders(StringOutput sb, FlexiTableComponent ftC, Translator translator) {
 		//do nothing
+	}
+	
+	@Override
+	protected void renderUserOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu,
+			Translator translator, RenderResult renderResult) {
+		//
 	}
 
 	@Override

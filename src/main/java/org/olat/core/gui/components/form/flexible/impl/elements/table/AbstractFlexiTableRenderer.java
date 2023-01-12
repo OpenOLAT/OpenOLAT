@@ -65,6 +65,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			renderTable(renderer, sb, ftC, ubu, translator, renderResult);
 		}
 		
+		setHeadersRendered(ftE);
+		
 		//source
 		if (source.isEnabled()) {
 			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
@@ -205,10 +207,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 	 *  Subclasses can override this method to render extra HTML or form items on the right side of the
 	 *  toolbar above the table.
 	 */
-	protected void renderUserOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu,
-									 Translator translator, RenderResult renderResult) {
-		//
-	}
+	protected abstract void renderUserOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu,
+			Translator translator, RenderResult renderResult);
 
 	private void renderFilterTabs(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -258,6 +258,34 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("</div>");
 		}
 		sb.append("</div>");
+	}
+	
+	protected void setHeadersRendered(FlexiTableElementImpl ftE) {
+		if(ftE.getCustomButton() != null) {
+			ftE.getCustomButton().getComponent().setDirty(false);
+		}
+		if(ftE.getExportButton() != null) {
+			ftE.getExportButton().getComponent().setDirty(false);
+		}
+		if(ftE.getSettingsButton() != null) {
+			ftE.getSettingsButton().getComponent().setDirty(false);
+		}
+
+		if(ftE.getCustomTypeButton() != null) {
+			ftE.getCustomTypeButton().getComponent().setDirty(false);
+		}
+		if(ftE.getClassicTypeButton() != null) {
+			ftE.getClassicTypeButton().getComponent().setDirty(false);
+		}
+		if(ftE.getExternalTypeButton() != null) {
+			ftE.getExternalTypeButton().getComponent().setDirty(false);
+		}
+		
+		if(ftE.getFiltersElement() != null) {
+			for(FormItem item:ftE.getFiltersElement().getFormItems()) {
+				item.getComponent().setDirty(false);
+			}
+		}
 	}
 	
 	private void renderSearchAndOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,
@@ -357,8 +385,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
-		} else if(ftE.getCustomButton() != null) {
-			ftE.getCustomButton().getComponent().setDirty(false);
 		}
 		
 		// download
@@ -367,8 +393,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			ftE.getExportButton().setEnabled(!empty);
 			renderFormItem(renderer, sb, ftE.getExportButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");
-		} else if(ftE.getExportButton() != null) {
-			ftE.getExportButton().getComponent().setDirty(false);
 		}
 		
 		// all settings
@@ -378,7 +402,6 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				renderFormItem(renderer, sb, ftE.getSettingsButton(), ubu, translator, renderResult, null);
 				sb.append("</div> ");
 			}
-			ftE.getSettingsButton().getComponent().setDirty(false);
 		}
 		
 		if(StringHelper.containsNonWhitespace(filterIndication)) {

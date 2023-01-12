@@ -64,7 +64,6 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 					sb.append("</li>");
 				}
 			}
-			backLink.setDirty(false);
 			
 			Link closeLink = panel.getCloseLink();
 			if (closeLink.isVisible()) {
@@ -72,11 +71,22 @@ public class BreadcrumbBarRenderer extends DefaultComponentRenderer {
 				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
 				sb.append("</li>");				
 			}
-			closeLink.setDirty(false);
 			sb.append("</ol>");
 		} else {
 			sb.append("<div id='o_c").append(source.getDispatchID()).append("'>");
+			
+			for(Link breadCrumb:breadCrumbs) {
+				breadCrumb.setDirty(false);
+			}
 		}
+		
+		if(panel.getBackLink() != null) {
+			panel.getBackLink().setDirty(false);
+		}
+		if(panel.getCloseLink() != null) {
+			panel.getCloseLink().setDirty(false);
+		}
+		
 		sb.append("</div>");
 	}
 }
