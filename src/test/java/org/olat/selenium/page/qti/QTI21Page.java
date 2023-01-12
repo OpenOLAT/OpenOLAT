@@ -333,7 +333,7 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page answerMatch(String source, String target, boolean match) {
-		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[th/p[contains(text(),'" + source + "')]]/td[count(//div[contains(@class,'matchInteraction')]/table//tr/th[p[contains(text(),'" + target + "')]]/preceding-sibling::th)]/input");
+		By matchBy = By.xpath("//div[contains(@class,'matchInteraction')]/table//tr[th/p[contains(text(),'" + source + "')]]/td[count(//div[contains(@class,'matchInteraction')]/table//tr/th[p[contains(text(),'" + target + "')]]/preceding-sibling::*[self::td|self::th])]/input");
 		WebElement matchEl = browser.findElement(matchBy);
 		OOGraphene.check(matchEl, match);
 		return this;
