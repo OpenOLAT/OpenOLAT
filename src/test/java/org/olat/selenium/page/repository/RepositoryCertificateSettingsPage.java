@@ -39,25 +39,26 @@ public class RepositoryCertificateSettingsPage {
 	}
 	
 	public RepositoryCertificateSettingsPage enableCertificates(boolean auto) {
+		By enableBy = By.cssSelector("fieldset.o_sel_certificate_settings a.o_button_toggle");
+		OOGraphene.waitElement(enableBy, browser);
+		browser.findElement(enableBy).click();
+		
+		By optionsBy = By.cssSelector("fieldset.o_sel_certificate_settings .o_sel_certificate_options");
+		OOGraphene.waitElement(optionsBy, browser);
+		
 		By by;
 		if(auto) {
-			by = By.cssSelector("fieldset.o_sel_certificate_settings div.checkbox input[type='checkbox'][value='auto']");
+			by = By.cssSelector("fieldset.o_sel_certificate_settings .o_sel_certificate_options input[type='checkbox'][value='auto']");
 		} else {
-			by = By.cssSelector("fieldset.o_sel_certificate_settings div.checkbox input[type='checkbox'][value='manual']");
+			by = By.cssSelector("fieldset.o_sel_certificate_settings .o_sel_certificate_options input[type='checkbox'][value='manual']");
 		}
 		WebElement checkEl = browser.findElement(by);
 		OOGraphene.check(checkEl, Boolean.TRUE);
-		if(auto) {
-			By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[name='recertification']");
-			OOGraphene.waitElement(recertificationBy, browser);
-		} else {
-			OOGraphene.waitBusy(browser);
-		}
 		return this;
 	}
 	
 	public RepositoryCertificateSettingsPage enableRecertification() {
-		By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[type='checkbox'][name='recertification']");
+		By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[type='checkbox'][name='recertification.period']");
 		WebElement checkEl = browser.findElement(recertificationBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		

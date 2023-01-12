@@ -154,6 +154,7 @@ public class CertificatesOptionsController extends FormBasicController {
 				translate("pdf.certificates.manual")
 		};
 		pdfCertificatesEl = uifactory.addCheckboxesVertical("pdf.certificates", formLayout, pdfCertificatesOptionsKeys, pdfCertificatesOptionsValues, 1);
+		pdfCertificatesEl.setElementCssClass("o_sel_certificate_options");
 		pdfCertificatesEl.select(PDFCertificatesOptions.auto.name(), courseConfig.isAutomaticCertificationEnabled());
 		pdfCertificatesEl.select(PDFCertificatesOptions.manual.name(), courseConfig.isManualCertificationEnabled());
 		pdfCertificatesEl.setEnabled(editable && !managedEff);

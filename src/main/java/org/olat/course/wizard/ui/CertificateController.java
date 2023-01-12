@@ -152,7 +152,7 @@ public class CertificateController extends StepFormBasicController {
 		
 		certificateTemplateEl.clearError();
 		if (pdfCertificatesEl.isAtLeastSelected(1) && context.getTemplate() == null) {
-			certificateTemplateEl.setErrorKey("form.legende.mandatory", null);
+			certificateTemplateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
