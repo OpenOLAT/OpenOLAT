@@ -483,6 +483,59 @@
 	background-color: $gray-lighter;
 }
 
+.o_video_question {
+	position: absolute;
+	display: inline-block;
+	z-index: 1;
+	height: 22px;
+	width: 22px;
+	cursor: pointer;
+
+	svg {
+		stroke-width: 32;
+		width: 22px;
+		height: 22px;
+	}
+
+	&.o_video_marker_gray {
+		svg {
+			fill: $o-video-gray-color;
+			stroke: darken($o-video-gray-color, 16);
+		}
+	}
+	&.o_video_marker_blue {
+		svg {
+			fill: $o-selection-light-blue;
+			stroke: darken($o-selection-light-blue, 16);
+		}
+	}
+	&.o_video_marker_green {
+		svg {
+			fill: $o-selection-light-green;
+			stroke: darken($o-selection-light-green, 16);
+		}
+	}
+	&.o_video_marker_yellow {
+		svg {
+			fill: $o-selection-yellow;
+			stroke: darken($o-selection-yellow, 16);
+		}
+	}
+	&.o_video_marker_red {
+		svg {
+			fill: $o-selection-red;
+			stroke: darken($o-selection-red, 16);
+		}
+	}
+
+	&.o_video_selected {
+		svg {
+			stroke: $brand-primary;
+			stroke-width: 50;
+		}
+	}
+}
+
 .o_video_timeline_event {
 	position: absolute;
 	display: inline-block;
