@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.modules.video.ui.editor.VideoEditorController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
@@ -50,6 +51,8 @@ import org.olat.repository.ui.RepositoryEntrySettingsController;
 public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 
 	private Link changeVideoLink;
+	private Link editVideoLink;
+	private VideoEditorController videoEditorController;
 	private RepositoryEntry repositoryEntry;
 
 	public VideoRuntimeController(UserRequest ureq, WindowControl wControl,
@@ -66,6 +69,10 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			changeVideoLink = LinkFactory.createToolLink("changeVideo", translate("tab.video.exchange"), this);
 			changeVideoLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 			toolsDropdown.addComponent(changeVideoLink);
+
+			editVideoLink = LinkFactory.createToolLink("editVideo", translate("tab.video.editor"), this);
+			editVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+			toolsDropdown.addComponent(editVideoLink);
 		}
 	}
 
@@ -78,11 +85,17 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (changeVideoLink == source) {
 			doReplaceVideo(ureq);
+		} else if (editVideoLink == source) {
+			doEditVideo(ureq);
 		} else {
 			if (event instanceof RootEvent || event instanceof PopEvent) {
 				// reload the video, maybe some new transcoded files available
 				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
 				videoDisplayCtr.reloadVideo(ureq);
+				if (event instanceof PopEvent && ((PopEvent)event).getController() == videoEditorController) {
+					toolbarPanel.removeCssClass("o_edit_mode");
+					toolbarPanel.setToolbarEnabled(true);
+				}
 			}
 			// maybe something else needs to be done
 			super.event(ureq, source, event);
@@ -111,6 +124,22 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		listenTo(resourceCtrl);
 		pushController(ureq, translate("tab.video.settings"), resourceCtrl);
 		setActiveTool(changeVideoLink);
+	}
+
+	private void doEditVideo(UserRequest ureq) {
+		videoEditorController = new VideoEditorController(ureq, getWindowControl(), repositoryEntry);
+		listenTo(videoEditorController);
+		pushController(ureq, translate("tab.video.editor.breadcrumb"), videoEditorController);
+		setActiveTool(editVideoLink);
+		toolbarPanel.addCssClass("o_edit_mode");
+		toolbarPanel.setToolbarEnabled(false);
+	}
+
+	@Override
+	protected <T extends Controller> T pushController(UserRequest ureq, String name, T controller) {
+		toolbarPanel.removeCssClass("o_edit_mode");
+		toolbarPanel.setToolbarEnabled(true);
+		return super.pushController(ureq, name, controller);
 	}
 
 	private void doRefreshVideoPosterIfEntryAdmin() {
