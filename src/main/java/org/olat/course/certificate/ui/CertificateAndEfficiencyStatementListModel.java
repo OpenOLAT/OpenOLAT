@@ -164,7 +164,7 @@ public class CertificateAndEfficiencyStatementListModel
 		efficiencyStatement("table.header.certificate", true), 
 		certificateExternalId("table.header.external.id", true),
 		certificate("table.header.certificate", true),
-		recertification("table.header.recertification", true), 
+		recertification("table.header.certificate.validity", true), 
 		deleteEfficiencyStatement("table.action.delete", false),
 		artefact("table.header.artefact", false),
 		tools("table.header.actions", false);

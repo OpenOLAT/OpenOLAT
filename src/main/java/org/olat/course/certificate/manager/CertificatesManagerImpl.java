@@ -37,7 +37,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import jakarta.annotation.Resource;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -49,6 +48,8 @@ import javax.jms.QueueConnection;
 import javax.jms.QueueSender;
 import javax.jms.QueueSession;
 import javax.jms.Session;
+
+import jakarta.annotation.Resource;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -119,6 +120,7 @@ import org.olat.course.certificate.model.JmsCertificateWork;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -606,7 +608,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		try {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-			if(config.isRecertificationEnabled()) {
+			if(config.isRecertificationEnabled() && ConditionNodeAccessProvider.TYPE.equals(config.getNodeAccessType().getType())) {
 				Certificate certificate =  getLastCertificate(identity, entry.getOlatResource().getKey());
 				if(certificate == null) {
 					allowed = true;

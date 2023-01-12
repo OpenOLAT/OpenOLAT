@@ -163,7 +163,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		passed("table.header.passed"),
 		assessmentStatus("table.header.assessmentStatus"),
 		certificate("table.header.certificate"),
-		recertification("table.header.recertification"),
+		recertification("table.header.certificate.validity"),
 		initialLaunchDate("table.header.initialLaunchDate"),
 		lastModified("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),

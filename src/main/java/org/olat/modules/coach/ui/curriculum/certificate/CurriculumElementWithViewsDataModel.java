@@ -195,7 +195,7 @@ public class CurriculumElementWithViewsDataModel extends DefaultFlexiTreeTableDa
 		score("table.header.score"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
-		recertification("table.header.recertification"),
+		recertification("table.header.certificate.validity"),
 		numberAssessments("table.header.number.assessments"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),

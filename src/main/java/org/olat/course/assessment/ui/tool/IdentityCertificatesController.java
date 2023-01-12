@@ -146,6 +146,7 @@ public class IdentityCertificatesController extends BasicController implements G
 			boolean needRecertification = false;
 			if(certificate.getNextRecertificationDate() != null && certificate.getNextRecertificationDate().compareTo(now) < 0) {
 				needRecertification = true; //only check the last one???
+				displayName += " <small>" + translate("certificate.valid.until", formatter.formatDate(certificate.getCreationDate())) + "</small>";
 			}
 			
 			Links links = new Links(url, displayName, certificate.getStatus().name(), needRecertification);

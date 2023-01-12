@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -477,7 +478,7 @@ public abstract class FormBasicController extends BasicController {
 	}
 	
 	protected void markDirtinessToContainer(FormItem source, FormEvent event) {
-		if((source instanceof MultipleSelectionElement || source instanceof SingleSelection)
+		if((source instanceof MultipleSelectionElement || source instanceof SingleSelection || source instanceof FormToggle)
 				&& (event.wasTriggerdBy(FormEvent.ONCLICK) || event.wasTriggerdBy(FormEvent.ONCHANGE))
 				&& flc.getRootForm().hasExplicitSubmit()) {
 			markDirty();

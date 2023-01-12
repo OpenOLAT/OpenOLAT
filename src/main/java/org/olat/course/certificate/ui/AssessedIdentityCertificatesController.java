@@ -191,7 +191,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 			doGenerateCertificate(ureq);
 		} else {
 			String title = translate("confirm.certificate.title");
-			String text = translate("confirm.certificate.text");
+			String text = translate("confirm.certificate.msg");
 			confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
 		}
 	}

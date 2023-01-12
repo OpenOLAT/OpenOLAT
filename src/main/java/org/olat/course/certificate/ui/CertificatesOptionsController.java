@@ -35,6 +35,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -54,6 +55,7 @@ import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -79,6 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CertificatesOptionsController extends FormBasicController {
 	
+	 private FormToggle enabledEl;
 	private MultipleSelectionElement pdfCertificatesEl;
 	private TextElement certificationCustom1El;
 	private TextElement certificationCustom2El;
@@ -94,6 +97,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	private CourseConfig courseConfig;
 	private final RepositoryEntry entry;
 	private CertificateTemplate selectedTemplate;
+	private boolean reCertificationEnabled;
 	
 	private CloseableModalController cmc;
 	private CertificateChooserController certificateChooserCtrl;
@@ -135,12 +139,21 @@ public class CertificatesOptionsController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_certificate_settings");
 		
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
+		
+		enabledEl = uifactory.addToggleButton("enabled", translate("issue.certificate"), "&nbsp;&nbsp;", formLayout, null, null);
+		enabledEl.addActionListener(FormEvent.ONCLICK);
+		enabledEl.setEnabled(editable && !managedEff);
+		if (courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
+			enabledEl.toggleOn();
+		} else {
+			enabledEl.toggleOff();
+		}
+		
 		String[] pdfCertificatesOptionsValues = new String[] {
 				translate("pdf.certificates.auto"),
 				translate("pdf.certificates.manual")
 		};
 		pdfCertificatesEl = uifactory.addCheckboxesVertical("pdf.certificates", formLayout, pdfCertificatesOptionsKeys, pdfCertificatesOptionsValues, 1);
-		pdfCertificatesEl.addActionListener(FormEvent.ONCHANGE);
 		pdfCertificatesEl.select(PDFCertificatesOptions.auto.name(), courseConfig.isAutomaticCertificationEnabled());
 		pdfCertificatesEl.select(PDFCertificatesOptions.manual.name(), courseConfig.isManualCertificationEnabled());
 		pdfCertificatesEl.setEnabled(editable && !managedEff);
@@ -177,22 +190,22 @@ public class CertificatesOptionsController extends FormBasicController {
 		certificationCustom3El = uifactory.addTextElement("certificate.custom3", 3000, courseConfig.getCertificateCustom3(), formLayout);
 		certificationCustom3El.setEnabled(editable);
 		
-		boolean reCertificationEnabled = courseConfig.isRecertificationEnabled();
-		reCertificationEl = uifactory.addCheckboxesHorizontal("recertification", formLayout, new String[]{ "xx" }, new String[]{ "" });
+		reCertificationEnabled = courseConfig.isRecertificationEnabled();
+		reCertificationEl = uifactory.addCheckboxesHorizontal("recertification.period", formLayout, new String[]{ "xx" }, new String[]{ "" });
 		reCertificationEl.addActionListener(FormEvent.ONCHANGE);
 		reCertificationEl.setEnabled(editable);
 		if(reCertificationEnabled) {
 			reCertificationEl.select("xx", true);
 		}
 		
-		String recertificationPage = velocity_root + "/recertification.html";
-		recertificationCont = FormLayoutContainer.createCustomFormLayout("timelapse.cont", getTranslator(), recertificationPage);
+		recertificationCont = FormLayoutContainer.createButtonLayout("recert", getTranslator());
+		recertificationCont.setElementCssClass("o_inline_cont");
+		recertificationCont.setLabel("validity.period", null);
 		recertificationCont.setRootForm(mainForm);
 		formLayout.add(recertificationCont);
 		
 		int timelapse = courseConfig.getRecertificationTimelapse();
 		reCertificationTimelapseEl = uifactory.addIntegerElement("timelapse", null, timelapse, recertificationCont);
-		reCertificationTimelapseEl.setDomReplacementWrapperRequired(false);
 		reCertificationTimelapseEl.setDisplaySize(4);
 		reCertificationTimelapseEl.setEnabled(editable);
 		
@@ -202,7 +215,6 @@ public class CertificatesOptionsController extends FormBasicController {
 		};
 		RecertificationTimeUnit timelapseUnit = courseConfig.getRecertificationTimelapseUnit();
 		reCertificationTimelapseUnitEl = uifactory.addDropdownSingleselect("timelapse.unit", null, recertificationCont, timelapseUnitKeys, timelapseUnitValues, null);
-		reCertificationTimelapseUnitEl.setDomReplacementWrapperRequired(false);
 		reCertificationTimelapseUnitEl.setEnabled(editable);
 		if(timelapseUnit != null) {
 			reCertificationTimelapseUnitEl.select(timelapseUnit.name(), true);
@@ -221,11 +233,13 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		boolean none = !pdfCertificatesEl.isAtLeastSelected(1);
+		boolean enabled = enabledEl.isOn();
 		
-		templateCont.setVisible(!none);
-		selectTemplateLink.setEnabled(!none && editable);
-		if(none || selectedTemplate == null) {
+		pdfCertificatesEl.setVisible(enabled);
+		
+		templateCont.setVisible(enabled);
+		selectTemplateLink.setEnabled(enabled && editable);
+		if(!enabled || selectedTemplate == null) {
 			templateCont.contextPut("templateName", translate("default.template"));
 			previewTemplateLink.setEnabled(false);
 		} else {
@@ -233,9 +247,13 @@ public class CertificatesOptionsController extends FormBasicController {
 			previewTemplateLink.setEnabled(true);
 		}
 		
-		reCertificationEl.setVisible(!none);
+		certificationCustom1El.setVisible(enabled);
+		certificationCustom2El.setVisible(enabled);
+		certificationCustom3El.setVisible(enabled);
 		
-		boolean enableRecertification = !none && reCertificationEl.isAtLeastSelected(1);
+		reCertificationEl.setVisible(enabled);
+		reCertificationEl.select(reCertificationEl.getKey(0), reCertificationEnabled);
+		boolean enableRecertification = enabled && reCertificationEl.isAtLeastSelected(1);
 		recertificationCont.setVisible(enableRecertification);
 		reCertificationTimelapseEl.setEnabled(enableRecertification && editable);
 		reCertificationTimelapseUnitEl.setEnabled(enableRecertification && editable);
@@ -263,19 +281,69 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(certificateChooserCtrl);
 		removeAsListenerAndDispose(cmc);
+		certificateChooserCtrl = null;
 		cmc = null;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == selectTemplateLink) {
-			doSelectTemplate(ureq);
-		} else if(source == reCertificationEl) {
+		if (source == enabledEl) {
 			updateUI();
-		} else if(source == pdfCertificatesEl) {
+		} else if (source == selectTemplateLink) {
+			doSelectTemplate(ureq);
+		} else if (source == reCertificationEl) {
+			reCertificationEnabled = reCertificationEl.isAtLeastSelected(1);
 			updateUI();
 		}
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		pdfCertificatesEl.clearError();
+		if (pdfCertificatesEl.isVisible()) {
+			if (!pdfCertificatesEl.isAtLeastSelected(1)) {
+				pdfCertificatesEl.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			}
+		}
+		
+		recertificationCont.clearError();
+		if (reCertificationTimelapseEl.isVisible()) {
+			if (!StringHelper.containsNonWhitespace(reCertificationTimelapseEl.getValue())) {
+				recertificationCont.setErrorKey("form.mandatory.hover");
+				allOk &= false;
+			} else {
+				allOk &= validateInt(reCertificationTimelapseEl, recertificationCont);
+			}
+		}
+		
+		return allOk;
+	}
+	
+	private boolean validateInt(TextElement el, FormItem errorEl) {
+		boolean allOk = true;
+		
+		if(el.isVisible()) {
+			String value = el.getValue();
+			if(StringHelper.containsNonWhitespace(value)) {
+				try {
+					Integer intValue = Integer.parseInt(value);
+					if (intValue.intValue() < 0) {
+						allOk = false;
+						errorEl.setErrorKey("error.positive.int");
+					}
+				} catch(Exception e) {
+					allOk = false;
+					errorEl.setErrorKey("error.positive.int");
+				}
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -327,39 +395,44 @@ public class CertificatesOptionsController extends FormBasicController {
 		ICourse course = CourseFactory.openCourseEditSession(courseOres.getResourceableId());
 		courseConfig = course.getCourseEnvironment().getCourseConfig();
 		
-		Collection<String> certificationOptions = pdfCertificatesEl.getSelectedKeys();
-		courseConfig.setAutomaticCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.auto.name()));
-		courseConfig.setManualCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.manual.name()));
-		if(selectedTemplate != null) {
-			Long templateId = selectedTemplate.getKey();
-			courseConfig.setCertificateTemplate(templateId);
-		} else {
-			courseConfig.setCertificateTemplate(null);
-		}
-		
-		courseConfig.setCertificateCustom1(certificationCustom1El.getValue());
-		courseConfig.setCertificateCustom2(certificationCustom2El.getValue());
-		courseConfig.setCertificateCustom3(certificationCustom3El.getValue());
-
-		boolean recertificationEnabled = reCertificationEl.isEnabled() && reCertificationEl.isAtLeastSelected(1);
-		courseConfig.setRecertificationEnabled(recertificationEnabled);
-
-		if(recertificationEnabled) {
-			int timelapse = reCertificationTimelapseEl.getIntValue();
-			courseConfig.setRecertificationTimelapse(timelapse);
-			
-			if(reCertificationTimelapseUnitEl.isOneSelected()) {
-				String selectedUnit = reCertificationTimelapseUnitEl.getSelectedKey();
-				RecertificationTimeUnit timeUnit = RecertificationTimeUnit.valueOf(selectedUnit);
-				courseConfig.setRecertificationTimelapseUnit(timeUnit);
+		if (enabledEl.isOn()) {
+			Collection<String> certificationOptions = pdfCertificatesEl.getSelectedKeys();
+			courseConfig.setAutomaticCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.auto.name()));
+			courseConfig.setManualCertificationEnabled(certificationOptions.contains(PDFCertificatesOptions.manual.name()));
+			if(selectedTemplate != null) {
+				Long templateId = selectedTemplate.getKey();
+				courseConfig.setCertificateTemplate(templateId);
 			} else {
-				courseConfig.setRecertificationTimelapseUnit(RecertificationTimeUnit.month);
+				courseConfig.setCertificateTemplate(null);
+			}
+			
+			courseConfig.setCertificateCustom1(certificationCustom1El.getValue());
+			courseConfig.setCertificateCustom2(certificationCustom2El.getValue());
+			courseConfig.setCertificateCustom3(certificationCustom3El.getValue());
+			
+			boolean recertificationEnabled = reCertificationEl.isEnabled() && reCertificationEl.isAtLeastSelected(1);
+			courseConfig.setRecertificationEnabled(recertificationEnabled);
+			
+			if(recertificationEnabled) {
+				int timelapse = reCertificationTimelapseEl.getIntValue();
+				courseConfig.setRecertificationTimelapse(timelapse);
+				
+				if(reCertificationTimelapseUnitEl.isOneSelected()) {
+					String selectedUnit = reCertificationTimelapseUnitEl.getSelectedKey();
+					RecertificationTimeUnit timeUnit = RecertificationTimeUnit.valueOf(selectedUnit);
+					courseConfig.setRecertificationTimelapseUnit(timeUnit);
+				} else {
+					courseConfig.setRecertificationTimelapseUnit(RecertificationTimeUnit.month);
+				}
+			} else {
+				courseConfig.setRecertificationTimelapse(0);
+				courseConfig.setRecertificationTimelapseUnit(null);
 			}
 		} else {
-			courseConfig.setRecertificationTimelapse(0);
-			courseConfig.setRecertificationTimelapseUnit(null);
+			courseConfig.setAutomaticCertificationEnabled(false);
+			courseConfig.setManualCertificationEnabled(false);
 		}
-
+		
 		CourseFactory.setCourseConfig(course.getResourceableId(), courseConfig);
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		

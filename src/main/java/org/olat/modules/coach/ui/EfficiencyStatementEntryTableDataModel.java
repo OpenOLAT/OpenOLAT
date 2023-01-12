@@ -202,7 +202,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		grade("table.header.grade"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
-		recertification("table.header.recertification"),
+		recertification("table.header.certificate.validity"),
 		numberAssessments("table.header.number.assessments"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),
