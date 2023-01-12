@@ -961,6 +961,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 		
 		try {
 			DBMailImpl mail = new DBMailImpl();
+			mail.setCreationDate(new Date());
+			mail.setLastModified(mail.getCreationDate());
 			if(result == null) {
 				result = new MailerResult();
 			}
@@ -1083,6 +1085,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			
 			if(cc != null) {
 				DBMailRecipient recipient = new DBMailRecipient();
+				recipient.setCreationDate(new Date());
 				if(cc instanceof IdentityImpl) {
 					recipient.setRecipient(cc);
 				} else {
@@ -1107,6 +1110,8 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				for(File attachment:attachments) {
 					try(FileInputStream in = new FileInputStream(attachment)) {
 						DBMailAttachment data = new DBMailAttachment();
+						data.setCreationDate(new Date());
+						data.setLastModified(data.getCreationDate());
 						data.setSize(attachment.length());
 						data.setName(attachment.getName());
 						
@@ -1120,9 +1125,9 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 
 						dbInstance.getCurrentEntityManager().persist(data);
 					} catch (FileNotFoundException e) {
-						log.error("File attachment not found: " + attachment, e);
+						log.error("File attachment not found: {}", attachment, e);
 					} catch (IOException e) {
-						log.error("Error with file attachment: " + attachment, e);
+						log.error("Error with file attachment: {}", attachment, e);
 					}
 				}
 			}

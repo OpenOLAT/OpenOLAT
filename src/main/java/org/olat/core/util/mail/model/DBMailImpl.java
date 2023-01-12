@@ -102,6 +102,10 @@ public class DBMailImpl implements Persistable, DBMail {
     @AttributeOverride(name="businessPath", column = @Column(name="businesspath"))
 	private DBMailContext context;
 	
+	public DBMailImpl() {
+		//
+	}
+	
 	@Override
 	public Long getKey() {
 		return key;

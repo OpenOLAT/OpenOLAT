@@ -119,6 +119,7 @@ public class ColorCategoryDAO {
 		List<ColorCategory> colorCategorys = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ColorCategory.class)
 				.setParameter("identifier", identifier)
+				.setHint("org.hibernate.cacheable", Boolean.TRUE)
 				.getResultList();
 		return colorCategorys.isEmpty()? null: colorCategorys.get(0);
 	}
