@@ -47,6 +47,10 @@ public class CalSecurityCallbackFactory {
 		return new CalSecurityCallbackImpl(canWrite, canReadPrivateEvents);
 	}
 	
+	public static CalSecurityCallback createFullReadWriteAccessCourseCalendarCallback() {
+		return new CalSecurityCallbackImpl(true, true);
+	}
+	
 	private static boolean hasEditRights(CalCourseNode courseNode, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		if (userCourseEnv.isAdmin()) {
 			return true;
