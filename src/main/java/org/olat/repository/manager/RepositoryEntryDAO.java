@@ -74,12 +74,12 @@ public class RepositoryEntryDAO {
 				.getResultList();
 	}
 
-	public List<RepositoryEntry> loadForMetaData(String status) {
-		if(status.isEmpty()) return new ArrayList<>(1);
+	public List<RepositoryEntry> loadForMetaData(RepositoryEntryStatusEnum status) {
+		if(status == null) return new ArrayList<>(1);
 
 		return dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadRepositoryEntriesForMetaData", RepositoryEntry.class)
-				.setParameter("repoStatus", status)
+				.setParameter("repoStatus", status.name())
 				.getResultList();
 	}
 

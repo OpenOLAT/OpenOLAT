@@ -22,6 +22,7 @@ package org.olat.modules.oaipmh.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.modules.oaipmh.OAIPmhModule;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -59,6 +61,8 @@ public class OAIPmhAdminController extends FormBasicController {
 
     @Autowired
     private OAIPmhModule oaiPmhModule;
+    @Autowired
+    private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
 
     public OAIPmhAdminController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, LAYOUT_VERTICAL);
@@ -101,11 +105,12 @@ public class OAIPmhAdminController extends FormBasicController {
         licenseEl.select(licenseKeys[1], oaiPmhModule.isLicenseRestrict());
         licenseEl.addActionListener(FormEvent.ONCHANGE);
 
-        List<LicenseType> license = licenseService.loadLicenseTypes();
+        List<LicenseType> license = licenseService.loadActiveLicenseTypes(repositoryEntryLicenseHandler);
 
         SelectionValues licenseSV = new SelectionValues();
 
-        license.forEach(l -> licenseSV.add(new SelectionValues.SelectionValue(l.getKey().toString(), l.getName())));
+        license.forEach(l -> licenseSV.add(new SelectionValues.SelectionValue(l.getKey().toString(), LicenseUIFactory.translate(l, getLocale()))));
+
 
         licenseSelectionEl = uifactory.addCheckboxesFilterDropdown("license.selected", "license.selected", licenseCont, getWindowControl(), licenseSV);
         licenseSelectionEl.setVisible(licenseEl.isKeySelected("oai.license.restrict"));

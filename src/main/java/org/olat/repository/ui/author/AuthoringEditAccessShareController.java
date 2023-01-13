@@ -321,8 +321,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		oaiCont = FormLayoutContainer.createVerticalFormLayout("oaiIndexingWarning", getTranslator());
 		oaiCont.setFormWarning(translate("cif.metadata.warning",
-				isEntryPublished ? null : "<li>Status: Freigegeben</li>",
-				!isEntryLicenseAllowedForIndexing ? "<li>Lizenzvoraussetzungen: " +
+				isEntryPublished ? null : translate("cif.metadata.release"),
+				!isEntryLicenseAllowedForIndexing ? translate("cif.metadata.license.requirements") +
 						allowedLicenses.toString()
 								.replace("[", "")
 								.replace("]", "")

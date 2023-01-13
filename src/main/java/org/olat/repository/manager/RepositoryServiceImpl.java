@@ -361,7 +361,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public List<RepositoryEntry> loadRepositoryForMetadata(String status) {
+	public List<RepositoryEntry> loadRepositoryForMetadata(RepositoryEntryStatusEnum status) {
 		return repositoryEntryDAO.loadForMetaData(status);
 	}
 
