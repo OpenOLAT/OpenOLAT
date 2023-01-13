@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>17</targetJdk>
-		<org.springframework.version>6.0.3</org.springframework.version>
+		<org.springframework.version>6.0.4</org.springframework.version>
 		<org.hibernate.version>6.1.6.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<apache.cxf>4.0.0</apache.cxf>
@@ -77,7 +77,7 @@
 		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.31</com.mysql.version>
 		<org.postgresql.version>42.5.1</org.postgresql.version>
-		<org.infinispan.version>14.0.4.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.5.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.7.2</version.selenium>
 		<version.drone>3.0.0-alpha.6</version.drone>
@@ -2266,7 +2266,7 @@
 		<dependency>
 			<groupId>org.eclipse.angus</groupId>
 			<artifactId>angus-mail</artifactId>
-			<version>1.0.0</version>		
+			<version>1.1.0</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
