@@ -210,7 +210,12 @@ public class CourseWebService {
 			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq.getIdentity(), roles, courseEntry);
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null, reSecurity);
-			CalSecurityCallback secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
+			CalSecurityCallback secCallback;
+			if(roles.isAdministrator()) {
+				secCallback = CalSecurityCallbackFactory.createFullReadWriteAccessCourseCalendarCallback();
+			} else {
+				secCallback = CalSecurityCallbackFactory.createCourseCalendarCallback(userCourseEnv);
+			}
 			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, secCallback);
 			return new CalWebService(wrapper);
 		}
