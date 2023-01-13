@@ -257,7 +257,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	/**
-	 * remove a specific track from the videoresource
+	 * remove a specific language track from the videoresource
 	 */
 	@Override
 	public void removeTrack(OLATResource videoResource, String lang){
@@ -270,7 +270,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	/**
-	 * get all tracks saved in the video metadata as map
+	 * get all language tracks saved in the video metadata as map 
 	 */
 	@Override
 	public Map<String, VFSLeaf> getAllTracks(OLATResource videoResource) {
@@ -1323,6 +1323,11 @@ public class VideoManagerImpl implements VideoManager {
 		return videoFile != null && videoFile.exists();
 	}
 	
+	/**
+	 * This filter returns true for all VTT and SRT language files of kind
+	 * "subtitles". The filter will skip chapter files that are technically also VTT
+	 * but are of kind "chapters"
+	 */
 	private static class TrackFilter implements VFSItemFilter {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
@@ -1330,7 +1335,8 @@ public class VideoManagerImpl implements VideoManager {
 				String name = vfsItem.getName();
 				String suffix = FileUtils.getFileSuffix(name);
 				return !name.startsWith(".")
-						&& (VideoManager.FILETYPE_SRT.equals(suffix) || VideoManager.FILETYPE_VTT.equals(suffix));
+						&& (VideoManager.FILETYPE_SRT.equals(suffix) || VideoManager.FILETYPE_VTT.equals(suffix))
+						&& !FILENAME_CHAPTERS_VTT.equals(name);
 			}
 			return false;
 		}
