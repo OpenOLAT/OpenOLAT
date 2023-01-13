@@ -801,8 +801,6 @@ public class AuthorListController extends FormBasicController implements Activat
 			tableEl.addBatchButton(modifyOwnersButton);
 			settingsButton = uifactory.addFormLink("settings.bulk", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(settingsButton);
-			indexMetadataButton = uifactory.addFormLink("details.index.metadata", formLayout, Link.BUTTON);
-			tableEl.addBatchButton(indexMetadataButton);
 			copyButton = uifactory.addFormLink("details.copy", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(copyButton);
 			deleteButton = uifactory.addFormLink("details.delete", formLayout, Link.BUTTON);
