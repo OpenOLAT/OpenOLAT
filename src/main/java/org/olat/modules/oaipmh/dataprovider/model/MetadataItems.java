@@ -27,6 +27,7 @@ import org.olat.modules.oaipmh.common.oaioo.OAIOOMetadata;
 import org.olat.modules.oaipmh.common.oaioo.OOElement;
 import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class MetadataItems implements Item {
     public static List<MetadataItems> repositoryDCItems(MetadataSetRepository setRepository) {
         List<MetadataItems> metadataItems = new ArrayList<>();
 
-        List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata("published");
+        List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
 
         for (RepositoryEntry repositoryEntry : repositoryEntries) {
             String rights = "";
@@ -103,7 +104,7 @@ public class MetadataItems implements Item {
     public static List<MetadataItems> repositoryOOItems(MetadataSetRepository setRepository) {
         List<MetadataItems> metadataItems = new ArrayList<>();
 
-        List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata("published");
+        List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
 
         for (RepositoryEntry repositoryEntry : repositoryEntries) {
             String licenseName = "";
