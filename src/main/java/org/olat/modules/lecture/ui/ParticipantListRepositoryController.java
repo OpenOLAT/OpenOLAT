@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -176,7 +177,9 @@ public class ParticipantListRepositoryController extends FormBasicController {
 				options.setDefaultOrderBy(new SortKey(propName, true));
 			}
 		}
-		
+
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.firstAdmission,
+				new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ParticipantsCols.plannedLectures));
 
 		if(rollCallEnabled) {
@@ -220,7 +223,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		tableEl.setExportEnabled(!printView);
 		tableEl.setEmptyTableMessageKey("empty.table.participant.list");
 		tableEl.setSortSettings(options);
-		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v3");
+		tableEl.setAndLoadPersistedPreferences(ureq, "participant-list-repo-entry-v4");
 	}
 	
 	private void loadModel() {

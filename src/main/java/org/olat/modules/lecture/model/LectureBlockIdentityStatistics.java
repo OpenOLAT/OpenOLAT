@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.modules.lecture.LectureRateWarning;
@@ -40,8 +41,9 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	private LectureRateWarning explicitWarning;
 	
 	public LectureBlockIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
-			Long lectureBlockKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
-		super(identityKey, lectureBlockKey, repoKey, displayName, externalRef, calculateRate, requiredRate);
+			Long lectureBlockKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate,
+			Date firstAdmission) {
+		super(identityKey, lectureBlockKey, repoKey, displayName, externalRef, calculateRate, requiredRate, firstAdmission);
 		this.identityName = identityName;
 		this.identityProps = identityProps;
 	}
@@ -87,7 +89,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	
 	public LectureBlockIdentityStatistics cloneForAggregation() {
 		LectureBlockIdentityStatistics clone
-			= new LectureBlockIdentityStatistics(getIdentityKey(), identityName, identityProps, null,null, null, null, false, 0.0d);
+			= new LectureBlockIdentityStatistics(getIdentityKey(), identityName, identityProps, null,null, null, null, false, 0.0d, null);
 		clone.addTotalAbsentLectures(getTotalAbsentLectures());
 		clone.addTotalAttendedLectures(getTotalAttendedLectures());
 		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());
@@ -103,7 +105,7 @@ public class LectureBlockIdentityStatistics extends LectureBlockStatistics {
 	
 	public LectureBlockIdentityStatistics cloneAll() {
 		LectureBlockIdentityStatistics clone = new LectureBlockIdentityStatistics(getIdentityKey(),
-				identityName, identityProps, getLectureBlockKey(), getRepoKey(), getDisplayName(), getExternalRef(), isCalculateRate(), getRequiredRate());
+				identityName, identityProps, getLectureBlockKey(), getRepoKey(), getDisplayName(), getExternalRef(), isCalculateRate(), getRequiredRate(), getFirstAdmission());
 		clone.addTotalAbsentLectures(getTotalAbsentLectures());
 		clone.addTotalAttendedLectures(getTotalAttendedLectures());
 		clone.addTotalAuthorizedAbsentLectures(getTotalAuthorizedAbsentLectures());

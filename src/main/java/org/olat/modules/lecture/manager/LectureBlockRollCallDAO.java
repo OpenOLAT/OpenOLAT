@@ -738,7 +738,8 @@ public class LectureBlockRollCallDAO {
 			} else {
 				entryStatistics = create(participantIdentity.getKey(), lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
-						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault,
+						firstAdmissionDate);
 				stats.put(repoKey, entryStatistics);
 			}
 			
@@ -975,7 +976,7 @@ public class LectureBlockRollCallDAO {
 				entryStatistics = createIdentityStatistics(identityKey, identityName, identityProps,
 						lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
-						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault, firstAdmissionDate);
 				stats.put(memberKey, entryStatistics);
 			}
 			
@@ -1198,7 +1199,8 @@ public class LectureBlockRollCallDAO {
 				entryStatistics = create(identityKey, lectureBlockKey,
 						entry.getKey(), entry.getDisplayname(), entry.getExternalRef(),
 						config.isOverrideModuleDefault(), repoCalculateRate,  repoRequiredRate,
-						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
+						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault,
+						firstAdmissionDate);
 				stats.put(identityKey, entryStatistics);
 			}
 
@@ -1252,23 +1254,25 @@ public class LectureBlockRollCallDAO {
 	
 	private LectureBlockStatistics create(Long identityKey, Long lectureBlockKey, Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
-			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault, Date firstAdmission) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 		return new LectureBlockStatistics(identityKey, lectureBlockKey, entryKey, displayName, externalRef,
-				requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+				requiredRate.isCalculateRate(), requiredRate.getRequiredRate(),
+				firstAdmission);
 	}
 	
 	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
 			Long lectureBlockKey, Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
-			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
+			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault, Date firstAdmission) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 		return new LectureBlockIdentityStatistics(identityKey, identityName, identityProps, lectureBlockKey,
-				entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+				entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate(),
+				firstAdmission);
 	}
 	
 	private RequiredRate calculateRequiredRate(Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
@@ -1370,6 +1374,11 @@ public class LectureBlockRollCallDAO {
 			} else if(plannedLecturesNumber != null) {
 				statistics.addTotalPersonalPlannedLectures(plannedLecturesNumber.longValue());
 			}
+		}
+		
+		if((firstAdmissionDate != null && statistics.getFirstAdmission() == null)
+				|| (firstAdmissionDate != null && statistics.getFirstAdmission() != null && firstAdmissionDate.before(statistics.getFirstAdmission()))) {
+			statistics.setFirstAdmission(firstAdmissionDate);
 		}
 	}
 	
