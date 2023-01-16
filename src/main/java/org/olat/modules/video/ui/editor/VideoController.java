@@ -33,6 +33,8 @@ import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.component.SelectTimeCommand;
+import org.olat.modules.video.ui.event.MarkerMovedEvent;
+import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.modules.video.ui.marker.ReloadMarkersCommand;
 import org.olat.repository.RepositoryEntry;
@@ -43,10 +45,10 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class VideoController extends BasicController {
-	private RepositoryEntry repositoryEntry;
-	private VideoDisplayController videoDisplayController;
-	private String videoElementId;
-	private long durationInSeconds;
+	private final RepositoryEntry repositoryEntry;
+	private final VideoDisplayController videoDisplayController;
+	private final String videoElementId;
+	private final long durationInSeconds;
 	private String currentTimeCode;
 
 	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
@@ -56,9 +58,11 @@ public class VideoController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("video_editor_player");
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
-		displayOptions.setAlwaysShowControls(true);
-		displayOptions.setAuthorMode(true);
+		displayOptions.setDragAnnotations(true);
 		displayOptions.setShowAnnotations(true);
+		displayOptions.setAlwaysShowControls(true);
+		displayOptions.setClickToPlayPause(false);
+		displayOptions.setAuthorMode(true);
 		videoDisplayController = new VideoDisplayController(ureq, wControl, repositoryEntry, null,
 				null, displayOptions);
 		listenTo(videoDisplayController);
@@ -77,8 +81,12 @@ public class VideoController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (videoDisplayController == source) {
-			if (event instanceof VideoEvent) {
-				this.currentTimeCode = ((VideoEvent)event).getTimeCode();
+			if (event instanceof VideoEvent videoEvent) {
+				this.currentTimeCode = videoEvent.getTimeCode();
+				fireEvent(ureq, event);
+			} else if (event instanceof MarkerMovedEvent) {
+				fireEvent(ureq, event);
+			} else if (event instanceof MarkerResizedEvent) {
 				fireEvent(ureq, event);
 			}
 		}

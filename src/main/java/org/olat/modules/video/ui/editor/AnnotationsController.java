@@ -32,11 +32,10 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -83,15 +82,15 @@ public class AnnotationsController extends FormBasicController {
 	private TextElement durationEl;
 	private RichTextElement textEl;
 	private SingleSelection colorDropdown;
-	private SelectionValues colorsKV;
+	private final SelectionValues colorsKV;
 	private SliderElement fontSize;
 	private TextElement fontSizeEl;
-	private FormSubmit saveButton;
-	private FormCancel cancelButton;
 	private final RepositoryEntry repositoryEntry;
 	private final SimpleDateFormat timeFormat;
 	private final String videoElementId;
 	private String currentTimeCode;
+	private StaticTextElement positionSizeEl;
+	private FormLink positionSizeEditLink;
 
 	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								 String videoElementId) {
@@ -153,12 +152,19 @@ public class AnnotationsController extends FormBasicController {
 		fontSize.setStep(10);
 		fontSize.addActionListener(FormEvent.ONCHANGE);
 
-		fontSizeEl = uifactory.addTextElement("fontSizeValue", "form.annotation.fontSize", 3, "100", formLayout);
+		fontSizeEl = uifactory.addTextElement("fontSizeValue", "form.annotation.fontSize", 3,
+				"100", formLayout);
 		fontSizeEl.setExampleKey("form.annotation.fontSize.hint", null);
 		fontSizeEl.addActionListener(FormEvent.ONBLUR);
 
-		saveButton = uifactory.addFormSubmitButton("save", formLayout);
-		cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		positionSizeEl = uifactory.addStaticTextElement("positionSize", "form.annotation.positionSize",
+				translate("form.annotation.positionSize.value", "", "", "", ""), formLayout);
+		positionSizeEditLink = uifactory.addFormLink("editPositionSize", "", null, formLayout,
+				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
+		positionSizeEditLink.setIconLeftCSS("o_icon o_iqtest_icon");
+
+		uifactory.addFormSubmitButton("save", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	private void loadModel() {
@@ -202,25 +208,38 @@ public class AnnotationsController extends FormBasicController {
 			colorDropdown.select(colorsKV.keys()[0], true);
 			colorDropdown.getComponent().setDirty(true);
 		}
+		positionSizeEl.setValue(translate("form.annotation.positionSize.value",
+				formatDouble(videoMarker.getTop()),
+				formatDouble(videoMarker.getLeft()),
+				formatDouble(videoMarker.getWidth()),
+				formatDouble(videoMarker.getHeight())));
+	}
+
+	private String formatDouble(Double value) {
+		if (value == null || Double.isNaN(value)) {
+			return "";
+		}
+		String stringValue = String.format("%.2f", value * 100.0);
+		if (stringValue.endsWith(".00")) {
+			stringValue = stringValue.substring(0, stringValue.length() - 3);
+		}
+		return stringValue;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addAnnotationButton == source) {
 			doAddAnnotation(ureq);
-		}
-		if (annotationsDropdown == source) {
+		} else if (annotationsDropdown == source) {
 			videoMarkerId = annotationsDropdown.getSelectedKey();
 			VideoMarker videoMarker = videoMarkers.getMarkerById(videoMarkerId);
 			if (videoMarker != null) {
 				setValues(videoMarker);
 				selectStartTime();
 			}
-		}
-		if (fontSize == source) {
+		} else if (fontSize == source) {
 			fontSizeEl.setValue(Integer.toString((int)fontSize.getValue()));
-		}
-		if (fontSizeEl == source) {
+		} else if (fontSizeEl == source) {
 			try {
 				double value = Double.parseDouble(fontSizeEl.getValue());
 				value = Double.max(value, 50);
@@ -231,31 +250,34 @@ public class AnnotationsController extends FormBasicController {
 				fontSize.setValue(intValue);
 				fontSizeEl.setValue(Integer.toString(intValue));
 			} catch (Exception e) {
+				//
 			}
-		}
-		if (startEl == source || durationEl == source) {
+		} else if (startEl == source || durationEl == source) {
 			try {
 				Date start = timeFormat.parse(startEl.getValue());
 				int duration = Integer.parseInt(durationEl.getValue());
 				Date end = DateUtils.addSeconds(start, duration);
 				endEl.setValue(timeFormat.format(end));
 			} catch (Exception e) {
+				//
 			}
-		}
-		if (startEl == source) {
+		} else if (startEl == source) {
 			try {
 				selectStartTime();
 			} catch (Exception e) {
+				//
 			}
-		}
-		if (endEl == source) {
+		} else if (endEl == source) {
 			try {
 				Date start = timeFormat.parse(startEl.getValue());
 				Date end = timeFormat.parse(endEl.getValue());
-				double duration = (end.getTime() - start.getTime()) / 1000;
+				double duration = (end.getTime() - start.getTime()) / 1000.0;
 				durationEl.setValue(Integer.toString((int)duration));
 			} catch (Exception e) {
+				//
 			}
+		} else if (positionSizeEditLink == source) {
+			System.err.println("edit position");
 		}
 	}
 
@@ -325,5 +347,25 @@ public class AnnotationsController extends FormBasicController {
 		setValues(videoMarker);
 		annotationsDropdown.select(videoMarkerId, true);
 		annotationsDropdown.getComponent().setDirty(true);
+	}
+
+	public void setAnnotationSize(String annotationId, double width, double height) {
+		if (annotationId.equals(videoMarkerId)) {
+			VideoMarker videoMarker = videoMarkers.getMarkerById(videoMarkerId);
+			videoMarker.setWidth(width);
+			videoMarker.setHeight(height);
+			videoManager.saveMarkers(videoMarkers, repositoryEntry.getOlatResource());
+			loadModel();
+		}
+	}
+
+	public void setAnnotationPosition(String annotationId, double top, double left) {
+		if (annotationId.equals(videoMarkerId)) {
+			VideoMarker videoMarker = videoMarkers.getMarkerById(videoMarkerId);
+			videoMarker.setTop(top);
+			videoMarker.setLeft(left);
+			videoManager.saveMarkers(videoMarkers, repositoryEntry.getOlatResource());
+			loadModel();
+		}
 	}
 }

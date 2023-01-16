@@ -28,6 +28,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.ui.event.MarkerMovedEvent;
+import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +99,12 @@ public class VideoEditorController extends BasicController {
 				String currentTimeCode = videoEvent.getTimeCode();
 				this.currentTimeCode = currentTimeCode;
 				detailsController.setCurrentTimeCode(currentTimeCode);
+			} else if (event instanceof MarkerResizedEvent markerResizedEvent) {
+				detailsController.setAnnotationSize(markerResizedEvent.getMarkerId(), markerResizedEvent.getWidth(),
+						markerResizedEvent.getHeight());
+			} else if (event instanceof MarkerMovedEvent markerMovedEvent) {
+				detailsController.setAnnotationPosition(markerMovedEvent.getMarkerId(), markerMovedEvent.getTop(),
+						markerMovedEvent.getLeft());
 			}
 		} else if (detailsController == source) {
 			if (event == AnnotationsController.RELOAD_MARKERS_EVENT) {
@@ -119,7 +127,9 @@ public class VideoEditorController extends BasicController {
 				}
 				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
 			} else if (event instanceof AnnotationSelectedEvent) {
+				//
 			} else if (event instanceof SegmentSelectedEvent) {
+				//
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent) {

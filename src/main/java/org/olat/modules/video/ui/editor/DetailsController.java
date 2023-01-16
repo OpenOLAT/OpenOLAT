@@ -120,4 +120,12 @@ public class DetailsController extends BasicController {
 	public void updateQuestion() {
 		quizController.updateQuestion();
 	}
+
+	public void setAnnotationSize(String annotationId, double width, double height) {
+		annotationsController.setAnnotationSize(annotationId, width, height);
+	}
+
+	public void setAnnotationPosition(String annotationId, double top, double left) {
+		annotationsController.setAnnotationPosition(annotationId, top, left);
+	}
 }
