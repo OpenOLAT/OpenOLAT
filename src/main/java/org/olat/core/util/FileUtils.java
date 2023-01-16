@@ -783,9 +783,10 @@ public class FileUtils {
 	public static String getFileSuffix(String filePath) {
 		if(StringHelper.containsNonWhitespace(filePath)) { 
 			int lastDot = filePath.lastIndexOf('.');
-			if (lastDot > 0) {
-				if (lastDot < filePath.length())
+			if (lastDot >= 0) {
+				if (lastDot < filePath.length()) {
 					return filePath.substring(lastDot + 1).toLowerCase();
+				}
 			}
 		}
 		return "";
