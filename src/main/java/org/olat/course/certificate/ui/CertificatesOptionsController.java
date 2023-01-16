@@ -157,6 +157,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		pdfCertificatesEl.setElementCssClass("o_sel_certificate_options");
 		pdfCertificatesEl.select(PDFCertificatesOptions.auto.name(), courseConfig.isAutomaticCertificationEnabled());
 		pdfCertificatesEl.select(PDFCertificatesOptions.manual.name(), courseConfig.isManualCertificationEnabled());
+		pdfCertificatesEl.setMandatory(true);
 		pdfCertificatesEl.setEnabled(editable && !managedEff);
 		
 		String templatePage = velocity_root + "/select_certificate.html";
@@ -202,6 +203,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		recertificationCont = FormLayoutContainer.createButtonLayout("recert", getTranslator());
 		recertificationCont.setElementCssClass("o_inline_cont");
 		recertificationCont.setLabel("validity.period", null);
+		recertificationCont.setMandatory(true);
 		recertificationCont.setRootForm(mainForm);
 		formLayout.add(recertificationCont);
 		
