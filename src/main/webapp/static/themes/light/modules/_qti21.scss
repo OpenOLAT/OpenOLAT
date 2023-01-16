@@ -294,7 +294,7 @@ span.o_qti_gaptext_score_alternative {
 }
 
 #o_qti_run_title {
-	 margin: 0 15px 0.5em 15px;
+	 margin: 0 0 0.5em 0;
 	 h3 {
 	 	margin: 15px 0 0 0;
 	 }
@@ -304,7 +304,7 @@ span.o_qti_gaptext_score_alternative {
 	border-radius: $o-qti-run-infos-border-radius;
 	background: $o-qti-run-infos-bg;
 	padding: $padding-large-vertical 0;
-	margin: 0 15px 1em 15px;
+	margin: 0 0 1em 0;
 	
 	.progress {
 		background-color: $o-qti-run-infos-progress-bg;
@@ -347,7 +347,7 @@ span.o_qti_gaptext_score_alternative {
 
 #o_qti_assessment_test_timer {
 	padding: $padding-large-vertical;
-	margin: 0 15px 1em 15px;
+	margin: 0 0 1em 0;
 	
 	&.o_hours {
 		background-color: $o-box-info-bg;
