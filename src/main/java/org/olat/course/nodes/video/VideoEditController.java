@@ -19,20 +19,25 @@
  */
 package org.olat.course.nodes.video;
 
+import java.util.Collection;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
@@ -88,7 +93,10 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT_NONE = "none";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT_RESOURCE = "resourceDescription";
 	public static final String CONFIG_KEY_DESCRIPTION_SELECT_CUSTOM = "customDescription";
-	
+
+	public static final String CONFIG_KEY_QUESTIONS = "questions";
+	public static final String CONFIG_KEY_ANNOTATIONS = "annotations";
+	public static final String CONFIG_KEY_SEGMENTS = "segments";
 	
 	public static final String CONFIG_KEY_DESCRIPTION_CUSTOMTEXT = "descriptionText";
 
@@ -303,7 +311,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	}
 }
 
-class VideoOptionsForm extends FormBasicController{
+class VideoOptionsForm extends FormBasicController {
 
 	/**
 	 * Simple form for the Videooptions
@@ -318,6 +326,7 @@ class VideoOptionsForm extends FormBasicController{
 	private SelectionElement videoAutoplay;
 	private SelectionElement videoForwardSeekingRestricted;
 	private SelectionElement title;
+	private MultipleSelectionElement videoElements;
 	private SingleSelection description;
 	private RichTextElement descriptionField;
 	private StaticTextElement descriptionRepoField;
@@ -332,7 +341,7 @@ class VideoOptionsForm extends FormBasicController{
 	private final ModuleConfiguration config;
 
 	VideoOptionsForm(UserRequest ureq, WindowControl wControl, RepositoryEntry repoEntry, ModuleConfiguration moduleConfiguration) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.config = moduleConfiguration;
 		this.repoEntry = repoEntry;
 		
@@ -362,11 +371,41 @@ class VideoOptionsForm extends FormBasicController{
 		if("customDescription".equals(description.getSelectedKey())) {
 			config.setStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT, descriptionField.getValue());
 		}
+		
+		Collection<String> selectedElements = videoElements.getSelectedKeys();
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_ANNOTATIONS,
+				selectedElements.contains(VideoEditController.CONFIG_KEY_ANNOTATIONS));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_QUESTIONS,
+				selectedElements.contains(VideoEditController.CONFIG_KEY_QUESTIONS));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS,
+				selectedElements.contains(VideoEditController.CONFIG_KEY_SEGMENTS));
+
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FormLayoutContainer elementsCont = uifactory.addDefaultFormLayout("elements", null, formLayout);
+		initElementsForm(elementsCont);
+		
+		FormLayoutContainer optionsCont = uifactory.addDefaultFormLayout("options", null, formLayout);
+		optionsCont.setFormTitle(translate("optionsSection"));
+		initOptionsForm(optionsCont);
+	}
+	
+	private void initElementsForm(FormItemContainer formLayout) {
+		SelectionValues elementsValues = new SelectionValues();
+		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
+		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
+		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_SEGMENTS, translate("video.config.elements.segments")));
+		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
+				elementsValues.keys(), elementsValues.values(), 1);
+		videoElements.select(VideoEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_ANNOTATIONS, true));
+		videoElements.select(VideoEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_QUESTIONS, true));
+		videoElements.select(VideoEditController.CONFIG_KEY_SEGMENTS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_SEGMENTS, false));
+	}
+	
+	private void initOptionsForm(FormItemContainer formLayout) {
 		//add checkboxes for displayoptions
 		videoComments = uifactory.addCheckboxesHorizontal("videoComments", "video.config.comments", formLayout, new String[]{"xx"}, new String[]{null});
 		videoComments.select("xx",commentsEnabled);

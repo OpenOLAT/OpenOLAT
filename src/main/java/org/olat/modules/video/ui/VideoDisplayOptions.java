@@ -39,6 +39,7 @@ public class VideoDisplayOptions {
 	private String descriptionText;
 	private boolean showAnnotations;
 	private boolean showQuestions;
+	private boolean showSegments;
 	private boolean showPoster;
 	private boolean alwaysShowControls;
 	private boolean dragAnnotations;
@@ -152,6 +153,14 @@ public class VideoDisplayOptions {
 
 	public void setShowQuestions(boolean showQuestions) {
 		this.showQuestions = showQuestions;
+	}
+
+	public boolean isShowSegments() {
+		return showSegments;
+	}
+
+	public void setShowSegments(boolean showSegments) {
+		this.showSegments = showSegments;
 	}
 
 	public boolean isShowTitle() {

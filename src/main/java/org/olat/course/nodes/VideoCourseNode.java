@@ -69,7 +69,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -3808867902051897291L;
-	private static final int CURRENT_VERSION = 3;
+	private static final int CURRENT_VERSION = 4;
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
@@ -114,9 +114,16 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		boolean courseCommentsRatings = config.getBooleanSafe(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS);
 		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
 		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
+		boolean showAnnotations = config.getBooleanSafe(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
+		boolean showQuestions = config.getBooleanSafe(VideoEditController.CONFIG_KEY_QUESTIONS, true);
+		boolean showSegments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_SEGMENTS, false);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, courseCommentsRatings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
+		displayOptions.setShowQuestions(showQuestions);
+		displayOptions.setShowAnnotations(showAnnotations);
+		displayOptions.setShowSegments(showSegments);
+		
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
 			case "customDescription":
 				displayOptions.setShowDescription(true);
@@ -188,6 +195,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_RATING, false);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED, false);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_COURSE_SPECIFIC_COMMENTS_RATINGS, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_QUESTIONS, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS, false);
 		} else if (version == 1) {
 			// Set defaults as it was in version 1 for newly added options
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, true);
@@ -209,6 +219,12 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			}
 			
 		}
+		if (version < 4) {
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_QUESTIONS, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS, false);
+		}
+		
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 	
