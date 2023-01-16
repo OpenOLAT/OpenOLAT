@@ -98,7 +98,6 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.accesscontrol.ACService;
-import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.ResourceReservation;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
@@ -145,8 +144,6 @@ public class RepositoryManager {
 	private ACReservationDAO reservationDao;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
-	@Autowired
-	private AccessControlModule acModule;
 	@Autowired
 	private ACService acService;
 	@Autowired

@@ -808,7 +808,7 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	}
 	
 	@Test
-	public void postCourseImage() throws IOException, URISyntaxException {
+	public void postCourseSmallImage() throws IOException, URISyntaxException {
 		URL imageUrl = RepositoryEntryWebServiceTest.class.getResource("portrait.jpg");
 		Assert.assertNotNull(imageUrl);
 		File image = new File(imageUrl.toURI());
@@ -834,6 +834,35 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		Assert.assertNotNull(imageLeaf);
 		// Because the image is small, it's not scaled
 		Assert.assertEquals(image.length(), imageLeaf.getSize());
+	}
+	
+	@Test
+	public void postCourseBigImage() throws IOException, URISyntaxException {
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/house_big.jpg");
+		Assert.assertNotNull(imageUrl);
+		File image = new File(imageUrl.toURI());
+
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		dbInstance.commitAndCloseSession();
+		
+		RestConnection conn = new RestConnection();
+		//remove the owner
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(entry.getKey().toString())
+				.path("image").build();
+		
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		conn.addMultipart(method, "image.jpg", image);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		VFSLeaf imageLeaf = repositoryManager.getImage(entry);
+		Assert.assertNotNull(imageLeaf);
+		// The image is scaled
+		Assert.assertTrue(imageLeaf.getSize() > 15000);
 	}
 	
 	
