@@ -30,6 +30,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.Select;
 
@@ -150,6 +151,8 @@ public class AuthoringEnvPage {
 	 */
 	public RepositorySettingsPage fillCreateForm(String displayName) {
 		OOGraphene.waitModalDialog(browser);
+		By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+		OOGraphene.waitElement(inputFocusBy, browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
@@ -168,6 +171,10 @@ public class AuthoringEnvPage {
 	 */
 	public RepositorySettingsPage fillCreateCourseForm(String displayName, boolean learnPath) {
 		OOGraphene.waitModalDialog(browser);
+		if(browser instanceof ChromeDriver) {
+			By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+			OOGraphene.waitElement(inputFocusBy, browser);
+		}
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
@@ -190,6 +197,8 @@ public class AuthoringEnvPage {
 	 */
 	public CourseWizardPage fillCreateFormAndStartWizard(String displayName) {
 		OOGraphene.waitModalDialog(browser);
+		By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
+		OOGraphene.waitElement(inputFocusBy, browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
