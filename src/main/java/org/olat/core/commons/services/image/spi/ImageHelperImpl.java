@@ -147,7 +147,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 		try {
 			imageIns = new FileImageInputStream(image);
-			imageExt = FileUtils.getFileSuffix(imageExt);
+			imageExt = cleanImageExt(imageExt);
 			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false);
 			if(scaledSize == null) {
 				return null;
@@ -286,7 +286,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			imageExt = FileUtils.getFileSuffix(imageExt);
+			imageExt = cleanImageExt(imageExt);
 			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill);
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;
@@ -310,6 +310,16 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		} finally {
 			closeQuietly(imageSrc);
 		}
+	}
+	
+	private static String cleanImageExt(String ext) {
+		if(StringHelper.containsNonWhitespace(ext)) { 
+			int lastDot = ext.lastIndexOf('.');
+			if (lastDot >= 0 && lastDot < ext.length()) {
+				return ext.substring(lastDot + 1).toLowerCase();
+			}
+		}
+		return ext;
 	}
 	
 	private static String getImageFormat(File image) {
