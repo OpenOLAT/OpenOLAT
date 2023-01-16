@@ -10,7 +10,7 @@
 
 	<bean id="assessmentEvaluateStartOverTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="assessmentEvaluateStartOverJob" />
-		<property name="cronExpression" value="1 * * * * ?" />
+		<property name="cronExpression" value="17 * * * * ?" />
 		<property name="startDelay" value="23000" />
 	</bean>
 	

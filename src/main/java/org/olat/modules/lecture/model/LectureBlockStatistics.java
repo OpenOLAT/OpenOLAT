@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.util.Date;
+
 /**
  * Statistics centered around a user.
  * 
@@ -47,8 +49,10 @@ public class LectureBlockStatistics {
 	private final boolean calculateRate;
 	private final double requiredRate;
 	
+	private Date firstAdmission;
+	
 	public LectureBlockStatistics(Long identityKey, Long lectureBlockKey, Long repoKey, String displayName, String externalRef,
-			boolean calculateRate, double requiredRate) {
+			boolean calculateRate, double requiredRate, Date firstAdmission) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
 		this.externalRef = externalRef;
@@ -56,6 +60,7 @@ public class LectureBlockStatistics {
 		this.lectureBlockKey = lectureBlockKey;
 		this.calculateRate = calculateRate;
 		this.requiredRate = requiredRate;
+		this.firstAdmission = firstAdmission;
 	}
 
 	public Long getRepoKey() {
@@ -170,4 +175,14 @@ public class LectureBlockStatistics {
 	public void setAttendanceRate(double rate) {
 		this.attendanceRate = rate;
 	}
+
+	public Date getFirstAdmission() {
+		return firstAdmission;
+	}
+	
+	public void setFirstAdmission(Date date) {
+		this.firstAdmission = date;
+	}
+	
+	
 }

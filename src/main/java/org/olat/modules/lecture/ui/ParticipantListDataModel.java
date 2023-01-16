@@ -43,6 +43,8 @@ import org.olat.core.gui.translator.Translator;
 public class ParticipantListDataModel extends DefaultFlexiTableDataModel<ParticipantRow>
 implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableDataModel {
 	
+	private static final ParticipantsCols[] COLS = ParticipantsCols.values();
+	
 	private final Locale locale;
 	private final Translator translator;
 	
@@ -81,7 +83,7 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 	@Override
 	public Object getValueAt(ParticipantRow row, int col) {
 		if(col < ParticipantListRepositoryController.USER_PROPS_OFFSET) {
-			switch(ParticipantsCols.values()[col]) {
+			switch(COLS[col]) {
 				case progress: return row.getStatistics();
 				case plannedLectures: return positive(row.getStatistics().getTotalPersonalPlannedLectures());
 				case attendedLectures: return positive(row.getStatistics().getTotalAttendedLectures());
@@ -92,6 +94,7 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 				case rateWarning: return row.getStatistics();
 				case rate: return row.getStatistics().getAttendanceRate();
 				case infos: return row;
+				case firstAdmission: return row.getStatistics().getFirstAdmission();
 				default: return null;
 			}
 		}
@@ -113,7 +116,8 @@ implements SortableFlexiTableDataModel<ParticipantRow>, ExportableFlexiTableData
 		progress("table.header.progress"),
 		rateWarning("table.header.rate.warning"),
 		rate("table.header.rate"),
-		infos("table.header.infos");
+		infos("table.header.infos"),
+		firstAdmission("table.header.first.admission");
 		
 		private final String i18nKey;
 		
