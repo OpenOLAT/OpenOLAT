@@ -200,17 +200,10 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 		return result;
 	}
 
-	public Optional<TimelineRow> getChapterRow(String chapterId) {
+	public Optional<TimelineRow> getTimelineRow(TimelineEventType type, String id) {
 		return getObjects()
 				.stream()
-				.filter((r) -> r.getType() == TimelineEventType.CHAPTER && r.getId().equals(chapterId))
-				.findFirst();
-	}
-
-	public Optional<TimelineRow> getQuestionRow(String questionId) {
-		return getObjects()
-				.stream()
-				.filter((r) -> r.getType() == TimelineEventType.QUIZ && r.getId().equals(questionId))
+				.filter(timelineRow -> timelineRow.getType() == type && timelineRow.getId().equals(id))
 				.findFirst();
 	}
 

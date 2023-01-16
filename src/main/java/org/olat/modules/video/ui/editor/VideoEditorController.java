@@ -69,7 +69,7 @@ public class VideoEditorController extends BasicController {
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
 
-		masterController = new MasterController(ureq, wControl, repositoryEntry.getOlatResource(), videoMetadata,
+		masterController = new MasterController(ureq, wControl, repositoryEntry.getOlatResource(),
 				videoElementId);
 		listenTo(masterController);
 		mainVC.put("master", masterController.getInitialComponent());
@@ -107,6 +107,8 @@ public class VideoEditorController extends BasicController {
 				masterController.reload();
 			} else if (event == QuizController.RELOAD_QUESTIONS_EVENT) {
 				masterController.reload();
+			} else if (event == SegmentController.RELOAD_SEGMENTS_EVENT) {
+				masterController.reload();
 			} else if (event instanceof EditQuestionEvent) {
 				if (editQuestionController == null) {
 					EditQuestionEvent editQuestionEvent = (EditQuestionEvent) event;
@@ -128,15 +130,18 @@ public class VideoEditorController extends BasicController {
 				detailsController.showChapters(ureq);
 				videoController.selectTime(((ChapterSelectedEvent) event).getStartTimeInMillis() / 1000);
 			} else if (event instanceof QuestionSelectedEvent) {
-				detailsController.showQuiz(ureq);
+				detailsController.showQuestion(ureq, ((QuestionSelectedEvent) event).getQuestionId());
 				videoController.selectTime(((QuestionSelectedEvent) event).getStartTimeInMillis() / 1000);
+			} else if (event instanceof SegmentSelectedEvent) {
+				detailsController.showSegment(ureq, ((SegmentSelectedEvent) event).getSegmentId());
+				videoController.selectTime(((SegmentSelectedEvent) event).getStartTimeInMillis() / 1000);
 			}
 		} else if (editQuestionController == source) {
 			String questionId = editQuestionController.getQuestionId();
 			removeAsListenerAndDispose(editQuestionController);
 			editQuestionController = null;
 			mainVC.remove("editQuestion");
-			detailsController.updateQuestion(questionId);
+			detailsController.updateQuestion();
 		}
 	}
 }

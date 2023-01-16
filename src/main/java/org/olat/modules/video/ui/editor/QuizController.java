@@ -35,8 +35,6 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -51,6 +49,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
+import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
@@ -82,11 +82,9 @@ public class QuizController extends FormBasicController {
 	private TextElement startEl;
 	private TextElement timeLimitEl;
 	private SingleSelection colorDropdown;
-	private SelectionValues colorsKV = new SelectionValues();
+	private final SelectionValues colorsKV;
 	private MultipleSelectionElement options;
 	private final SelectionValues optionsKV;
-	private FormSubmit saveButton;
-	private FormCancel cancelButton;
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
@@ -121,7 +119,6 @@ public class QuizController extends FormBasicController {
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
-		System.err.println("quiz: current time code: " + currentTimeCode);
 		this.currentTimeCode = currentTimeCode;
 	}
 
@@ -157,17 +154,20 @@ public class QuizController extends FormBasicController {
 		options = uifactory.addCheckboxesVertical("options", "form.question.options", formLayout,
 				optionsKV.keys(), optionsKV.values(), 1);
 
-		initTable(formLayout);
+		initTable(ureq, formLayout);
 
-		saveButton = uifactory.addFormSubmitButton("save", formLayout);
-		cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("save", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
-	private void initTable(FormItemContainer formLayout) {
+	private void initTable(UserRequest ureq, FormItemContainer formLayout) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		Translator assessmentTranslator = Util.createPackageTranslator(AssessmentItemEditorController.class,
+				ureq.getLocale());
 
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.question));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.type));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.type,
+				new QuestionTypeFlexiCellRenderer(assessmentTranslator)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(QuestionTableModel.QuestionColDef.score));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(
 				QuestionTableModel.QuestionColDef.edit.i18nHeaderKey(),
@@ -200,13 +200,17 @@ public class QuizController extends FormBasicController {
 	private void setValues() {
 		if (questionId != null) {
 			videoQuestions.getQuestions().stream().filter((q) -> questionId.equals(q.getId())).findFirst()
-					.ifPresent((q)->setValues(q));
+					.ifPresent(this::setValues);
 		}
 	}
 
 	private void setValues(VideoQuestion videoQuestion) {
 		startEl.setValue(timeFormat.format(videoQuestion.getBegin()));
-		timeLimitEl.setValue("" + videoQuestion.getTimeLimit());
+		if (videoQuestion.getTimeLimit() == -1) {
+			timeLimitEl.setValue("");
+		} else {
+			timeLimitEl.setValue(Long.toString(videoQuestion.getTimeLimit()));
+		}
 		if (videoQuestion.getStyle() != null) {
 			colorDropdown.select(videoQuestion.getStyle(), true);
 			colorDropdown.getComponent().setDirty(true);
@@ -255,8 +259,7 @@ public class QuizController extends FormBasicController {
 				setValues();
 				setTimeToQuestion();
 			}
-		} else if (event instanceof SelectionEvent) {
-			SelectionEvent selectionEvent = (SelectionEvent) event;
+		} else if (event instanceof SelectionEvent selectionEvent) {
 			VideoQuestion question = tableModel.getObject(selectionEvent.getIndex());
 			if (EDIT_ACTION.equals(selectionEvent.getCommand())) {
 				doEdit(ureq, question);
@@ -331,7 +334,12 @@ public class QuizController extends FormBasicController {
 		fireEvent(ureq, RELOAD_QUESTIONS_EVENT);
 	}
 
-	public void updateQuestion(String questionId) {
+	public void updateQuestion() {
 		loadModel();
+	}
+
+	public void showQuestion(String questionId) {
+		this.questionId = questionId;
+		setValues();
 	}
 }

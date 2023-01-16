@@ -21,6 +21,7 @@ package org.olat.modules.video.ui.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -29,13 +30,15 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 
 /**
  * Initial date: 2023-01-09<br>
@@ -46,25 +49,31 @@ public class EditCategoriesController extends FormBasicController {
 
 	private final String MOVE_UP_CMD = "moveUp";
 	private final String MOVE_DOWN_CMD = "moveDown";
+	private final String COLOR_CMD = "color";
 	private final String ADD_CMD = "add";
 	private final String DELETE_CMD = "delete";
 
 	private final VideoSegments videoSegments;
 	private List<Category> categories;
+	private CloseableCalloutWindowController ccwc;
+	private SelectColorController selectColorController;
 
 	public class Category {
-		int id;
-		int sortOrder;
-		String color;
-		FormLink moveUpLink;
-		FormLink moveDownLink;
-		TextElement labelEl;
-		TextElement titleEl;
-		FormLink addButton;
-		FormLink deleteButton;
+		private int id;
+		private String longId;
+		private int sortOrder;
+		private String color;
+		private FormLink moveUpLink;
+		private FormLink moveDownLink;
+		private FormLink colorLink;
+		private TextElement labelEl;
+		private TextElement titleEl;
+		private FormLink addButton;
+		private FormLink deleteButton;
 
 		public Category(FormItemContainer formLayout, UserRequest ureq, int id, VideoSegmentCategory category) {
 			this.id = id;
+			this.longId = category == null ? UUID.randomUUID().toString() : category.getId();
 			this.sortOrder = id;
 			this.color = category == null ? "o_video_marker_gray" : category.getColor();
 			moveUpLink = uifactory.addFormLink(MOVE_UP_CMD + "_" + id, "", "", formLayout,
@@ -74,6 +83,10 @@ public class EditCategoriesController extends FormBasicController {
 			moveDownLink = uifactory.addFormLink(MOVE_DOWN_CMD + "_" + id, "", "", formLayout,
 					Link.LINK | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 			moveDownLink.setIconRightCSS("o_icon o_icon_move_down o_icon-lg");
+
+			colorLink = uifactory.addFormLink(COLOR_CMD + "_" + id, "", "", formLayout,
+					Link.LINK | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+			colorLink.setIconRightCSS("o_color_button_placeholder o_video_colored_area " + color);
 
 			String labelValue = category == null ? "" : category.getLabel();
 			labelEl = uifactory.addTextElement("label_" + id, "", 2, labelValue, formLayout);
@@ -92,8 +105,8 @@ public class EditCategoriesController extends FormBasicController {
 					Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 			deleteButton.setIconRightCSS("o_icon o_icon_delete_item");
 
-			FormSubmit saveButton = uifactory.addFormSubmitButton("save", formLayout);
-			FormCancel cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("save", formLayout);
+			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		}
 
 		public FormLink getMoveUpLink() {
@@ -102,6 +115,10 @@ public class EditCategoriesController extends FormBasicController {
 
 		public FormLink getMoveDownLink() {
 			return moveDownLink;
+		}
+
+		public FormLink getColorLink() {
+			return colorLink;
 		}
 
 		public TextElement getLabel() {
@@ -132,8 +149,23 @@ public class EditCategoriesController extends FormBasicController {
 			this.sortOrder = sortOrder;
 		}
 
+		public void setColor(String color) {
+			this.color = color;
+			colorLink.setIconRightCSS("o_color_button_placeholder o_video_colored_area " + color);
+		}
+
 		public String getColor() {
 			return color;
+		}
+
+		public VideoSegmentCategory asVideoSegmentCategory() {
+			VideoSegmentCategoryImpl videoSegmentCategory = new VideoSegmentCategoryImpl();
+			videoSegmentCategory.setId(longId);
+			videoSegmentCategory.setLabel(labelEl.getValue());
+			videoSegmentCategory.setTitle(titleEl.getValue());
+			videoSegmentCategory.setColor(color);
+			videoSegmentCategory.setSortOrder(sortOrder);
+			return videoSegmentCategory;
 		}
 	}
 
@@ -152,6 +184,29 @@ public class EditCategoriesController extends FormBasicController {
 		}
 		initCategorySortOrders();
 		flc.contextPut("categories", categories);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (selectColorController == source) {
+			if (event instanceof ColorSelectedEvent colorSelectedEvent) {
+				Category category = categories.get((int) colorSelectedEvent.getUserObject());
+				category.setColor(colorSelectedEvent.getColor());
+				flc.contextPut("categories", categories);
+			}
+			ccwc.deactivate();
+			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(selectColorController);
+		ccwc = null;
+		selectColorController = null;
 	}
 
 	@Override
@@ -192,7 +247,26 @@ public class EditCategoriesController extends FormBasicController {
 				initCategorySortOrders();
 				flc.contextPut("categories", categories);
 			}
+		} else if (COLOR_CMD.equals(cmd)) {
+			int index = getCategoryIndex(id);
+			Category category = categories.get(index);
+			doSelectColor(ureq, category.getColorLink(), index);
 		}
+	}
+
+	private void doSelectColor(UserRequest ureq, FormLink anchorButton, int index) {
+		if (guardModalController(selectColorController)) {
+			return;
+		}
+
+		selectColorController = new SelectColorController(ureq, getWindowControl(), index);
+		listenTo(selectColorController);
+
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				selectColorController.getInitialComponent(), anchorButton.getFormDispatchId(), "", true,
+				"", new CalloutSettings(false));
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	private int getNewCategoryIndex() {
@@ -227,6 +301,15 @@ public class EditCategoriesController extends FormBasicController {
 	}
 	@Override
 	protected void formOK(UserRequest ureq) {
+		videoSegments.getCategories().clear();
+		for (Category category: categories) {
+			videoSegments.getCategories().add(category.asVideoSegmentCategory());
+		}
+		fireEvent(ureq, Event.DONE_EVENT);
+	}
 
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 }

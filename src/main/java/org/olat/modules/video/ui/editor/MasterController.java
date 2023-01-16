@@ -55,7 +55,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.resource.OLATResource;
@@ -72,7 +71,6 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private static final String THUMBNAIL_JPG_SUFFIX = ".jpg";
 	private static final String THUMBNAIL_BASE_FILE_NAME = "thumbnail_";
 
-	private final String videoElementId;
 	private final VFSContainer thumbnailsContainer;
 	private final VFSLeaf videoFile;
 	private final long videoFrameCount;
@@ -80,7 +78,6 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private int fps;
 	private final Size movieSize;
 
-	private final VideoMeta videoMetadata;
 	private final TimelineDataSource timelineDataSource;
 	private TimelineModel timelineModel;
 	private FlexiTableElement timelineTableEl;
@@ -94,16 +91,13 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	@Autowired
 	private VideoManager videoManager;
 	private int availableWidth;
-	private int pageSize;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, OLATResource olatResource,
-							VideoMeta videoMetadata, String videoElementId) {
+							String videoElementId) {
 		super(ureq, wControl, "master");
 		flc.contextPut("videoElementId", videoElementId);
-		this.videoElementId = videoElementId;
 		thumbnailsContainer = videoManager.getThumbnailsContainer(olatResource);
 		timelineDataSource = new TimelineDataSource(olatResource);
-		this.videoMetadata = videoMetadata;
 		this.videoFile = videoManager.getMasterVideoFile(olatResource);
 		this.videoFrameCount = videoManager.getVideoFrameCount(videoFile);
 		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
@@ -140,16 +134,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		String mediaUrl = registerMapper(ureq, new ThumbnailMapper());
 		timelineModel.setMediaUrl(mediaUrl);
 		timelineModel.setScaleFactor(0.1);
-//		try {
-//			String duration = videoMetadata.getLength();
-//			if (duration.indexOf(':') == duration.lastIndexOf(':')) {
-//				duration = "00:" + duration;
-//			}
-//			timelineModel.setVideoLength(VideoHelper.parseTimeToSeconds(duration) * 1000);
-			timelineModel.setVideoLength(videoDurationInMillis);
-//		} catch (ParseException e) {
-//			timelineModel.setVideoLength(1000);
-//		}
+		timelineModel.setVideoLength(videoDurationInMillis);
 		fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
 
 		timelineTableEl = uifactory.addTableElement(getWindowControl(), "timelineEvents", timelineModel,
@@ -159,6 +144,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineTableEl.setRendererType(FlexiTableRendererType.external);
 		timelineTableEl.setExternalRenderer(new TimelineRenderer(), "o_icon_fa6_timeline");
 		timelineTableEl.setCustomizeColumns(false);
+		flc.contextPut("showPlayHead", true);
 
 		zoomMinusButton = uifactory.addFormLink("zoomMinusButton", "", null, formLayout,
 				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
@@ -204,42 +190,56 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink) {
-			FormLink button = (FormLink) source;
-			if ("zoomMinusButton".equals(button.getCmd())) {
-				double value = zoomSlider.getValue();
-				value = Double.max(value - 10, 0);
-				zoomSlider.setValue(value);
-				doZoom();
-			} else if ("zoomPlusButton".equals(button.getCmd())) {
-				double value = zoomSlider.getValue();
-				value = Double.min(value + 10, 100);
-				zoomSlider.setValue(value);
-				doZoom();
-			}
-		} else if (source == timelineTableEl) {
-			if (event instanceof FormEvent) {
-				if ("ONCLICK".equals(event.getCommand())) {
-					String questionId = ureq.getParameter("questionId");
-					if (questionId != null) {
-						timelineModel.getQuestionRow(questionId)
-								.ifPresent(q->fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
-					}
-					String annotationId = ureq.getParameter("annotationId");
-					if (annotationId != null) {
-						fireEvent(ureq, new AnnotationSelectedEvent(annotationId));
-					}
-					String chapterId = ureq.getParameter("chapterId");
-					if (chapterId != null) {
-						timelineModel.getChapterRow(chapterId)
-								.ifPresent(c -> fireEvent(ureq, new ChapterSelectedEvent(c.getId(), c.getStartTime())));
-					}
+		if (zoomMinusButton == source) {
+			doZoomOut();
+		} else if (zoomPlusButton == source) {
+			doZoomIn();
+		} else if (timelineTableEl == source) {
+			if ("ONCLICK".equals(event.getCommand())) {
+				String questionId = ureq.getParameter("questionId");
+				if (questionId != null) {
+					timelineModel.getTimelineRow(TimelineEventType.QUIZ, questionId)
+							.ifPresent(q->fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
+				}
+				String annotationId = ureq.getParameter("annotationId");
+				if (annotationId != null) {
+					fireEvent(ureq, new AnnotationSelectedEvent(annotationId));
+				}
+				String chapterId = ureq.getParameter("chapterId");
+				if (chapterId != null) {
+					timelineModel.getTimelineRow(TimelineEventType.CHAPTER, chapterId)
+							.ifPresent(c -> fireEvent(ureq, new ChapterSelectedEvent(c.getId(), c.getStartTime())));
+				}
+				String segmentId = ureq.getParameter("segmentId");
+				if (segmentId != null) {
+					timelineModel.getTimelineRow(TimelineEventType.SEGMENT, segmentId)
+							.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getStartTime())));
+				}
+			} else if (event instanceof FlexiTableRenderEvent renderEvent) {
+				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
+					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
 				}
 			}
-		} else if (source.getName().equals("zoomSlider")) {
+		} else if (zoomSlider == source) {
 			doZoom();
-		} else if (event instanceof FlexiTableRenderEvent) {
-			FlexiTableRenderEvent flexiTableRenderEvent = (FlexiTableRenderEvent) event;
+		}
+	}
+
+	private void doZoomOut() {
+		double value = zoomSlider.getValue();
+		value = Double.max(value - 10, 0);
+		if (value != zoomSlider.getValue()) {
+			zoomSlider.setValue(value);
+			doZoom();
+		}
+	}
+
+	private void doZoomIn() {
+		double value = zoomSlider.getValue();
+		value = Double.min(value + 10, 100);
+		if (value != zoomSlider.getValue()) {
+			zoomSlider.setValue(value);
+			doZoom();
 		}
 	}
 
@@ -257,8 +257,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> components = new ArrayList<>();
-		return components;
+		return new ArrayList<>();
 	}
 
 	public void setAvailableWidth(int availableWidth) {

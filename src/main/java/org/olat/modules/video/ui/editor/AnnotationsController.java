@@ -55,6 +55,7 @@ import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.SelectTimeCommand;
 import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
 import org.olat.repository.RepositoryEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,20 +90,19 @@ public class AnnotationsController extends FormBasicController {
 	private FormCancel cancelButton;
 	private final RepositoryEntry repositoryEntry;
 	private final SimpleDateFormat timeFormat;
-	private final Translator videoTranslator;
 	private final String videoElementId;
 	private String currentTimeCode;
 
 	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								 String videoElementId) {
 		super(ureq, wControl, "annotations");
-		videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		this.repositoryEntry = repositoryEntry;
 		this.videoElementId = videoElementId;
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		colorsKV = new SelectionValues();
+		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		for (String color : videoModule.getMarkerStyles()) {
 			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
 		}

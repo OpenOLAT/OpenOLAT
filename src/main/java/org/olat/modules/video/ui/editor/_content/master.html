@@ -5,26 +5,10 @@ $r.render("timelineEvents")
 #end
 
 <style>
-	.o_video_play_head_marker_icon {
-		color: #337ab7;
-	}
-	.o_video_play_head_marker {
-		position: absolute;
-		left: -4px;
-		top: -8px;
-	}
-	.o_video_play_head_text {
-		position: absolute;
-		left: -30px;
-		width: 60px;
-		text-align: center;
-		top: -16px;
-		font-size: 12px;
-		font-weight: bold;
-	}
 </style>
 
-<div id="o_video_play_head" style="z-index: 10; position: absolute; left: 55px; width: 3px; background-color: #337ab7;">
+#if ($showPlayHead)
+<div id="o_video_play_head">
 	<div class="o_video_play_head_marker">
 		<i class='o_icon o_icon-lg o_icon_caret o_video_play_head_marker_icon'></i>
 	</div>
@@ -32,6 +16,7 @@ $r.render("timelineEvents")
 		00:00:00
 	</div>
 </div>
+#end
 
 <script>
 	function scrollHandler() {

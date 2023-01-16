@@ -1,17 +1,3 @@
-<style>
-	table.o_video_category_container {
-		margin: 10px auto;
-		width: 90%;
-		border-spacing: 10px;
-		border-collapse: separate;
-	}
-	.o_color_button_placeholder {
-		display: inline-block;
-		width: 34px;
-		height: 34px;
-	}
-</style>
-
 <div class="o_form">
 	<table class="o_video_category_container">
 		<thead>
@@ -30,7 +16,7 @@
 		<tr>
 			<td>$r.render(${category.getMoveUpLink().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getMoveDownLink().getComponent().getComponentName()})</td>
-			<td><div class="o_color_button_placeholder o_video_colored_area ${category.getColor()}"></div></td>
+			<td>$r.render(${category.getColorLink().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getLabel().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getTitle().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getAddButton().getComponent().getComponentName()})</td>

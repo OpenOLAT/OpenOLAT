@@ -22,27 +22,27 @@ package org.olat.modules.video.ui.editor;
 import org.olat.core.gui.control.Event;
 
 /**
- * Initial date: 2023-01-10<br>
+ * Initial date: 2023-01-13<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class SegmentSelectedEvent extends Event {
-	private static final long serialVersionUID = 9214522746511569235L;
-	private static final String COMMAND = "segment.selected";
-	private final String segmentId;
-	private final long startTimeInMillis;
+public class ColorSelectedEvent extends Event {
+	private static final long serialVersionUID = 5062960496615765447L;
+	private static final String COMMAND = "color.selected";
+	private final String color;
+	private final Object userObject;
 
-	public SegmentSelectedEvent(String segmentId, long startTimeInMillis) {
+	public ColorSelectedEvent(String color, Object userObject) {
 		super(COMMAND);
-		this.segmentId = segmentId;
-		this.startTimeInMillis = startTimeInMillis;
+		this.color = color;
+		this.userObject = userObject;
 	}
 
-	public String getSegmentId() {
-		return segmentId;
+	public String getColor() {
+		return color;
 	}
 
-	public long getStartTimeInMillis() {
-		return startTimeInMillis;
+	public Object getUserObject() {
+		return userObject;
 	}
 }

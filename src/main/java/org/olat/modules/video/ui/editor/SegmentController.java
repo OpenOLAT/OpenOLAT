@@ -25,6 +25,7 @@ import java.util.TimeZone;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -32,21 +33,27 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Util;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 import org.olat.modules.video.model.VideoSegmentImpl;
+import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.SelectTimeCommand;
 import org.olat.repository.RepositoryEntry;
 
@@ -71,23 +78,24 @@ public class SegmentController extends FormBasicController {
 	private SingleSelection segmentsDropdown;
 	private FormLink nextSegmentButton;
 	private FormLink addSegmentButton;
+	private FormLink commandsButton;
 	private TextElement startEl;
 	private TextElement endEl;
 	private TextElement durationEl;
-	private SingleSelection categoryDropdown;
 	private FormLink categoryButton;
 	private SelectionValues categoriesKV;
 	private FormLink editCategoriesButton;
 	private CloseableModalController cmc;
 	private EditCategoriesController editCategoriesController;
-
-	private FormSubmit saveButton;
-	private FormCancel cancelButton;
-
 	private final RepositoryEntry repositoryEntry;
 	private final SimpleDateFormat timeFormat;
 	private final String videoElementId;
 	private String currentTimeCode;
+	private final SelectionValues colorsKV;
+	@Autowired
+	private VideoModule videoModule;
+	private CloseableCalloutWindowController ccwc;
+	private CommandsController commandsController;
 
 	public SegmentController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							 String videoElementId) {
@@ -100,15 +108,25 @@ public class SegmentController extends FormBasicController {
 		segmentsKV = new SelectionValues();
 		categoriesKV = new SelectionValues();
 
+		colorsKV = new SelectionValues();
+		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
+		for (String color : videoModule.getMarkerStyles()) {
+			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
+		}
+
 		initForm(ureq);
 		loadModel();
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(editCategoriesController);
+		removeAsListenerAndDispose(commandsController);
+		ccwc = null;
 		cmc = null;
 		editCategoriesController = null;
+		commandsController = null;
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
@@ -132,6 +150,10 @@ public class SegmentController extends FormBasicController {
 		addSegmentButton = uifactory.addFormLink("addSegment", "form.segment.add",
 				"form.segment.add", formLayout, Link.BUTTON);
 
+		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
+				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		commandsButton.setIconRightCSS("o_icon o_icon_commands");
+
 		startEl = uifactory.addTextElement("start", "form.segment.startEnd", 8, "",
 				formLayout);
 		startEl.setMandatory(true);
@@ -145,9 +167,6 @@ public class SegmentController extends FormBasicController {
 		durationEl.setExampleKey("form.segment.duration.hint", null);
 		durationEl.setMandatory(true);
 
-//		categoryDropdown = uifactory.addDropdownSingleselect("category", "form.segment.category",
-//				formLayout, categoriesKV.keys(), categoriesKV.values());
-
 		categoryButton = uifactory.addFormLink("category", "", "form.segment.category",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		categoryButton.setIconRightCSS("o_icon o_icon_caret o_video_segment_category_icon");
@@ -158,12 +177,13 @@ public class SegmentController extends FormBasicController {
 		editCategoriesButton = uifactory.addFormLink("editCategories", "form.segment.category.edit",
 				"form.segment.category.edit", formLayout, Link.BUTTON);
 
-		saveButton = uifactory.addFormSubmitButton("save", formLayout);
-		cancelButton = uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("save", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	private void loadModel() {
 		videoSegments = videoManager.loadSegments(repositoryEntry.getOlatResource());
+		videoSegments.getSegments().sort(new SegmentComparator());
 		if (videoSegmentId == null) {
 			videoSegments.getSegments().stream().findFirst().ifPresent((s) -> {
 				videoSegmentId = s.getId();
@@ -182,9 +202,8 @@ public class SegmentController extends FormBasicController {
 		flc.contextPut("hasSegments", !videoSegments.getSegments().isEmpty());
 		segmentsKV = new SelectionValues();
 		for (VideoSegment videoSegment : videoSegments.getSegments()) {
-			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent((c) -> {
-				segmentsKV.add(SelectionValues.entry(videoSegment.getId(), c.getLabelAndTitle()));
-			});
+			videoSegments.getCategory(videoSegment.getCategoryId())
+					.ifPresent(c -> segmentsKV.add(SelectionValues.entry(videoSegment.getId(), c.getLabelAndTitle())));
 		}
 		segmentsDropdown.setKeysAndValues(segmentsKV.keys(), segmentsKV.values(), null);
 
@@ -203,7 +222,7 @@ public class SegmentController extends FormBasicController {
 
 		int selectedIndex = -1;
 		for (int i = 0; i < segmentsKV.size(); i++) {
-			if (segmentsKV.keys()[i] == videoSegmentId) {
+			if (segmentsKV.keys()[i].equals(videoSegmentId)) {
 				selectedIndex = i;
 				break;
 			}
@@ -219,55 +238,96 @@ public class SegmentController extends FormBasicController {
 				Date end = DateUtils.addSeconds(s.getBegin(), (int)s.getDuration());
 				endEl.setValue(timeFormat.format(end));
 				durationEl.setValue(Long.toString(s.getDuration()));
-				videoSegments.getCategory(s.getCategoryId()).ifPresent((c) -> {
-					categoryButton.setI18nKey(c.getLabelAndTitle());
-				});
+				videoSegments.getCategory(s.getCategoryId())
+						.ifPresent(c -> categoryButton.setI18nKey(c.getLabelAndTitle()));
 			});
 		}
 	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addSegmentButton == source) {
 			doAddSegment(ureq);
+		} else if (commandsButton == source) {
+			doCommands(ureq);
 		} else if (categoryButton == source) {
 			doToggleCategory();
 		} else if (editCategoriesButton == source) {
 			doEditCategories(ureq);
 		} else if (segmentsDropdown == source) {
-			videoSegmentId = segmentsDropdown.getSelectedKey();
-			fireSegmentSelectedEvent(ureq);
-			selectStartTime();
-			setFieldValues();
+			doSetSegment(ureq, segmentsDropdown.getSelectedKey());
 		} else if (nextSegmentButton == source) {
-			String keys[] = segmentsDropdown.getKeys();
-			for (int i = 0; i < keys.length; i++) {
-				String key = keys[i];
-				if (videoSegmentId != null && videoSegmentId.equals(key)) {
-					int newIndex = i + 1;
-					if (newIndex < keys.length) {
-						videoSegmentId = keys[newIndex];
-						fireSegmentSelectedEvent(ureq);
-						selectStartTime();
-						setFieldValues();
-					}
-					break;
-				}
-			}
+			doNextSegment(ureq);
 		} else if (previousSegmentButton == source) {
-			String keys[] = segmentsDropdown.getKeys();
-			for (int i = 0; i < keys.length; i++) {
-				String key = keys[i];
-				if (videoSegmentId != null && videoSegmentId.equals(key)) {
-					int newIndex = i - 1;
-					if (newIndex >= 0) {
-						videoSegmentId = keys[newIndex];
-						fireSegmentSelectedEvent(ureq);
-						selectStartTime();
-						setFieldValues();
-					}
-					break;
+			doPreviousSegment(ureq);
+		} else if (flc == source) {
+			if ("ONCLICK".equals(event.getCommand())) {
+				String categoryId = ureq.getParameter("categoryId");
+				if (categoryId != null) {
+					doSetCategory(categoryId);
 				}
 			}
+		}
+	}
+
+	private void doCommands(UserRequest ureq) {
+		commandsController = new CommandsController(ureq, getWindowControl());
+		listenTo(commandsController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
+				commandsButton.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
+	}
+
+	private void doSetSegment(UserRequest ureq, String segmentId) {
+		videoSegmentId = segmentId;
+		fireSegmentSelectedEvent(ureq);
+		selectStartTime();
+		setFieldValues();
+	}
+
+	private void doNextSegment(UserRequest ureq) {
+		String[] keys = segmentsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (videoSegmentId != null && videoSegmentId.equals(key)) {
+				int newIndex = i + 1;
+				if (newIndex < keys.length) {
+					videoSegmentId = keys[newIndex];
+					fireSegmentSelectedEvent(ureq);
+					selectStartTime();
+					setFieldValues();
+				}
+				break;
+			}
+		}
+	}
+
+	private void doPreviousSegment(UserRequest ureq) {
+		String[] keys = segmentsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (videoSegmentId != null && videoSegmentId.equals(key)) {
+				int newIndex = i - 1;
+				if (newIndex >= 0) {
+					videoSegmentId = keys[newIndex];
+					fireSegmentSelectedEvent(ureq);
+					selectStartTime();
+					setFieldValues();
+				}
+				break;
+			}
+		}
+	}
+
+	private void doSetCategory(String categoryId) {
+		if (videoSegmentId != null) {
+			videoSegments.getSegment(videoSegmentId).ifPresent(s -> {
+				s.setCategoryId(categoryId);
+				setFieldValues();
+				flc.contextPut("categoryId", categoryId);
+				flc.contextPut("categoryOpen", false);
+			});
 		}
 	}
 
@@ -303,9 +363,7 @@ public class SegmentController extends FormBasicController {
 		flc.contextPut("categoriesAvailable", !categoriesKV.isEmpty());
 		flc.contextPut("categories", videoSegments.getCategories());
 		if (categoryOpen) {
-			videoSegments.getSegment(videoSegmentId).ifPresent((s) -> {
-				flc.contextPut("categoryId", s.getCategoryId());
-			});
+			videoSegments.getSegment(videoSegmentId).ifPresent(s -> flc.contextPut("categoryId", s.getCategoryId()));
 		}
 	}
 
@@ -329,28 +387,52 @@ public class SegmentController extends FormBasicController {
 	}
 
 	private void fireSegmentSelectedEvent(UserRequest ureq) {
-		fireEvent(ureq, new SegmentSelectedEvent(videoSegmentId));
+		fireEvent(ureq, new SegmentSelectedEvent(videoSegmentId, -1));
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		videoManager.saveSegments(videoSegments, repositoryEntry.getOlatResource());
 		loadModel();
-		fireEvent(ureq, Event.DONE_EVENT);
+		reloadSegments(ureq);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (editCategoriesController == source) {
 			if (event == Event.DONE_EVENT) {
-
+				flc.contextPut("categories", videoSegments.getCategories());
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (commandsController == source) {
+			if (CommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				doDeleteSegment(ureq);
+			}
+			ccwc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void doDeleteSegment(UserRequest ureq) {
+		if (videoSegmentId != null) {
+			videoSegments.getSegment(videoSegmentId).ifPresent(s -> {
+				videoSegments.getSegments().remove(s);
+				videoManager.saveSegments(videoSegments, repositoryEntry.getOlatResource());
+				if (videoSegments.getSegments().isEmpty()) {
+					videoSegmentId = null;
+				} else {
+					videoSegmentId = videoSegments.getSegments().get(0).getId();
+				}
+				handleVideoSegmentsUpdated();
+				reloadSegments(ureq);
+			});
+		}
 	}
 
 	private void selectStartTime() {
@@ -362,5 +444,34 @@ public class SegmentController extends FormBasicController {
 			SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
 			getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
 		});
+	}
+
+	public void showSegment(String segmentId) {
+		videoSegmentId = segmentId;
+		setFieldValues();
+	}
+
+	private static class CommandsController extends BasicController {
+		private static final Event DELETE_EVENT = new Event("delete");
+		private final Link deleteLink;
+
+		protected CommandsController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+
+			VelocityContainer mainVC = createVelocityContainer("segment_commands");
+
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			mainVC.put("delete", deleteLink);
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (deleteLink == source) {
+				fireEvent(ureq, DELETE_EVENT);
+			}
+		}
 	}
 }

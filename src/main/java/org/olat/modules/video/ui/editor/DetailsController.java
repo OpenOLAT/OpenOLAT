@@ -36,7 +36,6 @@ import org.olat.repository.RepositoryEntry;
  */
 public class DetailsController extends BasicController {
 
-	private final String videoElementId;
 	private final TabbedPane tabbedPane;
 	private final ChaptersController chaptersController;
 	private final AnnotationsController annotationsController;
@@ -46,8 +45,6 @@ public class DetailsController extends BasicController {
 	public DetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							 String videoElementId, long durationInSeconds) {
 		super(ureq, wControl);
-
-		this.videoElementId = videoElementId;
 
 		VelocityContainer mainVC = createVelocityContainer("details");
 
@@ -95,6 +92,7 @@ public class DetailsController extends BasicController {
 	public void setCurrentTimeCode(String currentTimeCode) {
 		annotationsController.setCurrentTimeCode(currentTimeCode);
 		quizController.setCurrentTimeCode(currentTimeCode);
+		segmentController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void setAnnotationId(String annotationId) {
@@ -109,15 +107,17 @@ public class DetailsController extends BasicController {
 		tabbedPane.setSelectedPane(ureq, 0);
 	}
 
-	public void showSegments(UserRequest ureq) {
+	public void showSegment(UserRequest ureq, String segmentId) {
 		tabbedPane.setSelectedPane(ureq, 2);
+		segmentController.showSegment(segmentId);
 	}
 
-	public void showQuiz(UserRequest ureq) {
+	public void showQuestion(UserRequest ureq, String questionId) {
 		tabbedPane.setSelectedPane(ureq, 3);
+		quizController.showQuestion(questionId);
 	}
 
-	public void updateQuestion(String questionId) {
-		quizController.updateQuestion(questionId);
+	public void updateQuestion() {
+		quizController.updateQuestion();
 	}
 }

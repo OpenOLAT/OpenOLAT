@@ -19,30 +19,38 @@
  */
 package org.olat.modules.video.ui.editor;
 
-import org.olat.core.gui.control.Event;
+import java.util.Comparator;
+import java.util.Date;
+
+import org.olat.modules.video.VideoSegment;
 
 /**
- * Initial date: 2023-01-10<br>
+ * Initial date: 2023-01-16<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class SegmentSelectedEvent extends Event {
-	private static final long serialVersionUID = 9214522746511569235L;
-	private static final String COMMAND = "segment.selected";
-	private final String segmentId;
-	private final long startTimeInMillis;
+public class SegmentComparator implements Comparator<VideoSegment> {
 
-	public SegmentSelectedEvent(String segmentId, long startTimeInMillis) {
-		super(COMMAND);
-		this.segmentId = segmentId;
-		this.startTimeInMillis = startTimeInMillis;
-	}
+	@Override
+	public int compare(VideoSegment o1, VideoSegment o2) {
+		if (o1 == null && o2 == null) {
+			return 0;
+		} else if (o1 == null) {
+			return -1;
+		} else if (o2 == null) {
+			return 1;
+		}
 
-	public String getSegmentId() {
-		return segmentId;
-	}
+		Date b1 = o1.getBegin();
+		Date b2 = o2.getBegin();
+		if (b1 == null && b2 == null) {
+			return 0;
+		} else if (b1 == null) {
+			return -1;
+		} else if (b2 == null) {
+			return 1;
+		}
 
-	public long getStartTimeInMillis() {
-		return startTimeInMillis;
+		return b1.compareTo(b2);
 	}
 }

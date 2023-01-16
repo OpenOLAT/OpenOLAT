@@ -1,0 +1,14 @@
+<style>
+.o_video_select_color .o_video_color_link {
+	display: block;
+	width: 34px;
+	height: 34px;
+	margin: 5px;
+}
+</style>
+
+<div class="o_video_select_color">
+	#foreach ($color in $colors)
+	$r.render(${color.getColorLink().getComponent().getComponentName()})
+	#end
+</div>

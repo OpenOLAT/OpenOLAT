@@ -165,6 +165,9 @@
 	&.o_video_marker_red {
 		border-left-color: $brand-danger;
 	}
+	&.o_video_marker_purple {
+		border-left-color: $o-cn-style-cat-purple-color;
+	}
 }
 
 .o_video_question {
@@ -228,6 +231,9 @@
 	}
 	.o_video_marker_red {
 		background: $brand-danger;
+	}
+	.o_video_marker_purple {
+		background: $o-cn-style-cat-purple-color;
 	}
 }
 
@@ -527,6 +533,12 @@
 			stroke: darken($o-selection-red, 16);
 		}
 	}
+	&.o_video_marker_purple {
+		svg {
+			fill: $o-selection-purple;
+			stroke: darken($o-selection-purple, 16);
+		}
+	}
 
 	&.o_video_selected {
 		svg {
@@ -579,6 +591,10 @@
 	&.o_video_marker_red {
 		background-color: $o-selection-red;
 		border-color: darken($o-selection-red, 16);
+	}
+	&.o_video_marker_purple {
+		background-color: $o-selection-purple;
+		border-color: darken($o-selection-purple, 16);
 	}
 }
 
@@ -646,4 +662,50 @@
 		background-color: $o-selection-red;
 		border-color: darken($o-selection-red, 16);
 	}
+	&.o_video_marker_purple {
+		background-color: $o-selection-purple;
+		border-color: darken($o-selection-purple, 16);
+	}
 }
+
+#o_video_play_head {
+	position: absolute;
+	left: 55px;
+	width: 3px;
+	background-color: $brand-primary;
+	z-index: 10;
+
+	.o_video_play_head_marker {
+		position: absolute;
+		left: -4px;
+		top: -8px;
+
+		.o_video_play_head_marker_icon {
+			color: $brand-primary;
+		}
+	}
+
+	.o_video_play_head_text {
+		position: absolute;
+		left: -30px;
+		width: 60px;
+		text-align: center;
+		top: -16px;
+		font-size: 12px;
+		font-weight: bold;
+	}
+}
+
+.o_video_category_container {
+	margin: 10px auto;
+	width: 90%;
+	border-spacing: 10px;
+	border-collapse: separate;
+
+	.o_color_button_placeholder {
+		display: inline-block;
+		width: 34px;
+		height: 34px;
+	}
+}
+

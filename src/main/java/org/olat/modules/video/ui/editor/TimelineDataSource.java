@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -30,6 +31,7 @@ import org.olat.core.commons.persistence.ResultInfos;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -51,6 +53,8 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	private final VideoManager videoManager;
 
 	private List<TimelineRow> rows = new ArrayList<>();
+	private List<FlexiTableFilter> filters;
+	private List<TimelineRow> filteredRows = new ArrayList<>();
 
 	public TimelineDataSource(OLATResource olatResource) {
 		this.olatResource = olatResource;
@@ -92,6 +96,43 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		});
 
 		rows.sort(Comparator.comparing(TimelineRow::getStartTime));
+
+		applyFilters();
+	}
+
+	private void applyFilters() {
+		filteredRows = rows.stream().filter(r -> {
+			if (filters == null) {
+				return true;
+			}
+			for (FlexiTableFilter filter : filters) {
+				boolean matchFound = false;
+				if (filter instanceof FlexiTableMultiSelectionFilter multiSelectionFilter) {
+					if (multiSelectionFilter.getValues() == null || multiSelectionFilter.getValues().isEmpty()) {
+						continue;
+					}
+					if (TimelineFilter.TYPE.name().equals(filter.getFilter())) {
+						for (String typeString : multiSelectionFilter.getValues()) {
+							if (r.getType().name().equals(typeString)) {
+								matchFound = true;
+								break;
+							}
+						}
+					} else if (TimelineFilter.COLOR.name().equals(filter.getFilter())) {
+						for (String colorString : multiSelectionFilter.getValues()) {
+							if (r.getColor().equals(colorString)) {
+								matchFound = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!matchFound) {
+					return false;
+				}
+			}
+			return true;
+		}).collect(Collectors.toList());
 	}
 
 	private String generateChapterId(VideoChapterTableRow chapter) {
@@ -100,7 +141,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 
 	@Override
 	public int getRowCount() {
-		return rows.size();
+		return filteredRows.size();
 	}
 
 	@Override
@@ -110,7 +151,9 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 
 	@Override
 	public ResultInfos<TimelineRow> getRows(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
-		List<TimelineRow> resultRows = rows.subList(firstResult, rows.size());
+		this.filters = filters;
+		applyFilters();
+		List<TimelineRow> resultRows = filteredRows.subList(firstResult, filteredRows.size());
 		return new DefaultResultInfos<>(firstResult + resultRows.size(),
 				-1, resultRows);
 	}

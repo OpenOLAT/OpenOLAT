@@ -39,6 +39,14 @@
 		justify-content: left;
 		align-items: center;
 		gap: 5px;
+		cursor: pointer;
+	}
+	.o_category_list_item:hover {
+		background-color: #eee;
+	}
+	.o_category_list_item:active {
+		background-color: #ddd;
+		font-weight: bold;
 	}
 	.o_category_list_item.o_selected {
 		background-color: #ddd;
@@ -52,7 +60,7 @@
 </style>
 <div class="o_video_edit_segments o_form form-horizontal">
 	<div class="form-group row clearfix">
-		<div class="col-xs-offset-3 col-xs-4">
+		<div class="col-xs-offset-3 col-xs-9">
 			#if ($hasSegments)
 			<div class="btn-group">
 				<div class="btn-group" style="display: inline-block; height: 36px; width: 36px; margin-left: -36px;">$r.render("previousSegment")</div>
@@ -60,8 +68,8 @@
 				<div class="btn-group" style="display: inline-block; height: 36px; width: 36px;">$r.render("nextSegment")</div>
 			</div>
 			#end
+			<div style="display: inline-block; float: right;">$r.render("addSegment") $r.render("commands")</div>
 		</div>
-		<div class="col-xs-5" style="text-align: right;">$r.render("addSegment")</div>
 	</div>
 	<div class="form-group row clearfix">
 		$r.render("start", "label", "col-xs-3")
@@ -87,7 +95,7 @@
 				<ul class="o_category_list">
 					#foreach ($category in $categories)
 					#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
-					<li class="o_category_list_item $selectedClass">
+					<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
 						<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
 						<div class="o_category_text">${category.getLabelAndTitle()}</div>
 					</li>
