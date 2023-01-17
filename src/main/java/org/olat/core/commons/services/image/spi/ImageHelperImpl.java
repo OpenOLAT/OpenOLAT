@@ -143,7 +143,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		try(OutputStream bos = new BufferedOutputStream(scaledImage.getOutputStream(false));
 				ImageInputStream imageIns = new FileImageInputStream(image)) {
 
-			imageExt = FileUtils.getFileSuffix(imageExt);
+			imageExt = cleanImageExt(imageExt);
 			SizeAndBufferedImage scaledSize = calcScaledSize(imageIns, imageExt, maxWidth, maxHeight, false, image.getName());
 			if(scaledSize == null) {
 				return null;
@@ -277,7 +277,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 		ImageInputStream imageSrc = null;
 		try {
 			imageSrc = new FileImageInputStream(image);
-			imageExt = FileUtils.getFileSuffix(imageExt);
+			imageExt = cleanImageExt(imageExt);
 			SizeAndBufferedImage scaledSize = calcScaledSize(imageSrc, imageExt, maxWidth, maxHeight, fill, image.getName());
 			if(scaledSize == null || scaledSize.image == null) {
 				return null;

@@ -226,6 +226,16 @@ public abstract class AbstractImageHelper implements ImageHelperSPI {
 		return numOfImages > 1;
 	}
 	
+	protected static String cleanImageExt(String ext) {
+		if(StringHelper.containsNonWhitespace(ext)) { 
+			int lastDot = ext.lastIndexOf('.');
+			if (lastDot >= 0 && lastDot < ext.length()) {
+				return ext.substring(lastDot + 1).toLowerCase();
+			}
+		}
+		return ext;
+	}
+	
 	protected static boolean isSameFormat(File source, VFSLeaf scaled) {
 		String sourceExt = FileUtils.getFileSuffix(source.getName());
 		String scaledExt = getImageFormat(scaled);
