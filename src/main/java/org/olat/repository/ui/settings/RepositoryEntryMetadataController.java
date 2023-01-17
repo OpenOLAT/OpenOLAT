@@ -249,7 +249,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			if (educationalType != null && Arrays.asList(educationalTypeEl.getKeys()).contains(educationalType.getIdentifier())) {
 				educationalTypeEl.select(educationalType.getIdentifier(), true);
 			}
-			educationalTypeEl.setEnabled(!readOnly);
+			educationalTypeEl.setEnabled(!readOnly && !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.educationalType));
 		}
 		
 		if (!usedInWizard) {
