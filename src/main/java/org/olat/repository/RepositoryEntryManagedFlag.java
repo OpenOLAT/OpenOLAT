@@ -45,6 +45,7 @@ public enum RepositoryEntryManagedFlag {
       credits(details,all),
       location(details,all),
       organisations(details,all),
+      educationalType(details,all),
     settings(all),//max num of participants...
       access(settings,all),
       search(settings, all),

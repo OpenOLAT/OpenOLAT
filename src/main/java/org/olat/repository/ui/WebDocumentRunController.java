@@ -27,7 +27,6 @@ import org.olat.core.commons.services.doceditor.DocEditorConfig;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
-import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -62,8 +61,6 @@ public class WebDocumentRunController extends BasicController {
 
 	@Autowired
 	private DocEditorService docEditorService;
-	@Autowired
-	private MovieService movieService;
 
 	public WebDocumentRunController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
