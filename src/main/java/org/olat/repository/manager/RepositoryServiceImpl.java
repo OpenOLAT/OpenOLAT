@@ -354,6 +354,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public RepositoryEntry loadByKey(Long key) {
 		return repositoryEntryDAO.loadByKey(key);
 	}
+	
+	@Override
+	public RepositoryEntry loadBy(RepositoryEntryRef ref) {
+		if(ref == null || ref.getKey() == null) return null;
+		return repositoryEntryDAO.loadByKey(ref.getKey());
+	}
 
 	@Override
 	public List<RepositoryEntry> loadByKeys(Collection<Long> keys) {

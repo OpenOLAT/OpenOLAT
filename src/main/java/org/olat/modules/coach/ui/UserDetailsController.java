@@ -58,6 +58,7 @@ import org.olat.modules.lecture.ui.ParticipantLectureBlocksController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -94,6 +95,8 @@ public class UserDetailsController extends BasicController implements Activateab
 	private LectureService lectureService;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -242,15 +245,14 @@ public class UserDetailsController extends BasicController implements Activateab
 		if(statementCtrl == null || hasChanged) {
 			removeAsListenerAndDispose(statementCtrl);
 
-			RepositoryEntry entry = statementEntry.getCourse();
+			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
 			Long statementKey = statementEntry.getUserEfficiencyStatementKey();
 			EfficiencyStatement efficiencyStatement = null;
 			if(statementKey != null) {
 				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByKey(statementKey);
 			}
 			if(efficiencyStatement == null) {
-				RepositoryEntry re = statementEntry.getCourse();
-				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(re, assessedIdentity);
+				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
 			}
 			statementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
 					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null, true);
@@ -270,7 +272,7 @@ public class UserDetailsController extends BasicController implements Activateab
 	
 	private AssessmentIdentityCourseController doOpenAssessmentController(UserRequest ureq) {
 		if(assessmentCtrl == null) {
-			RepositoryEntry entry = statementEntry.getCourse();
+			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
 			UserCourseEnvironment coachCourseEnv = loadUserCourseEnvironment(ureq, entry);
 			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv, assessedIdentity, true);
 			listenTo(assessmentCtrl);
@@ -282,7 +284,7 @@ public class UserDetailsController extends BasicController implements Activateab
 	
 	private ParticipantLectureBlocksController doOpenLecturesBlock(UserRequest ureq) {
 		if(lectureBlocksCtrl == null) {
-			RepositoryEntry entry = statementEntry.getCourse();
+			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
 			lectureBlocksCtrl = new ParticipantLectureBlocksController(ureq, getWindowControl(), entry, assessedIdentity);
 			listenTo(lectureBlocksCtrl);
 		}
@@ -290,6 +292,8 @@ public class UserDetailsController extends BasicController implements Activateab
 		segmentView.select(lecturesLink);
 		return lectureBlocksCtrl;
 	}
+	
+	
 	
 	public enum Segment {
 		efficiencyStatement,

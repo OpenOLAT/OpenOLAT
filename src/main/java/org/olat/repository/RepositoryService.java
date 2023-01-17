@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -66,6 +65,8 @@ public interface RepositoryService {
 
 	public RepositoryEntry loadByKey(Long key);
 	
+	public RepositoryEntry loadBy(RepositoryEntryRef ref);
+	
 	public List<RepositoryEntry> loadByKeys(Collection<Long> keys);
 
 	public List<RepositoryEntry> loadRepositoryForMetadata(RepositoryEntryStatusEnum status);
@@ -79,6 +80,7 @@ public interface RepositoryService {
 	public List<RepositoryEntry> loadRepositoryEntriesLikeExternalRef(String externalRef);
 
 	public List<RepositoryEntry> loadByResourceKeys(Collection<Long> keys);
+	
 
 	/**
 	 * @param repositoryEntryKey The key of the repository entry
