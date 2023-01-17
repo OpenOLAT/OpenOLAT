@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+
 /**
  * Initial date: 2022-11-21<br>
  *
@@ -38,6 +40,8 @@ public class TimelineRow {
 	private String color;
 
 	private boolean selected;
+	private FormLink toolLink;
+
 
 	public TimelineRow(String id, long startTime, long duration, TimelineEventType type, String text, String color) {
 		this.id = id;
@@ -98,5 +102,13 @@ public class TimelineRow {
 
 	public void setSelected(boolean selected) {
 		this.selected = selected;
+	}
+
+	public FormLink getToolLink() {
+		return toolLink;
+	}
+
+	public void setToolLink(FormLink toolLink) {
+		this.toolLink = toolLink;
 	}
 }

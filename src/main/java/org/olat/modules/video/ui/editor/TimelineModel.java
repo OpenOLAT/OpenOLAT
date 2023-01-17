@@ -67,6 +67,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 			case type -> timelineRow.getType();
 			case text -> timelineRow.getText();
 			case color -> timelineRow.getColor();
+			case tools -> timelineRow.getToolLink();
 		};
 	}
 

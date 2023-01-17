@@ -100,6 +100,10 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		applyFilters();
 	}
 
+	public List<TimelineRow> getRows() {
+		return rows;
+	}
+
 	private void applyFilters() {
 		filteredRows = rows.stream().filter(r -> {
 			if (filters == null) {
@@ -150,12 +154,46 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	}
 
 	@Override
-	public ResultInfos<TimelineRow> getRows(String query, List<FlexiTableFilter> filters, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<TimelineRow> getRows(String query, List<FlexiTableFilter> filters, int firstResult,
+											int maxResults, SortKey... orderBy) {
 		this.filters = filters;
 		applyFilters();
 		List<TimelineRow> resultRows = filteredRows.subList(firstResult, filteredRows.size());
 		return new DefaultResultInfos<>(firstResult + resultRows.size(),
 				-1, resultRows);
+	}
+
+	public void delete(TimelineRow row) {
+		switch (row.getType()) {
+			case QUIZ -> {
+				VideoQuestions videoQuestions = videoManager.loadQuestions(olatResource);
+				videoQuestions.getQuestions().stream().filter(q -> row.getId().equals(q.getId())).findFirst()
+						.ifPresent(q -> videoQuestions.getQuestions().remove(q));
+				videoManager.saveQuestions(videoQuestions, olatResource);
+			}
+			case ANNOTATION -> {
+				VideoMarkers videoMarkers = videoManager.loadMarkers(olatResource);
+				videoMarkers.getMarkers().stream().filter(m -> row.getId().equals(m.getId())).findFirst()
+						.ifPresent(m -> videoMarkers.getMarkers().remove(m));
+				videoManager.saveMarkers(videoMarkers, olatResource);
+			}
+			case SEGMENT -> {
+				VideoSegments videoSegments = videoManager.loadSegments(olatResource);
+				videoSegments.getSegments().stream().filter(s -> row.getId().equals(s.getId())).findFirst()
+						.ifPresent(s -> videoSegments.getSegments().remove(s));
+				videoManager.saveSegments(videoSegments, olatResource);
+			}
+			case CHAPTER -> {
+				List<VideoChapterTableRow> chapters = videoManager.loadChapters(olatResource);
+				chapters.stream().filter(c -> row.getStartTime() == c.getBegin().getTime()).findFirst()
+						.ifPresent(chapters::remove);
+				videoManager.saveChapters(chapters, olatResource);
+			}
+			default -> {
+				//
+			}
+		}
+		loadRows();
 	}
 
 	public enum TimelineFilter {

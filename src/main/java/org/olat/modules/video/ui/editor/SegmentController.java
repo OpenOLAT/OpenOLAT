@@ -91,7 +91,6 @@ public class SegmentController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	private final String videoElementId;
 	private String currentTimeCode;
-	private final SelectionValues colorsKV;
 	@Autowired
 	private VideoModule videoModule;
 	private CloseableCalloutWindowController ccwc;
@@ -108,7 +107,7 @@ public class SegmentController extends FormBasicController {
 		segmentsKV = new SelectionValues();
 		categoriesKV = new SelectionValues();
 
-		colorsKV = new SelectionValues();
+		SelectionValues colorsKV = new SelectionValues();
 		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		for (String color : videoModule.getMarkerStyles()) {
 			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
@@ -460,7 +459,8 @@ public class SegmentController extends FormBasicController {
 
 			VelocityContainer mainVC = createVelocityContainer("segment_commands");
 
-			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this, Link.LINK);
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
+					Link.LINK);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
 			mainVC.put("delete", deleteLink);
 

@@ -40,11 +40,17 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -70,6 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MasterController extends FormBasicController implements FlexiTableComponentDelegate {
 	private static final String THUMBNAIL_JPG_SUFFIX = ".jpg";
 	private static final String THUMBNAIL_BASE_FILE_NAME = "thumbnail_";
+	private static final String CMD_TOOLS = "tools";
 
 	private final VFSContainer thumbnailsContainer;
 	private final VFSLeaf videoFile;
@@ -91,6 +98,8 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	@Autowired
 	private VideoManager videoManager;
 	private int availableWidth;
+	private CloseableCalloutWindowController ccwc;
+	private ToolsController toolsController;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, OLATResource olatResource,
 							String videoElementId) {
@@ -103,8 +112,15 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
 		this.movieSize = new Size(90, 50, false);
 		initForm(ureq);
-		loadModel();
 		initFilters(ureq);
+		addTools();
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(toolsController);
+		ccwc = null;
+		toolsController = null;
 	}
 
 	@Override
@@ -129,6 +145,10 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				sb.append("<div class=\"o_video_color_circle o_video_colored_area ").append((String) val).append("\">").append("</div>");
 			}
 		}));
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TimelineCols.tools.i18nHeaderKey(),
+				TimelineCols.tools.ordinal());
+		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		columnModel.addFlexiColumnModel(toolsColumn);
 
 		timelineModel = new TimelineModel(timelineDataSource, columnModel);
 		String mediaUrl = registerMapper(ureq, new ThumbnailMapper());
@@ -160,8 +180,20 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		zoomPlusButton.setIconLeftCSS("o_icon o_icon_enlarge");
 	}
 
-	private void loadModel() {
-
+	private void addTools() {
+		for (TimelineRow timelineRow : timelineDataSource.getRows()) {
+			String toolId = "tool_" + timelineRow.getId();
+			FormLink toolLink = (FormLink) timelineTableEl.getFormComponent(toolId);
+			if (toolLink == null) {
+				toolLink = uifactory.addFormLink(toolId, CMD_TOOLS, "", timelineTableEl,
+						Link.LINK | Link.NONTRANSLATED);
+				toolLink.setTranslator(getTranslator());
+				toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+				toolLink.setTitle(translate("table.header.timeline.tools"));
+			}
+			toolLink.setUserObject(timelineRow);
+			timelineRow.setToolLink(toolLink);
+		}
 	}
 
 	private void initFilters(UserRequest ureq) {
@@ -189,6 +221,23 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	}
 
 	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if (ccwc == source) {
+			cleanUp();
+		} else if (toolsController == source) {
+			if (ToolsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				TimelineRow row = toolsController.getRow();
+				timelineDataSource.delete(row);
+				addTools();
+				timelineTableEl.reloadData();
+			}
+			ccwc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (zoomMinusButton == source) {
 			doZoomOut();
@@ -199,7 +248,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				String questionId = ureq.getParameter("questionId");
 				if (questionId != null) {
 					timelineModel.getTimelineRow(TimelineEventType.QUIZ, questionId)
-							.ifPresent(q->fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
+							.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
 				}
 				String annotationId = ureq.getParameter("annotationId");
 				if (annotationId != null) {
@@ -220,9 +269,21 @@ public class MasterController extends FormBasicController implements FlexiTableC
 					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
 				}
 			}
+		} else if (source instanceof FormLink formLink &&
+				CMD_TOOLS.equals(formLink.getCmd()) && formLink.getUserObject() instanceof TimelineRow timelineRow) {
+			doOpenTools(ureq, formLink, timelineRow);
 		} else if (zoomSlider == source) {
 			doZoom();
 		}
+	}
+
+	private void doOpenTools(UserRequest ureq, FormLink formLink, TimelineRow timelineRow) {
+		toolsController = new ToolsController(ureq, getWindowControl(), timelineRow);
+		listenTo(toolsController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsController.getInitialComponent(),
+				formLink.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	private void doZoomOut() {
@@ -272,6 +333,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	public void reload() {
 		timelineDataSource.loadRows();
 		timelineTableEl.reloadData();
+		addTools();
 	}
 
 	private class ThumbnailMapper implements Mapper {
@@ -295,6 +357,37 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				return new VFSMediaResource(outputLeaf);
 			} catch (NumberFormatException e) {
 				return new NotFoundMediaResource();
+			}
+		}
+	}
+
+	private static class ToolsController extends BasicController {
+		private static final Event DELETE_EVENT = new Event("delete");
+		private final Link deleteLink;
+		private final TimelineRow row;
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl, TimelineRow row) {
+			super(ureq, wControl);
+
+			this.row = row;
+
+			VelocityContainer mainVC = createVelocityContainer("table_row_tools");
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
+					Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			mainVC.put("delete", deleteLink);
+
+			putInitialPanel(mainVC);
+		}
+
+		public TimelineRow getRow() {
+			return row;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (deleteLink == source) {
+				fireEvent(ureq, DELETE_EVENT);
 			}
 		}
 	}
