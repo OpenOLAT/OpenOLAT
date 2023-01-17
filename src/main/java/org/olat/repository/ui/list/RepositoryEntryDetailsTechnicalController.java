@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.restapi.RestapiAdminController;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.core.gui.UserRequest;
@@ -88,8 +89,8 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 	private CoordinatorManager coordinatorManager;
 	
 	public RepositoryEntryDetailsTechnicalController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isOwner) {
-		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_technical.html");
-		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		super(ureq, wControl, "details_technical", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale(),
+				Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale())));
 		this.entry = entry;
 		this.isOwner = isOwner;
 		
@@ -98,9 +99,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			
+		if (formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("v", entry);
 			
 			Roles roles = ureq.getUserSession().getRoles();
@@ -197,8 +196,7 @@ public class RepositoryEntryDetailsTechnicalController extends FormBasicControll
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("owner".equals(cmd)) {
 				doOpenVisitCard(ureq, (Long)link.getUserObject());

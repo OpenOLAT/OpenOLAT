@@ -150,7 +150,7 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 		case authors:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case educationalType: 
-			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details)
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.educationalType)
 					&& isCourse(repositoryEntry);
 		case mainLanguage:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
