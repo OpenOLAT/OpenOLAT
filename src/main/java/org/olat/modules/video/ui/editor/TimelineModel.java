@@ -21,6 +21,7 @@ package org.olat.modules.video.ui.editor;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	public Object getValueAt(int row, int col) {
 		TimelineRow timelineRow = getObject(row);
 		return switch (TimelineCols.values()[col]) {
-			case startTime -> durationString(timelineRow.getStartTime());
+			case startTime -> new Date(timelineRow.getStartTime());
 			case type -> timelineRow.getType();
 			case text -> timelineRow.getText();
 			case color -> timelineRow.getColor();
@@ -71,7 +72,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 		};
 	}
 
-	private String durationString(long timeInMillis) {
+	public static String durationString(long timeInMillis) {
 		Duration duration = Duration.ofMillis(timeInMillis);
 		return String.format("%02d:%02d:%02d", duration.toHours(), duration.toMinutesPart(), duration.toSecondsPart());
 	}

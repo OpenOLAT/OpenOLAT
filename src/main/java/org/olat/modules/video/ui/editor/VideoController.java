@@ -45,15 +45,12 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class VideoController extends BasicController {
-	private final RepositoryEntry repositoryEntry;
 	private final VideoDisplayController videoDisplayController;
 	private final String videoElementId;
 	private final long durationInSeconds;
-	private String currentTimeCode;
 
 	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
-		this.repositoryEntry = repositoryEntry;
 
 		VelocityContainer mainVC = createVelocityContainer("video_editor_player");
 
@@ -81,8 +78,7 @@ public class VideoController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (videoDisplayController == source) {
-			if (event instanceof VideoEvent videoEvent) {
-				this.currentTimeCode = videoEvent.getTimeCode();
+			if (event instanceof VideoEvent) {
 				fireEvent(ureq, event);
 			} else if (event instanceof MarkerMovedEvent) {
 				fireEvent(ureq, event);
@@ -122,5 +118,12 @@ public class VideoController extends BasicController {
 	public void selectTime(long timeInSeconds) {
 		SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
+	}
+
+	public void setMode(TimelineEventType type) {
+		videoDisplayController.setMode(type == TimelineEventType.QUIZ,
+				type == TimelineEventType.ANNOTATION
+		);
+		reloadMarkers();
 	}
 }

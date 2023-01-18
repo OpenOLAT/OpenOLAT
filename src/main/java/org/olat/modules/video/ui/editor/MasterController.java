@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
@@ -63,6 +64,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoSettingsController;
+import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.resource.OLATResource;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -77,6 +79,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private static final String THUMBNAIL_JPG_SUFFIX = ".jpg";
 	private static final String THUMBNAIL_BASE_FILE_NAME = "thumbnail_";
 	private static final String CMD_TOOLS = "tools";
+	private static final String SELECT_ACTION = "select";
 
 	private final VFSContainer thumbnailsContainer;
 	private final VFSLeaf videoFile;
@@ -126,7 +129,8 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.startTime));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.startTime, SELECT_ACTION,
+				new VideoTimeCellRenderer()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.type,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 			if (val instanceof TimelineEventType) {
@@ -230,6 +234,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				timelineDataSource.delete(row);
 				addTools();
 				timelineTableEl.reloadData();
+				fireEvent(ureq, new TimelineEventDeletedEvent(row.getType(), row.getId()));
 			}
 			ccwc.deactivate();
 			cleanUp();
@@ -268,12 +273,28 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
 					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
 				}
+			} else if (event instanceof SelectionEvent selectionEvent) {
+				if (SELECT_ACTION.equals(selectionEvent.getCommand())) {
+					TimelineRow timelineRow = timelineModel.getObject(selectionEvent.getIndex());
+					doSelect(ureq, timelineRow);
+				}
 			}
 		} else if (source instanceof FormLink formLink &&
 				CMD_TOOLS.equals(formLink.getCmd()) && formLink.getUserObject() instanceof TimelineRow timelineRow) {
 			doOpenTools(ureq, formLink, timelineRow);
 		} else if (zoomSlider == source) {
 			doZoom();
+		}
+	}
+
+	private void doSelect(UserRequest ureq, TimelineRow timelineRow) {
+		switch (timelineRow.getType()) {
+			case QUIZ -> fireEvent(ureq, new QuestionSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
+			case ANNOTATION -> fireEvent(ureq, new AnnotationSelectedEvent(timelineRow.getId()));
+			case CHAPTER -> fireEvent(ureq, new ChapterSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
+			case SEGMENT -> fireEvent(ureq, new SegmentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
+			case VIDEO -> {
+			}
 		}
 	}
 

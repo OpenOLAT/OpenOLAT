@@ -90,6 +90,7 @@ public class DetailsController extends BasicController {
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
+		chaptersController.setCurrentTimeCode(currentTimeCode);
 		annotationsController.setCurrentTimeCode(currentTimeCode);
 		quizController.setCurrentTimeCode(currentTimeCode);
 		segmentController.setCurrentTimeCode(currentTimeCode);
@@ -127,5 +128,14 @@ public class DetailsController extends BasicController {
 
 	public void setAnnotationPosition(String annotationId, double top, double left) {
 		annotationsController.setAnnotationPosition(annotationId, top, left);
+	}
+
+	public void handleDeleted(TimelineEventType type, String id) {
+		switch (type) {
+			case CHAPTER -> chaptersController.handleDeleted();
+			case ANNOTATION -> annotationsController.handleDeleted(id);
+			case SEGMENT -> segmentController.handleDeleted(id);
+			case QUIZ -> quizController.handleDeleted(id);
+		}
 	}
 }

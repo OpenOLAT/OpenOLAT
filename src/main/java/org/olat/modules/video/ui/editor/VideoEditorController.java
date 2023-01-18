@@ -51,8 +51,6 @@ public class VideoEditorController extends BasicController {
 	@Autowired
 	private VideoManager videoManager;
 
-	private String currentTimeCode;
-
 	public VideoEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("video_editor");
@@ -94,11 +92,8 @@ public class VideoEditorController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (videoController == source) {
-			if (event instanceof VideoEvent) {
-				VideoEvent videoEvent = (VideoEvent) event;
-				String currentTimeCode = videoEvent.getTimeCode();
-				this.currentTimeCode = currentTimeCode;
-				detailsController.setCurrentTimeCode(currentTimeCode);
+			if (event instanceof VideoEvent videoEvent) {
+				detailsController.setCurrentTimeCode(videoEvent.getTimeCode());
 			} else if (event instanceof MarkerResizedEvent markerResizedEvent) {
 				detailsController.setAnnotationSize(markerResizedEvent.getMarkerId(), markerResizedEvent.getWidth(),
 						markerResizedEvent.getHeight());
@@ -128,23 +123,31 @@ public class VideoEditorController extends BasicController {
 				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
 			} else if (event instanceof AnnotationSelectedEvent) {
 				//
-			} else if (event instanceof SegmentSelectedEvent) {
-				//
+			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
+				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
+			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
+				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
 			}
 		} else if (masterController == source) {
-			if (event instanceof AnnotationSelectedEvent) {
-				detailsController.setAnnotationId(((AnnotationSelectedEvent)event).getAnnotationId());
+			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
+				videoController.setMode(TimelineEventType.ANNOTATION);
+				detailsController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
 				detailsController.showAnnotations(ureq);
-				videoController.setAnnotationId(((AnnotationSelectedEvent)event).getAnnotationId());
-			} else if (event instanceof ChapterSelectedEvent) {
+				videoController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
+			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
+				videoController.setMode(TimelineEventType.CHAPTER);
 				detailsController.showChapters(ureq);
-				videoController.selectTime(((ChapterSelectedEvent) event).getStartTimeInMillis() / 1000);
-			} else if (event instanceof QuestionSelectedEvent) {
-				detailsController.showQuestion(ureq, ((QuestionSelectedEvent) event).getQuestionId());
-				videoController.selectTime(((QuestionSelectedEvent) event).getStartTimeInMillis() / 1000);
-			} else if (event instanceof SegmentSelectedEvent) {
-				detailsController.showSegment(ureq, ((SegmentSelectedEvent) event).getSegmentId());
-				videoController.selectTime(((SegmentSelectedEvent) event).getStartTimeInMillis() / 1000);
+				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
+			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
+				videoController.setMode(TimelineEventType.QUIZ);
+				detailsController.showQuestion(ureq, questionSelectedEvent.getQuestionId());
+				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
+			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
+				videoController.setMode(TimelineEventType.SEGMENT);
+				detailsController.showSegment(ureq, segmentSelectedEvent.getSegmentId());
+				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
+			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {
+				detailsController.handleDeleted(timelineEventDeletedEvent.getType(), timelineEventDeletedEvent.getId());
 			}
 		} else if (editQuestionController == source) {
 			String questionId = editQuestionController.getQuestionId();

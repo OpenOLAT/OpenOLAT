@@ -190,6 +190,7 @@ public class QuizController extends FormBasicController {
 				.stream()
 				.sorted(new VideoQuestionRowComparator())
 				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), q.getTitle())));
+		flc.contextPut("hasQuestions", !questionsKV.isEmpty());
 		questionsDropdown.setKeysAndValues(questionsKV.keys(), questionsKV.values(), null);
 		if (questionId == null && !questionsKV.isEmpty()) {
 			questionId = questionsKV.keys()[0];
@@ -234,6 +235,8 @@ public class QuizController extends FormBasicController {
 			if (event instanceof NewQuestionEvent) {
 				doNewQuestion(ureq, ((NewQuestionEvent) event).getQuestion());
 			}
+		} else if (ccwc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -341,5 +344,12 @@ public class QuizController extends FormBasicController {
 	public void showQuestion(String questionId) {
 		this.questionId = questionId;
 		setValues();
+	}
+
+	public void handleDeleted(String id) {
+		if (id.equals(questionId)) {
+			questionId = null;
+		}
+		loadModel();
 	}
 }

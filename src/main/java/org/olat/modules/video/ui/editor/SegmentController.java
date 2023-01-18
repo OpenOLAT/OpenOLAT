@@ -450,6 +450,13 @@ public class SegmentController extends FormBasicController {
 		setFieldValues();
 	}
 
+	public void handleDeleted(String id) {
+		if (id.equals(videoSegmentId)) {
+			videoSegmentId = null;
+		}
+		loadModel();
+	}
+
 	private static class CommandsController extends BasicController {
 		private static final Event DELETE_EVENT = new Event("delete");
 		private final Link deleteLink;

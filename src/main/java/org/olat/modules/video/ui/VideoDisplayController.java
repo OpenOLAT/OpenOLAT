@@ -883,8 +883,12 @@ public class VideoDisplayController extends BasicController {
 	public void forceReload() {
 		mainVC.contextPut("addForceReload", "?t=" + CodeHelper.getRAMUniqueID());
 	}
-	
-	
+
+	public void setMode(boolean showQuestions, boolean showAnnotations) {
+		displayOptions.setShowQuestions(showQuestions);
+		displayOptions.setShowAnnotations(showAnnotations);
+	}
+
 	public static class VideoMarkerWrapper {
 		
 		private final VideoMarker marker;

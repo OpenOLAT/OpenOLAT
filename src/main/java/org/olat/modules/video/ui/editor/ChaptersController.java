@@ -20,10 +20,10 @@
 package org.olat.modules.video.ui.editor;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -48,6 +48,7 @@ import org.olat.modules.video.ui.ChapterEditController;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.repository.RepositoryEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ChaptersController extends FormBasicController {
 	public static final Event RELOAD_CHAPTERS_EVENT = new Event("video.edit.reload.chapters");
 	private static final String EDIT_ACTION = "edit";
+	private static final String SELECT_ACTION = "select";
 
 	private FormLink addChapterButton;
 	private FlexiTableElement chapterTable;
@@ -70,12 +72,16 @@ public class ChaptersController extends FormBasicController {
 	private VideoManager videoManager;
 
 	private final long durationInSeconds;
+	private String currentTimeCode;
+	private final Translator videoTranslator;
+
 
 	public ChaptersController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							  long durationInSeconds) {
 		super(ureq, wControl, "chapters");
-		this.repositoryEntry = repositoryEntry;
+ 		this.repositoryEntry = repositoryEntry;
 		this.durationInSeconds = durationInSeconds;
+		videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		initForm(ureq);
 		loadTableModel();
 	}
@@ -89,11 +95,7 @@ public class ChaptersController extends FormBasicController {
 
 	private void loadTableModel() {
 		List<VideoChapterTableRow> chapters = videoManager.loadChapters(repositoryEntry.getOlatResource());
-		if (chapters == null) {
-			tableModel.setObjects(new ArrayList<>());
-		} else {
-			tableModel.setObjects(chapters);
-		}
+		tableModel.setObjects(Objects.requireNonNullElseGet(chapters, ArrayList::new));
 		chapterTable.reset(true, true, true);
 	}
 
@@ -103,7 +105,8 @@ public class ChaptersController extends FormBasicController {
 				"form.chapter.add", formLayout, Link.BUTTON);
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.start));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.start,
+				SELECT_ACTION));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.text));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey(),
 				translate(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey()), EDIT_ACTION));
@@ -119,7 +122,7 @@ public class ChaptersController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (chapterEditController == source) {
 			if (event == Event.DONE_EVENT) {
-				addOrUpdateChapter(ureq, chapterEditController.getVideoChapterTableRow());
+				doAddOrUpdateChapter(ureq, chapterEditController.getVideoChapterTableRow());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -129,7 +132,7 @@ public class ChaptersController extends FormBasicController {
 		super.event(ureq, source, event);
 	}
 
-	private void addOrUpdateChapter(UserRequest ureq, VideoChapterTableRow row) {
+	private void doAddOrUpdateChapter(UserRequest ureq, VideoChapterTableRow row) {
 		List<VideoChapterTableRow> chapters = new ArrayList<>(tableModel.getObjects());
 		if (!chapters.contains(row)){
 			chapters.add(row);
@@ -148,7 +151,7 @@ public class ChaptersController extends FormBasicController {
 
 
 	private void sortAndAlignChapters(List<VideoChapterTableRow> chapters) {
-		Collections.sort(chapters, Comparator.comparing(VideoChapterTableRow::getBegin));
+		chapters.sort(Comparator.comparing(VideoChapterTableRow::getBegin));
 		for (int i = 1; i <= chapters.size(); i++) {
 			if (i < chapters.size()) {
 				chapters.get(i - 1).setEnd(chapters.get(i).getBegin());
@@ -160,13 +163,28 @@ public class ChaptersController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (event instanceof SelectionEvent) {
-			SelectionEvent selectionEvent = (SelectionEvent) event;
+		if (event instanceof SelectionEvent selectionEvent) {
 			VideoChapterTableRow row = tableModel.getObject(selectionEvent.getIndex());
 			if (EDIT_ACTION.equals(selectionEvent.getCommand())) {
 				doEdit(ureq, row, true);
+			} else if (SELECT_ACTION.equals(selectionEvent.getCommand())) {
+				doSelect(ureq, row);
 			}
+		} else if (addChapterButton == source) {
+			long timeInMs = currentTimeCode != null ? Math.round(Double.parseDouble(currentTimeCode)) * 1000L : 0L;
+			Date currentDate = new Date(timeInMs);
+			VideoChapterTableRow row = new VideoChapterTableRow(
+					videoTranslator.translate("video.chapter.new"),
+					TimelineModel.durationString(timeInMs),
+					currentDate,
+					currentDate
+			);
+			doEdit(ureq, row, false);
 		}
+	}
+
+	private void doSelect(UserRequest ureq, VideoChapterTableRow row) {
+		fireEvent(ureq, new ChapterSelectedEvent(row.getChapterName(), row.getBegin().getTime()));
 	}
 
 	private void doEdit(UserRequest ureq, VideoChapterTableRow row, boolean chapterExists) {
@@ -178,7 +196,6 @@ public class ChaptersController extends FormBasicController {
 				tableModel.getObjects(), durationInSeconds);
 		listenTo(chapterEditController);
 
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		String title = videoTranslator.translate("video.chapter." + (chapterExists ? "edit" : "new"));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				chapterEditController.getInitialComponent(), true, title);
@@ -189,5 +206,13 @@ public class ChaptersController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 
+	}
+
+	public void setCurrentTimeCode(String currentTimeCode) {
+		this.currentTimeCode = currentTimeCode;
+	}
+
+	public void handleDeleted() {
+		loadTableModel();
 	}
 }

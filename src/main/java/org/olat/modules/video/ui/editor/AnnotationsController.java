@@ -175,6 +175,7 @@ public class AnnotationsController extends FormBasicController {
 				.stream()
 				.sorted(new VideoMarkerRowComparator())
 				.forEach((m) -> annotationsKV.add(SelectionValues.entry(m.getId(), m.getText())));
+		flc.contextPut("hasAnnotations", !annotationsKV.isEmpty());
 		annotationsDropdown.setKeysAndValues(annotationsKV.keys(), annotationsKV.values(), null);
 		annotationsDropdown.setEscapeHtml(false);
 		if (videoMarkerId != null) {
@@ -258,12 +259,9 @@ public class AnnotationsController extends FormBasicController {
 				int duration = Integer.parseInt(durationEl.getValue());
 				Date end = DateUtils.addSeconds(start, duration);
 				endEl.setValue(timeFormat.format(end));
-			} catch (Exception e) {
-				//
-			}
-		} else if (startEl == source) {
-			try {
-				selectStartTime();
+				if (startEl == source) {
+					selectStartTime();
+				}
 			} catch (Exception e) {
 				//
 			}
@@ -323,11 +321,11 @@ public class AnnotationsController extends FormBasicController {
 		} else {
 			newVideoMarker.setBegin(new Date(0));
 		}
-		newVideoMarker.setText(timeFormat.format(newVideoMarker.getBegin()));
-		newVideoMarker.setLeft(25);
-		newVideoMarker.setTop(25);
-		newVideoMarker.setWidth(50);
-		newVideoMarker.setHeight(50);
+		newVideoMarker.setText(translate("form.annotation.new"));
+		newVideoMarker.setLeft(0.25);
+		newVideoMarker.setTop(0.25);
+		newVideoMarker.setWidth(0.50);
+		newVideoMarker.setHeight(0.50);
 		newVideoMarker.setStyle(colorsKV.keys()[0]);
 
 		videoMarkerId = newVideoMarker.getId();
@@ -367,5 +365,12 @@ public class AnnotationsController extends FormBasicController {
 			videoManager.saveMarkers(videoMarkers, repositoryEntry.getOlatResource());
 			loadModel();
 		}
+	}
+
+	public void handleDeleted(String id) {
+		if (id.equals(videoMarkerId)) {
+			videoMarkerId = null;
+		}
+		loadModel();
 	}
 }
