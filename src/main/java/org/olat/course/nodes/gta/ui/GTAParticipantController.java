@@ -120,7 +120,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, gtaNode, userCourseEnv.getCourseEnvironment(), userCourseEnv, true, true, true);
 		initContainer(ureq);
-		process(ureq);
+		process(ureq, true);
 	}
 	
 	@Override
@@ -426,7 +426,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 		
 		cleanUpProcess();
-		process(ureq);
+		process(ureq, true);
 
 		//do send e-mail
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {
@@ -981,7 +981,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else if("reload".equals(event.getCommand())) {
 			cleanUpProcess();
 			resetDueDates();
-			process(ureq);
+			process(ureq, true);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.event(ureq, source, event);
@@ -993,13 +993,13 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
 				resetDueDates();
-				process(ureq);
+				process(ureq, true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(revisionDocumentsCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
-				process(ureq);
+				process(ureq, true);
 			}
 		} else if(businessGroupChooserCtrl == source) {
 			if(event == Event.DONE_EVENT && businessGroupChooserCtrl.getSelectGroup() != null) {
@@ -1007,7 +1007,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 				resetDueDates();
 				assessedGroup = businessGroupChooserCtrl.getSelectGroup();
 				setGroupHeaders(assessedGroup);
-				process(ureq);
+				process(ureq, true);
 			}
 			chooserCalloutCtrl.deactivate();
 			cleanUpPopups();
@@ -1022,7 +1022,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		} else if(confirmResetTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
-				process(ureq);
+				process(ureq, true);
 			}
 			cmc.deactivate();
 			cleanUpPopups();
@@ -1034,7 +1034,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 						getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.user);
 			} else if(event == Event.DONE_EVENT) {
 				cleanUpProcess();
-				process(ureq);
+				process(ureq, true);
 			}
 			
 			if(submitButton != null) {
@@ -1044,12 +1044,12 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(event == Event.DONE_EVENT) {
 				assignTaskAutomatically(ureq, confirmOptionalAssignmentCtrl.getTask());
 				cleanUpProcess();
-				process(ureq);
+				process(ureq, true);
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
 				optionalTaskRefused = true;
 				cleanUpProcess();
-				process(ureq);
+				process(ureq, true);
 			}
 			cmc.deactivate();
 			cleanUpPopups();

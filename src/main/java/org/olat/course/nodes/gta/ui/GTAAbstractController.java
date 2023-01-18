@@ -198,7 +198,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 
 	protected abstract void initContainer(UserRequest ureq);
 	
-	protected final void process(UserRequest ureq) {
+	protected final void process(UserRequest ureq, boolean collapseContent) {
 		Task task;
 		if(businessGroupTask) {
 			task = gtaManager.getTask(assessedGroup, taskList);
@@ -268,8 +268,9 @@ public abstract class GTAAbstractController extends BasicController implements G
 		resetTask(ureq, task);
 		
 		nodeLog(task);
-		collapsedContents(task);
-		
+		if(collapseContent) {
+			collapsedContents(task);
+		}
 		if(userCourseEnv != null && getIdentity().equals(userCourseEnv.getIdentityEnvironment().getIdentity())) {
 			// recalculate potential changes in status
 			userCourseEnv.getScoreAccounting().evaluateAll();
@@ -784,11 +785,15 @@ public abstract class GTAAbstractController extends BasicController implements G
 	private void doShow(UserRequest ureq) {
 		String step = ureq.getParameter("step");
 		doSaveStepPreferences(ureq, step, Boolean.TRUE);
+		
+		process(ureq, false);
 	}
 	
 	private void doHide(UserRequest ureq) {
 		String step = ureq.getParameter("step");
 		doSaveStepPreferences(ureq, step, Boolean.FALSE);
+
+		process(ureq, false);
 	}
 
 	private void doSaveStepPreferences(UserRequest ureq, String step, Boolean showHide) {

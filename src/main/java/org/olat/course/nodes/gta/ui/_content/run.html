@@ -308,6 +308,13 @@
 <script>
 "use strict";
 jQuery(function() {
+	if(window.o_gtaCountDowns) {
+		for(var i=window.o_gtaCountDowns.length; i-->0; ) {
+			window.o_gtaCountDowns[i].cancel();
+		}
+	}
+	window.o_gtaCountDowns = new Array();
+	
 	function displayRemainingTime(wrapperId, hourCssClass, minuteCssClass, remaining) {
 		var hours = Math.floor(remaining / (60 * 60 * 1000));
 		var minutes = Math.floor((remaining - (hours * 60 * 60 * 1000)) / (60 * 1000));
@@ -333,6 +340,7 @@ jQuery(function() {
 						periodic.cancel();
 					}
 				});
+				window.o_gtaCountDowns.push(periodic);
 	    	}
 		}
 	}
