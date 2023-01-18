@@ -152,7 +152,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		this.withReset = withReset;
 		isAdmin = coachCourseEnv.isAdmin();
 		initContainer(ureq);
-		process(ureq);
+		process(ureq, true);
 	}
 
 	@Override
@@ -555,7 +555,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(task != null) {
 			gtaManager.updateTask(task, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 			cleanUpProcess();
-			process(ureq);
+			process(ureq, true);
 		}
 	}
 
@@ -570,7 +570,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		if(task != null && task.getTaskStatus() == TaskProcess.graded) {
 			gtaManager.updateTask(task, TaskProcess.grading, gtaNode, false, getIdentity(), Role.coach);
 			cleanUpProcess();
-			process(ureq);
+			process(ureq, true);
 		}
 	}
 	
@@ -678,7 +678,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				|| participantGradingCtrl == source
 				|| groupGradingCtrl == source) {
 			cleanUpProcess();
-			process(ureq);
+			process(ureq, true);
 		} else if(submitCorrectionsCtrl == source) {
 			if(event instanceof SubmitEvent) {
 				Task assignedTask = submitCorrectionsCtrl.getAssignedTask();
@@ -786,7 +786,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
-		process(ureq);
+		process(ureq, true);
 	}
 	
 	private void doConfirmRevisions(UserRequest ureq, Task task) {
@@ -805,7 +805,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		gtaManager.log("Review", "need revision", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
-		process(ureq);
+		process(ureq, true);
 	}
 	
 	private void doConfirmCollectTask(UserRequest ureq, Task assignedTask) {
@@ -868,7 +868,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		gtaManager.log("Collect", "collect documents", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
-		process(ureq);
+		process(ureq, true);
 	}
 	
 	private void doConfirmBackToSubmission(UserRequest ureq, Task assignedTask) {
@@ -896,7 +896,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 					getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			
 			cleanUpProcess();
-			process(ureq);
+			process(ureq, true);
 		}
 	}
 	
@@ -920,7 +920,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		gtaManager.log("Allow reset task", "Allow the user to reset the task", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		cleanUpProcess();
-		process(ureq);
+		process(ureq, true);
 		showInfo("info.task.reset.allowed", (String)null);
 	}
 	
