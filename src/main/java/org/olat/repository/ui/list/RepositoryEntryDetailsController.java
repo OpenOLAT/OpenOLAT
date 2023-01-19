@@ -40,6 +40,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.run.InfoCourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.ui.PriceMethod;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +58,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryDetailsController.class);
 	
 	private final RepositoryEntryDetailsHeaderController headerCtrl;
+	private final RepositoryEntryResourceInfoDetailsHeaderController resourceInfoHeaderCtrl;
 	private final RepositoryEntryDetailsDescriptionController accessListCtrl;
 	private final RepositoryEntryDetailsMetadataController metadataCtrl;
 	private final RepositoryEntryDetailsLinkController linkCtrl;
@@ -70,7 +72,7 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 	@Autowired
 	private CourseModule courseModule;
 
-	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
+	public RepositoryEntryDetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean isResourceInfoView) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		this.entry = entry;
@@ -84,17 +86,28 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
-		
+
+		List<PriceMethod> types;
+		resourceInfoHeaderCtrl = new RepositoryEntryResourceInfoDetailsHeaderController(ureq, wControl, entry);
 		headerCtrl = new RepositoryEntryDetailsHeaderController(ureq, wControl, entry, isMember, true);
-		listenTo(headerCtrl);
-		mainVC.put("header", headerCtrl.getInitialComponent());
+
+		if (isResourceInfoView) {
+			listenTo(resourceInfoHeaderCtrl);
+			mainVC.put("header", resourceInfoHeaderCtrl.getInitialComponent());
+			types = resourceInfoHeaderCtrl.getTypes();
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, true);
+		} else {
+			listenTo(headerCtrl);
+			mainVC.put("header", headerCtrl.getInitialComponent());
+			types = headerCtrl.getTypes();
+			metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, types, ureq.getUserSession().getRoles().isGuestOnly());
+		}
 		
 		accessListCtrl = new RepositoryEntryDetailsDescriptionController(ureq, wControl, entry);
 		listenTo(accessListCtrl);
 		mainVC.put("description", accessListCtrl.getInitialComponent());
 		mainVC.contextPut("hasDescription", Boolean.valueOf(accessListCtrl.hasDescription()));
-		
-		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, headerCtrl.getTypes());
+
 		listenTo(metadataCtrl);
 		mainVC.put("metadata", metadataCtrl.getInitialComponent());
 		
@@ -144,6 +157,10 @@ public abstract class RepositoryEntryDetailsController extends BasicController {
 				doStart(ureq);
 			} else if (event == RepositoryEntryDetailsHeaderController.BOOK_EVENT) {
 				doBook(ureq);
+			}
+		} else if (source == resourceInfoHeaderCtrl) {
+			if (event == RepositoryEntryResourceInfoDetailsHeaderController.START_EVENT) {
+				doStart(ureq);
 			}
 		}
 		super.event(ureq, source, event);

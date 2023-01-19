@@ -119,7 +119,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 	private MarkManager markManager;
 
 	public RepositoryEntryDetailsMetadataController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
-			boolean isMember, boolean isParticipant, List<PriceMethod> types) {
+			boolean isMember, boolean isParticipant, List<PriceMethod> types, boolean isGuestOnly) {
 		super(ureq, wControl, Util.getPackageVelocityRoot(RepositoryEntryDetailsController.class) + "/details_metadata.html");
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
@@ -127,7 +127,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 		this.isMember = isMember;
 		this.isParticipant = isParticipant;
 		this.types = types;
-		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		this.guestOnly = isGuestOnly;
 		
 		initForm(ureq);
 	}

@@ -46,7 +46,7 @@ public class OAIDCMetadata implements XmlWritable {
     public static final String NAMESPACE_URI = "http://www.openarchives.org/OAI/2.0/oai_dc/";
     public static final String SCHEMA_LOCATION = "http://www.openarchives.org/OAI/2.0/oai_dc.xsd";
     public static final String NAMESPACE_DC = "http://purl.org/dc/elements/1.1/";
-    private static final String DEFAULT_FIELD = "value";
+
     protected List<Element> elements = new ArrayList<>();
 
     public static OAIDCMetadata parse(InputStream inputStream) throws XmlReaderException {

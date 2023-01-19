@@ -10,6 +10,7 @@
 
 package org.olat.modules.oaipmh.dataprovider.repository;
 
+import org.olat.core.helpers.Settings;
 import org.olat.modules.oaipmh.common.model.DeletedRecord;
 import org.olat.modules.oaipmh.common.model.Granularity;
 
@@ -125,10 +126,10 @@ public class RepositoryConfiguration {
     public RepositoryConfiguration withDefaults() {
         this.repositoryName = "Repository";
         this.earliestDate = new Date();
-        this.baseUrl = "https://localhost/openolat_lms_war_exploded/oaipmh";
-        this.maxListIdentifiers = 3;
-        this.maxListRecords = 3;
-        this.maxListSets = 5;
+        this.baseUrl = Settings.getServerContextPathURI() + "/oaipmh";
+        this.maxListIdentifiers = 100;
+        this.maxListRecords = 100;
+        this.maxListSets = 10;
         this.granularity = Granularity.Day;
         this.deleteMethod = DeletedRecord.NO;
 

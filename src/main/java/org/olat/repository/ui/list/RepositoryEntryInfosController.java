@@ -37,7 +37,7 @@ public class RepositoryEntryInfosController extends RepositoryEntryDetailsContro
 	private final boolean inRuntime;
 	
 	public RepositoryEntryInfosController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean inRuntime) {
-		super(ureq, wControl, entry);
+		super(ureq, wControl, entry, false);
 		this.inRuntime = inRuntime;
 	}
 	

@@ -733,8 +733,8 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		// OER-release
 		SelectionValues oerValues = new SelectionValues();
-		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), "Freigegeben"));
-		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), "Nicht freigegeben"));
+		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), translate("filter.released")));
+		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), translate("filter.not.released")));
 		filters.add(new FlexiTableSingleSelectionFilter("Freigabe externer OER Katalog",
 				AuthorSourceFilter.OERRELASE.name(), oerValues, false));
 		

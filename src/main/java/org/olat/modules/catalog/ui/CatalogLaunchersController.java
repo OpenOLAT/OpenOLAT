@@ -80,7 +80,7 @@ public class CatalogLaunchersController extends BasicController {
 		List<String> componentNames = new ArrayList<>(launchers.size());
 		for (CatalogLauncher launcher : launchers) {
 			CatalogLauncherHandler handler = catalogService.getCatalogLauncherHandler(launcher.getType());
-			if (handler.isEnabled()) {
+			if (handler != null && handler.isEnabled()) {
 				Controller launcherCtrl = handler.createRunController(ureq, getWindowControl(), getTranslator(), launcher, defaultSearchParams);
 				if (launcherCtrl != null) {
 					listenTo(launcherCtrl);

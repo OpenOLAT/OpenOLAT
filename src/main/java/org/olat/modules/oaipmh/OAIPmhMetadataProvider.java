@@ -19,20 +19,19 @@
  */
 package org.olat.modules.oaipmh;
 
-import org.olat.core.gui.media.MediaResource;
+import org.olat.modules.oaipmh.dataprovider.model.MetadataItems;
+import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
+
+import java.util.List;
+
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface OAIService {
+public interface OAIPmhMetadataProvider {
 
-	/**
-	 * @param requestParameter
-	 * @return MediaResource of type XML in Dublin Core-Standard with OAI
-	 */
-	public MediaResource handleOAIRequest(String requestParameter, String requestIdentifierParameter,
-										  String requestMetadataPrefixParameter, String requestResumptionTokenParameter,
-										  String requestFromParameter, String requestUntilParameter,
-										  String requestSetParameter);
+    public String getMetadataPrefix();
+
+    public List<MetadataItems> getMetadata(MetadataSetRepository setRepository);
 
 }

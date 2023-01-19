@@ -211,13 +211,13 @@ public class RepositoryEntryAuthorQueries {
 		
 		needIdentity |= appendAccessSubSelect(sb, params);
 
-		/*if (params.getOerRelease() != null && params.getOerRelease() != SearchAuthorRepositoryEntryViewParams.OERRelease.all) {
+		if (params.getOerRelease() != null && params.getOerRelease() != SearchAuthorRepositoryEntryViewParams.OERRelease.all) {
 			if (params.getOerRelease() == SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased) {
 				sb.append(" and v.canIndexMetadata=false");
 			} else {
 				sb.append(" and v.canIndexMetadata=true");
 			}
-		}*/
+		}
 		
 		if(params.getResourceUsage() != null && params.getResourceUsage() != ResourceUsage.all) {
 			sb.append(" and res.resName!='CourseModule' and");	

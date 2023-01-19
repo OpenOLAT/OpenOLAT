@@ -182,8 +182,6 @@
 	  <property name="jobClass" value="org.olat.modules.gotomeeting.manager.GoToRefreshJob" />
 	</bean>
 
-	<bean id="OAIService" class="org.olat.modules.oaipmh.OAIServiceImpl">
-	</bean>
 	
 	<!-- Portfolio admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">

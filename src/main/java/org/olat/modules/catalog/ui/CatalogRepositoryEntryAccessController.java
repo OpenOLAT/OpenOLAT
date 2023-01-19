@@ -73,7 +73,7 @@ public class CatalogRepositoryEntryAccessController extends BasicController {
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());
 		
-		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, headerCtrl.getTypes());
+		metadataCtrl = new RepositoryEntryDetailsMetadataController(ureq, wControl, entry, isMember, isParticipant, headerCtrl.getTypes(), ureq.getUserSession().getRoles().isGuestOnly());
 		listenTo(metadataCtrl);
 		mainVC.put("metadata", metadataCtrl.getInitialComponent());
 		

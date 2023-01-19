@@ -310,9 +310,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
-		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
-		boolean isEntryLicenseAllowedForIndexing = licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString());
 		List<LicenseType> allowedLicensesTypes = licenseService.loadLicensesTypesByKeys(licenseRestrictions);
 		List<String> allowedLicenses = allowedLicensesTypes.stream()
 				.filter(type -> StringHelper.containsNonWhitespace(type.getName()))
@@ -321,12 +319,12 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		oaiCont = FormLayoutContainer.createVerticalFormLayout("oaiIndexingWarning", getTranslator());
 		oaiCont.setFormWarning(translate("cif.metadata.warning",
-				isEntryPublished ? null : translate("cif.metadata.release"),
-				!isEntryLicenseAllowedForIndexing ? translate("cif.metadata.license.requirements") +
+				isEntryPublished ? "" : translate("cif.metadata.release"),
+				isEntryLicenseAllowedForIndexing() ? "" : translate("cif.metadata.license.requirements") +
 						allowedLicenses.toString()
 								.replace("[", "")
 								.replace("]", "")
-						+ "</li>" : ""));
+						+ "</li>"));
 		generalCont.add("oaiIndexingWarning", oaiCont);
 
 		updateIndexMetadataWarningUI();
@@ -338,6 +336,13 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
+	}
+
+	private boolean isEntryLicenseAllowedForIndexing() {
+		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
+		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
+		return !oaiPmhModule.isLicenseRestrict()
+				|| (oaiPmhModule.isLicenseRestrict() && licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString()));
 	}
 
 	private String getAccessTranslatedValue(String i18nKey, String explanationI18nKey, String iconCssClass) {
@@ -463,7 +468,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private void updateIndexMetadataWarningUI() {
-		oaiCont.setVisible(enableMetadataIndexingEl.isSelected(0) && entry.getEntryStatus() != RepositoryEntryStatusEnum.published);
+		oaiCont.setVisible(enableMetadataIndexingEl.isSelected(0)
+				&& (entry.getEntryStatus() != RepositoryEntryStatusEnum.published ||
+				!isEntryLicenseAllowedForIndexing()));
 	}
 
 	private void updateCatalogLinksUI() {

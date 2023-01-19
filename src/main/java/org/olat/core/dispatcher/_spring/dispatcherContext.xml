@@ -77,6 +77,9 @@
 				<entry key="/oaipmh">
 					<ref bean="oaibean" />
 				</entry>
+				<entry key="/resourceinfo/">
+					<ref bean="resourceinfobean" />
+				</entry>
 				<entry key="/podcast/">
 					<ref bean="podcastMediaBean" />
 				</entry>
@@ -312,7 +315,10 @@
 		  class="org.olat.modules.immunityproof.ImmunityProofDispatcher" />
 
 	<bean id="oaibean"
-		  class="org.olat.modules.oaipmh.OAIDispatcher"/>
+		  class="org.olat.modules.oaipmh.dispatcher.OAIDispatcher"/>
+
+	<bean id="resourceinfobean"
+		  class="org.olat.repository.ResourceInfoDispatcher"/>
 
 		
 	<!-- podcast media dispatcher -->

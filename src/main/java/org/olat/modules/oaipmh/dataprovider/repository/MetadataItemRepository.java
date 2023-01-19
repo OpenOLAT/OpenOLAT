@@ -43,15 +43,9 @@ public class MetadataItemRepository implements ItemRepository {
         return this;
     }
 
-    public MetadataItemRepository withRepositoryItems(MetadataSetRepository setRepository) {
+    public MetadataItemRepository withRepositoryItems(List<MetadataItems> metadataItems) {
         list.clear();
-        list.addAll(MetadataItems.repositoryDCItems(setRepository));
-        return this;
-    }
-
-    public MetadataItemRepository withOORepositoryItems(MetadataSetRepository setRepository) {
-        list.clear();
-        list.addAll(MetadataItems.repositoryOOItems(setRepository));
+        list.addAll(metadataItems);
         return this;
     }
 
