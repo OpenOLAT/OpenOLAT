@@ -104,15 +104,18 @@ public class ZoomConfigurationController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+    	formLayout.setElementCssClass("o_sel_zoom_admin_configuration");
         setFormTitle("zoom.title");
         setFormInfo("zoom.info");
         setFormContextHelp("manual_admin/administration/Zoom/");
 
         moduleEnabledEl = uifactory.addCheckboxesHorizontal("zoom.module.enabled", formLayout, moduleEnabledKV.keys(), moduleEnabledKV.values());
+        moduleEnabledEl.setElementCssClass("o_sel_zoom_admin_enable");
         moduleEnabledEl.select(moduleEnabledKV.keys()[0], zoomModule.isEnabled());
         moduleEnabledEl.addActionListener(FormEvent.ONCHANGE);
 
         enableForEl = uifactory.addCheckboxesVertical("zoom.module.enable.for", formLayout, enableForKV.keys(), enableForKV.values(), 1);
+        enableForEl.setElementCssClass("o_sel_zoom_admin_enabled_for");
         enableForEl.select(enableForKV.keys()[0], zoomModule.isEnabledForCourseElement());
         enableForEl.select(enableForKV.keys()[1], zoomModule.isEnabledForCourseTool());
         enableForEl.select(enableForKV.keys()[2], zoomModule.isEnabledForGroupTool());
@@ -146,6 +149,7 @@ public class ZoomConfigurationController extends FormBasicController {
         profilesTableEl = uifactory.addTableElement(getWindowControl(), "profiles", profilesTableModel, 10, false, getTranslator(), formLayout);
 
 		addProfileButton = uifactory.addFormLink("zoom.add.configuration", formLayout, Link.BUTTON);
+		addProfileButton.setElementCssClass("o_sel_zoom_admin_add_profile");
 
         FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
         formLayout.add(buttonLayout);

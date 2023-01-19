@@ -80,12 +80,14 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
+		settingsCont.setElementCssClass("o_sel_lti13_admin_settings");
 		formLayout.add(settingsCont);
 		settingsCont.setFormContextHelp("manual_admin/administration/LTI_Integrations/");
 		
 		String[] enabledValues = new String[]{ translate("enabled") };
 		
 		moduleEnabled = uifactory.addCheckboxesHorizontal("lti13.module.enabled", settingsCont, ENABLED_KEY, enabledValues);
+		moduleEnabled.setElementCssClass("o_sel_lti13_admin_enable");
 		moduleEnabled.select(ENABLED_KEY[0], lti13Module.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
 		
@@ -104,6 +106,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		initBusinessGroupForm(businessGroupCont);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		buttonLayout.setElementCssClass("o_sel_lti13_admin_buttons");
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
 	}
@@ -165,7 +168,6 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		permissionsKeyValues.add(SelectionValues.entry(InvitationConfigurationPermission.perResource.name(), translate("activate.per.business.group")));
 		businessGroupCoachPermissionEl = uifactory.addRadiosVertical("business.group.coach.permission", "business.group.coach.permission", formLayout,
 				permissionsKeyValues.keys(), permissionsKeyValues.values());
-		businessGroupCoachPermissionEl.setHelpText(translate("business.group.coach.permission.help"));
 		
 		DeploymentConfigurationPermission permission = lti13Module.getDeploymentBusinessGroupCoachPermission();
 		if(permission != null && permissionsKeyValues.containsKey(permission.name())) {
