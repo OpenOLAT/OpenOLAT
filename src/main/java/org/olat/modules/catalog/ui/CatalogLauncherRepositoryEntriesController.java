@@ -112,7 +112,7 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 			
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if (image != null) {
-				item.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
+				item.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
 			}
 			
 			String id = "o_dml_" + CodeHelper.getRAMUniqueID();

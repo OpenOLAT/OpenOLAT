@@ -304,7 +304,7 @@ public class CatalogRepositoryEntryListController extends FormBasicController im
 	public void forgeThumbnail(CatalogRepositoryEntryRow row) {
 		VFSLeaf image = repositoryManager.getImage(row.getKey(), row.getOlatResource());
 		if (image != null) {
-			row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
+			row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
 		}
 	}
 	

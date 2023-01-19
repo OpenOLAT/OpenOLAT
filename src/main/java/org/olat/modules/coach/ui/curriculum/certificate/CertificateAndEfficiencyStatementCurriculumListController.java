@@ -486,7 +486,7 @@ public class CertificateAndEfficiencyStatementCurriculumListController extends F
 
                         VFSLeaf image = repositoryManager.getImage(row.getRepositoryEntryResourceable().getResourceableId(), row.getOlatResource());
                         if (image != null) {
-                            row.setThumbnailRelPath(mapperThumbnailKey.getUrl() + "/" + image.getName());
+                            row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(mapperThumbnailKey.getUrl() , image));
                         }
                     }
                 });
