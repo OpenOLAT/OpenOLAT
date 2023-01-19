@@ -113,6 +113,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		this.videoFile = videoManager.getMasterVideoFile(olatResource);
 		this.videoFrameCount = videoManager.getVideoFrameCount(videoFile);
 		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
+		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
 		this.movieSize = new Size(90, 50, false);
 		initForm(ureq);
 		initFilters(ureq);

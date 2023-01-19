@@ -675,14 +675,12 @@
 
 #o_video_time_bar_container {
 	height: 8px;
+	cursor: pointer;
 }
 
 #o_video_time_bar {
 	height: 100%;
 	background-color: $brand-primary;
-	transition-property: width;
-	transition-duration: 800ms;
-	transition-delay: 0ms;
 }
 
 #o_video_play_head {
@@ -690,15 +688,14 @@
 	left: 55px;
 	width: 3px;
 	background-color: $brand-primary;
+	cursor: pointer;
 	z-index: 10;
-	transition-property: left;
-	transition-duration: 800ms;
-	transition-delay: 0ms;
 
 	.o_video_play_head_marker {
 		position: absolute;
 		left: -4px;
 		top: -8px;
+		cursor: pointer;
 
 		.o_video_play_head_marker_icon {
 			color: $brand-primary;
@@ -713,6 +710,8 @@
 		top: -16px;
 		font-size: 12px;
 		font-weight: bold;
+		cursor: pointer;
+		user-select: none;
 	}
 }
 

@@ -131,6 +131,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (ftC.getFormItem().getTableDataModel() instanceof TimelineModel timelineModel) {
 			s.append("<div style=\"height: 8px;\"></div>");
 			s.append("<div class=\"o_video_timeline\">");
+			s.append("<div id=\"o_video_timeline_containment\" style=\"height: 1px; left: 70px; right: 15px; position: absolute;\"></div>");
 			renderChannelLabels(s, timelineModel);
 			renderChannels(s, ftC, timelineModel);
 			s.append("</div>");
@@ -179,7 +180,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 	private void renderChannels(StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
 		s.append("<div class=\"o_video_channels\">");
-		renderTimeChannel(s);
+		renderTimeChannel(s, timelineModel);
 		renderChannel(s, TimelineEventType.QUIZ, ftC, timelineModel);
 		renderChannel(s, TimelineEventType.ANNOTATION, ftC, timelineModel);
 		renderVideoChannel(s, timelineModel);
@@ -188,10 +189,12 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		s.append("</div>");
 	}
 
-	private void renderTimeChannel(StringOutput s) {
-		s.append("<div id=\"o_video_time_bar_container\" class=\"o_video_timeline_box\">");
-		s.append("<div id=\"o_video_time_bar\" style=\"left: 0;\"></div>");
-		s.append("</div>");
+	private void renderTimeChannel(StringOutput s, TimelineModel timelineModel) {
+		s
+				.append("<div id=\"o_video_time_bar_container\" class=\"o_video_timeline_box\" style=\"width: ")
+				.append(timelineModel.getChannelWidth()).append("px;\">")
+				.append("<div id=\"o_video_time_bar\" style=\"left: 0;\"></div>")
+				.append("</div>");
 	}
 
 	private void renderVideoChannel(StringOutput s, TimelineModel timelineModel) {
