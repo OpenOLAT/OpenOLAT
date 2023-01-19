@@ -245,8 +245,19 @@ a.b_link_mailto {
 	color: $o-content-link-color; /* need seomething for tiny */
 	&:before {
 		@include o-make-icon();
-		padding-right: 0.5em;
+		padding-right: 0.25em;
+		padding-left: 0.25em;
 		content: $fa-var-envelope-o;
+
+	}
+}
+a.b_link_tel {
+	color: $o-content-link-color; /* need seomething for tiny */
+	&:before {
+		@include o-make-icon();
+		padding-right: 0.25em;
+		padding-left: 0.25em;
+		content: $fa-var-phone;
 
 	}
 }
@@ -254,7 +265,8 @@ a.b_link_forward {
 	color: $o-content-link-color; /* need seomething for tiny */
 	&:before {
 		@include o-make-icon();
-		padding-right: 0.5em;
+		padding-right: 0.25em;
+		padding-left: 0.25em;
 		content: $fa-var-share ;
 
 	}

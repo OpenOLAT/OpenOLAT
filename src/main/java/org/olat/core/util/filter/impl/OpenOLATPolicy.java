@@ -46,7 +46,8 @@ public class OpenOLATPolicy {
 
 	private static final Pattern PARAGRAPH = Pattern.compile("([\\p{L}\\p{N},'\\.\\s\\-_\\(\\)]|&[0-9]{2};)*");
 	private static final Pattern COLORNAME = Pattern.compile("(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|rebeccapurple|purple|red|silver|teal|white|yellow)");
-	private static final Pattern OFFSITEURL = Pattern.compile("(\\s)*((ht)tp(s?)://|mailto:)[\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");
+	private static final Pattern OFFSITEURL = Pattern.compile("(\\s)*((ht)tp(s?)://)[\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");
+	private static final Pattern SPECIALPROTOCOLS = Pattern.compile("(\\s)*(mailto:|tel:)[\\+\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");	
 	private static final Pattern HTMLCLASS = Pattern.compile("[a-zA-Z0-9\\s,-_]+");
 	private static final Pattern ANYTHING = Pattern.compile(".*");
 	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
@@ -67,8 +68,10 @@ public class OpenOLATPolicy {
 		.allowAttributes("lang")
 			.matching(Pattern.compile("[a-zA-Z]{2,20}")).globally()
 			
-		.allowUrlProtocols("mailto", "http", "https")
+		.allowUrlProtocols("http", "https")
 			.allowElements("img", "a", "video", "audio")
+			.allowUrlProtocols("mailto", "tel")
+			.allowElements("a")
 		// Fix::dir
 		.allowAttributes("charoff")
 			.matching(Pattern.compile("numberOrPercent"))
@@ -167,7 +170,7 @@ public class OpenOLATPolicy {
 		.allowAttributes("rel")
 			.matching(false,"nofollow").onElements("a")
 		.allowAttributes("href")
-			.matching(new OrPredicate(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL, ANCHOR), new StringsPredicate(VARIABLES)))
+			.matching(new OrPredicate(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL, ANCHOR, SPECIALPROTOCOLS), new StringsPredicate(VARIABLES)))
 			.onElements("a")
 	    .allowAttributes("onclick")
 			.matching(new OnClickValues())
@@ -424,16 +427,18 @@ public class OpenOLATPolicy {
 		private final Pattern b;
 		private final Pattern c;
 		private final Pattern d;
+		private final Pattern e;
 		
 		public Patterns(Pattern a, Pattern b) {
-			this(a, b, null, null);
+			this(a, b, null, null, null);
 		}
 		
-		public Patterns(Pattern a, Pattern b, Pattern c, Pattern d) {
+		public Patterns(Pattern a, Pattern b, Pattern c, Pattern d, Pattern e) {
 			this.a = a;
 			this.b = b;
 			this.c = c;
 			this.d = d;
+			this.e = e;
 		}
 
 		@Override
@@ -441,7 +446,8 @@ public class OpenOLATPolicy {
 			return a.matcher(s).matches()
 					|| b.matcher(s).matches()
 					|| c == null || c.matcher(s).matches()
-					|| d == null || d.matcher(s).matches();
+					|| d == null || d.matcher(s).matches()
+					|| e == null || e.matcher(s).matches();
 		}
 		
 		// Needed for Java8 compat with later Guava that extends
