@@ -113,12 +113,16 @@ public class ResourceInfoDispatcher implements Dispatcher {
 			requestedData = requestedData.substring(0, requestedData.indexOf('.'));
 			RepositoryEntry entry = getRepositoryEntryById(Long.valueOf(requestedData));
 
-			MediaResource image = getRepositoryEntryImage(entry);
-			// Only return image if correct mimeType is used
-			if (image.getContentType().contains(mimeType)) {
-				ServletUtil.serveResource(request, response, image);
+			if (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
+				MediaResource image = getRepositoryEntryImage(entry);
+				// Only return image if correct mimeType is used
+				if (image.getContentType().contains(mimeType)) {
+					ServletUtil.serveResource(request, response, image);
+				} else {
+					response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				}
 			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND);
+				DispatcherModule.redirectToServiceNotAvailable(response);
 			}
 		} else {
 			dispatch(ureq, uriPrefix, requestedData, response);
@@ -148,31 +152,35 @@ public class ResourceInfoDispatcher implements Dispatcher {
 		DmzBFWCParts bfwcParts = new DmzBFWCParts();
 		bfwcParts.showTopNav(false);
 		final RepositoryEntry entry = getRepositoryEntryById(Long.valueOf(requestedData));
-		ControllerCreator controllerCreator = (uureq, wControl) -> new RepositoryEntryPublicInfosController(uureq, wControl, entry);
-		bfwcParts.setContentControllerCreator(controllerCreator);
+		if (entry.getCanIndexMetadata() && entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
+			ControllerCreator controllerCreator = (uureq, wControl) -> new RepositoryEntryPublicInfosController(uureq, wControl, entry);
+			bfwcParts.setContentControllerCreator(controllerCreator);
 
-		Windows windows = Windows.getWindows(usess);
-		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
-		if (!windowHere) {
-			synchronized (windows) {
-				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
-				Window window = cc.getWindow();
-				window.setUriPrefix(uriPrefix);
-				ureq.overrideWindowComponentID(window.getDispatchID());
-				windows.registerWindow(cc);
+			Windows windows = Windows.getWindows(usess);
+			boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
+			if (!windowHere) {
+				synchronized (windows) {
+					ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
+					Window window = cc.getWindow();
+					window.setUriPrefix(uriPrefix);
+					ureq.overrideWindowComponentID(window.getDispatchID());
+					windows.registerWindow(cc);
+				}
 			}
-		}
 
-		windows.getWindowManager().setAjaxWanted(ureq);
-		ChiefController chiefController = windows.getChiefController(ureq);
-		try {
-			WindowControl wControl = chiefController.getWindowControl();
-			NewControllerFactory.getInstance().launch(ureq, wControl);
-			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
-			w.dispatchRequest(ureq, false); // renderOnly
-			chiefController.resetReload();
-		} catch (Exception e) {
-			log.error("", e);
+			windows.getWindowManager().setAjaxWanted(ureq);
+			ChiefController chiefController = windows.getChiefController(ureq);
+			try {
+				WindowControl wControl = chiefController.getWindowControl();
+				NewControllerFactory.getInstance().launch(ureq, wControl);
+				Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
+				w.dispatchRequest(ureq, false); // renderOnly
+				chiefController.resetReload();
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		} else {
+			DispatcherModule.redirectToServiceNotAvailable(response);
 		}
 	}
 
