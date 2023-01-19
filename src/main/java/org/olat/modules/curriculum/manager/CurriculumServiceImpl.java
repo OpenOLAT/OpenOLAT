@@ -414,7 +414,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public boolean deleteCurriculumElement(CurriculumElementRef element) {
-		if(element == null) return true; // nothing to do
+		if(element == null || element.getKey() == null) return true; // nothing to do
 
 		boolean delete = true;
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
@@ -423,6 +423,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 
 		CurriculumElementImpl reloadedElement = (CurriculumElementImpl)curriculumElementDao.loadByKey(element.getKey());
+		if(reloadedElement == null) {
+			return true;
+		}
 
 		// remove relations to repository entries
 		List<RepositoryEntryToGroupRelation> relationsToRepo = repositoryEntryRelationDao.getCurriculumRelations(reloadedElement);
