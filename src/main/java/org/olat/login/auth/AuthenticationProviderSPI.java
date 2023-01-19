@@ -34,8 +34,11 @@ import org.olat.login.validation.ValidationResult;
 public interface AuthenticationProviderSPI {
 
 	public List<String> getProviderNames();
+
+	public boolean canAddAuthenticationUsername(String provider);
 	
 	public boolean canChangeAuthenticationUsername(String provider);
+	
 	
 	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername);
 	

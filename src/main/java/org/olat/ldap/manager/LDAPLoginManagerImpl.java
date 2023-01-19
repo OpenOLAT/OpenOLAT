@@ -171,8 +171,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	}
 
 	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return canChangeAuthenticationUsername(provider);
+	}
+	
+	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
-		return "LDAP".equals(provider);
+		return ldapLoginModule.isLDAPEnabled() && LDAPAuthenticationController.PROVIDER_LDAP.equals(provider);
 	}
 
 	@Override

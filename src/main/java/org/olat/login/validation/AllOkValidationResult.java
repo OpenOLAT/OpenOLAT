@@ -17,11 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.selenium.page.course;
+package org.olat.login.validation;
 
-import org.olat.selenium.page.graphene.OOGraphene;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
+import java.util.List;
 
 /**
  * 
@@ -29,17 +27,15 @@ import org.openqa.selenium.WebDriver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ZoomPage {
+public class AllOkValidationResult implements ValidationResult {
 
-	private final WebDriver browser;
-	
-	public ZoomPage(WebDriver browser) {
-		this.browser = browser;
+	@Override
+	public boolean isValid() {
+		return true;
 	}
-	
-	public ZoomPage assertOnZoomPanel() {
-		By zoomPanelBy = By.id("zoom-run-panel");
-		OOGraphene.waitElement(zoomPanelBy, browser);
-		return this;
+
+	@Override
+	public List<ValidationDescription> getInvalidDescriptions() {
+		return List.of();
 	}
 }

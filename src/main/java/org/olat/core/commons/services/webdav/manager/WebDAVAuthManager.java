@@ -93,7 +93,12 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		names.add(PROVIDER_HA1_INSTITUTIONAL_EMAIL);
 		return names;
 	}
-
+	
+	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return false;
+	}
+	
 	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
 		return false;
