@@ -408,6 +408,10 @@ public class UserAdminController extends BasicController implements Activateable
 					|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
 					|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles);
 		}
+		
+		if(identityRoles.getOrganisations().isEmpty()) {
+			return managerRoles.isRolesManager() || managerRoles.isAdministrator();
+		}
 
 		// if user is guest only allowed to edit if configured
 		if(identityRoles.isGuestOnly()) {

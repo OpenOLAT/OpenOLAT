@@ -30,6 +30,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -124,6 +125,26 @@ public class AuthenticationDAO {
 		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
 		  .append(" inner join auth.identity as ident")
 		  .append(" where auth.provider=:provider");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("provider", provider)
+				.getResultList();
+	}
+	
+	/**
+	 * 
+	 * @param provider The authentication provider
+	 * @return A list of identities (the user is not fetched)
+	 */
+	public List<Identity> getIdentitiesWithAuthenticationWithoutOrgnisation(String provider) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ident from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join auth.identity as ident")
+		  .append(" where auth.provider=:provider")
+		  .append(" and not exists (select orgtomember.key from bgroupmember as orgtomember ")
+		  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+		  .append("  where orgtomember.identity.key=ident.key and orgtomember.role ").in(OrganisationRoles.user)
+		  .append(" )");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("provider", provider)

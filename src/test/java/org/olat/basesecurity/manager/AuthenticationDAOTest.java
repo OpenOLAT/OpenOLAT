@@ -19,6 +19,9 @@
  */
 package org.olat.basesecurity.manager;
 
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -30,6 +33,8 @@ import org.junit.Test;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.ldap.ui.LDAPAuthenticationController;
@@ -54,6 +59,8 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	private BaseSecurity securityManager;
 	@Autowired
 	private AuthenticationDAO authenticationDao;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void updateCredential() {
@@ -93,6 +100,29 @@ public class AuthenticationDAOTest extends OlatTestCase {
 
 		List<Identity> identities = authenticationDao.getIdentitiesWithAuthentication("SPECAUTH");
 		Assert.assertTrue(identities.contains(ident.getIdentity()));
+	}
+	
+	@Test
+	public void getIdentitiesWithAuthenticationWithoutOrgnisation() {
+		String token1 = UUID.randomUUID().toString();
+		IdentityWithLogin ident1 = JunitTestHelper.createAndPersistRndUser("authdao-36-");
+		Authentication auth1 = securityManager.createAndPersistAuthentication(ident1.getIdentity(), "SPECAUTH", BaseSecurity.DEFAULT_ISSUER,
+				ident1.getLogin(), token1, null);
+		String token2 = UUID.randomUUID().toString();
+		IdentityWithLogin identWithoutOrg = JunitTestHelper.createAndPersistRndUser("authdao-36-");
+		Authentication auth2 = securityManager.createAndPersistAuthentication(identWithoutOrg.getIdentity(), "SPECAUTH", BaseSecurity.DEFAULT_ISSUER,
+				identWithoutOrg.getLogin(), token2, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth1);
+		Assert.assertNotNull(auth2);
+		
+		organisationService.removeMember(identWithoutOrg, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> identities = authenticationDao.getIdentitiesWithAuthenticationWithoutOrgnisation("SPECAUTH");
+		assertThat(identities)
+			.contains(identWithoutOrg.getIdentity())
+			.doesNotContain(ident1.getIdentity());
 	}
 	
 	@Test

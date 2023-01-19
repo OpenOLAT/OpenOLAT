@@ -266,8 +266,17 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	}
 	
 	private boolean createQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
+		
+		// Without organisation search the absence of user membership
+		if(params.isWithoutOrganisation()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" not exists (select orgtomember.key from bgroupmember as orgtomember ")
+			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
+			  .append("  where orgtomember.identity.key=ident.key and orgtomember.role").in(OrganisationRoles.user)
+			  .append(")");
+		}
 		// authors and co-authors is essentially an OR
-		if(params.hasRoles() && params.hasOrganisations()) {
+		else if(params.hasRoles() && params.hasOrganisations()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
@@ -720,7 +729,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			}
 		}
 		
-		if(params.hasOrganisations()) {
+		if(params.hasOrganisations() && !params.isWithoutOrganisation()) {
 			List<Long> organisationKeys = params.getOrganisations()
 					.stream().map(OrganisationRef::getKey).collect(Collectors.toList());
 			dbq.setParameter("organisationKey", organisationKeys);
