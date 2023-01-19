@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.Serial;
+
 import org.olat.core.gui.control.Event;
 
 /**
@@ -28,13 +30,20 @@ import org.olat.core.gui.control.Event;
  */
 public class AnnotationSelectedEvent extends Event {
 
+	@Serial
 	private static final long serialVersionUID = 533208350723649718L;
 	private static final String COMMAND = "annotation.selected";
 	private final String annotationId;
+	private final long startTimeInMillis;
 
-	public AnnotationSelectedEvent(String annotationId) {
+	public AnnotationSelectedEvent(String annotationId, long startTimeInMillis) {
 		super(COMMAND);
 		this.annotationId = annotationId;
+		this.startTimeInMillis = startTimeInMillis;
+	}
+
+	public long getStartTimeInMillis() {
+		return startTimeInMillis;
 	}
 
 	public String getAnnotationId() {

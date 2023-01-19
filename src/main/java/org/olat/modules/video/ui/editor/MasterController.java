@@ -257,7 +257,9 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				}
 				String annotationId = ureq.getParameter("annotationId");
 				if (annotationId != null) {
-					fireEvent(ureq, new AnnotationSelectedEvent(annotationId));
+					timelineModel.getTimelineRow(TimelineEventType.ANNOTATION, annotationId)
+									.ifPresent(a -> fireEvent(ureq, new AnnotationSelectedEvent(a.getId(),
+											a.getStartTime())));
 				}
 				String chapterId = ureq.getParameter("chapterId");
 				if (chapterId != null) {
@@ -290,7 +292,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private void doSelect(UserRequest ureq, TimelineRow timelineRow) {
 		switch (timelineRow.getType()) {
 			case QUIZ -> fireEvent(ureq, new QuestionSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
-			case ANNOTATION -> fireEvent(ureq, new AnnotationSelectedEvent(timelineRow.getId()));
+			case ANNOTATION -> fireEvent(ureq, new AnnotationSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case CHAPTER -> fireEvent(ureq, new ChapterSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case SEGMENT -> fireEvent(ureq, new SegmentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case VIDEO -> {

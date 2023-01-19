@@ -108,7 +108,7 @@ public class VideoEditorController extends BasicController {
 			} else if (event == ChaptersController.RELOAD_CHAPTERS_EVENT) {
 				videoController.reloadChapters();
 				masterController.reload();
-			} else if (event == QuizController.RELOAD_QUESTIONS_EVENT) {
+			} else if (event == QuestionsController.RELOAD_QUESTIONS_EVENT) {
 				masterController.reload();
 			} else if (event == SegmentController.RELOAD_SEGMENTS_EVENT) {
 				masterController.reload();
@@ -121,12 +121,18 @@ public class VideoEditorController extends BasicController {
 					listenTo(editQuestionController);
 				}
 				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
-			} else if (event instanceof AnnotationSelectedEvent) {
-				//
+			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
+				videoController.setMode(TimelineEventType.ANNOTATION);
+				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000);
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
+				videoController.setMode(TimelineEventType.SEGMENT);
 				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
+				videoController.setMode(TimelineEventType.CHAPTER);
 				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
+			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
+				videoController.setMode(TimelineEventType.QUIZ);
+				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
@@ -154,7 +160,7 @@ public class VideoEditorController extends BasicController {
 			removeAsListenerAndDispose(editQuestionController);
 			editQuestionController = null;
 			mainVC.remove("editQuestion");
-			detailsController.updateQuestion();
+			detailsController.updateQuestion(questionId);
 		}
 	}
 }

@@ -1,0 +1,9 @@
+<div class="form-group row clearfix">
+	<div class="col-xs-3"></div>
+	<div class="col-xs-4">
+		#if ($hasQuestions)
+		$r.render("questions")
+		#end
+	</div>
+	<div class="col-xs-5 text-right">$r.render("addQuestion")</div>
+</div>

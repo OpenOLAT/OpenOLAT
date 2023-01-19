@@ -40,7 +40,7 @@ public class DetailsController extends BasicController {
 	private final ChaptersController chaptersController;
 	private final AnnotationsController annotationsController;
 	private final SegmentController segmentController;
-	private final QuizController quizController;
+	private final QuestionsController questionsController;
 
 	public DetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							 String videoElementId, long durationInSeconds) {
@@ -63,9 +63,9 @@ public class DetailsController extends BasicController {
 		listenTo(segmentController);
 		tabbedPane.addTab(translate("video.editor.panes.segments"), segmentController);
 
-		quizController = new QuizController(ureq, wControl, repositoryEntry, videoElementId);
-		listenTo(quizController);
-		tabbedPane.addTab(translate("video.editor.panes.quiz"), quizController);
+		questionsController = new QuestionsController(ureq, wControl, repositoryEntry, videoElementId);
+		listenTo(questionsController);
+		tabbedPane.addTab(translate("video.editor.panes.quiz"), questionsController);
 
 		mainVC.put("tabbedPane", tabbedPane);
 
@@ -84,7 +84,7 @@ public class DetailsController extends BasicController {
 			fireEvent(ureq, event);
 		} else if (source instanceof SegmentController) {
 			fireEvent(ureq, event);
-		} else if (source instanceof QuizController) {
+		} else if (source instanceof QuestionsController) {
 			fireEvent(ureq, event);
 		}
 	}
@@ -92,7 +92,7 @@ public class DetailsController extends BasicController {
 	public void setCurrentTimeCode(String currentTimeCode) {
 		chaptersController.setCurrentTimeCode(currentTimeCode);
 		annotationsController.setCurrentTimeCode(currentTimeCode);
-		quizController.setCurrentTimeCode(currentTimeCode);
+		questionsController.setCurrentTimeCode(currentTimeCode);
 		segmentController.setCurrentTimeCode(currentTimeCode);
 	}
 
@@ -115,11 +115,11 @@ public class DetailsController extends BasicController {
 
 	public void showQuestion(UserRequest ureq, String questionId) {
 		tabbedPane.setSelectedPane(ureq, 3);
-		quizController.showQuestion(questionId);
+		questionsController.showQuestion(questionId);
 	}
 
-	public void updateQuestion() {
-		quizController.updateQuestion();
+	public void updateQuestion(String questionId) {
+		questionsController.updateQuestion(questionId);
 	}
 
 	public void setAnnotationSize(String annotationId, double width, double height) {
@@ -135,7 +135,7 @@ public class DetailsController extends BasicController {
 			case CHAPTER -> chaptersController.handleDeleted();
 			case ANNOTATION -> annotationsController.handleDeleted(id);
 			case SEGMENT -> segmentController.handleDeleted(id);
-			case QUIZ -> quizController.handleDeleted(id);
+			case QUIZ -> questionsController.handleDeleted(id);
 		}
 	}
 }

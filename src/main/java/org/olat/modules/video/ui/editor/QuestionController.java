@@ -21,7 +21,6 @@ package org.olat.modules.video.ui.editor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -29,7 +28,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -39,27 +37,18 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
-import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
-import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.ui.VideoSettingsController;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
-import org.olat.modules.video.ui.question.NewQuestionEvent;
-import org.olat.modules.video.ui.question.NewQuestionItemCalloutController;
-import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,16 +58,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class QuizController extends FormBasicController {
-	public static final Event RELOAD_QUESTIONS_EVENT = new Event("video.edit.reload.questions");
+public class QuestionController extends FormBasicController {
 	public static final String EDIT_ACTION = "edit";
+	private VideoQuestion question;
 	private final RepositoryEntry repositoryEntry;
-	private final String videoElementId;
-	private SingleSelection questionsDropdown;
-	private SelectionValues questionsKV = new SelectionValues();
-	private FormLink addQuestionButton;
-	private NewQuestionItemCalloutController newQuestionCtrl;
-	private CloseableCalloutWindowController ccwc;
 	private TextElement startEl;
 	private TextElement timeLimitEl;
 	private SingleSelection colorDropdown;
@@ -86,21 +69,16 @@ public class QuizController extends FormBasicController {
 	private MultipleSelectionElement options;
 	private final SelectionValues optionsKV;
 	@Autowired
-	private VideoManager videoManager;
-	@Autowired
 	private VideoModule videoModule;
-	private VideoQuestions videoQuestions;
-	private String questionId;
 	private final SimpleDateFormat timeFormat;
-	private String currentTimeCode;
 	private QuestionTableModel tableModel;
 	private FlexiTableElement questionTable;
 
-	public QuizController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-						  String videoElementId) {
-		super(ureq, wControl, "quiz");
+	public QuestionController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+							  VideoQuestion question) {
+		super(ureq, wControl, "question");
 		this.repositoryEntry = repositoryEntry;
-		this.videoElementId = videoElementId;
+		this.question = question;
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -115,31 +93,20 @@ public class QuizController extends FormBasicController {
 		optionsKV.add(SelectionValues.entry("allowNewAttempt", translate("form.question.allowNewAttempt")));
 
 		initForm(ureq);
-		loadModel();
+		setValues();
 	}
 
-	public void setCurrentTimeCode(String currentTimeCode) {
-		this.currentTimeCode = currentTimeCode;
+	public void setQuestion(VideoQuestion question) {
+		this.question = question;
+		setValues();
 	}
 
-	private long getCurrentTime() {
-		long time = 0;
-		if (currentTimeCode != null) {
-			time = Math.round(Double.parseDouble(currentTimeCode)) * 1000L;
-		}
-		return time;
+	public VideoQuestion getQuestion() {
+		return question;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		questionsDropdown = uifactory.addDropdownSingleselect("questions", "form.question.title",
-				formLayout, questionsKV.keys(), questionsKV.values());
-		questionsDropdown.addActionListener(FormEvent.ONCHANGE);
-		questionsDropdown.setEscapeHtml(false);
-
-		addQuestionButton = uifactory.addFormLink("addQuestion", "form.question.add",
-				"form.question.add", formLayout, Link.BUTTON);
-
 		startEl = uifactory.addTextElement("start", "form.question.start", 8,
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
@@ -178,91 +145,36 @@ public class QuizController extends FormBasicController {
 				getTranslator(), formLayout);
 		questionTable.setCustomizeColumns(false);
 		questionTable.setNumOfRowsEnabled(false);
-
-		flc.contextPut("questionTableHasData", false);
-	}
-
-	private void loadModel() {
-		questionsKV = new SelectionValues();
-		videoQuestions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
-		videoQuestions
-				.getQuestions()
-				.stream()
-				.sorted(new VideoQuestionRowComparator())
-				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), q.getTitle())));
-		flc.contextPut("hasQuestions", !questionsKV.isEmpty());
-		questionsDropdown.setKeysAndValues(questionsKV.keys(), questionsKV.values(), null);
-		if (questionId == null && !questionsKV.isEmpty()) {
-			questionId = questionsKV.keys()[0];
-		}
-		setValues();
 	}
 
 	private void setValues() {
-		if (questionId != null) {
-			videoQuestions.getQuestions().stream().filter((q) -> questionId.equals(q.getId())).findFirst()
-					.ifPresent(this::setValues);
+		if (question == null) {
+			return;
 		}
-	}
 
-	private void setValues(VideoQuestion videoQuestion) {
-		startEl.setValue(timeFormat.format(videoQuestion.getBegin()));
-		if (videoQuestion.getTimeLimit() == -1) {
+		startEl.setValue(timeFormat.format(question.getBegin()));
+		if (question.getTimeLimit() == -1) {
 			timeLimitEl.setValue("");
 		} else {
-			timeLimitEl.setValue(Long.toString(videoQuestion.getTimeLimit()));
+			timeLimitEl.setValue(Long.toString(question.getTimeLimit()));
 		}
-		if (videoQuestion.getStyle() != null) {
-			colorDropdown.select(videoQuestion.getStyle(), true);
+		if (question.getStyle() != null) {
+			colorDropdown.select(question.getStyle(), true);
 			colorDropdown.getComponent().setDirty(true);
 		}
 		if (!colorDropdown.isOneSelected() && !colorsKV.isEmpty()) {
 			colorDropdown.select(colorsKV.keys()[0], true);
 			colorDropdown.getComponent().setDirty(true);
 		}
-		options.select(optionsKV.keys()[0], videoQuestion.isAllowSkipping());
-		options.select(optionsKV.keys()[1], videoQuestion.isAllowNewAttempt());
-		tableModel.setObjects(List.of(videoQuestion));
-		flc.contextPut("questionTableHasData", true);
+		options.select(optionsKV.keys()[0], question.isAllowSkipping());
+		options.select(optionsKV.keys()[1], question.isAllowNewAttempt());
+		tableModel.setObjects(List.of(question));
 		questionTable.reloadData();
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (newQuestionCtrl == source) {
-			ccwc.deactivate();
-			cleanUp();
-			if (event instanceof NewQuestionEvent) {
-				doNewQuestion(ureq, ((NewQuestionEvent) event).getQuestion());
-			}
-		} else if (ccwc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
-		newQuestion.setBegin(new Date(getCurrentTime()));
-		videoQuestions.getQuestions().add(newQuestion);
-		videoManager.saveQuestions(videoQuestions, repositoryEntry.getOlatResource());
-		loadModel();
-		fireEvent(ureq, new EditQuestionEvent(null, questionId, repositoryEntry));
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (addQuestionButton == source) {
-			doAddQuestion(ureq);
-		} else if (newQuestionCtrl == source) {
-			ccwc.deactivate();
-			cleanUp();
-		} else if (questionsDropdown == source) {
-			if (questionsDropdown.isOneSelected()) {
-				questionId = questionsDropdown.getSelectedKey();
-				setValues();
-				setTimeToQuestion();
-			}
-		} else if (event instanceof SelectionEvent selectionEvent) {
+		if (event instanceof SelectionEvent selectionEvent) {
 			VideoQuestion question = tableModel.getObject(selectionEvent.getIndex());
 			if (EDIT_ACTION.equals(selectionEvent.getCommand())) {
 				doEdit(ureq, question);
@@ -275,81 +187,29 @@ public class QuizController extends FormBasicController {
 		fireEvent(ureq, new EditQuestionEvent(null, question.getId(), repositoryEntry));
 	}
 
-	private void setTimeToQuestion() {
+	@Override
+	protected void formOK(UserRequest ureq) {
+		if (question == null) {
+			return;
+		}
+
 		try {
-			Date start = timeFormat.parse(startEl.getValue());
-			long timeInSeconds = start.getTime() / 1000;
-			SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-			getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
+			question.setBegin(timeFormat.parse(startEl.getValue()));
+			long timeLimit = -1;
+			if (StringHelper.containsNonWhitespace(timeLimitEl.getValue())) {
+				try {
+					timeLimit = Long.parseLong(timeLimitEl.getValue());
+				} catch (NumberFormatException e) {
+					logError("", e);
+				}
+			}
+			question.setTimeLimit(timeLimit);
+			question.setStyle(colorDropdown.getSelectedKey());
+			question.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
+			question.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));
+			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
 			logError("", e);
 		}
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(ccwc);
-		removeAsListenerAndDispose(newQuestionCtrl);
-		ccwc = null;
-		newQuestionCtrl = null;
-	}
-
-	private void doAddQuestion(UserRequest ureq) {
-		newQuestionCtrl = new NewQuestionItemCalloutController(ureq, getWindowControl(), repositoryEntry);
-		listenTo(newQuestionCtrl);
-
-		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), newQuestionCtrl.getInitialComponent(),
-				addQuestionButton.getFormDispatchId(), "", true, "",
-				new CalloutSettings(false));
-		listenTo(ccwc);
-		ccwc.activate();
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		if (questionId != null) {
-			videoQuestions.getQuestions().stream().filter((q) -> questionId.equals(q.getId())).findFirst()
-					.ifPresent(q -> {
-						try {
-							q.setBegin(timeFormat.parse(startEl.getValue()));
-							long timeLimit = -1;
-							if (StringHelper.containsNonWhitespace(timeLimitEl.getValue())) {
-								try {
-									timeLimit = Long.parseLong(timeLimitEl.getValue());
-								} catch (NumberFormatException e) {
-									logError("", e);
-								}
-							}
-							q.setTimeLimit(timeLimit);
-							q.setStyle(colorDropdown.getSelectedKey());
-							q.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
-							q.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));
-							videoManager.saveQuestions(videoQuestions, repositoryEntry.getOlatResource());
-							loadModel();
-							reloadQuestions(ureq);
-						} catch (ParseException e) {
-							logError("", e);
-						}
-					});
-		}
-	}
-
-	private void reloadQuestions(UserRequest ureq) {
-		fireEvent(ureq, RELOAD_QUESTIONS_EVENT);
-	}
-
-	public void updateQuestion() {
-		loadModel();
-	}
-
-	public void showQuestion(String questionId) {
-		this.questionId = questionId;
-		setValues();
-	}
-
-	public void handleDeleted(String id) {
-		if (id.equals(questionId)) {
-			questionId = null;
-		}
-		loadModel();
 	}
 }
