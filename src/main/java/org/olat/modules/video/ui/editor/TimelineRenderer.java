@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractFlexiTableRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.render.RenderResult;
@@ -125,31 +124,33 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	protected void renderBody(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 							  URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		ftC.getFormItem().getTableDataModel().getTableColumnModel();
-		renderTimeline(renderer, target, ftC);
+		renderTimeline(target, ftC);
 	}
 
-	private void renderTimeline(Renderer renderer, StringOutput s, FlexiTableComponent ftC) {
-		FlexiTableDataModel dataModel = ftC.getFormItem().getTableDataModel();
-		if (!(dataModel instanceof TimelineModel)) {
-			return;
+	private void renderTimeline(StringOutput s, FlexiTableComponent ftC) {
+		if (ftC.getFormItem().getTableDataModel() instanceof TimelineModel timelineModel) {
+			s.append("<div style=\"height: 8px;\"></div>");
+			s.append("<div class=\"o_video_timeline\">");
+			renderChannelLabels(s, timelineModel);
+			renderChannels(s, ftC, timelineModel);
+			s.append("</div>");
+			renderPostprocessing(s);
 		}
-		TimelineModel timelineModel = (TimelineModel) dataModel;
-		s.append("<div style=\"height: 8px;\"></div>");
-		s.append("<div class=\"o_video_timeline\">");
-		renderChannelLabels(s, timelineModel);
-		renderChannels(renderer, s, ftC, timelineModel);
-		s.append("</div>");
-		renderPostprocessing(s);
 	}
 
 	private void renderChannelLabels(StringOutput s, TimelineModel timelineModel) {
 		s.append("<div class=\"o_video_channel_labels\">");
+		renderChannelLabelPlaceholder(s);
 		renderChannelLabel(s, TimelineEventType.QUIZ, timelineModel);
 		renderChannelLabel(s, TimelineEventType.ANNOTATION, timelineModel);
 		renderChannelLabel(s, TimelineEventType.VIDEO, timelineModel);
 		renderChannelLabel(s, TimelineEventType.CHAPTER, timelineModel);
 		renderChannelLabel(s, TimelineEventType.SEGMENT, timelineModel);
 		s.append("</div>");
+	}
+
+	private void renderChannelLabelPlaceholder(StringOutput s) {
+		s.append("<div id=\"o_video_time_bar_label\" class=\"o_video_channel_label\"></div>");
 	}
 
 	private void renderChannelLabel(StringOutput s, TimelineEventType type, TimelineModel timelineModel) {
@@ -173,21 +174,27 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		}
 		List<TimelineRow> events = timelineModel.getEventsByType(type);
 		int nbLanes = Integer.max(TimelineModel.getNumberOfLanes(events), 1);
-		int height = 10 + nbLanes * 20 + 5 * (nbLanes - 1);
-		return height;
+		return 10 + nbLanes * 20 + 5 * (nbLanes - 1);
 	}
 
-	private void renderChannels(Renderer renderer, StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
+	private void renderChannels(StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
 		s.append("<div class=\"o_video_channels\">");
+		renderTimeChannel(s);
 		renderChannel(s, TimelineEventType.QUIZ, ftC, timelineModel);
 		renderChannel(s, TimelineEventType.ANNOTATION, ftC, timelineModel);
-		renderVideoChannel(s, ftC, timelineModel);
+		renderVideoChannel(s, timelineModel);
 		renderChannel(s, TimelineEventType.CHAPTER, ftC, timelineModel);
 		renderChannel(s, TimelineEventType.SEGMENT, ftC, timelineModel);
 		s.append("</div>");
 	}
 
-	private void renderVideoChannel(StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
+	private void renderTimeChannel(StringOutput s) {
+		s.append("<div id=\"o_video_time_bar_container\" class=\"o_video_timeline_box\">");
+		s.append("<div id=\"o_video_time_bar\" style=\"left: 0;\"></div>");
+		s.append("</div>");
+	}
+
+	private void renderVideoChannel(StringOutput s, TimelineModel timelineModel) {
 		int channelWidth = timelineModel.getChannelWidth();
 		long videoLength = timelineModel.getVideoLength();
 		int thumbnailWidth = 89;
@@ -233,18 +240,10 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		for (List<TimelineRow> eventsByLane : eventsByLanes) {
 			for (TimelineRow event : eventsByLane) {
 				switch (type) {
-					case QUIZ:
-						renderQuestion(s, ftC, theForm, timelineModel, event, y, "questionId");
-						break;
-					case ANNOTATION:
-						renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
-						break;
-					case CHAPTER:
-						renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_chapter", "chapterId");
-						break;
-					case SEGMENT:
-						renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_segment", "segmentId");
-						break;
+					case QUIZ -> renderQuestion(s, ftC, theForm, timelineModel, event, y);
+					case ANNOTATION -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
+					case CHAPTER -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_chapter", "chapterId");
+					case SEGMENT -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_segment", "segmentId");
 				}
 			}
 			y += 20 + 5;
@@ -252,18 +251,19 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	}
 
 	private void renderQuestion(StringOutput s, FlexiTableComponent ftC, Form form, TimelineModel timelineModel,
-								TimelineRow event, int y, String idParameterName) {
+								TimelineRow event, int y) {
 		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
 		if (x == 0) {
 			x += 1;
 		}
-		s.append("<div class=\"o_video_question ").append(event.getColor()).append("\" style=\"left: ").append(x - 11).append("px; top: ").append(y - 1)
+		s.append("<div class=\"o_video_question ").append(event.getColor())
+				.append("\" style=\"left: ").append(x - 15).append("px; top: ").append(y - 5)
 				.append("px; \" onclick=\"")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
 						false, false, false,
-						new NameValuePair(idParameterName, event.getId())))
+						new NameValuePair("questionId", event.getId())))
 				.append("\">")
 				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
 						"<path d=\"M284.3 11.7c-15.6-15.6-40.9-15.6-56.6 0l-216 216c-15.6 15.6-15.6 40.9 0 56.6l216 216c15.6 15.6 40.9 15.6 56.6 0l216-216c15.6-15.6 15.6-40.9 0-56.6l-216-216z\"/>" +

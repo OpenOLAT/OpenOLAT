@@ -493,14 +493,14 @@
 	position: absolute;
 	display: inline-block;
 	z-index: 1;
-	height: 22px;
-	width: 22px;
+	height: 30px;
+	width: 30px;
 	cursor: pointer;
 
 	svg {
 		stroke-width: 32;
-		width: 22px;
-		height: 22px;
+		width: 30px;
+		height: 30px;
 	}
 
 	&.o_video_marker_gray {
@@ -668,12 +668,32 @@
 	}
 }
 
+#o_video_time_bar_label {
+	height: 8px;
+	padding: 0;
+}
+
+#o_video_time_bar_container {
+	height: 8px;
+}
+
+#o_video_time_bar {
+	height: 100%;
+	background-color: $brand-primary;
+	transition-property: width;
+	transition-duration: 800ms;
+	transition-delay: 0ms;
+}
+
 #o_video_play_head {
 	position: absolute;
 	left: 55px;
 	width: 3px;
 	background-color: $brand-primary;
 	z-index: 10;
+	transition-property: left;
+	transition-duration: 800ms;
+	transition-delay: 0ms;
 
 	.o_video_play_head_marker {
 		position: absolute;

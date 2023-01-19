@@ -26,7 +26,9 @@ $r.render("timelineEvents")
 	function initPlayHead() {
 		const playHead = jQuery('#o_video_play_head');
 		const videoChannels = jQuery('.o_video_channels');
-		if (playHead && videoChannels) {
+		const timeBar = jQuery('#o_video_time_bar');
+		if (playHead && videoChannels && timeBar) {
+			timeBar.width(0);
 			const videoChannelsOffset = videoChannels.offset();
 			if (videoChannelsOffset) {
 				const playHeadLeft = videoChannelsOffset.left;
@@ -74,6 +76,7 @@ $r.render("timelineEvents")
 		const playHead = jQuery('#o_video_play_head');
 		const videoChannels = jQuery('.o_video_channels');
 		const playHeadText = jQuery('.o_video_play_head_text');
+		const timeBar = jQuery('#o_video_time_bar');
 		const videoElementId = 'o_so_vid$videoElementId';
 		const videoElement = jQuery('#' + videoElementId);
 		const player = videoElement.data('player');
@@ -86,6 +89,7 @@ $r.render("timelineEvents")
 		const playHeadTop = playHead.offset().top;
 		const playHeadLeft = videoChannelsOffset.left + currentTimeInSeconds * videoChannelsWidth / durationInSeconds - videoChannelsScrollLeft;
 		const playHeadVisible = (playHeadLeft >= videoChannelsOffset.left && playHeadLeft <= (videoChannelsOffset.left + videoChannelsViewportWidth));
+		const timeBarWidth = currentTimeInSeconds * videoChannelsWidth / durationInSeconds;
 		playHeadText.text(formatTime(currentTimeInSeconds));
 		if (playHeadVisible) {
 			playHead.css({ 'opacity' : 1 });
@@ -95,7 +99,7 @@ $r.render("timelineEvents")
 			playHeadText.hide();
 		}
 		playHead.offset({left: playHeadLeft - 1, top: playHeadTop});
-
+		timeBar.width(timeBarWidth);
 	}
 
 	initPlayHead();
