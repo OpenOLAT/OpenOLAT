@@ -64,6 +64,7 @@ public class SearchIdentityParams {
 	private boolean withoutBusinessGroup;
 	private boolean withoutResources;
 	private boolean withoutEfficiencyStatements;
+	private boolean withoutOrganisation;
 	
 	private List<Organisation> organisationParents;
 	private List<OrganisationRef> organisations;
@@ -124,6 +125,13 @@ public class SearchIdentityParams {
 		return params;
 	}
 	
+	public static SearchIdentityParams withoutOrganisation(Integer status) {
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setWithoutOrganisation(true);
+		params.setStatus(status);
+		return params;
+	}
+	
 	public static SearchIdentityParams withBusinesGroups() {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setWithoutBusinessGroup(true);
@@ -157,6 +165,19 @@ public class SearchIdentityParams {
 		} else {
 			this.organisations = new ArrayList<>(organisations);
 		}
+	}
+
+	public boolean isWithoutOrganisation() {
+		return withoutOrganisation;
+	}
+
+	/**
+	 * This parameter overwrite roles and organisations parameters.
+	 * 
+	 * @param withoutOrganisation true if you want the list of user without a user memberhsip to at least one organisation
+	 */
+	public void setWithoutOrganisation(boolean withoutOrganisation) {
+		this.withoutOrganisation = withoutOrganisation;
 	}
 
 	public String getLogin() {

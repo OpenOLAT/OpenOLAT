@@ -412,6 +412,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true, false);
+			case "userswithoutorganisation":
+				return createUserSearchController(ureq, bwControl,
+						SearchIdentityParams.withoutOrganisation(Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true, false);
@@ -746,6 +749,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.userswithoutgroup", "menu.userswithoutgroup.alt", "userswithoutgroup", "o_sel_useradmin_userswithoutgroup", queriesNode);
 		if(identityRoles.isRolesManager() || identityRoles.isAdministrator()) {
 			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
+			appendNode("menu.users.without.organisation", "menu.users.without.organisation.alt", "userswithoutorganisation", "o_sel_useradmin_userswithoutorganisation", queriesNode);
 			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
 		}
 		appendNode("menu.noauthentication", "menu.noauthentication.alt", "noauthentication", "o_sel_useradmin_noauthentication", queriesNode);

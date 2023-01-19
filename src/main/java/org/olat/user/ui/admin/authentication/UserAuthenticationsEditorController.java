@@ -53,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -74,12 +75,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class UserAuthenticationsEditorController extends FormBasicController {
 	
 	private FormLink editNickNameLink;
+	private FormLink addAuthenticationLink;
 	private StaticTextElement nickNameEl;
 	private FlexiTableElement tableEl;
 	private AuthenticationsTableDataModel tableModel;
 
 	private CloseableModalController cmc;
 	private DialogBoxController confirmationDialog;
+	private UserAuthenticationAddController addCtrl;
 	private UserAuthenticationEditController editCtrl;
 	private UserNickNameEditController editNickNameCtrl;
 	
@@ -110,6 +113,9 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		nickNameEl.getComponent().setSpanAsDomReplaceable(true);
 		editNickNameLink =  uifactory.addFormLink("edit", formLayout);
 		editNickNameLink.setIconLeftCSS("o_icon o_icon_edit");
+		
+		addAuthenticationLink =  uifactory.addFormLink("add.authentication", formLayout, Link.BUTTON);
+		addAuthenticationLink.setIconLeftCSS("o_icon o_icon_add");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
@@ -168,6 +174,8 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(editNickNameLink == source) {
 			doEditNickName(ureq);
+		} else if(this.addAuthenticationLink == source) {
+			doAdd(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
@@ -187,7 +195,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { 
 				doDelete((Authentication)confirmationDialog.getUserObject());
 			}
-		} else if(editCtrl == source || editNickNameCtrl == source) {
+		} else if(addCtrl == source || editCtrl == source || editNickNameCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reloadModel();
 				fireEvent(ureq, Event.DONE_EVENT);
@@ -202,9 +210,11 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(editNickNameCtrl);
 		removeAsListenerAndDispose(editCtrl);
+		removeAsListenerAndDispose(addCtrl);
 		removeAsListenerAndDispose(cmc);
 		editNickNameCtrl = null;
 		editCtrl = null;
+		addCtrl = null;
 		cmc = null;
 	}
 	
@@ -230,9 +240,19 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		cmc.activate();
 	}
 	
+	private void doAdd(UserRequest ureq) {
+		addCtrl = new UserAuthenticationAddController(ureq, getWindowControl(), changeableIdentity);
+		listenTo(addCtrl);
+		
+		String title = translate("add.authentication.title", userManager.getUserDisplayName(changeableIdentity));
+		cmc = new CloseableModalController(getWindowControl(), "close", addCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doConfirmDelete(UserRequest ureq, UserAuthenticationRow row) {
 		String fullname = userManager.getUserDisplayName(changeableIdentity);
-		String msg = translate("authedit.delete.confirm", new String[] { row.getAuthentication().getProvider(), fullname });
+		String msg = translate("authedit.delete.confirm", row.getAuthentication().getProvider(), fullname);
 		confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
 		confirmationDialog.setUserObject(row.getAuthentication());
 	}
@@ -240,7 +260,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	private void doDelete(Authentication auth) {
 		securityManager.deleteAuthentication(auth);
 		getWindowControl().setInfo(getTranslator().translate("authedit.delete.success", 
-				new String[] { auth.getProvider(), changeableIdentity.getName() }));
+				auth.getProvider(), changeableIdentity.getName()));
 		loadModel();
 	}
 

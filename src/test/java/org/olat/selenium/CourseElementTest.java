@@ -43,6 +43,7 @@ import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.User;
+import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
@@ -71,6 +72,8 @@ import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
 import org.olat.selenium.page.course.SinglePageConfigurationPage;
 import org.olat.selenium.page.course.TeamsPage;
+import org.olat.selenium.page.course.ZoomConfigurationPage;
+import org.olat.selenium.page.course.ZoomPage;
 import org.olat.selenium.page.forum.ForumPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
@@ -2446,6 +2449,71 @@ public class CourseElementTest extends Deployments {
 		
 		teams
 			.assertOnJoinDisabled();
+	}
+	
+
+	/**
+	 * The test doesn't test really Zoom itself. It enables LTI 1.3 and Zoom,
+	 * create a dummy Zoom profile, create a course with a Zoom course element
+	 * with the above created profile and check that the panel appears but
+	 * Zoom will not accept the fake profile.
+	 * 
+	 */
+	@Test
+	public void courseWithZoom() {
+		String profile = UUID.randomUUID().toString();
+		
+		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		NavigationPage navBar = NavigationPage.load(browser);
+		AdministrationPage administration = navBar
+			.openAdministration();
+		administration
+			.openLti13Settings()
+			.enableLTI()
+			.saveConfiguration();
+		administration
+			.openZoomSettings(false)
+			.enableZoom()
+			.addProfile(profile, "key-" + profile)
+			.saveConfiguration();
+		 
+		 OOGraphene.scrollTop(browser);
+		 
+		 String courseTitle = "Course with Zoom " + UUID.randomUUID().toString();
+		 navBar
+		 	.openAuthoringEnvironment()
+		 	.createCourse(courseTitle, true)
+		 	.assertOnInfos();
+		
+		String nodeTitle = "Zoom meeting";
+		CoursePageFragment course = new CoursePageFragment(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("zoom")
+			.nodeTitle(nodeTitle);
+		
+		ZoomConfigurationPage zoomConfiguration = new ZoomConfigurationPage(browser);
+		zoomConfiguration
+			.selectConfiguration()
+			.selectProfile(profile)
+			.saveConfiguration();
+		
+		//publish the course
+		courseEditor
+			.publish()
+			.quickPublish();
+		
+		course = courseEditor
+			.clickToolbarBack();
+		
+		ZoomPage zoom = new ZoomPage(browser);
+		zoom
+			.assertOnZoomPanel();
 	}
 	
 

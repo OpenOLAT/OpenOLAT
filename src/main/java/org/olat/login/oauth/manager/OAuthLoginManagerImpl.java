@@ -22,6 +22,7 @@ package org.olat.login.oauth.manager;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -30,17 +31,23 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.admin.user.imp.TransientIdentity;
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
+import org.olat.login.auth.AuthenticationProviderSPI;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.OAuthLoginManager;
+import org.olat.login.oauth.OAuthLoginModule;
+import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.login.oauth.ui.OAuthRegistrationController;
+import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
@@ -55,18 +62,59 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class OAuthLoginManagerImpl implements OAuthLoginManager {
+public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationProviderSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(OAuthLoginManagerImpl.class);
 	
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private OAuthLoginModule oauthModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
 	@Autowired
+	private AuthenticationDAO authenticationDao;
+	@Autowired
 	private HttpClientService httpClientService;
+	
+
+	@Override
+	public List<String> getProviderNames() {
+		List<OAuthSPI> spies = oauthModule.getEnableSPIs();
+		return spies.stream()
+				.map(OAuthSPI::getProviderName)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return canChangeAuthenticationUsername(provider);
+	}
+
+	@Override
+	public boolean canChangeAuthenticationUsername(String provider) {
+		List<OAuthSPI> spies = oauthModule.getEnableSPIs();
+		for(OAuthSPI spi:spies) {
+			if(spi.getProviderName().equals(provider) && spi.isEnabled()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername) {
+		authentication.setAuthusername(newUsername);
+		authentication = authenticationDao.updateAuthentication(authentication);
+		return authentication != null;
+	}
+
+	@Override
+	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+		return new AllOkValidationResult();
+	}
 
 	@Override
 	public boolean isValid(OAuthUser oauthUser) {

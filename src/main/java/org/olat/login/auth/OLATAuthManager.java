@@ -119,6 +119,11 @@ public class OLATAuthManager implements AuthenticationSPI {
 	}
 
 	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return false;
+	}
+
+	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
 		return "OLAT".equals(provider);
 	}

@@ -87,13 +87,16 @@ public class ZoomProfileEditController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+    	formLayout.setElementCssClass("o_sel_zoom_edit_profile");
         setFormDescription("zoom.profile.description");
         String profileName = zoomProfile == null ? null : zoomProfile.getName();
         profileNameEl = uifactory.addTextElement("zoom.profile.name", "zoom.profile.name", 255, profileName, formLayout);
+        profileNameEl.setElementCssClass("o_sel_zoom_profile_name");
         profileNameEl.setMandatory(true);
 
         String ltiKey = zoomProfile == null ? null : zoomProfile.getLtiKey();
         ltiKeyEl = uifactory.addTextElement("zoom.profile.ltiKey", "zoom.profile.ltiKey", 255, ltiKey, formLayout);
+        ltiKeyEl.setElementCssClass("o_sel_zoom_profile_ltikey");
         ltiKeyEl.setHelpTextKey("zoom.profile.ltiKey.help", null);
         ltiKeyEl.setMandatory(true);
 

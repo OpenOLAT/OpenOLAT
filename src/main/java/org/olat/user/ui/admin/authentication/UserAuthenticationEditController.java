@@ -78,8 +78,8 @@ public class UserAuthenticationEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
 	@Override
@@ -88,14 +88,14 @@ public class UserAuthenticationEditController extends FormBasicController {
 
 		loginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(loginEl.getValue())) {
-			loginEl.setErrorKey("form.legende.mandatory", null);
+			loginEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else {
 			ValidationResult result = provider.validateAuthenticationUsername(loginEl.getValue(), authentication.getIdentity());
 			if(!result.isValid()) {
 				ValidationDescription descr = result.getInvalidDescriptions().get(0);
 				String text = descr.getText(getLocale());
-				loginEl.setErrorKey("error.username.invalid", new String[] { text });
+				loginEl.setErrorKey("error.username.invalid", text);
 				allOk = false;
 			}
 		}

@@ -19,6 +19,9 @@
  */
 package org.olat.repository.ui;
 
+
+import java.util.UUID;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.olat.core.CoreSpringFactory;
@@ -54,13 +57,19 @@ public class RepositoryEntryImageMapper implements Mapper {
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(relPath.startsWith("/")) {
-			relPath = relPath.substring(1, relPath.length());
-		}
-		
 		int lastIndex = relPath.lastIndexOf('.');
 		if(lastIndex >= 0) {
 			relPath = relPath.substring(0, lastIndex);
+		}
+		
+		if (relPath.endsWith("/")) {
+			relPath = relPath.substring(0, relPath.length() -1);
+		}
+		
+		// Remove the cache part
+		lastIndex = relPath.lastIndexOf('/');
+		if (lastIndex >= 0) {
+			relPath = relPath.substring(lastIndex + 1, relPath.length());
 		}
 		
 		MediaResource resource = null;
@@ -84,5 +93,11 @@ public class RepositoryEntryImageMapper implements Mapper {
 			resource = new NotFoundMediaResource();
 		}
 		return resource;
+	}
+	
+	public static String getImageUrl(String mapperUrl, VFSLeaf image) {
+		long lastModified = image.getLastModified();
+		String cachePart = lastModified > 0? String.valueOf(lastModified): UUID.randomUUID().toString().replace("-", "");
+		return mapperUrl + "/" + cachePart + "/" + image.getName();
 	}
 }

@@ -171,8 +171,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	}
 
 	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return canChangeAuthenticationUsername(provider);
+	}
+	
+	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
-		return "LDAP".equals(provider);
+		return ldapLoginModule.isLDAPEnabled() && LDAPAuthenticationController.PROVIDER_LDAP.equals(provider);
 	}
 
 	@Override
@@ -575,16 +580,23 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		dbInstance.commit();
 		
 		// check WebDAV authentication
-		CoreSpringFactory.getImpl(OLATAuthManager.class).synchronizeCredentials(identity, identity);
-		
-		// Check that the user is at least in 1 organisation
+		CoreSpringFactory.getImpl(OLATAuthManager.class)
+			.synchronizeCredentials(identity, identity);
+		checkOrganisationMembership(identity);
+
+		return identity;
+	}
+	
+	/**
+	 * Check that the user is at least in 1 organisation
+	 */
+	private void checkOrganisationMembership(Identity identity) {
 		if(!syncConfiguration.syncOrganisationWithLDAPGroup()) {
 			List<Organisation> organisationAsUsers = organisationService.getOrganisations(identity, OrganisationRoles.user);
 			if(organisationAsUsers.isEmpty()) {
 				organisationService.addMember(identity, OrganisationRoles.user);
 			}
 		}
-		return identity;
 	}
 
 	@Override
@@ -1211,8 +1223,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			ctx = bindSystem();
 			//sync groups by LDAP groups or attributes
 			doBatchSyncGroups(ctx, ldapUsers, dnToIdentityKeyMap, errors);
-			//sync roles
-			doBatchSyncRoles(ctx, ldapUsers, dnToIdentityKeyMap, errors);
+			//sync roles and organizations
+			doBatchSyncRolesAndOrganisations(ctx, ldapUsers, dnToIdentityKeyMap, errors);
 			
 			// update sync time and set running flag
 			lastSyncDate = timeBeforeSync;
@@ -1247,7 +1259,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 * @param errors
 	 * @throws NamingException
 	 */
-	private void doBatchSyncRoles(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
+	private void doBatchSyncRolesAndOrganisations(LdapContext ctx, List<LDAPUser> ldapUsers, Map<String,LDAPUser> dnToIdentityKeyMap, LDAPError errors)
 	throws NamingException {
 		// Search the roles of LDAP users in specified groups bases
 		doBatchSearchRolesInGroups(ctx, dnToIdentityKeyMap, errors);
@@ -1255,6 +1267,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		// Sync organizations if configured
 		List<LDAPOrganisationGroup> organisationsMapping = doBatchSyncOrganisations(ctx);
 		if(organisationsMapping == null) {
+			// Make sure all LDAP users are in the default organization
+			List<Identity> ldapIdentityWithOrg = authenticationDao
+					.getIdentitiesWithAuthenticationWithoutOrgnisation(LDAPAuthenticationController.PROVIDER_LDAP);
+			if(!ldapIdentityWithOrg.isEmpty()) {
+				log.info("{} LDAP users found without an organisation.", ldapIdentityWithOrg.size());
+				for(Identity ldapIdentity:ldapIdentityWithOrg) {
+					checkOrganisationMembership(ldapIdentity);
+				}
+				dbInstance.commitAndCloseSession();
+			}
+
 			// Map all on default organization (users are only added in the default organization, never removed)
 			doBatchSyncRolesToDefaultOrganisation(ldapUsers);
 		} else {

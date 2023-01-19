@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
+import org.olat.selenium.page.course.LTI13SettingsPage;
 import org.olat.selenium.page.course.ZoomSettingsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureAdminSettingsPage;
@@ -236,19 +237,21 @@ public class AdministrationPage {
 		return new BigBlueButtonSettingsPage(browser);
 	}
 	
-	public ZoomSettingsPage openLti13Settings() {
+	public LTI13SettingsPage openLti13Settings() {
 		selectExternalTools();
 		
-		By ltiBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
+		By ltiBy = By.cssSelector(".o_sel_lti13 span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(ltiBy, browser);
 		browser.findElement(ltiBy).click();
-		By ltiConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
+		By ltiConfigBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings");
 		OOGraphene.waitElement(ltiConfigBy, browser);
-		return new ZoomSettingsPage(browser);
+		return new LTI13SettingsPage(browser);
 	}
 	
-	public ZoomSettingsPage openZoomSettings() {
-		selectExternalTools();
+	public ZoomSettingsPage openZoomSettings(boolean openExternalTools) {
+		if(openExternalTools) {
+			selectExternalTools();
+		}
 		
 		By zoomBy = By.cssSelector(".o_sel_zoom span.o_tree_level_label_leaf>a");
 		OOGraphene.waitElement(zoomBy, browser);

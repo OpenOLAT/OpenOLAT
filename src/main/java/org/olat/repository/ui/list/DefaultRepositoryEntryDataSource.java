@@ -43,6 +43,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.PriceMethod;
+import org.olat.repository.ui.RepositoryEntryImageMapper;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -225,7 +226,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if(image != null) {
-				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
+				row.setThumbnailRelPath(RepositoryEntryImageMapper.getImageUrl(uifactory.getMapperThumbnailUrl() , image));
 			}
 			
 			List<TaxonomyLevelNamePath> taxonomyLevels = TaxonomyUIFactory.getNamePaths(uifactory.getTranslator(), entry.getTaxonomyLevels());

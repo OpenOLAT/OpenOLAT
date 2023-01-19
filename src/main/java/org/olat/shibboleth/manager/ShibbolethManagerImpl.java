@@ -22,15 +22,20 @@ package org.olat.shibboleth.manager;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.util.StringHelper;
+import org.olat.login.auth.AuthenticationProviderSPI;
+import org.olat.login.validation.AllOkValidationResult;
+import org.olat.login.validation.ValidationResult;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.auto.AutoAccessManager;
 import org.olat.shibboleth.ShibbolethDispatcher;
@@ -48,7 +53,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ShibbolethManagerImpl implements ShibbolethManager {
+public class ShibbolethManagerImpl implements ShibbolethManager, AuthenticationProviderSPI {
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -57,6 +62,8 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private AuthenticationDAO authenticationDao;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private AutoAccessManager autoAccessManager;
@@ -64,6 +71,33 @@ public class ShibbolethManagerImpl implements ShibbolethManager {
 	private OrganisationService organisationService;
 	@Autowired
 	private ShibbolethModule shibbolethModule;
+
+	@Override
+	public List<String> getProviderNames() {
+		return List.of(ShibbolethDispatcher.PROVIDER_SHIB);
+	}
+
+	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return canChangeAuthenticationUsername(provider);
+	}
+
+	@Override
+	public boolean canChangeAuthenticationUsername(String provider) {
+		return shibbolethModule.isEnabled() && ShibbolethDispatcher.PROVIDER_SHIB.equals(provider);
+	}
+
+	@Override
+	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername) {
+		authentication.setAuthusername(newUsername);
+		authentication = authenticationDao.updateAuthentication(authentication);
+		return authentication != null;
+	}
+
+	@Override
+	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+		return new AllOkValidationResult();
+	}
 
 	@Override
 	public Identity createUser(String username, String shibbolethUniqueID, String language, ShibbolethAttributes shibbolethAttributes) {

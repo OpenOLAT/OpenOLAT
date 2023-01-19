@@ -20,26 +20,23 @@
 package org.olat.modules.oaipmh.dispatcher;
 
 
+import java.io.IOException;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
-import org.olat.core.gui.Windows;
-import org.olat.core.gui.components.Window;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.UserSession;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.OAIService;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>

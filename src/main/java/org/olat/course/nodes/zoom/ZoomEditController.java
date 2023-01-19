@@ -83,6 +83,6 @@ public class ZoomEditController extends ActivateableTabbableDefaultController {
     @Override
     public void addTabs(TabbedPane tabbedPane) {
         this.tabbedPane = tabbedPane;
-        tabbedPane.addTab(translate("pane.tab.zoomConfig"), zoomConfig.getInitialComponent());
+        tabbedPane.addTab(translate("pane.tab.zoomConfig"), "o_sel_zoom_options", zoomConfig.getInitialComponent());
     }
 }

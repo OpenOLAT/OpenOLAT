@@ -69,6 +69,7 @@ public class ZoomUpdateConfigController extends FormBasicController {
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+    	formLayout.setElementCssClass("o_sel_zoom_configuration_form");
         if (applicationType == ZoomManager.ApplicationType.courseElement) {
             setFormTitle("zoom.configuration.title"); // to be consistent with containing element
         } else {
@@ -79,6 +80,7 @@ public class ZoomUpdateConfigController extends FormBasicController {
 
         ZoomManager.KeysAndValues profiles = zoomManager.getProfilesAsKeysAndValues();
         profileEl = uifactory.addDropdownSingleselect("zoom.profile", formLayout, profiles.keys, profiles.values);
+        profileEl.setElementCssClass("o_sel_zoom_profile");
         profileEl.addActionListener(FormEvent.ONCHANGE);
         ZoomConfig zoomConfig = zoomManager.getConfig(courseEntry, subIdent, businessGroup);
 

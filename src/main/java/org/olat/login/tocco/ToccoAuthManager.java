@@ -36,11 +36,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.login.auth.AuthenticationSPI;
+import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.ValidationResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,8 @@ public class ToccoAuthManager implements AuthenticationSPI {
 	private WebDAVAuthManager webDAVAuthManager;
 	@Autowired
 	private HttpClientService httpClientService;
+	@Autowired
+	private AuthenticationDAO authenticationDao;
 
 	@Override
 	public List<String> getProviderNames() {
@@ -116,20 +120,27 @@ public class ToccoAuthManager implements AuthenticationSPI {
 		}
 		return false;
 	}
+	
+	@Override
+	public boolean canAddAuthenticationUsername(String provider) {
+		return canChangeAuthenticationUsername(provider);
+	}
 
 	@Override
 	public boolean canChangeAuthenticationUsername(String provider) {
-		return false;
+		return toccoLoginModule.isEnabled() && ToccoLoginModule.TOCCO_PROVIDER.equals(provider);
 	}
 
 	@Override
 	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername) {
-		return false;
+		authentication.setAuthusername(newUsername);
+		authentication = authenticationDao.updateAuthentication(authentication);
+		return authentication != null;
 	}
 
 	@Override
 	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
-		return null;
+		return new AllOkValidationResult();
 	}
 
 	@Override
