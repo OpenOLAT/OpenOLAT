@@ -79,7 +79,7 @@
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.7.2</version.selenium>
-		<version.drone>3.0.0-alpha.6</version.drone>
+		<version.drone>3.0.0-alpha.7</version.drone>
 		<activemq.version>5.17.0</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
@@ -106,9 +106,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>108.0.5359.71</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>109.0.5414.74</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>108.0.5359.71</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>109.0.5414.74</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
