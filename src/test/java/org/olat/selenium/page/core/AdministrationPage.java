@@ -69,7 +69,7 @@ public class AdministrationPage {
 		By systemLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'systemParent')]");
 		OOGraphene.waitElement(systemLinkBy, browser);
 		browser.findElement(systemLinkBy).click();
-		By systemLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'systemParent')]");
+		By systemLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'active')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'systemParent')]");
 		OOGraphene.waitElement(systemLinkOpenBy, browser);
 		return this;
 	}
@@ -78,7 +78,7 @@ public class AdministrationPage {
 		By coreConfigurationLinkBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')]/a[contains(@onclick,'sysconfigParent')]");
 		OOGraphene.waitElement(coreConfigurationLinkBy, browser);
 		browser.findElement(coreConfigurationLinkBy).click();
-		By coreConfigurationLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'sysconfigParent')]");
+		By coreConfigurationLinkOpenBy = By.xpath("//div[contains(@class,'o_tree')]//div[contains(@class,'active')][a/i[contains(@class,'o_icon_close_tree')]]/span[contains(@class,'o_tree_link')][contains(@class,'active')]/a[contains(@onclick,'sysconfigParent')]");
 		OOGraphene.waitElement(coreConfigurationLinkOpenBy, browser);
 		return this;
 	}
