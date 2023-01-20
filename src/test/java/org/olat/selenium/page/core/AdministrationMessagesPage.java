@@ -55,8 +55,8 @@ public class AdministrationMessagesPage {
 	
 	public AdministrationMessagesPage clearMaintenanceMessage() {
 		By clearBy = By.cssSelector("a.o_sel_maintenance_msg_clear");
-		browser.findElement(clearBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.click(clearBy, browser);
+		OOGraphene.waitElementDisappears(clearBy, 5, browser);
 		return this;
 	}
 

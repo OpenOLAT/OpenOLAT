@@ -126,6 +126,8 @@ public class MembersWizardPage {
 		//Search by username or first name
 		By firstFieldBy = By.xpath("//fieldset[contains(@class,'o_sel_usersearch_searchform')]//input[@type='text'][1]");
 		OOGraphene.waitElement(firstFieldBy, browser);
+		By typeheadBy = By.xpath("//span[contains(@class,'twitter-typeahead')]/div[contains(@class,'tt-menu')]");
+		OOGraphene.waitElementPresence(typeheadBy, 5, browser);
 		
 		String search = admin ? user.getLogin() : user.getFirstName();
 		browser.findElement(firstFieldBy).sendKeys(search);

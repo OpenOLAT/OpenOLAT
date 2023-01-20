@@ -315,6 +315,12 @@ public class OOGraphene {
 			.until(ExpectedConditions.invisibilityOfElementLocated(element));
 	}
 	
+	public static void waitElementSlowlyDisappears(By element, int timeoutInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingSlower)
+			.until(ExpectedConditions.invisibilityOfElementLocated(element));
+	}
+	
 	public static void nextStep(WebDriver browser) {
 		clickAndWait(wizardNextBy, browser);
 	}

@@ -105,7 +105,7 @@ public class LoginPage {
 	}
 	
 	public LoginPage waitOnMaintenanceMessageCleared() {
-		OOGraphene.waitElementDisappears(maintenanceMessageBy, 10, browser);
+		OOGraphene.waitElementSlowlyDisappears(maintenanceMessageBy, 10, browser);
 		return this;
 	}
 	
