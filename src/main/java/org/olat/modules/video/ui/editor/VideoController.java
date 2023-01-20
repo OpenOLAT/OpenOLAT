@@ -78,7 +78,10 @@ public class VideoController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (videoDisplayController == source) {
-			if (event instanceof VideoEvent) {
+			if (event instanceof VideoEvent videoEvent) {
+				if ("timeupdate".equals(videoEvent.getCommand())) {
+					videoDisplayController.clearMarkerLayer();
+				}
 				fireEvent(ureq, event);
 			} else if (event instanceof MarkerMovedEvent) {
 				fireEvent(ureq, event);
@@ -122,8 +125,10 @@ public class VideoController extends BasicController {
 
 	public void setMode(TimelineEventType type) {
 		videoDisplayController.setMode(type == TimelineEventType.QUIZ,
-				type == TimelineEventType.ANNOTATION
-		);
+				type == TimelineEventType.ANNOTATION);
+		if (type == TimelineEventType.CHAPTER) {
+			videoDisplayController.clearMarkerLayer();
+		}
 		reloadMarkers();
 	}
 }

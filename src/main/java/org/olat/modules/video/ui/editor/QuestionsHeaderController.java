@@ -68,7 +68,7 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 										String videoElementId) {
-		super(ureq, wControl, "questions-header");
+		super(ureq, wControl, "questions_header");
 		this.repositoryEntry = repositoryEntry;
 		this.videoElementId = videoElementId;
 		initForm(ureq);
@@ -101,6 +101,7 @@ public class QuestionsHeaderController extends FormBasicController {
 				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), q.getTitle())));
 		flc.contextPut("hasQuestions", !questionsKV.isEmpty());
 		questionsDropdown.setKeysAndValues(questionsKV.keys(), questionsKV.values(), null);
+
 		if (questions.getQuestions().stream().noneMatch(q -> q.getId().equals(questionId))) {
 			questionId = null;
 		}

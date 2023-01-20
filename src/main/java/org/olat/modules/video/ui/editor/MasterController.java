@@ -103,6 +103,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private int availableWidth;
 	private CloseableCalloutWindowController ccwc;
 	private ToolsController toolsController;
+	private String currentTimeCode;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, OLATResource olatResource,
 							String videoElementId) {
@@ -275,6 +276,9 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			} else if (event instanceof FlexiTableRenderEvent renderEvent) {
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
 					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
+					if (renderEvent.getRendererType() == FlexiTableRendererType.external) {
+						flc.contextPut("currentTimeInSeconds", currentTimeCode);
+					}
 				}
 			} else if (event instanceof SelectionEvent selectionEvent) {
 				if (SELECT_ACTION.equals(selectionEvent.getCommand())) {
@@ -358,6 +362,11 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineDataSource.loadRows();
 		timelineTableEl.reloadData();
 		addTools();
+	}
+
+	public void setCurrentTimeCode(String currentTimeCode) {
+		this.currentTimeCode = currentTimeCode;
+		flc.contextPut("currentTimeInSeconds", currentTimeCode);
 	}
 
 	private class ThumbnailMapper implements Mapper {

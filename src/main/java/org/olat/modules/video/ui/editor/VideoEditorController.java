@@ -94,6 +94,7 @@ public class VideoEditorController extends BasicController {
 		if (videoController == source) {
 			if (event instanceof VideoEvent videoEvent) {
 				detailsController.setCurrentTimeCode(videoEvent.getTimeCode());
+				masterController.setCurrentTimeCode(videoEvent.getTimeCode());
 			} else if (event instanceof MarkerResizedEvent markerResizedEvent) {
 				detailsController.setAnnotationSize(markerResizedEvent.getMarkerId(), markerResizedEvent.getWidth(),
 						markerResizedEvent.getHeight());
@@ -137,8 +138,7 @@ public class VideoEditorController extends BasicController {
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
 				videoController.setMode(TimelineEventType.ANNOTATION);
-				detailsController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
-				detailsController.showAnnotations(ureq);
+				detailsController.showAnnotation(ureq, annotationSelectedEvent.getAnnotationId());
 				videoController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
 				videoController.setMode(TimelineEventType.CHAPTER);

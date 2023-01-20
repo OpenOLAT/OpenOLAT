@@ -889,6 +889,10 @@ public class VideoDisplayController extends BasicController {
 		displayOptions.setShowAnnotations(showAnnotations);
 	}
 
+	public void clearMarkerLayer() {
+		markerPanel.setContent(null);
+	}
+
 	public static class VideoMarkerWrapper {
 		
 		private final VideoMarker marker;

@@ -96,12 +96,9 @@ public class DetailsController extends BasicController {
 		segmentController.setCurrentTimeCode(currentTimeCode);
 	}
 
-	public void setAnnotationId(String annotationId) {
-		annotationsController.setAnnotationId(annotationId);
-	}
-
-	public void showAnnotations(UserRequest ureq) {
+	public void showAnnotation(UserRequest ureq, String annotationId) {
 		tabbedPane.setSelectedPane(ureq, 1);
+		annotationsController.showAnnotation(annotationId);
 	}
 
 	public void showChapters(UserRequest ureq) {

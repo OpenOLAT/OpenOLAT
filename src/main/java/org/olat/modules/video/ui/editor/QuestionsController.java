@@ -80,7 +80,7 @@ public class QuestionsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-
+		//
 	}
 
 	@Override

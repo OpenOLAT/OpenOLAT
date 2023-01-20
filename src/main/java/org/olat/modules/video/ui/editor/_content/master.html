@@ -4,9 +4,6 @@ $r.render("timelineEvents")
 	$r.render("timelineEvents_ERROR")
 #end
 
-<style>
-</style>
-
 #if ($showPlayHead)
 <div id="o_video_play_head">
 	<div class="o_video_play_head_marker">
@@ -16,7 +13,6 @@ $r.render("timelineEvents")
 		00:00:00
 	</div>
 </div>
-#end
 
 <script>
 	function scrollHandler(e) {
@@ -41,11 +37,11 @@ $r.render("timelineEvents")
 			currentTimeInSeconds = Math.max(currentTimeInSeconds, 0);
 			currentTimeInSeconds = Math.min(currentTimeInSeconds, durationInSeconds);
 
-			setCurrentTime(videoElement, currentTimeInSeconds);
+			setCurrentTimeInVideoElement(videoElement, currentTimeInSeconds);
 		}
 	}
 
-	function setCurrentTime(videoElement, currentTimeInSeconds) {
+	function setCurrentTimeInVideoElement(videoElement, currentTimeInSeconds) {
 		const player = videoElement.data('player');
 		const loaded = videoElement.data('playerloaded');
 		if (player) {
@@ -79,32 +75,32 @@ $r.render("timelineEvents")
 			let currentTimeInSeconds = relativeX * durationInSeconds / widthScrollableChannels;
 			currentTimeInSeconds = Math.max(currentTimeInSeconds, 0);
 			currentTimeInSeconds = Math.min(currentTimeInSeconds, durationInSeconds);
-			setCurrentTime(videoElement, currentTimeInSeconds);
+			setCurrentTimeInVideoElement(videoElement, currentTimeInSeconds);
 		}
 	}
 
-	function initPlayHead() {
+	function initTimeLine() {
 		const playHead = jQuery('#o_video_play_head');
+		const playHeadText = jQuery('.o_video_play_head_text');
 		const videoChannels = jQuery('.o_video_channels');
 		const timeBar = jQuery('#o_video_time_bar');
 		const timeBarContainer = jQuery('#o_video_time_bar_container');
-		if (playHead && videoChannels && timeBar && timeBarContainer) {
-			timeBar.width(0);
-			const videoChannelsOffset = videoChannels.offset();
-			if (videoChannelsOffset) {
-				const playHeadLeft = videoChannelsOffset.left;
-				const playHeadTop = videoChannelsOffset.top - 10;
-				const playHeadHeight = videoChannels.height() + 20;
-				playHead.offset({left: playHeadLeft - 1, top: playHeadTop});
-				playHead.height(playHeadHeight);
 
-				const videoElementId = 'o_so_vid$videoElementId';
-				const videoElement = jQuery('#' + videoElementId);
-				const player = videoElement.data('player');
-				player.media.removeEventListener(timeUpdateListener);
-				player.media.addEventListener('timeupdate', timeUpdateListener);
-			}
+		if (playHead && playHeadText && videoChannels && timeBar && timeBarContainer) {
+			initPlayHead(videoChannels, playHead);
+
+			const currentTimeInSeconds = $currentTimeInSeconds;
+			const durationInSeconds = $durationInSeconds;
+			adjustPlayHeadAndTimeBar(playHead, playHeadText, timeBar, videoChannels, currentTimeInSeconds, durationInSeconds);
+			adjustScrollPosition(videoChannels, currentTimeInSeconds, durationInSeconds);
+
 			videoChannels.scroll(scrollHandler);
+
+			const videoElementId = 'o_so_vid$videoElementId';
+			const videoElement = jQuery('#' + videoElementId);
+			const player = videoElement.data('player');
+			player.media.removeEventListener(timeUpdateListener);
+			player.media.addEventListener('timeupdate', timeUpdateListener);
 
 			playHead.draggable({
 				axis: 'x',
@@ -114,6 +110,15 @@ $r.render("timelineEvents")
 
 			timeBarContainer.click(clickHandler);
 		}
+	}
+
+	function initPlayHead(videoChannels, playHead) {
+		const videoChannelsOffset = videoChannels.offset();
+		const playHeadLeft = videoChannelsOffset.left;
+		const playHeadTop = videoChannelsOffset.top - 10;
+		const playHeadHeight = videoChannels.height() + 20;
+		playHead.offset({left: playHeadLeft - 1, top: playHeadTop});
+		playHead.height(playHeadHeight);
 	}
 
 	function formatTime(sec) {
@@ -151,13 +156,22 @@ $r.render("timelineEvents")
 		const player = videoElement.data('player');
 		const currentTimeInSeconds = player.media.currentTime;
 		const durationInSeconds = player.media.duration;
-		const videoChannelsOffset = videoChannels.offset();
+
+		adjustPlayHeadAndTimeBar(playHead, playHeadText, timeBar, videoChannels, currentTimeInSeconds, durationInSeconds);
+
+		if (mode !== "scroll") {
+			adjustScrollPosition(videoChannels, currentTimeInSeconds, durationInSeconds);
+		}
+	}
+
+	function adjustPlayHeadAndTimeBar(playHead, playHeadText, timeBar, videoChannels, currentTimeInSeconds, durationInSeconds) {
+		const videoChannelsX = videoChannels.offset().left;
 		const videoChannelsWidth = videoChannels.get(0).scrollWidth;
 		const videoChannelsViewportWidth = videoChannels.width();
 		const videoChannelsScrollLeft = videoChannels.scrollLeft();
 		const playHeadTop = playHead.offset().top;
-		const playHeadLeft = videoChannelsOffset.left + currentTimeInSeconds * videoChannelsWidth / durationInSeconds - videoChannelsScrollLeft;
-		const playHeadVisible = (playHeadLeft >= videoChannelsOffset.left && playHeadLeft <= (videoChannelsOffset.left + videoChannelsViewportWidth));
+		const playHeadX = videoChannelsX + currentTimeInSeconds * videoChannelsWidth / durationInSeconds - videoChannelsScrollLeft;
+		const playHeadVisible = (playHeadX >= videoChannelsX && playHeadX <= (videoChannelsX + videoChannelsViewportWidth));
 		const timeBarWidth = currentTimeInSeconds * videoChannelsWidth / durationInSeconds;
 		playHeadText.text(formatTime(currentTimeInSeconds));
 		if (playHeadVisible) {
@@ -167,20 +181,27 @@ $r.render("timelineEvents")
 			playHead.css({ 'opacity' : 0 });
 			playHeadText.hide();
 		}
-		playHead.offset({left: playHeadLeft - 1, top: playHeadTop});
+		playHead.offset({left: playHeadX - 1, top: playHeadTop});
 		timeBar.width(timeBarWidth);
-
-		if (mode !== "scroll") {
-			const overlapLeft = Math.max(videoChannelsOffset.left - playHeadLeft + 50, 0);
-			const overlapRight = Math.max(playHeadLeft - (videoChannelsOffset.left + videoChannelsViewportWidth) + 50, 0);
-			const minScrollLeft = 0;
-			const maxScrollLeft = videoChannelsWidth - videoChannelsViewportWidth;
-			let newScrollLeft = videoChannels.scrollLeft() - overlapLeft + overlapRight;
-			newScrollLeft = Math.max(minScrollLeft, newScrollLeft);
-			newScrollLeft = Math.min(newScrollLeft, maxScrollLeft);
-			videoChannels.scrollLeft(newScrollLeft);
-		}
 	}
 
-	initPlayHead();
+	function adjustScrollPosition(videoChannels, currentTimeInSeconds, durationInSeconds) {
+		const videoChannelsX = videoChannels.offset().left;
+		const videoChannelsWidth = videoChannels.get(0).scrollWidth;
+		const videoChannelsViewportWidth = videoChannels.width();
+		const videoChannelsScrollLeft = videoChannels.scrollLeft();
+		const playHeadX = videoChannelsX + currentTimeInSeconds * videoChannelsWidth / durationInSeconds - videoChannelsScrollLeft;
+
+		const overlapLeft = Math.max(videoChannelsX - playHeadX + 50, 0);
+		const overlapRight = Math.max(playHeadX - (videoChannelsX + videoChannelsViewportWidth) + 50, 0);
+		const minScrollLeft = 0;
+		const maxScrollLeft = videoChannelsWidth - videoChannelsViewportWidth;
+		let newScrollLeft = videoChannels.scrollLeft() - overlapLeft + overlapRight;
+		newScrollLeft = Math.max(minScrollLeft, newScrollLeft);
+		newScrollLeft = Math.min(newScrollLeft, maxScrollLeft);
+		videoChannels.scrollLeft(newScrollLeft);
+	}
+
+	initTimeLine();
 </script>
+#end
