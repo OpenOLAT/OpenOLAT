@@ -57,6 +57,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
@@ -210,14 +211,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private void populateAssessedIdentityInfos(UserRequest ureq, RepositoryEntry courseRepo, BusinessGroup group, boolean links) { 
 		if(efficiencyStatement != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(efficiencyStatement.getCourseTitle()));
-			
-			long lastModified;
-			if(efficiencyStatement.getLastUserModified() > 0) {
-				lastModified = efficiencyStatement.getLastUserModified();
-			} else {
-				lastModified = efficiencyStatement.getLastUpdated();
-			}
-			mainVC.contextPut("date", StringHelper.formatLocaleDateTime(lastModified, getLocale()));
 		} else if(courseRepo != null) {
 			mainVC.contextPut("courseTitle", StringHelper.escapeHtml(courseRepo.getDisplayname()));
 		}
@@ -229,7 +222,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 		
 		mainVC.contextPut("user", statementOwner.getUser());
-		mainVC.contextPut("username", statementOwner.getName());
+		mainVC.contextPut("username", statementOwner.getUser().getNickName());
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -261,15 +254,20 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				Collections.singletonList(courseRepoEntry.getKey()));
 		}
 		if (!completions.isEmpty()) {
-			Double completion = completions.get(0).getCompletion();
+			AssessmentEntryScoring assessmentEntryScoring = completions.get(0);
+			Double completion = assessmentEntryScoring.getCompletion();
 			if (completion != null) {
-				ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue(),
-						Float.valueOf(1), null);
+				ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue() * 100,
+						Float.valueOf(100), "%");
 				completionItem.setWidthInPercent(true);
-				completionItem.setLabelAlignment(LabelAlignment.none);
+				completionItem.setLabelAlignment(LabelAlignment.right);
+				completionItem.setLabelMaxEnabled(false);
 				completionItem.setRenderStyle(RenderStyle.radial);
-				completionItem.setRenderSize(RenderSize.inline);	
-				completionItem.setBarColor(BarColor.success);	
+				completionItem.setRenderSize(RenderSize.inline);
+				BarColor barColor =  assessmentEntryScoring.getPassed() == null || assessmentEntryScoring.getPassed().booleanValue()
+						? BarColor.success
+						: BarColor.danger;
+				completionItem.setBarColor(barColor);
 				mainVC.put("completion", completionItem);
 			}
 		}
@@ -317,6 +315,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			certificateCtrl = new CertificateController(ureq, getWindowControl(), certificate);
 			listenTo(certificateCtrl);
 		}
+		
+		mainVC.contextPut("certCreation", Formatter.getInstance(getLocale()).formatDateAndTime(certificate.getCreationDate()));
+		if (certificate.getNextRecertificationDate() != null) {
+			mainVC.contextPut("certRecertification", Formatter.getInstance(getLocale()).formatDate(certificate.getNextRecertificationDate()));
+		}
+		
 		mainVC.put("segmentCmp", certificateCtrl.getInitialComponent());
 	}
 	

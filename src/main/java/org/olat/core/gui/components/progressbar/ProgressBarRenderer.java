@@ -166,11 +166,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 	private void renderLabel(StringOutput target, ProgressBar ubar) {
 		target.append("<span class='o_progress_label'>");
 		target.append(Math.round(ubar.getActual()));
-		target.append("/");
-		if (ubar.getIsNoMax()) {
-			target.append("-");
-		} else {
-			target.append(Math.round(ubar.getMax()));
+		if (ubar.isLabelMaxEnabled()) {
+			target.append("/");
+			if (ubar.getIsNoMax()) {
+				target.append("-");
+			} else {
+				target.append(Math.round(ubar.getMax()));
+			}
 		}
 		if (StringHelper.containsNonWhitespace(ubar.getUnitLabel())) {
 			target.append(" ");

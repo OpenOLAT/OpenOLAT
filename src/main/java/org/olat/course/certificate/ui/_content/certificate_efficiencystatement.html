@@ -61,7 +61,7 @@ jQuery(function(){
 			<tbody>
 			#if($courseTitle)
 				<tr>
-					<th style="width: 30%;">$r.translate("course")</th>
+					<th style="width: 30%;">$r.translate("course.title")</th>
 					<td>$courseTitle
 						#if($r.available("course.link"))
 							<div>$r.render("course.link")</div>
@@ -69,15 +69,9 @@ jQuery(function(){
 					</td>
 				</tr>
 			#end
-			#if($date)
-				<tr>
-					<th style="width: 30%;">$r.translate("date")</th>
-					<td>$date</td>
-				</tr>
-			#end
 			#if($groupName)
 				<tr>
-					<th style="width: 30%;">$r.translate("group")</th>
+					<th style="width: 30%;">$r.translate("group.name")</th>
 					<td>
 						$groupName 
 						#if($r.available("group.link"))
@@ -91,6 +85,22 @@ jQuery(function(){
 					<th style="width: 30%;">$r.translate("completion")</th>
 					<td>
 						$r.render("completion")
+					</td>
+				</tr>
+			#end
+			#if($certCreation)
+				<tr>
+					<th style="width: 30%;">$r.translate("certificate.issued")</th>
+					<td>
+						$certCreation
+					</td>
+				</tr>
+			#end
+			#if($certRecertification)
+				<tr>
+					<th style="width: 30%;">$r.translate("certificate.valid.until")</th>
+					<td>
+						$certRecertification
 					</td>
 				</tr>
 			#end

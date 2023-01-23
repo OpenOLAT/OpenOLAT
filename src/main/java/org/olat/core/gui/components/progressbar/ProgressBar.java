@@ -38,10 +38,10 @@ import org.olat.core.gui.components.ComponentRenderer;
 public class ProgressBar extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
 	
-	public enum LabelAlignment {none, left, right};
-	public enum RenderStyle {horizontal, radial, pie};
-	public enum RenderSize {inline, small, medium, large};
-	public enum BarColor {primary, success, info, warning, danger};
+	public enum LabelAlignment {none, left, right}
+	public enum RenderStyle {horizontal, radial, pie}
+	public enum RenderSize {inline, small, medium, large}
+	public enum BarColor {primary, success, info, warning, danger}
 
 	private static final int DEFAULT_WIDTH = 200;
 
@@ -58,6 +58,7 @@ public class ProgressBar extends AbstractComponent {
 	private boolean progressAnimationEnabled = false;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
+	private boolean labelMaxEnabled = true;
 	private String info;
 	private String cssClass;
 	
@@ -202,7 +203,15 @@ public class ProgressBar extends AbstractComponent {
 	public void setLabelAlignment(LabelAlignment labelAlignment) {
 		this.labelAlignment = labelAlignment;
 	}
-		
+	
+	public boolean isLabelMaxEnabled() {
+		return labelMaxEnabled;
+	}
+	
+	public void setLabelMaxEnabled(boolean labelMaxEnabled) {
+		this.labelMaxEnabled = labelMaxEnabled;
+	}
+
 	public float getActual() {
 		return actual;
 	}

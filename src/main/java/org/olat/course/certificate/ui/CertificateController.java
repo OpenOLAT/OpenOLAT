@@ -29,7 +29,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.certificate.Certificate;
@@ -58,19 +57,9 @@ public class CertificateController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("certificate");
 		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
 		if(certificate != null) {
-			Formatter formatter = Formatter.getInstance(getLocale());
-			String creationDate = formatter.formatDateAndTime(certificate.getCreationDate());
-			String creationDateMsg = translate("certificate.creationdate", creationDate);
-			mainVC.contextPut("certificateCreationDateMsg", creationDateMsg);
-			
 			downloadButton = LinkFactory.createButton("download.button", mainVC, this);
 			downloadButton.setIconLeftCSS("o_icon o_icon_download");
 			downloadButton.setTarget("_blank");
-			
-			String url = DownloadCertificateCellRenderer.getUrl(certificate);
-			mainVC.contextPut("certificateUrl", url);
-			String name = DownloadCertificateCellRenderer.getName(certificate);
-			mainVC.contextPut("certificateName", name);
 		}
 		
 		if(certificateLeaf != null) {

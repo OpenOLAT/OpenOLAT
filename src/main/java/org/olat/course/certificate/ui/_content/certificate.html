@@ -1,8 +1,4 @@
 <div class="o_block clearfix">
-	<div class="pull-left">
-		<a href="$certificateUrl" target="_blank"><i class="o_icon o_filetype_pdf"> </i> $certificateName</a><br/>
-		<div class="text-muted">$certificateCreationDateMsg</div>
-	</div>
 	#if($r.available("certificate"))
 	<div class="pull-right">
 		$r.render("download.button")
