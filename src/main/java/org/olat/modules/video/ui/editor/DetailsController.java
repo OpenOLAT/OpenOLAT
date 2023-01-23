@@ -22,6 +22,7 @@ package org.olat.modules.video.ui.editor;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -74,6 +75,15 @@ public class DetailsController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		if (tabbedPane == source) {
+			if (event instanceof TabbedPaneChangedEvent tabbedPaneChangedEvent) {
+				if (annotationsController == tabbedPaneChangedEvent.getNewController()) {
+					annotationsController.sendSelectionEvent(ureq);
+				} else if (questionsController == tabbedPaneChangedEvent.getNewController()) {
+					questionsController.sendSelectionEvent(ureq);
+				}
+			}
+		}
 	}
 
 	@Override

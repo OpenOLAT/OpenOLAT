@@ -147,4 +147,10 @@ public class QuestionsController extends BasicController {
 		String currentQuestionId = questionsHeaderController.getQuestionId();
 		showQuestion(currentQuestionId);
 	}
+
+	public void sendSelectionEvent(UserRequest ureq) {
+		if (question != null) {
+			fireEvent(ureq, new QuestionSelectedEvent(question.getId(), question.getBegin().getTime()));
+		}
+	}
 }

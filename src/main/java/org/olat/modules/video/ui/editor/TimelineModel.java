@@ -216,4 +216,8 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	public String getMediaUrl() {
 		return mediaUrl;
 	}
+
+	public void select(String id) {
+		getObjects().forEach(t -> t.setSelected(t.getId().equals(id)));
+	}
 }

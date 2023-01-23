@@ -259,7 +259,8 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (x == 0) {
 			x += 1;
 		}
-		s.append("<div class=\"o_video_question ").append(event.getColor())
+		s.append("<div id=\"o_video_event_").append(event.getId())
+				.append("\" class=\"o_video_question ").append(event.getColor()).append(event.isSelected() ? " o_video_selected" : "")
 				.append("\" style=\"left: ").append(x - 15).append("px; top: ").append(y - 5)
 				.append("px; \" onclick=\"")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
@@ -282,7 +283,8 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 			x += 1;
 			width -= 1;
 		}
-		s.append("<div class=\"o_video_timeline_event ").append(cssClass).append(" ").append(event.isSelected() ? "o_video_selected " : "")
+		s.append("<div id=\"o_video_event_").append(event.getId())
+				.append("\" class=\"o_video_timeline_event ").append(cssClass).append(" ").append(event.isSelected() ? "o_video_selected " : "")
 				.append(event.getColor())
 				.append("\" style=\"left: ").append(x).append("px; width: ").append(width).append("px; ")
 				.append("top: ").append(y).append("px;")

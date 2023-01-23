@@ -158,4 +158,10 @@ public class AnnotationsController extends BasicController {
 			annotationController.setAnnotation(annotation);
 		}
 	}
+
+	public void sendSelectionEvent(UserRequest ureq) {
+		if (annotation != null) {
+			fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+		}
+	}
 }

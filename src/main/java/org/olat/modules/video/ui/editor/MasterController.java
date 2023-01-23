@@ -52,10 +52,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -115,6 +117,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		this.videoFrameCount = videoManager.getVideoFrameCount(videoFile);
 		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
 		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
+		flc.contextPut("currentTimeInSeconds", "0.0");
 		this.movieSize = new Size(90, 50, false);
 		initForm(ureq);
 		initFilters(ureq);
@@ -254,22 +257,26 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			if ("ONCLICK".equals(event.getCommand())) {
 				String questionId = ureq.getParameter("questionId");
 				if (questionId != null) {
+					timelineModel.select(questionId);
 					timelineModel.getTimelineRow(TimelineEventType.QUIZ, questionId)
 							.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getStartTime())));
 				}
 				String annotationId = ureq.getParameter("annotationId");
 				if (annotationId != null) {
+					timelineModel.select(annotationId);
 					timelineModel.getTimelineRow(TimelineEventType.ANNOTATION, annotationId)
 									.ifPresent(a -> fireEvent(ureq, new AnnotationSelectedEvent(a.getId(),
 											a.getStartTime())));
 				}
 				String chapterId = ureq.getParameter("chapterId");
 				if (chapterId != null) {
+					timelineModel.select(chapterId);
 					timelineModel.getTimelineRow(TimelineEventType.CHAPTER, chapterId)
 							.ifPresent(c -> fireEvent(ureq, new ChapterSelectedEvent(c.getId(), c.getStartTime())));
 				}
 				String segmentId = ureq.getParameter("segmentId");
 				if (segmentId != null) {
+					timelineModel.select(segmentId);
 					timelineModel.getTimelineRow(TimelineEventType.SEGMENT, segmentId)
 							.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getStartTime())));
 				}
@@ -277,7 +284,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
 					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
 					if (renderEvent.getRendererType() == FlexiTableRendererType.external) {
-						flc.contextPut("currentTimeInSeconds", currentTimeCode);
+						flc.contextPut("currentTimeInSeconds", StringHelper.containsNonWhitespace(currentTimeCode) ? currentTimeCode : "0.0");
 					}
 				}
 			} else if (event instanceof SelectionEvent selectionEvent) {
@@ -366,7 +373,20 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		this.currentTimeCode = currentTimeCode;
-		flc.contextPut("currentTimeInSeconds", currentTimeCode);
+		flc.contextPut("currentTimeInSeconds", StringHelper.containsNonWhitespace(currentTimeCode) ? currentTimeCode : "0.0");
+	}
+
+	public void select(String id) {
+		timelineModel.select(id);
+		JSCommand command = new JSCommand(
+				"try {" +
+						"  jQuery('.o_video_selected').removeClass('o_video_selected');" +
+						"  jQuery('#o_video_event_" + id + "').addClass('o_video_selected');" +
+						"} catch(e) {" +
+						"  if (window.console) console.log(e);" +
+						"}"
+				);
+		getWindowControl().getWindowBackOffice().sendCommandTo(command);
 	}
 
 	private class ThumbnailMapper implements Mapper {

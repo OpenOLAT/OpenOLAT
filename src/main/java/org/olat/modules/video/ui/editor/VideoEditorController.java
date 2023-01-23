@@ -125,15 +125,19 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
 				videoController.setMode(TimelineEventType.ANNOTATION);
 				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000);
+				masterController.select(annotationSelectedEvent.getAnnotationId());
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
 				videoController.setMode(TimelineEventType.SEGMENT);
 				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
+				masterController.select(segmentSelectedEvent.getSegmentId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
 				videoController.setMode(TimelineEventType.CHAPTER);
 				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
+				masterController.select(chapterSelectedEvent.getChapterId());
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
 				videoController.setMode(TimelineEventType.QUIZ);
 				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
+				masterController.select(questionSelectedEvent.getQuestionId());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {

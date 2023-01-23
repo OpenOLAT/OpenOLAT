@@ -184,7 +184,7 @@ public class ChaptersController extends FormBasicController {
 	}
 
 	private void doSelect(UserRequest ureq, VideoChapterTableRow row) {
-		fireEvent(ureq, new ChapterSelectedEvent(row.getChapterName(), row.getBegin().getTime()));
+		fireEvent(ureq, new ChapterSelectedEvent(TimelineDataSource.generateChapterId(row), row.getBegin().getTime()));
 	}
 
 	private void doEdit(UserRequest ureq, VideoChapterTableRow row, boolean chapterExists) {

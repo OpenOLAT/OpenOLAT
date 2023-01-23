@@ -139,7 +139,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		}).collect(Collectors.toList());
 	}
 
-	private String generateChapterId(VideoChapterTableRow chapter) {
+	public static String generateChapterId(VideoChapterTableRow chapter) {
 		return "c_" + chapter.getBegin().hashCode() + "_" + chapter.getEnd().hashCode();
 	}
 
