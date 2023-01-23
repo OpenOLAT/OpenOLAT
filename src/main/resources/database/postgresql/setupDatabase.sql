@@ -3313,6 +3313,7 @@ create table o_lic_license_type (
   l_css_class varchar(64),
   l_predefined bool not null default false,
   l_sort_order int8 not null,
+  l_type_oer bool not null default false,
   primary key (id)
 );
 

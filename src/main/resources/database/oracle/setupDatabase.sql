@@ -3359,6 +3359,7 @@ create table o_lic_license_type (
   l_css_class varchar2(64),
   l_predefined number not null,
   l_sort_order number(20) not null,
+  l_type_oer number not null,
   primary key (id)
 );
 
