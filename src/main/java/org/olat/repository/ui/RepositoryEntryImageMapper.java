@@ -44,6 +44,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class RepositoryEntryImageMapper implements Mapper {
+
+	private final int maxWidth;
+	private final int maxHeight;
 	
 	@Autowired
 	private RepositoryService repositoryService;
@@ -51,9 +54,15 @@ public class RepositoryEntryImageMapper implements Mapper {
 	private VFSRepositoryService vfsRepositoryService;
 	
 	public RepositoryEntryImageMapper() {
+		this(180, 120);
+	}
+	
+	public RepositoryEntryImageMapper(int maxWidth, int maxHeight) {
+		this.maxWidth = maxWidth;
+		this.maxHeight = maxHeight;
 		CoreSpringFactory.autowireObject(this);
 	}
-
+	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		int lastIndex = relPath.lastIndexOf('.');
@@ -77,7 +86,7 @@ public class RepositoryEntryImageMapper implements Mapper {
 			VFSItem image = repositoryService.getIntroductionImage(re);
 			if(image instanceof VFSLeaf) {
 				//121 is needed to fill the div
-				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, 180, 120, true);
+				VFSLeaf thumbnail = vfsRepositoryService.getThumbnail((VFSLeaf)image, maxWidth, maxHeight, true);
 				if(thumbnail != null) {
 					resource = new VFSMediaResource(thumbnail);
 				}
