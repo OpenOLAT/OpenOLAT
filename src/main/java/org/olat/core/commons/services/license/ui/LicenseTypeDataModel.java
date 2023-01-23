@@ -61,6 +61,8 @@ class LicenseTypeDataModel extends DefaultFlexiTableDataModel<LicenseTypeRow> {
 					return licenseTypeRow.getLicenseType().getCssClass();
 				case edit:
 					return licenseTypeRow.getLicenseType().isPredefined();
+				case oer:
+					return licenseTypeRow.getLicenseType().isOerLicense();
 				default:
 			}
 		}
@@ -80,7 +82,8 @@ class LicenseTypeDataModel extends DefaultFlexiTableDataModel<LicenseTypeRow> {
 		nameTranslation("license.type.name.translation"),
 		text("license.type.text"),
 		cssClass("license.type.css.class"),
-		edit("table.header.edit");
+		edit("table.header.edit"),
+		oer("table.header.oer");
 		
 		private final String i18nKey;
 	

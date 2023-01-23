@@ -551,7 +551,11 @@ public class RepositoryEntryAuthorQueries {
 				case guests:
 					sb.append(" order by v.guests");
 					appendAsc(sb, asc).append(", lower(v.displayname) asc");	
-					break; 
+					break;
+				case oer:
+					sb.append(" order by v.canIndexMetadata");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
+					break;
 				case access:
 					if(asc) {
 						sb.append(" order by v.status asc, lower(v.displayname) asc");

@@ -46,5 +46,9 @@ public interface LicenseType extends Comparable<LicenseType>, Persistable, Creat
 	int getSortOrder();
 
 	void setSortOrder(int sortOrder);
+
+	boolean isOerLicense();
+
+	void setOerLicense(boolean oerLicense);
 	
 }

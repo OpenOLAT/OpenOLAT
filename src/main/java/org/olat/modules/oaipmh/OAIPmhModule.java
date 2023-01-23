@@ -60,6 +60,7 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private static final String CONFIG_API_RELEASE = "oai.api.type.release";
 	private static final String CONFIG_SEARCHENGINE_ENABLED = "oai.searchengine.enabled";
 	private static final String CONFIG_SELECTED_LICENSE_RESTRICTIONS = "oai.license.selectedRestrictions";
+	private static final String CONFIG_OAI_IDENTIFIER_TYPE = "oai.identifier.type";
 
 	@Value("${oai.enabled}")
 	private boolean enabled;
@@ -81,6 +82,8 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private boolean searchEngineEnabled;
 	@Value("${oai.license.selectedRestrictions}")
 	private String licenseSelectedRestrictions;
+	@Value("${oai.identifier.type}")
+	private String identifierType;
 
 	@Autowired
 	private ACService acService;
@@ -135,6 +138,10 @@ public class OAIPmhModule extends AbstractSpringModule {
 		enabledObj = getStringPropertyValue(CONFIG_SELECTED_LICENSE_RESTRICTIONS, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			licenseSelectedRestrictions = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_OAI_IDENTIFIER_TYPE, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			identifierType = enabledObj;
 		}
 	}
 
@@ -245,6 +252,14 @@ public class OAIPmhModule extends AbstractSpringModule {
 		setStringProperty(CONFIG_SELECTED_LICENSE_RESTRICTIONS, licenseSelectedRestrictions.toString(), true);
 	}
 
+	public String getIdentifierType() {
+		return identifierType;
+	}
+
+	public void setIdentifierType(String identifierType) {
+		this.identifierType = identifierType;
+	}
+
 	public ListBuilder<String> getSetSpecByRepositoryEntry(
 			RepositoryEntry repositoryEntry,
 			ResourceLicense license,
@@ -265,7 +280,9 @@ public class OAIPmhModule extends AbstractSpringModule {
 			setSpec.add("org:" + organisation);
 		}
 		if (isApiTypeLicense()) {
-			setSpec.add("license:" + license.getLicenseType().getName());
+			if (license != null && license.getLicenseType().isOerLicense()) {
+				setSpec.add("license:" + license.getLicenseType().getName());
+			}
 		}
 		if (isApiTypeLearningResource()) {
 			String type = NewControllerFactory.translateResourceableTypeName(repositoryEntry.getOlatResource().getResourceableTypeName(), Locale.getDefault());

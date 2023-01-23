@@ -517,7 +517,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(configuration.isDefaultGuest(),
 					Cols.guests.i18nKey(), Cols.guests.ordinal(), true, OrderBy.guests.name(), FlexiColumnModel.ALIGNMENT_LEFT,
 					new GuestAccessRenderer(getLocale())));
-		}	
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(),
 				true, OrderBy.creationDate.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastUsage.i18nKey(), Cols.lastUsage.ordinal(),
@@ -527,8 +527,8 @@ public class AuthorListController extends FormBasicController implements Activat
 					true, OrderBy.references.name()));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
-				false, null));
-		
+				true, OrderBy.oer.name(), FlexiColumnModel.ALIGNMENT_LEFT,
+				new OerPubRenderer(getLocale())));
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lectureInfos.i18nKey(), Cols.lectureInfos.ordinal(),
 				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));

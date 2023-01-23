@@ -68,6 +68,9 @@ public class LicenseTypeImpl implements LicenseType {
 	@Column(name="l_sort_order", nullable=false, insertable=true, updatable=true)
 	private int sortOrder;
 
+	@Column(name="l_type_oer", nullable=true, insertable=true, updatable=true)
+	private boolean oerLicense;
+
 	@Override
 	public Long getKey() {
 		return key;
@@ -138,6 +141,16 @@ public class LicenseTypeImpl implements LicenseType {
 	@Override
 	public void setSortOrder(int sortOrder) {
 		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public boolean isOerLicense() {
+		return oerLicense;
+	}
+
+	@Override
+	public void setOerLicense(boolean oerLicense) {
+		this.oerLicense = oerLicense;
 	}
 
 	@Override

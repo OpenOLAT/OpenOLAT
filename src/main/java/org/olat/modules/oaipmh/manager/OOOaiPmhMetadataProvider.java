@@ -112,8 +112,11 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			}
 
 			metadataItemsObject
-					.with("identifier", ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
+					.with("identifier", oaiPmhModule.getIdentifierType().equals("url") ?
+							ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()) :
+							"oai:" + Settings.getServerDomainName() + ":" + repositoryEntry.getKey())
 					.with("url", Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repositoryEntry.getKey())
+					.with("info_url", ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
 					.with("displayname", repositoryEntry.getDisplayname())
 					.with("resourcename", repositoryEntry.getResourcename())
 					.with("initialauthor", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))

@@ -36,6 +36,7 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.OAIService;
+import org.olat.modules.oaipmh.common.util.URLDecoder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -80,7 +81,8 @@ public class OAIDispatcher implements Dispatcher {
 
 		try {
 			String requestVerbParam = ureq.getParameter("verb");
-			String requestIdentifierParam = ureq.getParameter("identifier");
+			String requestIdentifierParam = ureq.getParameter("identifier") != null ?
+					URLDecoder.decode(ureq.getParameter("identifier")) : null;
 			String requestMetadataPrefixParameter = ureq.getParameter("metadataprefix");
 			String requestResumptionTokenParameter = ureq.getParameter("resumptiontoken");
 			String requestFromParameter = ureq.getParameter("from");

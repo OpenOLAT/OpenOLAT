@@ -23,6 +23,7 @@ import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -39,10 +40,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class EditLicenseTypeController extends FormBasicController {
+
+	private static final String LICENSE_TYPE_OER_KEY = "license.type.oer";
 	
 	private TextElement nameEl;
 	private TextElement textEl;
 	private TextElement cssClassEl;
+	private MultipleSelectionElement oerEl;
 	
 	private LicenseType licenseType;
 	
@@ -73,6 +77,12 @@ public class EditLicenseTypeController extends FormBasicController {
 		
 		String cssClass = licenseType == null ? "" : licenseType.getCssClass();
 		cssClassEl = uifactory.addTextElement("license.type.css.class", 64, cssClass, formLayout);
+
+		String[] oerKeys = new String[]{LICENSE_TYPE_OER_KEY};
+		String[] oerValues = new String[]{translate("license.type.oer.qualifies")};
+
+		oerEl = uifactory.addCheckboxesVertical(LICENSE_TYPE_OER_KEY, formLayout, oerKeys, oerValues, 1);
+		oerEl.select(oerKeys[0], licenseType.isOerLicense());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -100,6 +110,9 @@ public class EditLicenseTypeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (oerEl.isEnabled()) {
+			licenseType.setOerLicense(oerEl.isKeySelected(LICENSE_TYPE_OER_KEY));
+		}
 		if (licenseType == null) {
 			licenseType = licenseService.createLicenseType(nameEl.getValue());
 		}

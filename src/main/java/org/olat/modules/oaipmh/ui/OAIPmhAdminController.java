@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -44,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
@@ -54,6 +57,7 @@ public class OAIPmhAdminController extends FormBasicController {
     private static final String[] keys = new String[]{"on"};
 
     private FormToggle oaiPmhEl;
+    private SingleSelection identifierTypeEl;
     private MultipleSelectionElement licenseEl;
     private MultipleSelectionElement apiTypeEl;
     private MultipleSelectionElement searchEnginePublishEl;
@@ -91,6 +95,14 @@ public class OAIPmhAdminController extends FormBasicController {
 
         String endpointUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + Settings.getServerContextPathURI() + "/oaipmh" + "' onclick='this.select()'/></span>";
         uifactory.addStaticTextElement("oaipmh.endpoint.uri", endpointUrl, oaipmhCont);
+
+        SelectionValues identifierTypeSV = new SelectionValues();
+        identifierTypeSV.add(entry("oai", translate("oai.identifier.type.oai")));
+        identifierTypeSV.add(entry("url", translate("oai.identifier.type.url")));
+        identifierTypeEl = uifactory.addRadiosVertical("oai.identifier.type", oaipmhCont, identifierTypeSV.keys(), identifierTypeSV.values());
+
+        identifierTypeEl.select(oaiPmhModule.getIdentifierType(), true);
+
 
         // license restrictions
         FormLayoutContainer licenseCont = FormLayoutContainer.createDefaultFormLayout("oaiLicense", getTranslator());
@@ -183,6 +195,7 @@ public class OAIPmhAdminController extends FormBasicController {
     @Override
     protected void formOK(UserRequest ureq) {
         oaiPmhModule.setEnabled(oaiPmhEl.isOn());
+        oaiPmhModule.setIdentifierType(identifierTypeEl.getSelectedKey());
 
         if (licenseEl.isEnabled()) {
             oaiPmhModule.setLicenseAllow(licenseEl.isKeySelected("oai.license.allow"));

@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -59,6 +60,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
+import org.olat.repository.ui.author.OerPubRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -152,6 +154,8 @@ public class LicenseAdminConfigController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LicenseTypeCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LicenseTypeCols.nameTranslation, CMD_TRANSLATE,
 				new StaticFlexiCellRenderer(CMD_TRANSLATE, new TextFlexiCellRenderer())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, LicenseTypeCols.oer.i18nKey(), LicenseTypeCols.oer.ordinal(),
+				true, null, FlexiColumnModel.ALIGNMENT_LEFT, new OerPubRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LicenseTypeCols.text));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LicenseTypeCols.cssClass));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LicenseTypeCols.edit, CMD_EDIT,

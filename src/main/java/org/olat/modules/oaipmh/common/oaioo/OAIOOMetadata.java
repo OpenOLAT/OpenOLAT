@@ -33,8 +33,8 @@ import java.util.List;
  */
 public class OAIOOMetadata implements XmlWritable {
 
-    public static final String NAMESPACE_URI = "http://www.openolat.com/OAI/oai_oo";
-    public static final String SCHEMA_LOCATION = "http://www.openolat.com/xsd/oai_oo.xsd";
+    public static final String NAMESPACE_URI = "http://www.openolat.org/OAI/oai_oo";
+    public static final String SCHEMA_LOCATION = "http://www.openolat.org/xsd/oai_oo.xsd";
     public static final String NAMESPACE_DC = "http://purl.org/dc/elements/1.1/";
 
     protected List<OOElement> OOElements = new ArrayList<>();

@@ -24,6 +24,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Organisation;
 import org.olat.modules.oaipmh.OAIPmhMetadataProvider;
 import org.olat.modules.oaipmh.OAIPmhModule;
@@ -95,11 +96,13 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			}
 
 			metadataItemsObject
-					.with("identifier", ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
+					.with("identifier", oaiPmhModule.getIdentifierType().equals("url") ?
+							ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()) :
+							"oai:" + Settings.getServerDomainName() + ":" + repositoryEntry.getKey())
 					.with("title", repositoryEntry.getDisplayname())
 					.with("initialauthor", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))
 					.with("subject", taxonomyLevels.toString())
-					.with("description", repositoryEntry.getDescription())
+					.with("description", repositoryEntry.getDescription() + " ResourceInfoUrl: " + ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
 					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
 					.with("contributer", repositoryEntry.getAuthors())
 					.with("date", repositoryEntry.getCreationDate())

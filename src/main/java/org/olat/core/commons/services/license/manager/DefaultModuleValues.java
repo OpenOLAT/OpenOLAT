@@ -45,26 +45,27 @@ public class DefaultModuleValues {
 	
 	@PostConstruct
 	void initPredefinedLicenseTypes() {
-		createAndPersistPredefined(LicenseTypeDAO.NO_LICENSE_NAME, "o_icon_lic_no_license", null);
-		createAndPersistPredefined(LicenseTypeDAO.FREETEXT_NAME, "o_icon_lic_freetext", null);
-		createAndPersistPredefined("public domain", "o_icon_lic_public_domain", "https://creativecommons.org/share-your-work/public-domain/pdm/");
-		createAndPersistPredefined("CC0", "o_icon_lic_cc0", "https://creativecommons.org/share-your-work/public-domain/cc0/");
-		createAndPersistPredefined("CC BY", "o_icon_lic_by", "https://creativecommons.org/licenses/by/4.0/");
-		createAndPersistPredefined("CC BY-SA", "o_icon_lic_by_sa", "https://creativecommons.org/licenses/by-sa/4.0/");
-		createAndPersistPredefined("CC BY-ND", "o_icon_lic_by_nd", "https://creativecommons.org/licenses/by-nd/4.0/");
-		createAndPersistPredefined("CC BY-NC", "o_icon_lic_by_nc", "https://creativecommons.org/licenses/by-nc/4.0/");
-		createAndPersistPredefined("CC BY-NC-SA", "o_icon_lic_by_nc_sa", "https://creativecommons.org/licenses/by-nc-sa/4.0/");
-		createAndPersistPredefined("CC BY-NC-ND", "o_icon_lic_by_nc_nd", "https://creativecommons.org/licenses/by-nc-nd/4.0/");
-		createAndPersistPredefined("all rights reserved", "o_icon_lic_all_rights_reserved", null);
-		createAndPersistPredefined("youtube", "o_icon_lic_youtube", "https://www.youtube.com/static?template=terms");
+		createAndPersistPredefined(LicenseTypeDAO.NO_LICENSE_NAME, "o_icon_lic_no_license", null, false);
+		createAndPersistPredefined(LicenseTypeDAO.FREETEXT_NAME, "o_icon_lic_freetext", null, false);
+		createAndPersistPredefined("public domain", "o_icon_lic_public_domain", "https://creativecommons.org/share-your-work/public-domain/pdm/", true);
+		createAndPersistPredefined("CC0", "o_icon_lic_cc0", "https://creativecommons.org/share-your-work/public-domain/cc0/", true);
+		createAndPersistPredefined("CC BY", "o_icon_lic_by", "https://creativecommons.org/licenses/by/4.0/", true);
+		createAndPersistPredefined("CC BY-SA", "o_icon_lic_by_sa", "https://creativecommons.org/licenses/by-sa/4.0/", true);
+		createAndPersistPredefined("CC BY-ND", "o_icon_lic_by_nd", "https://creativecommons.org/licenses/by-nd/4.0/", true);
+		createAndPersistPredefined("CC BY-NC", "o_icon_lic_by_nc", "https://creativecommons.org/licenses/by-nc/4.0/", true);
+		createAndPersistPredefined("CC BY-NC-SA", "o_icon_lic_by_nc_sa", "https://creativecommons.org/licenses/by-nc-sa/4.0/", true);
+		createAndPersistPredefined("CC BY-NC-ND", "o_icon_lic_by_nc_nd", "https://creativecommons.org/licenses/by-nc-nd/4.0/", true);
+		createAndPersistPredefined("all rights reserved", "o_icon_lic_all_rights_reserved", null, false);
+		createAndPersistPredefined("youtube", "o_icon_lic_youtube", "https://www.youtube.com/static?template=terms", false);
 	}
 	
-	private void createAndPersistPredefined(String name, String cssClass, String text) {
+	private void createAndPersistPredefined(String name, String cssClass, String text, boolean isOer) {
 		if (!licenseTypeDao.exists(name)) {
 			LicenseTypeImpl licenseType = (LicenseTypeImpl) licenseTypeDao.create(name);
 			licenseType.setCssClass(cssClass);
 			licenseType.setText(text);
 			licenseType.setPredefined(true);
+			licenseType.setOerLicense(isOer);
 			licenseTypeDao.save(licenseType);
 		}
 	}
