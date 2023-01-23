@@ -91,7 +91,8 @@ public class CatalogLauncherRepositoryEntriesController extends BasicController 
 		this.state = state;
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
-		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(450, 300));
+		// Two times the with of the card in mobile view.
+		this.mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper(900, 600));
 		
 		mainVC = createVelocityContainer("launch_repository_entry");
 		
