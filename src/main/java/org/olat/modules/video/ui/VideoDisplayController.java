@@ -766,6 +766,7 @@ public class VideoDisplayController extends BasicController {
 			backToQuestion = null;
 			markerVC.contextPut("markers", currentMarkers);
 			markerVC.contextPut("dragMarkers", displayOptions.isDragAnnotations());
+			markerVC.contextPut("snapMarkerSizeToGrid", displayOptions.isSnapMarkerSizeToGrid());
 			markerPanel.setContent(markerVC);
 		}
 	}

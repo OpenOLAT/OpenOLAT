@@ -43,6 +43,7 @@ public class VideoDisplayOptions {
 	private boolean showPoster;
 	private boolean alwaysShowControls;
 	private boolean dragAnnotations;
+	private boolean snapMarkerSizeToGrid;
 	private boolean clickToPlayPause;
 	private boolean authorMode;
 	private boolean forwardSeekingRestricted;
@@ -65,6 +66,7 @@ public class VideoDisplayOptions {
 		options.setShowAnnotations(true);
 		options.setAlwaysShowControls(false);
 		options.setDragAnnotations(false);
+		options.setSnapMarkerSizeToGrid(true);
 		options.setClickToPlayPause(true);
 		options.setAuthorMode(authorMode);
 		return options;
@@ -86,6 +88,7 @@ public class VideoDisplayOptions {
 		options.setShowAnnotations(false);
 		options.setAlwaysShowControls(false);
 		options.setDragAnnotations(false);
+		options.setSnapMarkerSizeToGrid(true);
 		options.setClickToPlayPause(true);
 		options.setAuthorMode(false);
 		return options;
@@ -145,6 +148,14 @@ public class VideoDisplayOptions {
 
 	public void setDragAnnotations(boolean dragAnnotations) {
 		this.dragAnnotations = dragAnnotations;
+	}
+
+	public boolean isSnapMarkerSizeToGrid() {
+		return snapMarkerSizeToGrid;
+	}
+
+	public void setSnapMarkerSizeToGrid(boolean snapMarkerSizeToGrid) {
+		this.snapMarkerSizeToGrid = snapMarkerSizeToGrid;
 	}
 
 	public boolean isShowQuestions() {

@@ -81,7 +81,9 @@ jQuery(function() {
 		}).resizable({
     		handles: 'all',
     		containment: '.mejs__container',
+			#if($r.isTrue($snapMarkerSizeToGrid))
 			grid: [o_info.emPxFactor, 10000],
+			#end
 			stop: function(event, ui) {
 				var containerEl = jQuery(".mejs__container");
 				var height = boxPercent(ui.size.height / containerEl.height());

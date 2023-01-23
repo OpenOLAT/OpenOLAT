@@ -57,6 +57,7 @@ public class VideoController extends BasicController {
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
 		displayOptions.setDragAnnotations(true);
 		displayOptions.setShowAnnotations(true);
+		displayOptions.setSnapMarkerSizeToGrid(false);
 		displayOptions.setAlwaysShowControls(true);
 		displayOptions.setClickToPlayPause(false);
 		displayOptions.setAuthorMode(true);
