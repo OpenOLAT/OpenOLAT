@@ -80,7 +80,9 @@ Object.assign(MediaElementPlayer.prototype, {
 		
 		var t = this,
 		    markers = controls.querySelectorAll('.' + t.options.classPrefix + 'time-marker');
-
+		if (markers.length === 0) {
+			return;
+		}
 		for (var i = 0, total = t.options.markers.length; i < total; ++i) {
 			if (Math.floor(t.options.markers[i].time) <= t.media.duration && Math.floor(t.options.markers[i].time) >= 0) {
 				var left = 100 * Math.floor(t.options.markers[i].time) / t.media.duration,

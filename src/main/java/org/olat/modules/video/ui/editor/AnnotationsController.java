@@ -87,6 +87,7 @@ public class AnnotationsController extends BasicController {
 				videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
 				annotationsHeaderController.setAnnotations(annotations);
 				reloadMarkers(ureq);
+				fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
 			}
 		} else if (annotationsHeaderController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
@@ -134,29 +135,27 @@ public class AnnotationsController extends BasicController {
 	}
 
 	public void setAnnotationSize(String annotationId, double width, double height) {
+		showAnnotation(annotationId);
+
 		if (annotation == null) {
 			return;
 		}
-		if (annotationId.equals(annotation.getId())) {
-			VideoMarker videoMarker = annotations.getMarkerById(annotationId);
-			videoMarker.setWidth(width);
-			videoMarker.setHeight(height);
-			videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
-			annotationController.setAnnotation(annotation);
-		}
+		annotation.setWidth(width);
+		annotation.setHeight(height);
+		videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
+		annotationController.setAnnotation(annotation);
 	}
 
 	public void setAnnotationPosition(String annotationId, double top, double left) {
+		showAnnotation(annotationId);
+
 		if (annotation == null) {
 			return;
 		}
-		if (annotationId.equals(annotation.getId())) {
-			VideoMarker videoMarker = annotations.getMarkerById(annotationId);
-			videoMarker.setTop(top);
-			videoMarker.setLeft(left);
-			videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
-			annotationController.setAnnotation(annotation);
-		}
+		annotation.setTop(top);
+		annotation.setLeft(left);
+		videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
+		annotationController.setAnnotation(annotation);
 	}
 
 	public void sendSelectionEvent(UserRequest ureq) {
