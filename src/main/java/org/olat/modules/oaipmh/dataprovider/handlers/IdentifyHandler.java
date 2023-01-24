@@ -33,7 +33,6 @@ import java.util.List;
 public class IdentifyHandler extends VerbHandler<Identify> {
 
     private static final String PROTOCOL_VERSION = "2.0";
-    private static final String XOAI_DESC = "XOAI: OAI-PMH Java Toolkit";
 
     public IdentifyHandler(Context context, Repository repository) {
         super(context, repository);
@@ -81,10 +80,10 @@ public class IdentifyHandler extends VerbHandler<Identify> {
         List<String> descriptions = configuration.getDescription();
         if (descriptions == null) {
             try {
-                identify.withDescription(new Description(XmlWriter.toString(new XOAIDescription().withValue(XOAI_DESC))));
-            } catch (XmlWriteException e) {
-                //
-            } catch (XMLStreamException e) {
+                identify.withDescription(new Description(XmlWriter.toString(
+                        new DefaultOODescription().withValue("OpenOlat: Das LMS für Wissensvermittlung," +
+                        " eTesting & Verwaltung,das sich Ihren Ansprüchen anpasst!"))));
+            } catch (XmlWriteException | XMLStreamException e) {
                 //
             }
         } else {
@@ -96,33 +95,22 @@ public class IdentifyHandler extends VerbHandler<Identify> {
         return identify;
     }
 
-    public class XOAIDescription implements XmlWritable {
+    public class DefaultOODescription implements XmlWritable {
         protected String value;
-        protected String type;
 
         public String getValue() {
             return value;
         }
 
-        public XOAIDescription withValue(String value) {
+        public DefaultOODescription withValue(String value) {
             this.value = value;
-            return this;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public XOAIDescription withType(String value) {
-            this.type = value;
             return this;
         }
 
         @Override
         public void write(XmlWriter writer) throws XmlWriteException {
             try {
-                writer.writeStartElement("XOAIDescription");
-                writer.writeAttribute("type", getType());
+                writer.writeStartElement("OpenOlat");
                 writer.writeCharacters(getValue());
                 writer.writeEndElement();
             } catch (XMLStreamException e) {

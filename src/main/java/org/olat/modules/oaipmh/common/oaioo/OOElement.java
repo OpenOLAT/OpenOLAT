@@ -30,7 +30,7 @@ import java.util.List;
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class OOElement implements XmlWritable {
-    protected List<OOField> ooFields = new ArrayList<>();
+
     protected String name;
     protected String value;
     protected List<OOElement> ooElements = new ArrayList<>();
@@ -39,21 +39,12 @@ public class OOElement implements XmlWritable {
         this.name = name;
     }
 
-    public List<OOField> getFields() {
-        return ooFields;
-    }
-
     public String getName() {
         return name;
     }
 
     public OOElement withName(String value) {
         this.name = value;
-        return this;
-    }
-
-    public OOElement withField(OOField OOField) {
-        this.ooFields.add(OOField);
         return this;
     }
 
