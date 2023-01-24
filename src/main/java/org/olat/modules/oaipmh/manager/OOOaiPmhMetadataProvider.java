@@ -130,7 +130,7 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
 					.with("authors", repositoryEntry.getAuthors())
 					.with("creationdate", repositoryEntry.getCreationDate())
-					.with("r_identifier", repositoryEntry.getEducationalType())
+					.with("r_identifier", repositoryEntry.getEducationalType() != null ? repositoryEntry.getEducationalType().getIdentifier() : "")
 					.with("resname", repositoryEntry.getOlatResource().getResourceableTypeName())
 					.with("mainlanguage", repositoryEntry.getMainLanguage())
 					.with("expenditureofwork", repositoryEntry.getExpenditureOfWork())

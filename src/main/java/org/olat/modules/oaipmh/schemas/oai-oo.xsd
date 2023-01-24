@@ -20,7 +20,7 @@
  -->
 
 
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.openolat.com/oai_oo" xmlns:tns="http://www.openolat.com/oai_oo" elementFormDefault="qualified">
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.openolat.org/oai_oo" xmlns:tns="http://www.openolat.org/oai_oo" elementFormDefault="qualified">
 
     <element name="OAI-PMH" type="oai:OAI-PMHtype"/>
 
@@ -195,9 +195,218 @@
                 explicitly qualified in the response.</documentation>
         </annotation>
         <sequence>
-            <any namespace="##other" processContents="strict"/>
+            <element name="identifier" type="oo:identifier" maxOccurs="1"/>
+            <element name="url" type="oo:url" maxOccurs="1"/>
+            <element name="info_url" type="oo:info_url" maxOccurs="1"/>
+            <element name="displayname" type="oo:displayname" maxOccurs="1"/>
+            <element name="resourcename" type="oo:resourcename" maxOccurs="1"/>
+            <element name="initialauthor" type="oo:initialauthor" maxOccurs="1"/>
+            <element name="softkey" type="oo:softkey" maxOccurs="1"/>
+            <element name="location" type="oo:location" maxOccurs="1"/>
+            <element name="requirements" type="oo:requirements" maxOccurs="1"/>
+            <element name="credits" type="oo:credits" maxOccurs="1"/>
+            <element name="taxonomy" type="oo:taxonomy" maxOccurs="1"/>
+            <element name="allowtoleave" type="oo:allowtoleave" maxOccurs="1"/>
+            <element name="description" type="oo:description" maxOccurs="1"/>
+            <element name="publisher" type="oo:publisher" maxOccurs="1"/>
+            <element name="authors" type="oo:authors" maxOccurs="1"/>
+            <element name="creationdate" type="oo:creationdate" maxOccurs="1"/>
+            <element name="r_identifier" type="oo:r_identifier" maxOccurs="1"/>
+            <element name="resname" type="oo:resname" maxOccurs="1"/>
+            <element name="mainlanguage" type="oo:mainlanguage" maxOccurs="1"/>
+            <element name="expenditureofwork" type="oo:expenditureofwork" maxOccurs="1"/>
+            <element name="teaser" type="oo:teaser" maxOccurs="1"/>
+            <element name="teaserImage" type="oo:teaserImage" maxOccurs="1"/>
+            <element name="canDownload" type="oo:canDownload" maxOccurs="1"/>
+            <element name="canCopy" type="oo:canCopy" maxOccurs="1"/>
+            <element name="canReference" type="oo:canReference" maxOccurs="1"/>
+            <element name="status_published_date" type="oo:status_published_date" maxOccurs="1"/>
+            <element name="license_name" type="oo:license_name" maxOccurs="1"/>
+            <element name="license_licensor" type="oo:license_licensor" maxOccurs="1"/>
+            <element name="sets" type="oo:sets" maxOccurs="1"/>
+            <element name="deleted" type="oo:deleted" maxOccurs="1"/>
         </sequence>
     </complexType>
+
+    <simpleType name="identifier">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="url">
+        <restriction base="string">
+            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="info_url">
+        <restriction base="string">
+            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="displayname">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="resourcename">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="initialauthor">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.,!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="softkey">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="location">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="requirements">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="credits">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="taxonomy">
+        <restriction base="string">
+            <pattern value="[]\/[A-Za-z0-9\-_\.,!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="allowtoleave">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="description">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.,!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="publisher">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="authors">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.,!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="creationdate">
+        <restriction base="string">
+            <pattern value="\d{4}-[01]\d-[0-3]\d\s[0-2]\d((:[0-5]\d)?){2}.+[0-9]"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="r_identifier">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="resname">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="mainlanguage">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="expenditureofwork">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="teaser">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="teaserImage">
+        <restriction base="string">
+            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="canDownload">
+        <restriction base="string">
+            <pattern value="^(?i)(true|false)$"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="canCopy">
+        <restriction base="string">
+            <pattern value="^(?i)(true|false)$"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="canReference">
+        <restriction base="string">
+            <pattern value="^(?i)(true|false)$"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="status_published_date">
+        <restriction base="string">
+            <pattern value="\d{4}-[01]\d-[0-3]\d\s[0-2]\d((:[0-5]\d)?){2}.+[0-9]"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="license_name">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="license_licensor">
+        <restriction base="string">
+            <pattern value="[A-Za-z0-9\-_\.!~\*'\(\)]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="sets">
+        <restriction base="string">
+            <pattern value="[A-Za-z]+:[A-Za-z0-9]+"/>
+        </restriction>
+    </simpleType>
+
+    <simpleType name="deleted">
+        <restriction base="string">
+            <pattern value="^(?i)(true|false)$"/>
+        </restriction>
+    </simpleType>
 
     <complexType name="aboutType">
         <annotation>
@@ -314,14 +523,5 @@
             <pattern value="([A-Za-z0-9\-_\.!~\*'\(\)])+(:[A-Za-z0-9\-_\.!~\*'\(\)]+)*"/>
         </restriction>
     </simpleType>
-
-
-    <element name="metadata">
-        <complexType>
-            <sequence minOccurs="0" maxOccurs="1">
-                <element minOccurs="1" maxOccurs="unbounded" name="element" type="tns:Element" />
-            </sequence>
-        </complexType>
-    </element>
 
 </schema>
