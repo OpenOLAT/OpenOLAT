@@ -86,6 +86,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	private UserAuthenticationEditController editCtrl;
 	private UserNickNameEditController editNickNameCtrl;
 	
+	private final boolean isAdmin;
 	private Identity changeableIdentity;
 	
 	@Autowired
@@ -101,7 +102,9 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 	public UserAuthenticationsEditorController(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) { 
 		super(ureq, wControl, "authentications", Util.createPackageTranslator(UserChangePasswordController.class, ureq.getLocale()));
 		
+		isAdmin = ureq.getUserSession().getRoles().isAdministrator();
 		this.changeableIdentity = changeableIdentity;
+		
 		initForm(ureq);
 		reloadModel();
 	}
@@ -116,6 +119,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		
 		addAuthenticationLink =  uifactory.addFormLink("add.authentication", formLayout, Link.BUTTON);
 		addAuthenticationLink.setIconLeftCSS("o_icon o_icon_add");
+		addAuthenticationLink.setVisible(isAdmin);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.provider));
