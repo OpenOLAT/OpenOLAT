@@ -19,8 +19,11 @@
   ~ <p>
  -->
 
-
-<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.openolat.org/oai_oo" xmlns:tns="http://www.openolat.org/oai_oo" elementFormDefault="qualified">
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+        targetNamespace="https://oai.openolat.org/OAI/oai_oo"
+        xmlns:oo="https://oai.openolat.org/OAI/oai_oo"
+        xmlns:oai="http://www.openarchives.org/OAI/2.0/"
+        elementFormDefault="qualified">
 
     <element name="OAI-PMH" type="oai:OAI-PMHtype"/>
 
