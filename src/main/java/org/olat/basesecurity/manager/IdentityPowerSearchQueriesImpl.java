@@ -272,7 +272,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" not exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-			  .append("  where orgtomember.identity.key=ident.key and orgtomember.role").in(OrganisationRoles.user)
+			  .append("  where orgtomember.identity.key=ident.key and orgtomember.role").in(OrganisationRoles.user, OrganisationRoles.invitee, OrganisationRoles.guest)
 			  .append(")");
 		}
 		// authors and co-authors is essentially an OR
@@ -405,6 +405,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			} else {
 				sb.append("ident.externalId is null");
 			}	
+		}
+		
+		if (params.getExcludeStatusList() != null && !params.getExcludeStatusList().isEmpty()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" ident.status not in (:excludeStatusList)");
 		}
 		
 		if (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty()) {
@@ -753,6 +758,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			dbq.setParameter("statusList", params.getExactStatusList());
 		} else if (params.getStatus() != null) {
 			dbq.setParameter("status", params.getStatus());
+		}
+		
+		if (params.getExcludeStatusList() != null && !params.getExcludeStatusList().isEmpty()) {
+			dbq.setParameter("excludeStatusList", params.getExcludeStatusList());
 		}
 		
 		if(params.getIdAndExternalIds() != null) {

@@ -59,6 +59,7 @@ public class SearchIdentityParams {
 	private Date userLoginBefore;
 	private Integer status;
 	private List<Integer> exactStatusList;
+	private List<Integer> excludeStatusList;
 	private Collection<Long> identityKeys;
 	private Boolean managed;
 	private boolean withoutBusinessGroup;
@@ -125,10 +126,10 @@ public class SearchIdentityParams {
 		return params;
 	}
 	
-	public static SearchIdentityParams withoutOrganisation(Integer status) {
+	public static SearchIdentityParams withoutOrganisation() {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setWithoutOrganisation(true);
-		params.setStatus(status);
+		params.setExcludeStatusList(List.of(Identity.STATUS_DELETED));
 		return params;
 	}
 	
@@ -380,6 +381,14 @@ public class SearchIdentityParams {
 	 */
 	public void setExactStatusList(List<Integer> statusList) {
 		this.exactStatusList = statusList;
+	}
+
+	public List<Integer> getExcludeStatusList() {
+		return excludeStatusList;
+	}
+
+	public void setExcludeStatusList(List<Integer> excludeStatusList) {
+		this.excludeStatusList = excludeStatusList;
 	}
 
 	public boolean hasIdentityKeys() {

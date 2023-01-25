@@ -412,9 +412,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "userswithoutemail":
 				List<Identity> usersWithoutEmail = userManager.findVisibleIdentitiesWithoutEmail();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersWithoutEmail, true, true, false);
-			case "userswithoutorganisation":
-				return createUserSearchController(ureq, bwControl,
-						SearchIdentityParams.withoutOrganisation(Identity.STATUS_VISIBLE_LIMIT), false, true, true, true, true);
+			case "userswithoutorganisation": return createUserSearchController(ureq, bwControl,
+						SearchIdentityParams.withoutOrganisation(), false, true, true, true, true);
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, true, false);

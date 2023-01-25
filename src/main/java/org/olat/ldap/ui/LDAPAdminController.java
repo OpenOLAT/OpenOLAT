@@ -76,6 +76,8 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private Link syncOneUserLink;
 	private Link removeFallBackAuthsLink;
 	
+	private boolean showSyncEvents = false;
+	
 	@Autowired
 	private LDAPLoginModule ldapLoginModule;
 	@Autowired
@@ -132,6 +134,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 			LDAPEvent ldapEvent = new LDAPEvent(LDAPEvent.DO_SYNCHING);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ldapEvent, LDAPLoginManager.ldapSyncLockOres);
 			showInfo("admin.synchronize.started");
+			showSyncEvents = true;
 		} else if (source == syncOneUserLink){
 			userSearchCtrl = new UserSearchController(ureq, getWindowControl(), false);
 			listenTo(userSearchCtrl);
@@ -266,6 +269,11 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	 * @param errors
 	 */
 	private void syncTaskFinished(boolean success, LDAPError errors) {
+		if(isDisposed() || !showSyncEvents) {
+			return;
+		}
+		showSyncEvents = false;
+
 		if (success) {
 			showWarning("admin.synchronize.finished.success");
 			logInfo("LDAP user synchronize job finished successfully");
