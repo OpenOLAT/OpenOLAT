@@ -78,7 +78,7 @@
 		<org.postgresql.version>42.4.2</org.postgresql.version>
 		<org.infinispan.version>13.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.7.2</version.selenium>
+		<version.selenium>4.8.0</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
 		<activemq.version>5.17.0</activemq.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
