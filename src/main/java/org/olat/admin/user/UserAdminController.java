@@ -498,15 +498,13 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 
-		if (isAdminOf || (isInvitee && (managerRoles.isPrincipal() || managerRoles.isUserManager()))) {
+		if (isAdminOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
 				return authenticationsCtr.getInitialComponent();
 			});
-		}
 
-		if(isAdminOf) {
 			userTabP.addTab(ureq, translate(NLS_EDIT_UPROP), uureq -> {
 				propertiesCtr = new UserPropertiesController(uureq, getWindowControl(), identity, editedRoles);
 				listenTo(propertiesCtr);
