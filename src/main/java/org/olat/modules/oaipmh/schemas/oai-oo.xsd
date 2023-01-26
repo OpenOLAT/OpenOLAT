@@ -25,6 +25,9 @@
         xmlns:oai="http://www.openarchives.org/OAI/2.0/"
         elementFormDefault="qualified">
 
+    <import namespace="http://www.openarchives.org/OAI/2.0/"
+            schemaLocation="http://www.openarchives.org/OAI/2.0/"/>
+
     <element name="OAI-PMH" type="oai:OAI-PMHtype"/>
 
     <complexType name="OAI-PMHtype">
@@ -239,13 +242,13 @@
 
     <simpleType name="url">
         <restriction base="string">
-            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+            <pattern value="https://.+"/>
         </restriction>
     </simpleType>
 
     <simpleType name="info_url">
         <restriction base="string">
-            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+            <pattern value="https://.+"/>
         </restriction>
     </simpleType>
 
@@ -293,7 +296,7 @@
 
     <simpleType name="taxonomy">
         <restriction base="string">
-            <pattern value="[]\/[A-Za-z0-9\-_\.,!~\*'\(\)]+"/>
+            <pattern value="[A-Za-z0-9\-_!\*'\.\s\[\]]+"/>
         </restriction>
     </simpleType>
 
@@ -359,25 +362,25 @@
 
     <simpleType name="teaserImage">
         <restriction base="string">
-            <pattern value="/^https:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/"/>
+            <pattern value="https://.+"/>
         </restriction>
     </simpleType>
 
     <simpleType name="canDownload">
         <restriction base="string">
-            <pattern value="^(?i)(true|false)$"/>
+            <pattern value="true|false"/>
         </restriction>
     </simpleType>
 
     <simpleType name="canCopy">
         <restriction base="string">
-            <pattern value="^(?i)(true|false)$"/>
+            <pattern value="true|false"/>
         </restriction>
     </simpleType>
 
     <simpleType name="canReference">
         <restriction base="string">
-            <pattern value="^(?i)(true|false)$"/>
+            <pattern value="true|false"/>
         </restriction>
     </simpleType>
 
@@ -407,7 +410,7 @@
 
     <simpleType name="deleted">
         <restriction base="string">
-            <pattern value="^(?i)(true|false)$"/>
+            <pattern value="true|false"/>
         </restriction>
     </simpleType>
 
