@@ -184,7 +184,7 @@ public class SortableFlexiTableModelDelegate<T> {
 		return Double.compare(a, b);
 	}
 
-	protected final int compareNullObjects(final Object a, final Object b) {
+	public static final int compareNullObjects(final Object a, final Object b) {
 		boolean ba = (a == null);
 		boolean bb = (b == null);
 		return ba? (bb? 0: -1):(bb? 1: 0);

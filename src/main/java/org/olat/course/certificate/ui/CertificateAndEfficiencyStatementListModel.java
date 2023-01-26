@@ -30,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
@@ -65,7 +64,7 @@ public class CertificateAndEfficiencyStatementListModel
 	@Override
 	public void sort(SortKey orderBy) {
 		if (orderBy != null) {
-			List<CertificateAndEfficiencyStatementRow> views= new SortableFlexiTableModelDelegate<>(orderBy, this, locale)
+			List<CertificateAndEfficiencyStatementRow> views= new CertificateAndEfficiencyStatementSortDelegate(orderBy, this, locale)
 					.sort();
 			super.setObjects(views);
 		}
@@ -91,7 +90,7 @@ public class CertificateAndEfficiencyStatementListModel
 			case passed:
 				return statement.getPassed();
 			case completion:
-				return statement.getCompletion();
+				return statement;
 			case lastModified:
 				return statement.getLastModified();
 			case lastUserUpdate:
@@ -158,7 +157,7 @@ public class CertificateAndEfficiencyStatementListModel
 		score("table.header.score", true),
 		grade("grade.system.labels.fallback", true),
 		passed("table.header.passed", true), 
-		completion("table.header.learning.progress", false),
+		completion("table.header.learning.progress", true),
 		lastModified("table.header.lastScoreDate", true), 
 		lastUserUpdate("table.header.lastUserModificationDate", true),
 		efficiencyStatement("table.header.certificate", true), 

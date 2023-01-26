@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.assessment.AssessmentEntryScoring;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -31,7 +32,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumLearningPathRepositoryRow {
+public class CurriculumLearningPathRepositoryRow implements CompletionPassed {
 
 	private final RepositoryEntry repositoryEntry;
 	private final Double completion;
@@ -51,10 +52,12 @@ public class CurriculumLearningPathRepositoryRow {
 		return repositoryEntry;
 	}
 
+	@Override
 	public Double getCompletion() {
 		return completion;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}

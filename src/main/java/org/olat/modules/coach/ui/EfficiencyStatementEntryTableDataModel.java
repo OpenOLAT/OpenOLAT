@@ -27,8 +27,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
@@ -45,7 +45,7 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
  */
 public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDataModel<EfficiencyStatementEntry> implements SortableFlexiTableDataModel<EfficiencyStatementEntry> {
 	
-	private static final Columns[] COLS = Columns.values();
+	public static final Columns[] COLS = Columns.values();
 	private ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap;
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
@@ -67,7 +67,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 
 	@Override
 	public void sort(SortKey orderBy) {
-		setObjects(new SortableFlexiTableModelDelegate<>(orderBy, this, null).sort());
+		setObjects(new EfficiencyStatementEntrySortDelegate(orderBy, this, null).sort());
 	}
 	@Override
 	public Object getValueAt(int row, int col) {
@@ -84,7 +84,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 				case repoName: return entry.getCourse().getDisplayname();
 				case repoExternalId: return entry.getCourse().getExternalId();
 				case repoExternalRef: return entry.getCourse().getExternalRef();
-				case completion: return getCompletion(entry);
+				case completion: return createCompletionPassed(entry);
 				case score: return entry.getScore();
 				case grade: return entry;
 				case passed: return entry.getPassed();
@@ -160,6 +160,10 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 			return certificateMap.get(key);
 		}
 		return null;
+	}
+
+	public CompletionPassed createCompletionPassed(EfficiencyStatementEntry entry) {
+		return new CompletionPassedImpl(getCompletion(entry), entry.getPassed());
 	}
 	
 	private Double getCompletion(EfficiencyStatementEntry entry) {
@@ -243,4 +247,27 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 			return null;
 		}
 	}
+	
+	private static final class CompletionPassedImpl implements CompletionPassed {
+		
+		private final Double completion;
+		private final Boolean passed;
+		
+		public CompletionPassedImpl(Double completion, Boolean passed) {
+			this.completion = completion;
+			this.passed = passed;
+		}
+		
+		@Override
+		public Double getCompletion() {
+			return completion;
+		}
+		
+		@Override
+		public Boolean getPassed() {
+			return passed;
+		}
+		
+	}
+	
 }

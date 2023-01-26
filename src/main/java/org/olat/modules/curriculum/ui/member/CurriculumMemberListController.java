@@ -47,6 +47,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActi
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressRadialCellRenderer;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -73,7 +75,6 @@ import org.olat.group.ui.main.EditMembershipController;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberLeaveConfirmationController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -233,7 +234,7 @@ public class CurriculumMemberListController extends FormBasicController implemen
 			colPos++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.progression, new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.progression, new ProgressRadialCellRenderer(BarColor.success)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.firstTime));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MemberCols.role, new CurriculumMembershipCellRenderer(getTranslator())));
 		

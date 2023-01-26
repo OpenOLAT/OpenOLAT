@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -57,6 +56,7 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 	public Object getValueAt(LearningPathIdentityRow row, int col) {
 		if(col >= 0 && col < LearningPathIdentityCols.values().length) {
 			switch(LearningPathIdentityCols.values()[col]) {
+				case progress: return row;
 				case completion: return row.getCompletion();
 				case passed: return row.getPassed();
 				case score: return row.getScore();
@@ -69,11 +69,12 @@ implements SortableFlexiTableDataModel<LearningPathIdentityRow> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<LearningPathIdentityRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<LearningPathIdentityRow> rows = new LearningPathIdentitySortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 	
 	public enum LearningPathIdentityCols implements FlexiSortableColumnDef {
+		progress("table.header.completion"),
 		completion("table.header.completion"),
 		passed("table.header.passed"),
 		score("table.header.score");

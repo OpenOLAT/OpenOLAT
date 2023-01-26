@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -56,7 +55,7 @@ implements SortableFlexiTableDataModel<CurriculumLearningPathRepositoryRow> {
 		if(col >= 0 && col < LearningPathRepositoryCols.values().length) {
 			switch(LearningPathRepositoryCols.values()[col]) {
 				case reponame: return row.getRepositoryEntry().getDisplayname();
-				case completion: return row.getCompletion();
+				case completion: return row;
 				case passed: return row.getPassed();
 				case score: return row.getScore();
 				case learningPath: return row.getLearningPathLink();
@@ -68,7 +67,7 @@ implements SortableFlexiTableDataModel<CurriculumLearningPathRepositoryRow> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<CurriculumLearningPathRepositoryRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<CurriculumLearningPathRepositoryRow> rows = new CurriculumLearningPathRepositorySortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 	

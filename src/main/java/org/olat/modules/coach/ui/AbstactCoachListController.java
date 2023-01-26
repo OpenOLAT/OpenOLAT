@@ -35,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.progressbar.ProgressBar.BarColor;
+import org.olat.core.gui.components.progressbar.ProgressRadialCellRenderer;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -45,7 +47,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.UserSession;
-import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.coach.RoleSecurityCallback;
 import org.olat.modules.coach.model.StudentStatEntry;
 import org.olat.modules.coach.ui.StudentsTableDataModel.Columns;
@@ -110,7 +111,7 @@ public abstract class AbstactCoachListController extends FormBasicController imp
         }
 
         if (securityCallback.canViewCourseProgressAndStatus()) {
-            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
+            columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new ProgressRadialCellRenderer(BarColor.success)));
             columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressOfCellRenderer()));
         }
 

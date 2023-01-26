@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeT
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateLight;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -38,7 +39,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode {
+public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode, CompletionPassed {
 	
 	private Float score = 0f;
 	private Float scoreMax;
@@ -134,6 +135,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode 
 		this.grade = grade;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
@@ -186,6 +188,7 @@ public class CertificateAndEfficiencyStatementRow implements FlexiTreeTableNode 
 		this.efficiencyStatementKey = efficiencyStatementKey;
 	}
 
+	@Override
 	public Double getCompletion() {
 		return completion;
 	}

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer.CompletionPassed;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -33,7 +34,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityRow extends UserPropertiesRow {
+public class LearningPathIdentityRow extends UserPropertiesRow implements CompletionPassed {
 
 	private final Double completion;
 	private final Boolean passed;
@@ -47,10 +48,12 @@ public class LearningPathIdentityRow extends UserPropertiesRow {
 		this.score = score;
 	}
 
+	@Override
 	public Double getCompletion() {
 		return completion;
 	}
 
+	@Override
 	public Boolean getPassed() {
 		return passed;
 	}
