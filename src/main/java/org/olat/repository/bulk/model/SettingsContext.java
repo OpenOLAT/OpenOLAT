@@ -56,6 +56,7 @@ public class SettingsContext {
 	private boolean authorRightReference = true;
 	private boolean authorRightCopy = true;
 	private boolean authorRightDownload = true;
+	private boolean canIndexMetadata = true;
 	private LifecycleType lifecycleType;
 	private Long lifecyclePublicKey;
 	private Date lifecycleValidFrom;
@@ -216,6 +217,14 @@ public class SettingsContext {
 
 	public void setAuthorRightDownload(boolean authorRightDownload) {
 		this.authorRightDownload = authorRightDownload;
+	}
+
+	public boolean isCanIndexMetadata() {
+		return canIndexMetadata;
+	}
+
+	public void setCanIndexMetadata(boolean canIndexMetadata) {
+		this.canIndexMetadata = canIndexMetadata;
 	}
 
 	public LifecycleType getLifecycleType() {

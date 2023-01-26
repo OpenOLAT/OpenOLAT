@@ -171,6 +171,15 @@ public class SettingsOverviewController extends StepFormBasicController {
 				String resourceItemName = createResourceLink(changes);
 				fields.add(new OverviewField(text, resourceItemName));
 			}
+			if (context.isSelected(SettingsBulkEditable.oerPub)) {
+				String text = context.isCanIndexMetadata()
+						? translate("settings.bulk.oer.on")
+						: translate("settings.bulk.oer.off");
+				List<RepositoryEntry> changes = editables.getChanges(context, SettingsBulkEditable.oerPub);
+				String resourceItemName = createResourceLink(changes);
+				fields.add(new OverviewField(text, resourceItemName));
+			}
+
 			if (fields.isEmpty()) {
 				fields.add(new OverviewField(translate("settings.bulk.overview.none"), null));
 			}

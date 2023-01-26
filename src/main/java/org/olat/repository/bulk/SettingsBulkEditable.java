@@ -53,6 +53,7 @@ public enum SettingsBulkEditable {
 	toolWiki,
 	toolForum,
 	toolDocuments,
-	toolChat;
+	toolChat,
+	oerPub;
 	
 }

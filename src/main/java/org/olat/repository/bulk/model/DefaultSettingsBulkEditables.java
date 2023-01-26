@@ -170,6 +170,8 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case taxonomyLevelsRemove:
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
+		case oerPub:
+			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
 		case organisationsAdd: 
 			return !RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.organisations);
 		case organisationsRemove:
@@ -262,6 +264,8 @@ public class DefaultSettingsBulkEditables implements SettingsBulkEditables {
 			return repositoryEntry.getCanCopy() != context.isAuthorRightCopy();
 		case authorRightDownload:
 			return repositoryEntry.getCanDownload() != context.isAuthorRightDownload();
+		case oerPub:
+			return repositoryEntry.getCanIndexMetadata() != context.isCanIndexMetadata();
 		case taxonomyLevelsAdd: 
 			return !hasTaxonomyLevelsToAdd(repositoryEntry, context.getTaxonomyLevelAddKeys());
 		case taxonomyLevelsRemove:

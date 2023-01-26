@@ -54,7 +54,8 @@ public class SettingsSteps {
 			SettingsBulkEditable.educationalType,
 			SettingsBulkEditable.mainLanguage,
 			SettingsBulkEditable.expenditureOfWork,
-			SettingsBulkEditable.license);
+			SettingsBulkEditable.license,
+			SettingsBulkEditable.oerPub);
 	private static final Set<SettingsBulkEditable> EDITABLES_TAXONOMY = Set.of(
 			SettingsBulkEditable.taxonomyLevelsAdd,
 			SettingsBulkEditable.taxonomyLevelsRemove);

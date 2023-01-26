@@ -76,6 +76,7 @@ public class MetadataController extends StepFormBasicController {
 	private TextElement expenditureOfWorkEl;
 	private TextElement licensorEl;
 	private SingleSelection licenseEl;
+	private SingleSelection oerPubEl;
 	private TextAreaElement licenseFreetextEl;
 	
 	private final SettingsContext context;
@@ -158,6 +159,13 @@ public class MetadataController extends StepFormBasicController {
 			
 			updateLicenseUI();
 		}
+
+		SelectionValues oerPubElSV = new SelectionValues();
+		oerPubElSV.add(entry("on", translate("on")));
+		oerPubElSV.add(entry("off", translate("off")));
+		oerPubEl = uifactory.addRadiosHorizontal("settings.bulk.oer", metadataCont, oerPubElSV.keys(), oerPubElSV.values());
+		decorate(oerPubEl, metadataCont, SettingsBulkEditable.oerPub);
+
 	}
 	
 	private MultipleSelectionElement decorate(FormItem item, FormLayoutContainer formLayout, SettingsBulkEditable editable) {
@@ -229,6 +237,11 @@ public class MetadataController extends StepFormBasicController {
 		context.select(SettingsBulkEditable.mainLanguage, languageEl.isVisible());
 		if (languageEl.isVisible()) {
 			context.setMainLanguage(languageEl.getValue().trim());
+		}
+
+		context.select(SettingsBulkEditable.oerPub, oerPubEl.isVisible());
+		if (oerPubEl.isVisible()) {
+			context.setCanIndexMetadata(oerPubEl.isKeySelected("on"));
 		}
 		
 		context.select(SettingsBulkEditable.expenditureOfWork, expenditureOfWorkEl.isVisible());

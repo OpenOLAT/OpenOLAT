@@ -355,6 +355,10 @@ public class RepositoryBulkServiceImpl implements RepositoryBulkService {
 		}
 
 		boolean canIndexMetadata = repositoryEntry.getCanIndexMetadata();
+		if (isSelectedAndChanged(context, editables, SettingsBulkEditable.oerPub, repositoryEntry)) {
+			canIndexMetadata = context.isCanIndexMetadata();
+			changed = true;
+		}
 		
 		if (changed) {
 			return repositoryManager.setAccess(repositoryEntry, repositoryEntry.isPublicVisible(),
