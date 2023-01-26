@@ -269,18 +269,21 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	 * @param errors
 	 */
 	private void syncTaskFinished(boolean success, LDAPError errors) {
-		if(isDisposed() || !showSyncEvents) {
+		if(isDisposed()) {
 			return;
 		}
-		showSyncEvents = false;
 
-		if (success) {
-			showWarning("admin.synchronize.finished.success");
-			logInfo("LDAP user synchronize job finished successfully");
-		} else {
-			showError("admin.synchronize.finished.failure", errors.get());
-			logInfo("LDAP user synchronize job finished with errors::" + errors.get());
+		if(showSyncEvents) {
+			if (success) {
+				showWarning("admin.synchronize.finished.success");
+				logInfo("LDAP user synchronize job finished successfully");
+			} else {
+				showError("admin.synchronize.finished.failure", errors.get());
+				logInfo("LDAP user synchronize job finished with errors::" + errors.get());
+			}
+			showSyncEvents = false;
 		}
+		
 		// re-enable start link
 		syncStartLink.setEnabled(true);
 		// update last sync date
