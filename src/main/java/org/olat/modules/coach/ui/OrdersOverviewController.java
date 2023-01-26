@@ -88,13 +88,13 @@ public class OrdersOverviewController extends BasicController implements Activat
 			doOpenAssessmentReview(ureq);
 		}
 		
+		assessmentApplyGradeLink = LinkFactory.createLink("orders.grades", mainVC, this);
+		assessmentApplyGradeLink.setVisible(coachingSec.isCoach());
+		segmentView.addSegment(assessmentApplyGradeLink, false);
+		
 		assessmentReleaseLink = LinkFactory.createLink("orders.release", mainVC, this);
 		assessmentReleaseLink.setVisible(coachingSec.isCoach());
 		segmentView.addSegment(assessmentReleaseLink, false);
-		
-		assessmentApplyGradeLink = LinkFactory.createLink("orders.apply.grade", mainVC, this);
-		assessmentApplyGradeLink.setVisible(coachingSec.isCoach());
-		segmentView.addSegment(assessmentApplyGradeLink, false);
 		
 		gradingAssignmentsLink = LinkFactory.createLink("orders.grading", mainVC, this);
 		gradingAssignmentsLink.setVisible(secCallback.canGrade() && !secCallback.canManage());
