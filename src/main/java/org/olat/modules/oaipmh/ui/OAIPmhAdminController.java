@@ -19,6 +19,11 @@
  */
 package org.olat.modules.oaipmh.ui;
 
+import static org.olat.core.gui.components.util.SelectionValues.entry;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -30,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -42,11 +48,6 @@ import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
@@ -56,11 +57,13 @@ public class OAIPmhAdminController extends FormBasicController {
 
     private static final String[] keys = new String[]{"on"};
 
+    private FormLayoutContainer restrictionsCont, apiCont, buttonsCont;
     private FormToggle oaiPmhEl;
+    private StaticTextElement endpointEl;
     private SingleSelection identifierTypeEl;
     private MultipleSelectionElement licenseEl;
     private MultipleSelectionElement apiTypeEl;
-    private MultipleSelectionElement searchEnginePublishEl;
+    //private MultipleSelectionElement searchEnginePublishEl;
     private MultiSelectionFilterElement licenseSelectionEl;
 
     @Autowired
@@ -70,70 +73,46 @@ public class OAIPmhAdminController extends FormBasicController {
 
     public OAIPmhAdminController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, LAYOUT_VERTICAL);
-
         initForm(ureq);
     }
 
     @Override
     protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-        FormLayoutContainer oaipmhCont = FormLayoutContainer.createDefaultFormLayout("oaipmh", getTranslator());
-        oaipmhCont.setFormTitle(translate("oai.title"));
-        oaipmhCont.setFormInfo(translate("oaipmh.desc"));
-        oaipmhCont.setFormInfoHelp("manual_admin/administration/Modules_OAI/");
-        oaipmhCont.setFormContextHelp("manual_admin/administration/Modules_OAI/");
-        formLayout.add(oaipmhCont);
+    	setFormTitle("oai.title");
+    	setFormInfo("oaipmh.desc");
+    	setFormInfoHelp("manual_admin/administration/Modules_OAI/");
+    	setFormContextHelp("manual_admin/administration/Modules_OAI/");
 
-        oaiPmhEl = uifactory.addToggleButton("oaipmh.module", translate("oaipmh.module"), "&nbsp;&nbsp;", oaipmhCont, null, null);
-
+    	// Render the on/off toggle standalone in it's own container. Other containers are visible depending on module activation
+    	FormLayoutContainer aipmhConfigContainer = FormLayoutContainer.createDefaultFormLayout("aipmhConfigContainer", getTranslator());
+    	formLayout.add(aipmhConfigContainer);
+        oaiPmhEl = uifactory.addToggleButton("oaipmh.module", translate("oaipmh.module"), "&nbsp;&nbsp;", aipmhConfigContainer, null, null);
+        oaiPmhEl.addActionListener(FormEvent.ONCHANGE);
+        
         if (oaiPmhModule.isEnabled()) {
-            oaiPmhEl.toggleOn();
+        	oaiPmhEl.toggleOn();
         } else {
-            oaiPmhEl.toggleOff();
+        	oaiPmhEl.toggleOff();
         }
 
-        oaiPmhEl.addActionListener(FormEvent.ONCHANGE);
-
+        // Add endpoint URL
         String endpointUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + Settings.getServerContextPathURI() + "/oaipmh" + "' onclick='this.select()'/></span>";
-        uifactory.addStaticTextElement("oaipmh.endpoint.uri", endpointUrl, oaipmhCont);
+        endpointEl = uifactory.addStaticTextElement("oaipmh.endpoint.uri", endpointUrl, aipmhConfigContainer);
 
-        SelectionValues identifierTypeSV = new SelectionValues();
-        identifierTypeSV.add(entry("oai", translate("oai.identifier.type.oai")));
-        identifierTypeSV.add(entry("url", translate("oai.identifier.type.url")));
-        identifierTypeEl = uifactory.addRadiosVertical("oai.identifier.type", oaipmhCont, identifierTypeSV.keys(), identifierTypeSV.values());
-
-        identifierTypeEl.select(oaiPmhModule.getIdentifierType(), true);
-
-
-        // license restrictions
-        FormLayoutContainer licenseCont = FormLayoutContainer.createDefaultFormLayout("oaiLicense", getTranslator());
-        licenseCont.setFormTitle(translate("license.title"));
-        formLayout.add(licenseCont);
-
-        String[] licenseKeys = new String[]{"oai.license.allow", "oai.license.restrict"};
-        String[] licenseValues = new String[]{translate("license.allow"), translate("license.restrict")};
-
-        licenseEl = uifactory.addCheckboxesVertical("license.label", licenseCont, licenseKeys, licenseValues, 1);
-        licenseEl.select(licenseKeys[0], oaiPmhModule.isLicenseAllow());
-        licenseEl.select(licenseKeys[1], oaiPmhModule.isLicenseRestrict());
-        licenseEl.addActionListener(FormEvent.ONCHANGE);
-
-        List<LicenseType> license = licenseService.loadActiveLicenseTypes(repositoryEntryLicenseHandler);
-
-        SelectionValues licenseSV = new SelectionValues();
-
-        license.forEach(l -> licenseSV.add(new SelectionValues.SelectionValue(l.getKey().toString(), LicenseUIFactory.translate(l, getLocale()))));
-
-
-        licenseSelectionEl = uifactory.addCheckboxesFilterDropdown("license.selected", "license.selected", licenseCont, getWindowControl(), licenseSV);
-        licenseSelectionEl.setVisible(licenseEl.isKeySelected("oai.license.restrict"));
-
-        oaiPmhModule.getLicenseSelectedRestrictions().forEach(lr -> licenseSelectionEl.select(lr, true));
-
-        // api configuration
-        FormLayoutContainer apiCont = FormLayoutContainer.createDefaultFormLayout("oaiApi", getTranslator());
+        // Section for API configuration
+        apiCont = FormLayoutContainer.createDefaultFormLayout("apiCont", getTranslator());
         apiCont.setFormTitle(translate("api.title"));
         formLayout.add(apiCont);
 
+        SelectionValues identifierTypeSV = new SelectionValues();
+        String domain = Settings.getServerDomainName();
+        identifierTypeSV.add(entry("oai", translate("oai.identifier.type.oai", domain)));
+        identifierTypeSV.add(entry("url", translate("oai.identifier.type.url", domain)));
+        identifierTypeEl = uifactory.addRadiosVertical("oai.identifier.type", apiCont, identifierTypeSV.keys(), identifierTypeSV.values());
+        
+        identifierTypeEl.select(oaiPmhModule.getIdentifierType(), true);
+        
+        
         String[] apiTypeKeys = new String[]{
                 "oai.api.type.taxonomy",
                 "oai.api.type.organisation",
@@ -153,6 +132,39 @@ public class OAIPmhAdminController extends FormBasicController {
         apiTypeEl.select(apiTypeKeys[2], oaiPmhModule.isApiTypeLicense());
         apiTypeEl.select(apiTypeKeys[3], oaiPmhModule.isApiTypeLearningResource());
         apiTypeEl.select(apiTypeKeys[4], oaiPmhModule.isApiTypeRelease());
+        apiTypeEl.setAjaxOnly(true); // to fix load after module enable
+
+
+        // Section for restrictions
+        // 1) license restrictions
+        restrictionsCont = FormLayoutContainer.createDefaultFormLayout("restrictionsCont", getTranslator());
+        restrictionsCont.setFormTitle(translate("license.title"));
+        formLayout.add(restrictionsCont);
+
+        String[] licenseKeys = new String[]{"oai.license.allow", "oai.license.restrict"};
+        String[] licenseValues = new String[]{translate("license.allow"), translate("license.restrict")};
+
+        licenseEl = uifactory.addCheckboxesVertical("license.label", restrictionsCont, licenseKeys, licenseValues, 1);
+        licenseEl.select(licenseKeys[0], oaiPmhModule.isLicenseAllow());
+        licenseEl.select(licenseKeys[1], oaiPmhModule.isLicenseRestrict());
+        licenseEl.addActionListener(FormEvent.ONCHANGE);
+        licenseEl.setAjaxOnly(true); // to fix load after module enable
+
+        List<LicenseType> license = licenseService.loadActiveLicenseTypes(repositoryEntryLicenseHandler);
+
+        SelectionValues licenseSV = new SelectionValues();
+
+        license.forEach(l -> licenseSV.add(new SelectionValues.SelectionValue(l.getKey().toString(), LicenseUIFactory.translate(l, getLocale()))));
+
+
+        licenseSelectionEl = uifactory.addCheckboxesFilterDropdown("license.selected", "license.selected", restrictionsCont, getWindowControl(), licenseSV);
+        licenseSelectionEl.setVisible(licenseEl.isKeySelected("oai.license.restrict"));
+        
+        oaiPmhModule.getLicenseSelectedRestrictions().forEach(lr -> licenseSelectionEl.select(lr, true));
+        
+        // 2) language restrictions
+        //TODO
+        
 
         /* TODO Not implemented yet
         // search engine
@@ -164,11 +176,19 @@ public class OAIPmhAdminController extends FormBasicController {
         searchEnginePublishEl = uifactory.addCheckboxesHorizontal("searchEngine.label", searchEngineCont, keys, new String[]{translate("searchEngine.enable")});
         searchEnginePublishEl.select(keys[0], oaiPmhModule.isSearchEngineEnabled());*/
 
-        FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-        buttonsCont.setRootForm(mainForm);
-        apiCont.add(buttonsCont);
-        uifactory.addFormSubmitButton("save", buttonsCont);
-        uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+        buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttonsCont", getTranslator());
+        formLayout.add(buttonsCont);
+        FormLayoutContainer buttonsInnerCont = FormLayoutContainer.createButtonLayout("buttonsInnerCont", getTranslator());
+//        buttonsInnerCont.setRootForm(mainForm);
+        buttonsCont.add(buttonsInnerCont);
+        uifactory.addFormSubmitButton("save", buttonsInnerCont);
+        uifactory.addFormCancelButton("cancel", buttonsInnerCont, ureq, getWindowControl());
+        
+        // Everything initialized, update visibility of form elements
+    	updateContainerVisibility();
+    	// dont
+    	this.mainForm.setHideDirtyMarkingMessage(true);
+
     }
 
     private void saveSelectedLicenseRestrictions() {
@@ -178,7 +198,11 @@ public class OAIPmhAdminController extends FormBasicController {
 
     @Override
     protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-        if (source == licenseEl) {
+	    if (source == oaiPmhEl) {
+	    	// enable / disable entire module and trigger visibility of config form
+	    	oaiPmhModule.setEnabled(oaiPmhEl.isOn());
+	    	updateContainerVisibility();
+	    } else if (source == licenseEl) {
             if (licenseEl.isKeySelected("oai.license.restrict")) {
                 licenseSelectionEl.setVisible(true);
             } else {
@@ -186,12 +210,35 @@ public class OAIPmhAdminController extends FormBasicController {
                 licenseSelectionEl.uncheckAll();
                 licenseSelectionEl.setVisible(false);
             }
-        }
+	    }        
 
         super.formInnerEvent(ureq, source, event);
     }
 
 
+    /**
+	 * helper to to enable / disable visibility of form parts containers depending
+	 * on module activation
+	 */
+    private void updateContainerVisibility() {
+    	// make everything below the module toggle switch visible/invisible
+        if (oaiPmhModule.isEnabled()) {
+        	endpointEl.setVisible(true);
+        	endpointEl.getComponent().setDirty(false);
+        	restrictionsCont.setVisible(true);
+        	apiCont.setVisible(true);
+        	buttonsCont.setVisible(true);
+  
+        } else {
+        	endpointEl.setVisible(false);
+        	endpointEl.getComponent().setDirty(false);
+        	restrictionsCont.setVisible(false);
+        	apiCont.setVisible(false);
+        	buttonsCont.setVisible(false);
+
+        }
+    }
+    
     @Override
     protected void formOK(UserRequest ureq) {
         oaiPmhModule.setEnabled(oaiPmhEl.isOn());

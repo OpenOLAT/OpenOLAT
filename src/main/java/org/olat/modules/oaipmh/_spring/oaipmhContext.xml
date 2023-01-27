@@ -6,7 +6,7 @@
   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
-        <property name="order" value="7210" />
+        <property name="order" value="9030" />
         <property name="actionController">
             <bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
                 <property name="className" value="org.olat.modules.oaipmh.ui.OAIPmhAdminController"/>
