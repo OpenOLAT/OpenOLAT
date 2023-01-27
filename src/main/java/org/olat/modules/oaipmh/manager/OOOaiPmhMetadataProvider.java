@@ -20,6 +20,7 @@
 package org.olat.modules.oaipmh.manager;
 
 import com.lyncode.builder.ListBuilder;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
@@ -43,6 +44,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -112,7 +114,7 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			}
 
 			metadataItemsObject
-					.with("identifier", oaiPmhModule.getIdentifierType().equals("url") ?
+					.with("identifier", oaiPmhModule.getIdentifierFormat().equals("url") ?
 							ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()) :
 							"oai:" + Settings.getServerDomainName() + ":" + repositoryEntry.getKey())
 					.with("url", Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repositoryEntry.getKey())
@@ -131,7 +133,8 @@ public class OOOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("authors", repositoryEntry.getAuthors())
 					.with("creationdate", repositoryEntry.getCreationDate())
 					.with("r_identifier", repositoryEntry.getEducationalType() != null ? repositoryEntry.getEducationalType().getIdentifier() : "")
-					.with("resname", repositoryEntry.getOlatResource().getResourceableTypeName())
+					.with("technical_type", repositoryEntry.getTechnicalType())
+					.with("resname", NewControllerFactory.translateResourceableTypeName(repositoryEntry.getOlatResource().getResourceableTypeName(), Locale.ENGLISH))
 					.with("mainlanguage", repositoryEntry.getMainLanguage())
 					.with("expenditureofwork", repositoryEntry.getExpenditureOfWork())
 					.with("teaser", repositoryEntry.getTeaser())

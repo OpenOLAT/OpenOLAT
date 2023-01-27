@@ -32,12 +32,13 @@ import org.olat.core.gui.components.ComponentRenderer;
 public class ExternalLink extends AbstractComponent {
 	
 	private static final ExternalLinkRenderer RENDERER = new ExternalLinkRenderer();
-	
+
 	private String url;
 	private String name;
 	private String target;
 	private String tooltip;
 	private String iconLeftCSS;
+	private String cssClass;
 	
 	public ExternalLink(String id, String name) {
 		super(id, name);
@@ -71,6 +72,14 @@ public class ExternalLink extends AbstractComponent {
 
 	public void setIconLeftCSS(String iconLeftCSS) {
 		this.iconLeftCSS = iconLeftCSS;
+	}
+
+	public String getCssClass() {
+		return cssClass;
+	}
+
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
 	}
 
 	public String getTarget() {

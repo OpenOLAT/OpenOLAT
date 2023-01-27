@@ -96,7 +96,7 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 			}
 
 			metadataItemsObject
-					.with("identifier", oaiPmhModule.getIdentifierType().equals("url") ?
+					.with("identifier", oaiPmhModule.getIdentifierFormat().equals("url") ?
 							ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()) :
 							"oai:" + Settings.getServerDomainName() + ":" + repositoryEntry.getKey())
 					.with("title", repositoryEntry.getDisplayname())

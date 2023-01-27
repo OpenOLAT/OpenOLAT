@@ -347,8 +347,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private boolean isEntryLicenseAllowedForIndexing() {
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
 		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
-		return !(oaiPmhModule.isLicenseAllow() && entryLicense.getLicenseType().getName().equals("no.license"))
-				|| (oaiPmhModule.isLicenseRestrict() && licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString()));
+		return (!oaiPmhModule.isLicenseAllow() && !oaiPmhModule.isLicenseRestrict())
+				|| (!oaiPmhModule.isLicenseAllow() || !entryLicense.getLicenseType().getName().equals("no.license"))
+				&& (!oaiPmhModule.isLicenseRestrict() || licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString())
+					|| licenseRestrictions.isEmpty());
 	}
 
 	private String getAccessTranslatedValue(String i18nKey, String explanationI18nKey, String iconCssClass) {

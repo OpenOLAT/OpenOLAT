@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
@@ -39,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,10 +61,11 @@ public class OAIPmhAdminController extends FormBasicController {
 
     private FormLayoutContainer restrictionsCont, apiCont, buttonsCont;
     private FormToggle oaiPmhEl;
+    private ExternalLinkItem testOaiEndpointLink;
     private StaticTextElement endpointEl;
-    private SingleSelection identifierTypeEl;
+    private SingleSelection identifierFormatEl;
     private MultipleSelectionElement licenseEl;
-    private MultipleSelectionElement apiTypeEl;
+    private MultipleSelectionElement setTypeEl;
     //private MultipleSelectionElement searchEnginePublishEl;
     private MultiSelectionFilterElement licenseSelectionEl;
 
@@ -70,6 +73,8 @@ public class OAIPmhAdminController extends FormBasicController {
     private OAIPmhModule oaiPmhModule;
     @Autowired
     private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
+    @Autowired
+    private LicenseModule licenseModule;
 
     public OAIPmhAdminController(UserRequest ureq, WindowControl wControl) {
         super(ureq, wControl, LAYOUT_VERTICAL);
@@ -84,11 +89,11 @@ public class OAIPmhAdminController extends FormBasicController {
     	setFormContextHelp("manual_admin/administration/Modules_OAI/");
 
     	// Render the on/off toggle standalone in it's own container. Other containers are visible depending on module activation
-    	FormLayoutContainer aipmhConfigContainer = FormLayoutContainer.createDefaultFormLayout("aipmhConfigContainer", getTranslator());
-    	formLayout.add(aipmhConfigContainer);
-        oaiPmhEl = uifactory.addToggleButton("oaipmh.module", translate("oaipmh.module"), "&nbsp;&nbsp;", aipmhConfigContainer, null, null);
+    	FormLayoutContainer oaipmhConfigContainer = FormLayoutContainer.createDefaultFormLayout("oaipmhConfigContainer", getTranslator());
+    	formLayout.add(oaipmhConfigContainer);
+        oaiPmhEl = uifactory.addToggleButton("oaipmh.module", translate("oaipmh.module"), "&nbsp;&nbsp;", oaipmhConfigContainer, null, null);
         oaiPmhEl.addActionListener(FormEvent.ONCHANGE);
-        
+
         if (oaiPmhModule.isEnabled()) {
         	oaiPmhEl.toggleOn();
         } else {
@@ -97,42 +102,45 @@ public class OAIPmhAdminController extends FormBasicController {
 
         // Add endpoint URL
         String endpointUrl = "<span class='o_copy_code o_nowrap'><input type='text' value='" + Settings.getServerContextPathURI() + "/oaipmh" + "' onclick='this.select()'/></span>";
-        endpointEl = uifactory.addStaticTextElement("oaipmh.endpoint.uri", endpointUrl, aipmhConfigContainer);
+        endpointEl = uifactory.addStaticTextElement("oaipmh.endpoint.uri", endpointUrl, oaipmhConfigContainer);
+
+        String testUrl = Settings.getServerContextPathURI() + "/oaipmh?" + "verb=listRecords";
+        testOaiEndpointLink = uifactory.addExternalLink("oaipmh.endpoint.test", testUrl, "_blank", oaipmhConfigContainer);
+        testOaiEndpointLink.setName(translate("oaipmh.endpoint.test"));
+        testOaiEndpointLink.setCssClass("btn btn-default");
 
         // Section for API configuration
         apiCont = FormLayoutContainer.createDefaultFormLayout("apiCont", getTranslator());
         apiCont.setFormTitle(translate("api.title"));
         formLayout.add(apiCont);
 
-        SelectionValues identifierTypeSV = new SelectionValues();
+        SelectionValues identifierFormatSV = new SelectionValues();
         String domain = Settings.getServerDomainName();
-        identifierTypeSV.add(entry("oai", translate("oai.identifier.type.oai", domain)));
-        identifierTypeSV.add(entry("url", translate("oai.identifier.type.url", domain)));
-        identifierTypeEl = uifactory.addRadiosVertical("oai.identifier.type", apiCont, identifierTypeSV.keys(), identifierTypeSV.values());
-        
-        identifierTypeEl.select(oaiPmhModule.getIdentifierType(), true);
-        
-        
-        String[] apiTypeKeys = new String[]{
-                "oai.api.type.taxonomy",
-                "oai.api.type.organisation",
-                "oai.api.type.license",
-                "oai.api.type.learningResource",
-                "oai.api.type.release"};
-        String[] apiTypeValues = new String[]{
-                translate("api.type.taxonomy"),
-                translate("api.type.organisation"),
-                translate("api.type.license"),
-                translate("api.type.learningResource"),
-                translate("api.type.release")};
+        identifierFormatSV.add(entry("oai", translate("oai.identifier.format.oai", domain)));
+        identifierFormatSV.add(entry("url", translate("oai.identifier.format.url", domain)));
+        identifierFormatEl = uifactory.addRadiosVertical("oai.identifier.format", apiCont, identifierFormatSV.keys(), identifierFormatSV.values());
+        identifierFormatEl.select(oaiPmhModule.getIdentifierFormat(), true);
 
-        apiTypeEl = uifactory.addCheckboxesVertical("api.label", apiCont, apiTypeKeys, apiTypeValues, 1);
-        apiTypeEl.select(apiTypeKeys[0], oaiPmhModule.isApiTypeTaxonomy());
-        apiTypeEl.select(apiTypeKeys[1], oaiPmhModule.isApiTypeOrganisation());
-        apiTypeEl.select(apiTypeKeys[2], oaiPmhModule.isApiTypeLicense());
-        apiTypeEl.select(apiTypeKeys[3], oaiPmhModule.isApiTypeLearningResource());
-        apiTypeEl.select(apiTypeKeys[4], oaiPmhModule.isApiTypeRelease());
-        apiTypeEl.setAjaxOnly(true); // to fix load after module enable
+        String[] setTypeKeys = new String[]{
+                "oai.set.type.taxonomy",
+                "oai.set.type.organisation",
+                "oai.set.type.license",
+                "oai.set.type.learningResource",
+                "oai.set.type.release"};
+        String[] setTypeValues = new String[]{
+                translate("set.type.taxonomy"),
+                translate("set.type.organisation"),
+                translate("set.type.license"),
+                translate("set.type.learningResource"),
+                translate("set.type.release")};
+
+        setTypeEl = uifactory.addCheckboxesVertical("set.label", apiCont, setTypeKeys, setTypeValues, 1);
+        setTypeEl.select(setTypeKeys[0], oaiPmhModule.isSetTypeTaxonomy());
+        setTypeEl.select(setTypeKeys[1], oaiPmhModule.isSetTypeOrganisation());
+        setTypeEl.select(setTypeKeys[2], oaiPmhModule.isSetTypeLicense());
+        setTypeEl.select(setTypeKeys[3], oaiPmhModule.isSetTypeLearningResource());
+        setTypeEl.select(setTypeKeys[4], oaiPmhModule.isSetTypeRelease());
+        setTypeEl.setAjaxOnly(true); // to fix load after module enable
 
 
         // Section for restrictions
@@ -159,9 +167,9 @@ public class OAIPmhAdminController extends FormBasicController {
 
         licenseSelectionEl = uifactory.addCheckboxesFilterDropdown("license.selected", "license.selected", restrictionsCont, getWindowControl(), licenseSV);
         licenseSelectionEl.setVisible(licenseEl.isKeySelected("oai.license.restrict"));
-        
+
         oaiPmhModule.getLicenseSelectedRestrictions().forEach(lr -> licenseSelectionEl.select(lr, true));
-        
+
         // 2) language restrictions
         //TODO
         
@@ -183,7 +191,7 @@ public class OAIPmhAdminController extends FormBasicController {
         buttonsCont.add(buttonsInnerCont);
         uifactory.addFormSubmitButton("save", buttonsInnerCont);
         uifactory.addFormCancelButton("cancel", buttonsInnerCont, ureq, getWindowControl());
-        
+
         // Everything initialized, update visibility of form elements
     	updateContainerVisibility();
     	// dont
@@ -210,39 +218,35 @@ public class OAIPmhAdminController extends FormBasicController {
                 licenseSelectionEl.uncheckAll();
                 licenseSelectionEl.setVisible(false);
             }
-	    }        
-
+            if (licenseEl.isAtLeastSelected(1)
+                    && !licenseModule.isEnabled(repositoryEntryLicenseHandler)) {
+                restrictionsCont.setFormWarning(translate("license.restriction.warning"));
+            } else {
+                restrictionsCont.setFormWarning(null);
+            }
+        }
         super.formInnerEvent(ureq, source, event);
     }
 
 
     /**
-	 * helper to to enable / disable visibility of form parts containers depending
+	 * helper to enable / disable visibility of form parts containers depending
 	 * on module activation
 	 */
     private void updateContainerVisibility() {
     	// make everything below the module toggle switch visible/invisible
-        if (oaiPmhModule.isEnabled()) {
-        	endpointEl.setVisible(true);
-        	endpointEl.getComponent().setDirty(false);
-        	restrictionsCont.setVisible(true);
-        	apiCont.setVisible(true);
-        	buttonsCont.setVisible(true);
-  
-        } else {
-        	endpointEl.setVisible(false);
-        	endpointEl.getComponent().setDirty(false);
-        	restrictionsCont.setVisible(false);
-        	apiCont.setVisible(false);
-        	buttonsCont.setVisible(false);
-
-        }
+        endpointEl.setVisible(oaiPmhModule.isEnabled());
+        endpointEl.getComponent().setDirty(false);
+        restrictionsCont.setVisible(oaiPmhModule.isEnabled());
+        apiCont.setVisible(oaiPmhModule.isEnabled());
+        buttonsCont.setVisible(oaiPmhModule.isEnabled());
+        testOaiEndpointLink.setVisible(oaiPmhModule.isEnabled());
     }
-    
+
     @Override
     protected void formOK(UserRequest ureq) {
         oaiPmhModule.setEnabled(oaiPmhEl.isOn());
-        oaiPmhModule.setIdentifierType(identifierTypeEl.getSelectedKey());
+        oaiPmhModule.setIdentifierFormat(identifierFormatEl.getSelectedKey());
 
         if (licenseEl.isEnabled()) {
             oaiPmhModule.setLicenseAllow(licenseEl.isKeySelected("oai.license.allow"));
@@ -258,12 +262,12 @@ public class OAIPmhAdminController extends FormBasicController {
         if (licenseSelectionEl.isEnabled()) {
             saveSelectedLicenseRestrictions();
         }
-        if (apiTypeEl.isEnabled()) {
-            oaiPmhModule.setApiTypeTaxonomy(apiTypeEl.isKeySelected("oai.api.type.taxonomy"));
-            oaiPmhModule.setApiTypeOrganisation(apiTypeEl.isKeySelected("oai.api.type.organisation"));
-            oaiPmhModule.setApiTypeLicense(apiTypeEl.isKeySelected("oai.api.type.license"));
-            oaiPmhModule.setApiTypeLearningResource(apiTypeEl.isKeySelected("oai.api.type.learningResource"));
-            oaiPmhModule.setApiTypeRelease(apiTypeEl.isKeySelected("oai.api.type.release"));
+        if (setTypeEl.isEnabled()) {
+            oaiPmhModule.setSetTypeTaxonomy(setTypeEl.isKeySelected("oai.set.type.taxonomy"));
+            oaiPmhModule.setSetTypeOrganisation(setTypeEl.isKeySelected("oai.set.type.organisation"));
+            oaiPmhModule.setSetTypeLicense(setTypeEl.isKeySelected("oai.set.type.license"));
+            oaiPmhModule.setSetTypeLearningResource(setTypeEl.isKeySelected("oai.set.type.learningResource"));
+            oaiPmhModule.setSetTypeRelease(setTypeEl.isKeySelected("oai.set.type.release"));
         }
         /*if (searchEnginePublishEl.isEnabled()) {
             oaiPmhModule.setSearchEngineEnabled(searchEnginePublishEl.isSelected(0));

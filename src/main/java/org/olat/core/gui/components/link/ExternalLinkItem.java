@@ -35,6 +35,10 @@ public interface ExternalLinkItem extends FormItem {
 
 	public void setUrl(String url);
 
+	String getCssClass();
+
+	void setCssClass(String cssClass);
+
 	public String getTarget();
 
 	public void setTarget(String target);
