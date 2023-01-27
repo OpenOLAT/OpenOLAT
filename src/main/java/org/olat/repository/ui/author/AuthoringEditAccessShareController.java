@@ -69,6 +69,7 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.Offer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,6 +132,8 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
 
 	public AuthoringEditAccessShareController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -311,7 +314,10 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
-		List<LicenseType> allowedLicensesTypes = licenseService.loadLicensesTypesByKeys(licenseRestrictions);
+		List<LicenseType> allowedLicensesTypes = oaiPmhModule.isLicenseRestrict()
+				? licenseService.loadLicensesTypesByKeys(licenseRestrictions)
+				: licenseService.loadActiveLicenseTypes(repositoryEntryLicenseHandler)
+					.stream().filter(l -> !l.getName().equals("no.license")).toList();
 		List<String> allowedLicenses = allowedLicensesTypes.stream()
 				.filter(type -> StringHelper.containsNonWhitespace(type.getName()))
 				.map(LicenseType::getName)
@@ -341,7 +347,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private boolean isEntryLicenseAllowedForIndexing() {
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
 		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
-		return !oaiPmhModule.isLicenseRestrict()
+		return !(oaiPmhModule.isLicenseAllow() && entryLicense.getLicenseType().getName().equals("no.license"))
 				|| (oaiPmhModule.isLicenseRestrict() && licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString()));
 	}
 
