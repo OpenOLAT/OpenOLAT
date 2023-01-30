@@ -1,7 +1,9 @@
 <div class="o_warning">
 	<p>$r.translate("confirm.delete.organisation", $organisationName)</p>
 </div>
-$r.render("organisation.replacement", "3_9", "form")
+#if($r.available("organisation.replacement"))
+	$r.render("organisation.replacement", "3_9", "form")
+#end
 <div class="o_button_group">
 	$r.render("delete")
 	$r.render("cancel")

@@ -86,8 +86,7 @@ public class ConfirmOrganisationDeleteController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("organisationName", StringHelper.escapeHtml(organisationRow.getDisplayName()));
 		}
 		
@@ -124,7 +123,7 @@ public class ConfirmOrganisationDeleteController extends FormBasicController {
 		if(organisationAltEl != null) {
 			organisationAltEl.clearError();
 			if(!organisationAltEl.isOneSelected()) {
-				organisationAltEl.setErrorKey("form.legende.mandatory", null);
+				organisationAltEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

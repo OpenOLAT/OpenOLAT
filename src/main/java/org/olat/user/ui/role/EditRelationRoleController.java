@@ -167,7 +167,7 @@ public class EditRelationRoleController extends FormBasicController {
 		
 		roleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(roleEl.getValue())) {
-			roleEl.setErrorKey("form.legende.mandatory", null);
+			roleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

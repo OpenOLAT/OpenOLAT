@@ -176,10 +176,10 @@ public class EditOrganisationController extends FormBasicController {
 		
 		textEl.clearError();
 		if(mandatory && !StringHelper.containsNonWhitespace(textEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
+			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(textEl.getValue().length() >= maxSize) {
-			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			textEl.setErrorKey("form.error.toolong", Integer.toString(maxSize));
 			allOk &= false;
 		}
 		

@@ -114,8 +114,7 @@ public class MoveOrganisationController extends FormBasicController {
 		
 		boolean ok = false;
 		Object uobject = node.getUserObject();
-		if(uobject instanceof Organisation) {
-			Organisation level = (Organisation)uobject;
+		if(uobject instanceof Organisation level) {
 			OrganisationType type = level.getType();
 			if(type == null || allowedTypes.contains(type)) {
 				openedNodes.add(node);
@@ -170,13 +169,13 @@ public class MoveOrganisationController extends FormBasicController {
 		
 		organisationTreeEl.clearError();
 		if(organisationTreeEl.getSelectedNode() == null) {
-			organisationTreeEl.setErrorKey("error.select.target.level", null);
+			organisationTreeEl.setErrorKey("error.select.target.level");
 			allOk &= false;
 		} else if(isParent()) {
-			organisationTreeEl.setErrorKey("error.target.no.parent", null);
+			organisationTreeEl.setErrorKey("error.target.no.parent");
 			allOk &= false;
 		} else if(!targetableNodes.contains(organisationTreeEl.getSelectedNode())) {
-			organisationTreeEl.setErrorKey("error.target.not.allowed", null);
+			organisationTreeEl.setErrorKey("error.target.not.allowed");
 			allOk &= false;
 		}
 
