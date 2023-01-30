@@ -46,7 +46,7 @@ public class CertificateAndEfficiencyStatementListModel
 		extends DefaultFlexiTreeTableDataModel<CertificateAndEfficiencyStatementRow>
 		implements SortableFlexiTableDataModel<CertificateAndEfficiencyStatementRow> {
 	
-	private static final Cols[] COLS = Cols.values();
+	public static final Cols[] COLS = Cols.values();
 
 	private final Locale locale;
 	private Set<RepositoryEntryMyView> allEntriesViews;

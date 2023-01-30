@@ -26,7 +26,6 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.course.learningpath.ui.CurriculumLearningPathRepositoryDataModel.LearningPathRepositoryCols;
 import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 
 /**
@@ -45,7 +44,7 @@ public class CertificateAndEfficiencyStatementSortDelegate extends SortableFlexi
 	@Override
 	protected void sort(List<CertificateAndEfficiencyStatementRow> rows) {
 		int columnIndex = getColumnIndex();
-		LearningPathRepositoryCols column = LearningPathRepositoryCols.values()[columnIndex];
+		CertificateAndEfficiencyStatementListModel.Cols column = CertificateAndEfficiencyStatementListModel.COLS[columnIndex];
 		switch(column) {
 			case completion: Collections.sort(rows, LearningProgressCompletionCellRenderer.createComparator()); break;
 			default: super.sort(rows); break;
