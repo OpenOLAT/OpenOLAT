@@ -73,7 +73,7 @@
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.3.Final</io.undertow>
-		<jackson.version>2.14.1</jackson.version>
+		<jackson.version>2.14.2</jackson.version>
 		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.32</com.mysql.version>
 		<org.postgresql.version>42.5.1</org.postgresql.version>
@@ -2093,12 +2093,6 @@
 			<version>4.0.1</version>
 		</dependency>
 		<dependency>
-		    <groupId>jakarta.xml.ws</groupId>
-		    <artifactId>jakarta.xml.ws-api</artifactId>
-		    <version>4.0.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 		    <groupId>jakarta.xml.bind</groupId>
 		    <artifactId>jakarta.xml.bind-api</artifactId>
 		    <version>4.0.0</version>
@@ -2299,7 +2293,7 @@
 		<dependency>
 			<groupId>org.eclipse.angus</groupId>
 			<artifactId>angus-mail</artifactId>
-			<version>2.0.0</version>		
+			<version>2.0.1</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -2323,7 +2317,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.3</version>
+			<version>1.13.4</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>
