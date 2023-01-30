@@ -18,43 +18,43 @@ import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
 
 public class Description implements XmlWritable {
-    protected String value;
+	protected String value;
 
-    private OAIDCMetadata OAIDCMetadata;
+	private OAIDCMetadata OAIDCMetadata;
 
-    public Description() {
-    }
+	public Description() {
+	}
 
-    public Description(OAIDCMetadata OAIDCMetadata) {
-        this.OAIDCMetadata = OAIDCMetadata;
-    }
+	public Description(OAIDCMetadata OAIDCMetadata) {
+		this.OAIDCMetadata = OAIDCMetadata;
+	}
 
-    public Description(String compiledMetadata) {
-        value = compiledMetadata;
-    }
+	public Description(String compiledMetadata) {
+		value = compiledMetadata;
+	}
 
-    public static Description description(OAIDCMetadata metadata) {
-        return new Description(metadata);
-    }
+	public static Description description(OAIDCMetadata metadata) {
+		return new Description(metadata);
+	}
 
-    public Description withMetadata(OAIDCMetadata OAIDCMetadata) {
-        this.OAIDCMetadata = OAIDCMetadata;
-        return this;
-    }
+	public Description withMetadata(OAIDCMetadata OAIDCMetadata) {
+		this.OAIDCMetadata = OAIDCMetadata;
+		return this;
+	}
 
-    public Description withMetadata(String metadata) {
-        this.value = metadata;
-        return this;
-    }
+	public Description withMetadata(String metadata) {
+		this.value = metadata;
+		return this;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        if (OAIDCMetadata != null) {
-            this.OAIDCMetadata.write(writer);
-        } else if (this.value != null) {
-            EchoElement echo = new EchoElement(value);
-            echo.write(writer);
-        }
-    }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		if (OAIDCMetadata != null) {
+			this.OAIDCMetadata.write(writer);
+		} else if (this.value != null) {
+			EchoElement echo = new EchoElement(value);
+			echo.write(writer);
+		}
+	}
 
 }

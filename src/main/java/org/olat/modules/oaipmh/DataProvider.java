@@ -9,6 +9,14 @@
  */
 package org.olat.modules.oaipmh;
 
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.From;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Identifier;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Set;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Until;
+import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Verb;
+
 import com.lyncode.builder.Builder;
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
 import org.olat.modules.oaipmh.common.model.OAIPMH;
@@ -33,94 +41,82 @@ import org.olat.modules.oaipmh.dataprovider.parameters.OAICompiledRequest;
 import org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest;
 import org.olat.modules.oaipmh.dataprovider.repository.Repository;
 
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.From;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Identifier;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.MetadataPrefix;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.ResumptionToken;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Set;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Until;
-import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Verb;
-
 public class DataProvider {
 
-    private final IdentifyHandler identifyHandler;
-    private final GetRecordHandler getRecordHandler;
-    private final ListSetsHandler listSetsHandler;
-    private final ListRecordsHandler listRecordsHandler;
-    private final ListIdentifiersHandler listIdentifiersHandler;
-    private final ListMetadataFormatsHandler listMetadataFormatsHandler;
-    private final Repository repository;
-    private final DateProvider dateProvider;
+	private final IdentifyHandler identifyHandler;
+	private final GetRecordHandler getRecordHandler;
+	private final ListSetsHandler listSetsHandler;
+	private final ListRecordsHandler listRecordsHandler;
+	private final ListIdentifiersHandler listIdentifiersHandler;
+	private final ListMetadataFormatsHandler listMetadataFormatsHandler;
+	private final Repository repository;
+	private final DateProvider dateProvider;
 
-    public static DataProvider dataProvider (Context context, Repository repository) {
-        return new DataProvider(context, repository);
-    }
+	public DataProvider(Context context, Repository repository) {
+		this.repository = repository;
+		this.dateProvider = new UTCDateProvider();
 
-    public DataProvider(Context context, Repository repository) {
-        this.repository = repository;
-        this.dateProvider = new UTCDateProvider();
+		this.identifyHandler = new IdentifyHandler(context, repository);
+		this.listSetsHandler = new ListSetsHandler(context, repository);
+		this.listMetadataFormatsHandler = new ListMetadataFormatsHandler(context, repository);
+		this.listRecordsHandler = new ListRecordsHandler(context, repository);
+		this.listIdentifiersHandler = new ListIdentifiersHandler(context, repository);
+		this.getRecordHandler = new GetRecordHandler(context, repository);
+	}
 
-        this.identifyHandler = new IdentifyHandler(context, repository);
-        this.listSetsHandler = new ListSetsHandler(context, repository);
-        this.listMetadataFormatsHandler = new ListMetadataFormatsHandler(context, repository);
-        this.listRecordsHandler = new ListRecordsHandler(context, repository);
-        this.listIdentifiersHandler = new ListIdentifiersHandler(context, repository);
-        this.getRecordHandler = new GetRecordHandler(context, repository);
-    }
+	public OAIPMH handle(Builder<OAIRequest> builder) throws OAIException {
+		return handle(builder.build());
+	}
 
-    public OAIPMH handle(Builder<OAIRequest> builder) throws OAIException {
-        return handle(builder.build());
-    }
+	public OAIPMH handle(OAIRequest requestParameters) throws OAIException {
+		Request request = new Request(repository.getConfiguration().getBaseUrl())
+				.withVerbType(requestParameters.get(Verb))
+				.withResumptionToken(requestParameters.get(ResumptionToken))
+				.withIdentifier(requestParameters.get(Identifier))
+				.withMetadataPrefix(requestParameters.get(MetadataPrefix))
+				.withSet(requestParameters.get(Set))
+				.withFrom(requestParameters.get(From))
+				.withUntil(requestParameters.get(Until));
 
-    public OAIPMH handle(OAIRequest requestParameters) throws OAIException {
-        Request request = new Request(repository.getConfiguration().getBaseUrl())
-                .withVerbType(requestParameters.get(Verb))
-                .withResumptionToken(requestParameters.get(ResumptionToken))
-                .withIdentifier(requestParameters.get(Identifier))
-                .withMetadataPrefix(requestParameters.get(MetadataPrefix))
-                .withSet(requestParameters.get(Set))
-                .withFrom(requestParameters.get(From))
-                .withUntil(requestParameters.get(Until));
+		OAIPMH response = new OAIPMH()
+				.withRequest(request)
+				.withResponseDate(dateProvider.now());
+		try {
+			OAICompiledRequest parameters = compileParameters(requestParameters);
 
-        OAIPMH response = new OAIPMH()
-                .withRequest(request)
-                .withResponseDate(dateProvider.now());
-        try {
-            OAICompiledRequest parameters = compileParameters(requestParameters);
+			switch (request.getVerbType()) {
+				case Identify:
+					response.withVerb(identifyHandler.handle(parameters));
+					break;
+				case ListSets:
+					response.withVerb(listSetsHandler.handle(parameters));
+					break;
+				case ListMetadataFormats:
+					response.withVerb(listMetadataFormatsHandler.handle(parameters));
+					break;
+				case GetRecord:
+					response.withVerb(getRecordHandler.handle(parameters));
+					break;
+				case ListIdentifiers:
+					response.withVerb(listIdentifiersHandler.handle(parameters));
+					break;
+				case ListRecords:
+					response.withVerb(listRecordsHandler.handle(parameters));
+					break;
+			}
+		} catch (HandlerException e) {
+			throw new OAIException(e.getMessage());
+		}
 
-            switch (request.getVerbType()) {
-                case Identify:
-                    response.withVerb(identifyHandler.handle(parameters));
-                    break;
-                case ListSets:
-                    response.withVerb(listSetsHandler.handle(parameters));
-                    break;
-                case ListMetadataFormats:
-                    response.withVerb(listMetadataFormatsHandler.handle(parameters));
-                    break;
-                case GetRecord:
-                    response.withVerb(getRecordHandler.handle(parameters));
-                    break;
-                case ListIdentifiers:
-                    response.withVerb(listIdentifiersHandler.handle(parameters));
-                    break;
-                case ListRecords:
-                    response.withVerb(listRecordsHandler.handle(parameters));
-                    break;
-            }
-        } catch (HandlerException e) {
-            //
-        }
+		return response;
+	}
 
-        return response;
-    }
-
-    private OAICompiledRequest compileParameters(OAIRequest requestParameters) throws IllegalVerbException, UnknownParameterException, BadArgumentException, DuplicateDefinitionException, BadResumptionToken {
-        try {
-            return requestParameters.compile();
-        } catch (InvalidResumptionTokenException e) {
-            throw new BadResumptionToken("The resumption token is invalid");
-        }
-    }
+	private OAICompiledRequest compileParameters(OAIRequest requestParameters) throws IllegalVerbException, UnknownParameterException, BadArgumentException, DuplicateDefinitionException, BadResumptionToken {
+		try {
+			return requestParameters.compile();
+		} catch (InvalidResumptionTokenException e) {
+			throw new BadResumptionToken("The resumption token is invalid");
+		}
+	}
 
 }

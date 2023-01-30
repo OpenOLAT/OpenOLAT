@@ -19,6 +19,14 @@
  */
 package org.olat.modules.oaipmh.manager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.lyncode.builder.ListBuilder;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.LicenseService;
@@ -40,14 +48,6 @@ import org.olat.repository.ResourceInfoDispatcher;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>

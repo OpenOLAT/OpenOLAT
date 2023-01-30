@@ -20,6 +20,11 @@
 package org.olat.modules.oaipmh;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+
 import com.lyncode.builder.ListBuilder;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -38,11 +43,6 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
@@ -65,9 +65,9 @@ public class OAIPmhModule extends AbstractSpringModule {
 	@Value("${oai.enabled}")
 	private boolean enabled;
 	@Value("${oai.license.allow}")
-	private boolean licenseAllow;
+	private boolean licenseAllowOnly;
 	@Value("${oai.license.restrict}")
-	private boolean licenseRestrict;
+	private boolean licenseSpecificRestrict;
 	@Value("${oai.set.type.taxonomy}")
 	private boolean setTypeTaxonomy;
 	@Value("${oai.set.type.organisation}")
@@ -105,11 +105,11 @@ public class OAIPmhModule extends AbstractSpringModule {
 		}
 		enabledObj = getStringPropertyValue(CONFIG_LICENSE_ALLOW, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
-			licenseAllow = "true".equals(enabledObj);
+			licenseAllowOnly = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_LICENSE_RESTRICT, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
-			licenseRestrict = "true".equals(enabledObj);
+			licenseSpecificRestrict = "true".equals(enabledObj);
 		}
 		enabledObj = getStringPropertyValue(CONFIG_SET_TAXONOMY, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
@@ -159,22 +159,22 @@ public class OAIPmhModule extends AbstractSpringModule {
 		setStringProperty(CONFIG_OAI_ENABLED, Boolean.toString(enabled), true);
 	}
 
-	public boolean isLicenseAllow() {
-		return licenseAllow;
+	public boolean isLicenseAllowOnly() {
+		return licenseAllowOnly;
 	}
 
-	public void setLicenseAllow(boolean licenseAllow) {
-		this.licenseAllow = licenseAllow;
-		setStringProperty(CONFIG_LICENSE_ALLOW, Boolean.toString(licenseAllow), true);
+	public void setLicenseAllowOnly(boolean licenseAllowOnly) {
+		this.licenseAllowOnly = licenseAllowOnly;
+		setStringProperty(CONFIG_LICENSE_ALLOW, Boolean.toString(licenseAllowOnly), true);
 	}
 
-	public boolean isLicenseRestrict() {
-		return licenseRestrict;
+	public boolean isLicenseSpecificRestrict() {
+		return licenseSpecificRestrict;
 	}
 
-	public void setLicenseRestrict(boolean licenseRestrict) {
-		this.licenseRestrict = licenseRestrict;
-		setStringProperty(CONFIG_LICENSE_RESTRICT, Boolean.toString(licenseRestrict), true);
+	public void setLicenseSpecificRestrict(boolean licenseSpecificRestrict) {
+		this.licenseSpecificRestrict = licenseSpecificRestrict;
+		setStringProperty(CONFIG_LICENSE_RESTRICT, Boolean.toString(licenseSpecificRestrict), true);
 	}
 
 	public boolean isSetTypeTaxonomy() {
@@ -302,9 +302,9 @@ public class OAIPmhModule extends AbstractSpringModule {
 	}
 
 	public boolean isIndexingRestricted(ResourceLicense license) {
-		return ((isLicenseAllow() &&
+		return ((isLicenseAllowOnly() &&
 				(license == null || license.getLicenseType().getName().equals("no.license")))
-				|| (isLicenseRestrict() &&
+				|| (isLicenseSpecificRestrict() &&
 				(license == null || !getLicenseSelectedRestrictions().contains(license.getLicenseType().getKey().toString()))));
 	}
 

@@ -10,6 +10,13 @@
 
 package org.olat.modules.oaipmh.dataprovider.model;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.lyncode.builder.ListBuilder;
 import org.olat.modules.oaipmh.common.model.About;
 import org.olat.modules.oaipmh.common.model.Metadata;
@@ -17,13 +24,6 @@ import org.olat.modules.oaipmh.common.oaidc.Element;
 import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
 import org.olat.modules.oaipmh.common.oaioo.OAIOOMetadata;
 import org.olat.modules.oaipmh.common.oaioo.OOElement;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MetadataItems implements Item {
 

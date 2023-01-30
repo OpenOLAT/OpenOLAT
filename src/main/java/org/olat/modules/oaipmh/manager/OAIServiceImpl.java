@@ -20,6 +20,13 @@
 package org.olat.modules.oaipmh.manager;
 
 
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.util.StringHelper;
@@ -43,12 +50,6 @@ import org.olat.modules.oaipmh.dataprovider.repository.Repository;
 import org.olat.modules.oaipmh.dataprovider.repository.RepositoryConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.xml.stream.XMLStreamException;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>

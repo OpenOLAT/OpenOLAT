@@ -314,7 +314,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
-		List<LicenseType> allowedLicensesTypes = oaiPmhModule.isLicenseRestrict()
+		List<LicenseType> allowedLicensesTypes = oaiPmhModule.isLicenseSpecificRestrict()
 				? licenseService.loadLicensesTypesByKeys(licenseRestrictions)
 				: licenseService.loadActiveLicenseTypes(repositoryEntryLicenseHandler)
 					.stream().filter(l -> !l.getName().equals("no.license")).toList();
@@ -347,9 +347,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	private boolean isEntryLicenseAllowedForIndexing() {
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
 		ResourceLicense entryLicense = licenseService.loadOrCreateLicense(entry.getOlatResource());
-		return (!oaiPmhModule.isLicenseAllow() && !oaiPmhModule.isLicenseRestrict())
-				|| (!oaiPmhModule.isLicenseAllow() || !entryLicense.getLicenseType().getName().equals("no.license"))
-				&& (!oaiPmhModule.isLicenseRestrict() || licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString())
+		return (!oaiPmhModule.isLicenseAllowOnly() && !oaiPmhModule.isLicenseSpecificRestrict())
+				|| (!oaiPmhModule.isLicenseAllowOnly() || !entryLicense.getLicenseType().getName().equals("no.license"))
+				&& (!oaiPmhModule.isLicenseSpecificRestrict() || licenseRestrictions.contains(entryLicense.getLicenseType().getKey().toString())
 					|| licenseRestrictions.isEmpty());
 	}
 

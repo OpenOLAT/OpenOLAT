@@ -14,27 +14,27 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MetadataItem {
-    public static final String XMLLANG = "xml:lang";
-    String value;
-    Map<String, String> properties = new HashMap<>();
+	public static final String XMLLANG = "xml:lang";
+	String value;
+	Map<String, String> properties = new HashMap<>();
 
-    public void addProperty(String name, String value) {
-        //TODO - TDD a better implementation of this
-        properties.put(name, value);
+	public void addProperty(String name, String value) {
+		//TODO - TDD a better implementation of this
+		properties.put(name, value);
 
-    }
+	}
 
-    public Object getValue() {
-        return value;
-    }
+	public Object getValue() {
+		return value;
+	}
 
-    public void setValue(String value) {
-        this.value = value;
+	public void setValue(String value) {
+		this.value = value;
 
-    }
+	}
 
-    public String getProperty(String property) {
-        return properties.get(property);
-    }
+	public String getProperty(String property) {
+		return properties.get(property);
+	}
 
 }

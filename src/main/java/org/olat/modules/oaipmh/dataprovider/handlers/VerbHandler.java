@@ -23,33 +23,33 @@ import org.olat.modules.oaipmh.dataprovider.repository.Repository;
 
 
 public abstract class VerbHandler<T extends XmlWritable> {
-    private Context context;
-    private Repository repository;
+	private Context context;
+	private Repository repository;
 
-    public VerbHandler (Context context, Repository repository) {
-        this.context = context;
-        this.repository = repository;
-    }
+	public VerbHandler(Context context, Repository repository) {
+		this.context = context;
+		this.repository = repository;
+	}
 
-    public Context getContext() {
-        return context;
-    }
+	public Context getContext() {
+		return context;
+	}
 
-    public Repository getRepository() {
-        return repository;
-    }
+	public Repository getRepository() {
+		return repository;
+	}
 
-    public T handle (OAIRequest parameters) throws HandlerException, InvalidResumptionTokenException, OAIException {
-        return handle(parameters.compile());
-    }
+	public T handle(OAIRequest parameters) throws HandlerException, InvalidResumptionTokenException, OAIException {
+		return handle(parameters.compile());
+	}
 
-    public T handle (OAIRequestParametersBuilder parameters) throws OAIException, HandlerException, InvalidResumptionTokenException {
-        return handle(parameters.build());
-    }
+	public T handle(OAIRequestParametersBuilder parameters) throws OAIException, HandlerException, InvalidResumptionTokenException {
+		return handle(parameters.build());
+	}
 
-    public T handle(Builder<OAICompiledRequest> parameters) throws OAIException, HandlerException {
-        return handle(parameters.build());
-    }
+	public T handle(Builder<OAICompiledRequest> parameters) throws OAIException, HandlerException {
+		return handle(parameters.build());
+	}
 
-    public abstract T handle(OAICompiledRequest params) throws OAIException, HandlerException;
+	public abstract T handle(OAICompiledRequest params) throws OAIException, HandlerException;
 }

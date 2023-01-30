@@ -18,54 +18,54 @@
 package org.olat.modules.oaipmh.common.model;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Set implements XmlWritable {
 
-    private String spec;
-    private String name;
-    private final List<Description> descriptions = new ArrayList<>();
+	private final List<Description> descriptions = new ArrayList<>();
+	private String spec;
+	private String name;
 
-    public String getSpec() {
-        return spec;
-    }
+	public String getSpec() {
+		return spec;
+	}
 
-    public Set withSpec(String value) {
-        this.spec = value;
-        return this;
-    }
+	public Set withSpec(String value) {
+		this.spec = value;
+		return this;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public Set withName(String value) {
-        this.name = value;
-        return this;
-    }
+	public Set withName(String value) {
+		this.name = value;
+		return this;
+	}
 
-    public List<Description> getDescriptions() {
-        return this.descriptions;
-    }
+	public List<Description> getDescriptions() {
+		return this.descriptions;
+	}
 
-    public Set withDescription(OAIDCMetadata description) {
-        this.descriptions.add(new Description(description));
-        return this;
-    }
+	public Set withDescription(OAIDCMetadata description) {
+		this.descriptions.add(new Description(description));
+		return this;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        writer.writeElement("setSpec", spec);
-        writer.writeElement("setName", name);
-        if (this.descriptions != null && !this.descriptions.isEmpty()) {
-            for (Description desc : this.descriptions)
-                writer.writeElement("setDescription", desc);
-        }
-    }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		writer.writeElement("setSpec", spec);
+		writer.writeElement("setName", name);
+		if (this.descriptions != null && !this.descriptions.isEmpty()) {
+			for (Description desc : this.descriptions)
+				writer.writeElement("setDescription", desc);
+		}
+	}
 }

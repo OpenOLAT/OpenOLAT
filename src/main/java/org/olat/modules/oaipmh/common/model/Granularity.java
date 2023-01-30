@@ -13,24 +13,24 @@ package org.olat.modules.oaipmh.common.model;
  * @version 3.1.0
  */
 public enum Granularity {
-    Day("YYYY-MM-DD"),
-    Second("YYYY-MM-DDThh:mm:ssZ");
+	Day("YYYY-MM-DD"),
+	Second("YYYY-MM-DDThh:mm:ssZ");
 
-    private final String representation;
+	private final String representation;
 
-    Granularity(String representation) {
-        this.representation = representation;
-    }
+	Granularity(String representation) {
+		this.representation = representation;
+	}
 
-    public static Granularity fromRepresentation(String representation) {
-        for (Granularity granularity : Granularity.values())
-            if (granularity.toString().equals(representation))
-                return granularity;
+	public static Granularity fromRepresentation(String representation) {
+		for (Granularity granularity : Granularity.values())
+			if (granularity.toString().equals(representation))
+				return granularity;
 
-        throw new IllegalArgumentException(representation);
-    }
+		throw new IllegalArgumentException(representation);
+	}
 
-    public String toString() {
-        return representation;
-    }
+	public String toString() {
+		return representation;
+	}
 }

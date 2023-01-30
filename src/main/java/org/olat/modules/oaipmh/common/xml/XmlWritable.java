@@ -11,5 +11,5 @@ package org.olat.modules.oaipmh.common.xml;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 
 public interface XmlWritable {
-    public void write(XmlWriter writer) throws XmlWriteException;
+	public void write(XmlWriter writer) throws XmlWriteException;
 }

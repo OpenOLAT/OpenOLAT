@@ -10,6 +10,13 @@
 
 package org.olat.modules.oaipmh.dataprovider.handlers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.transform.TransformerException;
+
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.model.About;
 import org.olat.modules.oaipmh.common.model.GetRecord;
@@ -29,94 +36,88 @@ import org.olat.modules.oaipmh.dataprovider.model.Set;
 import org.olat.modules.oaipmh.dataprovider.parameters.OAICompiledRequest;
 import org.olat.modules.oaipmh.dataprovider.repository.Repository;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.transform.TransformerException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
 
 public class GetRecordHandler extends VerbHandler<GetRecord> {
-    public GetRecordHandler(Context context, Repository repository) {
-        super(context, repository);
-    }
+	public GetRecordHandler(Context context, Repository repository) {
+		super(context, repository);
+	}
 
-    @Override
-    public GetRecord handle(OAICompiledRequest parameters) throws OAIException, HandlerException {
-        Header header = new Header();
-        Record record = new Record().withHeader(header);
-        GetRecord result = new GetRecord(record);
+	@Override
+	public GetRecord handle(OAICompiledRequest parameters) throws OAIException, HandlerException {
+		Header header = new Header();
+		Record record = new Record().withHeader(header);
+		GetRecord result = new GetRecord(record);
 
-        MetadataFormat format = getContext().formatForPrefix(parameters.getMetadataPrefix());
-        if (format == null) {
-            throw new CannotDisseminateFormatException("Format "+parameters.getMetadataPrefix()+" not applicable to this item");
-        }
+		MetadataFormat format = getContext().formatForPrefix(parameters.getMetadataPrefix());
+		if (format == null) {
+			throw new CannotDisseminateFormatException("Format " + parameters.getMetadataPrefix() + " not applicable to this item");
+		}
 
-        Item item = getRepository().getItemRepository().getItem(parameters.getIdentifier());
+		Item item = getRepository().getItemRepository().getItem(parameters.getIdentifier());
 
-        if (getContext().hasCondition() &&
-                !getContext().getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
-            throw new IdDoesNotExistException("This context does not include this item");
+		if (getContext().hasCondition() &&
+				!getContext().getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
+			throw new IdDoesNotExistException("This context does not include this item");
 
-        if (format.hasCondition() &&
-                !format.getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
-            throw new CannotDisseminateFormatException("Format "+parameters.getMetadataPrefix()+" not applicable to this item");
+		if (format.hasCondition() &&
+				!format.getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
+			throw new CannotDisseminateFormatException("Format " + parameters.getMetadataPrefix() + " not applicable to this item");
 
 
-        header.withIdentifier(item.getIdentifier());
-        header.withDatestamp(item.getDatestamp());
+		header.withIdentifier(item.getIdentifier());
+		header.withDatestamp(item.getDatestamp());
 
-        for (Set set : getContext().getSets())
-            if (set.getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
-                header.withSetSpec(set.getSpec());
+		for (Set set : getContext().getSets())
+			if (set.getCondition().getFilter(getRepository().getFilterResolver()).isItemShown(item))
+				header.withSetSpec(set.getSpec());
 
-        for (Set set : item.getSets())
-            header.withSetSpec(set.getSpec());
+		for (Set set : item.getSets())
+			header.withSetSpec(set.getSpec());
 
-        if (item.isDeleted())
-            header.withStatus(Header.Status.DELETED);
+		if (item.isDeleted())
+			header.withStatus(Header.Status.DELETED);
 
-        if (!item.isDeleted()) {
-            Metadata metadata = null;
-            try {
-                if (getContext().hasTransformer()) {
-                    metadata = new Metadata(toPipeline(item, parameters.getMetadataPrefix())
-                            .apply(getContext().getTransformer())
-                            .apply(format.getTransformer())
-                            .process());
-                } else {
-                    metadata = new Metadata(toPipeline(item, parameters.getMetadataPrefix())
-                            .apply(format.getTransformer())
-                            .process());
-                }
-            } catch (XMLStreamException | TransformerException | IOException | XmlWriteException e) {
-                throw new OAIException(e);
-            }
+		if (!item.isDeleted()) {
+			Metadata metadata = null;
+			try {
+				if (getContext().hasTransformer()) {
+					metadata = new Metadata(toPipeline(item, parameters.getMetadataPrefix())
+							.apply(getContext().getTransformer())
+							.apply(format.getTransformer())
+							.process());
+				} else {
+					metadata = new Metadata(toPipeline(item, parameters.getMetadataPrefix())
+							.apply(format.getTransformer())
+							.process());
+				}
+			} catch (XMLStreamException | TransformerException | IOException | XmlWriteException e) {
+				throw new OAIException(e);
+			}
 
-            record.withMetadata(metadata);
+			record.withMetadata(metadata);
 
-            if (item.getAbout() != null) {
-                for (About about : item.getAbout())
-                    record.withAbout(about);
-            }
-        }
-        return result;
-    }
+			if (item.getAbout() != null) {
+				for (About about : item.getAbout())
+					record.withAbout(about);
+			}
+		}
+		return result;
+	}
 
-    private XSLPipeline toPipeline(Item item, String metadataPrefix) throws XmlWriteException, XMLStreamException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        XmlWriter writer = new XmlWriter(output);
-        Metadata metadata;
-        if (metadataPrefix.equals("oai_dc")) {
-            metadata = item.getMetadata(metadataPrefix);
-        } else if (metadataPrefix.equals("oai_oo")) {
-            metadata = item.getMetadata(metadataPrefix);
-        } else {
-            return new XSLPipeline(new ByteArrayInputStream(output.toByteArray()), true);
-        }
+	private XSLPipeline toPipeline(Item item, String metadataPrefix) throws XmlWriteException, XMLStreamException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		XmlWriter writer = new XmlWriter(output);
+		Metadata metadata;
+		if (metadataPrefix.equals("oai_dc")) {
+			metadata = item.getMetadata(metadataPrefix);
+		} else if (metadataPrefix.equals("oai_oo")) {
+			metadata = item.getMetadata(metadataPrefix);
+		} else {
+			return new XSLPipeline(new ByteArrayInputStream(output.toByteArray()), true);
+		}
 
-        metadata.write(writer);
-        writer.close();
-        return new XSLPipeline(new ByteArrayInputStream(output.toByteArray()), true);
-    }
+		metadata.write(writer);
+		writer.close();
+		return new XSLPipeline(new ByteArrayInputStream(output.toByteArray()), true);
+	}
 }

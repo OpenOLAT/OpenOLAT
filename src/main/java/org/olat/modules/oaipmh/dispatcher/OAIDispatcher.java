@@ -72,8 +72,6 @@ public class OAIDispatcher implements Dispatcher {
 			return;
 		}
 
-
-
 		if (!oaiPmhModule.isEnabled()) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
 			return;

@@ -19,10 +19,10 @@
  */
 package org.olat.modules.oaipmh;
 
+import java.util.List;
+
 import org.olat.modules.oaipmh.dataprovider.model.MetadataItems;
 import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
-
-import java.util.List;
 
 
 /**
@@ -30,8 +30,8 @@ import java.util.List;
  */
 public interface OAIPmhMetadataProvider {
 
-    public String getMetadataPrefix();
+	public String getMetadataPrefix();
 
-    public List<MetadataItems> getMetadata(MetadataSetRepository setRepository);
+	public List<MetadataItems> getMetadata(MetadataSetRepository setRepository);
 
 }

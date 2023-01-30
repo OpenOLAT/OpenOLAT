@@ -24,45 +24,45 @@ import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
 public class MetadataFormat implements XmlWritable {
 
-    protected String metadataPrefix;
-    protected String schema;
-    protected String metadataNamespace;
+	protected String metadataPrefix;
+	protected String schema;
+	protected String metadataNamespace;
 
-    public String getMetadataPrefix() {
-        return metadataPrefix;
-    }
+	public String getMetadataPrefix() {
+		return metadataPrefix;
+	}
 
-    public MetadataFormat withMetadataPrefix(String value) {
-        this.metadataPrefix = value;
-        return this;
-    }
+	public MetadataFormat withMetadataPrefix(String value) {
+		this.metadataPrefix = value;
+		return this;
+	}
 
-    public String getSchema() {
-        return schema;
-    }
+	public String getSchema() {
+		return schema;
+	}
 
-    public MetadataFormat withSchema(String value) {
-        this.schema = value;
-        return this;
-    }
+	public MetadataFormat withSchema(String value) {
+		this.schema = value;
+		return this;
+	}
 
-    public String getMetadataNamespace() {
-        return metadataNamespace;
-    }
+	public String getMetadataNamespace() {
+		return metadataNamespace;
+	}
 
-    public MetadataFormat withMetadataNamespace(String value) {
-        this.metadataNamespace = value;
-        return this;
-    }
+	public MetadataFormat withMetadataNamespace(String value) {
+		this.metadataNamespace = value;
+		return this;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        if (metadataPrefix != null)
-            writer.writeElement("metadataPrefix", metadataPrefix);
-        if (schema != null)
-            writer.writeElement("schema", schema);
-        if (metadataNamespace != null)
-            writer.writeElement("metadataNamespace", metadataNamespace);
-    }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		if (metadataPrefix != null)
+			writer.writeElement("metadataPrefix", metadataPrefix);
+		if (schema != null)
+			writer.writeElement("schema", schema);
+		if (metadataNamespace != null)
+			writer.writeElement("metadataNamespace", metadataNamespace);
+	}
 
 }

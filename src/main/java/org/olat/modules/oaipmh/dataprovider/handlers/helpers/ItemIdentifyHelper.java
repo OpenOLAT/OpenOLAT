@@ -13,11 +13,11 @@ package org.olat.modules.oaipmh.dataprovider.handlers.helpers;
 import org.olat.modules.oaipmh.dataprovider.model.ItemIdentifier;
 
 public class ItemIdentifyHelper {
-    private ItemIdentifier item;
+	private ItemIdentifier item;
 
-    public ItemIdentifyHelper(ItemIdentifier item) {
-        this.item = item;
-    }
+	public ItemIdentifyHelper(ItemIdentifier item) {
+		this.item = item;
+	}
 //
 //    public List<ReferenceSet> getSets(XOAIContext context) {
 //        List<ReferenceSet> list = this.item.getSets();

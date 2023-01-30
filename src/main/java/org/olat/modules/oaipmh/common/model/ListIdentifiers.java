@@ -10,54 +10,55 @@
 
 package org.olat.modules.oaipmh.common.model;
 
-import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
-import org.olat.modules.oaipmh.common.xml.XmlWriter;
-
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
+import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
+import org.olat.modules.oaipmh.common.xml.XmlWriter;
+
 public class ListIdentifiers implements Verb {
 
-    protected List<Header> headers = new ArrayList<>();
-    protected ResumptionToken resumptionToken;
+	protected List<Header> headers = new ArrayList<>();
+	protected ResumptionToken resumptionToken;
 
-    public List<Header> getHeaders() {
-        return this.headers;
-    }
+	public List<Header> getHeaders() {
+		return this.headers;
+	}
 
-    public ResumptionToken getResumptionToken() {
-        return resumptionToken;
-    }
+	public ResumptionToken getResumptionToken() {
+		return resumptionToken;
+	}
 
-    public ListIdentifiers withResumptionToken(ResumptionToken value) {
-        this.resumptionToken = value;
-        return this;
-    }
+	public ListIdentifiers withResumptionToken(ResumptionToken value) {
+		this.resumptionToken = value;
+		return this;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        try {
-            if (this.headers != null && !this.headers.isEmpty()) {
-                for (Header header : this.headers) {
-                    writer.writeStartElement("header");
-                    header.write(writer);
-                    writer.writeEndElement();
-                }
-            }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		try {
+			if (this.headers != null && !this.headers.isEmpty()) {
+				for (Header header : this.headers) {
+					writer.writeStartElement("header");
+					header.write(writer);
+					writer.writeEndElement();
+				}
+			}
 
-            if (this.resumptionToken != null) {
-                writer.writeStartElement("resumptionToken");
-                this.resumptionToken.write(writer);
-                writer.writeEndElement();
-            }
-        } catch (XMLStreamException e) {
-            throw new XmlWriteException(e);
-        }
-    }
+			if (this.resumptionToken != null) {
+				writer.writeStartElement("resumptionToken");
+				this.resumptionToken.write(writer);
+				writer.writeEndElement();
+			}
+		} catch (XMLStreamException e) {
+			throw new XmlWriteException(e);
+		}
+	}
 
-    @Override
-    public Type getType() {
-        return Type.ListIdentifiers;
-    }
+	@Override
+	public Type getType() {
+		return Type.ListIdentifiers;
+	}
 }

@@ -17,40 +17,40 @@
 
 package org.olat.modules.oaipmh.common.model;
 
-import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
-import org.olat.modules.oaipmh.common.xml.XmlWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
+import org.olat.modules.oaipmh.common.xml.XmlWriter;
+
 public class ListSets implements Verb {
-    protected List<Set> sets = new ArrayList<>();
-    protected ResumptionToken resumptionToken;
+	protected List<Set> sets = new ArrayList<>();
+	protected ResumptionToken resumptionToken;
 
-    public List<Set> getSets() {
-        return this.sets;
-    }
+	public List<Set> getSets() {
+		return this.sets;
+	}
 
-    public ResumptionToken getResumptionToken() {
-        return resumptionToken;
-    }
+	public ResumptionToken getResumptionToken() {
+		return resumptionToken;
+	}
 
-    public ListSets withResumptionToken(ResumptionToken value) {
-        this.resumptionToken = value;
-        return this;
-    }
+	public ListSets withResumptionToken(ResumptionToken value) {
+		this.resumptionToken = value;
+		return this;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        if (!this.sets.isEmpty())
-            for (Set set : this.sets)
-                writer.writeElement("set", set);
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		if (!this.sets.isEmpty())
+			for (Set set : this.sets)
+				writer.writeElement("set", set);
 
-        writer.writeElement("resumptionToken", resumptionToken);
-    }
+		writer.writeElement("resumptionToken", resumptionToken);
+	}
 
-    @Override
-    public Type getType() {
-        return Type.ListSets;
-    }
+	@Override
+	public Type getType() {
+		return Type.ListSets;
+	}
 }

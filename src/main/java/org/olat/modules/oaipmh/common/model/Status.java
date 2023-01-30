@@ -26,10 +26,6 @@ public enum Status {
 		value = v;
 	}
 
-	public String value() {
-		return value;
-	}
-
 	public static Status fromValue(String v) {
 		for (Status c : Status.values()) {
 			if (c.value.equals(v)) {
@@ -37,6 +33,10 @@ public enum Status {
 			}
 		}
 		throw new IllegalArgumentException(v);
+	}
+
+	public String value() {
+		return value;
 	}
 
 }

@@ -10,6 +10,9 @@
 
 package org.olat.modules.oaipmh.common.model;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.io.IOUtils;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
@@ -18,50 +21,45 @@ import org.olat.modules.oaipmh.common.xml.EchoElement;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 public class Metadata implements XmlWritable {
-    private String string;
+	protected OAIDCMetadata value;
+	protected OAIOOMetadata ooValue;
+	private String string;
 
-    protected OAIDCMetadata value;
+	public Metadata(OAIDCMetadata value) {
+		this.value = value;
+	}
 
-    protected OAIOOMetadata ooValue;
+	public Metadata(OAIOOMetadata value) {
+		this.ooValue = value;
+	}
 
-    public Metadata(OAIDCMetadata value) {
-        this.value = value;
-    }
+	public Metadata(String value) {
+		this.string = value;
+	}
 
-    public Metadata(OAIOOMetadata value) {
-        this.ooValue = value;
-    }
+	public Metadata(InputStream value) throws IOException {
+		this.string = IOUtils.toString(value);
+	}
 
-    public Metadata(String value) {
-        this.string = value;
-    }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		if (this.ooValue != null)
+			this.ooValue.write(writer);
+		else if (this.value != null) {
+			this.value.write(writer);
+		} else {
+			EchoElement elem = new EchoElement(string);
+			elem.write(writer);
+		}
+	}
 
-    public Metadata(InputStream value) throws IOException {
-        this.string = IOUtils.toString(value);
-    }
+	public OAIDCMetadata getValue() {
+		return value;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        if (this.ooValue != null)
-            this.ooValue.write(writer);
-        else if (this.value != null) {
-            this.value.write(writer);
-        } else {
-            EchoElement elem = new EchoElement(string);
-            elem.write(writer);
-        }
-    }
-
-    public OAIDCMetadata getValue () {
-        return value;
-    }
-
-    public OAIOOMetadata getOoValue() {
-        return ooValue;
-    }
+	public OAIOOMetadata getOoValue() {
+		return ooValue;
+	}
 
 }

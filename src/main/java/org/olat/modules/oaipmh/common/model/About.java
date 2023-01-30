@@ -16,21 +16,21 @@ import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
 
 public class About implements XmlWritable {
-    private final String value;
+	private final String value;
 
-    public About(String xmlValue) {
-        this.value = xmlValue;
-    }
+	public About(String xmlValue) {
+		this.value = xmlValue;
+	}
 
-    public String getValue() {
-        return value;
-    }
+	public String getValue() {
+		return value;
+	}
 
-    @Override
-    public void write(XmlWriter writer) throws XmlWriteException {
-        if (this.value != null) {
-            EchoElement elem = new EchoElement(value);
-            elem.write(writer);
-        }
-    }
+	@Override
+	public void write(XmlWriter writer) throws XmlWriteException {
+		if (this.value != null) {
+			EchoElement elem = new EchoElement(value);
+			elem.write(writer);
+		}
+	}
 }

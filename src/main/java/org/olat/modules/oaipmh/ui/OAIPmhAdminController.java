@@ -153,8 +153,8 @@ public class OAIPmhAdminController extends FormBasicController {
         String[] licenseValues = new String[]{translate("license.allow"), translate("license.restrict")};
 
         licenseEl = uifactory.addCheckboxesVertical("license.label", restrictionsCont, licenseKeys, licenseValues, 1);
-        licenseEl.select(licenseKeys[0], oaiPmhModule.isLicenseAllow());
-        licenseEl.select(licenseKeys[1], oaiPmhModule.isLicenseRestrict());
+        licenseEl.select(licenseKeys[0], oaiPmhModule.isLicenseAllowOnly());
+        licenseEl.select(licenseKeys[1], oaiPmhModule.isLicenseSpecificRestrict());
         licenseEl.addActionListener(FormEvent.ONCHANGE);
         licenseEl.setAjaxOnly(true); // to fix load after module enable
 
@@ -249,8 +249,8 @@ public class OAIPmhAdminController extends FormBasicController {
         oaiPmhModule.setIdentifierFormat(identifierFormatEl.getSelectedKey());
 
         if (licenseEl.isEnabled()) {
-            oaiPmhModule.setLicenseAllow(licenseEl.isKeySelected("oai.license.allow"));
-            oaiPmhModule.setLicenseRestrict(licenseEl.isKeySelected("oai.license.restrict"));
+            oaiPmhModule.setLicenseAllowOnly(licenseEl.isKeySelected("oai.license.allow"));
+            oaiPmhModule.setLicenseSpecificRestrict(licenseEl.isKeySelected("oai.license.restrict"));
             if (licenseEl.isKeySelected("oai.license.restrict")) {
                 licenseSelectionEl.setVisible(true);
             } else {
