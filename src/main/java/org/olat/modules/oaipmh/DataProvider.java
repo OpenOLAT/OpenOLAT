@@ -18,6 +18,8 @@ import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Paramet
 import static org.olat.modules.oaipmh.dataprovider.parameters.OAIRequest.Parameter.Verb;
 
 import com.lyncode.builder.Builder;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.oaipmh.common.exceptions.InvalidResumptionTokenException;
 import org.olat.modules.oaipmh.common.model.OAIPMH;
 import org.olat.modules.oaipmh.common.model.Request;
@@ -30,6 +32,7 @@ import org.olat.modules.oaipmh.dataprovider.exceptions.HandlerException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.IllegalVerbException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.OAIException;
 import org.olat.modules.oaipmh.dataprovider.exceptions.UnknownParameterException;
+import org.olat.modules.oaipmh.dataprovider.handlers.ErrorHandler;
 import org.olat.modules.oaipmh.dataprovider.handlers.GetRecordHandler;
 import org.olat.modules.oaipmh.dataprovider.handlers.IdentifyHandler;
 import org.olat.modules.oaipmh.dataprovider.handlers.ListIdentifiersHandler;
@@ -43,6 +46,8 @@ import org.olat.modules.oaipmh.dataprovider.repository.Repository;
 
 public class DataProvider {
 
+	private static final Logger log = Tracing.createLoggerFor(DataProvider.class);
+
 	private final IdentifyHandler identifyHandler;
 	private final GetRecordHandler getRecordHandler;
 	private final ListSetsHandler listSetsHandler;
@@ -51,6 +56,7 @@ public class DataProvider {
 	private final ListMetadataFormatsHandler listMetadataFormatsHandler;
 	private final Repository repository;
 	private final DateProvider dateProvider;
+	private final ErrorHandler errorsHandler;
 
 	public DataProvider(Context context, Repository repository) {
 		this.repository = repository;
@@ -62,6 +68,7 @@ public class DataProvider {
 		this.listRecordsHandler = new ListRecordsHandler(context, repository);
 		this.listIdentifiersHandler = new ListIdentifiersHandler(context, repository);
 		this.getRecordHandler = new GetRecordHandler(context, repository);
+		this.errorsHandler = new ErrorHandler();
 	}
 
 	public OAIPMH handle(Builder<OAIRequest> builder) throws OAIException {
@@ -105,7 +112,8 @@ public class DataProvider {
 					break;
 			}
 		} catch (HandlerException e) {
-			throw new OAIException(e.getMessage());
+			log.debug(e.getMessage(), e);
+			response.withError(errorsHandler.handle(e));
 		}
 
 		return response;
