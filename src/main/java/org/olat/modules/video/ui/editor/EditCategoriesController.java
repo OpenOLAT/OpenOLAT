@@ -21,7 +21,10 @@ package org.olat.modules.video.ui.editor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -36,9 +39,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-01-09<br>
@@ -57,19 +63,21 @@ public class EditCategoriesController extends FormBasicController {
 	private List<Category> categories;
 	private CloseableCalloutWindowController ccwc;
 	private SelectColorController selectColorController;
+	@Autowired
+	private VideoModule videoModule;
 
 	public class Category {
-		private int id;
-		private String longId;
+		private final int id;
+		private final String longId;
 		private int sortOrder;
 		private String color;
-		private FormLink moveUpLink;
-		private FormLink moveDownLink;
-		private FormLink colorLink;
-		private TextElement labelEl;
-		private TextElement titleEl;
-		private FormLink addButton;
-		private FormLink deleteButton;
+		private final FormLink moveUpLink;
+		private final FormLink moveDownLink;
+		private final FormLink colorLink;
+		private final TextElement labelEl;
+		private final TextElement titleEl;
+		private final FormLink addButton;
+		private final FormLink deleteButton;
 
 		public Category(FormItemContainer formLayout, UserRequest ureq, int id, VideoSegmentCategory category) {
 			this.id = id;
@@ -212,7 +220,7 @@ public class EditCategoriesController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source.getName().contains("_")){
-			String parts[] = source.getName().split("_");
+			String[] parts = source.getName().split("_");
 			String cmd = parts[0];
 			int id = Integer.parseInt(parts[1]);
 			doHandleCommand(cmd, id, ureq);
@@ -222,11 +230,27 @@ public class EditCategoriesController extends FormBasicController {
 
 	private void doHandleCommand(String cmd, int id, UserRequest ureq) {
 		if (ADD_CMD.equals(cmd)) {
-			categories.add(0, new Category(flc, ureq, getNewCategoryIndex(), null));
+			Category category = new Category(flc, ureq, getNewCategoryIndex(), null);
+
+			Set<String> usedColors = categories.stream().map(Category::getColor).collect(Collectors.toSet());
+			List<String> colors = videoModule.getMarkerStyles();
+			Optional<String> unusedColor = colors.stream().filter(c -> !usedColors.contains(c)).findFirst();
+			unusedColor.ifPresentOrElse(category::setColor, () -> category.setColor(colors.get(0)));
+
+			category.getLabel().setValue(translate("form.segment.category.label.new"));
+			category.getTitle().setValue(translate("form.segment.category.title.new"));
+			categories.add(0, category);
 			initCategorySortOrders();
 			flc.contextPut("categories", categories);
 		} else if (DELETE_CMD.equals(cmd)) {
 			categories.stream().filter((c) -> c.getId() == id).findFirst().ifPresent((c) -> categories.remove(c));
+			if (categories.isEmpty()) {
+				Category category = new Category(flc, ureq, getNewCategoryIndex(), null);
+				category.setColor("o_video_marker_green");
+				category.getLabel().setValue(translate("form.segment.category.label.new"));
+				category.getTitle().setValue(translate("form.segment.category.title.new"));
+				categories.add(0, category);
+			}
 			initCategorySortOrders();
 			flc.contextPut("categories", categories);
 		} else if (MOVE_UP_CMD.equals(cmd)) {

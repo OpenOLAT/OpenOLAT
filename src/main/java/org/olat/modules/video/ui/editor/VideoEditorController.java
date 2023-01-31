@@ -111,7 +111,7 @@ public class VideoEditorController extends BasicController {
 				masterController.reload();
 			} else if (event == QuestionsController.RELOAD_QUESTIONS_EVENT) {
 				masterController.reload();
-			} else if (event == SegmentController.RELOAD_SEGMENTS_EVENT) {
+			} else if (event == SegmentsController.RELOAD_SEGMENTS_EVENT) {
 				masterController.reload();
 			} else if (event instanceof EditQuestionEvent) {
 				if (editQuestionController == null) {

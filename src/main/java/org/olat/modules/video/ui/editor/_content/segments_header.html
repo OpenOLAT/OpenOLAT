@@ -1,0 +1,12 @@
+<div class="form-group row clearfix">
+	<div class="col-xs-offset-3 col-xs-9">
+		#if ($hasSegments)
+		<div class="btn-group">
+			<div class="btn-group" style="display: inline-block; height: 36px; width: 36px; margin-left: -36px;">$r.render("previousSegment")</div>
+			<div class="btn-group" style="display: inline-block; height: 34px; vertical-align: middle; z-index: 1;">$r.render("segments")</div>
+			<div class="btn-group" style="display: inline-block; height: 36px; width: 36px;">$r.render("nextSegment")</div>
+		</div>
+		#end
+		<div style="display: inline-block; float: right;">$r.render("addSegment") $r.render("commands")</div>
+	</div>
+</div>
