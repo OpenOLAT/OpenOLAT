@@ -786,6 +786,9 @@ $o-video-startbox-bg-color							: #fcfcfc;
 $o-video-correct-segments-color						: $brand-success;
 $o-video-notcorrect-segments-color					: $brand-danger;
 
+$o-video-timeline-correct-bg						: $brand-success;
+$o-video-timeline-incorrect-bg						: $brand-danger;
+
 /* Lecture module */
 $o-lm-current-bg									: $o-toolbar-bg-color !default;
 $o-lm-current-border-color							: transparent !default; 

@@ -1,1 +1,12 @@
 $r.render("table")
+
+#if($r.isNotNull($rowCount) && $r.isNotEmpty($legends) && $rowCount > 0)
+<div class="o_block">
+	<strong id="title-categories">$r.translate("details.legend")</strong>
+	<ul class="list-unstyled" aria-labelledby="title-categories">
+		#foreach($legend in $legends)
+		<li>$r.escapeHtml($legend)</li>
+		#end
+	</ul>
+</div>
+#end

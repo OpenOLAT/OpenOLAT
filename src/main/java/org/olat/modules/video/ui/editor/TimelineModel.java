@@ -55,6 +55,8 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	// The available width for the timeline.
 	private int availableWidth;
 	private String mediaUrl;
+	private List<TimelineEventType> visibleChannels = List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
+			TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT);
 
 	public TimelineModel(FlexiTableDataSourceDelegate<TimelineRow> dataSource, FlexiTableColumnModel columnModel) {
 		super(dataSource, columnModel);
@@ -96,6 +98,14 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 
 	public void setScaleFactor(double scaleFactor) {
 		this.scaleFactor = scaleFactor;
+	}
+
+	public List<TimelineEventType> getVisibleChannels() {
+		return visibleChannels;
+	}
+
+	public void setVisibleChannels(List<TimelineEventType> visibleChannels) {
+		this.visibleChannels = visibleChannels;
 	}
 
 	public List<TimelineRow> getEventsByType(TimelineEventType type) {

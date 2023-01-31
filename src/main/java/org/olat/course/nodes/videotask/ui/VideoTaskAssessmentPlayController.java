@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -34,6 +36,7 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.editor.MasterController;
+import org.olat.modules.video.ui.editor.TimelineEventType;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +87,9 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		mainVC.put("video", videoDisplayController.getInitialComponent());
 
 		String videoElementId = videoDisplayController.getVideoElementId();
-		timelineCtrl = new MasterController(ureq, getWindowControl(), videoEntry.getOlatResource(), videoElementId);
+		timelineCtrl = new MasterController(ureq, getWindowControl(),
+				videoEntry.getOlatResource(), List.of(taskSession), videoElementId);
+		timelineCtrl.setVisibleChannels(List.of(TimelineEventType.CORRECT, TimelineEventType.SEGMENT, TimelineEventType.INCORRECT, TimelineEventType.VIDEO));
 		listenTo(timelineCtrl);
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());
 		

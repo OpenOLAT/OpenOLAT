@@ -469,8 +469,43 @@
 .o_video_channel {
 	position: relative;
 
-	.o_video_timeline_event.o_video_selected {
-		border-color: $brand-primary;
+	.o_video_timeline_event {
+	 	&.o_video_selected {
+			border-color: $brand-primary;
+		}
+		&.o_video_segment_selection {
+			position: relative;
+			overflow: visible;
+			padding: 0 2px;
+			margin-top: -5px;
+			height: 30px;
+			border: none;
+			border-radius: 0;
+			z-index: 3;
+		}
+		&.o_video_segment_selection:before {
+			content: '\0020';
+			position: absolute;
+			height: 30px;
+			right: 1px;
+			width: 2px;
+		}
+		&.o_selection_correct {
+			background-color: $o-video-timeline-correct-bg;
+		}
+		&.o_selection_correct:before {
+			top: 30px;
+			color: $o-video-timeline-correct-bg;
+			background-color: $o-video-timeline-correct-bg;
+		}
+		&.o_selection_incorrect {
+			background-color: $o-video-timeline-incorrect-bg;
+		}
+		&.o_selection_incorrect:before {
+			top: -30px;
+			color: $o-video-timeline-incorrect-bg;
+			background-color: $o-video-timeline-incorrect-bg;
+		}
 	}
 }
 

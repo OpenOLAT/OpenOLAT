@@ -67,6 +67,14 @@ public class VideoTaskSessionRow {
 		return scoring == null ? null : scoring.getPoints();
 	}
 	
+	public boolean isFinished() {
+		return taskSession.getFinishTime() != null;
+	}
+	
+	public Date getFinishTime() {
+		return taskSession.getFinishTime();
+	}
+	
 	public long getDuration() {
 		Date start = taskSession.getCreationDate();
 		Date finish = taskSession.getFinishTime();

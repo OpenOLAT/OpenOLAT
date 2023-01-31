@@ -143,6 +143,7 @@ public class VideoTaskDisplayController extends BasicController {
 		int counter = 0;
 		List<Link> categoriesLink = new ArrayList<>();
 		List<VideoSegmentCategory> categoriesList = VideoTaskHelper.getSelectedCategories(segments, categoriesIds);
+		VideoTaskHelper.sortCategories(categoriesList, courseNode, getLocale());
 		for(VideoSegmentCategory category:categoriesList) {
 			String catId = "cat_" + (++counter);
 			String catName = category.getLabelAndTitle();

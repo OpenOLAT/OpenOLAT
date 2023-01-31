@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -39,6 +40,8 @@ import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.VideoTaskSegmentSelection;
+import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.resource.OLATResource;
 
@@ -50,15 +53,19 @@ import org.olat.resource.OLATResource;
 public class TimelineDataSource implements FlexiTableDataSourceDelegate<TimelineRow> {
 
 	private final OLATResource olatResource;
+	private final List<VideoTaskSession> taskSessions;
 	private final VideoManager videoManager;
+	private final VideoAssessmentService videoAssessmentService;
 
 	private List<TimelineRow> rows = new ArrayList<>();
 	private List<FlexiTableFilter> filters;
 	private List<TimelineRow> filteredRows = new ArrayList<>();
 
-	public TimelineDataSource(OLATResource olatResource) {
+	public TimelineDataSource(OLATResource olatResource, List<VideoTaskSession> taskSessions) {
 		this.olatResource = olatResource;
+		this.taskSessions = taskSessions == null ? List.of() : taskSessions;
 		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
+		videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
 		loadRows();
 	}
 
@@ -94,6 +101,15 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 			rows.add(new TimelineRow(chapterId, ch.getBegin().getTime(), durationInMillis,
 					TimelineEventType.CHAPTER, ch.getChapterName(), "o_video_marker_gray"));
 		});
+		
+		if(taskSessions != null && !taskSessions.isEmpty()) {
+			List<VideoTaskSegmentSelection> segmentsSelections = videoAssessmentService.getTaskSegmentSelections(taskSessions);
+			segmentsSelections.forEach(sel -> {
+				TimelineEventType type= sel.isCorrect() ? TimelineEventType.CORRECT : TimelineEventType.INCORRECT;
+				String color = sel.isCorrect() ? "o_selection_correct" : "o_selection_incorrect";
+				rows.add(new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, "", color));
+			});
+		}
 
 		rows.sort(Comparator.comparing(TimelineRow::getStartTime));
 

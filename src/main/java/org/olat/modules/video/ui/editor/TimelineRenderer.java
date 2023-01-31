@@ -142,11 +142,10 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	private void renderChannelLabels(StringOutput s, TimelineModel timelineModel) {
 		s.append("<div class=\"o_video_channel_labels\">");
 		renderChannelLabelPlaceholder(s);
-		renderChannelLabel(s, TimelineEventType.QUIZ, timelineModel);
-		renderChannelLabel(s, TimelineEventType.ANNOTATION, timelineModel);
-		renderChannelLabel(s, TimelineEventType.VIDEO, timelineModel);
-		renderChannelLabel(s, TimelineEventType.CHAPTER, timelineModel);
-		renderChannelLabel(s, TimelineEventType.SEGMENT, timelineModel);
+		List<TimelineEventType> channels = timelineModel.getVisibleChannels();
+		for(TimelineEventType channel:channels) {
+			renderChannelLabel(s, channel, timelineModel);
+		}
 		s.append("</div>");
 	}
 
@@ -173,6 +172,9 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (type == TimelineEventType.VIDEO) {
 			return 50;
 		}
+		if (type == TimelineEventType.CORRECT || type == TimelineEventType.INCORRECT) {
+			return 30;
+		}
 		List<TimelineRow> events = timelineModel.getEventsByType(type);
 		int nbLanes = Integer.max(TimelineModel.getNumberOfLanes(events), 1);
 		return 10 + nbLanes * 20 + 5 * (nbLanes - 1);
@@ -181,11 +183,14 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	private void renderChannels(StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
 		s.append("<div class=\"o_video_channels\">");
 		renderTimeChannel(s, timelineModel);
-		renderChannel(s, TimelineEventType.QUIZ, ftC, timelineModel);
-		renderChannel(s, TimelineEventType.ANNOTATION, ftC, timelineModel);
-		renderVideoChannel(s, timelineModel);
-		renderChannel(s, TimelineEventType.CHAPTER, ftC, timelineModel);
-		renderChannel(s, TimelineEventType.SEGMENT, ftC, timelineModel);
+		List<TimelineEventType> channels = timelineModel.getVisibleChannels();
+		for(TimelineEventType channel:channels) {
+			if(channel == TimelineEventType.VIDEO) {
+				renderVideoChannel(s, timelineModel);
+			} else {
+				renderChannel(s, channel, ftC, timelineModel);
+			}
+		}
 		s.append("</div>");
 	}
 
@@ -247,8 +252,12 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 					case ANNOTATION -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
 					case CHAPTER -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_chapter", "chapterId");
 					case SEGMENT -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_segment", "segmentId");
+					case CORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 5, "o_video_segment_selection", "correctId");
+					case INCORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 5, "o_video_segment_selection", "incorrectId");
+					default -> { /* Nothing */ }
 				}
 			}
+			
 			y += 20 + 5;
 		}
 	}
@@ -283,6 +292,10 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 			x += 1;
 			width -= 1;
 		}
+		if(y > 30) {
+			System.out.println();
+		}
+		
 		s.append("<div id=\"o_video_event_").append(event.getId())
 				.append("\" class=\"o_video_timeline_event ").append(cssClass).append(" ").append(event.isSelected() ? "o_video_selected " : "")
 				.append(event.getColor())

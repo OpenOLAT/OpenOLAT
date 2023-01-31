@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -70,7 +72,7 @@ public class VideoEditorController extends BasicController {
 		mainVC.put("detail", detailsController.getInitialComponent());
 
 		masterController = new MasterController(ureq, wControl, repositoryEntry.getOlatResource(),
-				videoElementId);
+				List.of(), videoElementId);
 		listenTo(masterController);
 		mainVC.put("master", masterController.getInitialComponent());
 

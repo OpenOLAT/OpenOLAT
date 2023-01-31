@@ -22,6 +22,8 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -65,11 +67,10 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.resource.OLATResource;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,11 +109,11 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private String currentTimeCode;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, OLATResource olatResource,
-							String videoElementId) {
+							List<VideoTaskSession> sessions, String videoElementId) {
 		super(ureq, wControl, "master");
 		flc.contextPut("videoElementId", videoElementId);
 		thumbnailsContainer = videoManager.getThumbnailsContainer(olatResource);
-		timelineDataSource = new TimelineDataSource(olatResource);
+		timelineDataSource = new TimelineDataSource(olatResource, sessions);
 		this.videoFile = videoManager.getMasterVideoFile(olatResource);
 		this.videoFrameCount = videoManager.getVideoFrameCount(videoFile);
 		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
@@ -354,6 +355,10 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		return new ArrayList<>();
+	}
+	
+	public void setVisibleChannels(List<TimelineEventType> visibleChannels) {
+		timelineModel.setVisibleChannels(visibleChannels);
 	}
 
 	public void setAvailableWidth(int availableWidth) {

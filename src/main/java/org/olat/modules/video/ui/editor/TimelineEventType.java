@@ -29,7 +29,9 @@ public enum TimelineEventType {
 	ANNOTATION("timelineEventType.annotation", "o_icon_fa6_a"),
 	QUIZ("timelineEventType.quiz", "o_icon_fa6_q"),
 	SEGMENT("timelineEventType.segment", "o_icon_fa6_s"),
-	VIDEO("timelineEventType.video", "o_icon_fa6_v");
+	VIDEO("timelineEventType.video", "o_icon_fa6_v"),
+	CORRECT("timelineEventType.correct.selection", "o_icon_correct_answer"),
+	INCORRECT("timelineEventType.incorrect.selection", "o_icon_not_correct");
 
 	private final String i18nKey;
 	private final String icon;

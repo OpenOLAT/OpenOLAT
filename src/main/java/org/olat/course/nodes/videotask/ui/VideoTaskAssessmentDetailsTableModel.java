@@ -19,11 +19,15 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FilterableFlexiTableModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
@@ -38,11 +42,21 @@ import org.olat.modules.video.VideoTaskSession;
  *
  */
 public class VideoTaskAssessmentDetailsTableModel extends DefaultFlexiTableDataModel<VideoTaskSessionRow>
-implements FlexiTableCssDelegate  {
+implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	
 	private static final DetailsCols[] COLS = DetailsCols.values();
 	
+	public static final String FILTER_PERFORMANCE = "performance";
+	public static final String FILTER_PERFORMANCE_HIGH = "high";
+	public static final String FILTER_PERFORMANCE_MEDIUM = "medium";
+	public static final String FILTER_PERFORMANCE_LOW = "low";
+	
+	private static final BigDecimal HIGH = BigDecimal.valueOf(67);
+	private static final BigDecimal MEDIUM = BigDecimal.valueOf(34);
+	
 	private VideoTaskSession lastSession;
+
+	private List<VideoTaskSessionRow> backupRows;
 	
 	public VideoTaskAssessmentDetailsTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -52,6 +66,51 @@ implements FlexiTableCssDelegate  {
 		return lastSession;
 	}
 	
+	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		setObjects(backupRows);
+		
+		if (filters != null && !filters.isEmpty()) {
+			List<String> filterValues = null;
+			
+			FlexiTableFilter performanceFilter = FlexiTableFilter.getFilter(filters, FILTER_PERFORMANCE);
+			if (performanceFilter != null) {
+				filterValues = ((FlexiTableExtendedFilter)performanceFilter).getValues();
+			}
+			
+			if(filterValues != null && !filterValues.isEmpty()) {
+				List<VideoTaskSessionRow> filteredViews = new ArrayList<>();
+				int numOfRows = getRowCount();
+				for(int i=0; i<numOfRows; i++) {
+					VideoTaskSessionRow view = getObject(i);
+					if(acceptPerformance(view, filterValues)) {
+						filteredViews.add(view);
+					}
+				}
+				super.setObjects(filteredViews);
+			}
+		}
+	}
+	
+	private boolean acceptPerformance(VideoTaskSessionRow row, List<String> filterValues) {
+		for(String filterValue:filterValues) {
+			if((FILTER_PERFORMANCE_HIGH.equals(filterValue)
+					&& row.getScoreInPercent().compareTo(HIGH) >= 0)) {
+				return true;
+			}
+			if(FILTER_PERFORMANCE_MEDIUM.equals(filterValue)
+					&& row.getScoreInPercent().compareTo(MEDIUM) >= 0
+					&& row.getScoreInPercent().compareTo(HIGH) < 0) {
+				return true;
+			}
+			if(FILTER_PERFORMANCE_LOW.equals(filterValue)
+					&& row.getScoreInPercent().compareTo(MEDIUM) < 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public String getWrapperCssClass(FlexiTableRendererType type) {
 		return null;
@@ -78,10 +137,10 @@ implements FlexiTableCssDelegate  {
 			switch(COLS[col]) {
 				case id: return session.getTaskSessionKey();
 				case attempt: return Long.valueOf(session.getAttempt());
-				case duration: return session.getDuration();
-				case scorePercent: return session.getScoreInPercent();
-				case scorePoints: return session.getPoints();
-				case play: return Boolean.valueOf(session.getTaskSession().getFinishTime() != null);
+				case duration: return session.isFinished() ? Long.valueOf(session.getDuration()) : null;
+				case scorePercent: return session.isFinished() ? session.getScoreInPercent() : null;
+				case scorePoints: return session.isFinished() ? session.getPoints() : null;
+				case play: return Boolean.valueOf(session.isFinished());
 				case tools: return session.getToolsButton();
 				default: return "ERROR";
 			}
@@ -94,6 +153,7 @@ implements FlexiTableCssDelegate  {
 	
 	@Override
 	public void setObjects(List<VideoTaskSessionRow> objects) {
+		backupRows = new ArrayList<>(objects);
 		super.setObjects(objects);
 		
 		List<VideoTaskSessionRow> sessions = new ArrayList<>(objects);

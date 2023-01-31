@@ -31,21 +31,26 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableClassicRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -58,6 +63,7 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.VideoTaskAssessmentDetailsTableModel.DetailsCols;
 import org.olat.course.nodes.videotask.ui.VideoTaskSessionRow.CategoryColumn;
+import org.olat.course.nodes.videotask.ui.components.DurationFlexiCellRenderer;
 import org.olat.course.nodes.videotask.ui.components.PercentCellRenderer;
 import org.olat.course.nodes.videotask.ui.components.SelectionCellRenderer;
 import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionComparator;
@@ -144,10 +150,11 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.attempt));
 		
 		// Categories
-		int count = CATEGORY_PROPS_OFFSET;
+		int colCount = CATEGORY_PROPS_OFFSET;
+		List<String> legends = new ArrayList<>();
 		selectionCellRenderers = new ArrayList<>(categories.size());
 		for(VideoSegmentCategory category:categories) {
-			int colIndex = count++;
+			int colIndex = colCount++;
 			String header = category.getLabel();
 			int numOfSegments = 0;
 			for(VideoSegment segment:segments.getSegments()) {
@@ -162,9 +169,10 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 			selectionCellRenderers.add(renderer);
 			catColModel.setCellRenderer(renderer);
 			columnsModel.addFlexiColumnModel(catColModel);
+			legends.add(category.getLabelAndTitle());
 		}
 
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.duration, new TimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.duration, new DurationFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.scorePercent, new PercentCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DetailsCols.play.i18nHeaderKey(), DetailsCols.play.ordinal(), "play",
 				new BooleanCellRenderer(
@@ -183,6 +191,26 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		tableEl.setExternalRenderer(new FlexiTableClassicRenderer(), "o_icon_list_num");
 		tableEl.getClassicTypeButton().setIconLeftCSS("o_icon o_icon_media");
 		tableEl.setCssDelegate(tableModel);
+		
+		initFilters();
+		
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("legends", legends);
+		}
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+
+		SelectionValues performanceValues = new SelectionValues();
+		performanceValues.add(SelectionValues.entry(VideoTaskAssessmentDetailsTableModel.FILTER_PERFORMANCE_HIGH, translate("performance.high")));
+		performanceValues.add(SelectionValues.entry(VideoTaskAssessmentDetailsTableModel.FILTER_PERFORMANCE_MEDIUM, translate("performance.medium")));
+		performanceValues.add(SelectionValues.entry(VideoTaskAssessmentDetailsTableModel.FILTER_PERFORMANCE_LOW, translate("performance.low")));
+		FlexiTableMultiSelectionFilter performanceFilter = new FlexiTableMultiSelectionFilter(translate("filter.performance"),
+				VideoTaskAssessmentDetailsTableModel.FILTER_PERFORMANCE, performanceValues, true);
+		filters.add(performanceFilter);
+
+		tableEl.setFilters(true, filters, false, true);
 	}
 	
 	private void loadModel() {
@@ -225,6 +253,7 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		Collections.sort(rows, new VideoTaskSessionRowComparator());
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+		flc.contextPut("rowCount", Integer.toString(rows.size()));
 	}
 	
 	private VideoTaskSessionRow forgeRow(VideoTaskSession taskSession, List<String> selectedCategoriesIds,
@@ -315,6 +344,8 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		if(tableEl == source) {
 			if(event instanceof SelectionEvent se && "play".equals(se.getCommand())) {
 				doPlay(ureq, tableModel.getObject(se.getIndex()));
+			} else if(event instanceof FlexiTableSearchEvent) {
+				doSearch();
 			}
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd()) && link.getUserObject() instanceof VideoTaskSessionRow row) {
@@ -338,6 +369,12 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		listenTo(playCtrl);
 
 		stackPanel.pushController(translate("play"), playCtrl);
+	}
+	
+	private void doSearch() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		tableModel.filter(null, filters);
+		tableEl.reset(true, true, true);
 	}
 	
 	private void doTools(UserRequest ureq, FormLink link, VideoTaskSessionRow row) {
