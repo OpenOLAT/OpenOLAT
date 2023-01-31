@@ -47,6 +47,7 @@ public class VideoDisplayOptions {
 	private boolean clickToPlayPause;
 	private boolean authorMode;
 	private boolean forwardSeekingRestricted;
+	private boolean responseAtEnd;
 	
 	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean useContainerForCommentsAndRatings, boolean showTitle, boolean showDescription,
 			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
@@ -69,6 +70,7 @@ public class VideoDisplayOptions {
 		options.setSnapMarkerSizeToGrid(true);
 		options.setClickToPlayPause(true);
 		options.setAuthorMode(authorMode);
+		options.setResponseAtEnd(false);
 		return options;
 	}
 	
@@ -91,6 +93,7 @@ public class VideoDisplayOptions {
 		options.setSnapMarkerSizeToGrid(true);
 		options.setClickToPlayPause(true);
 		options.setAuthorMode(false);
+		options.setResponseAtEnd(false);
 		return options;
 	}
 	
@@ -256,5 +259,13 @@ public class VideoDisplayOptions {
 	 */
 	public void setUseContainerForCommentsAndRatings(boolean useContainerForCommentsAndRatings) {
 		this.useContainerForCommentsAndRatings = useContainerForCommentsAndRatings;
+	}
+
+	public boolean isResponseAtEnd() {
+		return responseAtEnd;
+	}
+
+	public void setResponseAtEnd(boolean responseAtEnd) {
+		this.responseAtEnd = responseAtEnd;
 	}
 }

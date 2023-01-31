@@ -1,0 +1,12 @@
+#if($r.isNotEmpty($msg))
+<div class="o_warning">$r.xssScan($msg)</div>
+#end
+<div class="o_button_group">
+	#if($r.available("revalidate.overwrite")) 
+		$r.render("revalidate.overwrite")
+	#end
+	#if($r.available("revalidate")) 
+		$r.render("revalidate")
+	#end
+	$r.render("cancel")
+</div>

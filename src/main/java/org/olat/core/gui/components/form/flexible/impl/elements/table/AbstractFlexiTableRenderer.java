@@ -381,7 +381,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		
 		// preferences columns
 		if(!empty && ftE.getCustomButton() != null && ftE.isCustomizeColumns()
-				&& (ftE.getRendererType() == null || ftE.getRendererType() == FlexiTableRendererType.classic)) {
+				&& (ftE.getRendererType() == null || ftE.getComponent().getHTMLRendererSingleton() instanceof FlexiTableClassicRenderer)) {
 			sb.append("<div class='btn-group'>");
 			renderFormItem(renderer, sb, ftE.getCustomButton(), ubu, translator, renderResult, null);
 			sb.append("</div> ");

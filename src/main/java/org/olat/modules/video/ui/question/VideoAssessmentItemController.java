@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.course.nodes.VideoCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.ims.qti21.AssessmentItemSession;
 import org.olat.ims.qti21.AssessmentSessionAuditLogger;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -74,7 +74,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	
 	private final RepositoryEntry entry;
 	private final RepositoryEntry videoEntry;
-	private final VideoCourseNode courseNode;
+	private final CourseNode courseNode;
 	private final boolean authorMode;
 	private VideoQuestion currentQuestion;
 	private List<VideoQuestion> allQuestions;
@@ -87,7 +87,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	private AssessmentService assessmentService;
 	
 	public VideoAssessmentItemController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry,
-			RepositoryEntry entry, VideoCourseNode courseNode, String videoElementId, boolean authorMode) {
+			RepositoryEntry entry, CourseNode courseNode, String videoElementId, boolean authorMode) {
 		super(ureq, wControl);
 		this.videoEntry = videoEntry;
 		this.courseNode = courseNode;

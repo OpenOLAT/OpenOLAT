@@ -318,14 +318,17 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 	}
 
+	@Override
 	public FormLink getClassicTypeButton() {
 		return classicTypeButton;
 	}
 
+	@Override
 	public FormLink getCustomTypeButton() {
 		return customTypeButton;
 	}
 
+	@Override
 	public FormLink getExternalTypeButton() {
 		return externalTypeButton;
 	}

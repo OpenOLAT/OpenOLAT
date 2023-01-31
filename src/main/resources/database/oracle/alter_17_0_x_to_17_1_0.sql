@@ -20,7 +20,7 @@ alter table o_bs_invitation add i_status varchar(32) default 'active';
 
 
 -- Business group
-alter table o_gp_business add column excludeautolifecycle number default 0 not null;
+alter table o_gp_business add excludeautolifecycle number default 0 not null;
 
 
 -- Task
@@ -30,5 +30,5 @@ alter table o_gta_task add g_collection_revisions_date date;
 alter table o_gta_task add g_collection_revisions_ndocs number(20);
 
 -- VFS metadata
-alter table o_vfs_metadata add column f_transcoding_status number(20);
+alter table o_vfs_metadata add f_transcoding_status number(20);
 create index idx_vfs_meta_transstat_idx on o_vfs_metadata(f_transcoding_status);

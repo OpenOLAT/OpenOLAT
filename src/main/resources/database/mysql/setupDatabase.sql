@@ -1785,6 +1785,40 @@ create table o_vid_metadata (
   primary key (id)
 );
 
+-- video task
+create table o_vid_task_session (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   v_author_mode bool default false,
+   v_finish_time datetime,
+   v_score float(65,30) default null,
+   v_max_score float(65,30) default null,
+   v_passed bool default null,
+   v_attempt bigint default 1 not null,
+   v_cancelled bool default false,
+   fk_reference_entry bigint not null,
+   fk_entry bigint,
+   v_subident varchar(255),
+   fk_identity bigint default null,
+   v_anon_identifier varchar(128) default null,
+   fk_assessment_entry bigint not null,
+   primary key (id)
+);
+
+create table o_vid_task_selection (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   v_segment_id varchar(64),
+   v_category_id varchar(64),
+   v_correct bool default false,
+   v_time bigint not null,
+   v_raw_time varchar(255),
+   fk_task_session bigint not null,
+   primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id bigint not null,
@@ -4016,6 +4050,8 @@ alter table o_goto_meeting ENGINE = InnoDB;
 alter table o_goto_registrant ENGINE = InnoDB;
 alter table o_vid_transcoding ENGINE = InnoDB;
 alter table o_vid_metadata ENGINE = InnoDB;
+alter table o_vid_task_session ENGINE = InnoDB;
+alter table o_vid_task_selection ENGINE = InnoDB;
 alter table o_pf_category_relation ENGINE = InnoDB;
 alter table o_pf_category ENGINE = InnoDB;
 alter table o_pf_media ENGINE = InnoDB;
@@ -4532,6 +4568,13 @@ create index vid_status_trans_idx on o_vid_transcoding(vid_status);
 create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
 
+-- video task
+alter table o_vid_task_session add constraint vid_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_vid_task_session add constraint vid_sess_to_vid_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_vid_task_session add constraint vid_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_vid_task_session add constraint vid_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
+
+alter table o_vid_task_selection add constraint vid_sel_to_session_idx foreign key (fk_task_session) references o_vid_task_session (id);
 
 -- calendar
 alter table o_cal_use_config add constraint cal_u_conf_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);

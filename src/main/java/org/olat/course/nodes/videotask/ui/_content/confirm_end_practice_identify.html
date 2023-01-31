@@ -1,0 +1,21 @@
+<div class="o_videotask_practice_end">
+	<div class="o_videotask_practice_result">
+		<i class="o_icon o_icon_trophy"> </i>
+		<span>$r.xssScan($resultMsg)</span>
+	</div>
+	<hr>
+	<div class="row o_block">
+		<div class="col-md-9"><i class="o_icon o_icon-fw o_icon_correct_answer"> </i> $r.translate("confirm.practice.identify.correct")</div>
+		<div class="col-md-3"><strong>$correct</strong></div>
+		<div class="col-md-9"><i class="o_icon o_icon-fw o_icon_not_correct"> </i> $r.translate("confirm.practice.identify.notcorrect")</div>
+		<div class="col-md-3"><strong>$notCorrect</strong></div>
+				<div class="col-md-9"><i class="o_icon o_icon-fw o_icon_not_identified"> </i> $r.translate("confirm.practice.identify.notidentified")</div>
+		<div class="col-md-3"><strong>$notIdentified</strong></div>
+	</div>
+	<div class="o_button_group">
+		#if($r.available("restart"))
+			$r.render("restart")
+		#end
+		$r.render("end.task")
+	</div>
+</div>

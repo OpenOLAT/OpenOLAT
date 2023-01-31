@@ -112,6 +112,21 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setDetailsRenderer(VelocityContainer rowRenderer, FlexiTableComponentDelegate componentDelegate);
 	
 	/**
+	 * @return The button to switch to the classic table renderer
+	 */
+	public FormLink getClassicTypeButton();
+	
+	/**
+	 * @return The button to switch to the custom table renderer
+	 */
+	public FormLink getCustomTypeButton();
+	
+	/**
+	 * @return The button to switch to the external table renderer
+	 */
+	public FormLink getExternalTypeButton();
+	
+	/**
 	 * @return Return true if the table has border on every cell.
 	 */
 	public boolean isBordered();

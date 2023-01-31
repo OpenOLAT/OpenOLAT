@@ -150,8 +150,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			if (nodeAccessCtrl != null) {
 				this.nodeAccessCtrl = nodeAccessCtrl;
 				listenTo(nodeAccessCtrl);
-				if (childTabsController instanceof ControllerEventListener) {
-					ControllerEventListener cel = (ControllerEventListener)childTabsController;
+				if (childTabsController instanceof ControllerEventListener cel) {
 					nodeAccessCtrl.addControllerListener(cel);
 				}
 			} else if (ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
@@ -245,8 +244,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	protected ActivateableTabbableDefaultController[] getChildren() {
-		if (childTabsCntrllr != null && childTabsCntrllr instanceof ActivateableTabbableDefaultController) {
-			return new ActivateableTabbableDefaultController[] { (ActivateableTabbableDefaultController) childTabsCntrllr };
+		if (childTabsCntrllr instanceof ActivateableTabbableDefaultController childCtrl) {
+			return new ActivateableTabbableDefaultController[] { childCtrl };
 		}
 		return new ActivateableTabbableDefaultController[] {};
 	}

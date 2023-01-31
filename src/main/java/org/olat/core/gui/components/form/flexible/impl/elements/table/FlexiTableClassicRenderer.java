@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
  * Render the table as a long HTML table
  * @author Christian Guretzki
  */
-class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
+public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	
 	@Override
 	protected void renderHeaders(StringOutput target, FlexiTableComponent ftC, Translator translator) {

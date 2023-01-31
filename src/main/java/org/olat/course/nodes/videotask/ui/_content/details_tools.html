@@ -1,0 +1,8 @@
+<ul class="o_dropdown list-unstyled">
+#if($r.available("invalidate.session"))
+	<li>$r.render("invalidate.session")</li>
+#end
+#if($r.available("revalidate.session"))
+	<li>$r.render("revalidate.session")</li>
+#end
+</ul>

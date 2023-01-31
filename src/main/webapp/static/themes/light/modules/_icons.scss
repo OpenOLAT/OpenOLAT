@@ -249,6 +249,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_under:before { content: $fa-var-mail-reply; }
 .o_icon_node_up_down:before { content: $fa-var-arrows-v; }
 .o_icon_notes:before { content: $fa-var-sticky-note-o; }
+.o_icon_not_correct:before { content: $fa-var-times; color: $brand-danger }
+.o_icon_not_identified:before { content: $fa-var-minus; }
 .o_icon_notice_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
 .o_icon_notice_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_notification:before { content: $fa-var-rss;}
@@ -409,6 +411,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_top:before { content: $fa-var-chevron-up; }
 .o_icon_translation_item:before { content: $fa-var-file-code-o; }
 .o_icon_translation_package:before { content: $fa-var-folder-open-o; }
+.o_icon_trophy:before { content: $fa-var-trophy; color: gold; }
 .o_icon_unlocked:before { content: $fa-var-unlock;}
 .o_icon_unselected:before { content: $fa-var-question; }
 .o_icon_undo:before { content: $fa-var-undo; }
@@ -423,6 +426,11 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_video_record:before { content: $fa-var-video-camera; }
 .o_icon_video_replay:before { content: $fa-var-repeat;}
 .o_icon_video_resume:before { content: $fa-var-play;}
+.o_icon_videotask {
+	position: relative; /* special case: combined icon */ 
+	&:before { content: $fa-var-circle }
+	&:after { content: $fa-var-video-camera; position: absolute; top: 28%; left: 50%; margin-left: -0.5em; font-size: 45%; color: white }
+}
 .o_icon_visitingcard.o_icon_waiting:before { content: $fa-var-clock-o; }
 .o_icon_warn:before { content: $fa-var-exclamation-triangle; color: $brand-warning;}
 .o_icon_warning:before { content: $fa-var-exclamation-triangle; }

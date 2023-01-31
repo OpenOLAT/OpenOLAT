@@ -1,0 +1,48 @@
+$r.render("backLink")
+
+<h3><i class="o_icon o_icon_user"> </i> $userFullname</h3>
+<div id="o_video_editor" class="o_video_editor">
+	<fieldset>
+		<legend>$r.translate("video.task.title")</legend>
+		<div id="o_video_editor_video">$r.render("video")</div>
+	</fieldset>
+	<div id="o_video_editor_master">$r.render("timeline")</div>
+</div>
+
+
+<script>
+	var globalVideoEditor = jQuery('#o_video_editor');
+
+	function resize() {
+		#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
+		var videoWidth = $videoWidth;
+		var videoHeight = $videoHeight;
+		var aspectRatio = videoWidth / videoHeight;
+		#else
+		var aspectRatio = 1.778;
+		#end
+
+		var videoEditor = jQuery('#o_video_editor');
+		var toolbar = jQuery('#o_main_toolbar');
+		var footer = jQuery('#o_footer_wrapper');
+		var video = jQuery('#o_video_editor_video');
+		var master = jQuery('#o_video_editor_master');
+
+		if (!(videoEditor && toolbar && footer && video && master)) {
+			return;
+		}
+
+		var availableWidth = videoEditor.width() + parseInt(videoEditor.css('margin-left'), 10)	+ parseInt(videoEditor.css('margin-right'), 10);
+		var videoViewWidth = Math.floor(availableWidth);
+		var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
+		video.width(videoViewWidth);
+		video.height(videoViewHeight);
+		window.dispatchEvent(new Event('resize'));
+
+		console.log('Send resize', videoEditor.width(), availableWidth, videoViewWidth, videoViewHeight);
+		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error', 'availableWidth', availableWidth);
+	}
+
+	resize();
+	new ResizeObserver(resize).observe(globalVideoEditor[0]);
+</script>

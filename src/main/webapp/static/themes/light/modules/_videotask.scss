@@ -1,0 +1,59 @@
+.o_videotask_box {
+	padding: 1em 2em;
+	border: 1px solid $o-video-startbox-main-border-color;
+	border-radius: $o-video-startbox-border-radius;
+	background-color: $o-video-startbox-main-bg-color;
+	
+	.o_videotask_marker {
+		position: relative;
+		display: inline-block;
+		
+		&.o_video_marker_gray { 
+			background-color: $gray-dark;
+			color: white;
+		}
+		&.o_video_marker_blue { 
+			background-color: $state-info-border;
+		}
+		&.o_video_marker_green { 
+			background-color: $brand-success;
+		}
+		&.o_video_marker_yellow { 
+			background-color: $brand-warning;
+		}
+		&.o_video_marker_red {
+			background-color: $brand-danger;
+		}
+		&.o_video_marker_purple {
+			background-color: $o-cn-style-cat-purple-color;
+		}
+	}
+}
+
+.o_videotask_correct_segments {
+	color: $o-video-correct-segments-color;
+}
+
+.o_videotask_notcorrect_segments {
+	color: $o-video-notcorrect-segments-color;
+}
+
+.o_videotask_practice_end {
+	padding: 0 3em;
+}
+
+.o_videotask_practice_result {
+	display: flex;
+	align-items: center;
+	min-height: 3em;
+	
+	.o_icon_trophy {
+		font-size: 300%;
+	}
+	
+	>span {
+		display: block;
+		padding-left: 1em;
+		font-size: 120%;
+	}
+}

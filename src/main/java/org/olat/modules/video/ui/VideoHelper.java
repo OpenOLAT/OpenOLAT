@@ -54,7 +54,10 @@ public class VideoHelper {
 				duration = metadata.getLength();
 			}
 		}
-		
+		return durationInSeconds(duration);
+	}
+	
+	public static long durationInSeconds(String duration) {
 		long durationInSeconds = -1l;
 		if(StringHelper.containsNonWhitespace(duration)) {
 			try {

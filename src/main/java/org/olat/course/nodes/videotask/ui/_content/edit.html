@@ -1,0 +1,13 @@
+<fieldset class="o_form form-horizontal o_video_configuration">
+	<legend>
+	#if ($r.isNotNull($helpUrl))
+		$r.contextHelpWithWrapper($helpUrl)
+	#end
+	$r.translate("choosenfile.video")</legend>
+
+	$r.render("reference")
+	#if($r.available("configform"))
+		$r.render("configform")
+	#end
+</fieldset>
+

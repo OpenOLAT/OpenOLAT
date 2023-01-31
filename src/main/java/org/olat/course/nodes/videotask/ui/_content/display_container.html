@@ -1,0 +1,11 @@
+#if($r.available("close.video"))
+<div class="o_button_group o_button_group_right">
+	$r.render("close.video")
+</div>
+#end
+$r.render("video")
+<div class="o_button_group">
+#foreach($category in $categories)
+	$r.render($category)
+#end
+</div>

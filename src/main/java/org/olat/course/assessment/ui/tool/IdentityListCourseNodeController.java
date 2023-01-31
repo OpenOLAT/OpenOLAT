@@ -991,8 +991,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(state instanceof AssessedIdentityListState) {
-			AssessedIdentityListState listState = (AssessedIdentityListState)state;
+		if(state instanceof AssessedIdentityListState listState) {
 			FlexiFiltersTab tab = tableEl.getFilterTabById(listState.getTabId());
 			if(tab != null) {
 				tableEl.setSelectedFilterTab(ureq, tab);
@@ -1019,9 +1018,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 					AssessedIdentityElementRow row = usersTableModel.getObject(i);
 					if(row.getIdentityKey().equals(identityKey)) {
 						Controller ctrl = doSelect(ureq, row);
-						if(ctrl instanceof Activateable2) {
+						if(ctrl instanceof Activateable2 activateableCtrl) {
 							List<ContextEntry> subEntries = entries.subList(1, entries.size());
-							((Activateable2)ctrl).activate(ureq, subEntries, entry.getTransientState());
+							activateableCtrl.activate(ureq, subEntries, entry.getTransientState());
 						}
 					}
 				}
@@ -1257,7 +1256,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	private Controller doSelect(UserRequest ureq, AssessedIdentityElementRow row) {
-		removeAsListenerAndDispose(currentIdentityCtrl);
+		if(currentIdentityCtrl != null) {
+			stackPanel.popController(currentIdentityCtrl);
+			removeAsListenerAndDispose(currentIdentityCtrl);
+		}
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		String fullName = userManager.getUserDisplayName(assessedIdentity);

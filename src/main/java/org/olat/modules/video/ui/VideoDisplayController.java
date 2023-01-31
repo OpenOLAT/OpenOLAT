@@ -68,7 +68,7 @@ import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.course.nodes.VideoCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.modules.video.VideoFormat;
@@ -150,7 +150,7 @@ public class VideoDisplayController extends BasicController {
 	 * @param displayOptions A list of options
 	 */
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry, RepositoryEntry entry,
-			VideoCourseNode courseNode, VideoDisplayOptions displayOptions) {
+			CourseNode courseNode, VideoDisplayOptions displayOptions) {
 		super(ureq, wControl);
 		this.videoEntry = videoEntry;
 		this.displayOptions = displayOptions;
@@ -451,6 +451,7 @@ public class VideoDisplayController extends BasicController {
 		mainVC.contextPut("authors", (StringHelper.containsNonWhitespace(authors) ? authors : null));
 		
 		mainVC.contextPut("clickToPlayPause", Boolean.valueOf(displayOptions.isClickToPlayPause()));
+		mainVC.contextPut("responseAtEnd", Boolean.valueOf(displayOptions.isResponseAtEnd()));
 		
 		// Check for null-value posters
 		if(displayOptions.isShowPoster()) {

@@ -1,0 +1,55 @@
+$r.render("assessment")
+
+#set($noMoreAttempts = $r.isTrue($attemptsConfig) && $maxAttempts > 0 && $numOfAttempts >= $maxAttempts)
+<div class="o_videotask_box">
+	<h2>$r.translate("instructions.title")</h2>
+	#if($r.isNotEmpty($instructions))
+		$r.xssScan($instructions)
+	#end
+	
+	<h3>$modeTitle</h3>
+	<p>$modeMsg</p>
+	<div class="clearfix">
+	#foreach($category in $segmentCategories)
+		<div class="btn btn-default o_videotask_marker ${category.color}">${category.title}</div>
+	#end
+	</div>
+	
+	<h4>$r.translate("informations.title")</h4>
+	<ul class="list-unstyled">
+		#if($r.isNotEmpty($videoLength))
+		<li><i class="o_icon o_icon-fw o_icon_expenditure"> </i> $videoLength</li>
+		#end
+		#if($r.isNotEmpty($elements))
+		<li><i class="o_icon o_icon-fw o_icon_passed"> </i> $elements</li>
+		#end
+		#if($r.isNotEmpty($attempts))
+		<li><i class="o_icon o_icon-fw o_icon_reload"> </i> $attempts</li>
+		#end
+		#if($r.isTrue($assessmentType))
+		<li><i class="o_icon o_icon-fw o_infomsg_icon"> </i> $r.translate("test.informations")</li>
+		#else
+		<li><i class="o_icon o_icon-fw o_infomsg_icon"> </i> $r.translate("practice.informations")</li>
+		#end
+	</ul>
+
+	#if($r.isFalse($noMoreAttempts))
+	<div class="o_button_group">
+		$r.render("start.video")
+	</div>
+	#end
+</div>
+
+#if($noMoreAttempts)
+	<div class="o_note">$r.translate("attempts.nomoreattempts")</div>		
+#end
+
+#if ($changelogconfig)
+	#if($r.isNotEmpty($log))
+	<div class="o_box">
+	    #o_togglebox_start("o_course_run_log" $r.translate("log.title"))
+	    <pre class="small">$log</pre>
+	    #o_togglebox_end()
+	</div>
+	#end
+#end

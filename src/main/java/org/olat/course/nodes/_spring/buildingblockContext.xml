@@ -93,6 +93,11 @@
 		<property name="order" value="220" />
 	</bean>
 	
+	<bean id="videotask" class="org.olat.course.nodes.videotask.VideoTaskCourseNodeConfiguration" scope="prototype">
+		<property name="enabled" value="${course.node.videotask.enabled}" />
+		<property name="order" value="166" />
+	</bean>
+	
 	<bean id="livestream" class="org.olat.course.nodes.livestream.LiveStreamCourseNodeConfiguration" scope="prototype">
 		<property name="order" value="222" />
 	</bean>

@@ -778,6 +778,14 @@ $o-video-marker-bg-color							: #efefef;
 $o-video-time-marker-default-bg-color				: $brand-info;
 $o-video-gray-color									: #dbdbdb;
 
+$o-video-startbox-main-border-color					: $brand-primary;
+$o-video-startbox-main-bg-color						: rgba($brand-primary,0.1);
+$o-video-startbox-border-radius						: $border-radius-base !default;
+$o-video-startbox-bg-color							: #fcfcfc;
+
+$o-video-correct-segments-color						: $brand-success;
+$o-video-notcorrect-segments-color					: $brand-danger;
+
 /* Lecture module */
 $o-lm-current-bg									: $o-toolbar-bg-color !default;
 $o-lm-current-border-color							: transparent !default; 

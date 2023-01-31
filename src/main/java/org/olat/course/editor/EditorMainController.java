@@ -599,7 +599,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			moveNodeLink.setVisible(!rootNode);
 			duplicateNodeLink.setVisible(!rootNode);
 
-			initNodeEditor(ureq, cetn.getCourseNode());
+			initNodeEditor(ureq, cetn.getCourseNode(), 0);
 			main.setPage(VELOCITY_ROOT + "/index.html");					
 		}
 	}
@@ -612,7 +612,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param chosenNode
 	 * @param groupMgr
 	 */
-	private void initNodeEditor(UserRequest ureq, CourseNode chosenNode) {
+	private void initNodeEditor(UserRequest ureq, CourseNode chosenNode, int selectedTab) {
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		tabbedNodeConfig.removeAll();
 		// dispose old one, if there was one
@@ -625,6 +625,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);
+			
+			if(selectedTab > 0 && nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
+				activateableNodeEditCntrllr.getTabbedPane().setSelectedPane(ureq, selectedTab);
+			}
 		}
 		boolean disabled = !cnConfig.isEnabled();
 		boolean deprecated = cnConfig.isDeprecated();
@@ -666,11 +670,11 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param groupMgr
 	 */
 	private void jumpToNodeEditor(String activatorIdent, UserRequest ureq, CourseNode chosenNode) {
-		initNodeEditor(ureq, chosenNode);
-		if (nodeEditCntrllr instanceof ActivateableTabbableDefaultController) {
+		initNodeEditor(ureq, chosenNode, 0);
+		if (nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
 			OLATResourceable activeOres = OresHelper.createOLATResourceableInstanceWithoutCheck(activatorIdent, 0l);
 			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(activeOres);
-			((ActivateableTabbableDefaultController) nodeEditCntrllr).activate(ureq, entries, null);
+			activateableNodeEditCntrllr.activate(ureq, entries, null);
 		}
 	}
 
@@ -692,13 +696,16 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 				updateCourseStatusMessages(ureq.getLocale(), courseStatus);
 				TreeNode node = menuTree.getSelectedNode();
-				if(node instanceof CourseEditorTreeNode) {
-					CourseEditorTreeNode cet = (CourseEditorTreeNode)node;
+				if(node instanceof CourseEditorTreeNode cet) {
 					main.contextPut("courseNode", cet.getCourseNode());					
 					doShowNodeStatus(ureq, cet.getCourseNode());
 				}
 				if (event == NodeEditController.NODECONFIG_CHANGED_REFRESH_EVENT) {
-					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"));
+					int selectedTab = 0;
+					if(nodeEditCntrllr instanceof ActivateableTabbableDefaultController activateableNodeEditCntrllr) {
+						selectedTab = activateableNodeEditCntrllr.getTabbedPane().getSelectedPane();
+					}
+					initNodeEditor(ureq, (CourseNode)main.contextGet("courseNode"), selectedTab);
 				}
 			}
 		} else if (source == statusCtr) {
@@ -789,7 +796,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 					menuTree.setSelectedNodeId(nodeId);
 					updateViewForSelectedNodeId(ureq, nodeId);
 					CourseNode copyNode = cetm.getCourseNode(nodeId);
-					initNodeEditor(ureq, copyNode);
+					initNodeEditor(ureq, copyNode, 0);
 				}
 				dirtyTreeAndValidation(ureq);
 			} else if (event == Event.FAILED_EVENT) {				
@@ -1016,7 +1023,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		cetm.markUnDeleted(activeNode);
 		menuTree.setDirty(true);
 		// show edit panels again
-		initNodeEditor(ureq, activeNode.getCourseNode());
+		initNodeEditor(ureq, activeNode.getCourseNode(), 0);
 		tabbedNodeConfig.setVisible(true);
 		deleteNodeLink.setVisible(true);
 		cmdsDropDown.setVisible(true);
@@ -1059,7 +1066,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		euce.getCourseEditorEnv().validateCourse();
 		StatusDescription[] courseStatus = euce.getCourseEditorEnv().getCourseStatus();
 		updateCourseStatusMessages(getLocale(), courseStatus);					
-		initNodeEditor(ureq, newNode);
+		initNodeEditor(ureq, newNode, 0);
 		// do logging
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_CREATED, getClass(),
 				LoggingResourceable.wrap(newNode));

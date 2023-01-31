@@ -1805,6 +1805,40 @@ create table o_vid_metadata (
   primary key (id)
 );
 
+-- video task
+create table o_vid_task_session (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   v_author_mode bool default false,
+   v_finish_time timestamp,
+   v_score decimal default null,
+   v_max_score decimal default null,
+   v_passed bool default null,
+   v_attempt int8 default 1 not null,
+   v_cancelled bool default false,
+   fk_reference_entry int8 not null,
+   fk_entry int8,
+   v_subident varchar(255),
+   fk_identity int8 default null,
+   v_anon_identifier varchar(128) default null,
+   fk_assessment_entry int8 not null,
+   primary key (id)
+);
+
+create table o_vid_task_selection (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   v_segment_id varchar(64),
+   v_category_id varchar(64),
+   v_correct bool default false,
+   v_time int8 not null,
+   v_raw_time varchar(255),
+   fk_task_session int8 not null,
+   primary key (id)
+);
+
 -- calendar
 create table o_cal_use_config (
    id int8 not null,
@@ -4476,6 +4510,19 @@ create index vid_status_trans_idx on o_vid_transcoding(vid_status);
 create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_vid_meta_rsrc_idx on o_vid_metadata(fk_resource_id);
+
+-- video taks
+alter table o_vid_task_session add constraint vid_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_vid_sess_to_repo_entry_idx on o_vid_task_session (fk_entry);
+alter table o_vid_task_session add constraint vid_sess_to_vid_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_vid_sess_to_vid_entry_idx on o_vid_task_session (fk_reference_entry);
+alter table o_vid_task_session add constraint vid_sess_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_vid_sess_to_identity_idx on o_vid_task_session (fk_identity);
+alter table o_vid_task_session add constraint vid_sess_to_as_entry_idx foreign key (fk_assessment_entry) references o_as_entry (id);
+create index idx_vid_sess_to_as_entry_idx on o_vid_task_session (fk_assessment_entry);
+
+alter table o_vid_task_selection add constraint vid_sel_to_session_idx foreign key (fk_task_session) references o_vid_task_session (id);
+create index idx_vid_sel_to_session_idx on o_vid_task_selection (fk_task_session);
 
 -- mapper
 create index o_mapper_uuid_idx on o_mapper (mapper_uuid);
