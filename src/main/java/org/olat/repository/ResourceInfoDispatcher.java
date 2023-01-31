@@ -59,7 +59,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(ResourceInfoDispatcher.class);
 
-	private static final String RESOURCEINFO_PATH = "resourceinfo";
+	public static final String RESOURCEINFO_PATH = "resourceinfo";
 
 	@Autowired
 	private OAIPmhModule oaiPmhModule;

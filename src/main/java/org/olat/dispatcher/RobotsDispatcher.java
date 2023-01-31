@@ -22,13 +22,17 @@ package org.olat.dispatcher;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.dispatcher.Dispatcher;
+import org.olat.core.helpers.Settings;
+import org.olat.core.logging.Tracing;
+import org.olat.modules.oaipmh.OAIPmhModule;
+import org.olat.repository.ResourceInfoDispatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.logging.log4j.Logger;
-import org.olat.core.dispatcher.Dispatcher;
-import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -40,6 +44,9 @@ public class RobotsDispatcher implements Dispatcher {
 	
 	private static final Logger log = Tracing.createLoggerFor(RobotsDispatcher.class);
 
+	@Autowired
+	private OAIPmhModule oaiModule;
+	
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
@@ -52,6 +59,10 @@ public class RobotsDispatcher implements Dispatcher {
 		try(PrintWriter writer = response.getWriter()) {
 			writer.write("User-agent: *\n");
 			writer.write("Disallow: /");
+			if (oaiModule.isEnabled() && oaiModule.isSearchEngineEnabled()) {
+				writer.write("\nAllow: " + Settings.getServerContextPath() + "/" + ResourceInfoDispatcher.RESOURCEINFO_PATH);	
+				writer.write("\n\nSitemap: " + ResourceInfoDispatcher.getUrl("sitemap.xml"));
+			}
 		} catch(IOException e) {
 			log.error("", e);
 		}
