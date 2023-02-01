@@ -42,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRenderEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
@@ -121,6 +122,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		flc.contextPut("currentTimeInSeconds", "0.0");
 		this.movieSize = new Size(90, 50, false);
 		initForm(ureq);
+		updateVisibility();
 		initFilters(ureq);
 		addTools();
 	}
@@ -174,7 +176,6 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineTableEl.setRendererType(FlexiTableRendererType.external);
 		timelineTableEl.setExternalRenderer(new TimelineRenderer(), "o_icon_fa6_timeline");
 		timelineTableEl.setCustomizeColumns(false);
-		flc.contextPut("showPlayHead", true);
 
 		zoomMinusButton = uifactory.addFormLink("zoomMinusButton", "", null, formLayout,
 				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
@@ -283,16 +284,18 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				}
 			} else if (event instanceof FlexiTableRenderEvent renderEvent) {
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
-					flc.contextPut("showPlayHead", renderEvent.getRendererType() == FlexiTableRendererType.external);
 					if (renderEvent.getRendererType() == FlexiTableRendererType.external) {
 						flc.contextPut("currentTimeInSeconds", StringHelper.containsNonWhitespace(currentTimeCode) ? currentTimeCode : "0.0");
 					}
+					updateVisibility();
 				}
 			} else if (event instanceof SelectionEvent selectionEvent) {
 				if (SELECT_ACTION.equals(selectionEvent.getCommand())) {
 					TimelineRow timelineRow = timelineModel.getObject(selectionEvent.getIndex());
 					doSelect(ureq, timelineRow);
 				}
+			} else if (event instanceof FlexiTableSearchEvent) {
+				updateVisibility();
 			}
 		} else if (source instanceof FormLink formLink &&
 				CMD_TOOLS.equals(formLink.getCmd()) && formLink.getUserObject() instanceof TimelineRow timelineRow) {
@@ -300,6 +303,14 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		} else if (zoomSlider == source) {
 			doZoom();
 		}
+	}
+
+	private void updateVisibility() {
+		boolean playHeadVisible = timelineTableEl.getRendererType() == FlexiTableRendererType.external && timelineModel.getRowCount() > 0;
+		flc.contextPut("showPlayHead", playHeadVisible);
+		zoomSlider.setVisible(playHeadVisible);
+		zoomMinusButton.setVisible(playHeadVisible);
+		zoomPlusButton.setVisible(playHeadVisible);
 	}
 
 	private void doSelect(UserRequest ureq, TimelineRow timelineRow) {
@@ -374,6 +385,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineDataSource.loadRows();
 		timelineTableEl.reloadData();
 		addTools();
+		updateVisibility();
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
