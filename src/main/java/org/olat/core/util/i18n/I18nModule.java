@@ -769,6 +769,11 @@ public class I18nModule extends AbstractSpringModule {
 	}
 	
 	public GenderStrategy getGenderStrategy(Locale locale) {
+		// remove overlay
+		String langKey = getLocaleKey(locale);
+		langKey = langKey.split("__")[0]; 
+		locale = createLocale(langKey);
+		// load from module config or use default
 		GenderStrategy strategy = genderStrategies.get(locale);
 		if (strategy == null) {
 			strategy = GenderStrategy.star; // default;
@@ -777,11 +782,13 @@ public class I18nModule extends AbstractSpringModule {
 	}
 	
 	public void setGenderStrategy(Locale locale, GenderStrategy genderStrategy) {
-		genderStrategies.put(locale, genderStrategy);
-		// persist in module config
+		// remove overlay
 		String langKey = getLocaleKey(locale);
-		langKey = langKey.split("__")[0]; // remove overlay
+		langKey = langKey.split("__")[0];
+		locale = createLocale(langKey);
+		// persist in module config
 		setStringProperty("genderStrategy." + langKey, genderStrategy.name(), true);
+		genderStrategies.put(locale, genderStrategy);
 		reInitializeAndFlushCache();
 	}
 	
