@@ -46,7 +46,6 @@ public class ChapterEditController extends FormBasicController {
 	private String time;
 	private String chapter;
 	private long durationInSeconds;
-	private boolean chapterExists;
 	private VideoChapterTableRow videoChapterTableRow;
 	private SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	
@@ -56,7 +55,7 @@ public class ChapterEditController extends FormBasicController {
 	private List<VideoChapterTableRow> chapters;
 	
 	public ChapterEditController(UserRequest ureq, WindowControl wControl, VideoChapterTableRow videoChapterTableRow,
-			boolean chapterExists, List<VideoChapterTableRow> chapters, long durationInSeconds) {
+			List<VideoChapterTableRow> chapters, long durationInSeconds) {
 		super(ureq, wControl);
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		try {
@@ -71,8 +70,7 @@ public class ChapterEditController extends FormBasicController {
 		this.chapters = chapters;
 		this.durationInSeconds = durationInSeconds;
 		this.chapter = videoChapterTableRow.getChapterName();
-		this.chapterExists = chapterExists;
-		
+
 		initForm(ureq);
 	}
 	
@@ -100,8 +98,8 @@ public class ChapterEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonGroupLayout);
+		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("submit", "video.chapter." + (chapterExists ? "edit" : "add"), buttonGroupLayout);
 	}
 	
 	@Override

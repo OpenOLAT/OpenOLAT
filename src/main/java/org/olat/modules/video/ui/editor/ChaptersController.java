@@ -256,7 +256,7 @@ public class ChaptersController extends FormBasicController {
 
 		List<VideoChapterTableRow> videoChapterTableRows = tableModel.getObjects().stream()
 				.map(ChapterTableRow::getVideoChapterTableRow).toList();
-		chapterEditController = new ChapterEditController(ureq, getWindowControl(),	videoChapterTableRow, chapterExists,
+		chapterEditController = new ChapterEditController(ureq, getWindowControl(),	videoChapterTableRow,
 				videoChapterTableRows, durationInSeconds);
 		listenTo(chapterEditController);
 

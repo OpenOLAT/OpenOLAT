@@ -266,7 +266,7 @@ public class VideoChapterEditController extends BasicController {
 			if(guardModalController(chapterEditCtr)) return;
 
 			chapterEditCtr = new ChapterEditController(ureq, getWindowControl(), videoChapterTableRow, 
-					chapterExists, tableModel.getObjects(), durationInSeconds); 
+					tableModel.getObjects(), durationInSeconds);
 			listenTo(chapterEditCtr);
 	
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), chapterEditCtr.getInitialComponent(), 
