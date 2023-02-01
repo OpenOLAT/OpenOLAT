@@ -254,4 +254,18 @@ public class VideoTaskSessionDAO {
 		}
 		return query.executeUpdate();
 	}
+	
+	public int deleteTaskSessions(List<VideoTaskSession> taskSessions) {	
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete from videotasksession session")
+		  .where().append(" session.key in (:taskSessionsKeys)");
+
+		List<Long> taskSessionsKeys = taskSessions.stream()
+				.map(VideoTaskSession::getKey)
+				.toList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("taskSessionsKeys", taskSessionsKeys)
+				.executeUpdate();
+	}
 }

@@ -72,5 +72,7 @@ public interface VideoAssessmentService {
 			List<VideoTaskSegmentSelection> selection);
 	
 	public long deleteTaskSessions(RepositoryEntry entry, String subIdent);
+	
+	public long deleteTaskSessions(List<Identity> identities, RepositoryEntry courseEntry, String subIdent);
 
 }

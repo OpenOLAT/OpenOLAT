@@ -20,6 +20,7 @@
 package org.olat.modules.video.manager;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegments;
@@ -51,6 +53,8 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 	private DB dbInstance;
 	@Autowired
 	private VideoTaskSessionDAO taskSessionDao;
+	@Autowired
+	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private VideoTaskSegmentSelectionDAO taskSegmentSelectionDao;
 	
@@ -89,6 +93,25 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		return taskSessionDao.countTaskSessions(entry, subIdent);
 	}
 	
+	@Override
+	public long deleteTaskSessions(List<Identity> identities, RepositoryEntry courseEntry, String subIdent) {
+		long rows = 0;
+		List<AssessmentEntry> entries = new ArrayList<>(identities.size());
+		for(Identity identity:identities) {
+			List<VideoTaskSession> taskSessions = taskSessionDao.getTaskSessions(courseEntry, subIdent, identity, null);
+			if(!taskSessions.isEmpty()) {
+				entries.add(taskSessions.get(0).getAssessmentEntry());
+				rows += taskSegmentSelectionDao.deleteSegementSelections(taskSessions);
+				rows += taskSessionDao.deleteTaskSessions(taskSessions);
+			}
+		}
+		
+		for(AssessmentEntry assessmentEntry:entries) {
+			assessmentEntryDao.resetAssessmentEntry(assessmentEntry);
+		}
+		return rows;
+	}
+
 	@Override
 	public long deleteTaskSessions(RepositoryEntry entry, String subIdent) {
 		long count = taskSegmentSelectionDao.deleteSegementSelections(entry, subIdent);

@@ -98,5 +98,20 @@ public class VideoTaskSegmentSelectionDAO {
 		}
 		return query.executeUpdate();
 	}
-
+	
+	public int deleteSegementSelections(List<VideoTaskSession> taskSessions) {
+		if(taskSessions == null || taskSessions.isEmpty()) return 0;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete from videotasksegmentselection as selection")
+		  .append(" where selection.taskSession.key in (:taskSessionsKeys)");
+		
+		List<Long> taskSessionsKeys = taskSessions.stream()
+				.map(VideoTaskSession::getKey)
+				.toList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("taskSessionsKeys", taskSessionsKeys)
+				.executeUpdate();
+	}
 }

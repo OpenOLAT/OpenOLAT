@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.manager;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
@@ -92,8 +94,27 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		Assert.assertNotNull(taskSession);
 		dbInstance.commitAndCloseSession();
 		
-		long deletedRows = videoAssessmentService.deleteTaskSessions(videoEntry, subIdent);;
+		long deletedRows = videoAssessmentService.deleteTaskSessions(videoEntry, subIdent);
 		Assert.assertEquals(4l, deletedRows);
+	}
+	
+	@Test
+	public void deleteTaskSessionByIdentity() {
+		// prepare a test and a user
+		RepositoryEntry videoEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("vsession-3");
+		AssessmentEntry assessmentEntry = assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, videoEntry, "-", null, videoEntry);
+		dbInstance.commit();
+		
+		String subIdent = "sub-ident-" + assessedIdentity.getKey();
+		VideoTaskSession taskSession = videoAssessmentService.createTaskSession(assessedIdentity, null, assessmentEntry, videoEntry, subIdent, videoEntry, true);
+		videoAssessmentService.createTaskSegmentSelection(taskSession, "seg-1", "cat-1", Boolean.TRUE, 10000, "00:00:10");
+		videoAssessmentService.createTaskSegmentSelection(taskSession, "seg-2", "cat-1", Boolean.TRUE, 10000, "00:00:10");
+		Assert.assertNotNull(taskSession);
+		dbInstance.commitAndCloseSession();
+		
+		long deletedRows = videoAssessmentService.deleteTaskSessions(List.of(assessedIdentity), videoEntry, subIdent);
+		Assert.assertEquals(3l, deletedRows);
 	}
 
 }

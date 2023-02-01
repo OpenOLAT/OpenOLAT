@@ -5,5 +5,8 @@
 	#if($r.available("tool.grade.scale"))
 		$r.render("tool.grade.scale")
 	#end
+	#if($r.available("tool.delete.data"))
+		$r.render("tool.delete.data")
+	#end
 </div>
 $r.render("table")
