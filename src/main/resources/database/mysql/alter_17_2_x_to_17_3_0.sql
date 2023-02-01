@@ -33,6 +33,7 @@ create table o_proj_artefact (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   p_type varchar(32),
    p_content_modified_date datetime not null,
    fk_content_modified_by bigint not null,
    p_status varchar(32),

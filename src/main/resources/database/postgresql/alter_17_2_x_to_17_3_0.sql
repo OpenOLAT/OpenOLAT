@@ -33,6 +33,7 @@ create table o_proj_artefact (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   p_type varchar(32),
    p_content_modified_date timestamp not null,
    fk_content_modified_by int8 not null,
    p_status varchar(32),

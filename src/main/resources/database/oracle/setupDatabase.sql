@@ -3875,6 +3875,7 @@ create table o_proj_artefact (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
+   p_type varchar(32),
    p_content_modified_date timestamp not null,
    fk_content_modified_by number(20) not null,
    p_status varchar(32),
