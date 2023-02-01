@@ -5206,7 +5206,7 @@ create index idx_projata_artefact1_idx on o_proj_artefact_to_artefact (fk_artefa
 alter table o_proj_artefact_to_artefact add constraint projata_artefact2_idx foreign key (fk_artefact2) references o_proj_artefact(id);
 create index idx_projata_artefact2_idx on o_proj_artefact_to_artefact (fk_artefact2);
 alter table o_proj_artefact_to_artefact add constraint projata_project_idx foreign key (fk_project) references o_proj_project(id);
-create index idx_projata_project_idx on o_proj_reference (fk_project);
+create index idx_projata_project_idx on o_proj_artefact_to_artefact (fk_project);
 alter table o_proj_artefact_to_artefact add constraint projata_creator_idx foreign key (fk_creator) references o_bs_identity(id);
 create index idx_projata_creator_idx on o_proj_artefact_to_artefact (fk_creator);
 
