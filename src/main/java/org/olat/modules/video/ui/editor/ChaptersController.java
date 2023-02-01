@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -36,10 +36,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
@@ -60,6 +65,7 @@ public class ChaptersController extends FormBasicController {
 	public static final Event RELOAD_CHAPTERS_EVENT = new Event("video.edit.reload.chapters");
 	private static final String EDIT_ACTION = "edit";
 	private static final String SELECT_ACTION = "select";
+	private static final String TOOLS_COMMAND = "tools";
 
 	private FormLink addChapterButton;
 	private FlexiTableElement chapterTable;
@@ -74,7 +80,8 @@ public class ChaptersController extends FormBasicController {
 	private final long durationInSeconds;
 	private String currentTimeCode;
 	private final Translator videoTranslator;
-
+	private CloseableCalloutWindowController ccwc;
+	private ToolsController toolsController;
 
 	public ChaptersController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							  long durationInSeconds) {
@@ -88,15 +95,40 @@ public class ChaptersController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(chapterEditController);
+		removeAsListenerAndDispose(toolsController);
 		cmc = null;
+		ccwc = null;
 		chapterEditController = null;
+		toolsController = null;
 	}
 
 	private void loadTableModel() {
-		List<VideoChapterTableRow> chapters = videoManager.loadChapters(repositoryEntry.getOlatResource());
-		tableModel.setObjects(Objects.requireNonNullElseGet(chapters, ArrayList::new));
+		List<ChapterTableRow> chapters = videoManager.loadChapters(repositoryEntry.getOlatResource()).stream()
+				.map(this::mapChapterRow).toList();
+		tableModel.setObjects(chapters);
 		chapterTable.reset(true, true, true);
+	}
+
+	private ChapterTableRow mapChapterRow(VideoChapterTableRow videoChapterTableRow) {
+		ChapterTableRow chapterTableRow = new ChapterTableRow(videoChapterTableRow);
+		addToolLink(chapterTableRow);
+		return chapterTableRow;
+	}
+
+	private void addToolLink(ChapterTableRow chapterTableRow) {
+		String toolId = "tool_" + chapterTableRow.hashCode();
+		FormLink toolLink = (FormLink) flc.getFormComponent(toolId);
+		if (toolLink == null) {
+			toolLink = uifactory.addFormLink(toolId, TOOLS_COMMAND, "", chapterTable,
+					Link.LINK | Link.NONTRANSLATED);
+			toolLink.setTranslator(getTranslator());
+			toolLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			toolLink.setTitle(translate("table.header.chapter.tools"));
+		}
+		toolLink.setUserObject(chapterTableRow);
+		chapterTableRow.setToolLink(toolLink);
 	}
 
 	@Override
@@ -110,6 +142,13 @@ public class ChaptersController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.text));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey(),
 				translate(ChapterTableModel.ChapterTableCols.edit.i18nHeaderKey()), EDIT_ACTION));
+		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(
+				ChapterTableModel.ChapterTableCols.tools.i18nHeaderKey(),
+				ChapterTableModel.ChapterTableCols.tools.ordinal()
+				);
+		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		columnModel.addFlexiColumnModel(toolsColumn);
+
 		tableModel = new ChapterTableModel(columnModel);
 
 		chapterTable = uifactory.addTableElement(getWindowControl(), "chapters", tableModel,
@@ -128,20 +167,39 @@ public class ChaptersController extends FormBasicController {
 			cleanUp();
 		} else if (cmc == source) {
 			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (toolsController == source) {
+			if (ToolsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				doDelete(ureq, toolsController.getChapterTableRow());
+			}
+			ccwc.deactivate();
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
 
-	private void doAddOrUpdateChapter(UserRequest ureq, VideoChapterTableRow row) {
-		List<VideoChapterTableRow> chapters = new ArrayList<>(tableModel.getObjects());
-		if (!chapters.contains(row)){
-			chapters.add(row);
-		}
+	private void doDelete(UserRequest ureq, ChapterTableRow chapterTableRow) {
+		List<ChapterTableRow> chapters = new ArrayList<>(tableModel.getObjects());
+		chapters.remove(chapterTableRow);
+		updateChapters(ureq, chapters);
+	}
 
+	private void doAddOrUpdateChapter(UserRequest ureq, VideoChapterTableRow videoChapterTableRow) {
+		List<ChapterTableRow> chapters = new ArrayList<>(tableModel.getObjects());
+		ChapterTableRow chapterTableRow = mapChapterRow(videoChapterTableRow);
+		if (!chapters.contains(chapterTableRow)){
+			chapters.add(chapterTableRow);
+		}
+		updateChapters(ureq, chapters);
+	}
+
+	private void updateChapters(UserRequest ureq, List<ChapterTableRow> chapters) {
 		sortAndAlignChapters(chapters);
 		tableModel.setObjects(chapters);
 		chapterTable.reset(true, true, true);
-		videoManager.saveChapters(chapters, repositoryEntry.getOlatResource());
+		List<VideoChapterTableRow> rows = chapters.stream().map(ChapterTableRow::getVideoChapterTableRow).toList();
+		videoManager.saveChapters(rows, repositoryEntry.getOlatResource());
 		reloadChapters(ureq);
 	}
 
@@ -150,8 +208,8 @@ public class ChaptersController extends FormBasicController {
 	}
 
 
-	private void sortAndAlignChapters(List<VideoChapterTableRow> chapters) {
-		chapters.sort(Comparator.comparing(VideoChapterTableRow::getBegin));
+	private void sortAndAlignChapters(List<ChapterTableRow> chapters) {
+		chapters.sort(Comparator.comparing(ChapterTableRow::getBegin));
 		for (int i = 1; i <= chapters.size(); i++) {
 			if (i < chapters.size()) {
 				chapters.get(i - 1).setEnd(chapters.get(i).getBegin());
@@ -164,36 +222,42 @@ public class ChaptersController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (event instanceof SelectionEvent selectionEvent) {
-			VideoChapterTableRow row = tableModel.getObject(selectionEvent.getIndex());
+			ChapterTableRow row = tableModel.getObject(selectionEvent.getIndex());
 			if (EDIT_ACTION.equals(selectionEvent.getCommand())) {
-				doEdit(ureq, row, true);
+				doEdit(ureq, row.getVideoChapterTableRow(), true);
 			} else if (SELECT_ACTION.equals(selectionEvent.getCommand())) {
 				doSelect(ureq, row);
 			}
 		} else if (addChapterButton == source) {
 			long timeInMs = currentTimeCode != null ? Math.round(Double.parseDouble(currentTimeCode)) * 1000L : 0L;
 			Date currentDate = new Date(timeInMs);
-			VideoChapterTableRow row = new VideoChapterTableRow(
+			VideoChapterTableRow videoChapterTableRow = new VideoChapterTableRow(
 					videoTranslator.translate("video.chapter.new"),
 					TimelineModel.durationString(timeInMs),
 					currentDate,
 					currentDate
 			);
-			doEdit(ureq, row, false);
+			doEdit(ureq, videoChapterTableRow, false);
+		} else if (source instanceof FormLink formLink && TOOLS_COMMAND.equals(formLink.getCmd()) &&
+				formLink.getUserObject() instanceof ChapterTableRow chapterTableRow) {
+			doOpenTools(ureq, chapterTableRow);
 		}
 	}
 
-	private void doSelect(UserRequest ureq, VideoChapterTableRow row) {
-		fireEvent(ureq, new ChapterSelectedEvent(TimelineDataSource.generateChapterId(row), row.getBegin().getTime()));
+	private void doSelect(UserRequest ureq, ChapterTableRow row) {
+		fireEvent(ureq, new ChapterSelectedEvent(TimelineDataSource.generateChapterId(row.getVideoChapterTableRow()),
+				row.getBegin().getTime()));
 	}
 
-	private void doEdit(UserRequest ureq, VideoChapterTableRow row, boolean chapterExists) {
+	private void doEdit(UserRequest ureq, VideoChapterTableRow videoChapterTableRow, boolean chapterExists) {
 		if (guardModalController(chapterEditController)) {
 			return;
 		}
 
-		chapterEditController = new ChapterEditController(ureq, getWindowControl(), row, chapterExists,
-				tableModel.getObjects(), durationInSeconds);
+		List<VideoChapterTableRow> videoChapterTableRows = tableModel.getObjects().stream()
+				.map(ChapterTableRow::getVideoChapterTableRow).toList();
+		chapterEditController = new ChapterEditController(ureq, getWindowControl(),	videoChapterTableRow, chapterExists,
+				videoChapterTableRows, durationInSeconds);
 		listenTo(chapterEditController);
 
 		String title = videoTranslator.translate("video.chapter." + (chapterExists ? "edit" : "new"));
@@ -201,6 +265,15 @@ public class ChaptersController extends FormBasicController {
 				chapterEditController.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+
+	private void doOpenTools(UserRequest ureq, ChapterTableRow chapterTableRow) {
+		toolsController = new ToolsController(ureq, getWindowControl(), chapterTableRow);
+		listenTo(toolsController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), toolsController.getInitialComponent(),
+				chapterTableRow.getToolLink().getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	@Override
@@ -214,5 +287,36 @@ public class ChaptersController extends FormBasicController {
 
 	public void handleDeleted() {
 		loadTableModel();
+	}
+
+	private static class ToolsController extends BasicController {
+		private static final Event DELETE_EVENT = new Event("delete");
+		private final Link deleteLink;
+		private final ChapterTableRow chapterTableRow;
+
+		protected ToolsController(UserRequest ureq, WindowControl wControl, ChapterTableRow chapterTableRow) {
+			super(ureq, wControl);
+
+			this.chapterTableRow = chapterTableRow;
+
+			VelocityContainer mainVC = createVelocityContainer("table_row_tools");
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
+					Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			mainVC.put("delete", deleteLink);
+
+			putInitialPanel(mainVC);
+		}
+
+		public ChapterTableRow getChapterTableRow() {
+			return chapterTableRow;
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (deleteLink == source) {
+				fireEvent(ureq, DELETE_EVENT);
+			}
+		}
 	}
 }

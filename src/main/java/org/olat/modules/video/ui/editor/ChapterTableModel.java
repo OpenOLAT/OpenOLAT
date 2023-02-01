@@ -22,14 +22,13 @@ package org.olat.modules.video.ui.editor;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.modules.video.ui.VideoChapterTableRow;
 
 /**
  * Initial date: 2022-12-12<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class ChapterTableModel extends DefaultFlexiTableDataModel<VideoChapterTableRow> {
+public class ChapterTableModel extends DefaultFlexiTableDataModel<ChapterTableRow> {
 	public ChapterTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
 	}
@@ -37,21 +36,21 @@ public class ChapterTableModel extends DefaultFlexiTableDataModel<VideoChapterTa
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		VideoChapterTableRow chapterTableRow = getObject(row);
-		switch (ChapterTableCols.values()[col]) {
-			case start:
-				return chapterTableRow.getIntervals();
-			case text:
-				return chapterTableRow.getChapterName();
-			default:
-				return "";
-		}
+		ChapterTableRow chapterTableRow = getObject(row);
+		ChapterTableCols columnDef = ChapterTableCols.values()[col];
+		return switch (columnDef) {
+			case start -> chapterTableRow.getVideoChapterTableRow().getIntervals();
+			case text -> chapterTableRow.getVideoChapterTableRow().getChapterName();
+			case edit -> "";
+			case tools -> chapterTableRow.getToolLink();
+		};
 	}
 
 	public enum ChapterTableCols implements FlexiSortableColumnDef {
 		start("table.header.chapter.start"),
 		text("table.header.chapter.text"),
-		edit("table.header.chapter.edit");
+		edit("table.header.chapter.edit"),
+		tools("table.header.chapter.tools");
 
 		private final String i18nKey;
 
