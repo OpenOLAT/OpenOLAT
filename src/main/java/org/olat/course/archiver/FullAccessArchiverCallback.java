@@ -101,4 +101,9 @@ public class FullAccessArchiverCallback implements IArchiverCallback {
 	public boolean mayArchiveForms() {
 		return true;
 	}
+
+	@Override
+	public boolean mayArchiveVideoTasks() {
+		return true;
+	}
 }

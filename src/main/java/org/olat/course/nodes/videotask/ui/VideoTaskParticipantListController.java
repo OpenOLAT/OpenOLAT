@@ -30,11 +30,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
+import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
+import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -49,6 +53,7 @@ import org.olat.repository.RepositoryEntry;
 public class VideoTaskParticipantListController extends IdentityListCourseNodeController {
 	
 	private FormLink resetButton;
+	private FormLink exportResultsButton;
 	
 	private VideoTaskResetDataController resetDataCtrl;
 	
@@ -62,6 +67,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		super.initGradeScaleEditButton(formLayout);
 		super.initBulkStatusTools(ureq, formLayout);
+		
+		exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+		exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
 			if(getAssessmentCallback().isAdmin()) {
@@ -94,6 +102,8 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(resetButton == source) {
 			doConfirmResetData(ureq);
+		} else if(exportResultsButton == source) {
+			doExportResults(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -110,5 +120,21 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		listenTo(cmc);
 		cmc.activate();
 	}
-
+	
+	private void doExportResults(UserRequest ureq) {
+		IdentitiesList identities = getIdentities(true);
+		doExportResults(ureq, identities);
+	}
+	
+	private void doExportResults(UserRequest ureq, IdentitiesList identities) {
+		if (!identities.isEmpty()) {
+			VideoTaskArchiveSearchParams searchParams = new VideoTaskArchiveSearchParams(courseEntry,
+					getReferencedRepositoryEntry(), (VideoTaskCourseNode)courseNode);
+			VideoTaskArchiveFormat archive = new VideoTaskArchiveFormat( getLocale(), searchParams);
+			MediaResource results = archive.exportCourseElement();
+			ureq.getDispatchResult().setResultingMediaResource(results);
+		} else {
+			showWarning("error.no.assessed.users");
+		}
+	}
 }

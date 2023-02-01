@@ -85,4 +85,6 @@ public interface IArchiverCallback {
 	
 	public boolean mayArchiveForms();
 	
+	public boolean mayArchiveVideoTasks();
+	
 }

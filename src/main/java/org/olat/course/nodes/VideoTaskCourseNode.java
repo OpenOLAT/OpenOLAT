@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
+import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -46,6 +47,8 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.videotask.VideoTaskAssessmentConfig;
+import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
+import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.nodes.videotask.ui.VideoTaskCoachRunController;
 import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
 import org.olat.course.nodes.videotask.ui.VideoTaskRunController;
@@ -245,6 +248,18 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
 				null, null, null, 1.0d, AssessmentRunStatus.done, taskSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
+	}
+	
+	@Override
+	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
+			ZipOutputStream exportStream, String archivePath, String charset) {
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry videoEntry = getReferencedRepositoryEntry();
+		VideoTaskArchiveSearchParams searchParams = new VideoTaskArchiveSearchParams(courseEntry, videoEntry, this);
+		VideoTaskArchiveFormat vaf = new VideoTaskArchiveFormat(locale, searchParams);
+		vaf.exportCourseElement(exportStream, this, archivePath);
+		return true;
 	}
 
 	

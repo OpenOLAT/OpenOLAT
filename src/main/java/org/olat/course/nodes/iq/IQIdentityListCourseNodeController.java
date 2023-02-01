@@ -37,8 +37,6 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -60,7 +58,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -397,8 +394,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(modelDirty && pe.getController() == correctionIdentitiesCtrl) {
 					reload(ureq);
 				}
@@ -423,8 +419,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				stackPanel.popController(correctionIdentitiesCtrl);
 				reload(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if(event instanceof CompleteAssessmentTestSessionEvent) {
-				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+			} else if(event instanceof CompleteAssessmentTestSessionEvent catse) {
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
 				reload(ureq);
 				stackPanel.popController(correctionIdentitiesCtrl);
@@ -434,8 +429,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(source instanceof QTI21IdentityListCourseNodeToolsController) {
-			if(event instanceof CompleteAssessmentTestSessionEvent) {
-				CompleteAssessmentTestSessionEvent catse = (CompleteAssessmentTestSessionEvent)event;
+			if(event instanceof CompleteAssessmentTestSessionEvent catse) {
 				doUpdateCourseNode(catse.getTestSessions(), catse.getAssessmentTest(), catse.getStatus());
 				reload(ureq);
 				fireEvent(ureq, Event.CHANGED_EVENT);
@@ -506,44 +500,6 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		return new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
 				courseNode, assessedIdentity, coachCourseEnv);
-	}
-	
-	/**
-	 * 
-	 * @param allIfAdmin Admin. have the possibility to see not participants.
-	 * @return A list of identities
-	 */
-	private IdentitiesList getIdentities(boolean allIfAdmin) {
-		AssessmentToolOptions asOptions = getOptions();
-		boolean withNonParticipants = false;
-		List<Identity> identities = asOptions.getIdentities();
-		if (identities != null) {
-			identities = asOptions.getIdentities();			
-		} else if (asOptions.isAdmin()) {
-			if(allIfAdmin) {
-				withNonParticipants = true;
-				identities = ScoreAccountingHelper.loadUsers(getCourseEnvironment());
-			} else {
-				identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
-			}
-		}
-		
-		List<String> filters = getHumanReadableFilterValues();
-		return new IdentitiesList(identities, filters, withNonParticipants, true);
-	}
-	
-	private List<String> getHumanReadableFilterValues() {
-		List<String> values = new ArrayList<>();
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		for(FlexiTableFilter filter:filters) {
-			if(filter instanceof FlexiTableExtendedFilter) {
-				List<String> hrVal = ((FlexiTableExtendedFilter)filter).getHumanReadableValues();
-				if(hrVal != null && !hrVal.isEmpty()) {
-					values.addAll(hrVal);
-				}
-			}
-		}
-		return values;
 	}
 	
 	private void doExportResults(UserRequest ureq) {

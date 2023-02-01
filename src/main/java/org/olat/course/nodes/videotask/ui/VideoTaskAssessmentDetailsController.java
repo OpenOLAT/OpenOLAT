@@ -262,7 +262,7 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		List<VideoTaskSegmentSelection> taskSelections = mapSelections.get(taskSession);
 		VideoTaskScore scoring = videoAssessmentService
 				.calculateScore(segments, selectedCategoriesIds, maxScore.doubleValue(), taskSelections);
-		CategoryColumn[] categoryScoring = calculateScoring(taskSelections);
+		CategoryColumn[] categoryScoring = VideoTaskHelper.calculateScoring(categories, taskSelections);
 		VideoTaskSessionRow row = new VideoTaskSessionRow(taskSession, scoring, categoryScoring);
 		
 		FormLink tools = uifactory.addFormLink("tools_" + (++count), "tools", "", null, flc, Link.LINK | Link.NONTRANSLATED);
@@ -274,31 +274,6 @@ public class VideoTaskAssessmentDetailsController extends FormBasicController {
 		return row;
 	}
 	
-	private CategoryColumn[] calculateScoring(List<VideoTaskSegmentSelection> taskSelections) {
-		CategoryColumn[] scoring = new CategoryColumn[categories.size()];
-		for(int i=0; i<categories.size(); i++) {
-			VideoSegmentCategory category = categories.get(i);
-			CategoryColumn col = new CategoryColumn();
-			
-			int correct = 0;
-			int notCorrect = 0;
-			for(VideoTaskSegmentSelection selection:taskSelections) {
-				if(category.getId().equals(selection.getCategoryId())) {
-					if(selection.getCorrect() != null && selection.getCorrect().booleanValue()) {
-						correct++;
-					} else {
-						notCorrect++;
-					}
-				}	
-			}
-
-			col.setCategory(category);
-			col.setCorrect(correct);
-			col.setNotCorrect(notCorrect);
-			scoring[i] = col;
-		}
-		return scoring;
-	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
