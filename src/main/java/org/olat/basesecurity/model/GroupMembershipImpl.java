@@ -63,6 +63,7 @@ import org.olat.core.util.StringHelper;
 @NamedQuery(name="countMembersByGroupAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
 @NamedQuery(name="membersByGroupAndRole", query="select distinct membership.identity from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
 @NamedQuery(name="membersByGroupsAndRole", query="select distinct membership.identity from bgroupmember as membership where membership.group.key in(:groupKeys) and membership.role=:role")
+@NamedQuery(name="membersByGroupsAndRoles", query="select distinct membership.identity from bgroupmember as membership where membership.group.key in(:groupKeys) and membership.role in(:roles)")
 @NamedQuery(name="hasRoleByGroupIdentityAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
 public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persistable {
 

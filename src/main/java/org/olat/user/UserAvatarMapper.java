@@ -38,14 +38,18 @@ public class UserAvatarMapper implements Mapper {
 	
 	private final UserManager userManager;
 	private final DisplayPortraitManager portraitManager;
-	private final boolean useLarge;
+	private boolean useLarge;
 
 	public UserAvatarMapper(boolean useLargePortrait) {
 		useLarge = useLargePortrait;
 		portraitManager = CoreSpringFactory.getImpl(DisplayPortraitManager.class);
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 	}
-
+	
+	public void setUseLarge(boolean useLarge) {
+		this.useLarge = useLarge;
+	}
+	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		MediaResource rsrc = null;

@@ -1,0 +1,64 @@
+$r.render("content")
+
+<h4 onclick="jQuery('#collapse_reference_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_reference_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($referenceOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.reference.title")
+</h4>
+<div id="collapse_reference_${r.getCId()}" class="collapse #if($referenceOpen) in #end">$r.render("reference")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.ffXHREvent("referenceOpen","false");
+	})
+	jQuery('#collapse_reference_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.ffXHREvent("referenceOpen","true");
+	})
+});
+</script>
+
+#if($r.isNotNull($memberOpen))
+<h4 onclick="jQuery('#collapse_member_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_member_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($memberOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.member.title")
+</h4>
+<div id="collapse_member_${r.getCId()}" class="collapse #if($memberOpen) in #end">$r.render("member")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_member_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.ffXHREvent("memberOpen","false");
+		console.log('open');
+	})
+	jQuery('#collapse_member_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.ffXHREvent("memberOpen","true");
+		console.log('close');
+	})
+});
+</script>
+#end
+
+<h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.metadata.title")
+</h4>
+<div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$f.ffXHREvent("metadataOpen","false");
+		console.log('open');
+	})
+	jQuery('#collapse_metadata_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$f.ffXHREvent("metadataOpen","true");
+		console.log('close');
+	})
+});
+</script>
+
+#if($r.available("buttons") && $r.visible("buttons"))
+	<div class="o_block_top">
+		$r.render("buttons")
+	</div>
+#end

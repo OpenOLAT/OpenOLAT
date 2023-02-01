@@ -82,6 +82,8 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 				case repositoryEntryDisplayname: return row.getRepositoryEntryDisplayname();
 				case businessGroupKey: return row.getBusinessGroupKey();
 				case businessGroupName: return row.getBusinessGroupName();
+				case projectKey: return row.getProjectKey();
+				case projectTitle: return row.getProjectTitle();
 				case role: return row.getInvitationRoles();
 				case status: return row.getInvitationStatus();
 				case invitationDate: return row.getInvitationDate();
@@ -117,6 +119,8 @@ implements SortableFlexiTableDataModel<InvitationRow> {
 		repositoryEntryExternalRef("table.header.external.ref"),
 		businessGroupKey("table.header.id"),
 		businessGroupName("table.header.name"),
+		projectKey("table.header.id"),
+		projectTitle("table.header.name"),
 		tools("table.header.tools");
 		
 		private final String i18nKey;

@@ -41,6 +41,7 @@ public class InvitationModule extends AbstractSpringModule {
 	
 	private static final String INVITATION_COURSE_ENABLED = "invitation.course";
 	private static final String INVITATION_GROUP_ENABLED = "invitation.group";
+	private static final String INVITATION_PROJECT_ENABLED = "invitation.project";
 	private static final String INVITATION_COURSE_ROLE = "invitation.course.role";
 	private static final String INVITATION_BUSINESS_GROUP_ROLE = "invitation.business.group.role";
 	private static final String INVITATION_COURSE_OWNER_PERMISSION = "invitation.course.owner.permission";
@@ -60,6 +61,9 @@ public class InvitationModule extends AbstractSpringModule {
 	private String businessGroupRolesConfiguration;
 	@Value("${invitation.business.group.coach.permission:perResource}")
 	private String businessGroupCoachPermission;
+	
+	@Value("${invitation.project:enabled}")
+	private String projectInvitationEnabled;
 	
 	@Value("${invitation.expiration.account:180}")
 	private String expirationAccountInDays;
@@ -85,6 +89,7 @@ public class InvitationModule extends AbstractSpringModule {
 	private void updateProperties() {
 		courseInvitationEnabled = getStringPropertyValue(INVITATION_COURSE_ENABLED, courseInvitationEnabled);
 		businessGroupInvitationEnabled = getStringPropertyValue(INVITATION_GROUP_ENABLED, businessGroupInvitationEnabled);
+		projectInvitationEnabled = getStringPropertyValue(INVITATION_PROJECT_ENABLED, projectInvitationEnabled);
 		
 		courseRolesConfiguration = getStringPropertyValue(INVITATION_COURSE_ROLE, courseRolesConfiguration);
 		businessGroupRolesConfiguration = getStringPropertyValue(INVITATION_BUSINESS_GROUP_ROLE, businessGroupRolesConfiguration);
@@ -96,7 +101,7 @@ public class InvitationModule extends AbstractSpringModule {
 	}
 	
 	public boolean isInvitationEnabled() {
-		return isBusinessGroupInvitationEnabled() || isCourseInvitationEnabled() || isPortfolioInvitationEnabled();
+		return isBusinessGroupInvitationEnabled() || isCourseInvitationEnabled() || isPortfolioInvitationEnabled() || isProjectInvitationEnabled();
 	}
 
 	public boolean isCourseInvitationEnabled() {
@@ -169,6 +174,15 @@ public class InvitationModule extends AbstractSpringModule {
 
 	public void setPortfolioInvitationEnabled(boolean enabled) {
 		loginModule.setInvitationEnabled(enabled);
+	}
+
+	public boolean isProjectInvitationEnabled() {
+		return "enabled".equals(projectInvitationEnabled);
+	}
+
+	public void setProjectInvitationEnabled(boolean enabled) {
+		projectInvitationEnabled = enabled ? "enabled" : "disabled";
+		setStringProperty(INVITATION_PROJECT_ENABLED, projectInvitationEnabled, true);
 	}
 
 	public int getExpirationAccountInDays() {

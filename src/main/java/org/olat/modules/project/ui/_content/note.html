@@ -1,0 +1,29 @@
+<div class="o_proj_note panel panel-default">
+	<div class="o_proj_note_header o_flex_first_grow panel-heading">
+		<div class="o_proj_note_header_infos">
+			<div>
+				$r.render("members")
+			</div>
+			<div>
+				<i class="o_icon i_icon_lg o_icon_proj_reference"></i> $numReferences
+			</div>
+			<div class="o_muted">
+				$modified
+			</div>
+		</div>
+		#if($r.visible("edit"))
+			$r.render("edit")
+		#end
+		#if($r.visible("cmds"))
+			$r.render("cmds")
+		#end
+	</div>
+	<div class="panel-body">
+		#if($r.available("viewNote"))
+			$r.render("viewNote")
+		#end
+		#if($r.available("editNote"))
+			$r.render("editNote")
+		#end
+	</div>
+</div>

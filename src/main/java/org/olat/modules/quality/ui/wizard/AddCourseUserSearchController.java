@@ -40,7 +40,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 /**
  * 
  * Initial date: 13.06.2018<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.comm
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class AddCourseUserSearchController extends StepFormBasicController {

@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.invitation.InvitationStatusEnum;
+import org.olat.modules.project.ProjProject;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -44,15 +45,17 @@ public class InvitationRow {
 	
 	private RepositoryEntry entry;
 	private BusinessGroup businessGroup;
+	private ProjProject project;
 	
 	public InvitationRow(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup,
-			FormLink urlLink, FormLink toolsLink) {
+			ProjProject project, FormLink urlLink, FormLink toolsLink) {
 		this.invitation = invitation;
 		this.urlLink = urlLink;
 		this.toolsLink = toolsLink;
 		identity = invitation.getIdentity();
 		this.entry = entry;
 		this.businessGroup = businessGroup;
+		this.project = project;
 	}
 	
 	public Date getInvitationDate() {
@@ -119,6 +122,18 @@ public class InvitationRow {
 	
 	public String getBusinessGroupName() {
 		return businessGroup == null ? null : businessGroup.getName();
+	}
+	
+	public ProjProject getProject() {
+		return project;
+	}
+	
+	public Long getProjectKey() {
+		return project == null ? null : project.getKey();
+	}
+	
+	public String getProjectTitle() {
+		return project == null ? null : project.getTitle();
 	}
 
 	public FormLink getUrlLink() {

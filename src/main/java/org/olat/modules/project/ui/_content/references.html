@@ -1,0 +1,20 @@
+<div class="o_proj_references">
+	#if($r.available("topButtons"))
+		$r.render("topButtons")
+	#end
+	#foreach($row in $rows)
+		<div class="o_flex_first_grow">
+			<div>
+				#if($r.available($row.getDisplayNameLinkName()))
+					$r.render($row.getDisplayNameLinkName())
+				#else
+					<i class="o_icon $row.iconCss"></i> $row.displayName
+				#end
+			</div>
+			<div>
+				$r.render($row.getOpenInNewWindowLinkName())
+				$r.render($row.getDeleteLinkName())
+			</div>
+		</div>
+	#end
+</div>

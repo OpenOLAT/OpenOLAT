@@ -1114,6 +1114,11 @@ $o-reminder-marker-padding			: 0.2em 0.4em !default;
 /* other configurations */
 $o-portrait-radius				: 50% !default;
 $o-portrait-border				: none !default;
+$o-portrait-size				: 100px !default;
+$o-portrait-small-size			: 30px !default;
+$o-users-portrait-img-border				: 2px solid white !default;
+$o-users-portrait-img-box-shadow			: 0px 1px 3px 0px rgba(0,0,0,0.2) !default;
+$o-users-portrait-overlap				: 0.3; // 30%
 $o-print-header-logo-height		: 2cm !default;
 $o-print-header-logo-width		: 5cm !default;
 $o-bookmark-color				: #bc2d0c !default;
@@ -1209,3 +1214,10 @@ $o-swiper-button-disabled-opacity			: .35 !default;
 
 /* Glossary */
 $o-gloss-tooltip-border-color               : #aaa;
+
+/* Projects */
+$o-proj-message-font-weight					: bold !default;
+$o-proj-proj-rows-gap						: 10px !default;
+$o-proj-timeline-row-gap						: 15px  !default;
+$o-proj-timeline-row-margin-top				: 10px  !default;
+

@@ -252,6 +252,27 @@ public class GroupDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getMembersOfGroupsAndRoles() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3b-1");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3b-2");
+		Identity id3 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3b-3");
+		Identity id4 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-3b-4");
+		Group group1 = groupDao.createGroup();
+		Group group2 = groupDao.createGroup();
+		groupDao.addMembershipTwoWay(group1, id1, "author");
+		groupDao.addMembershipTwoWay(group1, id2, "author");
+		groupDao.addMembershipTwoWay(group2, id1, "author");
+		groupDao.addMembershipTwoWay(group2, id3, "author");
+		groupDao.addMembershipTwoWay(group2, id3, "participant");
+		groupDao.addMembershipTwoWay(group2, id4, "coach");
+		dbInstance.commitAndCloseSession();
+		
+		List<Identity> members = groupDao.getMembers(asList(group1, group2), asList("participant", "coach"));
+		Assert.assertNotNull(members);
+		Assert.assertEquals(2, members.size());
+	}
+	
+	@Test
 	public void countMembers() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-4-");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("bgrp-5-");

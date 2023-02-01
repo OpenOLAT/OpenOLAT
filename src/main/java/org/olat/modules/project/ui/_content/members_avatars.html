@@ -1,0 +1,29 @@
+<div class="o_proj_members_avatar">
+	#foreach($member in $members)
+		<div class="o_proj_member">
+			<div class="o_portrait" aria-hidden="true">
+				#if($member.isPortraitAvailable())
+					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" style="background-image: url('$avatarBaseURL/${member.getIdentityKey()}/portrait.jpg') !important;" alt="$r.escapeHtml("$member.getDisplayName()")" />
+				#else
+					<img src="$r.staticLink("images/transparent.gif")" class="$member.getPortraitCssClass()" alt="$r.escapeHtml("$member.getDisplayName()")" />
+				#end
+			</div>
+			<div class="o_properties">
+				<div class="o_prop o_name">
+					#if($member.getOnlineIconCss())<i class="$member.getOnlineIconCss()"></i> #end$member.displayName
+				</div>
+				#foreach($userPropertyHandler in $userPropertyHandlers)
+					#if($userPropertyHandler.name != "firstName" && $userPropertyHandler.name != "lastName") 
+						#set ($prop=$!{member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))})
+						## $prop can contain value of last iteration because when null the value is not assigned to $prop - check again
+						#if(${member.getIdentityProp($handlerLookupMap.get($userPropertyHandler.name))} && $prop != "" && $prop != "-")
+							<div class="o_prop o_${userPropertyHandler.name}">
+								$prop
+							</div>
+						#end
+					#end	
+				#end
+			</div>
+		</div>
+	#end
+</div>

@@ -88,6 +88,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumModule;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.project.ProjectModule;
 import org.olat.modules.qpool.QuestionPoolModule;
 import org.olat.modules.quality.QualityModule;
 import org.olat.user.UserManager;
@@ -137,6 +138,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LockResult lock;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private ProjectModule projectModule;
 	@Autowired
 	private QualityModule qualityModule;
 	@Autowired
@@ -667,6 +670,9 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			buildTreeNodeRole(accessNode, OrganisationRoles.groupmanager);
 			if(lectureModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.lecturemanager);
+			}
+			if(projectModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.projectmanager);
 			}
 			if(qualityModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.qualitymanager);

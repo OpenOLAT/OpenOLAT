@@ -1,0 +1,22 @@
+<div class="o_proj_widget o_proj_note_widget panel panel-default">
+	<div class="o_proj_title o_proj_widget_title panel-heading">
+		<div>
+			<h3>
+				$r.render("note.widget.title")
+			</h3>
+		</div>
+		<div class="o_proj_widget_cmds">
+			#if($r.available("note.create") && $r.visible("note.create"))
+				$r.render("note.create")
+			#end
+		</div>
+	</div>
+	<div class="panel-body">
+		$r.render("table")
+		<div class="o_button_group">
+			#if($r.available("note.show.all") && $r.visible("note.show.all"))
+				$r.render("note.show.all")
+			#end
+		</div>
+	</div>
+</div>

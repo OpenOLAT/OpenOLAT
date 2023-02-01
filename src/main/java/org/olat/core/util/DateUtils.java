@@ -127,6 +127,15 @@ public class DateUtils {
 		return toDate(localDateTime);
 	}
 	
+	public static Date addMonth(Date date, int months) {
+		if (date == null) return null;
+		
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.MONTH, months);
+		return c.getTime();
+	}
+	
 	public static Date addDays(Date date, int days) {
 		if (date == null) return null;
 		

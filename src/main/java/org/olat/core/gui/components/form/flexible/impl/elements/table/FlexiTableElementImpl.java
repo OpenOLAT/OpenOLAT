@@ -2529,6 +2529,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			if(getRootForm() != null) {
 				rootFormAvailable(emptyTablePrimaryActionButton);
 			}		
+		} else if (emptyTablePrimaryActionButton != null) {
+			emptyTablePrimaryActionButton = null;
 		}
 		// search filed config
 		this.emptyShowSearch = showAlwaysSearchFields;

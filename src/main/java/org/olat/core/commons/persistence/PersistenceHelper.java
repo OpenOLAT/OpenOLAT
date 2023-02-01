@@ -211,6 +211,19 @@ public class PersistenceHelper {
 		return string.toLowerCase();
 	}
 	
+	public static String makeStartFuzzyQueryString(String string) {
+		// By default only fuzzy at the start. Usually it makes no sense to do a
+		// fuzzy search with % at the beginning, but it makes the query very very
+		// slow since it can not use any index and must perform a fulltext search.
+		// User can always use * to make it a really fuzzy search query
+		string = string.replace('*', '%');
+		string = "%" + string;
+		// with 'LIKE' the character '_' is a wildcard which matches exactly one character.
+		// To test for literal instances of '_', we have to escape it.
+		string = string.replace("_", "\\_");
+		return string.toLowerCase();
+	}
+	
 
 	public static String getOrderByRandom(DB dbInstance) {
 		if (dbInstance.isPostgreSQL()){

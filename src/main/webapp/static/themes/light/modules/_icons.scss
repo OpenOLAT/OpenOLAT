@@ -926,6 +926,16 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 .o_icon_immunity_proof_claimed:before { content: $fa-var-question; }
 .o_icon_immunity_proof_validated:before { content: $fa-var-check; }
 
+/* Projects */
+.o_icon_proj_file:before { content: $fa-var-file-o; }
+.o_icon_proj_note:before { content: $fa-var-sticky-note-o; }
+.o_icon_proj_reference:before { content: $fa-var-link; }
+.o_icon_proj_project:before { content: $fa-var-leaf; }
+.o_icon_proj_project_status_active:before { content: $fa-var-check;}
+.o_icon_proj_project_status_done:before { content: $fa-var-ban; }
+.o_icon_proj_project_status_deleted:before { content: $fa-var-trash-o;}
+
+
 /* do not move link icons */
 a.o_icon {
 	&:hover,&:focus {

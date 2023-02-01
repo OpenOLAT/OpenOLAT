@@ -64,7 +64,7 @@ public class LoginModule extends AbstractSpringModule {
 		OrganisationRoles.sysadmin, OrganisationRoles.administrator, OrganisationRoles.principal,
 		OrganisationRoles.rolesmanager, OrganisationRoles.usermanager,
 		OrganisationRoles.learnresourcemanager, OrganisationRoles.groupmanager,
-		OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
+		OrganisationRoles.lecturemanager, OrganisationRoles.projectmanager, OrganisationRoles.qualitymanager,
 		OrganisationRoles.poolmanager, OrganisationRoles.linemanager	
 	};
 	
@@ -97,6 +97,7 @@ public class LoginModule extends AbstractSpringModule {
 	private static final String MAX_AGE_POOLMANAGER = "password.max.age.poolmanager";
 	private static final String MAX_AGE_CURRICULUMMANAGER = "password.max.age.curriculummanager";
 	private static final String MAX_AGE_LINEMANAGER = "password.max.age.linemanager";
+	private static final String MAX_AGE_PROJECTMANAGER = "password.max.age.projectmanager";
 	private static final String MAX_AGE_QUALITYMANAGER = "password.max.age.qualitymanager";
 	private static final String MAX_AGE_LECTUREMANAGER = "password.max.age.lecturemanager";
 	private static final String MAX_AGE_PRINCIPAL = "password.max.age.principal";
@@ -167,6 +168,8 @@ public class LoginModule extends AbstractSpringModule {
 	private int passwordMaxAgeCurriculumManager;
 	@Value("${password.max.age.linemanager}")
 	private int passwordMaxAgeLineManager;
+	@Value("${password.max.age.projectmanager}")
+	private int passwordMaxAgeProjectManager;
 	@Value("${password.max.age.qualitymanager}")
 	private int passwordMaxAgeQualityManager;
 	@Value("${password.max.age.lecturemanager}")
@@ -402,6 +405,7 @@ public class LoginModule extends AbstractSpringModule {
 		passwordMaxAgeLearnResourceManager = getAgeValue(MAX_AGE_LEARNRESOURCEMANAGER, passwordMaxAgeLearnResourceManager);
 		passwordMaxAgeCurriculumManager = getAgeValue(MAX_AGE_CURRICULUMMANAGER, passwordMaxAgeCurriculumManager);
 		passwordMaxAgeLectureManager = getAgeValue(MAX_AGE_LECTUREMANAGER, passwordMaxAgeLectureManager);
+		passwordMaxAgeProjectManager = getAgeValue(MAX_AGE_PROJECTMANAGER, passwordMaxAgeProjectManager);
 		passwordMaxAgeQualityManager = getAgeValue(MAX_AGE_QUALITYMANAGER, passwordMaxAgeQualityManager);
 		passwordMaxAgeLineManager = getAgeValue(MAX_AGE_LINEMANAGER, passwordMaxAgeLineManager);
 		passwordMaxAgePrincipal = getAgeValue(MAX_AGE_PRINCIPAL, passwordMaxAgePrincipal);
@@ -736,7 +740,7 @@ public class LoginModule extends AbstractSpringModule {
 				|| passwordMaxAgeGroupManager > 0 || passwordMaxAgePoolManager > 0
 				|| passwordMaxAgeUserManager > 0  || passwordMaxAgeRolesManager > 0 
 				|| passwordMaxAgeLearnResourceManager > 0 || passwordMaxAgeLectureManager > 0
-				|| passwordMaxAgeQualityManager > 0 || passwordMaxAgeLineManager > 0
+				|| passwordMaxAgeProjectManager > 0 || passwordMaxAgeQualityManager > 0 || passwordMaxAgeLineManager > 0
 				|| passwordMaxAgeCurriculumManager > 0 || passwordMaxAgePrincipal > 0
 				|| passwordMaxAgeAdministrator > 0 || passwordMaxAgeSysAdmin > 0;
 	}
@@ -800,6 +804,7 @@ public class LoginModule extends AbstractSpringModule {
 			case poolmanager: return passwordMaxAgePoolManager;
 			case curriculummanager: return passwordMaxAgeCurriculumManager;
 			case lecturemanager: return passwordMaxAgeLectureManager;
+			case projectmanager: return passwordMaxAgeProjectManager;
 			case qualitymanager: return passwordMaxAgeQualityManager;
 			case linemanager: return passwordMaxAgeLineManager;
 			case principal: return passwordMaxAgePrincipal;
@@ -837,6 +842,9 @@ public class LoginModule extends AbstractSpringModule {
 				break;
 			case lecturemanager:
 				passwordMaxAgeLectureManager = setPasswordMaxAge(MAX_AGE_LECTUREMANAGER, maxAge);
+				break;
+			case projectmanager:
+				passwordMaxAgeProjectManager = setPasswordMaxAge(MAX_AGE_PROJECTMANAGER, maxAge);
 				break;
 			case qualitymanager:
 				passwordMaxAgeQualityManager = setPasswordMaxAge(MAX_AGE_QUALITYMANAGER, maxAge);

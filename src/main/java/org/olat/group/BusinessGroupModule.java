@@ -58,7 +58,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 			OrganisationRoles.rolesmanager, OrganisationRoles.usermanager, 
 			OrganisationRoles.learnresourcemanager, OrganisationRoles.groupmanager, 
 			OrganisationRoles.poolmanager, OrganisationRoles.curriculummanager,
-			OrganisationRoles.lecturemanager, OrganisationRoles.qualitymanager,
+			OrganisationRoles.lecturemanager, OrganisationRoles.projectmanager, OrganisationRoles.qualitymanager,
 			OrganisationRoles.linemanager, OrganisationRoles.principal,
 			OrganisationRoles.author, OrganisationRoles.user,
 	};
@@ -81,6 +81,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private static final String MANDATORY_ENROLMENT_EMAIL_POOLMANAGERS = "mandatoryEnrolmentEmailForPoolmanagers";
 	private static final String MANDATORY_ENROLMENT_EMAIL_CURRICULUMMANAGERS = "mandatoryEnrolmentEmailForCurriculummanagers";
 	private static final String MANDATORY_ENROLMENT_EMAIL_LECTUREMANAGERS = "mandatoryEnrolmentEmailForLecturemanagers";
+	private static final String MANDATORY_ENROLMENT_EMAIL_PROJECTMANAGERS = "mandatoryEnrolmentEmailForProjectmanagers";
 	private static final String MANDATORY_ENROLMENT_EMAIL_QUALITYMANAGERS = "mandatoryEnrolmentEmailForQualitymanagers";
 	private static final String MANDATORY_ENROLMENT_EMAIL_LINEMANAGERS = "mandatoryEnrolmentEmailForLinemanagers";
 	private static final String MANDATORY_ENROLMENT_EMAIL_PRINCIPALS = "mandatoryEnrolmentEmailForPrincipals";
@@ -96,6 +97,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private static final String ACCEPT_MEMBERSHIP_POOLMANAGERS = "acceptMembershipForPoolmanagers";
 	private static final String ACCEPT_MEMBERSHIP_CURRICULUMMANAGERS = "acceptMembershipForCurriculummanagers";
 	private static final String ACCEPT_MEMBERSHIP_LECTUREMANAGERS = "acceptMembershipForLecturemanagers";
+	private static final String ACCEPT_MEMBERSHIP_PROJECTMANAGERS = "acceptMembershipForProjectmanagers";
 	private static final String ACCEPT_MEMBERSHIP_QUALITYMANAGERS = "acceptMembershipForQualitymanagers";
 	private static final String ACCEPT_MEMBERSHIP_LINEMANAGERS = "acceptMembershipForLinemanagers";
 	private static final String ACCEPT_MEMBERSHIP_PRINCIPALS = "acceptMembershipForPrincipals";
@@ -163,6 +165,8 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private String mandatoryEnrolmentEmailForCurriculummanagers;
 	@Value("${group.mandatory.enrolment.email.lecturemanagers}")
 	private String mandatoryEnrolmentEmailForLecturemanagers;
+	@Value("${group.mandatory.enrolment.email.projectmanagers}")
+	private String mandatoryEnrolmentEmailForProjectmanagers;
 	@Value("${group.mandatory.enrolment.email.qualitymanagers}")
 	private String mandatoryEnrolmentEmailForQualitymanagers;
 	@Value("${group.mandatory.enrolment.email.linemanagers}")
@@ -192,6 +196,8 @@ public class BusinessGroupModule extends AbstractSpringModule {
 	private String acceptMembershipForCurriculummanagers;
 	@Value("${group.accept.membership.lecturemanagers}")
 	private String acceptMembershipForLecturemanagers;
+	@Value("${group.accept.membership.projectmanagers}")
+	private String acceptMembershipForProjectmanagers;
 	@Value("${group.accept.membership.qualitymanagers}")
 	private String acceptMembershipForQualitymanagers;
 	@Value("${group.accept.membership.linemanagers}")
@@ -466,6 +472,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 			case poolmanager: return mandatoryEnrolmentEmailForPoolmanagers;
 			case curriculummanager: return mandatoryEnrolmentEmailForCurriculummanagers;
 			case lecturemanager: return mandatoryEnrolmentEmailForLecturemanagers;
+			case projectmanager: return mandatoryEnrolmentEmailForProjectmanagers;
 			case qualitymanager: return mandatoryEnrolmentEmailForQualitymanagers;
 			case linemanager: return mandatoryEnrolmentEmailForLinemanagers;
 			case principal: return mandatoryEnrolmentEmailForPrincipals;
@@ -503,6 +510,9 @@ public class BusinessGroupModule extends AbstractSpringModule {
 				break;
 			case lecturemanager:
 				mandatoryEnrolmentEmailForLecturemanagers = setStringProperty(MANDATORY_ENROLMENT_EMAIL_LECTUREMANAGERS, enable, true);
+				break;
+			case projectmanager:
+				mandatoryEnrolmentEmailForProjectmanagers = setStringProperty(MANDATORY_ENROLMENT_EMAIL_PROJECTMANAGERS, enable, true);
 				break;
 			case qualitymanager:
 				mandatoryEnrolmentEmailForQualitymanagers = setStringProperty(MANDATORY_ENROLMENT_EMAIL_QUALITYMANAGERS, enable, true);
@@ -545,6 +555,7 @@ public class BusinessGroupModule extends AbstractSpringModule {
 			case poolmanager: return acceptMembershipForPoolmanagers;
 			case curriculummanager: return acceptMembershipForCurriculummanagers;
 			case lecturemanager: return acceptMembershipForLecturemanagers;
+			case projectmanager: return acceptMembershipForProjectmanagers;
 			case qualitymanager: return acceptMembershipForQualitymanagers;
 			case linemanager: return acceptMembershipForLinemanagers;
 			case principal: return acceptMembershipForPrincipals;
@@ -582,6 +593,9 @@ public class BusinessGroupModule extends AbstractSpringModule {
 				break;
 			case lecturemanager:
 				acceptMembershipForLecturemanagers = setStringProperty(ACCEPT_MEMBERSHIP_LECTUREMANAGERS, enable, true);
+				break;
+			case projectmanager:
+				acceptMembershipForProjectmanagers = setStringProperty(ACCEPT_MEMBERSHIP_PROJECTMANAGERS, enable, true);
 				break;
 			case qualitymanager:
 				acceptMembershipForQualitymanagers = setStringProperty(ACCEPT_MEMBERSHIP_QUALITYMANAGERS, enable, true);

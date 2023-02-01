@@ -62,6 +62,7 @@ public class ForumUIFactory {
 	 */
 	public static PopupBrowserWindow getPopupableForumController(UserRequest ureq, WindowControl wControl, final Forum forum, final ForumCallback forumCallback, final TitleInfo titleInfo) {		
 		ControllerCreator ctrlCreator = new ControllerCreator() {
+			@Override
 			public Controller createController(UserRequest lureq, WindowControl lwControl) {
 				Controller forumWrapperController = getTitledForumController(lureq, lwControl, forum,  forumCallback, titleInfo);
 				// use on column layout

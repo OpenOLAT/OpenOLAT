@@ -199,6 +199,9 @@ public class UserRolesController extends FormBasicController {
 		roleKeys.add(OrganisationRoles.lecturemanager.name());
 		roleValues.add(translate("role.".concat(OrganisationRoles.lecturemanager.name())));
 
+		roleKeys.add(OrganisationRoles.projectmanager.name());
+		roleValues.add(translate("role.".concat(OrganisationRoles.projectmanager.name())));
+
 		roleKeys.add(OrganisationRoles.qualitymanager.name());
 		roleValues.add(translate("role.".concat(OrganisationRoles.qualitymanager.name())));
 
@@ -249,6 +252,7 @@ public class UserRolesController extends FormBasicController {
 			enabled.add(OrganisationRoles.lecturemanager.name());
 			enabled.add(OrganisationRoles.linemanager.name());
 			enabled.add(OrganisationRoles.poolmanager.name());
+			enabled.add(OrganisationRoles.projectmanager.name());
 			enabled.add(OrganisationRoles.qualitymanager.name());
 			enabled.add(OrganisationRoles.rolesmanager.name());
 			enabled.add(OrganisationRoles.usermanager.name());
@@ -446,6 +450,7 @@ public class UserRolesController extends FormBasicController {
 			wrapper.commit(OrganisationRoles.poolmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.curriculummanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.linemanager, rolesToAdd, rolesToRemove);
+			wrapper.commit(OrganisationRoles.projectmanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.qualitymanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.lecturemanager, rolesToAdd, rolesToRemove);
 			wrapper.commit(OrganisationRoles.usermanager, rolesToAdd, rolesToRemove);

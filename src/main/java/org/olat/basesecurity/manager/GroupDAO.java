@@ -233,6 +233,15 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
+	public List<Identity> getMembers(Collection<Group> group, Collection<String> roles) {
+		List<Long> groupKeys = group.stream().map(Group::getKey).collect(Collectors.toList());
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membersByGroupsAndRoles", Identity.class)
+			.setParameter("groupKeys", groupKeys)
+			.setParameter("roles", roles)
+			.getResultList();
+	}
+	
 	/**
 	 * 
 	 * @param group A group

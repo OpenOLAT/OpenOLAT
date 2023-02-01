@@ -1,0 +1,23 @@
+<div class="o_proj_note_all">
+	<div class="o_proj_title o_block">
+		<div>
+			<h2>
+				$r.translate("note.all.title")
+			</h2>
+		</div>
+		<div class="o_proj_title_cmds">
+			#if($r.available("note.upload") && $r.visible("note.upload"))
+				$r.render("note.upload")
+			#end
+			#if($r.available("note.create") && $r.visible("note.create") && $r.available("note.create.dropdown") && $r.visible("note.create.dropdown"))
+				<div class="btn-group">
+					$r.render("note.create")
+					$r.render("note.create.dropdown")
+				</div>
+			#elseif($r.available("note.create") && $r.visible("note.create"))
+				$r.render("note.create")
+			#end
+		</div>
+	</div>
+	$r.render("table")
+</div>

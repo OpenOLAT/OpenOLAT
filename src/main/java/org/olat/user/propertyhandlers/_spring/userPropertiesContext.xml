@@ -1943,6 +1943,44 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.project.ui.ProjMemberListTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Members management in a project" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</list>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyFirstName" />
+							</set>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
+				<entry key="org.olat.modules.project.ui.ProjMembersAvatarController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Avatar view in projects" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.course.noderight.ui.NodeRightsController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Properties used in the configuration of user rights in course elements" />

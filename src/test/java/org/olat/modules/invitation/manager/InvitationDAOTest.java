@@ -20,6 +20,7 @@
 package org.olat.modules.invitation.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
 import java.util.Locale;
@@ -39,8 +40,11 @@ import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithProject;
 import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjectService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
@@ -67,6 +71,8 @@ public class InvitationDAOTest extends OlatTestCase {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private ProjectService projectService;
 	
 	@Test
 	public void createAndPersistInvitation() {
@@ -197,6 +203,25 @@ public class InvitationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void findInvitations_project() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(creator);
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
+		((InvitationImpl)invitation).setIdentity(invitee);
+		((InvitationImpl)invitation).setBaseGroup(project.getBaseGroup());
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		List<Invitation> foundInvitations = invitationDao.findInvitations(project, searchParams);
+		assertThat(foundInvitations)
+			.isNotNull()
+			.containsExactlyInAnyOrder(invitation);
+	}
+	
+	@Test
 	public void findInvitations_course() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-auth-1");
 		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(author);
@@ -236,6 +261,30 @@ public class InvitationDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, foundInvitations.size());
 		Assert.assertEquals(invitation, foundInvitations.get(0).getInvitation());
 		Assert.assertEquals(businessGroup, foundInvitations.get(0).getBusinessGroup());
+	}
+	
+	@Test
+	public void findInvitationsWithProject() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(creator);
+		project.setTitle("Project with invitations.");
+		project = projectService.updateProject(project.getCreator(), project);
+		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
+		((InvitationImpl)invitation).setIdentity(invitee);
+		((InvitationImpl)invitation).setBaseGroup(project.getBaseGroup());
+		invitation = invitationDao.update(invitation);
+		dbInstance.commit();
+		Assert.assertNotNull(invitation);
+		
+		SearchInvitationParameters searchParams = new SearchInvitationParameters();
+		searchParams.setIdentityKey(invitee.getKey());
+		searchParams.setSearchString("invitations");
+		searchParams.setUserPropertyHandlers(List.of());
+		List<InvitationWithProject> foundInvitations = invitationDao.findInvitationsWitProjects(searchParams);
+		Assert.assertEquals(1, foundInvitations.size());
+		Assert.assertEquals(invitation, foundInvitations.get(0).getInvitation());
+		Assert.assertEquals(project, foundInvitations.get(0).getProject());
 	}
 	
 	@Test

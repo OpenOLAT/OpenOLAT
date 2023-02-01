@@ -39,8 +39,11 @@ import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithProject;
 import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -103,6 +106,8 @@ public class InvitationDAO {
 		  .append("   where relGroup.group.key=baseGroup.key")
 		  .append(" ) or exists (select bgi.key from businessgroup as bgi")
 		  .append("   where bgi.baseGroup.key=baseGroup.key")
+		  .append(" ) or exists (select project.key from projproject as project")
+		  .append("   where project.baseGroup.key=baseGroup.key")
 		  .append(" ))");
 
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
@@ -231,6 +236,7 @@ public class InvitationDAO {
 		  .and().append("invitation.type=:type")
 		  .and().append("lower(invitation.mail)=:email");
 
+		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Invitation.class)
 				.setParameter("groupKey", group.getKey())
@@ -249,7 +255,7 @@ public class InvitationDAO {
 		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch invitation.identity ident")
 		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch ident.user as identUser");
 		appendInvitationsSearchParametersToQuery(sb, searchParams);
-		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), false, true);
+		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), false, true, false);
 		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Object[].class);
@@ -274,7 +280,7 @@ public class InvitationDAO {
 		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch invitation.identity ident")
 		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch ident.user as identUser");
 		appendInvitationsSearchParametersToQuery(sb, searchParams);
-		String[] params = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), true, false);
+		String[] params = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), true, false, false);
 
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Object[].class);
@@ -287,6 +293,31 @@ public class InvitationDAO {
 			Invitation invitation = (Invitation)raw[0];
 			BusinessGroup businessGroup = (BusinessGroup)raw[1];
 			invitations.add(new InvitationWithBusinessGroup(invitation, businessGroup));
+		}
+		return invitations;
+	}
+	
+	public List<InvitationWithProject> findInvitationsWitProjects(SearchInvitationParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select invitation, project from binvitation as invitation")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" inner join projproject as project on (bGroup.key = project.baseGroup.key)")
+		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch invitation.identity ident")
+		  .append(" ").append("inner", "left", searchParams.getIdentityKey() != null).append(" join fetch ident.user as identUser");
+		appendInvitationsSearchParametersToQuery(sb, searchParams);
+		String[] params = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), false, false, true);
+
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Object[].class);
+		appendInvitationsParametersToQuery(query, searchParams);
+		appendinvitationsSearchToQuery(params, query);
+		
+		List<Object[]> raws = query.getResultList();
+		List<InvitationWithProject> invitations = new ArrayList<>(raws.size());
+		for(Object[] raw:raws) {
+			Invitation invitation = (Invitation)raw[0];
+			ProjProject project = (ProjProject)raw[1];
+			invitations.add(new InvitationWithProject(invitation, project));
 		}
 		return invitations;
 	}
@@ -306,7 +337,7 @@ public class InvitationDAO {
 		  .append(" left join fetch ident.user as identUser")
 		  .where().append("reToGroup.entry.key=:repositoryEntryKey and reToGroup.defaultGroup=true");
 		appendInvitationsSearchParametersToQuery(sb, searchParams);
-		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), false, false);
+		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), false, false, false);
 
 		TypedQuery<Invitation> query = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Invitation.class)
@@ -325,11 +356,30 @@ public class InvitationDAO {
 		  .append(" left join fetch ident.user as identUser")
 		  .where().append("bgi.key=:businessGroupKey");
 		appendInvitationsSearchParametersToQuery(sb, searchParams);
-		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), true, false);
+		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), true, false, false);
 		
 		TypedQuery<Invitation> query = dbInstance.getCurrentEntityManager()
 				  .createQuery(sb.toString(), Invitation.class)
 				  .setParameter("businessGroupKey", businessGroup.getKey());
+		appendInvitationsParametersToQuery(query, searchParams);
+		appendinvitationsSearchToQuery(userParams, query);
+		return query.getResultList();
+	}
+	
+	public List<Invitation> findInvitations(ProjProjectRef project, SearchInvitationParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select invitation from binvitation as invitation ")
+		  .append(" inner join fetch invitation.baseGroup bGroup")
+		  .append(" inner join projproject as project on (bGroup.key = project.baseGroup.key)")
+		  .append(" left join fetch invitation.identity ident")
+		  .append(" left join fetch ident.user as identUser")
+		  .where().append("project.key=:projectKey");
+		appendInvitationsSearchParametersToQuery(sb, searchParams);
+		String[] userParams = appendInvitationsSearchFull(sb, searchParams.getUserPropertyHandlers(), searchParams.getSearchString(), true, false, false);
+		
+		TypedQuery<Invitation> query = dbInstance.getCurrentEntityManager()
+				  .createQuery(sb.toString(), Invitation.class)
+				  .setParameter("projectKey", project.getKey());
 		appendInvitationsParametersToQuery(query, searchParams);
 		appendinvitationsSearchToQuery(userParams, query);
 		return query.getResultList();
@@ -364,7 +414,7 @@ public class InvitationDAO {
 	}
 	
 	private String[] appendInvitationsSearchFull(QueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers,
-			String search, boolean withBusinessGroups, boolean withRepositoryEntry) {
+			String search, boolean withBusinessGroups, boolean withRepositoryEntry, boolean withProject) {
 		String[] searchArr = null;
 
 		if(StringHelper.containsNonWhitespace(search)) {
@@ -390,6 +440,11 @@ public class InvitationDAO {
 				if(withRepositoryEntry) {
 					start = appendOr(sb, start);
 					PersistenceHelper.appendFuzzyLike(sb, "v.displayname", searchParam, dbVendor);
+				}
+				
+				if(withProject) {
+					start = appendOr(sb, start);
+					PersistenceHelper.appendFuzzyLike(sb, "project.title", searchParam, dbVendor);
 				}
 			}
 			sb.append(")");

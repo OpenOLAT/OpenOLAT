@@ -41,8 +41,11 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +61,7 @@ public class InvitationListController extends AbstractInvitationListController i
 
 	private final RepositoryEntry entry;
 	private final BusinessGroup businessGroup;
+	private final ProjProject project;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	@Autowired
@@ -67,6 +71,7 @@ public class InvitationListController extends AbstractInvitationListController i
 		super(ureq, wControl, "invitations", readOnly);
 		this.entry = repositoryEntry;
 		this.businessGroup = null;
+		this.project = null;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -80,6 +85,24 @@ public class InvitationListController extends AbstractInvitationListController i
 		super(ureq, wControl, "invitations", readOnly);
 		this.entry = null;
 		this.businessGroup = businessGroup;
+		this.project = null;
+		
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
+		
+		initForm(ureq);
+		loadModel();
+	}
+	
+	public InvitationListController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
+		super(ureq, wControl, "invitations", readOnly);
+		setTranslator(Util.createPackageTranslator(ProjectUIFactory.class, ureq.getLocale(), getTranslator()));
+		this.entry = null;
+		this.businessGroup = null;
+		this.project = project;
+		
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -98,6 +121,9 @@ public class InvitationListController extends AbstractInvitationListController i
 			} else if(businessGroup != null) {
 				String name = businessGroup.getName() == null ? "" : businessGroup.getName();
 				layoutCont.contextPut("title", translate("invitation.business.group.list.title", name));
+			} else if(project != null) {
+				String name = project.getTitle() == null ? "" : project.getTitle();
+				layoutCont.contextPut("title", translate("invitation.project.list.title", name));
 			}
 		}
 		
@@ -148,12 +174,17 @@ public class InvitationListController extends AbstractInvitationListController i
 		if(entry != null) {
 			List<Invitation> invitations = invitationService.findInvitations(entry, getSearchParameters());
 			rows = invitations.stream()
-					.map(invitation -> forgeRow(invitation, entry, null))
+					.map(invitation -> forgeRow(invitation, entry, null, null))
 					.collect(Collectors.toList());
 		} else if(businessGroup != null) {
 			List<Invitation> invitations = invitationService.findInvitations(businessGroup, getSearchParameters());
 			rows = invitations.stream()
-					.map(invitation -> forgeRow(invitation, null, businessGroup))
+					.map(invitation -> forgeRow(invitation, null, businessGroup, null))
+					.collect(Collectors.toList());
+		} else if(project != null) {
+			List<Invitation> invitations = invitationService.findInvitations(project, getSearchParameters());
+			rows = invitations.stream()
+					.map(invitation -> forgeRow(invitation, null, null,  project))
 					.collect(Collectors.toList());
 		} else {
 			rows = new ArrayList<>();

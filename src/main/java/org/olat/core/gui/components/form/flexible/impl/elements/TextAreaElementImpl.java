@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -78,9 +79,6 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 		component = new TextAreaElementComponent(this, rows, cols, isAutoHeightEnabled, fixedFontWidth, originalLineBreaks);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormItemImpl#evalFormRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		String paramId = String.valueOf(component.getFormDispatchId());
@@ -89,8 +87,12 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 			setValue(val);
 			// mark associated component dirty, that it gets rerendered
 			component.setDirty(true);
+		} else {
+			String autosave = getRootForm().getRequestParameter("autosave");
+			if (StringHelper.containsNonWhitespace(autosave)) {
+				getRootForm().fireFormEvent(ureq, new TextAreaAutosaveEvent(this, autosave));
+			}
 		}
-
 	}
 
 	@Override
@@ -146,6 +148,11 @@ public abstract class TextAreaElementImpl extends AbstractTextElement implements
 	@Override
 	public void setFixedFontWidth(boolean fixedFontWidth) {
 		component.setFixedFontWidth(fixedFontWidth);
+	}
+	
+	@Override
+	public void setAutosave(boolean autosave) {
+		component.setAutosave(autosave);
 	}
 	
 	@Override

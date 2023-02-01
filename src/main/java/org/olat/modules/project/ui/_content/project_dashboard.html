@@ -1,0 +1,29 @@
+<div class="o_proj_dashboard">
+	<div class="o_proj_header o_flex_first_grow o_block">
+		<div class="o_proj_dashboard_title">
+			<h2>$projectTitle</h2>
+		</div>
+		<div class="o_title_cmds">
+			#if($r.available("cmds") && $r.visible("cmds"))
+				<div>$r.render("cmds")</div>
+			#end
+		</div>
+	</div>
+	<div class="o_proj_project_teaser">
+		#if($projectTeaser)
+			$projectTeaser
+		#end
+	</div>
+	<div>
+		$r.render("users")
+	</div>
+	<div class="o_proj_widgets o_block">
+		<div class="o_proj_widget_col">
+			$r.render("files")
+			$r.render("notes")
+		</div>
+		<div class="o_proj_timeline_col">
+			$r.render("timeline")
+		</div>
+	</div>
+</div>

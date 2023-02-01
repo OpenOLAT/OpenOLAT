@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -53,6 +54,9 @@ import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjectRole;
+import org.olat.modules.project.ProjectService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
 import org.olat.repository.RepositoryManager;
@@ -80,6 +84,8 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private ProjectService projectService;
 
 	public InvitationFinishCallback(InvitationContext context) {
 		CoreSpringFactory.autowireObject(this);
@@ -94,13 +100,18 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			if(invitation.getIdentity() == null || invitation.isIdentityInviteeOnly()) {
 				step = executeInvitation(ureq, wControl, invitation);
 			} else {
-				step = executeMembership(ureq, wControl, invitation.getIdentity());
+				if (context.getProject() != null) {
+					projectService.updateMember(context.getDoer(), context.getProject(), invitation.getIdentity(), context.getProjectRoles());
+					step = StepsMainRunController.DONE_MODIFIED;
+				} else {
+					step = executeMembership(ureq, wControl, invitation.getIdentity());
+				}
 			}
 		}
 		
 		return step;
 	}
-	
+
 	private Step executeMembership(UserRequest ureq, WindowControl wControl, Identity identity) {
 		MemberPermissionChangeEvent changes = context.getMemberPermissions();
 			
@@ -127,22 +138,26 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	private Step executeInvitation(UserRequest ureq, WindowControl wControl, TransientInvitation transientInvitation) {
 		MemberPermissionChangeEvent changes = context.getMemberPermissions();
 		
-		List<String> repoRoles = roles(changes);
-		if(!repoRoles.isEmpty() && context.getRepoEntry() != null) {
-			executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), null, repoRoles); 
-		}
-		
-		List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
-		if(allModifications != null && !allModifications.isEmpty()) {
-			for(BusinessGroupMembershipChange allModification:allModifications) {
-				BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(allModification.getGroupKey());
-				List<String> groupRoles = roles(allModifications, allModification.getGroupKey());
-				if(businessGroup != null && !groupRoles.isEmpty()) {
-					executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), businessGroup, groupRoles);
+		if (context.getProject() != null && context.getProjectRoles() != null) {
+			List<String> roles = context.getProjectRoles().stream().map(ProjectRole::name).collect(Collectors.toList());
+			executeInvitation(ureq, wControl, transientInvitation, null, null, context.getProject() , roles); 
+		} else {
+			List<String> repoRoles = roles(changes);
+			if(!repoRoles.isEmpty() && context.getRepoEntry() != null) {
+				executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), null, null, repoRoles); 
+			}
+			
+			List<BusinessGroupMembershipChange> allModifications = changes.getGroupChanges();
+			if(allModifications != null && !allModifications.isEmpty()) {
+				for(BusinessGroupMembershipChange allModification:allModifications) {
+					BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(allModification.getGroupKey());
+					List<String> groupRoles = roles(allModifications, allModification.getGroupKey());
+					if(businessGroup != null && !groupRoles.isEmpty()) {
+						executeInvitation(ureq, wControl, transientInvitation, context.getRepoEntry(), businessGroup, null, groupRoles);
+					}
 				}
 			}
 		}
-
 		return StepsMainRunController.DONE_MODIFIED;
 	}
 	
@@ -185,7 +200,7 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 	}
 	
 	private Step executeInvitation(UserRequest ureq, WindowControl wControl, TransientInvitation transientInvitation,
-			RepositoryEntry repoEntry, BusinessGroup businessGroup, List<String> roles) {
+			RepositoryEntry repoEntry, BusinessGroup businessGroup, ProjProject project, List<String> roles) {
 		Group group = null;
 		OLATResourceable ores = null;
 		InvitationTypeEnum type = null;
@@ -197,6 +212,10 @@ public class InvitationFinishCallback implements StepRunnerCallback {
 			group = businessGroup.getBaseGroup();
 			ores = businessGroup;
 			type = InvitationTypeEnum.businessGroup;
+		} else if (project != null) {
+			group = project.getBaseGroup();
+			ores = project;
+			type = InvitationTypeEnum.project;
 		}
 		
 		Invitation invitation = invitationService.createInvitation(type);

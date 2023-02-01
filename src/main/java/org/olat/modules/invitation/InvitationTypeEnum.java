@@ -29,6 +29,7 @@ public enum InvitationTypeEnum {
 	
 	binder,
 	repositoryEntry,
-	businessGroup
+	businessGroup,
+	project
 
 }

@@ -35,10 +35,6 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
 import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
@@ -53,8 +49,10 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.filter.impl.HtmlMathScanner;
+
 
 /**
  * enclosing_type Description: <br>
@@ -82,6 +80,7 @@ public class Formatter {
 	
 
 	private final Locale locale;
+	private final Translator translator;
 	private final DateFormat shortDateFormat;
 	private final DateFormat longDateFormat;
 	private final DateFormat shortDateTimeFormat;
@@ -94,6 +93,7 @@ public class Formatter {
 	 */
 	private Formatter(Locale locale) {
 		this.locale = locale;
+		this.translator = Util.createPackageTranslator(Formatter.class, locale);
 		// Date only formats
 		shortDateFormat = DateFormat.getDateInstance(DateFormat.SHORT, locale);
 		shortDateFormat.setLenient(false);
@@ -178,21 +178,6 @@ public class Formatter {
 		synchronized (shortDateFormat) {
 			return shortDateFormat.format(date);
 		}
-	}
-
-	/**
-	 * adds the given period in day/month/years to the baseLineDate and formats it in a short format, e.g. 05.12.2015 or 12/05/2015
-	 *
-	 * @param baseLineDate the date
-	 * @return a String with the formatted date
-	 */
-	public String formatDateRelative(Date baseLineDate, int days, int months, int years) {
-		if (baseLineDate == null) return null;
-		LocalDate date = LocalDateTime.ofInstant(baseLineDate.toInstant(),ZoneId.systemDefault()).toLocalDate();
-		Period period = Period.of(years, months, days);
-		LocalDate relativeDate = date.plus(period);
-		Date result = Date.from(relativeDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-		return formatDate(result);
 	}
 
 	/**
@@ -375,6 +360,22 @@ public class Formatter {
 		DateFormatSymbols symbols = new DateFormatSymbols(locale);
 		String[] dayNames = symbols.getWeekdays();
 		return dayNames[day];
+	}
+	
+	public String formatDateRelative(Date d) {
+		Date now = new Date();
+		if (DateUtils.isSameDay(d, now)) {
+			return translator.translate("today");
+		}
+		Date yesterday = DateUtils.addDays(now, -1);
+		if (DateUtils.isSameDay(d, yesterday)) {
+			return translator.translate("yesterday");
+		}
+		long days = DateUtils.countDays(d, now);
+		if (days <= 7) {
+			return translator.translate("days.ago", String.valueOf(days));
+		}
+		return formatDate(d);
 	}
 
 	/**

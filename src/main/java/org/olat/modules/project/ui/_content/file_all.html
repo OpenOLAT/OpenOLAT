@@ -1,0 +1,23 @@
+<div class="o_proj_file_all">
+	<div class="o_proj_title o_block">
+		<div>
+			<h2>
+				$r.translate("file.all.title")
+			</h2>
+		</div>
+		<div class="o_proj_title_cmds">
+			#if($r.available("file.upload") && $r.visible("file.upload"))
+				$r.render("file.upload")
+			#end
+			#if($r.available("file.create") && $r.visible("file.create") && $r.available("file.create.dropdown") && $r.visible("file.create.dropdown"))
+				<div class="btn-group">
+					$r.render("file.create")
+					$r.render("file.create.dropdown")
+				</div>
+			#elseif($r.available("file.create") && $r.visible("file.create"))
+				$r.render("file.create")
+			#end
+		</div>
+	</div>
+	$r.render("table")
+</div>

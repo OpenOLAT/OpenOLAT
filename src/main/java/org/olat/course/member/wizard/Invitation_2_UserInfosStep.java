@@ -41,7 +41,7 @@ public class Invitation_2_UserInfosStep extends BasicStep {
 	public Invitation_2_UserInfosStep(UserRequest ureq, InvitationContext context) {
 		super(ureq);
 		this.context = context;
-		setNextStep(new Invitation_3_ChoosePermissionStep(ureq, context));
+		setNextStep(context.getProject() != null? new Invitation_3_ProjectRolesStep(ureq, context):  new Invitation_3_ChoosePermissionStep(ureq, context));
 		setI18nTitleAndDescr("invitation.user.infos.title", "invitation.user.infos.title");
 	}
 

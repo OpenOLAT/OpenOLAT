@@ -1,0 +1,293 @@
+.o_proj_projects {
+	.o_proj_header {
+		align-items: baseline;
+	}
+	.o_proj_project_list {
+		.o_rendertype_custom {
+			.o_proj_project_rows {
+				display: grid;
+				grid-template-columns: 1fr;
+				@media (min-width: $screen-sm-min) {
+					grid-template-columns: 1fr 1fr;
+				}
+				gap: $o-proj-proj-rows-gap;
+				
+				.o_proj_project_row {
+					.panel {
+						margin-bottom: 0;
+					}
+					.o_proj_project_title {
+						display: inline;
+					}
+					.o_proj_project_members {
+						margin-bottom: 5px;
+					}
+					.o_proj_project_modified {
+						@extend %o_muted;
+					}
+				}
+			}
+		}
+	}
+}
+
+.o_labeled_light {
+	&.o_proj_project_status_active {
+		border-color: 		$o-repo-published-color;
+		color: 				$o-repo-published-color;
+	}
+	&.o_proj_project_status_done {
+		border-color: 		$o-repo-closed-color;
+		color: 				$o-repo-closed-color;
+	}
+	&.o_proj_project_status_deleted {
+		border-color: 		$o-repo-deleted-color;
+		color: 				$o-repo-deleted-color;
+	}
+}
+
+.o_proj_dashboard {
+	.o_proj_widgets {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 40px;
+		
+		.o_proj_widget_col {
+			grid-column: span 2;
+			@media (max-width: $screen-xs-max) {
+				grid-column: span 3;
+			}
+		}
+		.o_proj_timeline_col {
+			grid-column: span 1;
+			@media (max-width: $screen-xs-max) {
+				display:none;
+			}
+		}
+	}
+	
+	.o_proj_widget {
+		.o_proj_widget_title {
+			.o_proj_widget_cmds {
+				font-size: $font-size-h3;
+			}
+		}
+	}
+	.panel-heading {
+		h3 {
+			margin-top: 10px;
+		}
+	}
+}
+
+.o_proj_cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	>div {
+		// Minus 5px because of the gap?!
+		width: calc(50% - 5px);
+		@media (max-width: $screen-sm-max) {
+			min-width: 100%;
+		}
+	}
+}
+
+.o_proj_card {
+	border: 1px solid $o-coursesite-rowelem-border;
+	border-radius: $o-coursesite-rowelem-border-radius;
+	background: #ffffff;
+	height: 100%;
+	
+	&.o_proj_card_link {
+		cursor: pointer;
+		.o_icon_actions {
+			margin: 10px 15px;
+		}
+	}
+	
+	.o_proj_card_meta {
+		padding: 10px;
+		border-radius: $o-coursesite-rowelem-border-radius;
+		background: #ffffff;
+		.o_proj_card_title {
+			margin-top: 0;
+			margin-bottom: 5px;
+			line-height: 26px;
+			
+			a {
+				@extend %o_nowrap;
+				display: block;
+			}
+		}
+		.o_proj_card_members {
+			@extend %o_block_small_bottom;
+		}
+		.o_proj_card_modified {
+			@extend %o_muted;
+			@extend %o_flex_block_one_line_left;
+		}
+	}
+}
+
+.o_proj_file_list {
+	&.o_rendertype_custom {
+		.o_proj_file_rows {
+			.o_proj_file_card {
+				height: 200px;
+				box-sizing: border-box;
+				overflow: hidden;
+				position: relative;
+				
+				.o_proj_file_thumbnail {
+					cursor: pointer;
+					height: 118px;
+					position: relative;
+					.o_proj_file_img {
+						left: 0;
+						overflow: hidden;
+						position: absolute;
+						text-align: center;
+						top: 0;
+						transition: opacity 200ms ease-in-out;
+						width: 100%;
+						img {
+							padding: 12px 12px 0px 12px;
+							height: auto;
+							text-align: center;
+						}
+					}
+					.o_visual_not_available {
+						height: 150px;
+						background-image:url('#{$o-images-path}no_preview.png');
+						background-repeat:no-repeat;
+						background-position:50% 50%;	
+						background-size: contain;
+					}
+				}
+				.o_proj_file_meta {
+					position: relative;
+					width: 100%;
+					height: 85px;
+				}
+			}
+		}
+		
+	}
+}
+.o_proj_references {
+	margin-bottom: 15px;
+}
+.o_proj_metadata {
+	display: grid;
+	grid-template-columns: 50% 50%;
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+}
+.o_proj_reference_selection_results {
+	height: 400px;
+	overflow-y: auto;
+}
+
+.o_proj_members_avatar {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
+	@media (max-width: $screen-md-max) {
+		grid-template-columns: 50% 50%;
+	}
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+	.o_proj_member {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: 50px auto;
+		.o_portrait {
+			img {
+				width: 50px;
+				height: 50px;
+			}
+		}
+		.o_properties {
+			:not(.o_name) {
+				color: $text-muted;
+			}
+		}
+	}
+}
+.o_proj_note {
+	.o_proj_note_header {
+		.o_proj_note_header_infos {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 30px;
+		}
+	}
+}
+.o_proj_timeline {
+	// Better way to change the icon?
+	.o_icon_search:before { content: $fa-var-filter;}
+	.o_table_toolbar {
+		margin-left: 15px;
+	}
+	.o_table_search {
+		.form-control {
+			width: auto;
+		}
+	}
+	
+	.o_proj_timeline_row {
+		display: flex;
+		gap: $o-proj-timeline-row-gap;
+		margin-top: $o-proj-timeline-row-margin-top;
+		
+		.o_proj_timeline_icon {
+			width: $o-portrait-small-size;
+			display:flex;
+			justify-content: center;
+			flex-shrink: 0;
+		}
+		.o_proj_timeline_doer {
+			@extend %o_muted;
+			@extend %o_small;
+		}
+		.o_proj_timeline_date {
+			margin-left: auto;
+			@extend %o_muted;
+		}
+		
+		&.o_proj_timeline_range_row {
+			.o_proj_timeline_range_deco {
+				flex-grow: 10;
+				border-top: .1rem solid $text-muted;
+				transform: translateY(1rem);
+			}
+			a {
+				@extend %o_muted;
+			}
+		}
+		&.o_proj_timeline_more_row {
+			justify-content: center;
+			@extend %o_small;
+		}
+	}
+	.o_table_add_filter {
+		display: none;
+	}
+}
+
+/* Helpers */
+.o_proj_title {
+	@extend %o_flex_first_grow_base;
+}
+.btn-group {
+ 	>.btn:first-child {
+		&.o_proj_cmds {
+			margin-left: 5px;
+		}
+	}
+}
+
