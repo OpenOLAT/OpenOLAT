@@ -94,7 +94,7 @@ public class ExportOptionsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		if(!downloadOptionsEl.isAtLeastSelected(1)) {
-			downloadOptionsEl.setErrorKey("nodechoose.config.error", null);
+			downloadOptionsEl.setErrorKey("nodechoose.config.error");
 			allOk &= false;
 		}
 		return allOk;

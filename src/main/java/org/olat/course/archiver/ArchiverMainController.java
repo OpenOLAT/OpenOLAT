@@ -65,6 +65,7 @@ import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.TACourseNode;
+import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.WikiCourseNode;
 
 /**
@@ -90,6 +91,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 	private static final String CMD_PARTICIPANTFOLDER = "participantfolder";
 	private static final String CMD_SURVEY = "survey";
 	private static final String CMD_FORM = "form";
+	private static final String CMD_VIDEOTASK = "videotask";
 	
 	
 	private IArchiverCallback archiverCallback;
@@ -291,7 +293,13 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 			gtn.setAltText(translate("menu.forms.alt"));
 			root.addChild(gtn);
 		}
-		
+		if (archiverCallback.mayArchiveVideoTasks()) {
+			gtn = new GenericTreeNode();
+			gtn.setTitle(translate("menu.videotasks"));
+			gtn.setUserObject(CMD_VIDEOTASK);
+			gtn.setAltText(translate("menu.videotasks.alt"));
+			root.addChild(gtn);
+		}
 		
 		//add extension menues
 		ExtManager extm = ExtManager.getInstance();
@@ -366,6 +374,9 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_FORM)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new FormCourseNode());
+				setContent(contentCtr);
+			} else if (menuCommand.equals(CMD_VIDEOTASK)) {
+				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new VideoTaskCourseNode());
 				setContent(contentCtr);
 			}
 		}		

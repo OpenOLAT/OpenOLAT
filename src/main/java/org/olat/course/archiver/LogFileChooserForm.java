@@ -85,11 +85,11 @@ public class LogFileChooserForm extends FormBasicController {
       	logChecked = true;
       }else{
       	if (sE.isVisible()) {
-      		sE.setErrorKey("course.logs.error", null);
+      		sE.setErrorKey("course.logs.error");
       	} else if (uE.isVisible()) {
-      		uE.setErrorKey("course.logs.error", null);
+      		uE.setErrorKey("course.logs.error");
       	} else {
-      		aE.setErrorKey("course.logs.error", null);
+      		aE.setErrorKey("course.logs.error");
       	}
       }
       
@@ -99,7 +99,7 @@ public class LogFileChooserForm extends FormBasicController {
       if((beginDate.getDate() != null)&&(endDate.getDate() != null)){
       	if (beginDate.getDate().after(endDate.getDate())){
       		beginLessThanEndOk= false;
-      		beginDate.setErrorKey("logfilechooserform.endlessthanbegin", null);
+      		beginDate.setErrorKey("logfilechooserform.endlessthanbegin");
       	}
       }
       

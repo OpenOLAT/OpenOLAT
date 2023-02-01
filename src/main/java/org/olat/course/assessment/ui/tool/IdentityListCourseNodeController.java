@@ -96,6 +96,7 @@ import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -118,6 +119,7 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.AssessmentToolOptions;
@@ -949,6 +951,44 @@ public class IdentityListCourseNodeController extends FormBasicController
 		return options;
 	}
 	
+	/**
+	 * 
+	 * @param allIfAdmin Admin. have the possibility to see not participants.
+	 * @return A list of identities
+	 */
+	protected IdentitiesList getIdentities(boolean allIfAdmin) {
+		AssessmentToolOptions asOptions = getOptions();
+		boolean withNonParticipants = false;
+		List<Identity> identities = asOptions.getIdentities();
+		if (identities != null) {
+			identities = asOptions.getIdentities();			
+		} else if (asOptions.isAdmin()) {
+			if(allIfAdmin) {
+				withNonParticipants = true;
+				identities = ScoreAccountingHelper.loadUsers(getCourseEnvironment());
+			} else {
+				identities = ScoreAccountingHelper.loadParticipants(getCourseEnvironment());
+			}
+		}
+		
+		List<String> filters = getHumanReadableFilterValues();
+		return new IdentitiesList(identities, filters, withNonParticipants, true);
+	}
+	
+	protected List<String> getHumanReadableFilterValues() {
+		List<String> values = new ArrayList<>();
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		for(FlexiTableFilter filter:filters) {
+			if(filter instanceof FlexiTableExtendedFilter extendedFilter) {
+				List<String> hrVal = extendedFilter.getHumanReadableValues();
+				if(hrVal != null && !hrVal.isEmpty()) {
+					values.addAll(hrVal);
+				}
+			}
+		}
+		return values;
+	}
+	
 	private void fillAlternativeToAssessableIdentityList(AssessmentToolOptions options, SearchAssessedIdentityParams params) {
 		List<Group> baseGroups = new ArrayList<>();
 		if(assessmentCallback.canAssessRepositoryEntryMembers() || assessmentCallback.canAssessNonMembers()) {
@@ -981,8 +1021,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	@Override
 	public void event(Event event) {
-		if(event instanceof CompletionEvent) {
-			CompletionEvent ce = (CompletionEvent)event;
+		if(event instanceof CompletionEvent ce) {
 			if(courseNode.getIdent().equals(ce.getSubIdent())) {
 				doUpdateCompletion(ce.getStart(), ce.getCompletion(), ce.getStatus(), ce.getIdentityKey());
 			}
@@ -1046,8 +1085,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
-			if(event instanceof AssessmentFormEvent) {
-				AssessmentFormEvent aee = (AssessmentFormEvent)event;
+			if(event instanceof AssessmentFormEvent aee) {
 				reload(ureq);
 				if(aee.isClose()) {
 					stackPanel.popController(currentIdentityCtrl);
@@ -1081,8 +1119,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			}
 			cleanUp();
 		} else if(toolsCtrl == source) {
-			if(event instanceof ShowDetailsEvent) {
-				doSelect(ureq, ((ShowDetailsEvent)event).getAssessedIdentity());
+			if(event instanceof ShowDetailsEvent sdEvent) {
+				doSelect(ureq, sdEvent.getAssessedIdentity());
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			} else if(event == Event.CHANGED_EVENT) {
@@ -1122,8 +1160,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				AssessedIdentityElementRow row = usersTableModel.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -1146,8 +1183,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doSetUserVisibility(ureq, false);
 		} else if(bulkEmailButton == source) {
 			doEmail(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
 			}

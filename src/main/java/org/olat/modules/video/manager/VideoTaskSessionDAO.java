@@ -176,6 +176,9 @@ public class VideoTaskSessionDAO {
 			
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select session from videotasksession session")
+		  .append(" inner join fetch session.assessmentEntry as aEntry")
+		  .append(" left join fetch session.identity as ident")
+		  .append(" left join fetch ident.user as identUser")
 		  .where().append(" session.repositoryEntry.key=:courseEntryKey");
 
 		if(subIdent != null) {
@@ -190,9 +193,9 @@ public class VideoTaskSessionDAO {
 			sb.and().append("session.anonymousIdentifier is null");
 		}
 		if(identity != null) {
-			sb.and().append("session.identity.key=:identityKey");
+			sb.and().append("ident.key=:identityKey");
 		}
-		sb.append(" order by session.creationDate desc");
+		sb.append(" order by ident.key, session.creationDate desc");
 		
 		TypedQuery<VideoTaskSession> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), VideoTaskSession.class)
