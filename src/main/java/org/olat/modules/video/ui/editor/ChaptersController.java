@@ -147,6 +147,7 @@ public class ChaptersController extends FormBasicController {
 				ChapterTableModel.ChapterTableCols.tools.ordinal()
 				);
 		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
 		columnModel.addFlexiColumnModel(toolsColumn);
 
 		tableModel = new ChapterTableModel(columnModel);

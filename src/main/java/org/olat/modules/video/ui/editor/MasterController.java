@@ -160,6 +160,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		StickyActionColumnModel toolsColumn = new StickyActionColumnModel(TimelineCols.tools.i18nHeaderKey(),
 				TimelineCols.tools.ordinal());
 		toolsColumn.setIconHeader("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		toolsColumn.setColumnCssClass("o_icon-fws o_col_sticky_right o_col_action");
 		columnModel.addFlexiColumnModel(toolsColumn);
 
 		timelineModel = new TimelineModel(timelineDataSource, columnModel);
