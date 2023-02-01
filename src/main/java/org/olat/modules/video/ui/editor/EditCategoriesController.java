@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
@@ -79,7 +80,7 @@ public class EditCategoriesController extends FormBasicController {
 		private final FormLink addButton;
 		private final FormLink deleteButton;
 
-		public Category(FormItemContainer formLayout, UserRequest ureq, int id, VideoSegmentCategory category) {
+		public Category(FormItemContainer formLayout, int id, VideoSegmentCategory category) {
 			this.id = id;
 			this.longId = category == null ? UUID.randomUUID().toString() : category.getId();
 			this.sortOrder = id;
@@ -112,9 +113,6 @@ public class EditCategoriesController extends FormBasicController {
 			deleteButton = uifactory.addFormLink(DELETE_CMD + "_" + id, "", "", formLayout,
 					Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 			deleteButton.setIconRightCSS("o_icon o_icon_delete_item");
-
-			uifactory.addFormSubmitButton("save", formLayout);
-			uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 		}
 
 		public FormLink getMoveUpLink() {
@@ -147,6 +145,10 @@ public class EditCategoriesController extends FormBasicController {
 
 		public int getId() {
 			return id;
+		}
+
+		public String getLongId() {
+			return longId;
 		}
 
 		public int getSortOrder() {
@@ -188,10 +190,13 @@ public class EditCategoriesController extends FormBasicController {
 		categories = new ArrayList<>();
 		for (int i = 0; i < videoSegments.getCategories().size(); i++) {
 			VideoSegmentCategory category = videoSegments.getCategories().get(i);
-			categories.add(new Category(formLayout, ureq, i, category));
+			categories.add(new Category(formLayout, i, category));
 		}
-		initCategorySortOrders();
+		initUi();
 		flc.contextPut("categories", categories);
+
+		uifactory.addFormSubmitButton("save", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 
 	@Override
@@ -230,7 +235,7 @@ public class EditCategoriesController extends FormBasicController {
 
 	private void doHandleCommand(String cmd, int id, UserRequest ureq) {
 		if (ADD_CMD.equals(cmd)) {
-			Category category = new Category(flc, ureq, getNewCategoryIndex(), null);
+			Category category = new Category(flc, getNewCategoryIndex(), null);
 
 			Set<String> usedColors = categories.stream().map(Category::getColor).collect(Collectors.toSet());
 			List<String> colors = videoModule.getMarkerStyles();
@@ -240,18 +245,18 @@ public class EditCategoriesController extends FormBasicController {
 			category.getLabel().setValue(translate("form.segment.category.label.new"));
 			category.getTitle().setValue(translate("form.segment.category.title.new"));
 			categories.add(0, category);
-			initCategorySortOrders();
+			initUi();
 			flc.contextPut("categories", categories);
 		} else if (DELETE_CMD.equals(cmd)) {
 			categories.stream().filter((c) -> c.getId() == id).findFirst().ifPresent((c) -> categories.remove(c));
 			if (categories.isEmpty()) {
-				Category category = new Category(flc, ureq, getNewCategoryIndex(), null);
+				Category category = new Category(flc, getNewCategoryIndex(), null);
 				category.setColor("o_video_marker_green");
 				category.getLabel().setValue(translate("form.segment.category.label.new"));
 				category.getTitle().setValue(translate("form.segment.category.title.new"));
 				categories.add(0, category);
 			}
-			initCategorySortOrders();
+			initUi();
 			flc.contextPut("categories", categories);
 		} else if (MOVE_UP_CMD.equals(cmd)) {
 			int index = getCategoryIndex(id);
@@ -259,7 +264,7 @@ public class EditCategoriesController extends FormBasicController {
 				Category category = categories.get(index);
 				categories.remove(index);
 				categories.add(index - 1, category);
-				initCategorySortOrders();
+				initUi();
 				flc.contextPut("categories", categories);
 			}
 		} else if (MOVE_DOWN_CMD.equals(cmd)) {
@@ -268,7 +273,7 @@ public class EditCategoriesController extends FormBasicController {
 				Category category = categories.get(index);
 				categories.remove(index);
 				categories.add(index + 1, category);
-				initCategorySortOrders();
+				initUi();
 				flc.contextPut("categories", categories);
 			}
 		} else if (COLOR_CMD.equals(cmd)) {
@@ -308,6 +313,18 @@ public class EditCategoriesController extends FormBasicController {
 			}
 		}
 		return -1;
+	}
+
+	private void initUi() {
+		initButtonStates();
+		initCategorySortOrders();
+	}
+
+	private void initButtonStates() {
+		Set<String> usedIds = videoSegments.getSegments().stream().map(VideoSegment::getCategoryId).collect(Collectors.toSet());
+		for (Category category : categories) {
+			category.getDeleteButton().setEnabled(!usedIds.contains(category.getLongId()));
+		}
 	}
 
 	private void initCategorySortOrders() {
