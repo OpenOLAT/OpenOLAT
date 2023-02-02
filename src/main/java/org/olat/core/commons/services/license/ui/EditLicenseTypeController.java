@@ -82,7 +82,7 @@ public class EditLicenseTypeController extends FormBasicController {
 		String[] oerValues = new String[]{translate("license.type.oer.qualifies")};
 
 		oerEl = uifactory.addCheckboxesVertical(LICENSE_TYPE_OER_KEY, formLayout, oerKeys, oerValues, 1);
-		oerEl.select(oerKeys[0], licenseType.isOerLicense());
+		oerEl.select(oerKeys[0], licenseType != null && licenseType.isOerLicense());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -110,11 +110,11 @@ public class EditLicenseTypeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (oerEl.isEnabled()) {
-			licenseType.setOerLicense(oerEl.isKeySelected(LICENSE_TYPE_OER_KEY));
-		}
 		if (licenseType == null) {
 			licenseType = licenseService.createLicenseType(nameEl.getValue());
+		}
+		if (oerEl.isEnabled()) {
+			licenseType.setOerLicense(oerEl.isKeySelected(LICENSE_TYPE_OER_KEY));
 		}
 		String text = StringHelper.containsNonWhitespace(textEl.getValue())
 				? textEl.getValue()
