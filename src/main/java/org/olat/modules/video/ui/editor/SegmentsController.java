@@ -113,17 +113,8 @@ public class SegmentsController extends BasicController {
 							segmentController.setSegment(s);
 							fireEvent(ureq, segmentSelectedEvent);
 						});
-			} else if (event == SegmentsHeaderController.SEGMENT_ADDED_EVENT) {
-				this.segments = segmentsHeaderController.getSegments();
-				String newSegmentId = segmentsHeaderController.getSegmentId();
-				showSegment(newSegmentId);
-				segmentController.setSegment(segment);
-				videoManager.saveSegments(segments, repositoryEntry.getOlatResource());
-				reloadSegments(ureq);
-				if (segment != null) {
-					fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime()));
-				}
-			} else if (event == SegmentsHeaderController.SEGMENT_DELETED_EVENT) {
+			} else if (event == SegmentsHeaderController.SEGMENT_ADDED_EVENT ||
+					event == SegmentsHeaderController.SEGMENT_DELETED_EVENT) {
 				this.segments = segmentsHeaderController.getSegments();
 				String newSegmentId = segmentsHeaderController.getSegmentId();
 				showSegment(newSegmentId);

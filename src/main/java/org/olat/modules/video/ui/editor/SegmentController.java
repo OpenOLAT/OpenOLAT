@@ -141,6 +141,8 @@ public class SegmentController extends FormBasicController {
 	}
 
 	private void setValues() {
+		flc.contextPut("overlapError", false);
+
 		if (segment == null) {
 			return;
 		}
@@ -249,6 +251,7 @@ public class SegmentController extends FormBasicController {
 	}
 
 	private boolean validateNoOverlap() {
+		flc.contextPut("overlapError", false);
 		try {
 			long startNew = timeFormat.parse(startEl.getValue()).getTime();
 			long endNew = timeFormat.parse(endEl.getValue()).getTime();
@@ -260,8 +263,7 @@ public class SegmentController extends FormBasicController {
 				long endTest = startTest + s.getDuration() * 1000;
 				boolean valid = startNew >= endTest || endNew <= startTest;
 				if (!valid) {
-					startEl.setErrorKey("form.error.timeNotValid");
-					endEl.setErrorKey("form.error.timeNotValid");
+					flc.contextPut("overlapError", true);
 				}
 				return valid;
 			});

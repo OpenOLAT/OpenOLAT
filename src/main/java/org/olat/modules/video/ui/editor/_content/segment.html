@@ -22,7 +22,13 @@
 		<div>$r.render("duration", "error")</div>
 		#end
 	</div>
-	<div class="o_form_example help-block col-xs-offset-10 col-xs-2">$r.render("duration", "example")</div>
+	<div class="col-xs-offset-3 col-xs-4">
+		#if ($overlapError)
+		<div class="o_error">$r.translate("form.segment.error.overlap")</div>
+		#end
+	</div>
+	<div class="col-xs-3"></div>
+	<div class="o_form_example help-block col-xs-2">$r.render("duration", "example")</div>
 </div>
 
 <div class="form-group row clearfix">
