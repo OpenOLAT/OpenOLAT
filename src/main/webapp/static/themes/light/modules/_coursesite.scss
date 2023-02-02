@@ -701,7 +701,7 @@
 /* Catalog V2 */
 .o_catalog2 {
 	.o_catalog_header {
-		margin-top: -20px;
+		margin-top: -$o-navbar-margin-bottom;
 		margin-bottom: -20px;
 		.o_catalog_header_item {
 			padding: 20px 20px 40px 20px;
