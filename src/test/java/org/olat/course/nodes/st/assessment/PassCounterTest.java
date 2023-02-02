@@ -19,9 +19,9 @@
  */
 package org.olat.course.nodes.st.assessment;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -144,26 +144,14 @@ public class PassCounterTest {
 		AssessmentEvaluation child21Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.mandatory);
 		scoreAccounting.put(child21, child21Evaluation);
 		when(courseAssessmentService.getAssessmentConfig(courseEntry, child21)).thenReturn(configSetByNode);
-		// Child level 2: set by node, passed, user visible
-		CourseNode child22 = new Card2BrainCourseNode();
-		child17.addChild(child22);
-		AssessmentEvaluation child22Evaluation = createAssessmentEvaluation(Boolean.TRUE, Boolean.TRUE, AssessmentObligation.optional);
-		scoreAccounting.put(child22, child22Evaluation);
-		when(courseAssessmentService.getAssessmentConfig(courseEntry, child22)).thenReturn(configSetByNode);
 		
-		// Test not excluded
-		Counts counts = sut.getCounts(courseEntry, parent, scoreAccounting, PassCounter.NOT_EXCLUDED, courseAssessmentService);
+		Counts counts = sut.getCounts(courseEntry, parent, scoreAccounting, courseAssessmentService);
 		
-		assertThat(counts.getPassable()).isEqualTo(7);
-		assertThat(counts.getPassed()).isEqualTo(3);
-		assertThat(counts.getFailed()).isEqualTo(1);
-		
-		// Test mandatory
-		counts = sut.getCounts(courseEntry, parent, scoreAccounting, PassCounter.MANDTATORY, courseAssessmentService);
-		
-		assertThat(counts.getPassable()).isEqualTo(6);
-		assertThat(counts.getPassed()).isEqualTo(2);
-		assertThat(counts.getFailed()).isEqualTo(1);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(counts.getPassable()).isEqualTo(6);
+		softly.assertThat(counts.getPassed()).isEqualTo(2);
+		softly.assertThat(counts.getFailed()).isEqualTo(1);
+		softly.assertAll();
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(Boolean passed, Boolean userVisibility, AssessmentObligation obligation) {

@@ -129,7 +129,6 @@ public class STAssessmentConfig implements AssessmentConfig {
 	private boolean isEvaluatedRoot() {
 		return isRoot && (
 				   rootConfig.has(STCourseNode.CONFIG_PASSED_PROGRESS)
-				|| rootConfig.has(STCourseNode.CONFIG_PASSED_ALL_MANDATORY)
 				|| rootConfig.has(STCourseNode.CONFIG_PASSED_ALL)
 				|| rootConfig.has(STCourseNode.CONFIG_PASSED_NUMBER)
 				|| rootConfig.has(STCourseNode.CONFIG_PASSED_POINTS)

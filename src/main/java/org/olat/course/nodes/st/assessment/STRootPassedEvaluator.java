@@ -92,32 +92,30 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		// Number passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER)) {
 			int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, Integer.MAX_VALUE);
-			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting, PassCounter.NOT_EXCLUDED);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassed() >= cutValue) {
 				return Boolean.TRUE;
 			}
 		}
 		
-		// All mandatory passed
-		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL_MANDATORY)) {
-			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting, PassCounter.MANDTATORY);
-			ReturnBoolean passedAll = getPassedAll(currentEvaluation, config, counts);
-			if (passedAll.isToReturn()) {
-				return passedAll.getReturnBoolean();
-			}
-		}
-		
 		// All passed
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL)) {
-			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting, PassCounter.NOT_EXCLUDED);
-			ReturnBoolean passedAll = getPassedAll(currentEvaluation, config, counts);
-			if (passedAll.isToReturn()) {
-				return passedAll.getReturnBoolean();
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
+			if (counts.getPassable() > 0) {
+				if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
+					return Boolean.TRUE;
+				}
+				if (counts.getFailed() > 0 && getActivePassedConfigs(config) == 1) {
+					return Boolean.FALSE;
+				}
+				if (getActivePassedConfigs(config) == 1 && !isFullyAssessed(currentEvaluation)) {
+					return null;
+				}
 			}
 		}
 	
 		if (currentPassed == null && getActivePassedConfigs(config) > 0) {
-			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting, PassCounter.NOT_EXCLUDED);
+			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				
 				// Failed if course is fully assessed
@@ -138,21 +136,6 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		
 		return currentPassed;
 	}
-
-	private ReturnBoolean getPassedAll(AssessmentEvaluation currentEvaluation, ModuleConfiguration config, Counts counts) {
-		if (counts.getPassable() > 0) {
-			if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
-				return ReturnBoolean.RETURN_TRUE;
-			}
-			if (counts.getFailed() > 0 && getActivePassedConfigs(config) == 1) {
-				return ReturnBoolean.RETURN_FALSE;
-			}
-			if (getActivePassedConfigs(config) == 1 && !isFullyAssessed(currentEvaluation)) {
-				return ReturnBoolean.RETURN_NULL;
-			}
-		}
-		return ReturnBoolean.NO_RETURN;
-	}
 	
 	private boolean isFullyAssessed(AssessmentEvaluation currentEvaluation) {
 		Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
@@ -162,9 +145,6 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 	public static int getActivePassedConfigs(ModuleConfiguration config) {
 		int active = 0;
 		if (config.has(STCourseNode.CONFIG_PASSED_PROGRESS)) {
-			active++;
-		}
-		if (config.has(STCourseNode.CONFIG_PASSED_ALL_MANDATORY)) {
 			active++;
 		}
 		if (config.has(STCourseNode.CONFIG_PASSED_ALL)) {
@@ -198,31 +178,6 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		}
 		
 		return lifecycle;
-	}
-	
-	private static final class ReturnBoolean {
-		
-		static ReturnBoolean RETURN_TRUE = new ReturnBoolean(true, Boolean.TRUE);
-		static ReturnBoolean RETURN_FALSE = new ReturnBoolean(true, Boolean.FALSE);
-		static ReturnBoolean RETURN_NULL = new ReturnBoolean(true, null);
-		static ReturnBoolean NO_RETURN = new ReturnBoolean(false, null);
-		
-		private final boolean toReturn;
-		private final Boolean returnBoolean;
-		
-		public ReturnBoolean(boolean toReturn, Boolean returnBoolean) {
-			this.toReturn = toReturn;
-			this.returnBoolean = returnBoolean;
-		}
-
-		public boolean isToReturn() {
-			return toReturn;
-		}
-
-		public Boolean getReturnBoolean() {
-			return returnBoolean;
-		}
-		
 	}
 
 }

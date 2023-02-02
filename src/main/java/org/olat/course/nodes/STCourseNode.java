@@ -125,7 +125,6 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_SCORE_VALUE_AVG = "score.avg";
 	public static final String CONFIG_PASSED_PROGRESS = "passed.progress";
 	public static final String CONFIG_PASSED_ALL = "passed.all";
-	public static final String CONFIG_PASSED_ALL_MANDATORY = "passed.all.mandatory";
 	public static final String CONFIG_PASSED_NUMBER = "passed.number";
 	public static final String CONFIG_PASSED_NUMBER_CUT = "passed.number.cut";
 	public static final String CONFIG_PASSED_POINTS = "passed.points";

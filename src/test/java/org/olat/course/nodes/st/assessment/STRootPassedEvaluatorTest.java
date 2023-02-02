@@ -54,7 +54,7 @@ public class STRootPassedEvaluatorTest {
 	public void setUp() {
 		Counts counts = new CountsImpl(3, 2, 1);
 		oneHalfPassed = mock(PassCounter.class);
-		when(oneHalfPassed.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(oneHalfPassed.getCounts(any(), any(), any())).thenReturn(counts);
 	}
 	
 	@Test
@@ -197,7 +197,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 3, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -213,7 +213,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -231,7 +231,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 1, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -248,7 +248,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -265,7 +265,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -282,7 +282,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -300,7 +300,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(4, 1, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -317,7 +317,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 1);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
@@ -338,7 +338,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -360,7 +360,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -382,7 +382,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, runningEntry);
 		
@@ -403,7 +403,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(0, 0, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -424,7 +424,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, endedEntry);
@@ -441,7 +441,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
@@ -458,7 +458,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
@@ -475,13 +475,14 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(0, 0, 0);
 		PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
 		
 		assertThat(passed).isNull();
 	}
+
 	
 	@Test
 	public void shouldReturnNullIfCourseIsFullyAssessedButHassNoPassConfigs() {
@@ -491,7 +492,7 @@ public class STRootPassedEvaluatorTest {
 		
 		Counts counts = new CountsImpl(3, 2, 0);
 			PassCounter passCounter = mock(PassCounter.class);
-		when(passCounter.getCounts(any(), any(), any(), any())).thenReturn(counts);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
 		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
 		
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
