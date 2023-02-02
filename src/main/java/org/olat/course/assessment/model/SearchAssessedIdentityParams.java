@@ -32,6 +32,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
@@ -70,6 +71,7 @@ public class SearchAssessedIdentityParams {
 	private Set<Long> fakeParticipantIdentityKeys;
 	
 	private Map<String,String> userProperties;
+	private List<UserPropertyHandler> userPropertyHandlers;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
@@ -261,6 +263,14 @@ public class SearchAssessedIdentityParams {
 			return getParticipantTypes() != null && getParticipantTypes().contains(ParticipantType.member);
 		}
 		return false;
+	}
+
+	public List<UserPropertyHandler> getUserPropertyHandlers() {
+		return userPropertyHandlers;
+	}
+
+	public void setUserPropertyHandlers(List<UserPropertyHandler> userPropertyHandlers) {
+		this.userPropertyHandlers = userPropertyHandlers;
 	}
 	
 }

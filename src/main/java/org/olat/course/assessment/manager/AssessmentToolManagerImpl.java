@@ -64,6 +64,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -647,7 +648,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		appendIdentityQuery(sb, params, queryParams, "ident.key", null);
 		
 		Long identityKey = appendUserSearchByKey(sb, params.getSearchString());
-		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(), identityKey == null);
+		String[] searchArr = appendUserSearchFull(sb, params.getSearchString(),
+				params.getUserPropertyHandlers(), identityKey == null);
 
 		TypedQuery<T> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), classResult);
@@ -678,13 +680,25 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 	}
 	
-	private String[] appendUserSearchFull(QueryBuilder sb, String search, boolean and) {
+	private String[] appendUserSearchFull(QueryBuilder sb, String search, List<UserPropertyHandler> userPropertyHandlers, boolean and) {
 		String[] searchArr = null;
 
 		if(StringHelper.containsNonWhitespace(search)) {
 			String dbVendor = dbInstance.getDbVendor();
 			searchArr = search.split(" ");
-			String[] attributes = new String[]{ "firstName", "lastName", "email" };
+			
+			List<String> attributes = new ArrayList<>();
+			attributes.add("firstName");
+			attributes.add("lastName");
+			attributes.add("email");
+			if(userPropertyHandlers != null && !userPropertyHandlers.isEmpty()) {
+				for(UserPropertyHandler handler:userPropertyHandlers) {
+					if(handler.getDatabaseColumnName() != null
+							&& !attributes.contains(handler.getName())) {
+						attributes.add(handler.getName());
+					}
+				}
+			}
 
 			if(and) {
 				sb.append(" and (");
@@ -699,15 +713,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 					} else {
 						sb.append(" or ");
 					}
-					
-					if(dbVendor.equals("mysql")) {
-						sb.append(" user.").append(attribute).append(" like :search").append(i).append(" ");
-					} else {
-						sb.append(" lower(user.").append(attribute).append(") like :search").append(i).append(" ");
-					}
-					if(dbVendor.equals("oracle")) {
-						sb.append(" escape '\\'");
-					}
+					PersistenceHelper.appendFuzzyLike(sb, "user.".concat(attribute), "search" + i, dbVendor);
 				}
 			}
 			sb.append(")");
@@ -1023,7 +1029,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		sb.append(" inner join fetch ident.user user");
 		sb.and().append(" ident.key in (:identityKeys)");
 		sb.and().append(" ident.status<").append(Identity.STATUS_DELETED);
-		String[] searchArr = appendUserSearchFull(sb, searchString, true);
+		String[] searchArr = appendUserSearchFull(sb, searchString, null, true);
 		
 		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)

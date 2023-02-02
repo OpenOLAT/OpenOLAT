@@ -827,6 +827,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+		params.setUserPropertyHandlers(userPropertyHandlers);
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
