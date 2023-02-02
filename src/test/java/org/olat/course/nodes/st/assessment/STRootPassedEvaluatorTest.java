@@ -221,6 +221,24 @@ public class STRootPassedEvaluatorTest {
 	}
 	
 	@Test
+	public void shouldReturnNullIfAllWithoutDecisionAndOnlyCriterion() {
+		// To reset former failed e.g. if a test is made a second time.
+		
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), Boolean.FALSE, null);
+		CourseNode courseNode = new STCourseNode();
+		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL, true);
+		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		Counts counts = new CountsImpl(3, 1, 0);
+		PassCounter passCounter = mock(PassCounter.class);
+		when(passCounter.getCounts(any(), any(), any())).thenReturn(counts);
+		STRootPassedEvaluator sut = new STRootPassedEvaluator(passCounter);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry);
+		
+		assertThat(passed).isNull();
+	}
+	
+	@Test
 	public void shouldNotReturnNullIfAllNotPassedAndMultipleCriterion() {
 		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(Float.valueOf(20), null, null);
 		CourseNode courseNode = new STCourseNode();

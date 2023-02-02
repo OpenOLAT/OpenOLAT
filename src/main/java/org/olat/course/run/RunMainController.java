@@ -710,7 +710,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				float actual = completion != null? completion.floatValue(): 0;
 				if (actual * 100 != courseProgress.getActual()) {
 					courseProgress.setActual(actual * 100);
-					courseProgress.setBarColor(BarColor.success);					
 				}
 				// 2) SCORE
 				Float score = assessmentEvaluation.getScore();
@@ -718,18 +717,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					courseProgress.setInfo(Math.round(score) + "pt");
 				}
 				// 3) Status
+				courseProgress.setBarColor(BarColor.success);
+				courseProgress.setCssClass(null);
 				Boolean passed = assessmentEvaluation.getPassed();
 				if (passed != null) {
 					if (passed.booleanValue()) {
-						courseProgress.setBarColor(BarColor.success);					
 						courseProgress.setCssClass("o_progress_passed");
 					} else {
 						courseProgress.setBarColor(BarColor.danger);											
 						courseProgress.setCssClass("o_progress_failed");
 					}
 				}
-				
-				
 			}
 		}		
 	}
