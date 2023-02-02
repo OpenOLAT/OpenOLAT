@@ -21,20 +21,28 @@ package org.olat.modules.video.manager;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionComparator;
+import org.olat.ims.qti21.manager.Statistics;
+import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoSegment;
+import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskCategoryScore;
 import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,8 +92,22 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 	}
 	
 	@Override
+	public List<VideoTaskSession> getTaskSessions(RepositoryEntry courseEntry, String subIdent) {
+		return taskSessionDao.getTaskSessions(courseEntry, subIdent,null, null);
+	}
+
+	@Override
 	public List<VideoTaskSession> getTaskSessions(RepositoryEntry courseEntry, String subIdent, IdentityRef identity) {
-		return taskSessionDao.getTaskSessions(courseEntry, subIdent, identity, null);
+		if(identity == null) {
+			return new ArrayList<>();
+		}
+		return taskSessionDao.getTaskSessions(courseEntry, subIdent, List.of(identity), null);
+	}
+
+	@Override
+	public List<VideoTaskSession> getTaskSessions(RepositoryEntry courseEntry, String subIdent,
+			List<? extends IdentityRef> identitiesRefs) {
+		return taskSessionDao.getTaskSessions(courseEntry, subIdent, identitiesRefs, null);
 	}
 
 	@Override
@@ -98,7 +120,7 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		long rows = 0;
 		List<AssessmentEntry> entries = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			List<VideoTaskSession> taskSessions = taskSessionDao.getTaskSessions(courseEntry, subIdent, identity, null);
+			List<VideoTaskSession> taskSessions = taskSessionDao.getTaskSessions(courseEntry, subIdent, List.of(identity), null);
 			if(!taskSessions.isEmpty()) {
 				entries.add(taskSessions.get(0).getAssessmentEntry());
 				rows += taskSegmentSelectionDao.deleteSegementSelections(taskSessions);
@@ -131,6 +153,129 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 	@Override
 	public List<VideoTaskSegmentSelection> getTaskSegmentSelections(List<VideoTaskSession> taskSessions) {
 		return taskSegmentSelectionDao.getSegmentSelection(taskSessions);
+	}
+
+	@Override
+	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
+			VideoSegments videoSegments, List<String> selectedCategories, Float maxScoreDef, Float cutValueDef) {
+		// Sort per user and finish time
+		Collections.sort(taskSessions, new VideoTaskSessionComparator(true));
+		
+		List<VideoTaskSegmentSelection> selections = getTaskSegmentSelections(taskSessions);
+		Map<VideoTaskSession,List<VideoTaskSegmentSelection>> mapSelections = taskSessions.stream()
+				.collect(Collectors.toMap(session -> session, s -> new ArrayList<>(), (u, v) -> u));
+		for(VideoTaskSegmentSelection selection:selections) {
+			List<VideoTaskSegmentSelection> taskSelections = mapSelections.get(selection.getTaskSession());
+			if(taskSelections != null) {
+				taskSelections.add(selection);
+			}
+		}
+		
+		int numOfPassed = 0;
+		int numOfFailed = 0;
+		double totalDuration = 0.0;
+		double maxScore = 0.0;
+		double minScore = Double.MAX_VALUE;
+		double[] scores = new double[taskSessions.size()];
+		double[] durationSeconds = new double[taskSessions.size()];
+		
+		double minDuration = Double.MAX_VALUE;
+		double maxDuration = 0.0d;
+		
+		BigDecimal cutBigValue = cutValueDef == null ? null : BigDecimal.valueOf(cutValueDef.doubleValue());
+		
+		int dataPos = 0;
+		boolean hasScore = false;
+		for(Map.Entry<VideoTaskSession, List<VideoTaskSegmentSelection>> taskSessionEntry:mapSelections.entrySet()) {
+			VideoTaskSession taskSession = taskSessionEntry.getKey();
+			List<VideoTaskSegmentSelection> selectionList = taskSessionEntry.getValue();
+
+			VideoTaskScore vtScore = calculateScore(videoSegments,selectedCategories, maxScoreDef, selectionList);
+			BigDecimal score = vtScore.getPoints();
+			if(score != null) {
+				double scored = score.doubleValue();
+				scores[dataPos] = scored;
+				maxScore = Math.max(maxScore, scored);
+				minScore = Math.min(minScore, scored);
+				hasScore = true;
+			}
+			
+			Boolean passed = taskSession.getPassed();
+			if(cutBigValue != null && score != null) {
+				passed = score.compareTo(cutBigValue) >= 0;
+			}
+			if(passed != null) {
+				if(passed.booleanValue()) {
+					numOfPassed++;
+				} else {
+					numOfFailed++;
+				}
+			}
+
+			// Duration is in milliseconds
+			Long duration = taskSession.getDuration();
+			if(duration != null) {
+				double durationd = duration.doubleValue();
+				double durationSecond = Math.round(durationd / 1000d);
+				durationSeconds[dataPos] = durationSecond;
+				totalDuration += durationd;
+				minDuration = Math.min(minDuration, durationSecond);
+				maxDuration = Math.max(maxDuration, durationSecond);
+			}
+			dataPos++;
+		}
+		if (taskSessions.isEmpty()) {
+			minScore = 0;
+		}
+		
+		Statistics statisticsHelper = new Statistics(scores);		
+
+		int numOfParticipants = taskSessions.size();
+		StatisticAssessment stats = new StatisticAssessment();
+		stats.setNumOfParticipants(numOfParticipants);
+		stats.setNumOfPassed(numOfPassed);
+		stats.setNumOfFailed(numOfFailed);
+		long averageDuration = Math.round(totalDuration / numOfParticipants);
+		stats.setAverageDuration(averageDuration);
+		stats.setAverage(statisticsHelper.getMean());
+		if(hasScore) {
+			double range = maxScore - minScore;
+			stats.setRange(range);
+			stats.setMaxScore(maxScore);
+			stats.setMinScore(minScore);
+		}
+		stats.setStandardDeviation(statisticsHelper.getStdDev());
+		stats.setMedian(statisticsHelper.median());
+		stats.setMode(statisticsHelper.mode());
+		stats.setScores(scores);
+		stats.setDurations(durationSeconds);
+		return stats;
+	}
+	
+	@Override
+	public VideoTaskCategoryScore[] calculateScorePerCategory(List<VideoSegmentCategory> categories, 
+			List<VideoTaskSegmentSelection> selections) {
+		
+		VideoTaskCategoryScore[] scoring = new VideoTaskCategoryScore[categories.size()];
+		for(int i=0; i<categories.size(); i++) {
+			VideoSegmentCategory category = categories.get(i);
+			String categoryId = category.getId();
+
+			int correct = 0;
+			int notCorrect = 0;
+			for(VideoTaskSegmentSelection selection:selections) {
+				if(categoryId.equals(selection.getCategoryId())) {
+					if(selection.getCorrect() != null && selection.getCorrect().booleanValue()) {
+						correct++;
+					} else {
+						notCorrect++;
+					}
+				}	
+			}
+
+			scoring[i] = new VideoTaskCategoryScore(category, correct, notCorrect);
+		}
+		return scoring;
 	}
 
 	@Override

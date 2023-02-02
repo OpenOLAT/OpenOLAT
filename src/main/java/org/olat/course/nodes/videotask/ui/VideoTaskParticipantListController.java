@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -42,7 +44,10 @@ import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.video.VideoAssessmentService;
+import org.olat.modules.video.VideoTaskSession;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,10 +57,16 @@ import org.olat.repository.RepositoryEntry;
  */
 public class VideoTaskParticipantListController extends IdentityListCourseNodeController {
 	
+	private FormLink statsButton;
 	private FormLink resetButton;
+	private FormLink playAllButton;
 	private FormLink exportResultsButton;
 	
+	private VideoTaskAssessmentPlayController playCtrl;
 	private VideoTaskResetDataController resetDataCtrl;
+	
+	@Autowired
+	private VideoAssessmentService videoAssessmentService;
 	
 	public VideoTaskParticipantListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -67,21 +78,34 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		super.initGradeScaleEditButton(formLayout);
 		super.initBulkStatusTools(ureq, formLayout);
+
+		String mode = courseNode.getModuleConfiguration().getStringValue(VideoTaskEditController.CONFIG_KEY_MODE,
+				VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+			exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
+			exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
+			
+			statsButton = uifactory.addFormLink("button.stats", formLayout, Link.BUTTON);
+			statsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_statistics_tool");
+		} else {
+			playAllButton = uifactory.addFormLink("play.all", formLayout, Link.BUTTON);
+			playAllButton.setIconLeftCSS("o_icon o_icon_video_play");
+		}
 		
-		exportResultsButton = uifactory.addFormLink("button.export", formLayout, Link.BUTTON);
-		exportResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_export");
-		
-		if(!coachCourseEnv.isCourseReadOnly()) {
-			if(getAssessmentCallback().isAdmin()) {
-				resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
-				resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
-			}
+		if(!coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin()) {
+			resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
+			resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
 	}
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(resetDataCtrl == source) {
+		if(playCtrl == source) {
+			if(event == Event.BACK_EVENT) {
+				stackPanel.popController(playCtrl);
+				cleanUp();
+			}
+		} else if(resetDataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reload(ureq);
 			}
@@ -94,7 +118,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	@Override
 	protected void cleanUp() {
 		removeAsListenerAndDispose(resetDataCtrl);
+		removeAsListenerAndDispose(playCtrl);
 		resetDataCtrl = null;
+		playCtrl = null;
 		super.cleanUp();
 	}
 
@@ -104,6 +130,10 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 			doConfirmResetData(ureq);
 		} else if(exportResultsButton == source) {
 			doExportResults(ureq);
+		} else if(statsButton == source) {
+			doLaunchStatistics(ureq);
+		} else if(playAllButton == source) {
+			doPlayAll(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -136,5 +166,25 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		} else {
 			showWarning("error.no.assessed.users");
 		}
+	}
+	
+	private void doLaunchStatistics(UserRequest ureq) {
+		IdentitiesList identities = getIdentities(false);
+		boolean canReset = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
+		Controller statisticsCtrl = new VideoTaskAssessmentStatisticsController(ureq, getWindowControl(), 
+				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canReset);
+		listenTo(statisticsCtrl);
+		stackPanel.pushController(translate("button.stats"), statisticsCtrl);
+	}
+	
+	private void doPlayAll(UserRequest ureq) {
+		RepositoryEntry videoEntry = courseNode.getReferencedRepositoryEntry();
+		IdentitiesList identities = getIdentities(false);
+		List<VideoTaskSession> taskSessions = videoAssessmentService
+				.getTaskSessions(courseEntry, courseNode.getIdent(), identities.getIdentities());
+		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(), videoEntry, taskSessions);
+		listenTo(playCtrl);
+
+		stackPanel.pushController(translate("play"), playCtrl);
 	}
 }

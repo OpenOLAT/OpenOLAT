@@ -57,7 +57,6 @@ import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
 import org.olat.course.nodes.videotask.ui.VideoTaskHelper;
 import org.olat.course.nodes.videotask.ui.VideoTaskParticipantListController;
-import org.olat.course.nodes.videotask.ui.VideoTaskSessionRow.CategoryColumn;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -67,6 +66,7 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskCategoryScore;
 import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -132,7 +132,7 @@ public class VideoTaskArchiveFormat {
 			@Override
 			protected void generate(OutputStream out) {
 				final List<VideoTaskSession> sessions = videoAssessmentService
-						.getTaskSessions(searchParams.getEntry(), searchParams.getCourseNode().getIdent(), null);		
+						.getTaskSessions(searchParams.getEntry(), searchParams.getCourseNode().getIdent());		
 				try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 					//headers
 					OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
@@ -164,7 +164,7 @@ public class VideoTaskArchiveFormat {
 	public void exportWorkbook(OutputStream exportStream) {
 		//content
 		final List<VideoTaskSession> sessions = videoAssessmentService
-				.getTaskSessions(searchParams.getEntry(), searchParams.getCourseNode().getIdent(), null);
+				.getTaskSessions(searchParams.getEntry(), searchParams.getCourseNode().getIdent());
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 1)) {
 			//headers
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
@@ -322,14 +322,14 @@ public class VideoTaskArchiveFormat {
 		// Duration
 		Long duration = null;
 		if(taskSession.getFinishTime() != null) {
-			duration = taskSession.getFinishTime().getTime() - taskSession.getCreationDate().getTime();
+			duration = taskSession.getDuration();
 		}
 		dataRow.addCell(col++, toDurationInMinutes(duration), null);
 		
 		// Categories
-		CategoryColumn[] categoriesScoring = VideoTaskHelper.calculateScoring(categories, selections);
-		for(CategoryColumn categoryScoring:categoriesScoring) {
-			int correct = categoryScoring.getCorrect();
+		VideoTaskCategoryScore[] categoriesScoring = videoAssessmentService.calculateScorePerCategory(categories, selections);
+		for(VideoTaskCategoryScore categoryScoring:categoriesScoring) {
+			int correct = categoryScoring.correct();
 			dataRow.addCell(col++, correct, null);
 		}
 	}

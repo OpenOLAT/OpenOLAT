@@ -53,6 +53,7 @@ import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentResult;
+import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.event.VideoEvent;
@@ -80,7 +81,6 @@ public class VideoTaskDisplayController extends BasicController {
 	private RepositoryEntry entry;
 	private final boolean authorMode;
 	private RepositoryEntry videoEntry;
-	private final boolean assessmentType;
 	private VideoTaskSession taskSession;
 	private final VideoSegments segments;
 	private final int maxAttempts;
@@ -106,7 +106,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private VideoAssessmentService videoAssessmentService;
 	
 	public VideoTaskDisplayController(UserRequest ureq, WindowControl wControl, VideoDisplayController displayCtrl,
-			RepositoryEntry videoEntry, RepositoryEntry entry, CourseNode courseNode, boolean assessmentType,
+			RepositoryEntry videoEntry, RepositoryEntry entry, CourseNode courseNode,
 			List<String> categories, boolean authorMode, boolean anonym, int currentAttempt) {
 		super(ureq, wControl);
 		this.entry = entry;
@@ -115,7 +115,6 @@ public class VideoTaskDisplayController extends BasicController {
 		this.authorMode = authorMode;
 		this.displayCtrl = displayCtrl;
 		this.currentAttempt = currentAttempt;
-		this.assessmentType = assessmentType;
 		this.categoriesIds = List.copyOf(categories);
 		maxAttempts = courseNode.getModuleConfiguration()
 				.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
@@ -133,9 +132,7 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 		
 		mainVC = createVelocityContainer("display_container");
-		if(assessmentType) {
-			initAssessment();
-		}
+		initAssessment();
 		
 		closeButton = LinkFactory.createButton("close.video", mainVC, this);
 		segments = videoManager.loadSegments(videoEntry.getOlatResource());
@@ -238,14 +235,11 @@ public class VideoTaskDisplayController extends BasicController {
 		VideoSegment segment = getSegment(positionInMilliSeconds);
 		String segmentId = segment == null ? null : segment.getId();
 		Boolean correct = Boolean.valueOf(segment != null && segment.getCategoryId().equals(category.getId()));
-		
+
+		VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession, segmentId, category.getId(), correct,
+			positionInMilliSeconds, rawPosition);
 		synchronized(segmentSelections) {
-			segmentSelections.add(new Result(positionInMilliSeconds, correct.booleanValue(), segmentId, category.getId()));
-		}
-		
-		if(assessmentType) {
-			videoAssessmentService.createTaskSegmentSelection(taskSession, segmentId, category.getId(), correct,
-				positionInMilliSeconds, rawPosition);
+			segmentSelections.add(selection);
 		}
 	}
 	
@@ -345,12 +339,8 @@ public class VideoTaskDisplayController extends BasicController {
 	}
 
 	private void doFinishTask(UserRequest ureq, boolean startNextAttempt) {
-		if(assessmentType) {
-			setFinishTaskSession();
-			fireEvent(ureq, new FinishEvent(taskSession, startNextAttempt));
-		} else {
-			fireEvent(ureq, new FinishEvent(startNextAttempt));
-		}
+		setFinishTaskSession();
+		fireEvent(ureq, new FinishEvent(taskSession, startNextAttempt));
 	}
 	
 	private void setFinishTaskSession() {
@@ -393,40 +383,6 @@ public class VideoTaskDisplayController extends BasicController {
 					thebaseChief.getScreenMode().setMode(Mode.standard, businessPath);
 				}
 			}
-		}
-	}
-	
-	public static class Result implements VideoTaskSegmentResult {
-		
-		private final long positionInMilliSeconds;
-		private final boolean correct;
-		private final String segmentId;
-		private final String categoryId;
-		
-		public Result(long positionInMilliSeconds, boolean correct, String segmentId, String categoryId) {
-			this.positionInMilliSeconds = positionInMilliSeconds;
-			this.correct = correct;
-			this.segmentId = segmentId;
-			this.categoryId = categoryId;
-		}
-
-		public long getPositionInMilliSeconds() {
-			return positionInMilliSeconds;
-		}
-
-		@Override
-		public boolean isCorrect() {
-			return correct;
-		}
-
-		@Override
-		public String getSegmentId() {
-			return segmentId;
-		}
-
-		@Override
-		public String getCategoryId() {
-			return categoryId;
 		}
 	}
 }

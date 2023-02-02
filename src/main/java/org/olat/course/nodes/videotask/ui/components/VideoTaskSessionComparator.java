@@ -22,6 +22,7 @@ package org.olat.course.nodes.videotask.ui.components;
 import java.util.Comparator;
 import java.util.Date;
 
+import org.olat.core.id.Identity;
 import org.olat.modules.video.VideoTaskSession;
 
 /**
@@ -41,7 +42,20 @@ public class VideoTaskSessionComparator implements Comparator<VideoTaskSession> 
 	@Override
 	public int compare(VideoTaskSession v1, VideoTaskSession v2) {
 		int c = 0;
-		if(checkCancelled) {
+		
+		Identity id1 = v1.getIdentity();
+		Identity id2 = v2.getIdentity();
+		if(id1 == null && id2 == null) {
+			c = v1.getAnonymousIdentifier().compareTo(v2.getAnonymousIdentifier());
+		} else if(id1 == null) {
+			c = 1;
+		} else if(id2 == null) {
+			c = -1;
+		} else {
+			c = id1.getKey().compareTo(id2.getKey());
+		}
+
+		if(c == 0 && checkCancelled) {
 			boolean c1 = !v1.isCancelled();
 			boolean c2 = !v2.isCancelled();
 			if(c1 && !c2) {

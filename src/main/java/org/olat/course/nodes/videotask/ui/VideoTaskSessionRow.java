@@ -23,8 +23,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.modules.video.VideoSegmentCategory;
+import org.olat.core.id.Identity;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskCategoryScore;
 import org.olat.modules.video.model.VideoTaskScore;
 
 /**
@@ -36,15 +37,20 @@ import org.olat.modules.video.model.VideoTaskScore;
 public class VideoTaskSessionRow {
 	
 	private final VideoTaskScore scoring;
+	private final Identity assessedIdentity;
 	private final VideoTaskSession taskSession;
-	private final CategoryColumn[] categoriesScoring;
+	private final VideoTaskCategoryScore[] categoriesScoring;
+	private final String assessedIdentityFullName;
 	
 	private FormLink toolsButton;
 	
-	public VideoTaskSessionRow(VideoTaskSession taskSession, VideoTaskScore scoring, CategoryColumn[] categoriesScoring) {
+	public VideoTaskSessionRow(VideoTaskSession taskSession, Identity assessedIdentity,
+			String assessedIdentityFullName, VideoTaskScore scoring, VideoTaskCategoryScore[] categoriesScoring) {
 		this.taskSession = taskSession;
 		this.scoring = scoring;
+		this.assessedIdentity = assessedIdentity;
 		this.categoriesScoring = categoriesScoring;
+		this.assessedIdentityFullName = assessedIdentityFullName;
 	}
 	
 	public long getAttempt() {
@@ -53,6 +59,14 @@ public class VideoTaskSessionRow {
 	
 	public Long getTaskSessionKey() {
 		return taskSession.getKey();
+	}
+	
+	public Long getIdentityKey() {
+		return assessedIdentity == null ? null : assessedIdentity.getKey();
+	}
+	
+	public String getIdentityFullName() {
+		return assessedIdentityFullName;
 	}
 
 	public VideoTaskSession getTaskSession() {
@@ -76,19 +90,18 @@ public class VideoTaskSessionRow {
 	}
 	
 	public long getDuration() {
-		Date start = taskSession.getCreationDate();
-		Date finish = taskSession.getFinishTime();
-		if(finish != null && start != null) {
-			return finish.getTime() - start.getTime();
-		}
-		return -1l;
+		return taskSession.getDuration();
 	}
 	
-	public CategoryColumn getCategoryScoring(int index) {
+	public VideoTaskCategoryScore getCategoryScoring(int index) {
 		if(categoriesScoring != null && index >= 0 && index < categoriesScoring.length) {
 			return categoriesScoring[index];
 		}
 		return null;
+	}
+	
+	public Identity getAssessedIdentity() {
+		return assessedIdentity;
 	}
 
 	public FormLink getToolsButton() {
@@ -113,36 +126,5 @@ public class VideoTaskSessionRow {
 			return taskSession.equals(row.taskSession);
 		}
 		return false;
-	}
-	
-	public static class CategoryColumn {
-		
-		private VideoSegmentCategory category;
-		private int correct;
-		private int notCorrect;
-		
-		public VideoSegmentCategory getCategory() {
-			return category;
-		}
-		
-		public void setCategory(VideoSegmentCategory category) {
-			this.category = category;
-		}
-		
-		public int getCorrect() {
-			return correct;
-		}
-		
-		public void setCorrect(int correct) {
-			this.correct = correct;
-		}
-		
-		public int getNotCorrect() {
-			return notCorrect;
-		}
-		
-		public void setNotCorrect(int notCorrect) {
-			this.notCorrect = notCorrect;
-		}
 	}
 }

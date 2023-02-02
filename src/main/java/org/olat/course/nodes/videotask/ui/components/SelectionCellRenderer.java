@@ -26,7 +26,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.course.nodes.videotask.ui.VideoTaskSessionRow.CategoryColumn;
+import org.olat.modules.video.model.VideoTaskCategoryScore;
 
 /**
  * 
@@ -58,16 +58,16 @@ public class SelectionCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof CategoryColumn scoring) {
+		if(cellValue instanceof VideoTaskCategoryScore scoring) {
 			if(source.getFormItem().getRendererType() == FlexiTableRendererType.external) {
-				target.append("<span class='o_videotask_correct_segments'>").append(scoring.getCorrect()).append("</span>")
+				target.append("<span class='o_videotask_correct_segments'>").append(scoring.correct()).append("</span>")
 				      .append("&nbsp;/&nbsp;")
-				      .append("<span class='o_videotask_notcorrect_segments'>").append(scoring.getNotCorrect()).append("</span>");
+				      .append("<span class='o_videotask_notcorrect_segments'>").append(scoring.notCorrect()).append("</span>");
 			} else {
-				rendererBlank(target, scoring.getCorrect(), maxCorrect);
-				rendererIcon(target, scoring.getCorrect(), "o_icon_correct_answer");
-				rendererIcon(target, scoring.getNotCorrect(), "o_icon_not_correct");
-				rendererBlank(target, scoring.getNotCorrect(), maxNotCorrect);
+				rendererBlank(target, scoring.correct(), maxCorrect);
+				rendererIcon(target, scoring.correct(), "o_icon_correct_answer");
+				rendererIcon(target, scoring.notCorrect(), "o_icon_not_correct");
+				rendererBlank(target, scoring.notCorrect(), maxNotCorrect);
 			}
 		}
 	}

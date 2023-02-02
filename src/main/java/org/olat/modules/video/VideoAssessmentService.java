@@ -23,7 +23,9 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.ims.qti21.model.statistics.StatisticAssessment;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.video.model.VideoTaskCategoryScore;
 import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.repository.RepositoryEntry;
 
@@ -48,6 +50,15 @@ public interface VideoAssessmentService {
 			String segmentId, String categoryId, Boolean correct, long timeInMilliSeconds, String rawTime);
 	
 	/**
+	 * Retrieve all sessions of a learn resource with the specified sub-identifier.
+	 * 
+	 * @param entry The learn resource like a course
+	 * @param subIdent The sub-identifier like course element id.
+	 * @return A list of video tasks sessions
+	 */
+	public List<VideoTaskSession> getTaskSessions(RepositoryEntry entry, String subIdent);
+	
+	/**
 	 * Retrieve the task sessions typically of a course element.
 	 * 
 	 * @param courseEntry The learn resource which make the assessment
@@ -56,6 +67,17 @@ public interface VideoAssessmentService {
 	 * @return A list of video task sessions
 	 */
 	public List<VideoTaskSession> getTaskSessions(RepositoryEntry entry, String subIdent, IdentityRef identity);
+	
+	public List<VideoTaskSession> getTaskSessions(RepositoryEntry entry, String subIdent, List<? extends IdentityRef> identitiesRefs);
+	
+	/**
+	 * 
+	 * @param taskSessions
+	 * @param cutValue
+	 * @return
+	 */
+	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
+			VideoSegments videoSegments, List<String> selectedCategories, Float maxScore, Float cutValue);
 	
 	/**
 	 * Count the number of video task sessions saved by this learn resource.
@@ -67,6 +89,9 @@ public interface VideoAssessmentService {
 	public long countTaskSessions(RepositoryEntry entry, String subIdent);
 	
 	public List<VideoTaskSegmentSelection> getTaskSegmentSelections(List<VideoTaskSession> taskSessions);
+	
+	public VideoTaskCategoryScore[] calculateScorePerCategory(List<VideoSegmentCategory> selectedCategories, 
+			List<VideoTaskSegmentSelection> selection);
 	
 	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories, double maxScore,
 			List<VideoTaskSegmentSelection> selection);

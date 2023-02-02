@@ -86,6 +86,19 @@ public class VideoTaskResetDataController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 	
 	public VideoTaskResetDataController(UserRequest ureq, WindowControl wControl,
+			CourseEnvironment courseEnv, List<Identity> identities, VideoTaskCourseNode courseNode) {
+		super(ureq, wControl, "confirm_reset_data");
+		this.courseNode = courseNode;
+		this.courseEnv = courseEnv;
+		
+		options = new ArchiveOptions();
+		options.setIdentities(identities);
+		this.identities = List.copyOf(identities);
+
+		initForm(ureq);
+	}
+	
+	public VideoTaskResetDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;

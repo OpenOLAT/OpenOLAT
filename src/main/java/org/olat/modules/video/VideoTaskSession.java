@@ -42,6 +42,11 @@ public interface VideoTaskSession extends CreateInfo, ModifiedInfo {
 	
 	public void setFinishTime(Date timestamp);
 	
+	/**
+	 * @return The time between finish and creation date in milliseconds
+	 */
+	public long getDuration();
+	
 	
 	public Boolean getPassed();
 

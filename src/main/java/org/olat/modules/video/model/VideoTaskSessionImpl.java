@@ -33,6 +33,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.Transient;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
@@ -214,6 +215,15 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
 	@Override
 	public void setFinishTime(Date finishTime) {
 		this.finishTime = finishTime;
+	}
+	
+	@Override
+	@Transient
+	public long getDuration() {
+		if(getFinishTime() == null) {
+			return -1;
+		}
+		return getFinishTime().getTime() - getCreationDate().getTime();
 	}
 
 	@Override

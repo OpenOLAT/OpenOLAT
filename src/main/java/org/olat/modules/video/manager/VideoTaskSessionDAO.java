@@ -172,7 +172,7 @@ public class VideoTaskSessionDAO {
 	}
 	
 	public List<VideoTaskSession> getTaskSessions(RepositoryEntryRef entry, String subIdent,
-			IdentityRef identity, String anonymousIdentifier) {
+			List<? extends IdentityRef> identities, String anonymousIdentifier) {
 			
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select session from videotasksession session")
@@ -192,8 +192,8 @@ public class VideoTaskSessionDAO {
 		} else {
 			sb.and().append("session.anonymousIdentifier is null");
 		}
-		if(identity != null) {
-			sb.and().append("ident.key=:identityKey");
+		if(identities != null && !identities.isEmpty()) {
+			sb.and().append("ident.key in (:identitiesKeys)");
 		}
 		sb.append(" order by ident.key, session.creationDate desc");
 		
@@ -206,8 +206,10 @@ public class VideoTaskSessionDAO {
 		if(anonymousIdentifier != null) {
 			query.setParameter("anonymousIdentifier", anonymousIdentifier);
 		}
-		if(identity != null) {
-			query.setParameter("identityKey", identity.getKey());
+		if(identities != null && !identities.isEmpty()) {
+			List<Long> identitiesKeys = identities.stream()
+					.map(IdentityRef::getKey).toList();
+			query.setParameter("identitiesKeys", identitiesKeys);
 		}
 		return query.getResultList();
 	}

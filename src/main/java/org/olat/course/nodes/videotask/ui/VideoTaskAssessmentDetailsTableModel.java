@@ -23,6 +23,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -32,7 +34,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
-import org.olat.course.nodes.videotask.ui.VideoTaskAssessmentDetailsController.VideoTaskSessionRowComparator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionRowComparator;
 import org.olat.modules.video.VideoTaskSession;
 
 /**
@@ -51,6 +56,9 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	public static final String FILTER_PERFORMANCE_MEDIUM = "medium";
 	public static final String FILTER_PERFORMANCE_LOW = "low";
 	
+	public static final String FILTER_ATTEMPTS = "attempts";
+	public static final String FILTER_IDENTITY = "identity";
+	
 	private static final BigDecimal HIGH = BigDecimal.valueOf(67);
 	private static final BigDecimal MEDIUM = BigDecimal.valueOf(34);
 	
@@ -66,30 +74,88 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 		return lastSession;
 	}
 	
+	public int getMaxAttempts() {
+		int maxAttempts = 0;
+		for(int i=this.getRowCount(); i-->0; ) {
+			VideoTaskSessionRow row = this.getObject(i);
+			if(row != null && row.getAttempt() > maxAttempts) {
+				maxAttempts = (int)row.getAttempt();
+			}
+		}
+		return maxAttempts;
+	}
+	
 	@Override
 	public void filter(String searchString, List<FlexiTableFilter> filters) {
 		setObjects(backupRows);
 		
 		if (filters != null && !filters.isEmpty()) {
 			List<String> filterValues = null;
+			Set<Long> attempts = null;
+			String search = null;
 			
 			FlexiTableFilter performanceFilter = FlexiTableFilter.getFilter(filters, FILTER_PERFORMANCE);
-			if (performanceFilter != null) {
-				filterValues = ((FlexiTableExtendedFilter)performanceFilter).getValues();
+			if (performanceFilter instanceof FlexiTableExtendedFilter extFilter) {
+				filterValues = extFilter.getValues();
 			}
 			
-			if(filterValues != null && !filterValues.isEmpty()) {
-				List<VideoTaskSessionRow> filteredViews = new ArrayList<>();
+			FlexiTableFilter attemptsFilter = FlexiTableFilter.getFilter(filters, FILTER_ATTEMPTS);
+			if (attemptsFilter instanceof FlexiTableExtendedFilter extFilter) {
+				List<String> attemptsValues = extFilter.getValues();
+				if(attemptsValues != null) {
+					attempts = attemptsValues.stream()
+							.map(Long::parseLong)
+							.collect(Collectors.toSet());
+				}
+			}
+			
+			FlexiTableFilter identityFilter = FlexiTableFilter.getFilter(filters, FILTER_IDENTITY);
+			if (identityFilter != null) {
+				String searchVal = identityFilter.getValue();
+				if(searchVal != null) {
+					search = searchVal.toLowerCase();
+				}
+			}
+			
+			if((filterValues != null && !filterValues.isEmpty())
+					|| (attempts != null && !attempts.isEmpty())
+					|| StringHelper.containsNonWhitespace(search)) {
+				List<VideoTaskSessionRow> filteredRows = new ArrayList<>();
 				int numOfRows = getRowCount();
 				for(int i=0; i<numOfRows; i++) {
-					VideoTaskSessionRow view = getObject(i);
-					if(acceptPerformance(view, filterValues)) {
-						filteredViews.add(view);
+					VideoTaskSessionRow row = getObject(i);
+					if((filterValues == null || acceptPerformance(row, filterValues))
+							&& (attempts == null || acceptAttempts(row, attempts))
+							&& (!StringHelper.containsNonWhitespace(search) || acceptSearch(row, search))) {
+						filteredRows.add(row);
 					}
 				}
-				super.setObjects(filteredViews);
+				super.setObjects(filteredRows);
 			}
 		}
+	}
+	
+	private boolean acceptSearch(VideoTaskSessionRow row, String search) {
+		Identity identity = row.getAssessedIdentity();
+		if(identity != null && identity.getUser() != null) {
+			User user = identity.getUser();
+			return acceptSearch(user.getFirstName(), search)
+					|| acceptSearch(user.getLastName(), search)
+					|| acceptSearch(user.getNickName(), search)
+					|| acceptSearch(user.getEmail(), search);
+		}
+		return false;
+	}
+	
+	private boolean acceptSearch(String val, String search) {
+		if(StringHelper.containsNonWhitespace(val)) {
+			return val.toLowerCase().contains(search);
+		}
+		return false;
+	}
+	
+	private boolean acceptAttempts(VideoTaskSessionRow row, Set<Long> attempts) {
+		return attempts.contains(Long.valueOf(row.getAttempt()));
 	}
 	
 	private boolean acceptPerformance(VideoTaskSessionRow row, List<String> filterValues) {
@@ -136,6 +202,7 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 		if(col >= 0 && col < COLS.length) {
 			switch(COLS[col]) {
 				case id: return session.getTaskSessionKey();
+				case assessedIdentity: return session.getIdentityFullName();
 				case attempt: return Long.valueOf(session.getAttempt());
 				case duration: return session.isFinished() ? Long.valueOf(session.getDuration()) : null;
 				case scorePercent: return session.isFinished() ? session.getScoreInPercent() : null;
@@ -169,6 +236,7 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 
 	public enum DetailsCols implements FlexiSortableColumnDef {
 		id("table.header.id"),
+		assessedIdentity("table.header.identity"),
 		attempt("table.header.attempt"),
 		duration("table.header.duration"),
 		scorePercent("table.header.score.percent"),

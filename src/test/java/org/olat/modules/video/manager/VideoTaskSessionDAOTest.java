@@ -157,7 +157,7 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//Load the sessions
-		List<VideoTaskSession> taskSessions = taskSessionDao.getTaskSessions(courseEntry, subIdent, assessedIdentity, null);
+		List<VideoTaskSession> taskSessions = taskSessionDao.getTaskSessions(courseEntry, subIdent, List.of(assessedIdentity), null);
 		assertThat(taskSessions)
 			.hasSize(2)
 			.containsExactlyInAnyOrder(taskSession1, taskSession2);

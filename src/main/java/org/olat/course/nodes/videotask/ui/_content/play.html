@@ -1,6 +1,9 @@
 $r.render("backLink")
 
+#if($r.isNotEmpty($userFullname))
 <h3><i class="o_icon o_icon_user"> </i> $userFullname</h3>
+#end
+
 <div id="o_video_editor" class="o_video_editor">
 	<fieldset>
 		<legend>$r.translate("video.task.title")</legend>

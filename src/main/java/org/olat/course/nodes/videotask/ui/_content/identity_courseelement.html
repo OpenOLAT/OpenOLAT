@@ -5,6 +5,12 @@
 	#if($r.available("tool.grade.scale"))
 		$r.render("tool.grade.scale")
 	#end
+	#if($r.available("button.stats"))
+		$r.render("button.stats")
+	#end
+	#if($r.available("play.all"))
+		$r.render("play.all")
+	#end
 	#if($r.available("button.export"))
 		$r.render("button.export")
 	#end

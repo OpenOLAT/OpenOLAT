@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.videotask.ui.VideoTaskSessionRow.CategoryColumn;
 import org.olat.course.nodes.videotask.ui.components.CategoryAlphabeticalComparator;
 import org.olat.course.nodes.videotask.ui.components.CategoryPresetComparator;
 import org.olat.modules.ModuleConfiguration;
@@ -34,7 +33,6 @@ import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentResult;
-import org.olat.modules.video.VideoTaskSegmentSelection;
 
 /**
  * 
@@ -106,13 +104,13 @@ public class VideoTaskHelper {
 		Set<String> segmentsIds = segments.stream()
 				.map(VideoSegment::getId)
 				.collect(Collectors.toSet());
-		
+		int incorrect = 0;
 		for(VideoTaskSegmentResult result:results) {
-			if(!result.isCorrect()) {
-				segmentsIds.remove(result.getSegmentId());
+			if(!result.isCorrect() && segmentsIds.contains(result.getSegmentId())) {
+				incorrect++;
 			}
 		}
-		return segments.size() - segmentsIds.size();
+		return incorrect;
 	}
 	
 	public static int notAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentResult> results) {
@@ -146,32 +144,4 @@ public class VideoTaskHelper {
 		
 		return unsuccessful;
 	}
-	
-	public static CategoryColumn[] calculateScoring(List<VideoSegmentCategory> categories, List<VideoTaskSegmentSelection> taskSelections) {
-		CategoryColumn[] scoring = new CategoryColumn[categories.size()];
-		for(int i=0; i<categories.size(); i++) {
-			VideoSegmentCategory category = categories.get(i);
-			CategoryColumn col = new CategoryColumn();
-			
-			int correct = 0;
-			int notCorrect = 0;
-			for(VideoTaskSegmentSelection selection:taskSelections) {
-				if(category.getId().equals(selection.getCategoryId())) {
-					if(selection.getCorrect() != null && selection.getCorrect().booleanValue()) {
-						correct++;
-					} else {
-						notCorrect++;
-					}
-				}	
-			}
-
-			col.setCategory(category);
-			col.setCorrect(correct);
-			col.setNotCorrect(notCorrect);
-			scoring[i] = col;
-		}
-		return scoring;
-	}
-	
-
 }

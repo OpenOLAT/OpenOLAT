@@ -1,0 +1,69 @@
+<div class="panel panel-default">
+	<div class="panel-heading"><h4>$r.translate("fig.title")</h4></div>	  	
+	<table class="table">
+		<tbody>
+			<tr>
+				<th scope="row">$r.translate("fig.courseId")</th>
+				<td>#if($r.isNotEmpty($courseId))$courseId#end</td>
+				<th scope="row">$r.translate("fig.videoId")</th>
+				<td>$videoId</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.participants")</th>
+				<td>$numOfParticipants</td>
+				<th scope="row">$r.translate("fig.passed")</th>
+				<td>$numOfPassed</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.failed")</th>
+				<td>$numOfFailed</td>
+				<th scope="row">$r.translate("chart.maxscore")</th>
+				<td>$maxScore</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("chart.cutscore")</th>
+				<td>$cutScore</td>
+				<th scope="row">$r.translate("fig.avg")</th>
+				<td>$average</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.span")</th>
+				<td>$range</td>
+				<th scope="row">$r.translate("fig.stddev")</th>
+				<td>$standardDeviation</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.mode")</th>
+				<td>$mode</td>
+				<th scope="row">$r.translate("fig.median")</th>
+				<td>$median</td>
+			</tr>
+			<tr>
+				<th scope="row">$r.translate("fig.averagedur")</th>
+				<td>$averageDuration</td>
+				<td></td><td></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+<fieldset>
+	<legend>$r.translate("statistics.attempts.title")</legend>
+	<div class="o_button_group o_button_group_right">
+		$r.render("play.all")
+		#if($r.available("tool.delete.data"))
+			$r.render("tool.delete.data")
+		#end
+	</div>
+	$r.render("table")
+	
+	#if($r.isNotNull($rowCount) && $r.isNotEmpty($legends) && $rowCount > 0)
+	<div class="o_block">
+		<strong id="title-categories">$r.translate("details.legend")</strong>
+		<ul class="list-unstyled" aria-labelledby="title-categories">
+			#foreach($legend in $legends)
+			<li>$r.escapeHtml($legend)</li>
+			#end
+		</ul>
+	</div>
+	#end
+</fieldset>

@@ -183,20 +183,19 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		status.add(sd);
 	}
 	
-	public VideoDisplayOptions getVideoDisplay(RepositoryEntry videoEntry, boolean readOnly) {
+	public VideoDisplayOptions getVideoDisplay(boolean readOnly) {
 		// configure the display controller according to config
 		ModuleConfiguration config = getModuleConfiguration();
 		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
 		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
 		boolean showAnnotations = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, true);
 		boolean showQuestions = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, true);
-		boolean showSegments = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
-		
+
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(false, false, false, false,
 				title, false, false, null, false, readOnly, forwardSeekingRestrictred);
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
-		displayOptions.setShowSegments(showSegments);
+		displayOptions.setShowSegments(true);
 		displayOptions.setShowDescription(false);
 		displayOptions.setResponseAtEnd(true);
 		return displayOptions;

@@ -20,6 +20,8 @@
 package org.olat.course.nodes.videotask.ui;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -49,8 +51,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoTaskAssessmentPlayController extends BasicController {
 	
-	private final Link backButton;
-	private final VelocityContainer mainVC;
+	private Link backButton;
+	private VelocityContainer mainVC;
 	
 	private MasterController timelineCtrl;
 	private VideoDisplayController videoDisplayController;
@@ -59,22 +61,28 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 	private UserManager userManager;
 	@Autowired
 	private VideoManager videoManager;
-		
+	
 	public VideoTaskAssessmentPlayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry videoEntry, VideoTaskSession taskSession, Identity assessedIdentity) {
+			RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("play");
+		
+		Set<Identity> identities = taskSessions.stream()
+				.filter(session -> session.getIdentity() != null).map(VideoTaskSession::getIdentity)
+				.collect(Collectors.toSet());
+		if(identities.size() == 1) {
+			Identity assessedIdentity = identities.iterator().next();
+			String fullname = userManager.getUserDisplayName(assessedIdentity);
+			mainVC.contextPut("userFullname", fullname);
+		}
 		
 		backButton = LinkFactory.createLinkBack(mainVC, this);
 		
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
 		mainVC.contextPut("videoWidth", videoMetadata.getWidth());
 		mainVC.contextPut("videoHeight", videoMetadata.getHeight());
-		
-		String fullname = userManager.getUserDisplayName(assessedIdentity);
-		mainVC.contextPut("userFullname", fullname);
-		
+
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
 		displayOptions.setDragAnnotations(true);
 		displayOptions.setShowAnnotations(true);
@@ -82,13 +90,13 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		displayOptions.setAlwaysShowControls(true);
 		displayOptions.setClickToPlayPause(false);
 		displayOptions.setAuthorMode(true);
-		videoDisplayController = new VideoDisplayController(ureq, wControl, videoEntry, null, null, displayOptions);
+		videoDisplayController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null, null, displayOptions);
 		listenTo(videoDisplayController);
 		mainVC.put("video", videoDisplayController.getInitialComponent());
 
 		String videoElementId = videoDisplayController.getVideoElementId();
 		timelineCtrl = new MasterController(ureq, getWindowControl(),
-				videoEntry.getOlatResource(), List.of(taskSession), videoElementId);
+				videoEntry.getOlatResource(), taskSessions, videoElementId);
 		timelineCtrl.setVisibleChannels(List.of(TimelineEventType.CORRECT, TimelineEventType.SEGMENT, TimelineEventType.INCORRECT, TimelineEventType.VIDEO));
 		listenTo(timelineCtrl);
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());

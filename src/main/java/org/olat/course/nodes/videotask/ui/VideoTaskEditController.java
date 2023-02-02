@@ -316,7 +316,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		
 		RepositoryEntry repositoryEntry = getVideoReference(config, false);
 		
-		VideoDisplayOptions options = videoTaskNode.getVideoDisplay(repositoryEntry, true);
+		VideoDisplayOptions options = videoTaskNode.getVideoDisplay(true);
 		previewCtrl = new VideoDisplayController(ureq, getWindowControl(), repositoryEntry, null, null, options);
 		listenTo(previewCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), previewCtrl.getInitialComponent(),

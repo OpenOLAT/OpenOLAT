@@ -116,7 +116,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 				elementsValues.keys(), elementsValues.values(), 1);
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, true));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, true));
-		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false));
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
+		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
 
 		SelectionValues categoriesValues = getCategoriesSelectionValues();
 		categoriesEl = uifactory.addCheckboxesVertical("video.config.categories", "video.config.categories", formLayout,
@@ -235,6 +236,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 			attemptsPerSegmentEl.select("3", true);
 			attemptsPerSegmentEl.setEnabled(false);
 		}
+		
+		attemptsPerSegmentEl.setVisible(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode));
 	}
 	
 	private void updateCategoriesUI() {
@@ -358,7 +361,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 			config.remove(VideoTaskEditController.CONFIG_KEY_ATTEMPTS);
 		}
 		
-		if(attemptsPerSegmentEl.isVisible() && attemptsPerSegmentEl.isOneSelected()) {
+		if(attemptsPerSegmentEl.isVisible() && attemptsPerSegmentEl.isOneSelected()
+				&& VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(currentMode)) {
 			int attemptsPerSegment = Integer.parseInt(attemptsPerSegmentEl.getSelectedKey());
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT, attemptsPerSegment);
 		} else {

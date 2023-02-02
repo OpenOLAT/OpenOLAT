@@ -349,7 +349,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		displayCtrl = new VideoDisplayController(ureq, bwControl, videoEntry, courseEntry,
-				courseNode, courseNode.getVideoDisplay(videoEntry, readOnly));
+				courseNode, courseNode.getVideoDisplay(readOnly));
 		listenTo(displayCtrl);
 		
 		List<String> categoriesIds = courseNode.getModuleConfiguration()
@@ -358,8 +358,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		Integer attempt = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
 		int currentAttempt = attempt == null ? 0 : attempt.intValue();
 		displayContainerCtrl = new VideoTaskDisplayController(ureq, bwControl, displayCtrl,
-				videoEntry, courseEntry, courseNode, assessmentType, categoriesIds,
-				false, false, currentAttempt);
+				videoEntry, courseEntry, courseNode, categoriesIds, false, false, currentAttempt);
 		listenTo(displayContainerCtrl);
 		
 		displayContainerCtrl.setAsFullscreen(ureq);
@@ -369,7 +368,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	private void submit(VideoTaskSession taskSession) {
 		// Session only in test / assessment mode, not in practice
 		if(assessmentType) {
-			submitTest(taskSession);
+			submitTask(taskSession);
 		} else {
 			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		}
@@ -380,7 +379,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, runStatus, Role.user);
 	}
 	
-	private void submitTest(VideoTaskSession taskSession) {
+	private void submitTask(VideoTaskSession taskSession) {
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
