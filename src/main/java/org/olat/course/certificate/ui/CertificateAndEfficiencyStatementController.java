@@ -229,7 +229,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 		
 		mainVC.contextPut("user", statementOwner.getUser());
-		mainVC.contextPut("username", statementOwner.getName());
+		mainVC.contextPut("username", statementOwner.getName());//TODO username
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
