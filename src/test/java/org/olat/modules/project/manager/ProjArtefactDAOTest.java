@@ -20,7 +20,7 @@
 package org.olat.modules.project.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.test.JunitTestHelper.random;
+import static org.olat.test.JunitTestHelper.miniRandom;
 
 import java.util.Date;
 import java.util.List;
@@ -58,9 +58,9 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreateArtefact() {
-		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
 		ProjProject project = projectService.createProject(creator);
-		String type = JunitTestHelper.random();
+		String type = miniRandom();
 		dbInstance.commitAndCloseSession();
 		
 		ProjArtefact artefact = sut.create(type, project, creator);
@@ -81,7 +81,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		ProjArtefact artefact = createRandomArtefact();
 		
 		artefact.setContentModifiedDate(new Date());
-		Identity contentModifiedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity contentModifiedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
 		artefact.setContentModifiedBy(contentModifiedBy);
 		artefact.setStatus(ProjectStatus.deleted);
 		artefact = sut.save(artefact);
@@ -149,9 +149,9 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	}
 
 	private ProjArtefact createRandomArtefact() {
-		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
 		ProjProject project = projectService.createProject(creator);
-		String type = JunitTestHelper.random();
+		String type = JunitTestHelper.miniRandom();
 		ProjArtefact artefact = sut.create(type, project, creator);
 		dbInstance.commitAndCloseSession();
 		return artefact;
