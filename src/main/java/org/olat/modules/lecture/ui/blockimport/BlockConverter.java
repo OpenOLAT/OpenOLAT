@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -148,7 +149,7 @@ public class BlockConverter {
 	}
 	
 	private void processLine(String[] parts) {
-		if(parts.length < 13) return;
+		if(parts.length < 9) return;
 		
 		String externalId = parts[0];
 		LectureBlock block = externalIdToBlocks.get(externalId);
@@ -183,17 +184,21 @@ public class BlockConverter {
 		GroupMapping participants = getParticipants(parts[8]);
 		importedBlocks.setGroupMapping(participants);
 		
-		String location = parts[9];
+		String location = processOptionalCell(parts, 9);
 		block.setLocation(location);
-		
-		String description = parts[10];
+
+		String description = processOptionalCell(parts, 10);
 		block.setDescription(description);
 		
-		String preparation = parts[11];
+		String preparation = processOptionalCell(parts, 11);
 		block.setPreparation(preparation);
 		
-		String comment = parts[12];
+		String comment = processOptionalCell(parts, 12);
 		block.setComment(comment);
+	}
+	
+	private String processOptionalCell(String[] parts, int pos) {
+		return (parts.length > pos) ? parts[pos] : null;
 	}
 	
 	private GroupMapping getParticipants(String participants) {
@@ -264,11 +269,15 @@ public class BlockConverter {
 		String datetime = sb.toString();
 		
 		Date parsed = null;
+		Calendar cal = Calendar.getInstance();
 		for(DateFormat format:dateFormatters) {
 			try {
 				format.setLenient(true);
 				parsed = format.parse(datetime);
-				break;
+				cal.setTime(parsed);
+				if(cal.get(Calendar.YEAR) > 2000) {
+					break;
+				}
 			} catch (ParseException e) {
 				//try
 			}
