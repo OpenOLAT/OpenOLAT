@@ -153,7 +153,8 @@ public class CourseScoreController extends FormBasicController {
 		// Passed evaluation
 		SelectionValues passedSV = new SelectionValues();
 		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_PROGRESS, translate("options.passed.progress")));
-		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_ALL, translate("options.passed.all")));
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_ALL_MANDATORY, translate("options.passed.all.mandatory")));
+		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_ALL, translate("options.passed.all.all")));
 		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_NUMBER, translate("options.passed.number")));
 		passedSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_POINTS, translate("options.passed.points")));
 		passedEl = uifactory.addCheckboxesVertical("options.passed", formLayout, passedSV.keys(), passedSV.values(), 1);
@@ -161,6 +162,7 @@ public class CourseScoreController extends FormBasicController {
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		passedEl.setEnabled(editable);
 		passedEl.select(STCourseNode.CONFIG_PASSED_PROGRESS, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS));
+		passedEl.select(STCourseNode.CONFIG_PASSED_ALL_MANDATORY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL_MANDATORY));
 		passedEl.select(STCourseNode.CONFIG_PASSED_ALL, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_ALL));
 		passedEl.select(STCourseNode.CONFIG_PASSED_NUMBER, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_NUMBER));
 		passedEl.select(STCourseNode.CONFIG_PASSED_POINTS, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_POINTS));
@@ -272,7 +274,7 @@ public class CourseScoreController extends FormBasicController {
 			}
 		}
 		if (!allOk) {
-			el.setErrorKey(i18nKey, null);
+			el.setErrorKey(i18nKey);
 		}
 		return allOk;
 	}
@@ -358,6 +360,15 @@ public class CourseScoreController extends FormBasicController {
 		} else {
 			runConfig.remove(STCourseNode.CONFIG_PASSED_PROGRESS);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_PROGRESS);
+		}
+		
+		boolean passedMandatoryAll = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_ALL_MANDATORY);
+		if (passedMandatoryAll) {
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL_MANDATORY, true);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_PASSED_ALL_MANDATORY, true);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_PASSED_ALL_MANDATORY);
+			editorConfig.remove(STCourseNode.CONFIG_PASSED_ALL_MANDATORY);
 		}
 		
 		boolean passedAll = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_ALL);
