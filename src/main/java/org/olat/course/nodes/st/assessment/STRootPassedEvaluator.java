@@ -108,6 +108,9 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 				if (counts.getFailed() > 0 && getActivePassedConfigs(config) == 1) {
 					return Boolean.FALSE;
 				}
+				if (getActivePassedConfigs(config) == 1 && !isFullyAssessed(currentEvaluation)) {
+					return null;
+				}
 			}
 		}
 	
@@ -116,8 +119,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 			if (counts.getPassable() > 0) {
 				
 				// Failed if course is fully assessed
-				Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
-				if (fullyAssessed != null && fullyAssessed.booleanValue()) {
+				if (isFullyAssessed(currentEvaluation)) {
 					return Boolean.FALSE;
 				}
 			
@@ -133,6 +135,11 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		}
 		
 		return currentPassed;
+	}
+	
+	private boolean isFullyAssessed(AssessmentEvaluation currentEvaluation) {
+		Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
+		return fullyAssessed != null && fullyAssessed.booleanValue();
 	}
 
 	public static int getActivePassedConfigs(ModuleConfiguration config) {

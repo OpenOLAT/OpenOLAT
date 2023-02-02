@@ -101,7 +101,7 @@ public class QTI21NewExportController extends FormBasicController {
 		uifactory.addStaticTextElement("export.participants", "export.participants", text, formLayout);
 		
 		defaultTitle = getDefaultTitle(ureq, false);
-		titleEl = uifactory.addTextElement("export.title", 64, defaultTitle, formLayout);
+		titleEl = uifactory.addTextElement("export.title", 96, defaultTitle, formLayout);
 		titleEl.setMandatory(true);
 		
 		uifactory.addFormSubmitButton("export", formLayout);
