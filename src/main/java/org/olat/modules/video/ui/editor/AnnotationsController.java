@@ -111,11 +111,17 @@ public class AnnotationsController extends BasicController {
 							annotationController.setAnnotation(a);
 							fireEvent(ureq, annotationSelectedEvent);
 						});
-			} else if (event == AnnotationsHeaderController.ANNOTATION_ADDED_EVENT) {
+			} else if (event == AnnotationsHeaderController.ANNOTATION_ADDED_EVENT ||
+					event == AnnotationsHeaderController.ANNOTATION_DELETED_EVENT) {
 				this.annotations = annotationsHeaderController.getAnnotations();
 				String newAnnotationId = annotationsHeaderController.getAnnotationId();
-				annotations.getMarkers().stream().filter(a -> a.getId().equals(newAnnotationId)).findFirst().ifPresent(annotationController::setAnnotation);
+				showAnnotation(newAnnotationId);
+				annotationController.setAnnotation(annotation);
+				videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
 				reloadMarkers(ureq);
+				if (annotation != null) {
+					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+				}
 			}
 		}
 

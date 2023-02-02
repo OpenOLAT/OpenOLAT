@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -30,10 +31,14 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -52,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AnnotationsHeaderController extends FormBasicController {
 	public final static Event ANNOTATION_ADDED_EVENT = new Event("annotation.added");
+	public final static Event ANNOTATION_DELETED_EVENT = new Event("annotation.deleted");
 	private final RepositoryEntry repositoryEntry;
 	private final String videoElementId;
 	private SingleSelection annotationsDropdown;
@@ -65,7 +71,9 @@ public class AnnotationsHeaderController extends FormBasicController {
 	private String annotationId;
 	private String currentTimeCode;
 	private final String newAnnotationColor;
-
+	private FormLink commandsButton;
+	private CommandsController commandsController;
+	private CloseableCalloutWindowController ccwc;
 
 	protected AnnotationsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 										  String videoElementId) {
@@ -77,6 +85,13 @@ public class AnnotationsHeaderController extends FormBasicController {
 		initForm(ureq);
 	}
 
+	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(commandsController);
+		commandsController = null;
+		ccwc = null;
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		annotationsDropdown = uifactory.addDropdownSingleselect("annotations", "form.annotation.title",
@@ -85,6 +100,10 @@ public class AnnotationsHeaderController extends FormBasicController {
 
 		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.annotation.add",
 				"form.annotation.add", formLayout, Link.BUTTON);
+
+		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
+				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 	}
 
 	public void setAnnotations(VideoMarkers annotations) {
@@ -98,7 +117,6 @@ public class AnnotationsHeaderController extends FormBasicController {
 
 	private void setValues() {
 		annotationsKV = new SelectionValues();
-		annotations = videoManager.loadMarkers(repositoryEntry.getOlatResource());
 		annotations
 				.getMarkers()
 				.stream()
@@ -123,6 +141,8 @@ public class AnnotationsHeaderController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addAnnotationButton == source) {
 			doAddAnnotation(ureq);
+		} else if (commandsButton == source) {
+			doCommands(ureq);
 		} else if (annotationsDropdown == source) {
 			if (annotationsDropdown.isOneSelected()) {
 				annotationId = annotationsDropdown.getSelectedKey();
@@ -164,6 +184,15 @@ public class AnnotationsHeaderController extends FormBasicController {
 		fireEvent(ureq, ANNOTATION_ADDED_EVENT);
 	}
 
+	private void doCommands(UserRequest ureq) {
+		commandsController = new CommandsController(ureq, getWindowControl());
+		listenTo(commandsController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
+				commandsButton.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
+	}
+
 	private void reloadMarkers(UserRequest ureq) {
 		fireEvent(ureq, AnnotationsController.RELOAD_MARKERS_EVENT);
 	}
@@ -171,6 +200,39 @@ public class AnnotationsHeaderController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (ccwc == source) {
+			cleanUp();
+		} else if (commandsController == source) {
+			if (CommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				doDeleteAnnotation(ureq);
+			}
+			ccwc.deactivate();
+			cleanUp();
+		}
+	}
+
+	private void doDeleteAnnotation(UserRequest ureq) {
+		if (annotationId == null) {
+			return;
+		}
+
+		VideoMarker annotation = annotations.getMarkerById(annotationId);
+		if (annotation == null) {
+			return;
+		}
+
+		annotations.getMarkers().remove(annotation);
+		if (annotations.getMarkers().isEmpty()) {
+			annotationId = null;
+		} else {
+			annotationId = annotations.getMarkers().get(0).getId();
+		}
+		setValues();
+		fireEvent(ureq, ANNOTATION_DELETED_EVENT);
 	}
 
 	public void setCurrentTimeCode(String currentTimeCode) {
@@ -191,5 +253,30 @@ public class AnnotationsHeaderController extends FormBasicController {
 	public void handleDeleted(String annotationId) {
 		annotations.getMarkers().removeIf(a -> a.getId().equals(annotationId));
 		setAnnotations(annotations);
+	}
+
+	private static class CommandsController extends BasicController {
+		private static final Event DELETE_EVENT = new Event("delete");
+		private final Link deleteLink;
+
+		protected CommandsController(UserRequest ureq, WindowControl wControl) {
+			super(ureq, wControl);
+
+			VelocityContainer mainVC = createVelocityContainer("annotation_commands");
+
+			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
+					Link.LINK);
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			mainVC.put("delete", deleteLink);
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if (deleteLink == source) {
+				fireEvent(ureq, DELETE_EVENT);
+			}
+		}
 	}
 }
