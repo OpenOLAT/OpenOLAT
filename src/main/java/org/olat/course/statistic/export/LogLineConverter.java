@@ -30,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -100,8 +101,11 @@ public class LogLineConverter {
 		if(anonymize) {
 			row.addCell(col++, makeAnonymous(identity.getName(), resourceableId));
 		} else if(isAdministrativeUser) {
-			
-			row.addCell(col++, identity.getName());
+			String userName = user.getNickName();
+			if(!StringHelper.containsNonWhitespace(userName)) {
+				userName = identity.getName();
+			}
+			row.addCell(col++, userName);
 		}
 		
 		if(!anonymize) {
@@ -119,7 +123,7 @@ public class LogLineConverter {
 	}
 	
 	/**
-	 * encode a string and course resourcable id with MD5
+	 * encode a string and course resourceable id with MD5
 	 * @param s
 	 * @param courseResId
 	 * @return

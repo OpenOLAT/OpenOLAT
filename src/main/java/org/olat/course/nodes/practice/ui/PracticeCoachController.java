@@ -281,6 +281,7 @@ public class PracticeCoachController extends FormBasicController implements Acti
 	
 	private SearchAssessedIdentityParams getSearchParameters() {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+		params.setUserPropertyHandlers(userPropertyHandlers);
 
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		

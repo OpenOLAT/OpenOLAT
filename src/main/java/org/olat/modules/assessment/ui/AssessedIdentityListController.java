@@ -271,6 +271,7 @@ public class AssessedIdentityListController extends FormBasicController implemen
 	
 	protected void updateModel(String searchString, List<FlexiTableFilter> filters) {
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(testEntry, null, testEntry, assessmentCallback);
+		params.setUserPropertyHandlers(userPropertyHandlers);
 		
 		FlexiTableFilter statusFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_STATUS);
 		if (statusFilter != null) {

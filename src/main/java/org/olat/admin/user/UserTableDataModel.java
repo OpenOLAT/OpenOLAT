@@ -33,6 +33,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -82,28 +83,26 @@ public class UserTableDataModel extends DefaultTableDataModel<Identity> {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public final Object getValueAt(int row, int col) {
 		Identity identity = getObject(row);
 		User user = identity.getUser();
 		if (col == 0) {
-			return identity.getName();
-
-		} else if ((col-1) < userPropertyHandlers.size()) {
+			String username = user.getNickName();
+			if(!StringHelper.containsNonWhitespace(username)) {
+				username = identity.getName();
+			}
+			return username;
+		}
+		if ((col-1) < userPropertyHandlers.size()) {
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col-1);
 			String value = userPropertyHandler.getUserProperty(user, getLocale());
 			return (value == null ? "n/a" : value);
-
-		} else {
-			return "error";			
-		}
+		} 
+		return "error";			
 	}
-	
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+
+	@Override
 	public int getColumnCount() {
 		return userPropertyHandlers.size() + 1;
 	}
