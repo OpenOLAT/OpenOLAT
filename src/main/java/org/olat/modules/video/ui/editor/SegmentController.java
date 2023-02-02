@@ -97,6 +97,7 @@ public class SegmentController extends FormBasicController {
 	public void setSegment(VideoSegment segment) {
 		this.segment = segment;
 		setValues();
+		flc.contextPut("categoryOpen", false);
 	}
 
 	public VideoSegment getSegment() {
@@ -259,12 +260,8 @@ public class SegmentController extends FormBasicController {
 				long endTest = startTest + s.getDuration() * 1000;
 				boolean valid = startNew >= endTest || endNew <= startTest;
 				if (!valid) {
-					if (startNew > startTest) {
-						startEl.setErrorKey("form.error.timeNotValid");
-					}
-					if (endNew < endTest) {
-						endEl.setErrorKey("form.error.timeNotValid");
-					}
+					startEl.setErrorKey("form.error.timeNotValid");
+					endEl.setErrorKey("form.error.timeNotValid");
 				}
 				return valid;
 			});
@@ -314,6 +311,8 @@ public class SegmentController extends FormBasicController {
 		if (editCategoriesController == source) {
 			if (event == Event.DONE_EVENT) {
 				flc.contextPut("categories", segments.getCategories());
+				setValues();
+				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

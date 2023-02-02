@@ -2,5 +2,7 @@
 	$r.render("header")
 	#if ($r.available("annotation"))
 	$r.render("annotation")
+	#else
+	$r.render("emptyState")
 	#end
 </div>

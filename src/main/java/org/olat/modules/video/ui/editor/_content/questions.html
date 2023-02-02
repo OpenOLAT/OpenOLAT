@@ -2,5 +2,7 @@
 	$r.render("header")
 	#if ($r.available("question"))
 	$r.render("question")
+	#else
+	$r.render("emptyState")
 	#end
 </div>

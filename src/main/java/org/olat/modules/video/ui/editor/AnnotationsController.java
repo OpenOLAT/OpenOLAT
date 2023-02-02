@@ -21,11 +21,16 @@ package org.olat.modules.video.ui.editor;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.emptystate.EmptyStateConfig;
+import org.olat.core.gui.components.emptystate.EmptyStateFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractFlexiTableRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -70,6 +75,15 @@ public class AnnotationsController extends BasicController {
 		} else {
 			mainVC.remove("annotation");
 		}
+
+		Translator tableTranslator = Util.createPackageTranslator(AbstractFlexiTableRenderer.class, ureq.getLocale());
+		EmptyStateConfig emptyStateConfig = EmptyStateConfig
+				.builder()
+				.withIconCss("o_icon_empty_objects")
+				.withIndicatorIconCss("o_icon_empty_indicator")
+				.withMessageTranslated(tableTranslator.translate("default.tableEmptyMessage"))
+				.build();
+		EmptyStateFactory.create("emptyState", mainVC, this, emptyStateConfig);
 
 		putInitialPanel(mainVC);
 	}
