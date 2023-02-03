@@ -294,8 +294,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
 		
 		// passed
-		passedSpacer.setVisible(gradeDisable);
-		passedEl.setVisible(gradeDisable);
+		passedSpacer.setVisible(scoreEnabled && gradeDisable);
+		passedEl.setVisible(scoreEnabled && gradeDisable);
 		boolean passedTypeVisible = scoreEnabled && gradeDisable && passedEl.isOn();
 		passedTypeEl.setVisible(passedTypeVisible);
 

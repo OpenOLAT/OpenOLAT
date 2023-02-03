@@ -66,6 +66,8 @@ public interface VideoTaskSession extends CreateInfo, ModifiedInfo {
 
 	public void setScore(BigDecimal score);
 	
+	public Float getScoreAsFloat();
+	
 	public BigDecimal getMaxScore();
 
 	public void setMaxScore(BigDecimal maxScore);

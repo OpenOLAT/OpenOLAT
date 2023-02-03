@@ -23,6 +23,7 @@ package org.olat.course.nodes.videotask.ui;
 import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NavigableSet;
@@ -56,8 +57,8 @@ import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.AssessmentDocumentsSupplier;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.PanelInfo;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
-import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.videotask.ui.components.FinishEvent;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -194,6 +195,9 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 			myContent.contextPut("maxAttempts", Integer.valueOf(maxAttempts));
 			myContent.contextPut("numOfAttempts", Integer.valueOf(attempts));
 			myContent.contextPut("attemptsConfig", Boolean.TRUE);
+			if(attempts >= maxAttempts) {
+				startButton.setEnabled(false);
+			}
 		} else {
 			myContent.contextPut("attemptsConfig", Boolean.FALSE);
 		}
@@ -368,7 +372,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	private void submit(VideoTaskSession taskSession) {
 		// Session only in test / assessment mode, not in practice
 		if(assessmentType) {
-			submitTask(taskSession);
+			submitAssessedTask(taskSession);
 		} else {
 			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		}
@@ -379,35 +383,36 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, runStatus, Role.user);
 	}
 	
-	private void submitTask(VideoTaskSession taskSession) {
+	private void submitAssessedTask(VideoTaskSession taskSession) {
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
-		Boolean pass = taskSession.getPassed();
 		
-		float fScore = taskSession.getScore() == null ? 0.0f : taskSession.getScore().floatValue();
-		Float score = Float.valueOf(fScore);
-		Boolean updatePass = pass;
+		Float cutValue = (Float)courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		BigDecimal score = taskSession.getScore();
+		Float scoreAsFloat = taskSession.getScoreAsFloat();
+		Boolean updatePassed = null;
 		if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()) {
 			if (assessmentConfig.isAutoGrade() || isAssessmentWithGrade()) {
 				GradeScale gradeScale = gradeService.getGradeScale(
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry(),
 						courseNode.getIdent());
 				NavigableSet<GradeScoreRange> gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
-				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, score);
+				GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreAsFloat);
 				grade = gradeScoreRange.getGrade();
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
-				updatePass = gradeScoreRange.getPassed();
+				updatePassed = gradeScoreRange.getPassed();
 			} else {
-				updatePass = null;
+				updatePassed = null;
 			}
+		} else if(score != null && cutValue != null) {
+			updatePassed = taskSession.getPassed();
 		}
 		
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
-		String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-		if(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || IQEditController.CORRECTION_GRADING.equals(correctionMode)) {
+		if(updatePassed == null) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
 			visibility = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getUserVisible();
 		} else {
@@ -415,8 +420,8 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 			visibility = Boolean.TRUE;
 		}
 		
-		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent,
-				updatePass, assessmentStatus, visibility, taskSession.getCreationDate(), null,
+		ScoreEvaluation sceval = new ScoreEvaluation(scoreAsFloat, grade, gradeSystemIdent, performanceClassIdent,
+				updatePassed, assessmentStatus, visibility, taskSession.getCreationDate(), null,
 				AssessmentRunStatus.done, taskSession.getKey());
 		
 		courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),

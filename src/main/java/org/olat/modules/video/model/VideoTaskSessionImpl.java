@@ -252,6 +252,12 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
 	}
 
 	@Override
+	@Transient
+	public Float getScoreAsFloat() {
+		return score == null ? null : Float.valueOf(score.floatValue());
+	}
+
+	@Override
 	public BigDecimal getMaxScore() {
 		return maxScore;
 	}
@@ -272,6 +278,7 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
 	}
 
 	@Override
+	@Transient
 	public BigDecimal getResultInPercent() {
 		return result == null ? null : result.multiply(BigDecimal.valueOf(100l));
 	}

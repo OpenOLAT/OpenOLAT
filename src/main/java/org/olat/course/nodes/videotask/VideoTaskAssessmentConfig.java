@@ -19,10 +19,13 @@
  */
 package org.olat.course.nodes.videotask;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
+import org.olat.modules.grade.GradeService;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * 
@@ -32,8 +35,13 @@ import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
  */
 public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 
-	public VideoTaskAssessmentConfig(VideoTaskCourseNode courseNode) {
+	private final String nodeIdent;
+	private final RepositoryEntryRef courseEntry;
+	
+	public VideoTaskAssessmentConfig(RepositoryEntryRef courseEntry, VideoTaskCourseNode courseNode) {
 		super(courseNode.getModuleConfiguration());
+		nodeIdent = courseNode.getIdent();
+		this.courseEntry = courseEntry;
 	}
 	
 	@Override
@@ -44,10 +52,22 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 	@Override
 	public Mode getScoreMode() {
 		String mode = config.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE);
-		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)
+				&& config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD)) {
 			return Mode.setByNode;
 		}
 		return Mode.none;
+	}
+	
+	@Override
+	public Mode getPassedMode() {
+		if (hasGrade() && Mode.none != getScoreMode()) {
+			if (CoreSpringFactory.getImpl(GradeService.class).hasPassed(courseEntry, nodeIdent)) {
+				return Mode.setByNode;
+			}
+			return Mode.none;
+		}
+		return super.getPassedMode();
 	}
 	
 	@Override

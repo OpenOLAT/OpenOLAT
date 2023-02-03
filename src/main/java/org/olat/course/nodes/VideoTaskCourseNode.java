@@ -131,7 +131,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public CourseNodeReminderProvider getReminderProvider(RepositoryEntryRef courseEntry, boolean rootNode) {
-		return new AssessmentReminderProvider(getIdent(), new VideoTaskAssessmentConfig(this));
+		return new AssessmentReminderProvider(getIdent(), new VideoTaskAssessmentConfig(courseEntry, this));
 	}
 
 	@Override

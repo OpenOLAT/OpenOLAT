@@ -246,8 +246,7 @@ public class VideoTaskDisplayController extends BasicController {
 		VideoSegment segment = getSegment(positionInMilliSeconds);
 		String segmentId = segment == null ? null : segment.getId();
 		Boolean correct = Boolean.valueOf(segment != null && segment.getCategoryId().equals(category.getId()));
-		System.out.println(correct + " " + segmentId);
-
+		
 		VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession, segmentId, category.getId(), correct,
 			positionInMilliSeconds, rawPosition);
 		synchronized(segmentSelections) {

@@ -58,7 +58,7 @@ public class VideoTaskAssessmentHandler implements AssessmentHandler {
 	
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		return new VideoTaskAssessmentConfig((VideoTaskCourseNode)courseNode);
+		return new VideoTaskAssessmentConfig(courseEntry, (VideoTaskCourseNode)courseNode);
 	}
 
 	@Override
