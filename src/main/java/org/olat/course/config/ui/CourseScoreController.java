@@ -126,6 +126,7 @@ public class CourseScoreController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.removeAll();
 		setFormTitle("options.score.title");
+		setFormContextHelp("manual_user/course_create/Course_Settings/#tab-assessment-for-learning-path-courses");
 		
 		SelectionValues scoreKV = new SelectionValues();
 		scoreKV.add(SelectionValues.entry(SCORE_VALUE_NONE, translate( "options.score.points.none")));
