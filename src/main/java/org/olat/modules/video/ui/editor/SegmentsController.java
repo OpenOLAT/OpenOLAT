@@ -136,6 +136,7 @@ public class SegmentsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		segmentsHeaderController.setCurrentTimeCode(currentTimeCode);
+		segmentController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showSegment(String segmentId) {

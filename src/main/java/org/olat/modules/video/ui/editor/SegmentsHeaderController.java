@@ -19,11 +19,13 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -61,7 +63,6 @@ public class SegmentsHeaderController extends FormBasicController {
 	public final static Event SEGMENT_DELETED_EVENT = new Event("segment.deleted");
 
 	private final static long DEFAULT_DURATION = 5;
-	private final static long MAX_NB_SEGMENTS = 10;
 	private final String videoElementId;
 	private final long videoDurationInSeconds;
 	private VideoSegments segments;
@@ -75,6 +76,7 @@ public class SegmentsHeaderController extends FormBasicController {
 	private FormLink commandsButton;
 	private CommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
+	private final SimpleDateFormat timeFormat;
 
 
 	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, String videoElementId,
@@ -82,6 +84,9 @@ public class SegmentsHeaderController extends FormBasicController {
 		super(ureq, wControl, "segments_header");
 		this.videoElementId = videoElementId;
 		this.videoDurationInSeconds = videoDurationInSeconds;
+
+		timeFormat = new SimpleDateFormat("HH:mm:ss");
+		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		initForm(ureq);
 	}
@@ -129,7 +134,9 @@ public class SegmentsHeaderController extends FormBasicController {
 				.getSegments()
 				.stream()
 				.sorted(new SegmentComparator())
-				.forEach(s -> segments.getCategory(s.getCategoryId()).ifPresent(c -> segmentsKV.add(SelectionValues.entry(s.getId(), c.getLabelAndTitle()))));
+				.forEach(s -> segments.getCategory(s.getCategoryId()).ifPresent(c ->
+						segmentsKV.add(SelectionValues.entry(s.getId(),
+								timeFormat.format(s.getBegin()) + " - " + c.getLabelAndTitle()))));
 		flc.contextPut("hasSegments", !segmentsKV.isEmpty());
 		segmentsDropdown.setKeysAndValues(segmentsKV.keys(), segmentsKV.values(), null);
 
@@ -155,7 +162,7 @@ public class SegmentsHeaderController extends FormBasicController {
 			nextSegmentButton.setEnabled(selectedIndex < (segmentsKV.size() - 1));
 		}
 
-		addSegmentButton.setEnabled(segmentsKV.size() < MAX_NB_SEGMENTS && !freeSegments().isEmpty());
+		addSegmentButton.setEnabled(!freeSegments().isEmpty());
 	}
 
 	@Override
@@ -235,7 +242,7 @@ public class SegmentsHeaderController extends FormBasicController {
 
 		long timeInSeconds = 0;
 		if (currentTimeCode != null) {
-			timeInSeconds = Math.round(Double.parseDouble(currentTimeCode)) * 1000;
+			timeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
 		}
 		VideoSegment freeSegment = closestSegment(freeSegments, timeInSeconds);
 		if (freeSegment == null) {

@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class EditCategoriesController extends FormBasicController {
+	private final static long MAX_NB_CATEGORIES = 10;
 
 	private final String MOVE_UP_CMD = "moveUp";
 	private final String MOVE_DOWN_CMD = "moveDown";
@@ -99,10 +100,11 @@ public class EditCategoriesController extends FormBasicController {
 
 			String labelValue = category == null ? "" : category.getLabel();
 			labelEl = uifactory.addTextElement("label_" + id, "", 2, labelValue, formLayout);
+			labelEl.setDisplaySize(2);
 			labelEl.setMandatory(true);
 
 			String titleValue = category == null ? "" : category.getTitle();
-			titleEl = uifactory.addTextElement("title_" + id, "", 80, titleValue,
+			titleEl = uifactory.addTextElement("title_" + id, "", 25, titleValue,
 					formLayout);
 			titleEl.setMandatory(true);
 
@@ -322,8 +324,10 @@ public class EditCategoriesController extends FormBasicController {
 
 	private void initButtonStates() {
 		Set<String> usedIds = videoSegments.getSegments().stream().map(VideoSegment::getCategoryId).collect(Collectors.toSet());
+		boolean canAddCategory = categories.size() < MAX_NB_CATEGORIES;
 		for (Category category : categories) {
 			category.getDeleteButton().setEnabled(!usedIds.contains(category.getLongId()));
+			category.getAddButton().setEnabled(canAddCategory);
 		}
 	}
 

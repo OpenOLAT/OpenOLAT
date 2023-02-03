@@ -22,6 +22,8 @@ package org.olat.modules.video.ui.editor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.olat.core.gui.UserRequest;
@@ -61,7 +63,9 @@ public class SegmentController extends FormBasicController {
 	private VideoSegment segment;
 	private final VideoSegments segments;
 	private TextElement startEl;
+	private FormLink startApplyPositionButton;
 	private TextElement endEl;
+	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private FormLink categoryButton;
 	private SelectionValues categoriesKV;
@@ -71,6 +75,7 @@ public class SegmentController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	@Autowired
 	private VideoModule videoModule;
+	private String currentTimeCode;
 
 	public SegmentController(UserRequest ureq, WindowControl wControl, VideoSegment segment,
 							 VideoSegments segments, long videoDurationInSeconds) {
@@ -117,9 +122,17 @@ public class SegmentController extends FormBasicController {
 				formLayout);
 		startEl.setMandatory(true);
 
+		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+
 		endEl = uifactory.addTextElement("end", "form.segment.startEnd", 8, "",
 				formLayout);
 		endEl.setMandatory(true);
+
+		endApplyPositionButton = uifactory.addFormLink("endApplyPosition", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 
 		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 3,
 				"", formLayout);
@@ -162,7 +175,11 @@ public class SegmentController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (categoryButton == source) {
+		if (startApplyPositionButton == source) {
+			doApplyStartPosition();
+		} else if (endApplyPositionButton == source) {
+			doApplyEndPosition();
+		} else if (categoryButton == source) {
 			doToggleCategory();
 		} else if (editCategoriesButton == source) {
 			doEditCategories(ureq);
@@ -173,6 +190,38 @@ public class SegmentController extends FormBasicController {
 					doSetCategory(categoryId);
 				}
 			}
+		}
+	}
+
+	private void doApplyStartPosition() {
+		if (currentTimeCode == null) {
+			return;
+		}
+		long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
+		startEl.setValue(timeFormat.format(new Date(startTimeInSeconds * 1000)));
+
+		try {
+			long endTimeInSeconds = timeFormat.parse(endEl.getValue()).getTime() / 1000;
+			long duration = endTimeInSeconds - startTimeInSeconds;
+			durationEl.setValue(Long.toString(duration));
+		} catch (ParseException e) {
+			//
+		}
+	}
+
+	private void doApplyEndPosition() {
+		if (currentTimeCode == null) {
+			return;
+		}
+		long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
+		endEl.setValue(timeFormat.format(new Date(endTimeInSeconds * 1000)));
+
+		try {
+			long startTimeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
+			long duration = endTimeInSeconds - startTimeInSeconds;
+			durationEl.setValue(Long.toString(duration));
+		} catch (ParseException e) {
+			//
 		}
 	}
 
@@ -197,9 +246,23 @@ public class SegmentController extends FormBasicController {
 		flc.contextPut("categoryOpen", categoryOpen);
 		flc.contextPut("categoriesAvailable", !categoriesKV.isEmpty());
 		flc.contextPut("categories", segments.getCategories());
+		flc.contextPut("categoryUsedCounts", getCategoryUsedCounts());
 		if (categoryOpen) {
 			flc.contextPut("categoryId", segment.getCategoryId());
 		}
+	}
+
+	private Map<String, Integer> getCategoryUsedCounts() {
+		Map<String, Integer> result = new HashMap<>();
+		segments.getSegments().stream().map(VideoSegment::getCategoryId)
+				.forEach(cid -> result.put(cid, result.containsKey(cid) ? result.get(cid) + 1 : 1));
+		segments.getCategories().stream().map(VideoSegmentCategory::getId)
+				.forEach(cid -> {
+					if (!result.containsKey(cid)) {
+						result.put(cid, 0);
+					}
+				});
+		return result;
 	}
 
 	private void doEditCategories(UserRequest ureq) {
@@ -313,6 +376,7 @@ public class SegmentController extends FormBasicController {
 		if (editCategoriesController == source) {
 			if (event == Event.DONE_EVENT) {
 				flc.contextPut("categories", segments.getCategories());
+				flc.contextPut("categoryUsedCounts", getCategoryUsedCounts());
 				setValues();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
@@ -322,5 +386,9 @@ public class SegmentController extends FormBasicController {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+
+	public void setCurrentTimeCode(String currentTimeCode) {
+		this.currentTimeCode = currentTimeCode;
 	}
 }

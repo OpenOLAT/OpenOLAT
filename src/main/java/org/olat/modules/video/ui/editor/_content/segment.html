@@ -1,39 +1,149 @@
-<div class="form-group row clearfix">
-	$r.render("start", "label", "col-xs-3")
-	<div class="col-xs-4">
-		<div class="o_video_segment_start" style="width: 45%; display: inline-block;">
-			$r.render("start")
-			#if ($f.hasError("start"))
-			<div>$r.render("start", "error")</div>
-			#end
-		</div>
-		<div style="width: 5%; display: inline-block; text-align: center; vertical-align: top; line-height: 32px;">-</div>
-		<div class="o_video_segment_end" style="width: 45%; display: inline-block; float: right;">
-			$r.render("end")
-			#if ($f.hasError("end"))
-			<div>$r.render("end", "error")</div>
-			#end
-		</div>
-	</div>
-	$r.render("duration", "label", "col-xs-3")
-	<div class="col-xs-2 o_video_segment_duration">
-		$r.render("duration")
-		#if ($f.hasError("duration"))
-		<div>$r.render("duration", "error")</div>
-		#end
-	</div>
-	<div class="col-xs-offset-3 col-xs-4">
-		#if ($overlapError)
-		<div class="o_error">$r.translate("form.segment.error.overlap")</div>
-		#end
-	</div>
-	<div class="col-xs-3"></div>
-	<div class="o_form_example help-block col-xs-2">$r.render("duration", "example")</div>
-</div>
+<style>
+	.o_video_apply_position_timestamp input {
+		width: 80px;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+
+	.o_video_apply_position_button a {
+		/*padding-left: 6px;*/
+		/*padding-right: 6px;*/
+	}
+
+	.o_video_nowrap {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.o_video_grid_container {
+		display: grid;
+		grid-template-columns: 130px 120px 10px 120px 130px 120px;
+		grid-template-rows: auto;
+		grid-template-areas:
+		"se-label start   dash end   duration-label duration"
+		"pad1     e-start pad2 e-end pad3           e-duration"
+		"ca-label ca      ca   ca    ca             ca"
+		"pad5     b       b    b     b              b"
+		;
+	}
+
+	.o_video_grid_item_se_label {
+		grid-area: se-label;
+		justify-self: right;
+		margin-right: 5px;
+	}
+
+	.o_video_grid_item_start {
+		grid-area: start;
+		justify-self: left;
+	}
+	.o_video_grid_item_error_start {
+		grid-area: e-start;
+		justify-self: left;
+	}
+
+	.o_video_grid_item_dash {
+		grid-area: dash;
+		justify-self: center;
+	}
+
+	.o_video_grid_item_end {
+		grid-area: end;
+		justify-self: right;
+	}
+
+	.o_video_grid_item_error_end {
+		grid-area: e-end;
+		justify-self: left;
+	}
+
+	.o_video_grid_item_error_start_end {
+		grid-area: 2 / 2 / 3 / 5;
+		justify-self: left;
+	}
+
+	.o_video_grid_item_duration_label {
+		grid-area: duration-label;
+		justify-self: right;
+		margin-right: 5px;
+	}
+
+	.o_video_grid_item_duration {
+		grid-area: duration;
+		justify-self: stretch;
+	}
+
+	.o_video_grid_item_error_duration {
+		grid-area: e-duration;
+		justify-self: stretch;
+	}
+
+	.o_video_grid_item_category_label {
+		grid-area: ca-label;
+		justify-self: right;
+		margin-right: 5px;
+		margin-top: 10px;
+	}
+
+	.o_video_grid_item_category_button {
+		grid-area: ca;
+		justify-self: stretch;
+		margin-top: 10px;
+	}
+
+	.o_video_grid_item_buttons {
+		grid-area: b;
+		justify-self: left;
+		margin-top: 10px;
+	}
+
+</style>
 
 <div class="form-group row clearfix">
-	$r.render("category", "label", "col-xs-3")
-	<div class="col-xs-9">$r.render("category")</div>
+
+	<div class="o_video_grid_container">
+		<div class="o_video_grid_item_se_label">$r.render("start", "label")</div>
+
+		<div class="o_video_grid_item_start btn-group">
+			<div class="btn-group o_video_apply_position_timestamp o_video_segment_start" style="display: inline-block;">$r.render("start")</div>
+			<div class="btn-group o_video_apply_position_button" style="display: inline-block;">$r.render("startApplyPosition")</div>
+		</div>
+
+		#if ($f.hasError("start"))
+		<div class="o_video_grid_item_error_start">$r.render("start", "error")</div>
+		#end
+
+		<div class="o_video_grid_item_dash" style="display: inline-block; text-align: center; vertical-align: top; line-height: 32px;">-</div>
+
+		<div class="o_video_grid_item_end btn-group">
+			<div class="btn-group o_video_apply_position_timestamp o_video_segment_end" style="display: inline-block;">$r.render("end")</div>
+			<div class="btn-group o_video_apply_position_button" style="display: inline-block;">$r.render("endApplyPosition")</div>
+		</div>
+
+		#if ($f.hasError("end"))
+		<div class="o_video_grid_item_error_end">$r.render("end", "error")</div>
+		#end
+
+		#if ($overlapError)
+		<div class="o_video_grid_item_error_start_end o_error">$r.translate("form.segment.error.overlap")</div>
+		#end
+
+		<div class="o_video_grid_item_duration_label">$r.render("duration", "label")</div>
+
+		<div class="o_video_grid_item_duration o_video_segment_duration">$r.render("duration")</div>
+
+		#if ($f.hasError("duration"))
+		<div class="o_video_grid_item_error_duration">$r.render("duration", "error")</div>
+		#else
+		<div class="o_video_grid_item_error_duration o_form_example help-block">$r.render("duration", "example")</div>
+		#end
+
+		<div class="o_video_grid_item_category_label">$r.render("category", "label")</div>
+		<div class="o_video_grid_item_category_button">$r.render("category")</div>
+
+		<div class="o_video_grid_item_buttons">$r.render("save") $r.render("cancel")</div>
+	</div>
 </div>
 
 #if ($categoryOpen)
@@ -46,7 +156,7 @@
 				#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
 				<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
 					<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
-					<div class="o_category_text">${category.getLabelAndTitle()}</div>
+					<div class="o_category_text">${category.getLabelAndTitle()} (${categoryUsedCounts.get($category.getId())})</div>
 				</li>
 				#end
 			</ul>
@@ -60,12 +170,6 @@
 	</div>
 </div>
 #end
-
-<div class="form-group row clearfix">
-	<div class="col-xs-offset-3 col-xs-9">
-		$r.render("save") $r.render("cancel")
-	</div>
-</div>
 
 <script>
 	jQuery(() => {
