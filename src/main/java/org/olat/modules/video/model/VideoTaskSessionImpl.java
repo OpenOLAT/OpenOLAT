@@ -104,6 +104,11 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
     private BigDecimal score;
     @Column(name="v_max_score", nullable=true, insertable=true, updatable=true)
     private BigDecimal maxScore;
+
+    @Column(name="v_result", nullable=true, insertable=true, updatable=true)
+    private BigDecimal result;
+    @Column(name="v_segments", nullable=true, insertable=true, updatable=true)
+    private int segments;
     
     @Column(name="v_attempt", nullable=true, insertable=true, updatable=true)
     private long attempt;
@@ -246,12 +251,39 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
 		this.score = score;
 	}
 
+	@Override
 	public BigDecimal getMaxScore() {
 		return maxScore;
 	}
 
+	@Override
 	public void setMaxScore(BigDecimal maxScore) {
 		this.maxScore = maxScore;
+	}
+
+	@Override
+	public BigDecimal getResult() {
+		return result;
+	}
+
+	@Override
+	public void setResult(BigDecimal result) {
+		this.result = result;
+	}
+
+	@Override
+	public BigDecimal getResultInPercent() {
+		return result == null ? null : result.multiply(BigDecimal.valueOf(100l));
+	}
+
+	@Override
+	public int getSegments() {
+		return segments;
+	}
+
+	@Override
+	public void setSegments(int segments) {
+		this.segments = segments;
 	}
 
 	@Override

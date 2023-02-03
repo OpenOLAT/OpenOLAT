@@ -51,7 +51,6 @@ import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
@@ -67,7 +66,6 @@ import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.model.VideoTaskCategoryScore;
-import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +82,6 @@ public class VideoTaskArchiveFormat {
 	public static final String TEST_USER_PROPERTIES = QTI21ArchiveFormat.TEST_USER_PROPERTIES;
 	
 	private Translator translator;
-	private final Float maxScore;
 	private VideoSegments videoSegments;
 	private final List<String> categoriesIds;
 	private final List<VideoSegmentCategory> categories;
@@ -110,9 +107,6 @@ public class VideoTaskArchiveFormat {
 				.getList(VideoTaskEditController.CONFIG_KEY_CATEGORIES, String.class);
 		categories = VideoTaskHelper.getSelectedCategories(videoSegments, categoriesIds);
 		VideoTaskHelper.sortCategories(categories, searchParams.getCourseNode(), locale);
-		
-		Float max = (Float) searchParams.getCourseNode().getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
 		
 		translator = Util.createPackageTranslator(VideoTaskParticipantListController.class, locale);
 		translator = Util.createPackageTranslator(QTI21RuntimeController.class, locale, translator);
@@ -296,20 +290,18 @@ public class VideoTaskArchiveFormat {
 		}
 		
 		// Score in percent, in points, passed
-		VideoTaskScore scoring = videoAssessmentService
-				.calculateScore(videoSegments, categoriesIds, maxScore.doubleValue(), selections);
-		if(scoring.getScoreInPercent() != null) {
-			dataRow.addCell(col, scoring.getScoreInPercent(), null);
+		if(taskSession.getResult() != null) {
+			dataRow.addCell(col, taskSession.getResultInPercent(), null);
 		}
 		col++;
 		
-		if(scoring.getPoints() != null) {
-			dataRow.addCell(col, scoring.getPoints(), null);
+		if(entry.getScore() != null) {
+			dataRow.addCell(col, entry.getScore(), null);
 		} 
 		col++;
 		
-		if(taskSession.getPassed() != null) {
-			dataRow.addCell(col, taskSession.getPassed().toString(), null);
+		if(entry.getPassed() != null) {
+			dataRow.addCell(col, entry.getPassed().toString(), null);
 		} 
 		col++;
 		

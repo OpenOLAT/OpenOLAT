@@ -73,12 +73,12 @@ public class VideoTaskSessionRow {
 		return taskSession;
 	}
 	
-	public BigDecimal getScoreInPercent() {
-		return scoring == null ? null : scoring.getScoreInPercent();
+	public BigDecimal getResultInPercent() {
+		return scoring == null ? null : scoring.resultInPercent();
 	}
 	
-	public BigDecimal getPoints() {
-		return scoring == null ? null : scoring.getPoints();
+	public BigDecimal getScore() {
+		return scoring == null ? null : scoring.score();
 	}
 	
 	public boolean isFinished() {

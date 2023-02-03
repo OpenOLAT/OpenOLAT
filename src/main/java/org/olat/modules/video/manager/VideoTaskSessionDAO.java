@@ -66,6 +66,7 @@ public class VideoTaskSessionDAO {
 		testSession.setAuthorMode(authorMode);
 		testSession.setIdentity(identity);
 		testSession.setAttempt(attempt);
+		testSession.setSegments(0);
 		testSession.setAnonymousIdentifier(anonymousIdentifier);
 		testSession.setCancelled(false);
 		dbInstance.getCurrentEntityManager().persist(testSession);

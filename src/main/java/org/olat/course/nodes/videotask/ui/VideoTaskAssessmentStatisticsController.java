@@ -124,9 +124,8 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 			List<VideoTaskSession> sessions = rows.stream()
 					.map(VideoTaskSessionRow::getTaskSession)
 					.collect(Collectors.toList());
-			List<String> categoriesIds = getCategoriesIds();
 			StatisticAssessment statistics = videoAssessmentService
-					.getAssessmentStatistics(sessions, segments, categoriesIds, maxScore, cutValue);
+					.getAssessmentStatistics(sessions, maxScore, cutValue, rounding);
 			
 			layoutCont.contextPut("numOfParticipants",  Integer.toString(statistics.getNumOfParticipants()));
 			

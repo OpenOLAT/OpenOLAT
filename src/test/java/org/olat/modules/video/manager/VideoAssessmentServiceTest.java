@@ -19,6 +19,7 @@
  */
 package org.olat.modules.video.manager;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.Assert;
@@ -115,6 +116,20 @@ public class VideoAssessmentServiceTest extends OlatTestCase {
 		
 		long deletedRows = videoAssessmentService.deleteTaskSessions(List.of(assessedIdentity), videoEntry, subIdent);
 		Assert.assertEquals(3l, deletedRows);
+	}
+	
+	@Test
+	public void round2Decimal() {
+		BigDecimal val = BigDecimal.valueOf(2.4999d);
+		BigDecimal out = VideoAssessmentService.round(val, 2);
+		Assert.assertEquals(new BigDecimal("2.50"), out);
+	}
+	
+	@Test
+	public void roundInteger() {
+		BigDecimal val = BigDecimal.valueOf(2.4999d);
+		BigDecimal out = VideoAssessmentService.round(val, 0);
+		Assert.assertEquals(new BigDecimal("2"), out);
 	}
 
 }

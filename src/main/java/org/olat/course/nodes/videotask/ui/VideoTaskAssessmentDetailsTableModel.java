@@ -161,16 +161,16 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	private boolean acceptPerformance(VideoTaskSessionRow row, List<String> filterValues) {
 		for(String filterValue:filterValues) {
 			if((FILTER_PERFORMANCE_HIGH.equals(filterValue)
-					&& row.getScoreInPercent().compareTo(HIGH) >= 0)) {
+					&& row.getResultInPercent().compareTo(HIGH) >= 0)) {
 				return true;
 			}
 			if(FILTER_PERFORMANCE_MEDIUM.equals(filterValue)
-					&& row.getScoreInPercent().compareTo(MEDIUM) >= 0
-					&& row.getScoreInPercent().compareTo(HIGH) < 0) {
+					&& row.getResultInPercent().compareTo(MEDIUM) >= 0
+					&& row.getResultInPercent().compareTo(HIGH) < 0) {
 				return true;
 			}
 			if(FILTER_PERFORMANCE_LOW.equals(filterValue)
-					&& row.getScoreInPercent().compareTo(MEDIUM) < 0) {
+					&& row.getResultInPercent().compareTo(MEDIUM) < 0) {
 				return true;
 			}
 		}
@@ -205,14 +205,14 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 				case assessedIdentity: return session.getIdentityFullName();
 				case attempt: return Long.valueOf(session.getAttempt());
 				case duration: return session.isFinished() ? Long.valueOf(session.getDuration()) : null;
-				case scorePercent: return session.isFinished() ? session.getScoreInPercent() : null;
-				case scorePoints: return session.isFinished() ? session.getPoints() : null;
+				case scorePercent: return session.isFinished() ? session.getResultInPercent() : null;
+				case scorePoints: return session.isFinished() ? session.getScore() : null;
 				case play: return Boolean.valueOf(session.isFinished());
 				case tools: return session.getToolsButton();
 				default: return "ERROR";
 			}
-		} else if(col >= VideoTaskAssessmentDetailsController.CATEGORY_PROPS_OFFSET) {
-			int colIndex = col - VideoTaskAssessmentDetailsController.CATEGORY_PROPS_OFFSET;
+		} else if(col >= AbstractVideoTaskSessionListController.CATEGORY_PROPS_OFFSET) {
+			int colIndex = col - AbstractVideoTaskSessionListController.CATEGORY_PROPS_OFFSET;
 			return session.getCategoryScoring(colIndex);
 		}
 		return null;

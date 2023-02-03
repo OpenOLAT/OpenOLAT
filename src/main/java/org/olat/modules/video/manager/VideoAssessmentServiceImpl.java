@@ -24,9 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -157,20 +155,10 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 
 	@Override
 	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
-			VideoSegments videoSegments, List<String> selectedCategories, Float maxScoreDef, Float cutValueDef) {
+			Float maxScoreDef, Float cutValueDef, int rounding) {
 		// Sort per user and finish time
 		Collections.sort(taskSessions, new VideoTaskSessionComparator(true));
-		
-		List<VideoTaskSegmentSelection> selections = getTaskSegmentSelections(taskSessions);
-		Map<VideoTaskSession,List<VideoTaskSegmentSelection>> mapSelections = taskSessions.stream()
-				.collect(Collectors.toMap(session -> session, s -> new ArrayList<>(), (u, v) -> u));
-		for(VideoTaskSegmentSelection selection:selections) {
-			List<VideoTaskSegmentSelection> taskSelections = mapSelections.get(selection.getTaskSession());
-			if(taskSelections != null) {
-				taskSelections.add(selection);
-			}
-		}
-		
+
 		int numOfPassed = 0;
 		int numOfFailed = 0;
 		double totalDuration = 0.0;
@@ -186,12 +174,9 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		
 		int dataPos = 0;
 		boolean hasScore = false;
-		for(Map.Entry<VideoTaskSession, List<VideoTaskSegmentSelection>> taskSessionEntry:mapSelections.entrySet()) {
-			VideoTaskSession taskSession = taskSessionEntry.getKey();
-			List<VideoTaskSegmentSelection> selectionList = taskSessionEntry.getValue();
-
-			VideoTaskScore vtScore = calculateScore(videoSegments,selectedCategories, maxScoreDef, selectionList);
-			BigDecimal score = vtScore.getPoints();
+		for(VideoTaskSession taskSession : taskSessions) {
+			VideoTaskScore vtScore = calculateScore(taskSession, maxScoreDef, cutValueDef, rounding);
+			BigDecimal score = vtScore.score();
 			if(score != null) {
 				double scored = score.doubleValue();
 				scores[dataPos] = scored;
@@ -280,7 +265,7 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 
 	@Override
 	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories,
-			double maxScore, List<VideoTaskSegmentSelection> selectionList) {
+			Float maxScore, Float cutValue, int rounding, List<VideoTaskSegmentSelection> selectionList) {
 		
 		int correct = 0;
 		int notCorrect = 0;
@@ -313,7 +298,27 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		
 		double numOfSegments = segmentIds.size();
 		double results = (correct / numOfSegments) - (0.25d * (notCorrect / numOfSegments));
-		double points = maxScore * results;
-		return new VideoTaskScore(BigDecimal.valueOf(points), BigDecimal.valueOf(results * 100));
+		return calculateScore(results, maxScore, cutValue, rounding, segmentIds.size());
+	}
+
+	@Override
+	public VideoTaskScore calculateScore(VideoTaskSession session, Float maxScore, Float cutValue, int rounding) {
+		double results = session.getResult() == null ? 0.0d : session.getResult().doubleValue();
+		return calculateScore(results, maxScore, cutValue, rounding, session.getSegments());
+	}
+	
+	private VideoTaskScore calculateScore(double results, Float maxScore, Float cutValue, int rounding, int segments) {
+		BigDecimal score = null;
+		Boolean passed = null;
+		if(maxScore != null) {
+			double scored = maxScore.doubleValue() * results;
+			score = BigDecimal.valueOf(scored);
+			score = VideoAssessmentService.round(score, rounding);
+			
+			if(cutValue != null) {
+				passed = Boolean.valueOf(scored >= cutValue.doubleValue());
+			}
+		}
+		return new VideoTaskScore(score, BigDecimal.valueOf(results), passed, segments);
 	}
 }

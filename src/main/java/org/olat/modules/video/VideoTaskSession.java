@@ -47,14 +47,38 @@ public interface VideoTaskSession extends CreateInfo, ModifiedInfo {
 	 */
 	public long getDuration();
 	
-	
+	/**
+	 * The passed value calculated from a cut value and the
+	 * raw score.
+	 * 
+	 * @return
+	 */
 	public Boolean getPassed();
 
 	public void setPassed(Boolean passed);
 
+	/**
+	 * The score calculated only by algorithm.
+	 * 
+	 * @return The raw score calculate by the algorithm
+	 */
 	public BigDecimal getScore();
 
 	public void setScore(BigDecimal score);
+	
+	public BigDecimal getMaxScore();
+
+	public void setMaxScore(BigDecimal maxScore);
+
+	public BigDecimal getResult();
+
+	public void setResult(BigDecimal result);
+	
+	public BigDecimal getResultInPercent();
+
+	public int getSegments();
+
+	public void setSegments(int segments);
 	
 	
 	public long getAttempt();

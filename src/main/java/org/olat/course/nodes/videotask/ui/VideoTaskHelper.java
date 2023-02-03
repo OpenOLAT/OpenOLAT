@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.videotask.ui.components.CategoryAlphabeticalComparator;
 import org.olat.course.nodes.videotask.ui.components.CategoryPresetComparator;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
@@ -143,5 +145,11 @@ public class VideoTaskHelper {
 		}
 		
 		return unsuccessful;
+	}
+	
+	public static BigDecimal round(BigDecimal val, CourseNode courseNode) {
+		int scale = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
+				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
+		return VideoAssessmentService.round(val, scale);
 	}
 }

@@ -1815,6 +1815,8 @@ create table o_vid_task_session (
    v_score decimal default null,
    v_max_score decimal default null,
    v_passed bool default null,
+   v_result decimal default null,
+   v_segments int8 default 0 not null,
    v_attempt int8 default 1 not null,
    v_cancelled bool default false,
    fk_reference_entry int8 not null,

@@ -23,33 +23,17 @@ import java.math.BigDecimal;
 
 /**
  * 
- * Initial date: 24 janv. 2023<br>
+ * Initial date: 2 févr. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTaskScore {
+public record VideoTaskScore(BigDecimal score, BigDecimal results, Boolean passed, int segments) {
 	
-	private BigDecimal points;
-	private BigDecimal scoreInPercent;
-	
-	public VideoTaskScore(BigDecimal points, BigDecimal scoreInPercent) {
-		this.points = points;
-		this.scoreInPercent = scoreInPercent;
+	public BigDecimal resultInPercent() {
+		return results.multiply(BigDecimal.valueOf(100l));
 	}
 	
-	public BigDecimal getPoints() {
-		return points;
-	}
-	
-	public void setPoints(BigDecimal points) {
-		this.points = points;
-	}
-	
-	public BigDecimal getScoreInPercent() {
-		return scoreInPercent;
-	}
-	
-	public void setScoreInPercent(BigDecimal scoreInPercent) {
-		this.scoreInPercent = scoreInPercent;
+	public Float scoreAsFloat() {
+		return score == null ? null : Float.valueOf(score.floatValue());
 	}
 }

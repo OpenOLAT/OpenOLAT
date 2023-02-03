@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
@@ -77,7 +79,7 @@ public interface VideoAssessmentService {
 	 * @return
 	 */
 	public StatisticAssessment getAssessmentStatistics(List<VideoTaskSession> taskSessions,
-			VideoSegments videoSegments, List<String> selectedCategories, Float maxScore, Float cutValue);
+			Float maxScore, Float cutValue, int rounding);
 	
 	/**
 	 * Count the number of video task sessions saved by this learn resource.
@@ -93,8 +95,14 @@ public interface VideoAssessmentService {
 	public VideoTaskCategoryScore[] calculateScorePerCategory(List<VideoSegmentCategory> selectedCategories, 
 			List<VideoTaskSegmentSelection> selection);
 	
-	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories, double maxScore,
-			List<VideoTaskSegmentSelection> selection);
+	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories,
+			Float maxScore, Float cutValue, int rounding, List<VideoTaskSegmentSelection> selection);
+	
+	public VideoTaskScore calculateScore(VideoTaskSession session, Float maxScore, Float cutValue, int rounding);
+	
+	public static BigDecimal round(BigDecimal val, int scale) {
+		return val.setScale(scale, RoundingMode.HALF_UP);
+	}
 	
 	public long deleteTaskSessions(RepositoryEntry entry, String subIdent);
 	

@@ -89,6 +89,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	
 	/** configuration: score can be set */
 	public static final String CONFIG_KEY_SCORE_ROUNDING = "scoreRounding";
+	public static final int CONFIG_KEY_SCORE_ROUNDING_DEFAULT = 2;
 	
 	public static final String CONFIG_KEY_WEIGHT_WRONG_ANSWERS = "weightWrongAnswers";
 	

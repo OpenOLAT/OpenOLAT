@@ -22,18 +22,25 @@ package org.olat.course.nodes;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NavigableSet;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
@@ -44,6 +51,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.videotask.VideoTaskAssessmentConfig;
@@ -52,22 +60,28 @@ import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.nodes.videotask.ui.VideoTaskCoachRunController;
 import org.olat.course.nodes.videotask.ui.VideoTaskEditController;
 import org.olat.course.nodes.videotask.ui.VideoTaskRunController;
+import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionComparator;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -199,6 +213,101 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		displayOptions.setShowDescription(false);
 		displayOptions.setResponseAtEnd(true);
 		return displayOptions;
+	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		VideoAssessmentService videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
+		
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry videoEntry = getReferencedRepositoryEntry();
+		Long videoEntryKey = videoEntry.getKey();
+
+		Float max = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		Float maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
+		Float cutValue = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		int rounding = getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
+				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
+
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, this);
+		boolean gradeEnabled = CoreSpringFactory.getImpl(GradeModule.class).isEnabled();
+		GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+		NavigableSet<GradeScoreRange> gradeScoreRanges = null;
+		if (gradeEnabled && assessmentConfig.hasGrade()) {
+			GradeScale gradeScale = gradeService.getGradeScale(courseEntry, this.getIdent());
+			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, locale);
+		}
+		
+		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesBySubIdent(courseEntry, getIdent());
+		List<VideoTaskSession> taskSessions = videoAssessmentService.getTaskSessions(courseEntry, getIdent());
+		Map<Long, List<VideoTaskSession>> identityKeyToSessions = taskSessions.stream()
+				.filter(session -> session.getFinishTime() != null)
+				.collect(Collectors.groupingBy(session -> session.getIdentity().getKey()));
+		
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			VideoTaskSession taskSession = getLastTaskSession(assessmentEntry, identityKeyToSessions);
+			AssessmentEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
+			VideoTaskScore scoring = null;
+			if(taskSession != null) {
+				scoring = videoAssessmentService.calculateScore(taskSession, maxScore, cutValue, rounding);
+			}
+			
+			String grade = null;
+			String gradeSystemIdent = null;
+			String performanceClassIdent = null;
+			Boolean passed = null;
+			BigDecimal score = scoring == null ? null : scoring.score();
+			Float scoreAsFloat = scoring == null ? null : scoring.scoreAsFloat();
+			
+			if (gradeEnabled && assessmentConfig.hasGrade()) {
+				if (assessmentConfig.isAutoGrade() || StringHelper.containsNonWhitespace(currentEval.getGrade())) {
+					if (scoreAsFloat != null) {
+						GradeScoreRange gradeScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, scoreAsFloat);
+						grade = gradeScoreRange.getGrade();
+						gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
+						performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
+						passed = gradeScoreRange.getPassed();
+					}
+				}
+			} else {
+				passed = scoring == null ? null : scoring.passed();
+			}
+			
+			boolean hasChanges = !Objects.equals(grade, assessmentEntry.getGrade())
+					|| !Objects.equals(gradeSystemIdent, assessmentEntry.getGradeSystemIdent())
+					|| !Objects.equals(performanceClassIdent, assessmentEntry.getPerformanceClassIdent())
+					|| !Objects.equals(passed, assessmentEntry.getPassed())
+					|| !Objects.equals(score, assessmentEntry.getScore());
+			
+			if (hasChanges
+					|| assessmentEntry.getReferenceEntry() == null
+					|| !videoEntryKey.equals(assessmentEntry.getReferenceEntry().getKey())) {
+				IdentityEnvironment ienv = new IdentityEnvironment(assessmentEntry.getIdentity(), Roles.userRoles());
+				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+				ScoreEvaluation scoreEval = new ScoreEvaluation(scoreAsFloat, grade, gradeSystemIdent,
+						performanceClassIdent, passed, currentEval.getAssessmentStatus(), currentEval.getUserVisible(),
+						currentEval.getCurrentRunStartDate(), currentEval.getCurrentRunCompletion(),
+						currentEval.getCurrentRunStatus(), currentEval.getAssessmentID());
+				courseAssessmentService.updateScoreEvaluation(this, scoreEval, uce, publisher, false, Role.coach);
+				
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		super.updateOnPublish(locale, course, publisher, publishEvents);
+	}
+	
+	private VideoTaskSession getLastTaskSession(AssessmentEntry entry, Map<Long, List<VideoTaskSession>> identityKeyToSessions) {
+		List<VideoTaskSession> taskSessions = identityKeyToSessions.get(entry.getIdentity().getKey());
+		if(taskSessions == null || taskSessions.isEmpty()) {
+			return null;
+		}
+		
+		if(taskSessions.size() > 1) {
+			Collections.sort(taskSessions, new VideoTaskSessionComparator(true));
+		}
+		return taskSessions.get(0);
 	}
 	
 	public void promoteTaskSession(VideoTaskSession taskSession, UserCourseEnvironment assessedUserCourseEnv,

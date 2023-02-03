@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.videotask.ui.components.FinishEvent;
 import org.olat.course.nodes.videotask.ui.components.RestartEvent;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -55,6 +57,7 @@ import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentResult;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
@@ -86,6 +89,9 @@ public class VideoTaskDisplayController extends BasicController {
 	private final int maxAttempts;
 	private final int currentAttempt;
 	private final String mode;
+	private final Float maxScore;
+	private final Float cutValue;
+	private final int rounding;
 
 	private CloseableModalController cmc;
 	private Controller confirmEndTaskCtrl;
@@ -94,7 +100,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private ConfirmNextAttemptController confirmNextAttemptCtrl;
 	
 	private final List<String> categoriesIds;
-	private final List<VideoTaskSegmentResult> segmentSelections = new ArrayList<>();
+	private final List<VideoTaskSegmentSelection> segmentSelections = new ArrayList<>();
 	
 	@Autowired
 	private DB dbInstance;
@@ -120,6 +126,11 @@ public class VideoTaskDisplayController extends BasicController {
 				.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
 		mode = courseNode.getModuleConfiguration()
 				.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE, VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
+		Float max = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
+		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
+				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
 		
 		UserSession usess = ureq.getUserSession();
 		boolean guestOnly = usess.getRoles().isGuestOnly();
@@ -235,6 +246,7 @@ public class VideoTaskDisplayController extends BasicController {
 		VideoSegment segment = getSegment(positionInMilliSeconds);
 		String segmentId = segment == null ? null : segment.getId();
 		Boolean correct = Boolean.valueOf(segment != null && segment.getCategoryId().equals(category.getId()));
+		System.out.println(correct + " " + segmentId);
 
 		VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession, segmentId, category.getId(), correct,
 			positionInMilliSeconds, rawPosition);
@@ -345,6 +357,17 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	private void setFinishTaskSession() {
 		taskSession.setFinishTime(new Date());
+		
+		if(maxScore != null) {
+			VideoTaskScore score = videoAssessmentService
+					.calculateScore(segments, categoriesIds, maxScore, cutValue, rounding, segmentSelections);
+			taskSession.setScore(score.score());
+			taskSession.setPassed(score.passed());
+			taskSession.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
+			taskSession.setResult(score.results());
+			taskSession.setSegments(score.segments());
+		}
+		
 		taskSession = videoAssessmentService.updateTaskSession(taskSession);
 		dbInstance.commitAndCloseSession();
 	}

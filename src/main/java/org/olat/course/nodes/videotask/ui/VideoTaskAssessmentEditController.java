@@ -155,7 +155,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
 		maxEl.setElementCssClass("o_sel_course_video_max");
 		
-		int rounding = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING, 2);
+		int rounding = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
+				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
 		String roundingStr = Integer.toString(rounding);
 		SelectionValues roundingValues = new SelectionValues();
 		roundingValues.add(SelectionValues.entry("0", "0"));
