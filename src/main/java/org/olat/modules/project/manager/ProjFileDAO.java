@@ -91,6 +91,8 @@ public class ProjFileDAO {
 		sb.append("  from projfile file");
 		sb.append("       inner join fetch file.artefact artefact");
 		sb.append("       inner join fetch artefact.project project");
+		sb.append("       inner join fetch artefact.creator creator");
+		sb.append("       inner join fetch artefact.contentModifiedBy modifier");
 		sb.append("       inner join fetch file.vfsMetadata metadata");
 		QueryParams queryParams = new QueryParams();
 		appendQuery(sb, searchParams, queryParams);

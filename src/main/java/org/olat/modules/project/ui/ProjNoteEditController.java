@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.Set;
+import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -87,7 +88,7 @@ public class ProjNoteEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjNoteContentEditController(ureq, getWindowControl(), mainForm, note, lockEntry.getLockEntry().getKey());
+		contentCtrl = new ProjNoteContentEditController(ureq, getWindowControl(), mainForm, note, UUID.randomUUID().toString());
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		

@@ -96,6 +96,8 @@ public class ProjNoteDAO {
 		sb.append("  from projnote note");
 		sb.append("       inner join fetch note.artefact artefact");
 		sb.append("       inner join fetch artefact.project project");
+		sb.append("       inner join fetch artefact.creator creator");
+		sb.append("       inner join fetch artefact.contentModifiedBy modifier");
 		appendQuery(searchParams, sb);
 		appendOrderBy(searchParams, sb);
 		

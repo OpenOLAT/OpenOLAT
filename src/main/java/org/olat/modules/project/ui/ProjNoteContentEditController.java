@@ -47,17 +47,17 @@ public class ProjNoteContentEditController extends FormBasicController {
 	private TextAreaElement textEl;
 
 	private final ProjNoteRef note;
-	private final String lockEntryKey;
+	private final String tempIdentifier;
 	private String title;
 	private String text;
 	
 	@Autowired
 	private ProjectService projectService;
 
-	public ProjNoteContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjNote note, String lockEntryKey) {
+	public ProjNoteContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjNote note, String tempIdentifier) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.note = note;
-		this.lockEntryKey = lockEntryKey;
+		this.tempIdentifier = tempIdentifier;
 		this.title = note.getTitle();
 		this.text = note.getText();
 		
@@ -97,7 +97,13 @@ public class ProjNoteContentEditController extends FormBasicController {
 	}
 	
 	public void doSave() {
-		projectService.updateNote(getIdentity(), note, lockEntryKey, title, text);
+		title = titleEl.getValue();
+		text = textEl.getValue();
+		doSaveInternal();
+	}
+
+	private void doSaveInternal() {
+		projectService.updateNote(getIdentity(), note, tempIdentifier, title, text);
 	}
 
 }

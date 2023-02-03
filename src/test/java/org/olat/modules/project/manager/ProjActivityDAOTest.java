@@ -127,16 +127,21 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		ProjProject project = createProject(creator);
 		ProjArtefact artefact = createArtefact(project, creator);
 		String tempIdentifier = random();
-		ProjActivity activity1 = sut.create(Action.noteCreate, null, null, tempIdentifier, creator, artefact);
-		ProjActivity activity2 = sut.create(Action.noteCreate, null, null, tempIdentifier, creator, artefact);
-		sut.create(Action.noteContentUpdate, null, null, tempIdentifier, creator, artefact);
-		sut.create(Action.projectCreate, null, null, random(), creator, artefact);
-		sut.create(Action.projectCreate, null, null, null, creator, artefact);
+		Date dueDate = new Date();
+		ProjActivity activity1 = createActivity(Action.noteCreate, tempIdentifier, artefact, DateUtils.addDays(dueDate, 1));
+		ProjActivity activity2 = createActivity(Action.noteCreate, tempIdentifier, artefact, DateUtils.addDays(dueDate, 2));
+		createActivity(Action.noteContentUpdate, tempIdentifier, artefact, DateUtils.addDays(dueDate, 2));
+		createActivity(Action.projectCreate, random(), artefact, DateUtils.addDays(dueDate, 2));
+		createActivity(Action.projectCreate, null, artefact, DateUtils.addDays(dueDate, 2));
 		dbInstance.commitAndCloseSession();
 		
 		List<ProjActivity> activities = sut.loadActivities(tempIdentifier, Action.noteCreate);
 		
-		assertThat(activities).containsExactly(activity1, activity2);
+		assertThat(activities).containsExactly(activity2, activity1);
+	}
+	
+	private ProjActivity createActivity(Action action, String tempIdentifier, ProjArtefact artefact, Date creationDate) {
+		return sut.create(action, null, null, tempIdentifier, artefact.getCreator(), artefact.getProject(), null, null, null, null, creationDate);
 	}
 	
 	@Test
@@ -272,8 +277,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		assertThat(projectKeyToLastActivity.get(project1.getKey())).isEqualTo(activity3);
 		assertThat(projectKeyToLastActivity.get(project2.getKey())).isEqualTo(activity6);
 	}
-
-
+	
 	private ProjActivity createActivity(Identity doer, ProjProject project, Date creationDate) {
 		return sut.create(Action.projectCreate, null, null, null, doer, project, null, null, null, null, creationDate);
 	}

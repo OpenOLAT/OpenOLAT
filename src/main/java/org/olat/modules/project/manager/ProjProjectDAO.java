@@ -101,6 +101,7 @@ public class ProjProjectDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select project");
 		sb.append("  from projproject project");
+		sb.append("       inner join fetch project.creator creator");
 		appendIdentitySubSelect(sb, params.getIdentity(), params.getProjectOrganisations());
 		appendQuery(sb, params);
 		
