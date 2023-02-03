@@ -39,6 +39,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
@@ -318,8 +319,13 @@ public class EditCategoriesController extends FormBasicController {
 	}
 
 	private void initUi() {
+		initWarning();
 		initButtonStates();
 		initCategorySortOrders();
+	}
+
+	private void initWarning() {
+		flc.contextPut("limitReached", categories.size() >= MAX_NB_CATEGORIES);
 	}
 
 	private void initButtonStates() {
@@ -344,6 +350,64 @@ public class EditCategoriesController extends FormBasicController {
 			category.getMoveDownLink().setVisible(i < (categories.size() - 1));
 		}
 	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		if (!validateNonWhitespace()) {
+			return false;
+		}
+
+		if (!validateUniqueness()) {
+			return false;
+		}
+
+		return allOk;
+	}
+
+	private boolean validateNonWhitespace() {
+		for (Category category: categories) {
+			category.labelEl.clearError();
+			if (!StringHelper.containsNonWhitespace(category.labelEl.getValue())) {
+				category.labelEl.setErrorKey("form.legende.mandatory");
+				return false;
+			}
+			category.titleEl.clearError();
+			if (!StringHelper.containsNonWhitespace(category.titleEl.getValue())) {
+				category.titleEl.setErrorKey("form.legende.mandatory");
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean validateUniqueness() {
+		for (Category category: categories) {
+			category.labelEl.clearError();
+			String label = category.labelEl.getValue();
+			category.titleEl.clearError();
+			String title = category.titleEl.getValue();
+			for (Category otherCategory: categories) {
+				if (otherCategory.id == category.id) {
+					continue;
+				}
+				String otherLabel = otherCategory.getLabel().getValue();
+				if (otherLabel.equalsIgnoreCase(label)) {
+					category.labelEl.setErrorKey("form.segment.category.label.error");
+					return false;
+				}
+
+				String otherTitle = otherCategory.getTitle().getValue();
+				if (otherTitle.equalsIgnoreCase(title)) {
+					category.titleEl.setErrorKey("form.segment.category.title.error");
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		videoSegments.getCategories().clear();

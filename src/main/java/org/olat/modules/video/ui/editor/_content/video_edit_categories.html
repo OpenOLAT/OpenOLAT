@@ -1,4 +1,8 @@
 <div class="o_form">
+	#if ($limitReached)
+	<div class="o_info">$r.translate("form.segment.category.message.limit")</div>
+	#end
+
 	<table class="o_video_category_container">
 		<thead>
 		<tr>
@@ -17,8 +21,18 @@
 			<td>$r.render(${category.getMoveUpLink().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getMoveDownLink().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getColorLink().getComponent().getComponentName()})</td>
-			<td>$r.render(${category.getLabel().getComponent().getComponentName()})</td>
-			<td>$r.render(${category.getTitle().getComponent().getComponentName()})</td>
+			<td>
+				$r.render(${category.getLabel().getComponent().getComponentName()})
+				#if ($f.hasError(${category.getLabel().getComponent().getComponentName()}))
+				$r.render(${category.getLabel().getComponent().getComponentName()}, "error")
+				#end
+			</td>
+			<td>
+				$r.render(${category.getTitle().getComponent().getComponentName()})
+				#if ($f.hasError(${category.getTitle().getComponent().getComponentName()}))
+				$r.render(${category.getTitle().getComponent().getComponentName()}, "error")
+				#end
+			</td>
 			<td>$r.render(${category.getAddButton().getComponent().getComponentName()})</td>
 			<td>$r.render(${category.getDeleteButton().getComponent().getComponentName()})</td>
 		</tr>

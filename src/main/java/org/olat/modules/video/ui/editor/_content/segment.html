@@ -21,10 +21,11 @@
 		grid-template-columns: 130px 120px 10px 120px 130px 120px;
 		grid-template-rows: auto;
 		grid-template-areas:
-		"se-label start   dash end   duration-label duration"
-		"pad1     e-start pad2 e-end pad3           e-duration"
-		"ca-label ca      ca   ca    ca             ca"
-		"pad5     b       b    b     b              b"
+		"se-label start   dash  end   duration-label duration"
+		"pad1     e-start pad2  e-end pad3           e-duration"
+		"ca-label ca      ca    ca    ca             ca"
+		"pad5     ca-ed   ca-ed ca-ed ca-ed          ca-ed"
+		"pad5     b       b     b     b              b"
 		;
 	}
 
@@ -92,6 +93,12 @@
 		margin-top: 10px;
 	}
 
+	.o_video_grid_item_category_edit {
+		grid-area: ca-ed;
+		justify-self: stretch;
+		margin-top: 5px;
+	}
+
 	.o_video_grid_item_buttons {
 		grid-area: b;
 		justify-self: left;
@@ -142,34 +149,31 @@
 		<div class="o_video_grid_item_category_label">$r.render("category", "label")</div>
 		<div class="o_video_grid_item_category_button">$r.render("category")</div>
 
+		#if ($categoryOpen)
+		<div class="o_video_grid_item_category_edit">
+			<div class="o_categories">
+				#if ($categoriesAvailable)
+				<ul class="o_category_list">
+					#foreach ($category in $categories)
+					#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
+					<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
+						<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
+						<div class="o_category_text">${category.getLabelAndTitle()} (${categoryUsedCounts.get($category.getId())})</div>
+					</li>
+					#end
+				</ul>
+				#else
+				<span class="o_video_segment_category_placeholder">$r.translate("form.segment.noCategoryAvailableYet")</span>
+				#end
+				<div class="o_edit_categories">
+					$r.render("editCategories")
+				</div>
+			</div>
+		</div>
+		#end
 		<div class="o_video_grid_item_buttons">$r.render("save") $r.render("cancel")</div>
 	</div>
 </div>
-
-#if ($categoryOpen)
-<div class="form-group row clearfix">
-	<div class="col-xs-offset-3 col-xs-9">
-		<div class="o_categories">
-			#if ($categoriesAvailable)
-			<ul class="o_category_list">
-				#foreach ($category in $categories)
-				#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
-				<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
-					<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
-					<div class="o_category_text">${category.getLabelAndTitle()} (${categoryUsedCounts.get($category.getId())})</div>
-				</li>
-				#end
-			</ul>
-			#else
-			<span class="o_video_segment_category_placeholder">$r.translate("form.segment.noCategoryAvailableYet")</span>
-			#end
-			<div class="o_edit_categories">
-				$r.render("editCategories")
-			</div>
-		</div>
-	</div>
-</div>
-#end
 
 <script>
 	jQuery(() => {
