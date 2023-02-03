@@ -75,7 +75,7 @@
 		<jackson.version>2.14.1</jackson.version>
 		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.31</com.mysql.version>
-		<org.postgresql.version>42.5.1</org.postgresql.version>
+		<org.postgresql.version>42.5.2</org.postgresql.version>
 		<org.infinispan.version>13.0.11.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.8.0</version.selenium>
