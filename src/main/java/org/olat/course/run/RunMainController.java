@@ -245,7 +245,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
 			Status assessmentStatus = assessmentMode.getStatus();
 			if(assessmentStatus == Status.assessment) {
-				visibilityFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
+				visibilityFilter = new AssessmentModeTreeFilter(re, wControl.getWindowBackOffice().getChiefController());
 			} else if(assessmentStatus == Status.leadtime || assessmentStatus == Status.followup) {
 				visibilityFilter = new InvisibleTreeFilter();
 			}
