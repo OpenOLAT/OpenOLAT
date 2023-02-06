@@ -611,9 +611,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean inAssessment22 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant2);
 		Assert.assertFalse(inAssessment22);
 		
-		assessmentModeCoordinationService.startAssessment(mode1pos1);
-		assessmentModeCoordinationService.startAssessment(mode2pos1);
+		mode1pos1 = assessmentModeCoordinationService.startAssessment(mode1pos1);
+		mode2pos1 = assessmentModeCoordinationService.startAssessment(mode2pos1);
 		dbInstance.commitAndCloseSession();
+		sleep(1000);
 		
 		boolean inAssessment1pos1run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant1);
 		Assert.assertTrue(inAssessment1pos1run1);
@@ -628,11 +629,12 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		boolean inAssessment2run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, null, participant2);
 		Assert.assertTrue(inAssessment2run1);
 		
-		assessmentModeCoordinationService.stopAssessment(mode1pos1, false, true, author);
-		assessmentModeCoordinationService.stopAssessment(mode2pos1, false, true, author);
-		assessmentModeCoordinationService.startAssessment(mode1pos2);
-		assessmentModeCoordinationService.startAssessment(mode2pos2);
+		mode1pos1 = assessmentModeCoordinationService.stopAssessment(mode1pos1, false, true, author);
+		mode2pos1 = assessmentModeCoordinationService.stopAssessment(mode2pos1, false, true, author);
+		mode1pos2 = assessmentModeCoordinationService.startAssessment(mode1pos2);
+		mode2pos2 = assessmentModeCoordinationService.startAssessment(mode2pos2);
 		dbInstance.commitAndCloseSession();
+		sleep(1000);
 		
 		boolean inAssessment1pos1run2 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant1);
 		Assert.assertFalse(inAssessment1pos1run2);
