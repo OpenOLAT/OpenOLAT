@@ -587,10 +587,10 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRoles.participant.name());
 		
-		AssessmentMode mode1pos1 = createPersistAssessmentmode(courseEntry, Target.groups, "position-1");
-		AssessmentMode mode2pos1 = createPersistAssessmentmode(courseEntry, Target.groups, "position-1");
-		AssessmentMode mode1pos2 = createPersistAssessmentmode(courseEntry, Target.groups, "position-2");
-		AssessmentMode mode2pos2 = createPersistAssessmentmode(courseEntry, Target.groups, "position-2");
+		AssessmentMode mode1pos1 = createPersistManualAssessmentMode(courseEntry, Target.groups, "position-1");
+		AssessmentMode mode2pos1 = createPersistManualAssessmentMode(courseEntry, Target.groups, "position-1");
+		AssessmentMode mode1pos2 = createPersistManualAssessmentMode(courseEntry, Target.groups, "position-2");
+		AssessmentMode mode2pos2 = createPersistManualAssessmentMode(courseEntry, Target.groups, "position-2");
 		
 		AssessmentModeHelper.updateBusinessGroupRelations(List.of(businessGroup1.getKey()),
 				mode1pos1, AssessmentMode.Target.groups, assessmentModeMgr, businessGroupService);
@@ -1565,7 +1565,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		return mode;
 	}
 	
-	private AssessmentMode createPersistAssessmentmode(RepositoryEntry entry, Target target, String elementId) {
+	private AssessmentMode createPersistManualAssessmentMode(RepositoryEntry entry, Target target, String elementId) {
 		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
 		mode.setName("Assessment to load");
 		Calendar cal = Calendar.getInstance();
@@ -1578,7 +1578,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		mode.setTargetAudience(target);
 		mode.setRestrictAccessElements(true);
 		mode.setElementList(elementId);
-		mode.setManualBeginEnd(false);
+		mode.setManualBeginEnd(true);
 		return assessmentModeMgr.persist(mode);
 	}
 	
