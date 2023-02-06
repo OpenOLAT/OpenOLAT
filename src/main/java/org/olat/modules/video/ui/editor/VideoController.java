@@ -124,12 +124,19 @@ public class VideoController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
 	}
 
-	public void setMode(TimelineEventType type) {
+	public void setMode(UserRequest ureq, TimelineEventType type) {
 		videoDisplayController.setMode(type == TimelineEventType.QUIZ,
 				type == TimelineEventType.ANNOTATION);
-		if (type == TimelineEventType.CHAPTER) {
+		if (type == TimelineEventType.CHAPTER || type == TimelineEventType.SEGMENT) {
 			videoDisplayController.clearMarkerLayer();
 		}
+
+		if (type == TimelineEventType.SEGMENT) {
+			videoDisplayController.setSegments(ureq);
+		} else {
+			videoDisplayController.clearSegments();
+		}
+
 		reloadMarkers();
 	}
 }

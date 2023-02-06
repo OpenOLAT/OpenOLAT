@@ -703,6 +703,27 @@
 	}
 }
 
+.o_video_me_colored_area {
+	&.o_video_marker_gray {
+		background-color: $o-video-gray;
+	}
+	&.o_video_marker_blue {
+		background-color: $o-video-blue;
+	}
+	&.o_video_marker_green {
+		background-color: $o-video-green;
+	}
+	&.o_video_marker_yellow {
+		background-color: $o-video-yellow;
+	}
+	&.o_video_marker_red {
+		background-color: $o-video-red;
+	}
+	&.o_video_marker_purple {
+		background-color: $o-video-purple;
+	}
+}
+
 #o_video_time_bar_label {
 	height: 8px;
 	padding: 0;
@@ -838,4 +859,27 @@
 			}
 		}
 	}
+}
+
+.o_video_me_segments {
+	position: absolute;
+	left: 10px;
+	right: 10px;
+	bottom: 40px;
+	background-color: rgba(255, 255, 255, 0.5);
+	height: 10px;
+}
+
+.o_video_me_segment {
+	display: inline-block;
+	position: absolute;
+	height: 10px;
+	line-height: 10px;
+	font-size: 8px;
+	text-align: center;
+	opacity: 0.9;
+
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

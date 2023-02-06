@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
@@ -89,9 +88,12 @@ import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.modules.video.ui.question.VideoAssessmentItemController;
 import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
+import org.olat.modules.video.ui.segment.VideoSegmentController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+
+import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -114,6 +116,7 @@ public class VideoDisplayController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final VelocityContainer markerVC;
 	private final Panel markerPanel = new Panel("markerpanes");
+	private final Panel segmentsPanel = new Panel("segmentsPanel");
 	
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution;
@@ -128,6 +131,7 @@ public class VideoDisplayController extends BasicController {
 	private final VideoDisplayOptions displayOptions;
 
 	private List<Marker> markers = new ArrayList<>();
+	private VideoSegmentController videoSegmentController;
 
 	@Autowired
 	private VideoModule videoModule;
@@ -164,7 +168,9 @@ public class VideoDisplayController extends BasicController {
 		questionCtrl = new VideoAssessmentItemController(ureq, getWindowControl(), videoEntry, entry, courseNode,
 				getVideoElementId(), displayOptions.isAuthorMode());
 		listenTo(questionCtrl);
-		
+
+		mainVC.put("segments", segmentsPanel);
+
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(videoEntry);
 		VFSContainer mediaContainer = handler.getMediaContainer(videoEntry);
 		if(mediaContainer != null) {
@@ -770,6 +776,21 @@ public class VideoDisplayController extends BasicController {
 			markerVC.contextPut("snapMarkerSizeToGrid", displayOptions.isSnapMarkerSizeToGrid());
 			markerPanel.setContent(markerVC);
 		}
+	}
+
+	public void setSegments(UserRequest ureq) {
+		if (videoSegmentController == null) {
+			videoSegmentController = new VideoSegmentController(ureq, getWindowControl(), videoEntry,
+					VideoHelper.durationInSeconds(videoEntry, this) * 1000);
+			listenTo(videoSegmentController);
+		}
+
+		videoSegmentController.loadSegments();
+		segmentsPanel.setContent(videoSegmentController.getInitialComponent());
+	}
+
+	public void clearSegments() {
+		segmentsPanel.setContent(null);
 	}
 
 	/**

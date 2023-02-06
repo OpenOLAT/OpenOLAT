@@ -135,9 +135,13 @@
 		        
 		        ## Place the markers holder
 		        var markerCmpId = 'o_c' + '${r.getComponent("markers").getDispatchID()}';
-		        jQuery('#' + player.id + ' .mejs__layers').append('<div id="' + markerCmpId + '"><!-- empty --></div>');
+				var segmentsCmpId = 'o_c' + '${r.getComponent("segments").getDispatchID()}';
+		        jQuery('#' + player.id + ' .mejs__layers')
+					.append('<div id="' + markerCmpId + '"><!-- empty --></div>')
+					.append('<div id="' + segmentsCmpId + '"><!-- empty --></div>');
 		        jQuery('#' + markerCmpId).hide();
-		        
+				jQuery('#' + segmentsCmpId).hide();
+
 		        ## Not click to play
 		        #if($r.isFalse($clickToPlayPause))
 		        jQuery('#' + player.id + ' .mejs__overlay-play').remove();

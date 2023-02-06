@@ -71,8 +71,7 @@ public class VideoEditorController extends BasicController {
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
 
-		masterController = new MasterController(ureq, wControl, repositoryEntry.getOlatResource(),
-				List.of(), videoElementId);
+		masterController = new MasterController(ureq, wControl, repositoryEntry, List.of(), videoElementId);
 		listenTo(masterController);
 		mainVC.put("master", masterController.getInitialComponent());
 
@@ -125,37 +124,37 @@ public class VideoEditorController extends BasicController {
 				}
 				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
 			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
-				videoController.setMode(TimelineEventType.ANNOTATION);
+				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
 				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000);
 				masterController.select(annotationSelectedEvent.getAnnotationId());
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
-				videoController.setMode(TimelineEventType.SEGMENT);
+				videoController.setMode(ureq, TimelineEventType.SEGMENT);
 				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
 				masterController.select(segmentSelectedEvent.getSegmentId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
-				videoController.setMode(TimelineEventType.CHAPTER);
+				videoController.setMode(ureq, TimelineEventType.CHAPTER);
 				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
 				masterController.select(chapterSelectedEvent.getChapterId());
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
-				videoController.setMode(TimelineEventType.QUIZ);
+				videoController.setMode(ureq, TimelineEventType.QUIZ);
 				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
 				masterController.select(questionSelectedEvent.getQuestionId());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
-				videoController.setMode(TimelineEventType.ANNOTATION);
+				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
 				detailsController.showAnnotation(ureq, annotationSelectedEvent.getAnnotationId());
 				videoController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
-				videoController.setMode(TimelineEventType.CHAPTER);
+				videoController.setMode(ureq, TimelineEventType.CHAPTER);
 				detailsController.showChapters(ureq);
 				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
-				videoController.setMode(TimelineEventType.QUIZ);
+				videoController.setMode(ureq, TimelineEventType.QUIZ);
 				detailsController.showQuestion(ureq, questionSelectedEvent.getQuestionId());
 				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
-				videoController.setMode(TimelineEventType.SEGMENT);
+				videoController.setMode(ureq, TimelineEventType.SEGMENT);
 				detailsController.showSegment(ureq, segmentSelectedEvent.getSegmentId());
 				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
 			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {

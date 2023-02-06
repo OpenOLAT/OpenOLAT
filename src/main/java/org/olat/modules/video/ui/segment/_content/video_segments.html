@@ -1,0 +1,26 @@
+<style>
+	.o_video_me_segment_textbox {
+		position: absolute;
+		height: 48px;
+		width: 128px;
+		background-color: #efefef;
+		opacity: 0.85;
+		border-width: 2px;
+		border-color: #337ab7;
+		border-style: solid;
+		text-align: center;
+	}
+</style>
+
+<div class="o_video_me_segments">
+	#foreach ($segment in $segments)
+	<div class="o_video_me_segment o_video_me_colored_area ${segment.getColor()}" style="left: ${segment.getLeft()}; width: ${segment.getWidth()};">
+		${segment.getLabel()}
+	</div>
+	#end
+
+	<div class="o_video_me_segment_textbox" style="left: 16px; bottom: 20px; padding: 4px;">
+		<span style="font-weight: bold; font-size: 13px;">PR: Präventation</span>
+		<span style="color: #808080; font-size: 11px;">Dauer: 95sek</span>
+	</div>
+</div>

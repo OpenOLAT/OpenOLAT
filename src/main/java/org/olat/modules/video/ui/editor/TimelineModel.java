@@ -30,6 +30,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: 2022-11-21<br>
@@ -144,6 +145,24 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 		double a = (maxWidth - minWidth) / 9.9;
 		double b = (100 * minWidth - maxWidth) / 99;
 		return (int) (a * scaleFactor + b);
+	}
+
+	public static long parsedExpenditureOfWork(String expenditureOfWork) {
+		if (!StringHelper.containsNonWhitespace(expenditureOfWork)) {
+			return -1;
+		}
+		long resultInMillis = 0;
+		String[] parts = expenditureOfWork.split(":");
+		for (String part : parts) {
+			try {
+				long partAsLong = Long.parseLong(part);
+				resultInMillis = 60 * resultInMillis + partAsLong;
+			} catch (NumberFormatException e) {
+				return -1;
+			}
+		}
+
+		return resultInMillis * 1000;
 	}
 
 	public static int getNumberOfLanes(List<TimelineRow> events) {

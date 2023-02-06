@@ -22,8 +22,6 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -71,7 +69,9 @@ import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
-import org.olat.resource.OLATResource;
+import org.olat.repository.RepositoryEntry;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -108,16 +108,24 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private CloseableCalloutWindowController ccwc;
 	private ToolsController toolsController;
 	private String currentTimeCode;
+	private final boolean showVideoTrack;
 
-	public MasterController(UserRequest ureq, WindowControl wControl, OLATResource olatResource,
+	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							List<VideoTaskSession> sessions, String videoElementId) {
 		super(ureq, wControl, "master");
 		flc.contextPut("videoElementId", videoElementId);
-		thumbnailsContainer = videoManager.getThumbnailsContainer(olatResource);
-		timelineDataSource = new TimelineDataSource(olatResource, sessions);
-		this.videoFile = videoManager.getMasterVideoFile(olatResource);
-		this.videoFrameCount = videoManager.getVideoFrameCount(videoFile);
-		this.videoDurationInMillis = videoManager.getVideoDuration(olatResource);
+		thumbnailsContainer = videoManager.getThumbnailsContainer(repositoryEntry.getOlatResource());
+		timelineDataSource = new TimelineDataSource(repositoryEntry.getOlatResource(), sessions);
+		videoFile = videoManager.getMasterVideoFile(repositoryEntry.getOlatResource());
+		showVideoTrack = videoFile != null;
+
+		if (showVideoTrack) {
+			videoFrameCount = videoManager.getVideoFrameCount(videoFile);
+			videoDurationInMillis = videoManager.getVideoDuration(repositoryEntry.getOlatResource());
+		} else {
+			videoFrameCount = -1;
+			videoDurationInMillis = TimelineModel.parsedExpenditureOfWork(repositoryEntry.getExpenditureOfWork());
+		}
 		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
 		flc.contextPut("currentTimeInSeconds", "0.0");
 		this.movieSize = new Size(90, 50, false);
@@ -168,6 +176,13 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineModel.setMediaUrl(mediaUrl);
 		timelineModel.setScaleFactor(0.1);
 		timelineModel.setVideoLength(videoDurationInMillis);
+		if (showVideoTrack) {
+			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
+					TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT));
+		} else {
+			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
+					TimelineEventType.CHAPTER, TimelineEventType.SEGMENT));
+		}
 		fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
 
 		timelineTableEl = uifactory.addTableElement(getWindowControl(), "timelineEvents", timelineModel,
