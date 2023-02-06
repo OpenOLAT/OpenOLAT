@@ -76,12 +76,12 @@
 		<jackson.version>2.14.2</jackson.version>
 		<swagger.ui.version>4.15.5</swagger.ui.version>
 		<com.mysql.version>8.0.32</com.mysql.version>
-		<org.postgresql.version>42.5.2</org.postgresql.version>
+		<org.postgresql.version>42.5.3</org.postgresql.version>
 		<org.infinispan.version>14.0.6.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.8.0</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
-		<activemq.artemis.version>2.27.1</activemq.artemis.version>
+		<activemq.artemis.version>2.28.0</activemq.artemis.version>
 		<qtiworks.version>1.0.29</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -1793,7 +1793,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.8</version>
+			<version>3.2.9</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
