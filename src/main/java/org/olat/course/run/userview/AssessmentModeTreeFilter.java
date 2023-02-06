@@ -19,13 +19,16 @@
  */
 package org.olat.course.run.userview;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-import org.olat.core.util.StringHelper;
+import org.olat.core.commons.fullWebApp.LockResourceInfos;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.Structure;
-import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.model.TransientAssessmentMode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -35,28 +38,42 @@ import org.olat.course.assessment.AssessmentMode;
  */
 public class AssessmentModeTreeFilter implements VisibilityFilter {
 	
-	private final boolean enable;
-	private final Set<String> nodeIds = new HashSet<>();
+	private final RepositoryEntry courseEntry;
+	private final ChiefController chiefController;
 	
-	public AssessmentModeTreeFilter(AssessmentMode mode, Structure structure) {
-		String nodes = mode.getElementList();
-		if(StringHelper.containsNonWhitespace(nodes)) {
-			enable = true;
-			
-			String[] nodeIdArr = nodes.split(",");
-			for(String nodeId:nodeIdArr) {
-				//allow the parent line
-				for(INode courseNode = structure.getNode(nodeId); courseNode != null; courseNode = courseNode.getParent()) {
-					nodeIds.add(courseNode.getIdent());
-				}
-			}
-		} else {
-			enable = false;
-		}
+	public AssessmentModeTreeFilter(RepositoryEntry courseEntry, ChiefController chiefController) {
+		this.courseEntry = courseEntry;
+		this.chiefController = chiefController;
 	}
 
 	@Override
 	public boolean isVisible(CourseTreeNode node) {
-		return !enable || nodeIds.contains(node.getCourseNode().getIdent());
+		LockResourceInfos lockInfos = chiefController.getLockResourceInfos();
+		if(lockInfos == null) {
+			return true;
+		}
+		
+		TransientAssessmentMode assessmentMode = lockInfos.getLockMode();
+		List<String> elementLists = assessmentMode.getElementList();
+		if(elementLists == null || elementLists.isEmpty()) {
+			return true;
+		}
+		
+		String subIdent = node.getIdent();
+		if(elementLists.contains(subIdent)) {
+			return true;
+		}
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Structure structure = course.getRunStructure();
+		for(String nodeId:elementLists) {
+			//allow the parent line
+			for(INode courseNode = structure.getNode(nodeId); courseNode != null; courseNode = courseNode.getParent()) {
+				if(subIdent.equals(courseNode.getIdent())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
