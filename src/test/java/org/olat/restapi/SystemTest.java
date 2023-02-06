@@ -155,6 +155,7 @@ public class SystemTest extends OlatRestTestCase {
 		assertTrue(sessionInfos.getCount() > 0);
 		assertTrue(sessionInfos.getAuthenticatedCount() >= 0);
 		assertTrue(sessionInfos.getSecureAuthenticatedCount() >= 0);
+		assertTrue(sessionInfos.getLoggedInUsersCount() >= 0);
 		assertTrue(sessionInfos.getSecureWebdavCount() >= 0);
 		assertTrue(sessionInfos.getWebdavCount() >= 0);
 		assertTrue(sessionInfos.getRestCount() >= 0);
