@@ -37,12 +37,14 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentMode.EndStatus;
 import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.assessment.AssessmentMode.Target;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
 import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
+import org.olat.course.assessment.ui.mode.AssessmentModeHelper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.group.BusinessGroup;
@@ -94,6 +96,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private BusinessGroupLifecycleManager businessGroupLifecycleManager;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	@Test
 	public void createAssessmentMode() {
@@ -566,6 +570,78 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		boolean entryEnded = assessmentModeMgr.isInAssessmentMode(entry, null, assessedIdentity);
 		Assert.assertFalse(entryEnded);
+	}
+	
+	@Test
+	public void isInAssessmentModeBusinessGroup() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-auth-1");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("assessed-grp-2");
+		
+		BusinessGroup businessGroup1 = businessGroupService.createBusinessGroup(null, "as-mode-10", "desc", BusinessGroup.BUSINESS_TYPE,
+				null, null, null, null, false, false, courseEntry);
+		BusinessGroup businessGroup2 = businessGroupService.createBusinessGroup(null, "as-mode-11", "desc", BusinessGroup.BUSINESS_TYPE,
+				null, null, null, null, false, false, courseEntry);
+		
+		businessGroupRelationDao.addRole(participant1, businessGroup1, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, businessGroup2, GroupRoles.participant.name());
+		
+		AssessmentMode mode1pos1 = createPersistAssessmentmode(courseEntry, Target.groups, "position-1");
+		AssessmentMode mode2pos1 = createPersistAssessmentmode(courseEntry, Target.groups, "position-1");
+		AssessmentMode mode1pos2 = createPersistAssessmentmode(courseEntry, Target.groups, "position-2");
+		AssessmentMode mode2pos2 = createPersistAssessmentmode(courseEntry, Target.groups, "position-2");
+		
+		AssessmentModeHelper.updateBusinessGroupRelations(List.of(businessGroup1.getKey()),
+				mode1pos1, AssessmentMode.Target.groups, assessmentModeMgr, businessGroupService);
+		AssessmentModeHelper.updateBusinessGroupRelations(List.of(businessGroup1.getKey()),
+				mode1pos2, AssessmentMode.Target.groups, assessmentModeMgr, businessGroupService);
+		AssessmentModeHelper.updateBusinessGroupRelations(List.of(businessGroup2.getKey()),
+				mode2pos1, AssessmentMode.Target.groups, assessmentModeMgr, businessGroupService);
+		AssessmentModeHelper.updateBusinessGroupRelations(List.of(businessGroup2.getKey()),
+				mode2pos2, AssessmentMode.Target.groups, assessmentModeMgr, businessGroupService);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inAssessment11 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant1);
+		Assert.assertFalse(inAssessment11);
+		boolean inAssessment21 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant2);
+		Assert.assertFalse(inAssessment21);
+		boolean inAssessment12 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant1);
+		Assert.assertFalse(inAssessment12);
+		boolean inAssessment22 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant2);
+		Assert.assertFalse(inAssessment22);
+		
+		assessmentModeCoordinationService.startAssessment(mode1pos1);
+		assessmentModeCoordinationService.startAssessment(mode2pos1);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inAssessment1pos1run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant1);
+		Assert.assertTrue(inAssessment1pos1run1);
+		boolean inAssessment2pos1run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant2);
+		Assert.assertTrue(inAssessment2pos1run1);
+		boolean inAssessment1pos2run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant1);
+		Assert.assertFalse(inAssessment1pos2run1);
+		boolean inAssessment2pos2run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant2);
+		Assert.assertFalse(inAssessment2pos2run1);
+		
+		// Without sub-identifier is allowed
+		boolean inAssessment2run1 = assessmentModeMgr.isInAssessmentMode(courseEntry, null, participant2);
+		Assert.assertTrue(inAssessment2run1);
+		
+		assessmentModeCoordinationService.stopAssessment(mode1pos1, false, true, author);
+		assessmentModeCoordinationService.stopAssessment(mode2pos1, false, true, author);
+		assessmentModeCoordinationService.startAssessment(mode1pos2);
+		assessmentModeCoordinationService.startAssessment(mode2pos2);
+		dbInstance.commitAndCloseSession();
+		
+		boolean inAssessment1pos1run2 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant1);
+		Assert.assertFalse(inAssessment1pos1run2);
+		boolean inAssessment2pos1run2 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-1", participant2);
+		Assert.assertFalse(inAssessment2pos1run2);
+		boolean inAssessment1pos2run2 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant1);
+		Assert.assertTrue(inAssessment1pos2run2);
+		boolean inAssessment2pos2run2 = assessmentModeMgr.isInAssessmentMode(courseEntry, "position-2", participant2);
+		Assert.assertTrue(inAssessment2pos2run2);
 	}
 	
 	/**
@@ -1485,6 +1561,23 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		mode.setTargetAudience(Target.course);
 		mode.setManualBeginEnd(false);
 		return mode;
+	}
+	
+	private AssessmentMode createPersistAssessmentmode(RepositoryEntry entry, Target target, String elementId) {
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(entry);
+		mode.setName("Assessment to load");
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal.add(Calendar.HOUR_OF_DAY, -1);
+		mode.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 2);
+		mode.setEnd(cal.getTime());
+		mode.setTargetAudience(target);
+		mode.setRestrictAccessElements(true);
+		mode.setElementList(elementId);
+		mode.setManualBeginEnd(false);
+		return assessmentModeMgr.persist(mode);
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

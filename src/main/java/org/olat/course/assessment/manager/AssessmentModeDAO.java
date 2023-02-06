@@ -236,7 +236,7 @@ public class AssessmentModeDAO {
 	
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, String subIdent, IdentityRef identity) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select mode.key from courseassessmentmode mode")
+		sb.append("select mode.key, mode.restrictAccessElements, mode.elementList from courseassessmentmode mode")
 		  .append(" inner join mode.repositoryEntry entry")
 		  .append(" left join mode.groups as modeToGroup")
 		  .append(" left join mode.areas as modeToArea")
@@ -254,20 +254,40 @@ public class AssessmentModeDAO {
 		  .and();
 		appendAssessmentModeToIdentity(sb);
 
-		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
 				.setParameter("repoKey", entry.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("status", DisadvantageCompensationStatusEnum.active.name());
 		if(StringHelper.containsNonWhitespace(subIdent)) {
 			query.setParameter("subIdent", subIdent);
 		}
-		List<Long> count = query
-				.setMaxResults(1)
-				.setFirstResult(0)
-				.getResultList();
-		return count != null && !count.isEmpty()
-				&& count.get(0) != null && count.get(0).longValue() > 0;
+		List<Object[]> modesList = query.getResultList();
+		for(Object[] mode:modesList) {
+			Boolean restricted = (Boolean)mode[1];
+			String elementList = (String)mode[2];
+			if(isInAssessmentMode(subIdent, restricted, elementList)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isInAssessmentMode(String subIdent, Boolean restricted, String elementList) {
+		if(restricted == null || !restricted.booleanValue()
+				|| !StringHelper.containsNonWhitespace(elementList)
+				|| !StringHelper.containsNonWhitespace(subIdent)) {
+			return true;
+		}
+		
+		String[] elements = elementList.split("[,]");
+		for(String element:elements) {
+			if(element.equals(subIdent)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date date) {
