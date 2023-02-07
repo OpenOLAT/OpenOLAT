@@ -220,6 +220,7 @@ public class VideoDisplayController extends BasicController {
 			mainVC.contextPut("showDescription", displayOptions.isShowDescription());
 			mainVC.contextPut("alwaysShowControls", displayOptions.isAlwaysShowControls());
 			mainVC.contextPut("progressFullWidth", displayOptions.isProgressFullWidth());
+			mainVC.contextPut("startFullScreen", displayOptions.isStartFullScreen());
 			mainVC.contextPut("clickToPlayPause", displayOptions.isClickToPlayPause());
 			mainVC.contextPut("forwardSeekingRestricted", displayOptions.isForwardSeekingRestricted());
 			

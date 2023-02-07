@@ -359,7 +359,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		displayCtrl = new VideoDisplayController(ureq, bwControl, videoEntry, courseEntry,
-				courseNode, courseNode.getVideoDisplay(readOnly));
+				courseNode, courseNode.getVideoDisplay(readOnly, true));
 		listenTo(displayCtrl);
 		
 		List<String> categoriesIds = courseNode.getModuleConfiguration()

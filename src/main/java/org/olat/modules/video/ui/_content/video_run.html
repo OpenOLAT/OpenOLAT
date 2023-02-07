@@ -176,12 +176,13 @@
       				}
   				};
   				#end
+  				#if($r.isTrue($startFullScreen))
+  				player.enterFullScreen();
+  				#end
 			}
-			
 		});
 		</script>
 	</div>
-	
 	
 	## Replay button
 	#if($r.isTrue($enableResumeDialog) && $playProgress)

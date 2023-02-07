@@ -197,7 +197,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		status.add(sd);
 	}
 	
-	public VideoDisplayOptions getVideoDisplay(boolean readOnly) {
+	public VideoDisplayOptions getVideoDisplay(boolean readOnly, boolean startFullScreen) {
 		// configure the display controller according to config
 		ModuleConfiguration config = getModuleConfiguration();
 		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
@@ -214,6 +214,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		displayOptions.setResponseAtEnd(true);
 		displayOptions.setProgressFullWidth(true);
 		displayOptions.setAlwaysShowControls(true);
+		displayOptions.setStartFullScreen(startFullScreen);
 		return displayOptions;
 	}
 	
