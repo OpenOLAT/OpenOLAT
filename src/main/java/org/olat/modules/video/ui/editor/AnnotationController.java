@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoModule;
@@ -71,10 +72,14 @@ public class AnnotationController extends FormBasicController {
 	private FormLink positionSizeEditLink;
 	@Autowired
 	private VideoModule videoModule;
+	private final long videoDurationInSeconds;
 
-	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation) {
+
+	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation,
+								long videoDurationInSeconds) {
 		super(ureq, wControl, "annotation");
 		this.annotation = annotation;
+		this.videoDurationInSeconds = videoDurationInSeconds;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -103,18 +108,15 @@ public class AnnotationController extends FormBasicController {
 		startEl = uifactory.addTextElement("start", "form.annotation.startEnd", 8,
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
-		startEl.addActionListener(FormEvent.ONBLUR);
 
 		endEl = uifactory.addTextElement("end", "form.annotation.startEnd", 8,
 				"00:00:00", formLayout);
 		endEl.setMandatory(true);
-		endEl.addActionListener(FormEvent.ONBLUR);
 
 		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 2,
 				"00", formLayout);
 		durationEl.setExampleKey("form.annotation.duration.hint", null);
 		durationEl.setMandatory(true);
-		durationEl.addActionListener(FormEvent.ONBLUR);
 
 		textEl = uifactory.addRichTextElementVeryMinimalistic("text", "form.annotation.text",
 				"", 3, -1, true, null, formLayout,
@@ -201,28 +203,63 @@ public class AnnotationController extends FormBasicController {
 			} catch (Exception e) {
 				//
 			}
-		} else if (startEl == source || durationEl == source) {
-			try {
-				Date start = timeFormat.parse(startEl.getValue());
-				int duration = Integer.parseInt(durationEl.getValue());
-				Date end = DateUtils.addSeconds(start, duration);
-				endEl.setValue(timeFormat.format(end));
-			} catch (Exception e) {
-				//
-			}
-		} else if (endEl == source) {
-			try {
-				Date start = timeFormat.parse(startEl.getValue());
-				Date end = timeFormat.parse(endEl.getValue());
-				double duration = (end.getTime() - start.getTime()) / 1000.0;
-				durationEl.setValue(Integer.toString((int)duration));
-			} catch (Exception e) {
-				//
-			}
 		} else if (positionSizeEditLink == source) {
 			System.err.println("edit position");
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+
+		allOk &= validateTime(startEl);
+		allOk &= validateTime(endEl);
+		allOk &= validateDuration();
+
+		return allOk;
+	}
+
+	private boolean validateTime(TextElement timeEl) {
+		boolean allOk = true;
+		timeEl.clearError();
+		if (!StringHelper.containsNonWhitespace(timeEl.getValue())) {
+			timeEl.setErrorKey("form.legende.mandatory");
+			allOk = false;
+		} else {
+			try {
+				long timeInSeconds = timeFormat.parse(timeEl.getValue()).getTime() / 1000;
+				if (timeInSeconds < 0 || timeInSeconds > videoDurationInSeconds) {
+					timeEl.setErrorKey("form.error.timeNotValid");
+					allOk = false;
+				}
+			} catch (Exception e) {
+				timeEl.setErrorKey("form.error.timeFormat");
+				allOk = false;
+			}
+		}
+		return allOk;
+	}
+
+	private boolean validateDuration() {
+		boolean allOk = true;
+		durationEl.clearError();
+		if (!StringHelper.containsNonWhitespace(durationEl.getValue())) {
+			durationEl.setErrorKey("form.legende.mandatory");
+			allOk = false;
+		} else if (!StringHelper.isLong(durationEl.getValue())) {
+			durationEl.setErrorKey("form.error.nointeger");
+			allOk = false;
+		} else if (Long.parseLong(durationEl.getValue()) <= 0) {
+			durationEl.setErrorKey("form.error.timeNotValid");
+			allOk = false;
+		}
+		return allOk;
+	}
+
+	@Override
+	protected void formCancelled(UserRequest ureq) {
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
 	@Override

@@ -5,17 +5,6 @@
 		border-bottom-right-radius: 0;
 	}
 
-	.o_video_apply_position_button a {
-		/*padding-left: 6px;*/
-		/*padding-right: 6px;*/
-	}
-
-	.o_video_nowrap {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
 	.o_video_grid_container {
 		display: grid;
 		grid-template-columns: 130px 120px 10px 120px 130px 120px;
@@ -121,7 +110,7 @@
 		<div class="o_video_grid_item_error_start">$r.render("start", "error")</div>
 		#end
 
-		<div class="o_video_grid_item_dash" style="display: inline-block; text-align: center; vertical-align: top; line-height: 32px;">-</div>
+		<div class="o_video_grid_item_dash" style="display: inline-block; text-align: center; line-height: 32px;">-</div>
 
 		<div class="o_video_grid_item_end btn-group">
 			<div class="btn-group o_video_apply_position_timestamp o_video_segment_end" style="display: inline-block;">$r.render("end")</div>

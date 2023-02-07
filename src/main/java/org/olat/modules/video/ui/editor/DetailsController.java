@@ -56,7 +56,7 @@ public class DetailsController extends BasicController {
 		listenTo(chaptersController);
 		tabbedPane.addTab(translate("video.editor.panes.chapters"), chaptersController);
 
-		annotationsController = new AnnotationsController(ureq, wControl, repositoryEntry);
+		annotationsController = new AnnotationsController(ureq, wControl, repositoryEntry, durationInSeconds);
 		listenTo(annotationsController);
 		tabbedPane.addTab(translate("video.editor.panes.annotations"), annotationsController);
 

@@ -55,7 +55,8 @@ public class AnnotationsController extends BasicController {
 	@Autowired
 	private VideoManager videoManager;
 
-	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+								 long videoDurationInSeconds) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("annotations");
@@ -68,7 +69,7 @@ public class AnnotationsController extends BasicController {
 		listenTo(annotationsHeaderController);
 		mainVC.put("header", annotationsHeaderController.getInitialComponent());
 
-		annotationController = new AnnotationController(ureq, wControl, annotation);
+		annotationController = new AnnotationController(ureq, wControl, annotation, videoDurationInSeconds);
 		listenTo(annotationController);
 		if (annotation != null) {
 			mainVC.put("annotation", annotationController.getInitialComponent());
