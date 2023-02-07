@@ -47,6 +47,8 @@ public class VideoController extends BasicController {
 	private final VideoDisplayController videoDisplayController;
 	private final String videoElementId;
 	private final long durationInSeconds;
+	private TimelineEventType timelineEventType;
+	private TimelineEventSelectedEvent selectedTimelineEvent;
 
 	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
@@ -80,7 +82,22 @@ public class VideoController extends BasicController {
 		if (videoDisplayController == source) {
 			if (event instanceof VideoEvent videoEvent) {
 				if ("timeupdate".equals(videoEvent.getCommand())) {
-					videoDisplayController.clearMarkerLayer();
+					long timeInMillis = (long)(Double.parseDouble(videoEvent.getTimeCode()) * 1000.0);
+					if (selectedTimelineEvent != null) {
+						long t0 = selectedTimelineEvent.getStartTimeInMillis();
+						long t1 = t0 + 1000L * selectedTimelineEvent.getDurationInSeconds();
+						if (timeInMillis < t0 || timeInMillis > t1) {
+							videoDisplayController.clearMarkerLayer();
+						} else {
+							switch (timelineEventType) {
+								case ANNOTATION -> videoDisplayController.loadMarker(ureq, videoEvent.getTimeCode(),
+										selectedTimelineEvent.getId());
+								default -> {}
+							}
+						}
+					} else {
+						videoDisplayController.clearMarkerLayer();
+					}
 				}
 				fireEvent(ureq, event);
 			} else if (event instanceof MarkerMovedEvent) {
@@ -119,19 +136,34 @@ public class VideoController extends BasicController {
 		}
 	}
 
-	public void setMode(UserRequest ureq, TimelineEventType type) {
-		videoDisplayController.setMode(type == TimelineEventType.QUIZ,
-				type == TimelineEventType.ANNOTATION);
-		if (type == TimelineEventType.CHAPTER || type == TimelineEventType.SEGMENT) {
-			videoDisplayController.clearMarkerLayer();
-		}
+	public void processTimelineEvent(UserRequest ureq, TimelineEventSelectedEvent selectedTimelineEvent,
+									 TimelineEventType timelineEventType, boolean isYoutube) {
+		this.timelineEventType = timelineEventType;
+		this.selectedTimelineEvent = selectedTimelineEvent;
 
-		if (type == TimelineEventType.SEGMENT) {
-			videoDisplayController.setSegments(ureq);
-		} else {
-			videoDisplayController.clearSegments();
-		}
+		videoDisplayController.setMode(timelineEventType == TimelineEventType.QUIZ,
+				timelineEventType == TimelineEventType.ANNOTATION);
 
 		reloadMarkers();
+
+		switch (timelineEventType) {
+			case ANNOTATION, QUIZ -> {
+				videoDisplayController.clearSegments();
+				videoDisplayController.loadMarker(ureq,
+						Double.toString((double) selectedTimelineEvent.getStartTimeInMillis() / 1000.0),
+						selectedTimelineEvent.getId());
+			}
+			case CHAPTER -> {
+				videoDisplayController.clearSegments();
+				videoDisplayController.clearMarkerLayer();
+			}
+			case SEGMENT -> {
+				videoDisplayController.clearMarkerLayer();
+				videoDisplayController.setSegments(ureq);
+			}
+			default -> {}
+		}
+
+		selectTime(selectedTimelineEvent.getStartTimeInMillis() / 1000, isYoutube);
 	}
 }

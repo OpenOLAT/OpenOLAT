@@ -108,7 +108,7 @@ public class QuestionsController extends BasicController {
 			}
 		} else if (questionsHeaderController == source) {
 			if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
-				questions.getQuestions().stream().filter(q -> q.getId().equals(questionSelectedEvent.getQuestionId()))
+				questions.getQuestions().stream().filter(q -> q.getId().equals(questionSelectedEvent.getId()))
 						.findFirst().ifPresent(q -> {
 							questionController.setQuestion(q);
 							fireEvent(ureq, questionSelectedEvent);

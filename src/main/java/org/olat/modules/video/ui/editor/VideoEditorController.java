@@ -129,39 +129,31 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof SelectTimeEvent selectTimeCommand) {
 				videoController.selectTime(selectTimeCommand.getTimeInSeconds(), isYoutube);
 			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
-				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
-				masterController.select(annotationSelectedEvent.getAnnotationId());
+				videoController.processTimelineEvent(ureq, annotationSelectedEvent, TimelineEventType.ANNOTATION, isYoutube);
+				masterController.select(annotationSelectedEvent.getId());
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.SEGMENT);
-				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
-				masterController.select(segmentSelectedEvent.getSegmentId());
+				videoController.processTimelineEvent(ureq, segmentSelectedEvent, TimelineEventType.SEGMENT, isYoutube);
+				masterController.select(segmentSelectedEvent.getId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.CHAPTER);
-				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
-				masterController.select(chapterSelectedEvent.getChapterId());
+				videoController.processTimelineEvent(ureq, chapterSelectedEvent, TimelineEventType.CHAPTER, isYoutube);
+				masterController.select(chapterSelectedEvent.getId());
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.QUIZ);
-				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
-				masterController.select(questionSelectedEvent.getQuestionId());
+				videoController.processTimelineEvent(ureq, questionSelectedEvent, TimelineEventType.QUIZ, isYoutube);
+				masterController.select(questionSelectedEvent.getId());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
-				detailsController.showAnnotation(ureq, annotationSelectedEvent.getAnnotationId());
-				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
+				videoController.processTimelineEvent(ureq, annotationSelectedEvent, TimelineEventType.ANNOTATION, isYoutube);
+				detailsController.showAnnotation(ureq, annotationSelectedEvent.getId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.CHAPTER);
+				videoController.processTimelineEvent(ureq, chapterSelectedEvent, TimelineEventType.CHAPTER, isYoutube);
 				detailsController.showChapters(ureq);
-				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.QUIZ);
-				detailsController.showQuestion(ureq, questionSelectedEvent.getQuestionId());
-				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
+				videoController.processTimelineEvent(ureq, questionSelectedEvent, TimelineEventType.QUIZ, isYoutube);
+				detailsController.showQuestion(ureq, questionSelectedEvent.getId());
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
-				videoController.setMode(ureq, TimelineEventType.SEGMENT);
-				detailsController.showSegment(ureq, segmentSelectedEvent.getSegmentId());
-				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
+				videoController.processTimelineEvent(ureq, segmentSelectedEvent, TimelineEventType.SEGMENT, isYoutube);
+				detailsController.showSegment(ureq, segmentSelectedEvent.getId());
 			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {
 				detailsController.handleDeleted(timelineEventDeletedEvent.getType(), timelineEventDeletedEvent.getId());
 			}

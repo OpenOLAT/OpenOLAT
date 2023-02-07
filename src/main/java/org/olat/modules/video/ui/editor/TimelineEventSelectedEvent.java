@@ -19,43 +19,13 @@
  */
 package org.olat.modules.video.ui.editor;
 
-import java.io.Serial;
-
-import org.olat.core.gui.control.Event;
-
 /**
- * Initial date: 2023-01-10<br>
+ * Initial date: 2023-02-07<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class SegmentSelectedEvent extends Event implements TimelineEventSelectedEvent {
-
-	@Serial
-	private static final long serialVersionUID = 9214522746511569235L;
-	private static final String COMMAND = "segment.selected";
-	private final String id;
-	private final long startTimeInMillis;
-	private final long durationInSeconds;
-
-	public SegmentSelectedEvent(String id, long startTimeInMillis, long durationInSeconds) {
-		super(COMMAND);
-		this.id = id;
-		this.startTimeInMillis = startTimeInMillis;
-		this.durationInSeconds = durationInSeconds;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
-
-	@Override
-	public long getStartTimeInMillis() {
-		return startTimeInMillis;
-	}
-
-	@Override
-	public long getDurationInSeconds() {
-		return durationInSeconds;
-	}
+public interface TimelineEventSelectedEvent {
+	long getStartTimeInMillis();
+	long getDurationInSeconds();
+	String getId();
 }

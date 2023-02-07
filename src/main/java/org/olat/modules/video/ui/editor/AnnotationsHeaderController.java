@@ -144,7 +144,8 @@ public class AnnotationsHeaderController extends FormBasicController {
 				annotationId = annotationsDropdown.getSelectedKey();
 				VideoMarker annotation = annotations.getMarkerById(annotationId);
 				if (annotation != null) {
-					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
+							annotation.getDuration()));
 				}
 			}
 		}

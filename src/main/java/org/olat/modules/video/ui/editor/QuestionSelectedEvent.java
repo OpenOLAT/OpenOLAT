@@ -19,6 +19,8 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.Serial;
+
 import org.olat.core.gui.control.Event;
 
 /**
@@ -26,24 +28,33 @@ import org.olat.core.gui.control.Event;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class QuestionSelectedEvent extends Event {
+public class QuestionSelectedEvent extends Event implements TimelineEventSelectedEvent {
 
+	@Serial
 	private static final long serialVersionUID = 1239734196124599858L;
 	private static final String COMMAND = "question.selected";
-	private final String questionId;
+	private final String id;
 	private final long startTimeInMillis;
 
 	public QuestionSelectedEvent(String questionId, long startTimeInMillis) {
 		super(COMMAND);
-		this.questionId = questionId;
+		this.id = questionId;
 		this.startTimeInMillis = startTimeInMillis;
 	}
 
-	public String getQuestionId() {
-		return questionId;
+	@Override
+	public String getId() {
+		return id;
 	}
 
+
+	@Override
 	public long getStartTimeInMillis() {
 		return startTimeInMillis;
+	}
+
+	@Override
+	public long getDurationInSeconds() {
+		return 0;
 	}
 }

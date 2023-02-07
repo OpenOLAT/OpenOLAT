@@ -28,25 +28,34 @@ import org.olat.core.gui.control.Event;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class AnnotationSelectedEvent extends Event {
+public class AnnotationSelectedEvent extends Event implements TimelineEventSelectedEvent {
 
 	@Serial
 	private static final long serialVersionUID = 533208350723649718L;
 	private static final String COMMAND = "annotation.selected";
-	private final String annotationId;
+	private final String id;
 	private final long startTimeInMillis;
+	private final long durationInSeconds;
 
-	public AnnotationSelectedEvent(String annotationId, long startTimeInMillis) {
+	public AnnotationSelectedEvent(String id, long startTimeInMillis, long durationInSeconds) {
 		super(COMMAND);
-		this.annotationId = annotationId;
+		this.id = id;
 		this.startTimeInMillis = startTimeInMillis;
+		this.durationInSeconds = durationInSeconds;
 	}
 
+	@Override
 	public long getStartTimeInMillis() {
 		return startTimeInMillis;
 	}
 
-	public String getAnnotationId() {
-		return annotationId;
+	@Override
+	public long getDurationInSeconds() {
+		return durationInSeconds;
+	}
+
+	@Override
+	public String getId() {
+		return id;
 	}
 }

@@ -183,7 +183,8 @@ public class SegmentsHeaderController extends FormBasicController {
 
 	private void handleSegmentSelected(UserRequest ureq) {
 		getOptionalSegment()
-				.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getBegin().getTime())));
+				.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getBegin().getTime(),
+						s.getDuration())));
 	}
 
 	private void doNextSegment(UserRequest ureq) {

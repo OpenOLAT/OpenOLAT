@@ -34,6 +34,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
+import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class AnnotationsController extends BasicController {
 		mainVC = createVelocityContainer("annotations");
 
 		annotations = videoManager.loadMarkers(repositoryEntry.getOlatResource());
-		annotation = annotations.getMarkers().stream().findFirst().orElse(null);
+		annotation = annotations.getMarkers().stream().min(new VideoMarkerRowComparator()).orElse(null);
 
 		annotationsHeaderController = new AnnotationsHeaderController(ureq, wControl, repositoryEntry);
 		annotationsHeaderController.setAnnotations(annotations);
@@ -100,12 +101,13 @@ public class AnnotationsController extends BasicController {
 				videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
 				annotationsHeaderController.setAnnotations(annotations);
 				reloadMarkers(ureq);
-				fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+				fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
+						annotation.getDuration()));
 			}
 		} else if (annotationsHeaderController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
 				annotations.getMarkers().stream()
-						.filter(a -> a.getId().equals(annotationSelectedEvent.getAnnotationId()))
+						.filter(a -> a.getId().equals(annotationSelectedEvent.getId()))
 						.findFirst().ifPresent(a -> {
 							annotationController.setAnnotation(a);
 							fireEvent(ureq, annotationSelectedEvent);
@@ -119,7 +121,8 @@ public class AnnotationsController extends BasicController {
 				videoManager.saveMarkers(annotations, repositoryEntry.getOlatResource());
 				reloadMarkers(ureq);
 				if (annotation != null) {
-					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
+							annotation.getDuration()));
 				}
 			}
 		}
@@ -179,7 +182,8 @@ public class AnnotationsController extends BasicController {
 
 	public void sendSelectionEvent(UserRequest ureq) {
 		if (annotation != null) {
-			fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
+			fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
+					annotation.getDuration()));
 		}
 	}
 }

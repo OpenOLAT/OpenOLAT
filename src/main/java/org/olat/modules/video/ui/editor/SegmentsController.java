@@ -62,7 +62,7 @@ public class SegmentsController extends BasicController {
 
 		segments = videoManager.loadSegments(repositoryEntry.getOlatResource());
 		segments.getSegments().sort(new SegmentComparator());
-		segment = segments.getSegments().stream().findFirst().orElse(null);
+		segment = segments.getSegments().stream().min(new SegmentComparator()).orElse(null);
 
 		segmentsHeaderController = new SegmentsHeaderController(ureq, wControl, videoDurationInSeconds);
 		segmentsHeaderController.setSegments(segments);
@@ -102,12 +102,13 @@ public class SegmentsController extends BasicController {
 				videoManager.saveSegments(segments, repositoryEntry.getOlatResource());
 				segmentsHeaderController.setSegments(segments);
 				reloadSegments(ureq);
-				fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime()));
+				fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime(),
+						segment.getDuration()));
 			}
 		} else if (segmentsHeaderController == source) {
 			if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
 				segments.getSegments().stream()
-						.filter(s -> s.getId().equals(segmentSelectedEvent.getSegmentId()))
+						.filter(s -> s.getId().equals(segmentSelectedEvent.getId()))
 						.findFirst().ifPresent(s -> {
 							segmentController.setSegment(s);
 							fireEvent(ureq, segmentSelectedEvent);
@@ -121,7 +122,8 @@ public class SegmentsController extends BasicController {
 				videoManager.saveSegments(segments, repositoryEntry.getOlatResource());
 				reloadSegments(ureq);
 				if (segment != null) {
-					fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime()));
+					fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime(),
+							segment.getDuration()));
 				}
 			}
 		}
@@ -159,7 +161,8 @@ public class SegmentsController extends BasicController {
 
 	public void sendSelectionEvent(UserRequest ureq) {
 		if (segment != null) {
-			fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime()));
+			fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime(),
+					segment.getDuration()));
 		}
 	}
 }
