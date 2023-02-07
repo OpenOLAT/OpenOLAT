@@ -50,6 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OAIPmhModule extends AbstractSpringModule {
 
+	private static final String CONFIG_OAI_UUID = "oai.uuid";
 	private static final String CONFIG_OAI_ENABLED = "oai.enabled";
 	private static final String CONFIG_LICENSE_ALLOW = "oai.license.allow";
 	private static final String CONFIG_LICENSE_RESTRICT = "oai.license.restrict";
@@ -59,9 +60,21 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private static final String CONFIG_SET_LEARNINGRESOURCE = "oai.set.type.learningResource";
 	private static final String CONFIG_SET_RELEASE = "oai.set.type.release";
 	private static final String CONFIG_SEARCHENGINE_ENABLED = "oai.searchengine.enabled";
+	private static final String CONFIG_SEARCHENGINE_BING = "oai.searchengine.bing";
+	private static final String CONFIG_SEARCHENGINE_BING_URL = "oai.searchengine.bing.url";
+	private static final String CONFIG_SEARCHENGINE_CUSTOM_SITEMAP = "oai.searchengine.custom.sitemap";
+	private static final String CONFIG_SEARCHENGINE_CUSTOM_SITEMAP_URL = "oai.searchengine.custom.sitemap.url";
+	private static final String CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW = "oai.searchengine.custom.indexnow";
+	private static final String CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW_URL = "oai.searchengine.custom.indexnow.url";
+	private static final String CONFIG_SEARCHENGINE_GOOGLE = "oai.searchengine.google";
+	private static final String CONFIG_SEARCHENGINE_GOOGLE_URL = "oai.searchengine.google.url";
+	private static final String CONFIG_SEARCHENGINE_YANDEX = "oai.searchengine.yandex";
+	private static final String CONFIG_SEARCHENGINE_YANDEX_URL = "oai.searchengine.yandex.url";
 	private static final String CONFIG_SELECTED_LICENSE_RESTRICTIONS = "oai.license.selectedRestrictions";
 	private static final String CONFIG_OAI_IDENTIFIER_FORMAT = "oai.identifier.format";
 
+	@Value("${oai.uuid}")
+	private String uuid;
 	@Value("${oai.enabled}")
 	private boolean enabled;
 	@Value("${oai.license.allow}")
@@ -80,6 +93,26 @@ public class OAIPmhModule extends AbstractSpringModule {
 	private boolean setTypeRelease;
 	@Value("${oai.searchengine.enabled}")
 	private boolean searchEngineEnabled;
+	@Value("${oai.searchengine.bing}")
+	private boolean searchEngineBing;
+	@Value("${oai.searchengine.custom.sitemap}")
+	private boolean searchEngineCustomSitemap;
+	@Value("${oai.searchengine.custom.indexnow}")
+	private boolean searchEngineCustomIndexnow;
+	@Value("${oai.searchengine.google}")
+	private boolean searchEngineGoogle;
+	@Value("${oai.searchengine.yandex}")
+	private boolean searchEngineYandex;
+	@Value("${oai.searchengine.bing.url}")
+	private String searchEngineBingUrl;
+	@Value("${oai.searchengine.custom.sitemap.url}")
+	private String searchEngineCustomSitemapUrl;
+	@Value("${oai.searchengine.custom.indexnow.url}")
+	private String searchEngineCustomIndexnowUrl;
+	@Value("${oai.searchengine.google.url}")
+	private String searchEngineGoogleUrl;
+	@Value("${oai.searchengine.yandex.url}")
+	private String searchEngineYandexUrl;
 	@Value("${oai.license.selectedRestrictions}")
 	private String licenseSelectedRestrictions;
 	@Value("${oai.identifier.format}")
@@ -99,6 +132,10 @@ public class OAIPmhModule extends AbstractSpringModule {
 	public void init() {
 		String enabledObj;
 
+		enabledObj = getStringPropertyValue(CONFIG_OAI_UUID, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			uuid = enabledObj;
+		}
 		enabledObj = getStringPropertyValue(CONFIG_OAI_ENABLED, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
@@ -135,6 +172,46 @@ public class OAIPmhModule extends AbstractSpringModule {
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			searchEngineEnabled = "true".equals(enabledObj);
 		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_BING, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineBing = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_CUSTOM_SITEMAP, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineCustomSitemap = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineCustomIndexnow = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_GOOGLE, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineGoogle = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_YANDEX, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineYandex = "true".equals(enabledObj);
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_BING_URL, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineBingUrl = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_CUSTOM_SITEMAP_URL, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineCustomSitemapUrl = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW_URL, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineCustomIndexnowUrl = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_GOOGLE_URL, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineGoogleUrl = enabledObj;
+		}
+		enabledObj = getStringPropertyValue(CONFIG_SEARCHENGINE_YANDEX_URL, true);
+		if (StringHelper.containsNonWhitespace(enabledObj)) {
+			searchEngineYandexUrl = enabledObj;
+		}
 		enabledObj = getStringPropertyValue(CONFIG_SELECTED_LICENSE_RESTRICTIONS, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			licenseSelectedRestrictions = enabledObj;
@@ -148,6 +225,15 @@ public class OAIPmhModule extends AbstractSpringModule {
 	@Override
 	protected void initFromChangedProperties() {
 		init();
+	}
+
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+		setStringProperty(CONFIG_OAI_UUID, uuid, true);
 	}
 
 	public boolean isEnabled() {
@@ -250,6 +336,96 @@ public class OAIPmhModule extends AbstractSpringModule {
 	public void setLicenseSelectedRestrictions(List<String> licenseSelectedRestrictions) {
 		this.licenseSelectedRestrictions = licenseSelectedRestrictions.toString();
 		setStringProperty(CONFIG_SELECTED_LICENSE_RESTRICTIONS, licenseSelectedRestrictions.toString(), true);
+	}
+
+	public boolean isSearchEngineBing() {
+		return searchEngineBing;
+	}
+
+	public void setSearchEngineBing(boolean searchEngineBing) {
+		this.searchEngineBing = searchEngineBing;
+		setStringProperty(CONFIG_SEARCHENGINE_BING, Boolean.toString(searchEngineBing), true);
+	}
+
+	public boolean isSearchEngineCustomSitemap() {
+		return searchEngineCustomSitemap;
+	}
+
+	public void setSearchEngineCustomSitemap(boolean searchEngineCustomSitemap) {
+		this.searchEngineCustomSitemap = searchEngineCustomSitemap;
+		setStringProperty(CONFIG_SEARCHENGINE_CUSTOM_SITEMAP, Boolean.toString(searchEngineCustomSitemap), true);
+	}
+
+	public boolean isSearchEngineCustomIndexnow() {
+		return searchEngineCustomIndexnow;
+	}
+
+	public void setSearchEngineCustomIndexnow(boolean searchEngineCustomIndexnow) {
+		this.searchEngineCustomIndexnow = searchEngineCustomIndexnow;
+		setStringProperty(CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW, Boolean.toString(searchEngineCustomIndexnow), true);
+	}
+
+	public boolean isSearchEngineGoogle() {
+		return searchEngineGoogle;
+	}
+
+	public void setSearchEngineGoogle(boolean searchEngineGoogle) {
+		this.searchEngineGoogle = searchEngineGoogle;
+		setStringProperty(CONFIG_SEARCHENGINE_GOOGLE, Boolean.toString(searchEngineGoogle), true);
+	}
+
+	public boolean isSearchEngineYandex() {
+		return searchEngineYandex;
+	}
+
+	public void setSearchEngineYandex(boolean searchEngineYandex) {
+		this.searchEngineYandex = searchEngineYandex;
+		setStringProperty(CONFIG_SEARCHENGINE_YANDEX, Boolean.toString(searchEngineYandex), true);
+	}
+
+	public String getSearchEngineBingUrl() {
+		return searchEngineBingUrl;
+	}
+
+	public void setSearchEngineBingUrl(String searchEngineBingUrl) {
+		this.searchEngineBingUrl = searchEngineBingUrl;
+		setStringProperty(CONFIG_SEARCHENGINE_BING_URL, searchEngineBingUrl, true);
+	}
+
+	public String getSearchEngineCustomSitemapUrl() {
+		return searchEngineCustomSitemapUrl;
+	}
+
+	public void setSearchEngineCustomSitemapUrl(String searchEngineCustomSitemapUrl) {
+		this.searchEngineCustomSitemapUrl = searchEngineCustomSitemapUrl;
+		setStringProperty(CONFIG_SEARCHENGINE_CUSTOM_SITEMAP_URL, searchEngineCustomSitemapUrl, true);
+	}
+
+	public String getSearchEngineCustomIndexnowUrl() {
+		return searchEngineCustomIndexnowUrl;
+	}
+
+	public void setSearchEngineCustomIndexnowUrl(String searchEngineCustomIndexnowUrl) {
+		this.searchEngineCustomIndexnowUrl = searchEngineCustomIndexnowUrl;
+		setStringProperty(CONFIG_SEARCHENGINE_CUSTOM_INDEXNOW_URL, searchEngineCustomIndexnowUrl, true);
+	}
+
+	public String getSearchEngineGoogleUrl() {
+		return searchEngineGoogleUrl;
+	}
+
+	public void setSearchEngineGoogleUrl(String searchEngineGoogleUrl) {
+		this.searchEngineGoogleUrl = searchEngineGoogleUrl;
+		setStringProperty(CONFIG_SEARCHENGINE_GOOGLE_URL, searchEngineGoogleUrl, true);
+	}
+
+	public String getSearchEngineYandexUrl() {
+		return searchEngineYandexUrl;
+	}
+
+	public void setSearchEngineYandexUrl(String searchEngineYandexUrl) {
+		this.searchEngineYandexUrl = searchEngineYandexUrl;
+		setStringProperty(CONFIG_SEARCHENGINE_YANDEX_URL, searchEngineYandexUrl, true);
 	}
 
 	public String getIdentifierFormat() {

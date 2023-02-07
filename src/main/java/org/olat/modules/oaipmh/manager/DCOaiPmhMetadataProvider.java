@@ -100,9 +100,9 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 							ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()) :
 							"oai:" + Settings.getServerDomainName() + ":" + repositoryEntry.getKey())
 					.with("title", repositoryEntry.getDisplayname())
-					.with("initialauthor", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))
+					.with("creator", userManager.getUserDisplayName(repositoryEntry.getInitialAuthor()))
 					.with("subject", taxonomyLevels.toString())
-					.with("description", repositoryEntry.getDescription() + " ResourceInfoUrl: " + ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
+					.with("description", repositoryEntry.getDescription())
 					.with("publisher", Arrays.stream(OrganisationUIFactory.createSelectionValues(organisationList).values()).findFirst().get().replace(" ", ""))
 					.with("contributer", repositoryEntry.getAuthors())
 					.with("date", repositoryEntry.getCreationDate())
@@ -111,6 +111,7 @@ public class DCOaiPmhMetadataProvider implements OAIPmhMetadataProvider {
 					.with("language", repositoryEntry.getMainLanguage())
 					.with("coverage", repositoryEntry.getTeaser())
 					.with("rights", rights)
+					.with("source", ResourceInfoDispatcher.getUrl(repositoryEntry.getKey().toString()))
 					.with("sets", setSpec.build().isEmpty() ? setSpec.add("").build() : setSpec.build())
 					.with("deleted", false);
 

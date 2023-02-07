@@ -17,6 +17,7 @@ import org.apache.commons.io.IOUtils;
 import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.oaidc.OAIDCMetadata;
 import org.olat.modules.oaipmh.common.oaioo.OAIOOMetadata;
+import org.olat.modules.oaipmh.common.services.sitemap.XMLSitemap;
 import org.olat.modules.oaipmh.common.xml.EchoElement;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
@@ -24,6 +25,7 @@ import org.olat.modules.oaipmh.common.xml.XmlWriter;
 public class Metadata implements XmlWritable {
 	protected OAIDCMetadata value;
 	protected OAIOOMetadata ooValue;
+	protected XMLSitemap sitemapValue;
 	private String string;
 
 	public Metadata(OAIDCMetadata value) {
@@ -32,6 +34,10 @@ public class Metadata implements XmlWritable {
 
 	public Metadata(OAIOOMetadata value) {
 		this.ooValue = value;
+	}
+
+	public Metadata(XMLSitemap sitemapValue) {
+		this.sitemapValue = sitemapValue;
 	}
 
 	public Metadata(String value) {
@@ -48,6 +54,8 @@ public class Metadata implements XmlWritable {
 			this.ooValue.write(writer);
 		else if (this.value != null) {
 			this.value.write(writer);
+		} else if (this.sitemapValue != null) {
+			this.sitemapValue.write(writer);
 		} else {
 			EchoElement elem = new EchoElement(string);
 			elem.write(writer);
@@ -60,6 +68,14 @@ public class Metadata implements XmlWritable {
 
 	public OAIOOMetadata getOoValue() {
 		return ooValue;
+	}
+
+	public XMLSitemap getSitemapValue() {
+		return sitemapValue;
+	}
+
+	public String getString() {
+		return string;
 	}
 
 }

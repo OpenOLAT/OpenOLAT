@@ -19,9 +19,14 @@
  */
 package org.olat.repository;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
@@ -37,6 +42,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
@@ -46,20 +52,19 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.oaipmh.OAIPmhModule;
+import org.olat.modules.oaipmh.common.services.sitemap.XMLSitemap;
 import org.olat.repository.ui.list.RepositoryEntryPublicInfosController;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class ResourceInfoDispatcher implements Dispatcher {
 
-	private static final Logger log = Tracing.createLoggerFor(ResourceInfoDispatcher.class);
-
 	public static final String RESOURCEINFO_PATH = "resourceinfo";
+	private static final Logger log = Tracing.createLoggerFor(ResourceInfoDispatcher.class);
+	private static final String CONTENT_ENCODING = "UTF-8";
+
 
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
@@ -92,6 +97,16 @@ public class ResourceInfoDispatcher implements Dispatcher {
 
 		if (!oaiPmhModule.isEnabled()) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
+		}
+
+		if (pathInfo.contains("sitemap.xml")) {
+			dispatchSitemap(request, response);
+			return;
+		}
+
+		if (pathInfo.contains(oaiPmhModule.getUuid())) {
+			dispatchKeyFile(request, response);
 			return;
 		}
 
@@ -181,6 +196,45 @@ public class ResourceInfoDispatcher implements Dispatcher {
 			}
 		} else {
 			DispatcherModule.redirectToServiceNotAvailable(response);
+		}
+	}
+
+	private void dispatchSitemap(HttpServletRequest request, HttpServletResponse response) {
+		List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
+
+		StringMediaResource mr = new StringMediaResource();
+		XMLSitemap xmlSitemap = new XMLSitemap(repositoryEntries);
+		String result = xmlSitemap.getSiteMapXML();
+
+		mr.setContentType("application/xml");
+		mr.setEncoding(CONTENT_ENCODING);
+		mr.setData(result);
+
+		response.setCharacterEncoding(CONTENT_ENCODING);
+		response.setContentType(mr.getContentType());
+
+		try {
+			ServletUtil.serveResource(request, response, mr);
+		} catch (Exception e) {
+			DispatcherModule.sendServerError(response);
+		}
+	}
+
+	private void dispatchKeyFile(HttpServletRequest request, HttpServletResponse response) {
+		StringMediaResource mr = new StringMediaResource();
+		String result = oaiPmhModule.getUuid();
+
+		mr.setContentType("text/html");
+		mr.setEncoding(CONTENT_ENCODING);
+		mr.setData(result);
+
+		response.setCharacterEncoding(CONTENT_ENCODING);
+		response.setContentType(mr.getContentType());
+
+		try {
+			ServletUtil.serveResource(request, response, mr);
+		} catch (Exception e) {
+			DispatcherModule.sendServerError(response);
 		}
 	}
 

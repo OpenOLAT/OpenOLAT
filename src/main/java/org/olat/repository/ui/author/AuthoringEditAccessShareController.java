@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.helpTooltip.HelpTooltip;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -309,6 +310,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		enableMetadataIndexingEl = uifactory.addCheckboxesVertical("cif.metadata.enabled", generalCont, metadataSV.keys(), metadataSV.values(), 1);
 		enableMetadataIndexingEl.select(KEY_INDEXING, entry.getCanIndexMetadata());
+		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
 

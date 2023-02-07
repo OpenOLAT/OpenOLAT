@@ -19,6 +19,9 @@
  */
 package org.olat.modules.oaipmh;
 
+import java.util.List;
+import java.util.Map;
+
 import org.olat.core.gui.media.MediaResource;
 
 /**
@@ -30,9 +33,11 @@ public interface OAIService {
 	 * @param requestParameter
 	 * @return MediaResource of type XML in Dublin Core-Standard with OAI
 	 */
-	public MediaResource handleOAIRequest(String requestParameter, String requestIdentifierParameter,
-										  String requestMetadataPrefixParameter, String requestResumptionTokenParameter,
-										  String requestFromParameter, String requestUntilParameter,
-										  String requestSetParameter);
+	MediaResource handleOAIRequest(String requestParameter, String requestIdentifierParameter,
+								   String requestMetadataPrefixParameter, String requestResumptionTokenParameter,
+								   String requestFromParameter, String requestUntilParameter,
+								   String requestSetParameter);
+
+	Map<String, Integer> propagateSearchEngines(List<String> searchEngineUrls);
 
 }
