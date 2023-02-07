@@ -48,6 +48,7 @@ public class VideoDisplayOptions {
 	private boolean authorMode;
 	private boolean forwardSeekingRestricted;
 	private boolean responseAtEnd;
+	private boolean progressFullWidth;
 	
 	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean useContainerForCommentsAndRatings, boolean showTitle, boolean showDescription,
 			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
@@ -268,4 +269,14 @@ public class VideoDisplayOptions {
 	public void setResponseAtEnd(boolean responseAtEnd) {
 		this.responseAtEnd = responseAtEnd;
 	}
+
+	public boolean isProgressFullWidth() {
+		return progressFullWidth;
+	}
+
+	public void setProgressFullWidth(boolean progressFullWidth) {
+		this.progressFullWidth = progressFullWidth;
+	}
+	
+	
 }

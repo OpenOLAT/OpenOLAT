@@ -383,6 +383,28 @@
 	}
 }
 
+/* place the progress bar above the controls and use the full width */
+.o_video_progress_full_width {
+	.mejs__time-rail {
+		order: -1;
+		flex-grow: 10;
+		width: 100%;
+		padding-top: 0;
+		height: 20px;
+	}
+	
+	.mejs__controls {
+		height: 60px;
+		flex-wrap: wrap;
+	}
+	
+	.mejs__time.mejs__duration-container {
+		/* Prevent calculation of the video width by media element */
+		//flex-grow: 1;
+		//text-align: left;
+	}
+}
+
 /* different breakpoints for various typical video resolutions in full-screen mode
    2% font size relative to video width, overriding fancy (wrong) calculated size from mediaelement
  */
