@@ -157,4 +157,43 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, binders.size());
 		Assert.assertTrue(binders.get(0).getBinderKey().equals(binder.getKey()));
 	}
+	
+	@Test
+	public void isUsedInPage() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
+		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commitAndCloseSession();
+
+		MediaPart mediaPart = new MediaPart();
+		mediaPart.setMedia(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		boolean inUse = mediaDao.isUsed(media);
+		Assert.assertTrue(inUse);
+	}
+	
+	@Test
+	public void isUsedInPageDeletedPage() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, null, null);
+		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commit();
+
+		MediaPart mediaPart = new MediaPart();
+		mediaPart.setMedia(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commit();
+		
+		dbInstance.getCurrentEntityManager().remove(page);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		boolean inUse = mediaDao.isUsed(media);
+		Assert.assertTrue(inUse);
+	}
 }
