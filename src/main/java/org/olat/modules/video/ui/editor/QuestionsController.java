@@ -54,8 +54,7 @@ public class QuestionsController extends BasicController {
 	@Autowired
 	private VideoManager videoManager;
 
-	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-								  String videoElementId) {
+	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("questions");
@@ -63,7 +62,7 @@ public class QuestionsController extends BasicController {
 		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
 		question = questions.getQuestions().stream().findFirst().orElse(null);
 
-		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry, videoElementId);
+		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry);
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 

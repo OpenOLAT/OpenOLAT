@@ -44,7 +44,6 @@ import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoMarkerImpl;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
 import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
 import org.olat.repository.RepositoryEntry;
 
@@ -59,7 +58,6 @@ public class AnnotationsHeaderController extends FormBasicController {
 	public final static Event ANNOTATION_ADDED_EVENT = new Event("annotation.added");
 	public final static Event ANNOTATION_DELETED_EVENT = new Event("annotation.deleted");
 	private final RepositoryEntry repositoryEntry;
-	private final String videoElementId;
 	private SingleSelection annotationsDropdown;
 	private SelectionValues annotationsKV = new SelectionValues();
 	private FormLink addAnnotationButton;
@@ -75,11 +73,9 @@ public class AnnotationsHeaderController extends FormBasicController {
 	private CommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
 
-	protected AnnotationsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-										  String videoElementId) {
+	protected AnnotationsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "annotations_header");
 		this.repositoryEntry = repositoryEntry;
-		this.videoElementId = videoElementId;
 		this.newAnnotationColor = videoModule.getMarkerStyles().get(0);
 
 		initForm(ureq);
@@ -149,9 +145,6 @@ public class AnnotationsHeaderController extends FormBasicController {
 				VideoMarker annotation = annotations.getMarkerById(annotationId);
 				if (annotation != null) {
 					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime()));
-					long timeInSeconds = annotation.getBegin().getTime() / 1000;
-					SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-					getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
 				}
 			}
 		}

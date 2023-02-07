@@ -54,8 +54,7 @@ public class AnnotationsController extends BasicController {
 	@Autowired
 	private VideoManager videoManager;
 
-	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-								 String videoElementId) {
+	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("annotations");
@@ -63,12 +62,12 @@ public class AnnotationsController extends BasicController {
 		annotations = videoManager.loadMarkers(repositoryEntry.getOlatResource());
 		annotation = annotations.getMarkers().stream().findFirst().orElse(null);
 
-		annotationsHeaderController = new AnnotationsHeaderController(ureq, wControl, repositoryEntry, videoElementId);
+		annotationsHeaderController = new AnnotationsHeaderController(ureq, wControl, repositoryEntry);
 		annotationsHeaderController.setAnnotations(annotations);
 		listenTo(annotationsHeaderController);
 		mainVC.put("header", annotationsHeaderController.getInitialComponent());
 
-		annotationController = new AnnotationController(ureq, wControl, videoElementId, annotation);
+		annotationController = new AnnotationController(ureq, wControl, annotation);
 		listenTo(annotationController);
 		if (annotation != null) {
 			mainVC.put("annotation", annotationController.getInitialComponent());

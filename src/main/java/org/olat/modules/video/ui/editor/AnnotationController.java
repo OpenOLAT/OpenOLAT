@@ -47,7 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoSettingsController;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AnnotationController extends FormBasicController {
 
-	private final String videoElementId;
 	private VideoMarker annotation;
 	private TextElement startEl;
 	private TextElement endEl;
@@ -74,10 +72,8 @@ public class AnnotationController extends FormBasicController {
 	@Autowired
 	private VideoModule videoModule;
 
-	public AnnotationController(UserRequest ureq, WindowControl wControl,
-								String videoElementId, VideoMarker annotation) {
+	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation) {
 		super(ureq, wControl, "annotation");
-		this.videoElementId = videoElementId;
 		this.annotation = annotation;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -211,9 +207,6 @@ public class AnnotationController extends FormBasicController {
 				int duration = Integer.parseInt(durationEl.getValue());
 				Date end = DateUtils.addSeconds(start, duration);
 				endEl.setValue(timeFormat.format(end));
-				if (startEl == source) {
-					selectStartTime();
-				}
 			} catch (Exception e) {
 				//
 			}
@@ -230,17 +223,6 @@ public class AnnotationController extends FormBasicController {
 			System.err.println("edit position");
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	private void selectStartTime() {
-		try {
-			Date start = timeFormat.parse(startEl.getValue());
-			long timeInSeconds = start.getTime() / 1000;
-			SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-			getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
-		} catch (ParseException e) {
-			logError("", e);
-		}
 	}
 
 	@Override

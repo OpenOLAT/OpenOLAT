@@ -64,7 +64,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
@@ -128,6 +130,11 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		}
 		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
 		flc.contextPut("currentTimeInSeconds", "0.0");
+
+		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());
+		boolean isYoutube = videoMetadata.getVideoFormat() == VideoFormat.youtube;
+		flc.contextPut("isYoutube", isYoutube);
+
 		this.movieSize = new Size(90, 50, false);
 		initForm(ureq);
 		updateVisibility();

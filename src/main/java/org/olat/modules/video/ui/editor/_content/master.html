@@ -59,6 +59,24 @@ $r.render("timelineEvents")
 				player.play();
 				player.media.addEventListener('loadedmetadata', metaListener);
 			}
+
+			#if ($isYoutube)
+			const deferredCommand = () => {
+				player.pause();
+				player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media));
+			};
+			if (loaded) {
+				player.play();
+				setTimeout(deferredCommand, 200);
+			} else {
+				const metaListener = (e) => {
+					setTimeout(deferredCommand, 200);
+					player.media.removeEventListener(metaListener);
+				};
+				player.play();
+				player.media.addEventListener('loadedmetadata', metaListener);
+			}
+			#end
 		}
 	}
 

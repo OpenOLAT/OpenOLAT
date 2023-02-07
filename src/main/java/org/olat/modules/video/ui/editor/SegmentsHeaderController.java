@@ -51,7 +51,6 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 import org.olat.modules.video.model.VideoSegmentImpl;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
 
 /**
  * Initial date: 2023-01-30<br>
@@ -63,7 +62,6 @@ public class SegmentsHeaderController extends FormBasicController {
 	public final static Event SEGMENT_DELETED_EVENT = new Event("segment.deleted");
 
 	private final static long DEFAULT_DURATION = 5;
-	private final String videoElementId;
 	private final long videoDurationInSeconds;
 	private VideoSegments segments;
 	private String segmentId;
@@ -79,10 +77,8 @@ public class SegmentsHeaderController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 
 
-	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, String videoElementId,
-									long videoDurationInSeconds) {
+	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, long videoDurationInSeconds) {
 		super(ureq, wControl, "segments_header");
-		this.videoElementId = videoElementId;
 		this.videoDurationInSeconds = videoDurationInSeconds;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -187,12 +183,7 @@ public class SegmentsHeaderController extends FormBasicController {
 
 	private void handleSegmentSelected(UserRequest ureq) {
 		getOptionalSegment()
-				.ifPresent(s -> {
-					fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getBegin().getTime()));
-					long timeInSeconds = s.getBegin().getTime() / 1000;
-					SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-					getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
-				});
+				.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getBegin().getTime())));
 	}
 
 	private void doNextSegment(UserRequest ureq) {

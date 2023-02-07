@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
@@ -49,6 +50,7 @@ public class VideoEditorController extends BasicController {
 	private final MasterController masterController;
 
 	private EditQuestionController editQuestionController;
+	private final boolean isYoutube;
 
 	@Autowired
 	private VideoManager videoManager;
@@ -58,6 +60,7 @@ public class VideoEditorController extends BasicController {
 		mainVC = createVelocityContainer("video_editor");
 
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());
+		isYoutube = videoMetadata.getVideoFormat() == VideoFormat.youtube;
 		mainVC.contextPut("videoWidth", videoMetadata.getWidth());
 		mainVC.contextPut("videoHeight", videoMetadata.getHeight());
 
@@ -66,7 +69,7 @@ public class VideoEditorController extends BasicController {
 		String videoElementId = videoController.getVideoElementId();
 		mainVC.put("video", videoController.getInitialComponent());
 
-		detailsController = new DetailsController(ureq, wControl, repositoryEntry, videoElementId,
+		detailsController = new DetailsController(ureq, wControl, repositoryEntry,
 				videoController.getDurationInSeconds());
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
@@ -123,40 +126,42 @@ public class VideoEditorController extends BasicController {
 					listenTo(editQuestionController);
 				}
 				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
+			} else if (event instanceof SelectTimeEvent selectTimeCommand) {
+				videoController.selectTime(selectTimeCommand.getTimeInSeconds(), isYoutube);
 			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
-				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 				masterController.select(annotationSelectedEvent.getAnnotationId());
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.SEGMENT);
-				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 				masterController.select(segmentSelectedEvent.getSegmentId());
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.CHAPTER);
-				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 				masterController.select(chapterSelectedEvent.getChapterId());
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.QUIZ);
-				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 				masterController.select(questionSelectedEvent.getQuestionId());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.ANNOTATION);
 				detailsController.showAnnotation(ureq, annotationSelectedEvent.getAnnotationId());
-				videoController.setAnnotationId(annotationSelectedEvent.getAnnotationId());
+				videoController.selectTime(annotationSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 			} else if (event instanceof ChapterSelectedEvent chapterSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.CHAPTER);
 				detailsController.showChapters(ureq);
-				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(chapterSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.QUIZ);
 				detailsController.showQuestion(ureq, questionSelectedEvent.getQuestionId());
-				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(questionSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
 				videoController.setMode(ureq, TimelineEventType.SEGMENT);
 				detailsController.showSegment(ureq, segmentSelectedEvent.getSegmentId());
-				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000);
+				videoController.selectTime(segmentSelectedEvent.getStartTimeInMillis() / 1000, isYoutube);
 			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {
 				detailsController.handleDeleted(timelineEventDeletedEvent.getType(), timelineEventDeletedEvent.getId());
 			}

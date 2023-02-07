@@ -44,7 +44,7 @@ public class DetailsController extends BasicController {
 	private final QuestionsController questionsController;
 
 	public DetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							 String videoElementId, long durationInSeconds) {
+							 long durationInSeconds) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("details");
@@ -56,16 +56,15 @@ public class DetailsController extends BasicController {
 		listenTo(chaptersController);
 		tabbedPane.addTab(translate("video.editor.panes.chapters"), chaptersController);
 
-		annotationsController = new AnnotationsController(ureq, wControl, repositoryEntry, videoElementId);
+		annotationsController = new AnnotationsController(ureq, wControl, repositoryEntry);
 		listenTo(annotationsController);
 		tabbedPane.addTab(translate("video.editor.panes.annotations"), annotationsController);
 
-		segmentsController = new SegmentsController(ureq, wControl, repositoryEntry, videoElementId,
-				durationInSeconds);
+		segmentsController = new SegmentsController(ureq, wControl, repositoryEntry, durationInSeconds);
 		listenTo(segmentsController);
 		tabbedPane.addTab(translate("video.editor.panes.segments"), segmentsController);
 
-		questionsController = new QuestionsController(ureq, wControl, repositoryEntry, videoElementId);
+		questionsController = new QuestionsController(ureq, wControl, repositoryEntry);
 		listenTo(questionsController);
 		tabbedPane.addTab(translate("video.editor.panes.quiz"), questionsController);
 

@@ -20,7 +20,6 @@
 package org.olat.modules.video.ui.editor;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -106,22 +105,18 @@ public class VideoController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(reloadMarkersCommand);
 	}
 
-	public void setAnnotationId(String annotationId) {
-		List<VideoDisplayController.Marker> markers = videoDisplayController.loadMarkers();
-		Optional<VideoDisplayController.Marker> marker = markers.stream().filter((m) -> m.getId().equals(annotationId)).findFirst();
-		marker.ifPresent((m) -> {
-			SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, m.getTime());
-			getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
-		});
-	}
-
 	public void reloadChapters() {
 		videoDisplayController.forceReload();
 	}
 
-	public void selectTime(long timeInSeconds) {
+	public void selectTime(long timeInSeconds, boolean isYoutube) {
 		SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
+
+		if (isYoutube) {
+			TimeUpdateCommand timeUpdateCommand = new TimeUpdateCommand(videoElementId, 200);
+			getWindowControl().getWindowBackOffice().sendCommandTo(timeUpdateCommand);
+		}
 	}
 
 	public void setMode(UserRequest ureq, TimelineEventType type) {

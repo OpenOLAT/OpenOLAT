@@ -39,7 +39,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
-import org.olat.modules.video.ui.component.SelectTimeCommand;
 import org.olat.modules.video.ui.question.NewQuestionEvent;
 import org.olat.modules.video.ui.question.NewQuestionItemCalloutController;
 import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
@@ -53,7 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class QuestionsHeaderController extends FormBasicController {
-	private final String videoElementId;
 	private SingleSelection questionsDropdown;
 	private FormLink addQuestionButton;
 	private NewQuestionItemCalloutController newQuestionCtrl;
@@ -66,11 +64,9 @@ public class QuestionsHeaderController extends FormBasicController {
 	private String questionId;
 	private String currentTimeCode;
 
-	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-										String videoElementId) {
+	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "questions_header");
 		this.repositoryEntry = repositoryEntry;
-		this.videoElementId = videoElementId;
 		initForm(ureq);
 		loadModel();
 	}
@@ -152,7 +148,6 @@ public class QuestionsHeaderController extends FormBasicController {
 				questionId = questionsDropdown.getSelectedKey();
 				getOptionalQuestion()
 						.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getBegin().getTime())));
-				setTimeToQuestion();
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -163,14 +158,6 @@ public class QuestionsHeaderController extends FormBasicController {
 			return Optional.empty();
 		}
 		return questions.getQuestions().stream().filter(q -> questionId.equals(q.getId())).findFirst();
-	}
-
-	private void setTimeToQuestion() {
-		getOptionalQuestion().ifPresent(q -> {
-			long timeInSeconds = q.getBegin().getTime() / 1000;
-			SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
-			getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
-		});
 	}
 
 	private void doAddQuestion(UserRequest ureq) {
