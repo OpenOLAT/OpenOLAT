@@ -34,7 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.videotask.ui.components.RestartEvent;
 import org.olat.modules.video.VideoSegment;
-import org.olat.modules.video.VideoTaskSegmentResult;
+import org.olat.modules.video.VideoTaskSegmentSelection;
 
 /**
  * 
@@ -50,10 +50,10 @@ public class ConfirmEndPracticeIdentifyTaskController extends FormBasicControlle
 	private final int maxAttempts;
 	private final int currentAttempt;
 	private final List<VideoSegment> segmentsList;
-	private final List<VideoTaskSegmentResult> results;
+	private final List<VideoTaskSegmentSelection> results;
 	
 	public ConfirmEndPracticeIdentifyTaskController(UserRequest ureq, WindowControl wControl,
-			List<VideoTaskSegmentResult> results, List<VideoSegment> segmentsList,
+			List<VideoTaskSegmentSelection> results, List<VideoSegment> segmentsList,
 			int currentAttempt, int maxAttempts) {
 		super(ureq, wControl, "confirm_end_practice_identify");
 	

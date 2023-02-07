@@ -1,0 +1,32 @@
+<div class="o_videotask_layer">
+	<div class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
+		<span>$message</span>
+	</div>
+	<div class="o_videotask_categories">
+	#foreach ($category in $categories)
+		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">${category.title}</button>
+	#end
+	</div>
+	<div class="o_videotask_segments $segmentsCssClass">
+		#foreach ($segment in $segments)
+		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};">
+			${segment.label()}
+		</div>
+		#end
+		#foreach ($segmentMarker in $segmentsSelections)
+		<div class="${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
+			<span>${segmentMarker.categoryLabel}</span>
+		</div>
+		#end
+	</div>
+	<script>
+	"use strict";
+	jQuery(function() {
+		const videoElement = jQuery('#o_so_vid${videoElementId}');
+		const player = videoElement.data('player');
+		player.media.addEventListener('timeupdate', function() {
+			var time = player.media.currentTime;
+		});
+	});
+	</script>
+</div>

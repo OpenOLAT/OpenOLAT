@@ -96,6 +96,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	private final VelocityContainer myContent;
 	
 	private boolean showLog;
+	private final String mode;
 	private final boolean anonym;
 	private final PanelInfo panelInfo;
 	private final boolean assessmentType;
@@ -128,11 +129,13 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		this.showLog = showLog;
 		this.courseNode = courseNode;
 		this.userCourseEnv = userCourseEnv;
+		mode = courseNode.getModuleConfiguration()
+				.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE, VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
 		assessmentEval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnv), courseNode);
-		this.panelInfo = new PanelInfo(VideoTaskRunController.class,
+		panelInfo = new PanelInfo(VideoTaskRunController.class,
 				"::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent());
-		this.assessmentType = assessmentConfig.isAssessable();
+		assessmentType = assessmentConfig.isAssessable();
 		videoEntry = courseNode.getReferencedRepositoryEntry();
 		segments = videoManager.loadSegments(videoEntry.getOlatResource());
 		
@@ -261,11 +264,14 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		String elements = translate(i18nCategoriesKey, Integer.toString(selectedCategories.size()));
 		String i18nSegmentKey = numOfSegments <= 1 ? "elements.instructions.segment" : "elements.instructions.segments";
 		elements += " / " + translate(i18nSegmentKey, Integer.toString(numOfSegments));
-		int attemptsPerSegmentInt = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT,
-				VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
-		if(attemptsPerSegmentInt > 0) {
-			String i18nAttemptsKey = attemptsPerSegmentInt <= 1 ? "elements.instructions.attempt" : "elements.instructions.attempts";
-			elements += " / " + translate(i18nAttemptsKey, Integer.toString(attemptsPerSegmentInt));
+		
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			int attemptsPerSegmentInt = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT,
+					VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
+			if(attemptsPerSegmentInt > 0) {
+				String i18nAttemptsKey = attemptsPerSegmentInt <= 1 ? "elements.instructions.attempt" : "elements.instructions.attempts";
+				elements += " / " + translate(i18nAttemptsKey, Integer.toString(attemptsPerSegmentInt));
+			}
 		}
 		myContent.contextPut("elements", elements);
 	}

@@ -28,7 +28,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface VideoTaskSegmentSelection extends VideoTaskSegmentResult, CreateInfo, ModifiedInfo {
+public interface VideoTaskSegmentSelection extends CreateInfo, ModifiedInfo {
 
 	public Long getKey();
 	
@@ -36,13 +36,13 @@ public interface VideoTaskSegmentSelection extends VideoTaskSegmentResult, Creat
 
 	public String getRawTime();
 	
-	@Override
 	public String getSegmentId();
 
-	@Override
 	public String getCategoryId();
 	
 	public Boolean getCorrect();
+	
+	public boolean isCorrect();
 	
 	public VideoTaskSession getTaskSession();
 	

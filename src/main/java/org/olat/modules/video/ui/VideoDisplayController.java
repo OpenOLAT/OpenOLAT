@@ -117,6 +117,7 @@ public class VideoDisplayController extends BasicController {
 	private final VelocityContainer markerVC;
 	private final Panel markerPanel = new Panel("markerpanes");
 	private final Panel segmentsPanel = new Panel("segmentsPanel");
+	private final Panel layersPanel = new Panel("layersPanel");
 	
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution;
@@ -162,6 +163,9 @@ public class VideoDisplayController extends BasicController {
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
 		mainVC.put("markers", markerPanel);
+		// Layer is per default invisible
+		layersPanel.setVisible(false);
+		mainVC.put("layers", layersPanel);
 		markerVC = createVelocityContainer("video_markers");
 		markerVC.getContext().put("videoElementId", getVideoElementId());
 		
@@ -777,6 +781,12 @@ public class VideoDisplayController extends BasicController {
 			markerVC.contextPut("snapMarkerSizeToGrid", displayOptions.isSnapMarkerSizeToGrid());
 			markerPanel.setContent(markerVC);
 		}
+	}
+	
+	public void addLayer(Controller controller) {
+		listenTo(controller);
+		layersPanel.setContent(controller.getInitialComponent());
+		layersPanel.setVisible(true);
 	}
 
 	public void setSegments(UserRequest ureq) {

@@ -7,27 +7,62 @@
 	.o_videotask_marker {
 		position: relative;
 		display: inline-block;
-		
-		&.o_video_marker_gray { 
-			background-color: $gray-dark;
-			color: white;
-		}
-		&.o_video_marker_blue { 
-			background-color: $state-info-border;
-		}
-		&.o_video_marker_green { 
-			background-color: $brand-success;
-		}
-		&.o_video_marker_yellow { 
-			background-color: $brand-warning;
-		}
-		&.o_video_marker_red {
-			background-color: $brand-danger;
-		}
-		&.o_video_marker_purple {
-			background-color: $o-cn-style-cat-purple-color;
-		}
 	}
+}
+
+.o_videotask_box .o_videotask_marker,
+.o_videotask_categories .btn,
+.o_videotask_box .btn,
+.o_videotask_marker,
+.o_videotask_segment {	
+	&.o_video_marker_gray { 
+		background-color: $gray-dark;
+		color: white;
+	}
+	&.o_video_marker_blue { 
+		background-color: $state-info-border;
+	}
+	&.o_video_marker_green { 
+		background-color: $brand-success;
+	}
+	&.o_video_marker_yellow { 
+		background-color: $brand-warning;
+	}
+	&.o_video_marker_red {
+		background-color: $brand-danger;
+	}
+	&.o_video_marker_purple {
+		background-color: $o-cn-style-cat-purple-color;
+	}
+}
+
+.o_videotask_marker.o_video_marker_gray:before,
+.o_videotask_marker.o_video_marker_gray > span { 
+	background-color: $gray-dark;
+}	
+.o_videotask_marker.o_video_marker_blue:before,
+.o_videotask_marker.o_video_marker_blue > span { 
+	background-color: $state-info-border;
+}
+.o_videotask_marker.o_video_marker_green:before,
+.o_videotask_marker.o_video_marker_green > span { 
+	background-color: $brand-success;
+}
+.o_videotask_marker.o_video_marker_yellow:before,
+.o_videotask_marker.o_video_marker_yellow > span { 
+	background-color: $brand-warning;
+}
+.o_videotask_marker.o_video_marker_red:before,
+.o_videotask_marker.o_video_marker_red > span {
+	background-color: $brand-danger;
+}
+.o_videotask_marker.o_video_marker_purple:before,
+.o_videotask_marker.o_video_marker_purple > span {
+	background-color: $o-cn-style-cat-purple-color;
+}
+
+.o_videotask_marker.o_video_marker_assign { 
+	background-color: $gray-dark;
 }
 
 .o_videotask_correct_segments {
@@ -57,3 +92,158 @@
 		font-size: 120%;
 	}
 }
+
+.o_videotask_layer {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	
+	left: 10px;
+	right: 10px;
+	bottom: 65px;
+	height: 160px;
+	margin: 0 10px;
+}
+
+
+.o_videotask_segments {
+	width: 100%;
+	background-color: rgba(255, 255, 255, 0.5);
+	position: relative;
+	height: 10px;
+}
+
+.o_videotask_segments.o_videotask_segments_with_markers {
+	margin-top: 25px;
+	margin-bottom: 5px;
+}
+
+.o_videotask_categories {
+	width: 100%;
+	background-color: transparent;
+	text-align: center;
+	padding: 10px 0;
+}
+
+.o_videotask_messages {
+	width: 100%;
+	text-align: center;
+	
+	>span {
+		background-color: white;
+		border: 1px solid black;
+		padding: 5px 30px;
+	}
+}
+
+.o_videotask_messages.hide {
+	display:none;
+}
+
+.o_videotask_marker {
+	display: inline-block;
+	position: absolute;
+	height: 1em;
+	width: 6em;
+	margin-left: -3em;
+	top: -25px;
+	text-align: center;
+	
+	>span {
+		border: 1px solid black;
+		border-radius: 4px;
+		padding: 3px 6px 1px 5px;
+	}
+}
+
+.o_videotask_segments .o_videotask_marker {
+	background-color: transparent !important;
+}
+
+.o_videotask_marker:before {
+	content: '\0020';
+	position: absolute;
+	height: 18px;
+	right: 0;
+	top: 19px;
+	margin-right: 3em;
+	width: 2px;
+	background-color: grey;
+}
+
+.o_videotask_marker.o_segment_marker_correct:after {
+	content: $fa-var-check-circle;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	line-height: 10px;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: $brand-success;
+	background-color: white;
+	width: 10px;
+	height: 10px;
+	border-radius: 5px;
+
+	position: absolute;
+	top: 37px;
+	right: 2px;
+	margin-right: 3em;
+	z-index: 4;
+}
+
+.o_videotask_marker.o_segment_marker_not_correct:after {
+	content: $fa-var-times-circle-o;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	line-height: 10px;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: $brand-danger;
+	background-color: white;
+	width: 10px;
+	height: 10px;
+	border-radius: 5px;
+
+	position: absolute;
+	top: 37px;
+	right: 2px;
+	margin-right: 3em;
+	z-index: 4;
+}
+
+.o_videotask_segment {
+	display: inline-block;
+	position: absolute;
+	height: 10px;
+	line-height: 10px;
+	font-size: 8px;
+	text-align: center;
+}
+
+.o_videotask_segment.o_segment_correct:after {
+	content: $fa-var-check-circle;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 12px;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	color: $brand-success;
+	background-color: white;
+	width: 10px;
+	height: 10px;
+	border-radius: 5px;
+
+	position: absolute;
+	top: -5px;
+	right: -5px;
+	z-index: 4;
+}
+
+
+

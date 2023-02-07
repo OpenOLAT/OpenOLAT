@@ -213,6 +213,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		displayOptions.setShowDescription(false);
 		displayOptions.setResponseAtEnd(true);
 		displayOptions.setProgressFullWidth(true);
+		displayOptions.setAlwaysShowControls(true);
 		return displayOptions;
 	}
 	

@@ -34,7 +34,7 @@ import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
-import org.olat.modules.video.VideoTaskSegmentResult;
+import org.olat.modules.video.VideoTaskSegmentSelection;
 
 /**
  * 
@@ -89,12 +89,12 @@ public class VideoTaskHelper {
 		return segmentsList;
 	}
 	
-	public static int correctlyAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentResult> results) {
+	public static int correctlyAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentSelection> results) {
 		Set<String> segmentsIds = segments.stream()
 				.map(VideoSegment::getId)
 				.collect(Collectors.toSet());
 		
-		for(VideoTaskSegmentResult result:results) {
+		for(VideoTaskSegmentSelection result:results) {
 			if(result.isCorrect()) {
 				segmentsIds.remove(result.getSegmentId());
 			}
@@ -102,12 +102,12 @@ public class VideoTaskHelper {
 		return segments.size() - segmentsIds.size();
 	}
 	
-	public static int incorrectlyAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentResult> results) {
+	public static int incorrectlyAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentSelection> results) {
 		Set<String> segmentsIds = segments.stream()
 				.map(VideoSegment::getId)
 				.collect(Collectors.toSet());
 		int incorrect = 0;
-		for(VideoTaskSegmentResult result:results) {
+		for(VideoTaskSegmentSelection result:results) {
 			if(!result.isCorrect() && segmentsIds.contains(result.getSegmentId())) {
 				incorrect++;
 			}
@@ -115,30 +115,30 @@ public class VideoTaskHelper {
 		return incorrect;
 	}
 	
-	public static int notAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentResult> results) {
+	public static int notAssignedSegments(List<VideoSegment> segments, List<VideoTaskSegmentSelection> results) {
 		Set<String> segmentsIds = segments.stream()
 				.map(VideoSegment::getId)
 				.collect(Collectors.toSet());
 		
-		for(VideoTaskSegmentResult result:results) {
+		for(VideoTaskSegmentSelection result:results) {
 			segmentsIds.remove(result.getSegmentId());
 		}
 		return segmentsIds.size();
 	}
 	
-	public static int unsuccessfulSegments(List<VideoSegment> segments, List<VideoTaskSegmentResult> results) {
+	public static int unsuccessfulSegments(List<VideoSegment> segments, List<VideoTaskSegmentSelection> results) {
 		Set<String> segmentsIds = segments.stream()
 				.map(VideoSegment::getId)
 				.collect(Collectors.toSet());
 		
-		for(VideoTaskSegmentResult result:results) {
+		for(VideoTaskSegmentSelection result:results) {
 			if(result.isCorrect()) {
 				segmentsIds.remove(result.getSegmentId());
 			}
 		}
 		
 		int unsuccessful = 0;
-		for(VideoTaskSegmentResult result:results) {
+		for(VideoTaskSegmentSelection result:results) {
 			if(!result.isCorrect() && segmentsIds.contains(result.getSegmentId())) {
 				unsuccessful++;
 			}

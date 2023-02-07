@@ -29,6 +29,11 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.Windows;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.StackedPanel;
@@ -54,11 +59,11 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
-import org.olat.modules.video.VideoTaskSegmentResult;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.model.VideoTaskScore;
 import org.olat.modules.video.ui.VideoDisplayController;
+import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,15 +97,18 @@ public class VideoTaskDisplayController extends BasicController {
 	private final Float maxScore;
 	private final Float cutValue;
 	private final int rounding;
+	private final int maxAttemptsPerSegments;
 
 	private CloseableModalController cmc;
 	private Controller confirmEndTaskCtrl;
+	private final SegmentsController segmentsCtrl;
 	private final VideoDisplayController displayCtrl;
 	private ConfirmFinishTaskController confirmFinishTaskCtrl;
 	private ConfirmNextAttemptController confirmNextAttemptCtrl;
 	
 	private final List<String> categoriesIds;
-	private final List<VideoTaskSegmentSelection> segmentSelections = new ArrayList<>();
+	private final long totalDurationInMillis;
+	private final List<SegmentMarker> segmentSelections = new ArrayList<>();
 	
 	@Autowired
 	private DB dbInstance;
@@ -131,7 +139,13 @@ public class VideoTaskDisplayController extends BasicController {
 		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
-		
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			maxAttemptsPerSegments = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT,
+					VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
+		} else {
+			maxAttemptsPerSegments = 0;
+		}
+
 		UserSession usess = ureq.getUserSession();
 		boolean guestOnly = usess.getRoles().isGuestOnly();
 		if(guestOnly || anonym) {
@@ -147,23 +161,17 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		closeButton = LinkFactory.createButton("close.video", mainVC, this);
 		segments = videoManager.loadSegments(videoEntry.getOlatResource());
-		
-		int counter = 0;
-		List<Link> categoriesLink = new ArrayList<>();
-		List<VideoSegmentCategory> categoriesList = VideoTaskHelper.getSelectedCategories(segments, categoriesIds);
-		VideoTaskHelper.sortCategories(categoriesList, courseNode, getLocale());
-		for(VideoSegmentCategory category:categoriesList) {
-			String catId = "cat_" + (++counter);
-			String catName = category.getLabelAndTitle();
-			Link categoryLink = LinkFactory.createLink(catId, catId, "category", catName, getTranslator(), mainVC, this, Link.BUTTON | Link.NONTRANSLATED);
-			categoryLink.setUserObject(category);
-			categoriesLink.add(categoryLink);
-		}
-		mainVC.contextPut("categories", categoriesLink);
 
 		mainVC.put("video", displayCtrl.getInitialComponent());
 		listenTo(displayCtrl);
 		mainPanel = putInitialPanel(mainVC);
+		
+		totalDurationInMillis = VideoHelper.durationInSeconds(videoEntry, displayCtrl) * 1000l;
+		
+		segmentsCtrl = new SegmentsController(ureq, getWindowControl(), displayCtrl.getVideoElementId(), segmentSelections);
+		listenTo(segmentsCtrl);
+		initSegmentsController(courseNode);
+		displayCtrl.addLayer(segmentsCtrl);
 	}
 	
 	private void initAssessment() {
@@ -178,6 +186,27 @@ public class VideoTaskDisplayController extends BasicController {
 					entry, subIdent, videoEntry, authorMode);
 		} else {
 			taskSession = lastSession;
+		}
+	}
+	
+	private void initSegmentsController(CourseNode courseNode) {
+		List<VideoSegmentCategory> categoriesList = VideoTaskHelper.getSelectedCategories(segments, categoriesIds);
+		VideoTaskHelper.sortCategories(categoriesList, courseNode, getLocale());
+		segmentsCtrl.setCategories(categoriesList);
+		
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			List<Segment> segmentsList = new ArrayList<>();
+			for(VideoSegment videoSegment:segments.getSegments()) {
+				segmentsList.add(Segment.valueOf(videoSegment.getBegin(), videoSegment.getDuration(), totalDurationInMillis, "o_video_marker_gray", ""));
+			}
+			segmentsCtrl.setSegments(segmentsList, "");
+		} else {
+			segmentsCtrl.setSegments(List.of(Segment.fullWidth()), "o_videotask_segments_with_markers");
+		}
+		
+
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+			segmentsCtrl.setMessage(translate("feedback.test.initial"));
 		}
 	}
 	
@@ -198,9 +227,6 @@ public class VideoTaskDisplayController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(closeButton == source) {
 			doConfirmFinishTask(ureq);
-		} else if(source instanceof Link link && "category".equals(link.getCommand())
-				&& link.getUserObject() instanceof VideoSegmentCategory category) {
-			doSegmentSelection(category);
 		}
 	}
 
@@ -210,9 +236,7 @@ public class VideoTaskDisplayController extends BasicController {
 			if(event instanceof VideoEvent ve) {
 				if(VideoEvent.ENDED.equals(ve.getCommand())) {
 					doEnd(ureq);
-				} else {
-					currentPosition(ve);
-				}
+				} 
 			}
 		} else if(confirmEndTaskCtrl == source) {
 			// Close first modals
@@ -241,22 +265,82 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 	}
 	
-	private void doSegmentSelection(VideoSegmentCategory category) {
-		long positionInMilliSeconds = positionInSeconds * 1000l;
-		VideoSegment segment = getSegment(positionInMilliSeconds);
-		String segmentId = segment == null ? null : segment.getId();
-		Boolean correct = Boolean.valueOf(segment != null && segment.getCategoryId().equals(category.getId()));
-		
-		VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession, segmentId, category.getId(), correct,
-			positionInMilliSeconds, rawPosition);
-		synchronized(segmentSelections) {
-			segmentSelections.add(selection);
+	private void doSegmentSelection(String categoryId, long positionInSeconds) {
+		VideoSegmentCategory category = segments.getCategory(categoryId).orElse(null);
+		if(category != null) {
+			long positionInMilliSeconds = positionInSeconds * 1000l;
+			VideoSegment segment = getSegment(positionInMilliSeconds);
+			String segmentId = segment == null ? null : segment.getId();
+			long currentSegmentAttempt = getAttemptOnSegment(segmentId);
+			if(maxAttemptsPerSegments <= 0 || currentSegmentAttempt < maxAttemptsPerSegments) {
+				boolean correct = segment != null && segment.getCategoryId().equals(category.getId());
+				VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession,
+						segmentId, category.getId(), correct, positionInMilliSeconds, Long.toString(positionInSeconds));
+				SegmentMarker segmentMarker = getMarker(selection, category, segment, correct);
+				if(segmentMarker != null) {
+					synchronized(segmentSelections) {
+						segmentSelections.add(segmentMarker);
+					}
+				}
+				
+				feedback(segmentId, correct);
+			} else {
+				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"));
+			}
 		}
 	}
 	
-	public List<VideoTaskSegmentResult> getResults() {
+	private SegmentMarker getMarker(VideoTaskSegmentSelection selection, VideoSegmentCategory category, VideoSegment videoSegment, boolean correct) {
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			if(!correct) {
+				return null;
+			}
+			return SegmentMarker.valueOfAssign(selection, category, "o_segment_correct", videoSegment, totalDurationInMillis);
+		}
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
+			String resultCss = correct ? "o_segment_marker_correct" : "o_segment_marker_not_correct";
+			return SegmentMarker.valueOfIdentify(selection, category, resultCss, totalDurationInMillis);
+		}
+		return SegmentMarker.valueOfTest(selection, category, totalDurationInMillis);
+	}
+	
+	private void feedback(String segmentId, boolean correct) {
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+			segmentsCtrl.setMessage("");
+			return;
+		}
+		
+		String i18nKey;
+		if(correct) {
+			i18nKey = "feedback.correct";
+		} else if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode) && maxAttemptsPerSegments > 0) {
+			long attemptsLeft = maxAttemptsPerSegments - getAttemptOnSegment(segmentId);
+			if(attemptsLeft <= 0l) {
+				i18nKey = "feedback.not.correct.assign.no.attempts.left";
+			} else if(attemptsLeft == 1l) {
+				i18nKey = "feedback.not.correct.assign.attempts.left.singular";
+			} else {
+				i18nKey = "feedback.not.correct.assign.attempts.left.plural";
+			}
+		} else {
+			i18nKey = "feedback.not.correct";
+		}
+		segmentsCtrl.setMessage(translate(i18nKey));
+	}
+	
+	private long getAttemptOnSegment(String segment) {
+		if(!StringHelper.containsNonWhitespace(segment)) return 0;
+		
+		return getResults().stream()
+				.filter(selection -> segment.equals(selection.getSegmentId()))
+				.count();
+	}
+	
+	public List<VideoTaskSegmentSelection> getResults() {
 		synchronized(segmentSelections) {
-			return List.copyOf(segmentSelections);
+			return segmentSelections.stream()
+					.map(SegmentMarker::segmentSelection)
+					.toList();
 		}
 	}
 	
@@ -270,26 +354,6 @@ public class VideoTaskDisplayController extends BasicController {
 			}	
 		}
 		return null;
-	}
-	
-	private String rawPosition;
-	private long positionInSeconds;
-	
-	private void currentPosition(VideoEvent ve) {
-		String cmd = ve.getCommand();
-		String duration = ve.getDuration();
-		String timecode = ve.getTimeCode();
-
-		if(StringHelper.containsNonWhitespace(ve.getTimeCode()) && !"NaN".equals(ve.getTimeCode())) {
-			try {
-				rawPosition = ve.getTimeCode();
-				positionInSeconds = Math.round(Double.parseDouble(ve.getTimeCode()));
-			} catch (NumberFormatException e) {
-				//don't panic
-			}
-		}
-		
-		getLogger().debug("Video event: {} (timecode: {}, duration {})", cmd, duration, timecode);
 	}
 	
 	private void cleanUp() {
@@ -359,7 +423,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		if(maxScore != null) {
 			VideoTaskScore score = videoAssessmentService
-					.calculateScore(segments, categoriesIds, maxScore, cutValue, rounding, segmentSelections);
+					.calculateScore(segments, categoriesIds, maxScore, cutValue, rounding, getResults());
 			taskSession.setScore(score.score());
 			taskSession.setPassed(score.passed());
 			taskSession.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
@@ -405,6 +469,113 @@ public class VideoTaskDisplayController extends BasicController {
 					thebaseChief.getScreenMode().setMode(Mode.standard, businessPath);
 				}
 			}
+		}
+	}
+	
+	public static record SegmentMarker(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category, String resultCssClass, String width, String left) {
+		
+		public static SegmentMarker valueOfAssign(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
+				String resultCssClass, VideoSegment segment, long totalDurationInMillis) {
+			double dleft = (double) segment.getBegin().getTime() / totalDurationInMillis;
+			double dwidth = (segment.getDuration() * 1000.0d) / totalDurationInMillis;
+			return new SegmentMarker(segmentSelection, category, "o_videotask_segment " + resultCssClass, String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100));
+		}
+		
+		public static SegmentMarker valueOfIdentify(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
+				String resultCssClass, long totalDurationInMillis) {
+			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker " + resultCssClass, "", String.format("%.2f%%", dleft * 100));
+		}
+		
+		public static SegmentMarker valueOfTest(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
+				 long totalDurationInMillis) {
+			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker", "", String.format("%.2f%%", dleft * 100));
+		}
+
+		public String getCategoryLabel() {
+			return category.getLabel();
+		}
+		
+		public String getCategoryColor() {
+			return category.getColor();
+		}
+	}
+	
+	public static record Segment(String width, String left, String color, String label) {
+
+		public static Segment valueOf(Date begin, long durationInSeconds, long totalDurationInMillis, String color, String label) {
+			double dwidth = (durationInSeconds * 1000.0) / totalDurationInMillis;
+			double dleft = (double) begin.getTime() / totalDurationInMillis;
+			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100), color, label);
+		}
+		
+		public static Segment fullWidth() {
+			return new Segment("100%", "0%", "grey", "");
+		}
+	}
+	
+	private class SegmentsController extends FormBasicController {
+
+		private final String videoElementId;
+		private final List<SegmentMarker> segmentsSelections;
+		
+		public SegmentsController(UserRequest ureq, WindowControl wControl, String videoElementId, List<SegmentMarker> segmentsSelections) {
+			super(ureq, wControl, "display_segments");
+			this.videoElementId = videoElementId;
+			this.segmentsSelections = segmentsSelections;
+			initForm(ureq);
+		}
+
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
+				layoutCont.contextPut("message", "");
+				layoutCont.contextPut("segmentsCssClass", "");
+				layoutCont.contextPut("videoElementId", videoElementId);
+				layoutCont.contextPut("segmentsSelections", segmentsSelections);
+			}
+		}
+		
+		public void setSegments(List<Segment> segments, String segmentsCssClass) {
+			flc.contextPut("segments", segments);
+			flc.contextPut("segmentsCssClass", segmentsCssClass);
+			
+		}
+		
+		public void setCategories(List<VideoSegmentCategory> categoriesList) {
+			flc.contextPut("categories", categoriesList);
+		}
+
+		public void setMessage(String message) {
+			flc.contextPut("message", message);
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if(flc == source) {
+				String cid = ureq.getParameter("cid");
+				String categoryId = ureq.getParameter("category-id");
+				long position = toPosition(ureq.getParameter("position"));
+				if("category".equals(cid) && StringHelper.containsNonWhitespace(categoryId) && position >= 0) {
+					doSegmentSelection(categoryId, position);
+				}
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+		
+		private long toPosition(String val) {
+			try {
+				return Math.round(Double.parseDouble(val));
+			} catch (NumberFormatException e) {
+				getLogger().warn("Cannot parse position: {}", val);
+				return -1l;
+			}
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
 		}
 	}
 }
