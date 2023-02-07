@@ -41,6 +41,8 @@ public class SessionsVO {
 	private int authenticatedCount;
 	@XmlAttribute(name="secureAuthenticatedCount", required=true)
 	private int secureAuthenticatedCount;
+	@XmlAttribute(name="loggedInUsersCount", required=true)
+	private int loggedInUsersCount;
 	@XmlAttribute(name="webdavCount", required=true)
 	private int webdavCount;
 	@XmlAttribute(name="secureWebdavCount", required=true)
@@ -92,6 +94,14 @@ public class SessionsVO {
 
 	public void setSecureAuthenticatedCount(int secureAuthenticatedCount) {
 		this.secureAuthenticatedCount = secureAuthenticatedCount;
+	}
+
+	public int getLoggedInUsersCount() {
+		return loggedInUsersCount;
+	}
+
+	public void setLoggedInUsersCount(int loggedInUsersCount) {
+		this.loggedInUsersCount = loggedInUsersCount;
 	}
 
 	public int getWebdavCount() {

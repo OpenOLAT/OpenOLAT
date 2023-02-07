@@ -35,6 +35,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WorkThreadInformations;
@@ -265,6 +266,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		int secureWebdavCount = 0;
 		int authenticatedcount = 0;
 		int secureAuthenticatedCount = 0;
+		int loggedInUsersCount = 0;
 		int restCount = 0;
 		int secureRestCount = 0;
 		for (UserSession usess:userSessions) {
@@ -284,6 +286,13 @@ public class OpenOLATStatisticsWebService implements Sampler {
 				if (sessInfo.isSecure()) {
 					secureAuthenticatedCount++;
 				}
+				
+				if(usess.isAuthenticated()) {
+					Roles roles = usess.getRoles();
+					if(roles != null && !roles.isGuestOnly()) {
+						loggedInUsersCount++;
+					}
+				}
 			}
 		}
 
@@ -293,6 +302,8 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		vo.setSecureWebdavCount(secureWebdavCount);
 		vo.setRestCount(restCount);
 		vo.setSecureRestCount(secureRestCount);
+		// Same as the UI
+		vo.setLoggedInUsersCount(loggedInUsersCount);
 		//Instant messaging
 		vo.setInstantMessagingCount(-1);
 

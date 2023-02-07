@@ -330,7 +330,7 @@ public class UserSessionManager implements GenericEventListener {
 				// characters -> map stores values as such
 				if(isDebug) log.debug("signOn() adding to userNameToIdentity: " + identity.getKey());
 				userNameToIdentity.add(identity.getKey());
-				userSessionCache.put(identity.getKey(), new Integer(Settings.getNodeId()));
+				userSessionCache.put(identity.getKey(), Integer.valueOf(Settings.getNodeId()));
 			
 			
 				//reload user prefs
