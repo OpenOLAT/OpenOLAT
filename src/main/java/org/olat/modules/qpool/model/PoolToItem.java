@@ -79,6 +79,7 @@ public class PoolToItem implements CreateInfo, Persistable {
 	@JoinColumn(name="fk_item_id", nullable=false, updatable=false)
 	private QuestionItem item;
 	
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -87,6 +88,7 @@ public class PoolToItem implements CreateInfo, Persistable {
 		this.key = key;
 	}
 
+	@Override
 	public Date getCreationDate() {
 		return creationDate;
 	}

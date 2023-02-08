@@ -210,28 +210,31 @@ public class PoolDAO {
 		if (lockedItem == null) return;
 		
 		for(Pool pool:pools) {
-			if(!isInPool(lockedItem, pool)) {
+			List<PoolToItem> itemsToPool = getQuestionItem2Pool(item, pool);
+			if(itemsToPool.isEmpty()) {
 				PoolToItem p2i = new PoolToItem();
 				p2i.setCreationDate(new Date());
 				p2i.setItem(lockedItem);
 				p2i.setEditable(editable);
 				p2i.setPool(pool);
 				dbInstance.getCurrentEntityManager().persist(p2i);
+			} else {
+				for(PoolToItem itemToPool:itemsToPool) {
+					itemToPool.setEditable(editable);
+					dbInstance.getCurrentEntityManager().merge(itemToPool);
+				}
 			}
 		}
 		dbInstance.commit();//release lock asap
 	}
 	
-	protected boolean isInPool(QuestionItem item, Pool pool) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey and pool2item.item.key=:itemKey");
-		Number count = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
+	protected List<PoolToItem> getQuestionItem2Pool(QuestionItemShort item, Pool pool) {
+		String sb = "select pool2item from qpool2item pool2item where pool2item.pool.key=:poolKey and pool2item.item.key=:itemKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), PoolToItem.class)
 				.setParameter("poolKey", pool.getKey())
 				.setParameter("itemKey", item.getKey())
-				.getSingleResult()
-				.intValue();
-		return count.intValue() > 0;
+				.getResultList();
 	}
 	
 	public List<QuestionItem2Pool> getQuestionItem2Pool(QuestionItemShort item) {

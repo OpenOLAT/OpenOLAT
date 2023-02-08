@@ -21,7 +21,6 @@ package org.olat.modules.qpool.ui;
 
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -35,6 +34,7 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.ui.events.QPoolEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -47,7 +47,8 @@ public class ShareItemOptionController extends FormBasicController {
 	private final String[] keys = {"yes","no"};
 	private SingleSelection editableEl;
 	
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	private final List<Pool> pools;
 	private final List<BusinessGroup> groups;
@@ -56,7 +57,6 @@ public class ShareItemOptionController extends FormBasicController {
 	public ShareItemOptionController(UserRequest ureq, WindowControl wControl,
 			List<QuestionItemShort> items, List<BusinessGroup> groups, List<Pool> pools) {	
 		super(ureq, wControl, "share_options");
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		
 		this.pools = pools;
 		this.items = items;
