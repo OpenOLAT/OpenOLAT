@@ -945,6 +945,27 @@ public class QItemQueriesDAOTest extends OlatTestCase  {
 		int countItems = qItemQueriesDao.countItems(params);
 		assertThat(countItems).isEqualTo(2);
 	}
+	
+	@Test
+	public void getItem() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Poolman-");
+		//create a pool
+		String poolTitle = "NGC-" + UUID.randomUUID().toString();
+		Pool pool = poolDao.createPool(null, poolTitle, false);
+		QuestionItem item = questionItemDao.createAndPersist(id, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, qItemType);
+		poolDao.addItemToPool(item, Collections.singletonList(pool), false);
+		dbInstance.commitAndCloseSession();
+
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setPoolKey(pool.getKey());
+		
+		//retrieve
+		QuestionItemView loadedItem = qItemQueriesDao.getItem(item.getKey(), id, pool.getKey(), null);
+		Assert.assertNotNull(loadedItem);
+		Assert.assertEquals(item.getKey(), loadedItem.getKey());
+		Assert.assertFalse(loadedItem.isEditableInPool());
+		Assert.assertFalse(loadedItem.isEditableInShare());
+	}
 
 	private Identity createRandomIdentity() {
 		return JunitTestHelper.createAndPersistIdentityAsRndUser("qitems");
