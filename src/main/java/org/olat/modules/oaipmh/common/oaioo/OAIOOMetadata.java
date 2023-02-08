@@ -54,9 +54,7 @@ public class OAIOOMetadata implements XmlWritable {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			this.write(new XmlWriter(out));
-		} catch (XmlWriteException e) {
-			// don't do anything
-		} catch (XMLStreamException e) {
+		} catch (XmlWriteException | XMLStreamException e) {
 			// don't do anything
 		}
 		return out.toString();

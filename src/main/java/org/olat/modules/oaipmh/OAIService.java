@@ -30,6 +30,8 @@ import org.olat.core.gui.media.MediaResource;
 public interface OAIService {
 
 	/**
+	 * handle incoming OAI-PMH Request and hand it over to the dataProvider
+	 *
 	 * @param requestParameter
 	 * @return MediaResource of type XML in Dublin Core-Standard with OAI
 	 */
@@ -38,6 +40,12 @@ public interface OAIService {
 								   String requestFromParameter, String requestUntilParameter,
 								   String requestSetParameter);
 
+	/**
+	 * Propagate resourceInfo pages from OO to selected searchEngines
+	 *
+	 * @param searchEngineUrls
+	 * @return Map for searchEngine and the respective HTTP response code
+	 */
 	Map<String, Integer> propagateSearchEngines(List<String> searchEngineUrls);
 
 }

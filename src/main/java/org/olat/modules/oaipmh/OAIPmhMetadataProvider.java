@@ -30,8 +30,15 @@ import org.olat.modules.oaipmh.dataprovider.repository.MetadataSetRepository;
  */
 public interface OAIPmhMetadataProvider {
 
+	/**
+	 * @return metadataprefix of requested provider
+	 */
 	public String getMetadataPrefix();
 
+	/**
+	 * @param setRepository
+	 * @return list of metadataitems of requested provider
+	 */
 	public List<MetadataItems> getMetadata(MetadataSetRepository setRepository);
 
 }

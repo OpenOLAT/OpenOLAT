@@ -48,7 +48,6 @@ public class OAIDispatcher implements Dispatcher {
 
 	@Autowired
 	private OAIService oaiService;
-
 	@Autowired
 	private OAIPmhModule oaiPmhModule;
 
