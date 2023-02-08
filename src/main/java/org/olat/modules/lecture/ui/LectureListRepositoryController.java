@@ -142,6 +142,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));

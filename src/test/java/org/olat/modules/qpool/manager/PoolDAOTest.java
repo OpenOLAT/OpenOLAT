@@ -40,6 +40,7 @@ import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.PoolToItem;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.test.JunitTestHelper;
@@ -326,6 +327,22 @@ public class PoolDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, pools.size());
 		Assert.assertTrue(pools.contains(pool1));
 		Assert.assertTrue(pools.contains(pool2));
+	}
+	
+	@Test
+	public void getQuestionItem2Pool() {
+		//create a pool
+		String poolName = "NGC-" + UUID.randomUUID().toString();
+		Pool pool = poolDao.createPool(null, poolName, true);
+		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
+		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		poolDao.addItemToPool(item, List.of(pool), false);
+		dbInstance.commitAndCloseSession();
+
+		//retrieve
+		List<PoolToItem> pool2Items = poolDao.getQuestionItem2Pool(item, pool);
+		Assert.assertNotNull(pool2Items);
+		Assert.assertEquals(1, pool2Items.size());
 	}
 	
 	@Test

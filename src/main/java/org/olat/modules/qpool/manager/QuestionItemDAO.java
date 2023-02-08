@@ -430,16 +430,34 @@ public class QuestionItemDAO {
 		if (lockedItem == null) return;
 		
 		for(OLATResource resource:resources) {
-			if(!isShared(lockedItem, resource)) {
+			List<ResourceShareImpl> shareToItems = getShared(lockedItem, resource);
+			if(shareToItems.isEmpty()) {
 				ResourceShareImpl share = new ResourceShareImpl();
 				share.setCreationDate(new Date());
 				share.setItem(lockedItem);
 				share.setEditable(editable);
 				share.setResource(resource);
 				em.persist(share);
+			} else {
+				for(ResourceShareImpl shareToItem:shareToItems) {
+					shareToItem.setEditable(editable);
+					em.merge(shareToItem);
+				}
 			}
 		}
 		dbInstance.commit();//release the lock asap
+	}
+	
+	protected List<ResourceShareImpl> getShared(QuestionItem item, OLATResource resource) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select share from qshareitem share")
+		  .append(" where share.resource.key=:resourceKey and share.item.key=:itemKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ResourceShareImpl.class)
+				.setParameter("resourceKey", resource.getKey())
+				.setParameter("itemKey", item.getKey())
+				.getResultList();
 	}
 	
 	protected boolean isShared(QuestionItem item, OLATResource resource) {

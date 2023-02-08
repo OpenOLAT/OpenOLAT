@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -106,12 +105,9 @@ public class PoolsController extends FormBasicController {
 		poolTable.setMultiSelect(true);
 		poolTable.setRendererType(FlexiTableRendererType.classic);
 		reloadModel(ureq);
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		buttonsCont.setRootForm(mainForm);
-		formLayout.add(buttonsCont);
-		selectButton = uifactory.addFormLink("select", buttonsCont, Link.BUTTON);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+
+		selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	private void reloadModel(UserRequest ureq) {
@@ -142,10 +138,6 @@ public class PoolsController extends FormBasicController {
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	protected void doShare() {
-		
 	}
 
 	@Override

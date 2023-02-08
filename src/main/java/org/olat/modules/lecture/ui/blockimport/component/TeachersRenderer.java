@@ -55,8 +55,7 @@ public class TeachersRenderer implements FlexiCellRenderer {
 			List<Identity> teachers = block.getTeachers();
 			for(Identity teacher:teachers) {
 				String name = userManager.getUserDisplayName(teacher);
-				target.append(name);
-				
+				target.append("<i class='o_icon o_icon_user'> </i> ").append(name).append(" ");
 			}
 		}
 	}

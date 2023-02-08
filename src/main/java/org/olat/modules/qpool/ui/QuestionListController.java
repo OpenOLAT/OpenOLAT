@@ -443,7 +443,7 @@ public class QuestionListController extends AbstractItemListController implement
 			if(event instanceof QPoolSelectionEvent) {
 				QPoolSelectionEvent qpe = (QPoolSelectionEvent)event;
 				List<Pool> pools = qpe.getPools();
-				if(pools.size() > 0) {
+				if(!pools.isEmpty()) {
 					@SuppressWarnings("unchecked")
 					List<QuestionItemShort> items = (List<QuestionItemShort>)selectPoolCtrl.getUserObject();
 					doShareItemsToPools(ureq, items, pools);
@@ -1264,7 +1264,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		String title;
 		if (groups != null && groups.size() == 1) {
-			title = translate("share.item.group", new String[] {groups.get(0).getName()});
+			title = translate("share.item.group", groups.get(0).getName());
 		} else {
 			title = translate("share.item.groups");
 		}
@@ -1282,7 +1282,7 @@ public class QuestionListController extends AbstractItemListController implement
 		
 		String title;
 		if (pools != null && pools.size() == 1) {
-			title = translate("share.item.pool", new String[] {pools.get(0).getName()});
+			title = translate("share.item.pool", pools.get(0).getName());
 		} else {
 			title = translate("share.item.pools");
 		}
