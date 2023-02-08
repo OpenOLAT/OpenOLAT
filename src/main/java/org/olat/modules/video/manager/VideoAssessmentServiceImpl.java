@@ -297,7 +297,10 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		}
 		
 		double numOfSegments = segmentIds.size();
-		double results = (correct / numOfSegments) - (0.25d * (notCorrect / numOfSegments));
+		double results = 0.0d;
+		if(numOfSegments > 0) {
+			results = (correct / numOfSegments) - (0.25d * (notCorrect / numOfSegments));
+		}
 		return calculateScore(results, maxScore, cutValue, rounding, segmentIds.size());
 	}
 
@@ -312,9 +315,13 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		Boolean passed = null;
 		if(maxScore != null) {
 			double scored = maxScore.doubleValue() * results;
+			if(scored < 0.0d || scored == Double.NaN) {
+				scored = 0.0d;
+			} else if(scored > maxScore.doubleValue()) {
+				scored = maxScore.doubleValue();
+			}
 			score = BigDecimal.valueOf(scored);
 			score = VideoAssessmentService.round(score, rounding);
-			
 			if(cutValue != null) {
 				passed = Boolean.valueOf(scored >= cutValue.doubleValue());
 			}

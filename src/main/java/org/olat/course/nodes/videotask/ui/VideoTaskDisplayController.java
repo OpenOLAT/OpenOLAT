@@ -190,8 +190,11 @@ public class VideoTaskDisplayController extends BasicController {
 	}
 	
 	private void initSegmentsController(CourseNode courseNode) {
-		List<VideoSegmentCategory> categoriesList = VideoTaskHelper.getSelectedCategories(segments, categoriesIds);
-		VideoTaskHelper.sortCategories(categoriesList, courseNode, getLocale());
+		List<VideoSegmentCategory> segmentCategoriesList = VideoTaskHelper.getSelectedCategories(segments, categoriesIds);
+		VideoTaskHelper.sortCategories(segmentCategoriesList, courseNode, getLocale());
+		List<Category> categoriesList = segmentCategoriesList.stream()
+				.map(Category::new)
+				.toList();
 		segmentsCtrl.setCategories(categoriesList);
 		
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
@@ -199,13 +202,13 @@ public class VideoTaskDisplayController extends BasicController {
 			for(VideoSegment videoSegment:segments.getSegments()) {
 				segmentsList.add(Segment.valueOf(videoSegment.getBegin(), videoSegment.getDuration(), totalDurationInMillis, "o_video_marker_gray", ""));
 			}
-			segmentsCtrl.setSegments(segmentsList, "");
+			segmentsCtrl.setSegments(segmentsList, "", true);
 		} else {
-			segmentsCtrl.setSegments(List.of(Segment.fullWidth()), "o_videotask_segments_with_markers");
+			segmentsCtrl.setSegments(List.of(Segment.fullWidth()), "o_videotask_segments_with_markers", false);
 		}
-		
 
-		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)
+				|| VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
 			segmentsCtrl.setMessage(translate("feedback.test.initial"));
 		}
 	}
@@ -277,13 +280,11 @@ public class VideoTaskDisplayController extends BasicController {
 				VideoTaskSegmentSelection selection = videoAssessmentService.createTaskSegmentSelection(taskSession,
 						segmentId, category.getId(), correct, positionInMilliSeconds, Long.toString(positionInSeconds));
 				SegmentMarker segmentMarker = getMarker(selection, category, segment, correct);
-				if(segmentMarker != null) {
-					synchronized(segmentSelections) {
-						segmentSelections.add(segmentMarker);
-					}
+				synchronized(segmentSelections) {
+					segmentSelections.add(segmentMarker);
 				}
 				
-				feedback(segmentId, correct);
+				feedback(category, segmentId, correct);
 			} else {
 				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"));
 			}
@@ -292,10 +293,7 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	private SegmentMarker getMarker(VideoTaskSegmentSelection selection, VideoSegmentCategory category, VideoSegment videoSegment, boolean correct) {
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
-			if(!correct) {
-				return null;
-			}
-			return SegmentMarker.valueOfAssign(selection, category, "o_segment_correct", videoSegment, totalDurationInMillis);
+			return SegmentMarker.valueOfAssign(selection, category, "o_segment_correct", videoSegment, totalDurationInMillis, correct);
 		}
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
 			String resultCss = correct ? "o_segment_marker_correct" : "o_segment_marker_not_correct";
@@ -304,17 +302,18 @@ public class VideoTaskDisplayController extends BasicController {
 		return SegmentMarker.valueOfTest(selection, category, totalDurationInMillis);
 	}
 	
-	private void feedback(String segmentId, boolean correct) {
+	private void feedback(VideoSegmentCategory category, String segmentId, boolean correct) {
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
 			segmentsCtrl.setMessage("");
 			return;
 		}
 		
 		String i18nKey;
+		long attemptsLeft = 0;
 		if(correct) {
 			i18nKey = "feedback.correct";
 		} else if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode) && maxAttemptsPerSegments > 0) {
-			long attemptsLeft = maxAttemptsPerSegments - getAttemptOnSegment(segmentId);
+			attemptsLeft = maxAttemptsPerSegments - getAttemptOnSegment(segmentId);
 			if(attemptsLeft <= 0l) {
 				i18nKey = "feedback.not.correct.assign.no.attempts.left";
 			} else if(attemptsLeft == 1l) {
@@ -325,7 +324,12 @@ public class VideoTaskDisplayController extends BasicController {
 		} else {
 			i18nKey = "feedback.not.correct";
 		}
-		segmentsCtrl.setMessage(translate(i18nKey));
+		
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			String icon = correct ? "o_icon_correct_answer" : "o_icon_incorrect_response";
+			segmentsCtrl.setCategoryIconCssClass(category, icon);
+		}
+		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)));
 	}
 	
 	private long getAttemptOnSegment(String segment) {
@@ -472,25 +476,64 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 	}
 	
-	public static record SegmentMarker(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category, String resultCssClass, String width, String left) {
+	public static class Category {
+		
+		private String iconCssClass;
+		private final VideoSegmentCategory segmentCategory;
+		
+		public Category(VideoSegmentCategory segmentCategory) {
+			this.segmentCategory = segmentCategory;
+		}
+
+		public String getIconCssClass() {
+			return iconCssClass;
+		}
+
+		public void setIconCssClass(String iconCssClass) {
+			this.iconCssClass = iconCssClass;
+		}
+		
+		public String getId() {
+			return segmentCategory.getId();
+		}
+		
+		public String getColor() {
+			return segmentCategory.getColor();
+		}
+		
+		public String getTitle() {
+			return segmentCategory.getTitle();
+		}
+		
+		public String getLabel() {
+			return segmentCategory.getLabel();
+		}
+		
+		public VideoSegmentCategory getCategory() {
+			return segmentCategory;
+		}
+	}
+	
+	public static record SegmentMarker(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
+			String resultCssClass, String width, String left, boolean visible) {
 		
 		public static SegmentMarker valueOfAssign(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
-				String resultCssClass, VideoSegment segment, long totalDurationInMillis) {
+				String resultCssClass, VideoSegment segment, long totalDurationInMillis, boolean visible) {
 			double dleft = (double) segment.getBegin().getTime() / totalDurationInMillis;
 			double dwidth = (segment.getDuration() * 1000.0d) / totalDurationInMillis;
-			return new SegmentMarker(segmentSelection, category, "o_videotask_segment " + resultCssClass, String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100));
+			return new SegmentMarker(segmentSelection, category, "o_videotask_segment " + resultCssClass, String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100), visible);
 		}
 		
 		public static SegmentMarker valueOfIdentify(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
 				String resultCssClass, long totalDurationInMillis) {
 			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
-			return new SegmentMarker(segmentSelection, category, "o_videotask_marker " + resultCssClass, "", String.format("%.2f%%", dleft * 100));
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker " + resultCssClass, "", String.format("%.2f%%", dleft * 100), true);
 		}
 		
 		public static SegmentMarker valueOfTest(VideoTaskSegmentSelection segmentSelection, VideoSegmentCategory category,
 				 long totalDurationInMillis) {
 			double dleft = (double) segmentSelection.getTime().longValue() / totalDurationInMillis;
-			return new SegmentMarker(segmentSelection, category, "o_videotask_marker", "", String.format("%.2f%%", dleft * 100));
+			return new SegmentMarker(segmentSelection, category, "o_videotask_marker", "", String.format("%.2f%%", dleft * 100), true);
 		}
 
 		public String getCategoryLabel() {
@@ -502,22 +545,24 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 	}
 	
-	public static record Segment(String width, String left, String color, String label) {
+	public static record Segment(String width, String left, double start, double duration, String color, String label) {
 
 		public static Segment valueOf(Date begin, long durationInSeconds, long totalDurationInMillis, String color, String label) {
 			double dwidth = (durationInSeconds * 1000.0) / totalDurationInMillis;
 			double dleft = (double) begin.getTime() / totalDurationInMillis;
-			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100), color, label);
+			double startInSeconds = begin.getTime() / 1000d;
+			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100), startInSeconds, durationInSeconds, color, label);
 		}
 		
 		public static Segment fullWidth() {
-			return new Segment("100%", "0%", "grey", "");
+			return new Segment("100%", "0%", -1d, -1d, "grey", "");
 		}
 	}
 	
 	private class SegmentsController extends FormBasicController {
 
 		private final String videoElementId;
+		private List<Category> categoriesList;
 		private final List<SegmentMarker> segmentsSelections;
 		
 		public SegmentsController(UserRequest ureq, WindowControl wControl, String videoElementId, List<SegmentMarker> segmentsSelections) {
@@ -537,14 +582,26 @@ public class VideoTaskDisplayController extends BasicController {
 			}
 		}
 		
-		public void setSegments(List<Segment> segments, String segmentsCssClass) {
+		public void setSegments(List<Segment> segments, String segmentsCssClass, boolean enableDisableCategories) {
 			flc.contextPut("segments", segments);
 			flc.contextPut("segmentsCssClass", segmentsCssClass);
+			flc.contextPut("enableDisableCategories", Boolean.valueOf(enableDisableCategories));
 			
 		}
 		
-		public void setCategories(List<VideoSegmentCategory> categoriesList) {
+		public void setCategories(List<Category> categoriesList) {
+			this.categoriesList = categoriesList;
 			flc.contextPut("categories", categoriesList);
+		}
+		
+		public void setCategoryIconCssClass(VideoSegmentCategory segmentCategory, String iconCssClass) {
+			if(segmentCategory == null || categoriesList == null || categoriesList.isEmpty()) return;
+			
+			for(Category category:categoriesList) {
+				if(category.segmentCategory.equals(segmentCategory)) {
+					category.setIconCssClass(iconCssClass);
+				}
+			}
 		}
 
 		public void setMessage(String message) {

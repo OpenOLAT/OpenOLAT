@@ -1,24 +1,33 @@
 <div class="o_videotask_layer">
-	<div class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
+	<div id="o_videotask_messages" class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
 		<span>$message</span>
 	</div>
-	<div class="o_videotask_categories">
+	#if($r.isTrue($enableDisableCategories))
+	<div id="o_videotask_start_message" class="o_videotask_messages hide">
+		<span>$r.translate("feedback.start.segment")</span>
+	</div>
+	#end
+	<div id="o_videotask_categories" class="o_videotask_categories">
 	#foreach ($category in $categories)
-		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">${category.title}</button>
+		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
+			#if($r.isNotEmpty($category.iconCssClass)) <i class="o_icon $category.iconCssClass"> </i> #end${category.title}</button>
 	#end
 	</div>
-	<div class="o_videotask_segments $segmentsCssClass">
+	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
 		#foreach ($segment in $segments)
-		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};">
+		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};" data-start="${segment.start()}" data-duration="${segment.duration()}">
 			${segment.label()}
 		</div>
 		#end
 		#foreach ($segmentMarker in $segmentsSelections)
-		<div class="${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
-			<span>${segmentMarker.categoryLabel}</span>
-		</div>
+			#if(${segmentMarker.visible()})
+			<div class="${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
+				<span>${segmentMarker.categoryLabel}</span>
+			</div>
+			#end
 		#end
 	</div>
+	#if($r.isTrue($enableDisableCategories))
 	<script>
 	"use strict";
 	jQuery(function() {
@@ -26,7 +35,30 @@
 		const player = videoElement.data('player');
 		player.media.addEventListener('timeupdate', function() {
 			var time = player.media.currentTime;
+			var findSegment = false;
+			var showStartMessage = false;
+			
+			jQuery('#o_videotask_segments>.o_video_me_segment').each(function(index, el) {
+				var jEl = jQuery(el); 
+				var start = parseFloat(jEl.attr('data-start'));
+				var duration = parseFloat(jEl.attr('data-duration'));
+				if(start >= 0 && time >= start && time <= (start + duration)) {
+					findSegment = true;
+				}
+			});
+			jQuery('#o_videotask_categories>button').each(function(index, el) {
+				if(el.disabled && findSegment) {
+					showStartMessage = true;
+				}
+				el.disabled=!findSegment;
+			});
+			
+			if(showStartMessage) {
+				jQuery('#o_videotask_start_message').addClass('show').removeClass('hide');
+				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
+			}
 		});
 	});
 	</script>
+	#end
 </div>
