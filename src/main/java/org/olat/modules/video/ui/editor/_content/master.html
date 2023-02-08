@@ -61,11 +61,14 @@ $r.render("timelineEvents")
 			}
 
 			#if ($isYoutube)
+			const muted = player.muted;
 			const deferredCommand = () => {
 				player.pause();
+				player.setMuted(muted);
 				player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media));
 			};
 			if (loaded) {
+				player.setMuted(true);
 				player.play();
 				setTimeout(deferredCommand, 200);
 			} else {
@@ -73,6 +76,7 @@ $r.render("timelineEvents")
 					setTimeout(deferredCommand, 200);
 					player.media.removeEventListener(metaListener);
 				};
+				player.setMuted(true);
 				player.play();
 				player.media.addEventListener('loadedmetadata', metaListener);
 			}

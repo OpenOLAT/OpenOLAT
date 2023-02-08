@@ -37,23 +37,26 @@ public class TimeUpdateCommand extends JSCommand {
 	public TimeUpdateCommand(String videoElementId, long delayInMillis) {
 		super("");
 
-		String timeUpdatePart = "setTimeout(() => { player.pause(); player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media)); }, " +
+		String timeUpdatePart = "setTimeout(() => { player.pause(); player.setMuted(muted); player.media.dispatchEvent(mejs.Utils.createEvent('timeupdate', player.media)); }, " +
 				delayInMillis + ");";
 
 		String elementId = "o_so_vid" + videoElementId;
 		StringBuilder sb = new StringBuilder(512);
 		sb
 				.append("try {\n")
-				.append("  var player = jQuery('#").append(elementId).append("').data('player');\n")
-				.append("  var loaded = jQuery('#").append(elementId).append("').data('playerloaded');\n")
+				.append("  const player = jQuery('#").append(elementId).append("').data('player');\n")
+				.append("  const loaded = jQuery('#").append(elementId).append("').data('playerloaded');\n")
+				.append("  const muted = player.muted;\n")
 				.append("  if (loaded) {\n")
+				.append("    player.setMuted(true);\n")
 				.append("    player.play();\n")
 				.append("    ").append(timeUpdatePart).append("\n")
 				.append("  } else {\n")
-				.append("    var metaListener = function(e) {\n")
+				.append("    const metaListener = function(e) {\n")
 				.append("      ").append(timeUpdatePart).append("\n")
 				.append("      player.media.removeEventListener(metaListener);\n")
 				.append("    };\n")
+				.append("    player.setMuted(true);\n")
 				.append("    player.play();\n")
 				.append("    player.media.addEventListener('loadedmetadata', metaListener);\n")
 				.append("  }\n")
