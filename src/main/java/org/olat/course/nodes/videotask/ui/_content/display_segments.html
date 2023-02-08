@@ -21,12 +21,36 @@
 		#end
 		#foreach ($segmentMarker in $segmentsSelections)
 			#if(${segmentMarker.visible()})
-			<div class="${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
+			<div data-label-title="${segmentMarker.getCategoryLabelAndTitle()}" data-duration-string="${segmentMarker.durationString()}" data-category-color="${segmentMarker.categoryColor}" class="o_vt_marker ${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
 				<span>${segmentMarker.categoryLabel}</span>
 			</div>
 			#end
 		#end
 	</div>
+	
+	#if($r.isTrue($showTooltips))
+	<script>
+	"use strict";
+	jQuery(function() {
+		jQuery('#o_videotask_segments>.o_vt_marker').each(function(index, el) {
+			const jEl = jQuery(el);
+			const title = '<strong>' + jEl.attr('data-label-title') + '</strong><br>' + jEl.attr('data-duration-string');
+			const categoryCssClass = jEl.attr('data-category-color');
+			jEl.tooltip({
+				html: true,
+				container: false,
+				title: title
+			}).on('show.bs.tooltip', function () {
+				jEl.tooltip().data('bs.tooltip')
+					.tip()
+					.addClass('o_videotask_tooltip')
+					.addClass(categoryCssClass);
+			})
+		});
+	});
+	</script>
+	#end
+	
 	#if($r.isTrue($enableDisableCategories))
 	<script>
 	"use strict";
@@ -51,12 +75,10 @@
 			});
 			
 			const changeOfSegment = (segmentIndex >= 0 && segmentIndex != currentSegmentIndex);
-			console.log(changeOfSegment, segmentIndex, currentSegmentIndex);
 			if(endSegment || changeOfSegment) {
 				jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
 				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
 				jQuery('#o_videotask_categories>button>i').remove();
-				console.log('Remove', endSegment, changeOfSegment);
 			}
 			if(startSegment || changeOfSegment) {
 				jQuery('#o_videotask_start_message').addClass('show').removeClass('hide');

@@ -21,18 +21,56 @@
 	}
 	&.o_video_marker_blue { 
 		background-color: $state-info-border;
+		color: black;
 	}
 	&.o_video_marker_green { 
 		background-color: $brand-success;
+		color: black;
 	}
 	&.o_video_marker_yellow { 
 		background-color: $brand-warning;
+		color: black;
 	}
 	&.o_video_marker_red {
 		background-color: $brand-danger;
+		color: black;
 	}
 	&.o_video_marker_purple {
 		background-color: $o-cn-style-cat-purple-color;
+		color: black;
+	}
+}
+
+.o_videotask_tooltip {	
+	&.o_video_marker_gray .tooltip-inner { 
+		background-color: $gray-dark;
+		color: white;
+	}
+	&.o_video_marker_blue .tooltip-inner { 
+		background-color: $state-info-border;
+		color: black;
+	}
+	&.o_video_marker_green .tooltip-inner { 
+		background-color: $brand-success;
+		color: black;
+	}
+	&.o_video_marker_yellow .tooltip-inner { 
+		background-color: $brand-warning;
+		color: black;
+	}
+	&.o_video_marker_red .tooltip-inner {
+		background-color: $brand-danger;
+		color: black;
+	}
+	&.o_video_marker_purple .tooltip-inner {
+		background-color: $o-cn-style-cat-purple-color;
+		color: black;
+	}
+}
+
+.o_videotask_tooltip {
+	&.tooltip.in {
+		opacity: 1;
 	}
 }
 
