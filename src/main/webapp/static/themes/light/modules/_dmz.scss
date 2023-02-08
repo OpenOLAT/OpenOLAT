@@ -271,6 +271,15 @@ body.o_dmz {
 	vertical-align: middle;
 }
 
+.icon_mastodon {
+	fill: $link-color;
+}
+.icon_mastodon:hover {
+	fill: $link-hover-color;
+}
+
+
+
 .o_old_browser {
 	display: none;
 }
