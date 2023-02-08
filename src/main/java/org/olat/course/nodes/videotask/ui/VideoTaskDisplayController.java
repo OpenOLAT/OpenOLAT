@@ -52,6 +52,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.videotask.ui.components.FinishEvent;
 import org.olat.course.nodes.videotask.ui.components.RestartEvent;
+import org.olat.course.nodes.videotask.ui.components.ShowSolutionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.video.VideoAssessmentService;
@@ -249,6 +250,8 @@ public class VideoTaskDisplayController extends BasicController {
 				doConfirmFinishTask(ureq);
 			} else if(event instanceof RestartEvent) {
 				doConfirmNextAttempt(ureq);
+			} else if(event instanceof ShowSolutionEvent) {
+				doShowSolution();
 			}
 		} else if(confirmNextAttemptCtrl == source) {
 			cmc.deactivate();
@@ -327,7 +330,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			String icon = correct ? "o_icon_correct_answer" : "o_icon_incorrect_response";
-			segmentsCtrl.setCategoryIconCssClass(category, icon);
+			segmentsCtrl.setCategoryIconCssClass(category, segmentId, icon);
 		}
 		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)));
 	}
@@ -379,7 +382,7 @@ public class VideoTaskDisplayController extends BasicController {
 		} else if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			List<VideoSegment> segmentsList = VideoTaskHelper.getSelectedSegments(segments, categoriesIds);
 			confirmEndTaskCtrl = new ConfirmEndPracticeAssignTaskController(ureq, getWindowControl(),
-					getResults(), segmentsList, currentAttempt, maxAttempts);
+					List.copyOf(segmentSelections), segmentsList, currentAttempt, maxAttempts);
 			titleI18nKey = "confirm.end.practice.title";
 		} else {
 			List<VideoSegment> segmentsList = VideoTaskHelper.getSelectedSegments(segments, categoriesIds);
@@ -439,6 +442,20 @@ public class VideoTaskDisplayController extends BasicController {
 		dbInstance.commitAndCloseSession();
 	}
 	
+	private void doShowSolution() {
+		List<SegmentMarker> solutionList = new ArrayList<>();
+		for(VideoSegment videoSegment:segments.getSegments()) {
+			VideoSegmentCategory category = segments.getCategory(videoSegment.getCategoryId()).orElse(null);
+			SegmentMarker solution = SegmentMarker.valueOfAssign(null, category, "o_segment_correct", videoSegment, totalDurationInMillis, true);
+			solutionList.add(solution);
+		}
+		
+		segmentsCtrl.setSegmentsSelections(solutionList);
+		segmentsCtrl.setCategories(List.of());
+		segmentsCtrl.setMessage("");
+		segmentsCtrl.setShowSolution(true);
+	}
+	
 	public boolean isFullScreen() {
 		return fullScreen;
 	}
@@ -478,6 +495,7 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	public static class Category {
 		
+		private String segmentId;
 		private String iconCssClass;
 		private final VideoSegmentCategory segmentCategory;
 		
@@ -489,8 +507,13 @@ public class VideoTaskDisplayController extends BasicController {
 			return iconCssClass;
 		}
 
-		public void setIconCssClass(String iconCssClass) {
+		public void setIconCssClass(String segmentId, String iconCssClass) {
 			this.iconCssClass = iconCssClass;
+			this.segmentId = segmentId;
+		}
+		
+		public String getSegmentId() {
+			return segmentId;
 		}
 		
 		public String getId() {
@@ -554,6 +577,15 @@ public class VideoTaskDisplayController extends BasicController {
 			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100), startInSeconds, durationInSeconds, color, label);
 		}
 		
+		public static Segment valueOf(VideoSegment videoSegment, VideoSegmentCategory category, long totalDurationInMillis) {
+			long durationInSeconds = videoSegment.getDuration();
+			double dwidth = (durationInSeconds * 1000.0) / totalDurationInMillis;
+			double dleft = (double) videoSegment.getBegin().getTime() / totalDurationInMillis;
+			double startInSeconds = videoSegment.getBegin().getTime() / 1000d;
+			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+					startInSeconds, durationInSeconds, category.getColor(), category.getLabel());
+		}
+		
 		public static Segment fullWidth() {
 			return new Segment("100%", "0%", -1d, -1d, "grey", "");
 		}
@@ -563,7 +595,7 @@ public class VideoTaskDisplayController extends BasicController {
 
 		private final String videoElementId;
 		private List<Category> categoriesList;
-		private final List<SegmentMarker> segmentsSelections;
+		private List<SegmentMarker> segmentsSelections;
 		
 		public SegmentsController(UserRequest ureq, WindowControl wControl, String videoElementId, List<SegmentMarker> segmentsSelections) {
 			super(ureq, wControl, "display_segments");
@@ -579,7 +611,12 @@ public class VideoTaskDisplayController extends BasicController {
 				layoutCont.contextPut("segmentsCssClass", "");
 				layoutCont.contextPut("videoElementId", videoElementId);
 				layoutCont.contextPut("segmentsSelections", segmentsSelections);
+				layoutCont.contextPut("showSolution", Boolean.FALSE);
 			}
+		}
+		
+		public void setSegmentsSelections(List<SegmentMarker> segmentsSelections) {
+			flc.contextPut("segmentsSelections", segmentsSelections);
 		}
 		
 		public void setSegments(List<Segment> segments, String segmentsCssClass, boolean enableDisableCategories) {
@@ -594,14 +631,20 @@ public class VideoTaskDisplayController extends BasicController {
 			flc.contextPut("categories", categoriesList);
 		}
 		
-		public void setCategoryIconCssClass(VideoSegmentCategory segmentCategory, String iconCssClass) {
+		public void setCategoryIconCssClass(VideoSegmentCategory segmentCategory, String segmentId, String iconCssClass) {
 			if(segmentCategory == null || categoriesList == null || categoriesList.isEmpty()) return;
 			
 			for(Category category:categoriesList) {
-				if(category.segmentCategory.equals(segmentCategory)) {
-					category.setIconCssClass(iconCssClass);
+				if(category.getCategory().equals(segmentCategory)) {
+					category.setIconCssClass(segmentId, iconCssClass);
+				} else if(category.getSegmentId() != null && !category.getSegmentId().equals(segmentId)) {
+					category.setIconCssClass(null, null);
 				}
 			}
+		}
+		
+		public void setShowSolution(boolean showSolution) {
+			flc.contextPut("showSolution", Boolean.valueOf(showSolution));
 		}
 
 		public void setMessage(String message) {

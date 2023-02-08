@@ -5,8 +5,10 @@
 	</div>
 	<hr>
 	<div class="row o_block">
-		<div class="col-md-9">[Success attempts X]</div>
-		<div class="col-md-3"><strong>[YY]</strong></div>
+		#foreach($resultMsg in $resultMsgList)
+		<div class="col-md-9">${resultMsg.message}</div>
+		<div class="col-md-3"><strong>${resultMsg.correctAnswers}</strong></div>
+		#end
 		<div class="col-md-9">$r.translate("confirm.practice.assign.unsuccessful")</div>
 		<div class="col-md-3"><strong>$unsuccessful</strong></div>
 	</div>

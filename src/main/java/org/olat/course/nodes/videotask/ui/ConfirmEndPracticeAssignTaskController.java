@@ -19,7 +19,11 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -32,6 +36,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.nodes.videotask.ui.VideoTaskDisplayController.SegmentMarker;
 import org.olat.course.nodes.videotask.ui.components.RestartEvent;
 import org.olat.course.nodes.videotask.ui.components.ShowSolutionEvent;
 import org.olat.modules.video.VideoSegment;
@@ -52,10 +57,10 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 	private final int maxAttempts;
 	private final int currentAttempt;
 	private final List<VideoSegment> segmentsList;
-	private final List<VideoTaskSegmentSelection> results;
+	private final List<SegmentMarker> results;
 	
 	public ConfirmEndPracticeAssignTaskController(UserRequest ureq, WindowControl wControl,
-			List<VideoTaskSegmentSelection> results, List<VideoSegment> segmentsList,
+			List<SegmentMarker> results, List<VideoSegment> segmentsList,
 			int currentAttempt, int maxAttempts) {
 		super(ureq, wControl, "confirm_end_practice_assign");
 		
@@ -78,11 +83,13 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			int correct = VideoTaskHelper.correctlyAssignedSegments(segmentsList, results);
-			String resultMsg = translate("confirm.practice.assign.results", Integer.toString(segmentsList.size()), Integer.toString(correct));
-			layoutCont.contextPut("resultMsg", resultMsg);
-			
-			int unsuccessful = VideoTaskHelper.unsuccessfulSegments(segmentsList, results);
+			List<AttemptStats> stats = correctlyAssignedSegments(results);
+			layoutCont.contextPut("resultMsgList", stats);
+
+			List<VideoTaskSegmentSelection> resultSelections = results.stream()
+					.map(SegmentMarker::segmentSelection)
+					.toList();
+			int unsuccessful = VideoTaskHelper.unsuccessfulSegments(segmentsList, resultSelections);
 			layoutCont.contextPut("unsuccessful", Integer.toString(unsuccessful));
 		}
 		
@@ -104,5 +111,94 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// Do nothing
+	}
+	
+	private List<AttemptStats> correctlyAssignedSegments(List<SegmentMarker> resultMarkers) {
+		Map<String,SegmentStats> segmentsIdsToAttempts = new HashMap<>();
+		
+		for(SegmentMarker result:resultMarkers) {
+			VideoTaskSegmentSelection segmentSelection = result.segmentSelection();
+			
+			SegmentStats stats = segmentsIdsToAttempts
+				.computeIfAbsent(segmentSelection.getSegmentId(), selection -> new SegmentStats());
+			if(!stats.isCorrect()) {
+				stats.incrementAttempts();
+				
+				boolean correct = segmentSelection.isCorrect();
+				stats.setCorrect(correct);
+			}
+		}
+		
+		Map<Integer,AttemptStats> attemptsStatistics = new HashMap<>();
+		for(SegmentStats segmentStats:segmentsIdsToAttempts.values()) {
+			int attempts = segmentStats.getAttempts();
+			if(attempts > 0 && segmentStats.isCorrect()) {
+				AttemptStats stats = attemptsStatistics.computeIfAbsent(Integer.valueOf(attempts), AttemptStats::new);
+				stats.incrementCorrectAnswers();
+			}
+		}
+		
+		List<AttemptStats> attemptsStatisticsList = new ArrayList<>(attemptsStatistics.values());
+		Collections.sort(attemptsStatisticsList);
+		for(AttemptStats stats:attemptsStatisticsList) {
+			String resultMsg = translate("confirm.practice.assign.attempt.label", Integer.toString(stats.attempt));
+			stats.setMessage(resultMsg);
+		}
+		
+		return attemptsStatisticsList;
+	}
+	
+	public static class SegmentStats {
+		
+		private int attempts = 0;
+		private boolean correct = false;
+		
+		public int getAttempts() {
+			return attempts;
+		}
+		
+		public void incrementAttempts() {
+			attempts++;
+		}
+		
+		public boolean isCorrect() {
+			return correct;
+		}
+		
+		public void setCorrect(boolean correct) {
+			this.correct = correct;
+		}
+	}
+	
+	public static class AttemptStats implements Comparable<AttemptStats> {
+		
+		private final int attempt;
+		private int correctAnswers;
+		private String message;
+		
+		public AttemptStats(Integer attempt) {
+			this.attempt = attempt.intValue();
+		}
+		
+		public int getCorrectAnswers() {
+			return correctAnswers;
+		}
+		
+		public void incrementCorrectAnswers() {
+			correctAnswers++;
+		}
+
+		public String getMessage() {
+			return message;
+		}
+
+		public void setMessage(String message) {
+			this.message = message;
+		}
+
+		@Override
+		public int compareTo(AttemptStats o) {
+			return Integer.compare(attempt, o.attempt);
+		}
 	}
 }

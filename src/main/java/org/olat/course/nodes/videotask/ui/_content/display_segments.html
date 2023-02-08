@@ -15,7 +15,7 @@
 	</div>
 	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
 		#foreach ($segment in $segments)
-		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};" data-start="${segment.start()}" data-duration="${segment.duration()}">
+		<div class="o_video_me_segment o_video_me_colored_area ${segment.color()}" style="left: ${segment.left()}; width: ${segment.width()};" data-index="${foreach.count}" data-start="${segment.start()}" data-duration="${segment.duration()}">
 			${segment.label()}
 		</div>
 		#end
@@ -33,31 +33,53 @@
 	jQuery(function() {
 		const videoElement = jQuery('#o_so_vid${videoElementId}');
 		const player = videoElement.data('player');
+		var currentSegmentIndex = findSegmentIndex(player.media.currentTime);
+		
 		player.media.addEventListener('timeupdate', function() {
-			var time = player.media.currentTime;
-			var findSegment = false;
-			var showStartMessage = false;
-			
-			jQuery('#o_videotask_segments>.o_video_me_segment').each(function(index, el) {
-				var jEl = jQuery(el); 
-				var start = parseFloat(jEl.attr('data-start'));
-				var duration = parseFloat(jEl.attr('data-duration'));
-				if(start >= 0 && time >= start && time <= (start + duration)) {
-					findSegment = true;
-				}
-			});
+			var startSegment = false;
+			var endSegment = false;
+			const segmentIndex = findSegmentIndex(player.media.currentTime);
+			const findSegment = segmentIndex >= 0;
+
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
 				if(el.disabled && findSegment) {
-					showStartMessage = true;
+					startSegment = true;
+				} else if(!el.disabled && !findSegment) {
+					endSegment = true;
 				}
 				el.disabled=!findSegment;
 			});
 			
-			if(showStartMessage) {
+			const changeOfSegment = (segmentIndex >= 0 && segmentIndex != currentSegmentIndex);
+			console.log(changeOfSegment, segmentIndex, currentSegmentIndex);
+			if(endSegment || changeOfSegment) {
+				jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
+				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
+				jQuery('#o_videotask_categories>button>i').remove();
+				console.log('Remove', endSegment, changeOfSegment);
+			}
+			if(startSegment || changeOfSegment) {
 				jQuery('#o_videotask_start_message').addClass('show').removeClass('hide');
 				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
 			}
+			if(segmentIndex >= 0) {
+				currentSegmentIndex = segmentIndex;
+			}
 		});
+		
+		function findSegmentIndex(time) {
+			var segmentIndex = -1;
+			jQuery('#o_videotask_segments>.o_video_me_segment').each(function(i, el) {
+				const jEl = jQuery(el); 
+				const start = parseFloat(jEl.attr('data-start'));
+				const duration = parseFloat(jEl.attr('data-duration'));
+				const index = parseInt(jEl.attr('data-index'));
+				if(start >= 0 && time >= start && time <= (start + duration)) {
+					segmentIndex = index;
+				}
+			});
+			return segmentIndex;
+		}
 	});
 	</script>
 	#end

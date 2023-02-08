@@ -123,7 +123,11 @@
 	width: 100%;
 	background-color: transparent;
 	text-align: center;
-	padding: 10px 0;
+	padding: 0 0 10px 0;
+}
+
+.o_videotask_categories>button.btn {
+	margin-top: 10px;
 }
 
 .o_videotask_messages {
