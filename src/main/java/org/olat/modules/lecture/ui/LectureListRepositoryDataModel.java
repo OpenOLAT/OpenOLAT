@@ -41,6 +41,8 @@ import org.olat.modules.lecture.model.LectureBlockRow;
 public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<LectureBlockRow>
 	implements SortableFlexiTableDataModel<LectureBlockRow> {
 	
+	private static final BlockCols[] COLS = BlockCols.values();
+	
 	private final Locale locale;
 	
 	public LectureListRepositoryDataModel(FlexiTableColumnModel columnModel, Locale locale) {
@@ -62,8 +64,9 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 
 	@Override
 	public Object getValueAt(LectureBlockRow row, int col) {
-		switch(BlockCols.values()[col]) {
+		switch(COLS[col]) {
 			case id: return row.getKey();
+			case externalId: return row.getLectureBlock().getExternalId();
 			case title: return  row.getLectureBlock().getTitle();
 			case compulsory: return row.getLectureBlock().isCompulsory();
 			case location: return row.getLectureBlock().getLocation();
@@ -113,7 +116,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		dateChooser("lecture.date"),
 		chosenTeachers("table.header.teachers"),
 		teacherChooser("table.header.teachers.edit"),
-		locationElement("lecture.location");
+		locationElement("lecture.location"),
+		externalId("table.header.external.id");
 		
 		private final String i18nKey;
 		

@@ -23,9 +23,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -176,9 +174,9 @@ public class BlockConverter {
 		String compulsory = parts[6];
 		block.setCompulsory("yes".equalsIgnoreCase(compulsory));
 		
-		Identity teacher = getTeacher(parts[7]);
-		if(teacher != null) {
-			importedBlocks.getTeachers().add(teacher);
+		List<Identity> teachers = getTeachers(parts[7]);
+		if(teachers != null && !teachers.isEmpty()) {
+			importedBlocks.getTeachers().addAll(teachers);
 		}
 
 		GroupMapping participants = getParticipants(parts[8]);
@@ -240,27 +238,33 @@ public class BlockConverter {
 		return bGroup;
 	}
 	
-	private Identity getTeacher(String string) {
-		Identity teacher = teachersMap.get(string);
-		
-		if(teacher == null) {
-			List<String> names = Arrays.asList(string);
-			List<FindNamedIdentity> namedTeachers = securityManager.findIdentitiesBy(names);
-			if(namedTeachers.size() == 1) {
-				teacher = namedTeachers.get(0).getIdentity();
-			}
-			if(teacher == null) {
-				List<Identity> teachers = userManager.findIdentitiesByEmail(Collections.singletonList(string));
-				if(!teachers.isEmpty()) {
-					teacher = teachers.get(0);
+	private List<Identity> getTeachers(String string) {
+		List<Identity> teacherList = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(string)) {
+			String[] stringArr = string.split("[,]");
+			for(String name:stringArr) {
+				Identity teacher = teachersMap.get(name);
+				if(teacher == null) {
+					List<String> names = List.of(name);
+					List<FindNamedIdentity> namedTeachers = securityManager.findIdentitiesBy(names);
+					if(namedTeachers.size() == 1) {
+						teacher = namedTeachers.get(0).getIdentity();
+					}
+					if(teacher == null) {
+						List<Identity> teachers = userManager.findIdentitiesByEmail(names);
+						if(!teachers.isEmpty()) {
+							teacher = teachers.get(0);
+						}
+					}
+					
+					if(teacher != null) {
+						teachersMap.put(string, teacher);
+						teacherList.add(teacher);
+					}
 				}
 			}
-			
-			if(teacher != null) {
-				teachersMap.put(string, teacher);
-			}
 		}
-		return teacher;
+		return teacherList;
 	}
 	
 	protected Date parseDateTime(String date, String time) {
