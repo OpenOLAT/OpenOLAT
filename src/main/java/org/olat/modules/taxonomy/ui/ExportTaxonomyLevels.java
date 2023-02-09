@@ -19,6 +19,22 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
@@ -38,259 +54,253 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
 
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 /**
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, https://www.frentix.com
  */
 public class ExportTaxonomyLevels implements MediaResource {
 
-    private static final Logger log = Tracing.createLoggerFor(ExportTaxonomyLevels.class);
+	private static final Logger log = Tracing.createLoggerFor(ExportTaxonomyLevels.class);
 
-    private static final String MEDIA_FOLDER = "/media";
-    private static final String README_FILE = "readme.md";
+	private static final String MEDIA_FOLDER = "/media";
+	private static final String README_FILE = "readme.md";
 
-    private final String encoding;
-    private final Taxonomy taxonomy;
-    private final TaxonomyService taxonomyService;
-    private final Translator translator;
-    private final I18nModule i18nModule;
-    private final I18nManager i18nManager;
+	private final String encoding;
+	private final Taxonomy taxonomy;
+	private final TaxonomyService taxonomyService;
+	private final Translator translator;
+	private final I18nModule i18nModule;
+	private final I18nManager i18nManager;
 
-    // Map<Map<TaxonomyLevel, LanguageKey>, Map<typeOfAttribute, attributeValue>> (typeOfAttribute: {displayName, description})
-    private final Map<Map<TaxonomyLevel, String>, Map<String, String>> attributesToLevels = new HashMap<>();
+	// Map<Map<TaxonomyLevel, LanguageKey>, Map<typeOfAttribute, attributeValue>> (typeOfAttribute: {displayName, description})
+	private final Map<Map<TaxonomyLevel, String>, Map<String, String>> attributesToLevels = new HashMap<>();
 
-    public ExportTaxonomyLevels(String encoding, Translator translator, Taxonomy taxonomy,
-                                TaxonomyService taxonomyService, I18nManager i18nManager, I18nModule i18nModule) {
-        this.encoding = encoding;
-        this.translator = translator;
-        this.taxonomy = taxonomy;
-        this.taxonomyService = taxonomyService;
-        this.i18nManager = i18nManager;
-        this.i18nModule = i18nModule;
-    }
+	public ExportTaxonomyLevels(String encoding, Translator translator, Taxonomy taxonomy,
+								TaxonomyService taxonomyService, I18nManager i18nManager, I18nModule i18nModule) {
+		this.encoding = encoding;
+		this.translator = translator;
+		this.taxonomy = taxonomy;
+		this.taxonomyService = taxonomyService;
+		this.i18nManager = i18nManager;
+		this.i18nModule = i18nModule;
+	}
 
-    @Override
-    public boolean acceptRanges() {
-        return false;
-    }
+	@Override
+	public boolean acceptRanges() {
+		return false;
+	}
 
-    @Override
-    public String getContentType() {
-        return "application/zip";
-    }
+	@Override
+	public String getContentType() {
+		return "application/zip";
+	}
 
-    @Override
-    public Long getSize() {
-        return null;
-    }
+	@Override
+	public Long getSize() {
+		return null;
+	}
 
-    @Override
-    public InputStream getInputStream() {
-        return null;
-    }
+	@Override
+	public InputStream getInputStream() {
+		return null;
+	}
 
-    @Override
-    public Long getLastModified() {
-        return null;
-    }
+	@Override
+	public Long getLastModified() {
+		return null;
+	}
 
-    @Override
-    public long getCacheControlDuration() {
-        return 0;
-    }
+	@Override
+	public long getCacheControlDuration() {
+		return 0;
+	}
 
-    private void createHeader(Translator translator, OpenXMLWorksheet worksheet) {
-        Row headerRow = worksheet.newRow();
-        int col = 0;
+	private void createHeader(Translator translator, OpenXMLWorksheet worksheet) {
+		Row headerRow = worksheet.newRow();
+		int col = 0;
 
-        headerRow.addCell(col++, translator.translate("taxonomy.level.path"));
-        headerRow.addCell(col++, translator.translate("level.identifier"));
-        headerRow.addCell(col++, translator.translate("level.type"));
-        headerRow.addCell(col++, translator.translate("level.sort.order"));
+		headerRow.addCell(col++, translator.translate("taxonomy.level.path"));
+		headerRow.addCell(col++, translator.translate("level.identifier"));
+		headerRow.addCell(col++, translator.translate("level.type"));
+		headerRow.addCell(col++, translator.translate("level.sort.order"));
 
-        List<String> validLanguages = attributesToLevels.keySet().stream().map(l -> l.values().stream().distinct().findFirst().get()).distinct().toList();
+		List<String> validLanguages = attributesToLevels.keySet().stream().map(l -> l.values().stream().distinct().findFirst().get()).distinct().toList();
 
-        for (int i = 0; i < validLanguages.size(); i++) {
-            headerRow.addCell(col++, translator.translate("level.language"));
-            headerRow.addCell(col++, translator.translate("level.displayname"));
-            headerRow.addCell(col++, translator.translate("level.description"));
-        }
-    }
+		for (int i = 0; i < validLanguages.size(); i++) {
+			headerRow.addCell(col++, translator.translate("level.language"));
+			headerRow.addCell(col++, translator.translate("level.displayname"));
+			headerRow.addCell(col++, translator.translate("level.description"));
+		}
+	}
 
-    private void createData(List<TaxonomyLevel> taxonomyLevels, OpenXMLWorksheet worksheet) {
-        worksheet.setHeaderRows(1);
+	private void createData(List<TaxonomyLevel> taxonomyLevels, OpenXMLWorksheet worksheet) {
+		worksheet.setHeaderRows(1);
 
-        taxonomyLevels = taxonomyLevels.stream().sorted(Comparator.comparing(TaxonomyLevel::getMaterializedPathIdentifiers)).toList();
+		taxonomyLevels = taxonomyLevels.stream().sorted(Comparator.comparing(TaxonomyLevel::getMaterializedPathIdentifiers)).toList();
 
-        for (TaxonomyLevel level : taxonomyLevels) {
-            OpenXMLWorksheet.Row dataRow = worksheet.newRow();
-            int c = 0;
+		for (TaxonomyLevel level : taxonomyLevels) {
+			OpenXMLWorksheet.Row dataRow = worksheet.newRow();
+			int c = 0;
 
-            String taxonomyLevelPath = level.getMaterializedPathIdentifiers();
-            String taxonomyLevelIdentifier = level.getIdentifier();
-            String taxonomyType = level.getType() != null ? level.getType().getIdentifier() : "";
-            String taxonomySortOrder = level.getSortOrder() != null ? level.getSortOrder().toString() : "";
+			String taxonomyLevelPath = level.getMaterializedPathIdentifiers();
+			String taxonomyLevelIdentifier = level.getIdentifier();
+			String taxonomyType = level.getType() != null ? level.getType().getIdentifier() : "";
+			String taxonomySortOrder = level.getSortOrder() != null ? level.getSortOrder().toString() : "";
 
-            dataRow.addCell(c++, taxonomyLevelPath);
-            dataRow.addCell(c++, taxonomyLevelIdentifier);
-            dataRow.addCell(c++, taxonomyType);
-            dataRow.addCell(c++, taxonomySortOrder);
+			dataRow.addCell(c++, taxonomyLevelPath);
+			dataRow.addCell(c++, taxonomyLevelIdentifier);
+			dataRow.addCell(c++, taxonomyType);
+			dataRow.addCell(c++, taxonomySortOrder);
 
-            List<String> validLanguages = attributesToLevels.keySet()
-                    .stream()
-                    .map(l -> l.values()
-                            .stream().distinct().findFirst()
-                            .get()).distinct().sorted().toList();
+			List<String> validLanguages = attributesToLevels.keySet()
+					.stream()
+					.map(l -> l.values()
+							.stream().distinct().findFirst()
+							.get()).distinct().sorted().toList();
 
-            for (String languageKey : validLanguages) {
-                String taxonomyDisplayName = "";
-                String taxonomyLevelDescription = "";
+			for (String languageKey : validLanguages) {
+				String taxonomyDisplayName = "";
+				String taxonomyLevelDescription = "";
 
-                if (attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))) != null) {
-                    taxonomyDisplayName = attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))).get("displayName");
-                    taxonomyLevelDescription = attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))).get("description");
-                }
+				if (attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))) != null) {
+					taxonomyDisplayName = attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))).get("displayName");
+					taxonomyLevelDescription = attributesToLevels.get(Map.ofEntries(Map.entry(level, languageKey))).get("description");
+				}
 
-                dataRow.addCell(c++, languageKey);
-                dataRow.addCell(c++, taxonomyDisplayName);
-                dataRow.addCell(c++, taxonomyLevelDescription);
-            }
-        }
-    }
+				dataRow.addCell(c++, languageKey);
+				dataRow.addCell(c++, taxonomyDisplayName);
+				dataRow.addCell(c++, taxonomyLevelDescription);
+			}
+		}
+	}
 
-    @Override
-    public void prepare(HttpServletResponse hres) {
-        try {
-            hres.setCharacterEncoding(encoding);
-        } catch (Exception e) {
-            log.error("", e);
-        }
+	@Override
+	public void prepare(HttpServletResponse hres) {
+		try {
+			hres.setCharacterEncoding(encoding);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 
-        String label = translator.translate("taxonomy.export.label");
-        String file = StringHelper.transformDisplayNameToFileSystemName(label) + ".zip";
-        String encodedFileName = StringHelper.urlEncodeUTF8(file);
-        hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
-        hres.setHeader("Content-Description", encodedFileName);
+		String label = translator.translate("taxonomy.export.label");
+		String file = StringHelper.transformDisplayNameToFileSystemName(label) + ".zip";
+		String encodedFileName = StringHelper.urlEncodeUTF8(file);
+		hres.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
+		hres.setHeader("Content-Description", encodedFileName);
 
-        try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
-            zout.setLevel(9);
+		try (ZipOutputStream zout = new ZipOutputStream(hres.getOutputStream())) {
+			zout.setLevel(9);
 
-            Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
-            Collection<String> languageKeys = i18nModule.getEnabledLanguageKeys();
-            Map<String, TaxonomyLevel> taxonomyLevelToMaterializedPathIdentifier = new HashMap<>();
+			Map<Locale, Locale> allOverlays = i18nModule.getOverlayLocales();
+			Collection<String> languageKeys = i18nModule.getEnabledLanguageKeys();
+			Map<String, TaxonomyLevel> taxonomyLevelToMaterializedPathIdentifier = new HashMap<>();
 
-            // Removing duplicates
-            for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
-                taxonomyLevelToMaterializedPathIdentifier.put(taxonomyLevel.getMaterializedPathIdentifiers(), taxonomyLevel);
-            }
+			// Removing duplicates
+			for (TaxonomyLevel taxonomyLevel : taxonomyService.getTaxonomyLevels(taxonomy)) {
+				taxonomyLevelToMaterializedPathIdentifier.put(taxonomyLevel.getMaterializedPathIdentifiers(), taxonomyLevel);
+			}
 
-            for (TaxonomyLevel taxonomyLevel : taxonomyLevelToMaterializedPathIdentifier.values()) {
-                String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix();
-                String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + taxonomyLevel.getI18nSuffix();
+			for (TaxonomyLevel taxonomyLevel : taxonomyLevelToMaterializedPathIdentifier.values()) {
+				String displayNameKey = TaxonomyUIFactory.PREFIX_DISPLAY_NAME + taxonomyLevel.getI18nSuffix();
+				String descriptionKey = TaxonomyUIFactory.PREFIX_DESCRIPTION + taxonomyLevel.getI18nSuffix();
 
-                String taxonomyPath = taxonomyLevel.getMaterializedPathIdentifiers();
-                LocalFileImpl backgroundImage = (LocalFileImpl) taxonomyService.getBackgroundImage(taxonomyLevel);
-                LocalFileImpl teaserImage = (LocalFileImpl) taxonomyService.getTeaserImage(taxonomyLevel);
+				String taxonomyPath = taxonomyLevel.getMaterializedPathIdentifiers();
+				LocalFileImpl backgroundImage = (LocalFileImpl) taxonomyService.getBackgroundImage(taxonomyLevel);
+				LocalFileImpl teaserImage = (LocalFileImpl) taxonomyService.getTeaserImage(taxonomyLevel);
 
-                if (backgroundImage != null) {
-                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "background/" + backgroundImage.getBasefile().getName(), backgroundImage.getBasefile(), zout);
-                } else {
-                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "background/"));
-                }
-                if (teaserImage != null) {
-                    ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "teaser/" + teaserImage.getBasefile().getName(), teaserImage.getBasefile(), zout);
-                } else {
-                    zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "teaser/"));
-                }
+				if (backgroundImage != null) {
+					ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "background/" + backgroundImage.getBasefile().getName(), backgroundImage.getBasefile(), zout);
+				} else {
+					zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "background/"));
+				}
+				if (teaserImage != null) {
+					ZipUtil.addFileToZip(label + MEDIA_FOLDER + taxonomyPath + "teaser/" + teaserImage.getBasefile().getName(), teaserImage.getBasefile(), zout);
+				} else {
+					zout.putNextEntry(new ZipEntry(label + MEDIA_FOLDER + taxonomyPath + "teaser/"));
+				}
 
-                for (String languageKey : languageKeys) {
-                    Map<String, String> attributesToItem = new HashMap<>();
-                    Map<TaxonomyLevel, String> languageToLevel = new HashMap<>();
-                    String taxonomyLevelLanguage = "";
-                    Locale locale = i18nManager.getLocaleOrDefault(languageKey);
+				for (String languageKey : languageKeys) {
+					Map<String, String> attributesToItem = new HashMap<>();
+					Map<TaxonomyLevel, String> languageToLevel = new HashMap<>();
+					String taxonomyLevelLanguage = "";
+					Locale locale = i18nManager.getLocaleOrDefault(languageKey);
 
-                    I18nItem displayNameItem = i18nManager.getI18nItem(
-                            TaxonomyUIFactory.BUNDLE_NAME,
-                            displayNameKey,
-                            allOverlays.get(locale));
-                    I18nItem descriptionItem = i18nManager.getI18nItem(
-                            TaxonomyUIFactory.BUNDLE_NAME,
-                            descriptionKey,
-                            allOverlays.get(locale));
+					I18nItem displayNameItem = i18nManager.getI18nItem(
+							TaxonomyUIFactory.BUNDLE_NAME,
+							displayNameKey,
+							allOverlays.get(locale));
+					I18nItem descriptionItem = i18nManager.getI18nItem(
+							TaxonomyUIFactory.BUNDLE_NAME,
+							descriptionKey,
+							allOverlays.get(locale));
 
-                    String translatedDisplayName = i18nManager.getLocalizedString(displayNameItem, null);
-                    String translatedDescription = i18nManager.getLocalizedString(descriptionItem, null);
+					String translatedDisplayName = i18nManager.getLocalizedString(displayNameItem, null);
+					String translatedDescription = i18nManager.getLocalizedString(descriptionItem, null);
 
-                    if (translatedDisplayName != null) {
-                        taxonomyLevelLanguage = languageKey.toUpperCase();
-                        attributesToItem.put("displayName", translatedDisplayName);
-                    }
+					if (translatedDisplayName != null) {
+						taxonomyLevelLanguage = languageKey.toUpperCase();
+						attributesToItem.put("displayName", translatedDisplayName);
+					}
 
-                    if (translatedDescription != null) {
-                        translatedDescription = translatedDescription.replaceAll("[\n\r]", "");
-                        taxonomyLevelLanguage = languageKey.toUpperCase();
-                        attributesToItem.put("description", translatedDescription);
-                    }
+					if (translatedDescription != null) {
+						translatedDescription = translatedDescription.replaceAll("[\n\r]", "");
+						taxonomyLevelLanguage = languageKey.toUpperCase();
+						attributesToItem.put("description", translatedDescription);
+					}
 
-                    if (translatedDisplayName != null || translatedDescription != null) {
-                        languageToLevel.put(taxonomyLevel, taxonomyLevelLanguage);
-                        attributesToLevels.put(languageToLevel, attributesToItem);
-                    }
-                }
-            }
+					if (translatedDisplayName != null || translatedDescription != null) {
+						languageToLevel.put(taxonomyLevel, taxonomyLevelLanguage);
+						attributesToLevels.put(languageToLevel, attributesToItem);
+					}
+				}
+			}
 
-            File excelExport = new File(WebappHelper.getTmpDir() + "/" + label + ".xlsx");
-            createExcelSheet(excelExport);
-            ZipUtil.addFileToZip(label + "/" + excelExport.getName(), excelExport, zout);
+			File excelExport = new File(WebappHelper.getTmpDir() + "/" + label + ".xlsx");
+			createExcelSheet(excelExport);
+			ZipUtil.addFileToZip(label + "/" + excelExport.getName(), excelExport, zout);
 
-            try (InputStream readme = ExportTaxonomyLevels.class.getResourceAsStream(README_FILE)) {
-                File readmeFile = new File(README_FILE);
-                FileUtils.copyInputStreamToFile(readme, readmeFile);
-                ZipUtil.addFileToZip(README_FILE, readmeFile, zout);
-            } catch (Exception e) {
-                log.error("Can not read readme.md", e);
-            }
+			File readmeFile = createReadmeFile();
+			if (readmeFile != null) {
+				ZipUtil.addFileToZip(README_FILE, readmeFile, zout);
+			}
 
-            zout.flush();
-        } catch (IOException e) {
-            String className = e.getClass().getSimpleName();
-            if ("ClientAbortException".equals(className)) {
-                log.debug("client browser probably abort when downloading zipped files", e);
-            } else {
-                log.error("client browser probably abort when downloading zipped files", e);
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        }
-    }
+			zout.flush();
+		} catch (IOException e) {
+			String className = e.getClass().getSimpleName();
+			if ("ClientAbortException".equals(className)) {
+				log.debug("client browser probably abort when downloading zipped files", e);
+			} else {
+				log.error("client browser probably abort when downloading zipped files", e);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
 
-    private void createExcelSheet(File excelExport) {
-        try (OutputStream out = new FileOutputStream(excelExport);
-             OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
-            OpenXMLWorksheet sheet = workbook.nextWorksheet();
-            createHeader(translator, sheet);
-            createData(taxonomyService.getTaxonomyLevels(taxonomy), sheet);
-        } catch (IOException e) {
-            log.error("Unable to export xlsx", e);
-        }
-    }
+	private File createReadmeFile() {
+		try (InputStream readme = ExportTaxonomyLevels.class.getResourceAsStream(README_FILE)) {
+			assert readme != null;
+			File readmeFile = new File(README_FILE);
+			FileUtils.copyInputStreamToFile(readme, readmeFile);
+			return readmeFile;
+		} catch (Exception e) {
+			log.error("Can not read readme.md", e);
+		}
+		return null;
+	}
 
-    @Override
-    public void release() {
-        // No need
-    }
+	private void createExcelSheet(File excelExport) {
+		try (OutputStream out = new FileOutputStream(excelExport);
+			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			createHeader(translator, sheet);
+			createData(taxonomyService.getTaxonomyLevels(taxonomy), sheet);
+		} catch (IOException e) {
+			log.error("Unable to export xlsx", e);
+		}
+	}
+
+	@Override
+	public void release() {
+		// No need
+	}
 }
