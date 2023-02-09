@@ -197,12 +197,13 @@ public class SegmentController extends FormBasicController {
 		if (currentTimeCode == null) {
 			return;
 		}
-		long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-		startEl.setValue(timeFormat.format(new Date(startTimeInSeconds * 1000)));
 
 		try {
+			long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
 			long endTimeInSeconds = timeFormat.parse(endEl.getValue()).getTime() / 1000;
-			long duration = endTimeInSeconds - startTimeInSeconds;
+			long newStartTimeInSeconds = Long.min(endTimeInSeconds - MIN_DURATION, startTimeInSeconds);
+			startEl.setValue(timeFormat.format(new Date(newStartTimeInSeconds * 1000)));
+			long duration = endTimeInSeconds - newStartTimeInSeconds;
 			durationEl.setValue(Long.toString(duration));
 		} catch (ParseException e) {
 			//
@@ -213,12 +214,13 @@ public class SegmentController extends FormBasicController {
 		if (currentTimeCode == null) {
 			return;
 		}
-		long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-		endEl.setValue(timeFormat.format(new Date(endTimeInSeconds * 1000)));
 
 		try {
+			long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
 			long startTimeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
-			long duration = endTimeInSeconds - startTimeInSeconds;
+			long newEndTimeInSeconds = Long.max(startTimeInSeconds + MIN_DURATION, endTimeInSeconds);
+			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
+			long duration = newEndTimeInSeconds - startTimeInSeconds;
 			durationEl.setValue(Long.toString(duration));
 		} catch (ParseException e) {
 			//
