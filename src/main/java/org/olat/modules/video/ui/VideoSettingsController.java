@@ -172,9 +172,9 @@ public class VideoSettingsController extends RepositoryEntrySettingsController {
 		initAccessAndBooking();
 		initOptions();
 		initPoster();
-		initChapters();
-		initComments();
-		initQuiz();
+		// initChapters();
+		// initComments();
+		// initQuiz();
 		initSubtitles();
 		initQualities();
 		initDownload();
