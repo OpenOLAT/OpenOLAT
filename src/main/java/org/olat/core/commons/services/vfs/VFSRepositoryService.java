@@ -92,6 +92,8 @@ public interface VFSRepositoryService {
 	 */
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata);
 	
+	public VFSMetadata getParent(VFSMetadata metadata);
+	
 	
 	public void cleanMetadatas();
 	

@@ -395,7 +395,12 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return metadataDao.getMetadatas(relativePath);
 	}
-	
+
+	@Override
+	public VFSMetadata getParent(VFSMetadata metadata) {
+		return ((VFSMetadataImpl)metadata).getParent();
+	}
+
 	@Override
 	public List<VFSMetadata> getChildren(VFSMetadataRef parentMetadata) {
 		return metadataDao.getMetadatas(parentMetadata);
