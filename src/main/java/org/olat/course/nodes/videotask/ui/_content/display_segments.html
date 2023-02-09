@@ -57,40 +57,64 @@
 	jQuery(function() {
 		const videoElement = jQuery('#o_so_vid${videoElementId}');
 		const player = videoElement.data('player');
-		var currentSegmentIndex = findSegmentIndex(player.media.currentTime);
-		
+		if(window.startMessageTimeout && window.startMessageTimeout != null) {
+			clearTimeout(window.startMessageTimeout);
+		} else {
+			window.startMessageTimeout = null;
+		}
+		if(player.currentSegment == "undefined") {
+			player.currentSegment = findSegmentIndex(player.media.currentTime);
+		}
+
 		player.media.addEventListener('timeupdate', function() {
+			const segmentIndex = findSegmentIndex(player.media.currentTime);
+			const hasCorrectAnswer = findCorrectCategory();
+			const findSegment = segmentIndex >= 0;
+			
 			var startSegment = false;
 			var endSegment = false;
-			const segmentIndex = findSegmentIndex(player.media.currentTime);
-			const findSegment = segmentIndex >= 0;
+			var changeSegment = false;
+			if(findSegment && player.currentSegment >= 0 && segmentIndex != player.currentSegment) {
+				changeSegment = true;
+			} else if(findSegment && player.currentSegment != segmentIndex) {
+				startSegment = true;
+			} else if(!findSegment) {
+				endSegment = true;
+			}
 
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
-				if(el.disabled && findSegment) {
-					startSegment = true;
-				} else if(!el.disabled && !findSegment) {
-					endSegment = true;
-				}
-				el.disabled=!findSegment;
+				el.disabled = !findSegment || hasCorrectAnswer;
 			});
 			
-			const changeOfSegment = (segmentIndex >= 0 && segmentIndex != currentSegmentIndex);
-			if(endSegment || changeOfSegment) {
-				jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
+			if(startSegment) {
+				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
+			} else if(endSegment || changeSegment) {
 				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
 				jQuery('#o_videotask_categories>button>i').remove();
 			}
-			if(startSegment || changeOfSegment) {
+			
+			if(startSegment || changeSegment) {
 				jQuery('#o_videotask_start_message').addClass('show').removeClass('hide');
-				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
-				setTimeout(function() {
+				startMessageTimeout = setTimeout(function() {
 					jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
 				}, 5000);
+			} else if(endSegment) {
+				jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
+				if(window.startMessageTimeout != null) {
+					clearTimeout(window.startMessageTimeout);
+					window.startMessageTimeout = null;
+				}
 			}
+			
 			if(segmentIndex >= 0) {
-				currentSegmentIndex = segmentIndex;
+				player.currentSegment = segmentIndex;
 			}
 		});
+		
+		function findCorrectCategory() {
+			const correctButtons = jQuery('#o_videotask_categories>button>i.o_icon_correct_answer');
+			return correctButtons.length > 0;
+		}
 		
 		function findSegmentIndex(time) {
 			var segmentIndex = -1;
