@@ -205,7 +205,6 @@ public class OAIPmhAdminController extends FormBasicController {
 
 		// search engine
 		searchEngineCont = FormLayoutContainer.createDefaultFormLayout("oaiSearchEngine", getTranslator());
-		searchEngineCont.setRootForm(mainForm);
 		searchEngineCont.setFormTitle(translate("searchengine.title"));
 		searchEngineCont.setFormInfo(translate("searchengine.info"));
 		formLayout.add(searchEngineCont);
@@ -220,8 +219,12 @@ public class OAIPmhAdminController extends FormBasicController {
 		}
 
 		String sitemapUrl = ResourceInfoDispatcher.getUrl("sitemap.xml");
-		String[] sitemapKeys = new String[]{OAI_KEY_SEARCHENGINE_GOOGLE, OAI_KEY_SEARCHENGINE_CUSTOM_SITEMAP};
-		String[] sitemapValues = new String[]{translate("searchengine.url.google"), translate("searchengine.url.custom.sitemap")};
+		String[] sitemapKeys = new String[]{
+				OAI_KEY_SEARCHENGINE_GOOGLE,
+				OAI_KEY_SEARCHENGINE_CUSTOM_SITEMAP};
+		String[] sitemapValues = new String[]{
+				translate("searchengine.url.google"),
+				translate("searchengine.url.custom.sitemap")};
 
 		searchEngineSitemapEl = uifactory.addCheckboxesVertical("searchengine.provider.sitemap", searchEngineCont, sitemapKeys, sitemapValues, 1);
 		searchEngineSitemapEl.setHelpTextKey("searchengine.provider.sitemap.help", new String[]{sitemapUrl});
@@ -231,11 +234,18 @@ public class OAIPmhAdminController extends FormBasicController {
 		customSitemapTextEl = uifactory.addTextElement("searchengine.url.custom.sitemap", 255, oaiPmhModule.getSearchEngineCustomSitemapUrl(), searchEngineCont);
 		searchEngineSitemapEl.select(sitemapKeys[0], oaiPmhModule.isSearchEngineGoogle());
 		searchEngineSitemapEl.select(sitemapKeys[1], oaiPmhModule.isSearchEngineCustomSitemap());
+		searchEngineSitemapEl.setAjaxOnly(true); // to fix load after module enable
 
 		uifactory.addSpacerElement("spacer", searchEngineCont, false);
 
-		String[] indexnowKeys = new String[]{OAI_KEY_SEARCHENGINE_BING, OAI_KEY_SEARCHENGINE_YANDEX, OAI_KEY_SEARCHENGINE_CUSTOM_INDEXNOW};
-		String[] indexnowValues = new String[]{translate("searchengine.url.bing"), translate("searchengine.url.yandex"), translate("searchengine.url.custom.indexnow")};
+		String[] indexnowKeys = new String[]{
+				OAI_KEY_SEARCHENGINE_BING,
+				OAI_KEY_SEARCHENGINE_YANDEX,
+				OAI_KEY_SEARCHENGINE_CUSTOM_INDEXNOW};
+		String[] indexnowValues = new String[]{
+				translate("searchengine.url.bing"),
+				translate("searchengine.url.yandex"),
+				translate("searchengine.url.custom.indexnow")};
 
 		searchEngineIndexnowEl = uifactory.addCheckboxesVertical("searchengine.provider.indexnow", searchEngineCont, indexnowKeys, indexnowValues, 1);
 		searchEngineIndexnowEl.setHelpUrl("https://www.indexnow.org/index");
@@ -246,6 +256,7 @@ public class OAIPmhAdminController extends FormBasicController {
 		searchEngineIndexnowEl.select(indexnowKeys[0], oaiPmhModule.isSearchEngineBing());
 		searchEngineIndexnowEl.select(indexnowKeys[1], oaiPmhModule.isSearchEngineYandex());
 		searchEngineIndexnowEl.select(indexnowKeys[2], oaiPmhModule.isSearchEngineCustomIndexnow());
+		searchEngineIndexnowEl.setAjaxOnly(true); // to fix load after module enable
 
 		searchEnginePublishLink = uifactory.addFormLink("searchengine.publish", searchEngineCont, Link.BUTTON);
 
@@ -363,7 +374,6 @@ public class OAIPmhAdminController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		oaiPmhModule.setEnabled(oaiPmhEl.isOn());
 		oaiPmhModule.setIdentifierFormat(identifierFormatEl.getSelectedKey());
 
 		if (licenseEl.isEnabled()) {
