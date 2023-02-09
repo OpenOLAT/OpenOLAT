@@ -60,8 +60,8 @@ public class EditQuestionController extends BasicController {
 	private AssessmentItemEditorController itemEditorCtrl;
 
 
-	protected EditQuestionController(UserRequest ureq, WindowControl wControl, VideoQuestion question,
-									 String questionId, RepositoryEntry repositoryEntry) {
+	public EditQuestionController(UserRequest ureq, WindowControl wControl, String questionId,
+									 RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
 		this.questionId = questionId;
 		this.question = videoManager.loadQuestions(repositoryEntry.getOlatResource()).getQuestions().stream()

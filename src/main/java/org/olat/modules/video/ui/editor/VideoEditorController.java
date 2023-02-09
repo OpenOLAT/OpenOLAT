@@ -35,6 +35,7 @@ import org.olat.modules.video.ui.event.MarkerMovedEvent;
 import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -49,7 +50,6 @@ public class VideoEditorController extends BasicController {
 	private final DetailsController detailsController;
 	private final MasterController masterController;
 
-	private EditQuestionController editQuestionController;
 	private final boolean isYoutube;
 
 	@Autowired
@@ -117,15 +117,8 @@ public class VideoEditorController extends BasicController {
 				masterController.reload();
 			} else if (event == SegmentsController.RELOAD_SEGMENTS_EVENT) {
 				masterController.reload();
-			} else if (event instanceof EditQuestionEvent) {
-				if (editQuestionController == null) {
-					EditQuestionEvent editQuestionEvent = (EditQuestionEvent) event;
-					editQuestionController = new EditQuestionController(ureq, getWindowControl(),
-							editQuestionEvent.getQuestion(), editQuestionEvent.getQuestionId(),
-							editQuestionEvent.getRepositoryEntry());
-					listenTo(editQuestionController);
-				}
-				mainVC.put("editQuestion", editQuestionController.getInitialComponent());
+			} else if (event instanceof EditQuestionEvent editQuestionEvent) {
+				fireEvent(ureq, editQuestionEvent);
 			} else if (event instanceof SelectTimeEvent selectTimeCommand) {
 				videoController.selectTime(selectTimeCommand.getTimeInSeconds(), isYoutube);
 			} else if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
@@ -157,12 +150,10 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {
 				detailsController.handleDeleted(timelineEventDeletedEvent.getType(), timelineEventDeletedEvent.getId());
 			}
-		} else if (editQuestionController == source) {
-			String questionId = editQuestionController.getQuestionId();
-			removeAsListenerAndDispose(editQuestionController);
-			editQuestionController = null;
-			mainVC.remove("editQuestion");
-			detailsController.updateQuestion(questionId);
 		}
+	}
+
+	public void updateQuestion(String questionId) {
+		detailsController.updateQuestion(questionId);
 	}
 }
