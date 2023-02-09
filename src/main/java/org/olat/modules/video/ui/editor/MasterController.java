@@ -160,7 +160,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 				sb.append("<i class=\"o_icon ").append(((TimelineEventType) val).getIcon()).append("\"></i>");
 			}
 		}));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.text,
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TimelineCols.text, SELECT_ACTION,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 			if (val instanceof String) {
 				sb.append(((String) val));
