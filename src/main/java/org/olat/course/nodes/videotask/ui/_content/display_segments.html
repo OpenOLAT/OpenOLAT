@@ -83,6 +83,9 @@
 			if(startSegment || changeOfSegment) {
 				jQuery('#o_videotask_start_message').addClass('show').removeClass('hide');
 				jQuery('#o_videotask_messages').addClass('hide').removeClass('show');
+				setTimeout(function() {
+					jQuery('#o_videotask_start_message').addClass('hide').removeClass('show');
+				}, 5000);
 			}
 			if(segmentIndex >= 0) {
 				currentSegmentIndex = segmentIndex;

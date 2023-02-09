@@ -46,6 +46,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.course.nodes.CourseNode;
@@ -262,11 +263,11 @@ public class VideoTaskDisplayController extends BasicController {
 				doFinishTask(ureq, true);
 			}
 		} else if(confirmFinishTaskCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
 			if(event == Event.DONE_EVENT) {
 				doFinishTask(ureq, false);
 			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -332,6 +333,9 @@ public class VideoTaskDisplayController extends BasicController {
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			String icon = correct ? "o_icon_correct_answer" : "o_icon_incorrect_response";
 			segmentsCtrl.setCategoryIconCssClass(category, segmentId, icon);
+			if(correct) {
+				segmentsCtrl.temporaryDisableCategories();
+			}
 		}
 		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)));
 	}
@@ -402,7 +406,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private void doConfirmNextAttempt(UserRequest ureq) {
 		removeAsListenerAndDispose(confirmNextAttemptCtrl);
 		
-		confirmNextAttemptCtrl = new ConfirmNextAttemptController(ureq, getWindowControl());
+		confirmNextAttemptCtrl = new ConfirmNextAttemptController(ureq, getWindowControl(), mode);
 		listenTo(confirmNextAttemptCtrl);
 		
 		String title = translate("confirm.next.attempt.title");
@@ -412,7 +416,7 @@ public class VideoTaskDisplayController extends BasicController {
 	}
 	
 	private void doConfirmFinishTask(UserRequest ureq) {
-		confirmFinishTaskCtrl = new ConfirmFinishTaskController(ureq, getWindowControl());
+		confirmFinishTaskCtrl = new ConfirmFinishTaskController(ureq, getWindowControl(), mode);
 		listenTo(confirmFinishTaskCtrl);
 		
 		String title = translate("confirm.finish.title");
@@ -657,6 +661,10 @@ public class VideoTaskDisplayController extends BasicController {
 					category.setIconCssClass(null, null);
 				}
 			}
+		}
+		
+		public void temporaryDisableCategories() {
+			flc.contextPut("temporaryDisableCategories", new ConsumableBoolean(true));
 		}
 		
 		public void setShowSolution(boolean showSolution) {

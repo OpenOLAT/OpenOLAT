@@ -166,6 +166,11 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 	
 	@Override
+	protected void doDispose() {
+		super.doDispose();
+	}
+
+	@Override
 	public List<File> getIndividualAssessmentDocuments() {
 		return courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
 	}
@@ -340,10 +345,12 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(displayContainerCtrl == source) {
 			if(event instanceof FinishEvent fe) {
-				submit(ureq, fe.getTaskSession());// fire changed event
+				submit(fe.getTaskSession());// fire changed event
 				doFinishTask(ureq);
 				if(fe.isStartNextAttempt()) {
 					doStart(ureq);
+				} else {
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
 		}
@@ -377,7 +384,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		displayContainerCtrl.activate();
 	}
 	
-	private void submit(UserRequest ureq, VideoTaskSession taskSession) {
+	private void submit(VideoTaskSession taskSession) {
 		// Session only in test / assessment mode, not in practice
 		if(assessmentType) {
 			submitAssessedTask(taskSession);
@@ -386,7 +393,6 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		}
 		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
 				AssessmentEntryStatus.done, Role.user);
-		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void submitAssessedTask(VideoTaskSession taskSession) {
@@ -452,7 +458,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
-		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 		}
 		
 		initMetadata();

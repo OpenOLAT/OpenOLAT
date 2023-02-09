@@ -74,11 +74,12 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(currentAttempt + 1 < maxAttempts) {
+		if(currentAttempt + 1 < maxAttempts || maxAttempts <= 0) {
 			String restartText = translate("restart", Integer.toString(currentAttempt + 2));
 			restartButton = uifactory.addFormLink("restart", restartText, null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 			restartButton.setIconLeftCSS("o_icon o_icon_reload");
-		} else {
+		}
+		if(currentAttempt + 1 >= maxAttempts || maxAttempts <= 0) {
 			showSolutionButton = uifactory.addFormLink("show.solution", null, "show.solution", formLayout, Link.BUTTON);
 		}
 		

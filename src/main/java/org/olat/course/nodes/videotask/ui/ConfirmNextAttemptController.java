@@ -22,6 +22,7 @@ package org.olat.course.nodes.videotask.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -34,14 +35,23 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class ConfirmNextAttemptController extends FormBasicController {
 	
-	public ConfirmNextAttemptController(UserRequest ureq, WindowControl wControl) {
+	private final String mode;
+	
+	public ConfirmNextAttemptController(UserRequest ureq, WindowControl wControl, String mode) {
 		super(ureq, wControl, "confirm_next_attempt");
-		
+		this.mode = mode;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+				layoutCont.contextPut("msg",  translate("confirm.next.attempt.test.descr"));
+			} else {
+				layoutCont.contextPut("msg",  translate("confirm.next.attempt.practice.descr"));
+			}
+		}
 
 		uifactory.addFormSubmitButton("ok", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());

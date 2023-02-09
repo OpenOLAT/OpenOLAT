@@ -174,8 +174,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 		// Negative form: label is ignore course assessment
 		SelectionValues assessmentValues = new SelectionValues();
-		assessmentValues.add(SelectionValues.entry("false", translate("yes")));
-		assessmentValues.add(SelectionValues.entry("true", translate("no")));
+		assessmentValues.add(SelectionValues.entry("true", translate("yes")));
+		assessmentValues.add(SelectionValues.entry("false", translate("no")));
 		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
 				assessmentValues.keys(), assessmentValues.values());
 		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true));
