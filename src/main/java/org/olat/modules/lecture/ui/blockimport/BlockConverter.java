@@ -175,7 +175,7 @@ public class BlockConverter {
 		block.setCompulsory("yes".equalsIgnoreCase(compulsory));
 		
 		List<Identity> teachers = getTeachers(parts[7]);
-		if(teachers != null && !teachers.isEmpty()) {
+		if(!teachers.isEmpty()) {
 			importedBlocks.getTeachers().addAll(teachers);
 		}
 
@@ -243,6 +243,7 @@ public class BlockConverter {
 		if(StringHelper.containsNonWhitespace(string)) {
 			String[] stringArr = string.split("[,]");
 			for(String name:stringArr) {
+				name = name.trim();
 				Identity teacher = teachersMap.get(name);
 				if(teacher == null) {
 					List<String> names = List.of(name);
