@@ -185,10 +185,10 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineModel.setVideoLength(videoDurationInMillis);
 		if (showVideoTrack) {
 			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
-					TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT));
+					TimelineEventType.SEGMENT, TimelineEventType.CHAPTER, TimelineEventType.VIDEO));
 		} else {
 			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
-					TimelineEventType.CHAPTER, TimelineEventType.SEGMENT));
+					TimelineEventType.SEGMENT, TimelineEventType.CHAPTER));
 		}
 		fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
 

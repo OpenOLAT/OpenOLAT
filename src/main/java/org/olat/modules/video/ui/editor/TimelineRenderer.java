@@ -44,6 +44,14 @@ import org.olat.core.util.StringHelper;
  */
 public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
+	private static final int LANE_HEIGHT = 20;
+	private static final int VIDEO_CHANNEL_HEIGHT = 50;
+	private static final int CORRECT_INCORRECT_CHANNEL_HEIGHT = 30;
+	private static final int VERTICAL_LANE_GAP = 5;
+	private static final int VERTICAL_CHANNEL_PADDING = 5;
+	private static final int THUMBNAIL_WIDTH = 89;
+	private static final int THUMBNAIL_HEIGHT = 50;
+
 	@Override
 	protected void renderUserOptions(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu,
 									 Translator translator, RenderResult renderResult) {
@@ -155,7 +163,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 	private void renderChannelLabel(StringOutput s, TimelineEventType type, TimelineModel timelineModel) {
 		int height = getChannelHeight(type, timelineModel);
-		int lineHeight = height - 10;
+		int lineHeight = height - 2 * VERTICAL_CHANNEL_PADDING;
 		s
 				.append("<div style=\"height: ")
 				.append(height)
@@ -170,14 +178,14 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 
 	private int getChannelHeight(TimelineEventType type, TimelineModel timelineModel) {
 		if (type == TimelineEventType.VIDEO) {
-			return 50;
+			return VIDEO_CHANNEL_HEIGHT;
 		}
 		if (type == TimelineEventType.CORRECT || type == TimelineEventType.INCORRECT) {
-			return 30;
+			return CORRECT_INCORRECT_CHANNEL_HEIGHT;
 		}
 		List<TimelineRow> events = timelineModel.getEventsByType(type);
 		int nbLanes = Integer.max(TimelineModel.getNumberOfLanes(events), 1);
-		return 10 + nbLanes * 20 + 5 * (nbLanes - 1);
+		return 2 * VERTICAL_CHANNEL_PADDING + nbLanes * LANE_HEIGHT + VERTICAL_LANE_GAP * (nbLanes - 1);
 	}
 
 	private void renderChannels(StringOutput s, FlexiTableComponent ftC, TimelineModel timelineModel) {
@@ -205,10 +213,10 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	private void renderVideoChannel(StringOutput s, TimelineModel timelineModel) {
 		int channelWidth = timelineModel.getChannelWidth();
 		long videoLength = timelineModel.getVideoLength();
-		int thumbnailWidth = 89;
-		int nbThumbnails = channelWidth / 89;
+		int thumbnailWidth = THUMBNAIL_WIDTH;
+		int nbThumbnails = channelWidth / THUMBNAIL_WIDTH;
 		s.append("<div style=\"background-color: black; width: ").append(channelWidth)
-				.append("px; height: 50px;\" class=\"o_video_channel o_video_timeline_box\">");
+				.append("px; height: ").append(VIDEO_CHANNEL_HEIGHT).append("px;\" class=\"o_video_channel o_video_timeline_box\">");
 
 		int accumulatedWidth = 0;
 		for (int i = 0; i <= nbThumbnails; i++) {
@@ -219,7 +227,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				s.append("<div style=\" background-image: url('")
 						.append(url)
 						.append("'); display: inline-block; width: ").append(width)
-						.append("px; height: 50px;\"></div>");
+						.append("px; height: ").append(THUMBNAIL_HEIGHT).append("px;\"></div>");
 			}
 			accumulatedWidth += width;
 		}
@@ -244,7 +252,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		Form theForm = ftE.getRootForm();
 
 		List<List<TimelineRow>> eventsByLanes = TimelineModel.distributeToLanes(timelineEvents);
-		int y = 5;
+		int y = VERTICAL_CHANNEL_PADDING;
 		for (List<TimelineRow> eventsByLane : eventsByLanes) {
 			for (TimelineRow event : eventsByLane) {
 				switch (type) {
@@ -270,7 +278,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		}
 		s.append("<div id=\"o_video_event_").append(event.getId())
 				.append("\" class=\"o_video_question ").append(event.getColor()).append(event.isSelected() ? " o_video_selected" : "")
-				.append("\" style=\"left: ").append(x - 15).append("px; top: ").append(y - 5)
+				.append("\" style=\"left: ").append(x - 15).append("px; top: ").append(y - VERTICAL_CHANNEL_PADDING)
 				.append("px; \" onclick=\"")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
