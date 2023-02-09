@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolService;
@@ -50,6 +51,7 @@ public class ShareItemOptionController extends FormBasicController {
 	@Autowired
 	private QPoolService qpoolService;
 	
+	private final boolean canEditable;
 	private final List<Pool> pools;
 	private final List<BusinessGroup> groups;
 	private final List<QuestionItemShort> items;
@@ -61,8 +63,21 @@ public class ShareItemOptionController extends FormBasicController {
 		this.pools = pools;
 		this.items = items;
 		this.groups = groups;
+		this.canEditable = isAuthor(items);
 		
 		initForm(ureq);
+	}
+	
+	private boolean isAuthor(List<QuestionItemShort> itemList) {
+		boolean isAuthor = true;
+		for(QuestionItemShort item:itemList) {
+			List<Identity> authors = qpoolService.getAuthors(item);
+			isAuthor &= authors.contains(getIdentity());
+			if(!isAuthor) {
+				break;
+			}
+		}
+		return isAuthor;
 	}
 	
 	public List<QuestionItemShort> getItems() {
@@ -105,6 +120,7 @@ public class ShareItemOptionController extends FormBasicController {
 		};
 		editableEl = uifactory.addRadiosVertical("share.editable", "share.editable", mailCont, keys, values);
 		editableEl.select("no", true);
+		editableEl.setEnabled(canEditable);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
@@ -115,7 +131,10 @@ public class ShareItemOptionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		boolean editable = editableEl.isOneSelected() && editableEl.isSelected(0);
+		Boolean editable = null;
+		if(canEditable) {
+			editable = editableEl.isOneSelected() && editableEl.isSelected(0);
+		}
 		if(groups != null && !groups.isEmpty()) {
 			qpoolService.shareItemsWithGroups(items, groups, editable);
 		}

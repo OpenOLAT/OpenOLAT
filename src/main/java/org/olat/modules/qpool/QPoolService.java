@@ -109,7 +109,7 @@ public interface QPoolService {
 	 */
 	public List<QuestionItemShort> getItems(TaxonomyLevelRef level);
 	
-	public List<Identity> getAuthors(QuestionItem item);
+	public List<Identity> getAuthors(QuestionItemShort item);
 	
 	public void addAuthors(List<Identity> authors, List<QuestionItemShort> items);
 	
@@ -148,14 +148,14 @@ public interface QPoolService {
 	
 	public void removeOwners(List<Identity> owners, List<Pool> pools);
 	
-	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, boolean editable);
+	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, Boolean editable);
 	
 	public void removeItemsInPool(List<QuestionItemShort> items, Pool pool);
 	
 	public List<QuestionItem2Pool> getPoolInfosByItem(QuestionItemShort item);
 	
 	//share
-	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, boolean editable);
+	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, Boolean editable);
 	
 	public void removeItemsFromResource(List<QuestionItemShort> items, OLATResource resource);
 	
