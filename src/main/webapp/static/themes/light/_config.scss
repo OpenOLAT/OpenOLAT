@@ -776,7 +776,6 @@ $o-qti-editor-box-border-color						: #e5e5e5;
 /* Video module */
 $o-video-marker-bg-color							: #efefef;
 $o-video-time-marker-default-bg-color				: $brand-info;
-$o-video-gray-color									: #dbdbdb;
 
 $o-video-startbox-main-border-color					: $brand-primary;
 $o-video-startbox-main-bg-color						: rgba($brand-primary,0.1);
@@ -1164,12 +1163,27 @@ $o-selection-light-green: #32CD3233;
 $o-selection-dark-green : #228B2233;
 
 /* Video Colors */
-$o-video-red       : #ff8080;
-$o-video-green     : #80ff80;
-$o-video-blue      : #809fff;
-$o-video-yellow    : #FFEC80;
-$o-video-purple    : #bb80ff;
-$o-video-gray      : #cccccc;
+$o-video-color-light-gray  : #E0E0E0;
+$o-video-color-yellow      : #FFE280;
+$o-video-color-orange      : #FFC580;
+$o-video-color-red         : #FF8080;
+$o-video-color-orchid      : #ECB7EA;
+$o-video-color-purple      : #BF80BF;
+$o-video-color-light-blue  : #D6EBF2;
+$o-video-color-cobalt-blue : #80A3D5;
+$o-video-color-light-green : #C7F6C7;
+$o-video-color-sea-green   : #C7DDC5;
+
+$o-video-border-color-light-gray  : #C0C0C0;
+$o-video-border-color-yellow      : #FFC500;
+$o-video-border-color-orange      : #FF8C00;
+$o-video-border-color-red         : #FF0000;
+$o-video-border-color-orchid      : #DA70D6;
+$o-video-border-color-purple      : #800080;
+$o-video-border-color-light-blue  : #ADD8E6;
+$o-video-border-color-cobalt-blue : #0047AB;
+$o-video-border-color-light-green : #90EE90;
+$o-video-border-color-sea-green   : #8FBC8B;
 
 /* Educational course types */
 $o-edu-type-standard-course-color 			: $gray !default;

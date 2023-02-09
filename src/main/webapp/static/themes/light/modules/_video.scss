@@ -150,23 +150,35 @@
 	border-left: 3px solid $o-video-time-marker-default-bg-color;
 	padding: 5px;
 	
-	&.o_video_marker_gray { 
-		border-left-color: $gray-dark;
+	&.o_video_marker_lightgray {
+		border-left-color: $o-video-border-color-light-gray;
 	}
-	&.o_video_marker_blue { 
-		border-left-color: $state-info-border;
+	&.o_video_marker_yellow {
+		border-left-color: $o-video-border-color-yellow;
 	}
-	&.o_video_marker_green { 
-		border-left-color: $brand-success;
-	}
-	&.o_video_marker_yellow { 
-		border-left-color: $brand-warning;
+	&.o_video_marker_orange {
+		border-left-color: $o-video-border-color-orange;
 	}
 	&.o_video_marker_red {
-		border-left-color: $brand-danger;
+		border-left-color: $o-video-border-color-red;
+	}
+	&.o_video_marker_orchid {
+		border-left-color: $o-video-border-color-orchid;
 	}
 	&.o_video_marker_purple {
-		border-left-color: $o-cn-style-cat-purple-color;
+		border-left-color: $o-video-border-color-purple;
+	}
+	&.o_video_marker_lightblue {
+		border-left-color: $o-video-border-color-light-blue;
+	}
+	&.o_video_marker_cobaltblue {
+		border-left-color: $o-video-border-color-cobalt-blue;
+	}
+	&.o_video_marker_lightgreen {
+		border-left-color: $o-video-border-color-light-green;
+	}
+	&.o_video_marker_seagreen {
+		border-left-color: $o-video-border-color-sea-green;
 	}
 }
 
@@ -217,23 +229,35 @@
 }
 
 .mejs__time-rail {
-	.o_video_marker_gray { 
-		background: $gray-dark;
+	.o_video_marker_lightgray {
+		background: $o-video-border-color-light-gray;
 	}
-	.o_video_marker_blue { 
-		background: $state-info-border;
+	.o_video_marker_yellow {
+		background: $o-video-border-color-yellow;
 	}
-	.o_video_marker_green { 
-		background: $brand-success;
-	}
-	.o_video_marker_yellow { 
-		background: $brand-warning;
+	.o_video_marker_orange {
+		background: $o-video-border-color-orange;
 	}
 	.o_video_marker_red {
-		background: $brand-danger;
+		background: $o-video-border-color-red;
+	}
+	.o_video_marker_orchid {
+		background: $o-video-border-color-orchid;
 	}
 	.o_video_marker_purple {
-		background: $o-cn-style-cat-purple-color;
+		background: $o-video-border-color-purple;
+	}
+	.o_video_marker_lightblue {
+		background: $o-video-border-color-light-blue;
+	}
+	.o_video_marker_cobaltblue {
+		background: $o-video-border-color-cobalt-blue;
+	}
+	.o_video_marker_lightgreen {
+		background: $o-video-border-color-light-green;
+	}
+	.o_video_marker_seagreen {
+		background: $o-video-border-color-sea-green;
 	}
 }
 
@@ -560,40 +584,64 @@
 		height: 30px;
 	}
 
-	&.o_video_marker_gray {
+	&.o_video_marker_lightgray {
 		svg {
-			fill: $o-video-gray-color;
-			stroke: darken($o-video-gray-color, 16);
-		}
-	}
-	&.o_video_marker_blue {
-		svg {
-			fill: $o-selection-light-blue;
-			stroke: darken($o-selection-light-blue, 16);
-		}
-	}
-	&.o_video_marker_green {
-		svg {
-			fill: $o-selection-light-green;
-			stroke: darken($o-selection-light-green, 16);
+			fill: $o-video-color-light-gray;
+			stroke: $o-video-border-color-light-gray;
 		}
 	}
 	&.o_video_marker_yellow {
 		svg {
-			fill: $o-selection-yellow;
-			stroke: darken($o-selection-yellow, 16);
+			fill: $o-video-color-yellow;
+			stroke: $o-video-border-color-yellow;
+		}
+	}
+	&.o_video_marker_orange {
+		svg {
+			fill: $o-video-color-orange;
+			stroke: $o-video-border-color-orange;
 		}
 	}
 	&.o_video_marker_red {
 		svg {
-			fill: $o-selection-red;
-			stroke: darken($o-selection-red, 16);
+			fill: $o-video-color-red;
+			stroke: $o-video-border-color-red;
+		}
+	}
+	&.o_video_marker_orchid {
+		svg {
+			fill: $o-video-color-orchid;
+			stroke: $o-video-border-color-orchid;
 		}
 	}
 	&.o_video_marker_purple {
 		svg {
-			fill: $o-selection-purple;
-			stroke: darken($o-selection-purple, 16);
+			fill: $o-video-color-purple;
+			stroke: $o-video-border-color-purple;
+		}
+	}
+	&.o_video_marker_lightblue {
+		svg {
+			fill: $o-video-color-light-blue;
+			stroke: $o-video-border-color-light-blue;
+		}
+	}
+	&.o_video_marker_cobaltblue {
+		svg {
+			fill: $o-video-color-cobalt-blue;
+			stroke: $o-video-border-color-cobalt-blue;
+		}
+	}
+	&.o_video_marker_lightgreen {
+		svg {
+			fill: $o-video-color-light-green;
+			stroke: $o-video-border-color-light-green;
+		}
+	}
+	&.o_video_marker_seagreen {
+		svg {
+			fill: $o-video-color-sea-green;
+			stroke: $o-video-border-color-sea-green;
 		}
 	}
 
@@ -629,29 +677,45 @@
 		outline: 1px solid $brand-primary;
 	}
 
-	&.o_video_marker_gray {
-		background-color: $o-video-gray-color;
-		border-color: darken($o-video-gray-color, 16);
-	}
-	&.o_video_marker_blue {
-		background-color: $o-selection-light-blue;
-		border-color: darken($o-selection-light-blue, 16);
-	}
-	&.o_video_marker_green {
-		background-color: $o-selection-light-green;
-		border-color: darken($o-selection-light-green, 16);
+	&.o_video_marker_lightgray {
+		background-color: $o-video-color-light-gray;
+		border-color: $o-video-border-color-light-gray;
 	}
 	&.o_video_marker_yellow {
-		background-color: $o-selection-yellow;
-		border-color: darken($o-selection-yellow, 16);
+		background-color: $o-video-color-yellow;
+		border-color: $o-video-border-color-yellow;
+	}
+	&.o_video_marker_orange {
+		background-color: $o-video-color-orange;
+		border-color: $o-video-border-color-orange;
 	}
 	&.o_video_marker_red {
-		background-color: $o-selection-red;
-		border-color: darken($o-selection-red, 16);
+		background-color: $o-video-color-red;
+		border-color: $o-video-border-color-red;
+	}
+	&.o_video_marker_orchid {
+		background-color: $o-video-color-orchid;
+		border-color: $o-video-border-color-orchid;
 	}
 	&.o_video_marker_purple {
-		background-color: $o-selection-purple;
-		border-color: darken($o-selection-purple, 16);
+		background-color: $o-video-color-purple;
+		border-color: $o-video-border-color-purple;
+	}
+	&.o_video_marker_lightblue {
+		background-color: $o-video-color-light-blue;
+		border-color: $o-video-border-color-light-blue;
+	}
+	&.o_video_marker_cobaltblue {
+		background-color: $o-video-color-cobalt-blue;
+		border-color: $o-video-border-color-cobalt-blue;
+	}
+	&.o_video_marker_lightgreen {
+		background-color: $o-video-color-light-green;
+		border-color: $o-video-border-color-light-green;
+	}
+	&.o_video_marker_seagreen {
+		background-color: $o-video-color-sea-green;
+		border-color: $o-video-border-color-sea-green;
 	}
 }
 
@@ -699,50 +763,78 @@
 }
 
 .o_video_colored_area {
-	&.o_video_marker_gray {
-		background-color: $o-video-gray-color;
-		border-color: darken($o-video-gray-color, 16);
-	}
-	&.o_video_marker_blue {
-		background-color: $o-selection-light-blue;
-		border-color: darken($o-selection-light-blue, 16);
-	}
-	&.o_video_marker_green {
-		background-color: $o-selection-light-green;
-		border-color: darken($o-selection-light-green, 16);
+	&.o_video_marker_lightgray {
+		background-color: $o-video-color-light-gray;
+		border-color: $o-video-border-color-light-gray;
 	}
 	&.o_video_marker_yellow {
-		background-color: $o-selection-yellow;
-		border-color: darken($o-selection-yellow, 16);
+		background-color: $o-video-color-yellow;
+		border-color: $o-video-border-color-yellow;
+	}
+	&.o_video_marker_orange {
+		background-color: $o-video-color-orange;
+		border-color: $o-video-border-color-orange;
 	}
 	&.o_video_marker_red {
-		background-color: $o-selection-red;
-		border-color: darken($o-selection-red, 16);
+		background-color: $o-video-color-red;
+		border-color: $o-video-border-color-red;
+	}
+	&.o_video_marker_orchid {
+		background-color: $o-video-color-orchid;
+		border-color: $o-video-border-color-orchid;
 	}
 	&.o_video_marker_purple {
-		background-color: $o-selection-purple;
-		border-color: darken($o-selection-purple, 16);
+		background-color: $o-video-color-purple;
+		border-color: $o-video-border-color-purple;
+	}
+	&.o_video_marker_lightblue {
+		background-color: $o-video-color-light-blue;
+		border-color: $o-video-border-color-light-blue;
+	}
+	&.o_video_marker_cobaltblue {
+		background-color: $o-video-color-cobalt-blue;
+		border-color: $o-video-border-color-cobalt-blue;
+	}
+	&.o_video_marker_lightgreen {
+		background-color: $o-video-color-light-green;
+		border-color: $o-video-border-color-light-green;
+	}
+	&.o_video_marker_seagreen {
+		background-color: $o-video-color-sea-green;
+		border-color: $o-video-border-color-sea-green;
 	}
 }
 
 .o_video_me_colored_area {
-	&.o_video_marker_gray {
-		background-color: $o-video-gray;
-	}
-	&.o_video_marker_blue {
-		background-color: $o-video-blue;
-	}
-	&.o_video_marker_green {
-		background-color: $o-video-green;
+	&.o_video_marker_lightgray {
+		background-color: $o-video-color-light-gray;
 	}
 	&.o_video_marker_yellow {
-		background-color: $o-video-yellow;
+		background-color: $o-video-color-yellow;
+	}
+	&.o_video_marker_orange {
+		background-color: $o-video-color-orange;
 	}
 	&.o_video_marker_red {
-		background-color: $o-video-red;
+		background-color: $o-video-color-red;
+	}
+	&.o_video_marker_orchid {
+		background-color: $o-video-color-orchid;
 	}
 	&.o_video_marker_purple {
-		background-color: $o-video-purple;
+		background-color: $o-video-color-purple;
+	}
+	&.o_video_marker_lightblue {
+		background-color: $o-video-color-light-blue;
+	}
+	&.o_video_marker_cobaltblue {
+		background-color: $o-video-color-cobalt-blue;
+	}
+	&.o_video_marker_lightgreen {
+		background-color: $o-video-color-light-green;
+	}
+	&.o_video_marker_seagreen {
+		background-color: $o-video-color-sea-green;
 	}
 }
 

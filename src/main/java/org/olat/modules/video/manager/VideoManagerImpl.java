@@ -83,12 +83,14 @@ import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoMetadataSearchParams;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
+import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
@@ -1140,12 +1142,30 @@ public class VideoManagerImpl implements VideoManager {
 		if(markersItem instanceof VFSLeaf) {
 			VFSLeaf markersLeaf = (VFSLeaf)markersItem;
 			try(InputStream in=markersLeaf.getInputStream()) {
-				return VideoXStream.fromXml(in, VideoMarkers.class);
+				return replaceMissingStyles(VideoXStream.fromXml(in, VideoMarkers.class));
 			} catch(IOException e) {
 				log.error("", e);
 			}
 		}
 		return new VideoMarkersImpl();
+	}
+
+	private VideoMarkers replaceMissingStyles(VideoMarkers markers) {
+		for (VideoMarker marker : markers.getMarkers()) {
+			marker.setStyle(replaceMissingStyle(marker.getStyle()));
+		}
+		return markers;
+	}
+
+	private String replaceMissingStyle(String style) {
+		if ("o_video_marker_gray".equals(style)) {
+			return "o_video_marker_lightgray";
+		} else if ("o_video_marker_blue".equals(style)) {
+			return "o_video_marker_lightblue";
+		} else if ("o_video_marker_green".equals(style)) {
+			return "o_video_marker_lightgreen";
+		}
+		return style;
 	}
 
 	@Override
@@ -1171,12 +1191,19 @@ public class VideoManagerImpl implements VideoManager {
 		VFSItem segmentsItem = vfsContainer.resolve(FILENAME_SEGMENTS_XML);
 		if (segmentsItem instanceof VFSLeaf segmentsLeaf) {
 			try (InputStream in = segmentsLeaf.getInputStream()) {
-				return VideoXStream.fromXml(in, VideoSegments.class);
+				return replaceMissingStyles(VideoXStream.fromXml(in, VideoSegments.class));
 			} catch (IOException e) {
 				log.error("", e);
 			}
 		}
 		return new VideoSegmentsImpl();
+	}
+
+	private VideoSegments replaceMissingStyles(VideoSegments segments) {
+		for (VideoSegmentCategory category : segments.getCategories()) {
+			category.setColor(replaceMissingStyle(category.getColor()));
+		}
+		return segments;
 	}
 
 	@Override
@@ -1202,12 +1229,19 @@ public class VideoManagerImpl implements VideoManager {
 		if(questionsItem instanceof VFSLeaf) {
 			VFSLeaf questionsLeaf = (VFSLeaf)questionsItem;
 			try(InputStream in=questionsLeaf.getInputStream()) {
-				return VideoXStream.fromXml(in, VideoQuestions.class);
+				return replaceMissingStyles(VideoXStream.fromXml(in, VideoQuestions.class));
 			} catch(IOException e) {
 				log.error("", e);
 			}
 		}
 		return new VideoQuestionsImpl();
+	}
+
+	private VideoQuestions replaceMissingStyles(VideoQuestions questions) {
+		for (VideoQuestion question : questions.getQuestions()) {
+			question.setStyle(replaceMissingStyle(question.getStyle()));
+		}
+		return questions;
 	}
 
 	@Override

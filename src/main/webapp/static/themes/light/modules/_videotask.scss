@@ -15,55 +15,87 @@
 .o_videotask_box .btn,
 .o_videotask_marker,
 .o_videotask_segment {	
-	&.o_video_marker_gray { 
-		background-color: $gray-dark;
-		color: white;
-	}
-	&.o_video_marker_blue { 
-		background-color: $state-info-border;
+	&.o_video_marker_lightgray {
+		background-color: $o-video-color-light-gray;
 		color: black;
 	}
-	&.o_video_marker_green { 
-		background-color: $brand-success;
+	&.o_video_marker_yellow {
+		background-color: $o-video-color-yellow;
 		color: black;
 	}
-	&.o_video_marker_yellow { 
-		background-color: $brand-warning;
+	&.o_video_marker_orange {
+		background-color: $o-video-color-orange;
 		color: black;
 	}
 	&.o_video_marker_red {
-		background-color: $brand-danger;
+		background-color: $o-video-color-red;
+		color: black;
+	}
+	&.o_video_marker_orchid {
+		background-color: $o-video-color-orchid;
 		color: black;
 	}
 	&.o_video_marker_purple {
-		background-color: $o-cn-style-cat-purple-color;
+		background-color: $o-video-color-purple;
+		color: black;
+	}
+	&.o_video_marker_lightblue {
+		background-color: $o-video-color-light-blue;
+		color: black;
+	}
+	&.o_video_marker_cobaltblue {
+		background-color: $o-video-color-cobalt-blue;
+		color: black;
+	}
+	&.o_video_marker_lightgreen {
+		background-color: $o-video-color-light-green;
+		color: black;
+	}
+	&.o_video_marker_seagreen {
+		background-color: $o-video-color-sea-green;
 		color: black;
 	}
 }
 
 .o_videotask_tooltip {	
-	&.o_video_marker_gray .tooltip-inner { 
-		background-color: $gray-dark;
-		color: white;
-	}
-	&.o_video_marker_blue .tooltip-inner { 
-		background-color: $state-info-border;
+	&.o_video_marker_lightgray .tooltip-inner {
+		background-color: $o-video-color-light-gray;
 		color: black;
 	}
-	&.o_video_marker_green .tooltip-inner { 
-		background-color: $brand-success;
+	&.o_video_marker_yellow .tooltip-inner {
+		background-color: $o-video-color-yellow;
 		color: black;
 	}
-	&.o_video_marker_yellow .tooltip-inner { 
-		background-color: $brand-warning;
+	&.o_video_marker_orange .tooltip-inner {
+		background-color: $o-video-color-orange;
 		color: black;
 	}
 	&.o_video_marker_red .tooltip-inner {
-		background-color: $brand-danger;
+		background-color: $o-video-color-red;
+		color: black;
+	}
+	&.o_video_marker_orchid .tooltip-inner {
+		background-color: $o-video-color-orchid;
 		color: black;
 	}
 	&.o_video_marker_purple .tooltip-inner {
-		background-color: $o-cn-style-cat-purple-color;
+		background-color: $o-video-color-purple;
+		color: black;
+	}
+	&.o_video_marker_lightblue .tooltip-inner {
+		background-color: $o-video-color-light-blue;
+		color: black;
+	}
+	&.o_video_marker_cobaltblue .tooltip-inner {
+		background-color: $o-video-color-cobalt-blue;
+		color: black;
+	}
+	&.o_video_marker_lightgreen .tooltip-inner {
+		background-color: $o-video-color-light-green;
+		color: black;
+	}
+	&.o_video_marker_seagreen .tooltip-inner {
+		background-color: $o-video-color-sea-green;
 		color: black;
 	}
 }
@@ -74,29 +106,45 @@
 	}
 }
 
-.o_videotask_marker.o_video_marker_gray:before,
-.o_videotask_marker.o_video_marker_gray > span { 
-	background-color: $gray-dark;
-}	
-.o_videotask_marker.o_video_marker_blue:before,
-.o_videotask_marker.o_video_marker_blue > span { 
-	background-color: $state-info-border;
-}
-.o_videotask_marker.o_video_marker_green:before,
-.o_videotask_marker.o_video_marker_green > span { 
-	background-color: $brand-success;
+.o_videotask_marker.o_video_marker_lightgray:before,
+.o_videotask_marker.o_video_marker_lightgray > span {
+	background-color: $o-video-color-light-gray;
 }
 .o_videotask_marker.o_video_marker_yellow:before,
-.o_videotask_marker.o_video_marker_yellow > span { 
-	background-color: $brand-warning;
+.o_videotask_marker.o_video_marker_yellow > span {
+	background-color: $o-video-color-yellow;
+}
+.o_videotask_marker.o_video_marker_orange:before,
+.o_videotask_marker.o_video_marker_orange > span {
+	background-color: $o-video-color-orange;
 }
 .o_videotask_marker.o_video_marker_red:before,
 .o_videotask_marker.o_video_marker_red > span {
-	background-color: $brand-danger;
+	background-color: $o-video-color-red;
+}
+.o_videotask_marker.o_video_marker_orchid:before,
+.o_videotask_marker.o_video_marker_orchid > span {
+	background-color: $o-video-color-orchid;
 }
 .o_videotask_marker.o_video_marker_purple:before,
 .o_videotask_marker.o_video_marker_purple > span {
-	background-color: $o-cn-style-cat-purple-color;
+	background-color: $o-video-color-purple;
+}
+.o_videotask_marker.o_video_marker_lightblue:before,
+.o_videotask_marker.o_video_marker_lightblue > span {
+	background-color: $o-video-color-light-blue;
+}
+.o_videotask_marker.o_video_marker_cobaltblue:before,
+.o_videotask_marker.o_video_marker_cobaltblue > span {
+	background-color: $o-video-color-cobalt-blue;
+}
+.o_videotask_marker.o_video_marker_lightgreen:before,
+.o_videotask_marker.o_video_marker_lightgreen > span {
+	background-color: $o-video-color-light-green;
+}
+.o_videotask_marker.o_video_marker_seagreen:before,
+.o_videotask_marker.o_video_marker_seagreen > span {
+	background-color: $o-video-color-sea-green;
 }
 
 .o_videotask_marker.o_video_marker_assign { 
