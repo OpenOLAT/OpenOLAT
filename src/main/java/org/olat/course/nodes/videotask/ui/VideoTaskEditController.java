@@ -21,6 +21,7 @@ package org.olat.course.nodes.videotask.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -42,6 +43,7 @@ import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
@@ -263,8 +265,15 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 			config.setStringValue(VideoTaskEditController.CONFIG_KEY_MODE, VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
 			config.remove(VideoTaskEditController.CONFIG_KEY_ATTEMPTS);
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT, CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
-			config.remove(VideoTaskEditController.CONFIG_KEY_CATEGORIES);
 			
+			if(videoEntry != null) {
+				VideoSegments segments = videoManager.loadSegments(videoEntry.getOlatResource());
+				List<String> categoriesId = segments.getCategories().stream().map(VideoSegmentCategory::getId).collect(Collectors.toList());
+				config.setList(CONFIG_KEY_CATEGORIES, categoriesId);
+			} else {
+				config.remove(CONFIG_KEY_CATEGORIES);
+			}
+
 			// reset assessment
 			config.setStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE.toString());
 			assessmentCtrl.resetConfiguration();

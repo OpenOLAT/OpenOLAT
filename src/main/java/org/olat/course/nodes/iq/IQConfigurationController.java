@@ -153,7 +153,7 @@ public class IQConfigurationController extends BasicController implements Refere
 		iconPanelContent = new IconPanelLabelTextContent("content");
 		
 		EmptyStateConfig emptyStateConfig = EmptyStateConfig.builder()
-				.withMessageTranslated(translate("no.test.resource.selected"))
+				.withMessageTranslated(translate("no.video.resource.selected"))
 				.withIconCss("o_icon o_FileResource-IMSQTI21_icon")
 				.build();
 		String selectionTitle = translate("select.test");

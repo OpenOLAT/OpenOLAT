@@ -179,7 +179,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 		RepositoryEntry videoEntry = VideoTaskEditController.getVideoReference(getModuleConfiguration(), false);
 		if (videoEntry == null) {
-			addStatusErrorDescription("no.video.chosen", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
+			addStatusErrorDescription("no.video.resource.selected", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
 		} else if (RepositoryEntryStatusEnum.deleted == videoEntry.getEntryStatus()
 					|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {	
 			addStatusErrorDescription("video.deleted", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
@@ -202,8 +202,8 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		boolean forwardSeekingRestrictred = config.getBooleanSafe(VideoEditController.CONFIG_KEY_FORWARD_SEEKING_RESTRICTED);
 		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
-		boolean showAnnotations = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, true);
-		boolean showQuestions = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, true);
+		boolean showAnnotations = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, false);
+		boolean showQuestions = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false);
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(false, false, false, false,
 				title, false, false, null, false, readOnly, forwardSeekingRestrictred);

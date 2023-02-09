@@ -20,6 +20,7 @@
 package org.olat.course.nodes.videotask.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -114,8 +115,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
 				elementsValues.keys(), elementsValues.values(), 1);
-		videoElements.select(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, true));
-		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, true));
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, false));
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
 		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
 
@@ -129,7 +130,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 					categoriesEl.select(category, true);
 				}
 			}
-		}
+		} 
 		categoriesEl.setVisible(!categoriesValues.isEmpty());
 		
 		SelectionValues sortValues = new SelectionValues();
@@ -354,6 +355,11 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		currentMode = modeEl.getSelectedKey();
 		config.setStringValue(VideoTaskEditController.CONFIG_KEY_MODE, currentMode);
 		
+		Collection<String> selectedElements = videoElements.getSelectedKeys();
+		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, selectedElements.contains(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS));
+		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_QUESTIONS, selectedElements.contains(VideoTaskEditController.CONFIG_KEY_QUESTIONS));
+		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
+
 		if(enableAttemptsEl.isOneSelected() && ATTEMPTS_ENABLED.equals(enableAttemptsEl.getSelectedKey())) {
 			int attempts = Integer.parseInt(attemptsEl.getValue());
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, attempts);
