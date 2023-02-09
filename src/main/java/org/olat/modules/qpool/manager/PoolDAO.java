@@ -205,7 +205,7 @@ public class PoolDAO {
 		return query.getResultList();
 	}
 	
-	public void addItemToPool(QuestionItemShort item, List<Pool> pools, boolean editable) {
+	public void addItemToPool(QuestionItemShort item, List<Pool> pools, Boolean editable) {
 		QuestionItem lockedItem = questionItemDao.loadForUpdate(item);
 		if (lockedItem == null) return;
 		
@@ -215,12 +215,12 @@ public class PoolDAO {
 				PoolToItem p2i = new PoolToItem();
 				p2i.setCreationDate(new Date());
 				p2i.setItem(lockedItem);
-				p2i.setEditable(editable);
+				p2i.setEditable(editable != null && editable.booleanValue());
 				p2i.setPool(pool);
 				dbInstance.getCurrentEntityManager().persist(p2i);
-			} else {
+			} else if(editable != null) {
 				for(PoolToItem itemToPool:itemsToPool) {
-					itemToPool.setEditable(editable);
+					itemToPool.setEditable(editable.booleanValue());
 					dbInstance.getCurrentEntityManager().merge(itemToPool);
 				}
 			}

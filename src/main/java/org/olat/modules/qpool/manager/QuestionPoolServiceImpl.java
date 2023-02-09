@@ -218,7 +218,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public List<Identity> getAuthors(QuestionItem item) {
+	public List<Identity> getAuthors(QuestionItemShort item) {
 		QuestionItemImpl itemImpl;
 		if(item instanceof QuestionItemImpl) {
 			itemImpl = (QuestionItemImpl)item;
@@ -512,7 +512,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, boolean editable) {
+	public void addItemsInPools(List<? extends QuestionItemShort> items, List<Pool> pools, Boolean editable) {
 		if(items == null || items.isEmpty() || pools == null || pools.isEmpty()) {
 			return;//nothing to do
 		}
@@ -560,7 +560,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
-	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, boolean editable) {
+	public void shareItemsWithGroups(List<? extends QuestionItemShort> items, List<BusinessGroup> groups, Boolean editable) {
 		if(items == null || items.isEmpty() || groups == null || groups.isEmpty()) {
 			return;//nothing to do
 		}

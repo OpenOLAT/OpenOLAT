@@ -424,7 +424,7 @@ public class QuestionItemDAO {
 		dbInstance.commit();//release the lock asap
 	}
 	
-	public void share(QuestionItemShort item, List<OLATResource> resources, boolean editable) {
+	public void share(QuestionItemShort item, List<OLATResource> resources, Boolean editable) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		QuestionItem lockedItem = loadForUpdate(item);
 		if (lockedItem == null) return;
@@ -435,10 +435,10 @@ public class QuestionItemDAO {
 				ResourceShareImpl share = new ResourceShareImpl();
 				share.setCreationDate(new Date());
 				share.setItem(lockedItem);
-				share.setEditable(editable);
+				share.setEditable(editable != null && editable.booleanValue());
 				share.setResource(resource);
 				em.persist(share);
-			} else {
+			} else if(editable != null) {
 				for(ResourceShareImpl shareToItem:shareToItems) {
 					shareToItem.setEditable(editable);
 					em.merge(shareToItem);
