@@ -220,9 +220,6 @@ public class OAIPmhAdminController extends FormBasicController {
 			searchEnginePublishEl.toggleOff();
 		}
 
-		// TODO /resourceinfo/ -> session cookies abstellen -> möglich?
-		// TODO Link -> NoFollow -> for searchengine, möglich?
-
 		String sitemapUrl = ResourceInfoDispatcher.getUrl("sitemap.xml");
 		String[] sitemapKeys = new String[]{OAI_KEY_SEARCHENGINE_GOOGLE, OAI_KEY_SEARCHENGINE_CUSTOM_SITEMAP};
 		String[] sitemapValues = new String[]{translate("searchengine.url.google"), translate("searchengine.url.custom.sitemap")};
