@@ -148,8 +148,10 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, wControl, assessmentEval,
 				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
-		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
-		
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
+			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+		}
+
 		exposeUserDataToVC();
 
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
@@ -418,7 +420,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		AssessmentEntryStatus assessmentStatus;
 		if(updatePassed == null) {
 			assessmentStatus = AssessmentEntryStatus.inReview;
-			visibility = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv).getUserVisible();
+			visibility = Boolean.FALSE;
 		} else {
 			assessmentStatus = AssessmentEntryStatus.done;
 			visibility = Boolean.TRUE;
@@ -449,7 +451,9 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), assessmentEval,
 				assessmentConfig, this, gradeSystem(userCourseEnv, courseNode), panelInfo);
 		listenTo(assessmentParticipantViewCtrl);
+		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
 		myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+		}
 		
 		initMetadata();
 	}

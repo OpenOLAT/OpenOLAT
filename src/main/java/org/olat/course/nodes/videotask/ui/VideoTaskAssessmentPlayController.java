@@ -20,8 +20,6 @@
 package org.olat.course.nodes.videotask.ui;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -63,16 +61,11 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 	private VideoManager videoManager;
 	
 	public VideoTaskAssessmentPlayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions) {
+			RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions, Identity assessedIdentity) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("play");
-		
-		Set<Identity> identities = taskSessions.stream()
-				.filter(session -> session.getIdentity() != null).map(VideoTaskSession::getIdentity)
-				.collect(Collectors.toSet());
-		if(identities.size() == 1) {
-			Identity assessedIdentity = identities.iterator().next();
+		if(assessedIdentity != null) {
 			String fullname = userManager.getUserDisplayName(assessedIdentity);
 			mainVC.contextPut("userFullname", fullname);
 		}

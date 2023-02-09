@@ -1,4 +1,6 @@
-$r.render("assessment")
+#if($r.available("assessment"))
+	$r.render("assessment")
+#end
 
 #set($noMoreAttempts = $r.isTrue($attemptsConfig) && $maxAttempts > 0 && $numOfAttempts >= $maxAttempts)
 <div class="o_videotask_box">

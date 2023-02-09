@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -66,6 +67,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 	private MultipleSelectionElement categoriesEl;
 	private SingleSelection sortCategoriesEl;
 	private SingleSelection attemptsPerSegmentEl;
+	private SpacerElement attemptsPerSegmentSpacer;
 	
 	private String currentMode;
 	private final String subIdent;
@@ -178,6 +180,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		enableAttemptsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		attemptsEl = uifactory.addTextElement("num.of.attempts", 4, Integer.toString(attempts), formLayout);
+		
+		attemptsPerSegmentSpacer = uifactory.addSpacerElement("attempts-spacer", formLayout, false);
 
 		int attemptsPerSegmentInt = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT,
 				VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
@@ -235,8 +239,10 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 				attemptsPerSegmentEl.select("3", true);
 			}
 			attemptsPerSegmentEl.setVisible(true);
+			attemptsPerSegmentSpacer.setVisible(true);
 		} else {
 			attemptsPerSegmentEl.setVisible(false);
+			attemptsPerSegmentSpacer.setVisible(false);
 		}
 	}
 	

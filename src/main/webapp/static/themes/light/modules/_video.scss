@@ -521,10 +521,9 @@
 			border-color: $brand-primary;
 		}
 		&.o_video_segment_selection {
-			position: relative;
 			overflow: visible;
-			padding: 0 2px;
-			margin-top: -5px;
+			font-size: 0;
+			padding: 0 1px;
 			height: 30px;
 			border: none;
 			border-radius: 0;
@@ -533,9 +532,10 @@
 		&.o_video_segment_selection:before {
 			content: '\0020';
 			position: absolute;
+			padding: 0 1px;
 			height: 30px;
-			right: 1px;
-			width: 2px;
+			right: 0;
+			width: 1px;
 		}
 		&.o_selection_correct {
 			background-color: $o-video-timeline-correct-bg;

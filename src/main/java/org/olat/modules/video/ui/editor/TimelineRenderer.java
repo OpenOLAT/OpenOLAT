@@ -260,8 +260,8 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 					case ANNOTATION -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
 					case CHAPTER -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_chapter", "chapterId");
 					case SEGMENT -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_segment", "segmentId");
-					case CORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 5, "o_video_segment_selection", "correctId");
-					case INCORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 5, "o_video_segment_selection", "incorrectId");
+					case CORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 0, "o_video_segment_selection", "correctId");
+					case INCORRECT -> renderEvent(s, ftC, theForm, timelineModel, event, 0, "o_video_segment_selection", "incorrectId");
 					default -> { /* Nothing */ }
 				}
 			}
@@ -299,9 +299,6 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (x == 0) {
 			x += 1;
 			width -= 1;
-		}
-		if(y > 30) {
-			System.out.println();
 		}
 		
 		s.append("<div id=\"o_video_event_").append(event.getId())
