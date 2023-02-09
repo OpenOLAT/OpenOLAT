@@ -36,7 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.ui.question.NewQuestionEvent;
@@ -52,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class QuestionsHeaderController extends FormBasicController {
+	public final static Event QUESTION_DELETED_EVENT = new Event("question.deleted");
+	public final static Event QUESTION_ADDED_EVENT = new Event("question.added");
 	private SingleSelection questionsDropdown;
 	private FormLink addQuestionButton;
 	private NewQuestionItemCalloutController newQuestionCtrl;
@@ -59,16 +61,27 @@ public class QuestionsHeaderController extends FormBasicController {
 	private SelectionValues questionsKV = new SelectionValues();
 	private VideoQuestions questions;
 	@Autowired
-	private VideoManager videoManager;
+	private VideoModule videoModule;
 	private final RepositoryEntry repositoryEntry;
 	private String questionId;
 	private String currentTimeCode;
+	private FormLink commandsButton;
+	private HeaderCommandsController commandsController;
 
 	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "questions_header");
 		this.repositoryEntry = repositoryEntry;
+
 		initForm(ureq);
-		loadModel();
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(newQuestionCtrl);
+		removeAsListenerAndDispose(commandsController);
+		ccwc = null;
+		newQuestionCtrl = null;
+		commandsController = null;
 	}
 
 	@Override
@@ -80,15 +93,22 @@ public class QuestionsHeaderController extends FormBasicController {
 
 		addQuestionButton = uifactory.addFormLink("addQuestion", "form.question.add",
 				"form.question.add", formLayout, Link.BUTTON);
+
+		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
+				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		commandsButton.setIconRightCSS("o_icon o_icon_commands");
 	}
 
-	private void loadModel() {
-		setQuestions(videoManager.loadQuestions(repositoryEntry.getOlatResource()));
-	}
-
-	private void setQuestions(VideoQuestions questions) {
+	public void setQuestions(VideoQuestions questions) {
 		this.questions = questions;
+		setValues();
+	}
 
+	public VideoQuestions getQuestions() {
+		return questions;
+	}
+
+	private void setValues() {
 		questionsKV = new SelectionValues();
 		questions
 				.getQuestions()
@@ -110,39 +130,11 @@ public class QuestionsHeaderController extends FormBasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (newQuestionCtrl == source) {
-			ccwc.deactivate();
-			cleanUp();
-			if (event instanceof NewQuestionEvent newQuestionEvent) {
-				doNewQuestion(ureq, newQuestionEvent.getQuestion());
-			}
-		} else if (ccwc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(ccwc);
-		removeAsListenerAndDispose(newQuestionCtrl);
-		ccwc = null;
-		newQuestionCtrl = null;
-	}
-
-	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
-		newQuestion.setBegin(new Date(getCurrentTime()));
-		questions.getQuestions().add(newQuestion);
-		questionId = newQuestion.getId();
-		videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
-		loadModel();
-		fireEvent(ureq, new EditQuestionEvent(null, questionId, repositoryEntry));
-	}
-
-	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (addQuestionButton == source) {
 			doAddQuestion(ureq);
+		} else if (commandsButton == source) {
+			doCommands(ureq);
 		} else if (questionsDropdown == source) {
 			if (questionsDropdown.isOneSelected()) {
 				questionId = questionsDropdown.getSelectedKey();
@@ -150,14 +142,8 @@ public class QuestionsHeaderController extends FormBasicController {
 						.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getBegin().getTime())));
 			}
 		}
-		super.formInnerEvent(ureq, source, event);
-	}
 
-	private Optional<VideoQuestion> getOptionalQuestion() {
-		if (questionId == null) {
-			return Optional.empty();
-		}
-		return questions.getQuestions().stream().filter(q -> questionId.equals(q.getId())).findFirst();
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	private void doAddQuestion(UserRequest ureq) {
@@ -171,9 +157,69 @@ public class QuestionsHeaderController extends FormBasicController {
 		ccwc.activate();
 	}
 
+	private void doCommands(UserRequest ureq) {
+		commandsController = new HeaderCommandsController(ureq, getWindowControl());
+		listenTo(commandsController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
+				commandsButton.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
+	}
+
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (newQuestionCtrl == source) {
+			ccwc.deactivate();
+			cleanUp();
+			if (event instanceof NewQuestionEvent newQuestionEvent) {
+				doNewQuestion(ureq, newQuestionEvent.getQuestion());
+			}
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (commandsController == source) {
+			if (HeaderCommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				doDeleteQuestion(ureq);
+			}
+			ccwc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
+		newQuestion.setBegin(new Date(getCurrentTime()));
+		newQuestion.setStyle(videoModule.getMarkerStyles().get(0));
+		questions.getQuestions().add(newQuestion);
+		questionId = newQuestion.getId();
+		setValues();
+		fireEvent(ureq, QUESTION_ADDED_EVENT);
+	}
+
+	private void doDeleteQuestion(UserRequest ureq) {
+		if (questionId == null) {
+			return;
+		}
+
+		questions.getQuestions().removeIf(q -> q.getId().equals(questionId));
+		if (questions.getQuestions().isEmpty()) {
+			questionId = null;
+		} else {
+			questionId = questions.getQuestions().get(0).getId();
+		}
+		setValues();
+		fireEvent(ureq, QUESTION_DELETED_EVENT);
+	}
+
+	private Optional<VideoQuestion> getOptionalQuestion() {
+		if (questionId == null) {
+			return Optional.empty();
+		}
+		return questions.getQuestions().stream().filter(q -> questionId.equals(q.getId())).findFirst();
 	}
 
 	private long getCurrentTime() {
@@ -197,10 +243,6 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	public String getQuestionId() {
 		return questionId;
-	}
-
-	public void reload() {
-		loadModel();
 	}
 
 	public void handleDeleted(String questionId) {

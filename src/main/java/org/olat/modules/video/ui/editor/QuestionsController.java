@@ -63,6 +63,7 @@ public class QuestionsController extends BasicController {
 		question = questions.getQuestions().stream().findFirst().orElse(null);
 
 		questionsHeaderController = new QuestionsHeaderController(ureq, wControl, repositoryEntry);
+		questionsHeaderController.setQuestions(questions);
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 
@@ -86,11 +87,6 @@ public class QuestionsController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	private void loadModel() {
-		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
-		questionsHeaderController.reload();
-	}
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -100,9 +96,11 @@ public class QuestionsController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (questionController == source) {
 			if (event == Event.DONE_EVENT) {
+				question = questionController.getQuestion();
 				videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
-				questionsHeaderController.reload();
+				questionsHeaderController.setQuestions(questions);
 				reloadQuestions(ureq);
+				fireEvent(ureq, new QuestionSelectedEvent(question.getId(), question.getBegin().getTime()));
 			} else if (event instanceof EditQuestionEvent) {
 				fireEvent(ureq, event);
 			}
@@ -113,8 +111,22 @@ public class QuestionsController extends BasicController {
 							questionController.setQuestion(q);
 							fireEvent(ureq, questionSelectedEvent);
 						});
-			} else if (event instanceof EditQuestionEvent) {
-				fireEvent(ureq, event);
+			} else if (event == QuestionsHeaderController.QUESTION_ADDED_EVENT ||
+					event == QuestionsHeaderController.QUESTION_DELETED_EVENT) {
+				this.questions = questionsHeaderController.getQuestions();
+				String newQuestionId = questionsHeaderController.getQuestionId();
+				showQuestion(newQuestionId);
+				questionController.setQuestion(question);
+				videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
+				reloadQuestions(ureq);
+				if (question != null) {
+					if (event == QuestionsHeaderController.QUESTION_DELETED_EVENT) {
+						fireEvent(ureq, new QuestionSelectedEvent(question.getId(), question.getBegin().getTime()));
+					}
+					if (event == QuestionsHeaderController.QUESTION_ADDED_EVENT) {
+						fireEvent(ureq, new EditQuestionEvent(question.getId(), repositoryEntry));
+					}
+				}
 			}
 		}
 
@@ -146,8 +158,8 @@ public class QuestionsController extends BasicController {
 	 * This call tells the controller that questions have been updated outside its controller hierarchy.
 	 */
 	public void updateQuestion(String questionId) {
-		questionsHeaderController.reload();
-		loadModel();
+		questions = videoManager.loadQuestions(repositoryEntry.getOlatResource());
+		questionsHeaderController.setQuestions(questions);
 		questions.getQuestions().stream().filter(q -> q.getId().equals(questionId)).findFirst()
 				.ifPresent(q -> {
 					questionController.setQuestion(q);

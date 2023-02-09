@@ -19,8 +19,9 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.Serial;
+
 import org.olat.core.gui.control.Event;
-import org.olat.modules.video.VideoQuestion;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -29,21 +30,16 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class EditQuestionEvent extends Event {
+	@Serial
 	private static final long serialVersionUID = 7215582487384570416L;
 	private static final String COMMAND = "edit.question";
-	private final VideoQuestion question;
 	private final String questionId;
 	private final RepositoryEntry repositoryEntry;
 
-	public EditQuestionEvent(VideoQuestion question, String questionId, RepositoryEntry repositoryEntry) {
+	public EditQuestionEvent(String questionId, RepositoryEntry repositoryEntry) {
 		super(COMMAND);
-		this.question = question;
 		this.questionId = questionId;
 		this.repositoryEntry = repositoryEntry;
-	}
-
-	public VideoQuestion getQuestion() {
-		return question;
 	}
 
 	public String getQuestionId() {

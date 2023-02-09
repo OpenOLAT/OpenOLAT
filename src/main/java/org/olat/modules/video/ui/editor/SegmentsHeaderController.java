@@ -30,7 +30,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -38,13 +37,10 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
@@ -72,7 +68,7 @@ public class SegmentsHeaderController extends FormBasicController {
 	private FormLink nextSegmentButton;
 	private FormLink addSegmentButton;
 	private FormLink commandsButton;
-	private CommandsController commandsController;
+	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
 	private final SimpleDateFormat timeFormat;
 
@@ -337,7 +333,7 @@ public class SegmentsHeaderController extends FormBasicController {
 	}
 
 	private void doCommands(UserRequest ureq) {
-		commandsController = new CommandsController(ureq, getWindowControl());
+		commandsController = new HeaderCommandsController(ureq, getWindowControl());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -355,7 +351,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		if (ccwc == source) {
 			cleanUp();
 		} else if (commandsController == source) {
-			if (CommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+			if (HeaderCommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
 				doDeleteSegment(ureq);
 			}
 			ccwc.deactivate();
@@ -395,30 +391,5 @@ public class SegmentsHeaderController extends FormBasicController {
 	public void handleDeleted(String segmentId) {
 		segments.getSegments().removeIf(s -> s.getId().equals(segmentId));
 		setSegments(segments);
-	}
-
-	private static class CommandsController extends BasicController {
-		private static final Event DELETE_EVENT = new Event("delete");
-		private final Link deleteLink;
-
-		protected CommandsController(UserRequest ureq, WindowControl wControl) {
-			super(ureq, wControl);
-
-			VelocityContainer mainVC = createVelocityContainer("segment_commands");
-
-			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
-					Link.LINK);
-			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
-			mainVC.put("delete", deleteLink);
-
-			putInitialPanel(mainVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			if (deleteLink == source) {
-				fireEvent(ureq, DELETE_EVENT);
-			}
-		}
 	}
 }

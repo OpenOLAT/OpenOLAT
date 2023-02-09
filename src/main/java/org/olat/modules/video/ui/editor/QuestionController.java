@@ -184,7 +184,7 @@ public class QuestionController extends FormBasicController {
 	}
 
 	private void doEdit(UserRequest ureq, VideoQuestion question) {
-		fireEvent(ureq, new EditQuestionEvent(null, question.getId(), repositoryEntry));
+		fireEvent(ureq, new EditQuestionEvent(question.getId(), repositoryEntry));
 	}
 
 	@Override
