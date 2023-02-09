@@ -47,7 +47,6 @@ import org.olat.core.gui.components.link.ExternalLinkItem;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
@@ -255,13 +254,10 @@ public class OAIPmhAdminController extends FormBasicController {
 		FormLayoutContainer buttonsInnerCont = FormLayoutContainer.createButtonLayout("buttonsInnerCont", getTranslator());
 		buttonsCont.add(buttonsInnerCont);
 		uifactory.addFormSubmitButton("save", buttonsInnerCont);
-		uifactory.addFormCancelButton("cancel", buttonsInnerCont, ureq, getWindowControl());
 
 		// Everything initialized, update visibility of form elements
 		updateContainerVisibility();
 		updateSearchEngineContainerVisibility();
-		// dont
-		this.mainForm.setHideDirtyMarkingMessage(true);
 	}
 
 	private void saveSelectedLicenseRestrictions() {
@@ -317,6 +313,8 @@ public class OAIPmhAdminController extends FormBasicController {
 
 			if (!urlList.isEmpty()) {
 				showInfo("searchengine.response", oaiService.propagateSearchEngines(urlList).toString());
+			} else {
+				showWarning("searchengine.warning");
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -404,7 +402,15 @@ public class OAIPmhAdminController extends FormBasicController {
 	}
 
 	@Override
-	protected void formCancelled(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);
+	protected void propagateDirtinessToContainer(FormItem source, FormEvent event) {
+		// Hide Dirty Marking Message when using OAI or searchengine toggle
+		if (source == oaiPmhEl || source == searchEnginePublishEl) {
+			this.mainForm.setHideDirtyMarkingMessage(true);
+			this.mainForm.setDirtyMarking(false);
+		} else {
+			this.mainForm.setHideDirtyMarkingMessage(false);
+		}
+		super.propagateDirtinessToContainer(source, event);
 	}
+
 }
