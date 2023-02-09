@@ -10,6 +10,11 @@
 	}
 }
 
+.o_video_me_colored_area.o_video_marker_gray {
+	border-left-color: $o-video-color-practice;
+	background: $o-video-color-practice;
+}
+
 .o_videotask_box .o_videotask_marker,
 .o_videotask_categories .btn,
 .o_videotask_box .btn,

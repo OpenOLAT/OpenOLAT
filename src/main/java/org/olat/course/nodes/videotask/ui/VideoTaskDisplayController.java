@@ -161,6 +161,7 @@ public class VideoTaskDisplayController extends BasicController {
 		initAssessment();
 		
 		closeButton = LinkFactory.createButton("close.video", mainVC, this);
+		closeButton.setElementCssClass("btn-primary");
 		segments = videoManager.loadSegments(videoEntry.getOlatResource());
 
 		mainVC.put("video", displayCtrl.getInitialComponent());
@@ -458,6 +459,7 @@ public class VideoTaskDisplayController extends BasicController {
 		segmentsCtrl.setMessage("");
 		segmentsCtrl.setShowSolution(true);
 		segmentsCtrl.setShowTooltips(true);
+		segmentsCtrl.setEnableDisableCategories(false);
 	}
 	
 	public boolean isFullScreen() {
@@ -634,7 +636,10 @@ public class VideoTaskDisplayController extends BasicController {
 			flc.contextPut("segments", segments);
 			flc.contextPut("segmentsCssClass", segmentsCssClass);
 			flc.contextPut("enableDisableCategories", Boolean.valueOf(enableDisableCategories));
-			
+		}
+		
+		public void setEnableDisableCategories(boolean enableDisableCategories) {
+			flc.contextPut("enableDisableCategories", Boolean.valueOf(enableDisableCategories));
 		}
 		
 		public void setCategories(List<Category> categoriesList) {

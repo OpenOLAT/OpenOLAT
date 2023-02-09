@@ -39,6 +39,7 @@ import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
+import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 import org.olat.modules.video.VideoTaskSession;
@@ -107,7 +108,9 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 			segmentsSelections.forEach(sel -> {
 				TimelineEventType type= sel.isCorrect() ? TimelineEventType.CORRECT : TimelineEventType.INCORRECT;
 				String color = sel.isCorrect() ? "o_selection_correct" : "o_selection_incorrect";
-				rows.add(new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, "", color));
+				VideoSegmentCategory category = videoSegments.getCategory(sel.getCategoryId()).orElse(null);
+				String categoryTitle = category == null ? null : category.getLabelAndTitle();
+				rows.add(new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, categoryTitle, color));
 			});
 		}
 

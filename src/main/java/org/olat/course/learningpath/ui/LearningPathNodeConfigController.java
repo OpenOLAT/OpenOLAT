@@ -513,7 +513,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				DueDateConfig endDateConfig = endDateEl.getDueDateConfig();
 				if (startDateConfig.getAbsoluteDate() != null && endDateConfig.getAbsoluteDate() != null) {
 					if(endDateConfig.getAbsoluteDate().before(startDateConfig.getAbsoluteDate())) {
-						endDateEl.setErrorKey("error.start.after.end", null);
+						endDateEl.setErrorKey("error.start.after.end");
 						allOk &= false;
 					}
 				}
@@ -544,7 +544,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			}
 		}
 		if (!allOk) {
-			el.setErrorKey(i18nKey, null);
+			el.setErrorKey(i18nKey);
 		}
 		return allOk;
 	}

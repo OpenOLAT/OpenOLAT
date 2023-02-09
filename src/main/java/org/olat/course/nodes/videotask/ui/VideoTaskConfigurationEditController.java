@@ -230,15 +230,14 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 			videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_QUESTIONS, true);
 		}
 		
-		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)
-				|| VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
-			attemptsPerSegmentEl.setEnabled(true);
+		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
+			if(!attemptsPerSegmentEl.isOneSelected()) {
+				attemptsPerSegmentEl.select("3", true);
+			}
+			attemptsPerSegmentEl.setVisible(true);
 		} else {
-			attemptsPerSegmentEl.select("3", true);
-			attemptsPerSegmentEl.setEnabled(false);
+			attemptsPerSegmentEl.setVisible(false);
 		}
-		
-		attemptsPerSegmentEl.setVisible(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode));
 	}
 	
 	private void updateCategoriesUI() {

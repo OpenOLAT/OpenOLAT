@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.videotask.ui.components.RestartEvent;
+import org.olat.course.nodes.videotask.ui.components.ShowSolutionEvent;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoTaskSegmentSelection;
 
@@ -46,6 +47,7 @@ public class ConfirmEndPracticeIdentifyTaskController extends FormBasicControlle
 	
 	private FormLink restartButton;
 	private FormLink endTaskButton;
+	private FormLink showSolutionButton;
 	
 	private final int maxAttempts;
 	private final int currentAttempt;
@@ -71,6 +73,8 @@ public class ConfirmEndPracticeIdentifyTaskController extends FormBasicControlle
 			String restartText = translate("restart", Integer.toString(currentAttempt + 2));
 			restartButton = uifactory.addFormLink("restart", restartText, null, formLayout, Link.BUTTON | Link.NONTRANSLATED);
 			restartButton.setIconLeftCSS("o_icon o_icon_reload");
+		} else {
+			showSolutionButton = uifactory.addFormLink("show.solution", null, "show.solution", formLayout, Link.BUTTON);
 		}
 		
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
@@ -95,6 +99,8 @@ public class ConfirmEndPracticeIdentifyTaskController extends FormBasicControlle
 			fireEvent(ureq, new RestartEvent());
 		} else if(endTaskButton == source) {
 			fireEvent(ureq, Event.DONE_EVENT);
+		} else if(showSolutionButton == source) {
+			fireEvent(ureq, new ShowSolutionEvent());
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

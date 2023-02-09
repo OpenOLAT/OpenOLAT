@@ -16,6 +16,9 @@
 		#if($r.available("restart"))
 			$r.render("restart")
 		#end
+		#if($r.available("show.solution"))
+			$r.render("show.solution")
+		#end
 		$r.render("end.task")
 	</div>
 </div>

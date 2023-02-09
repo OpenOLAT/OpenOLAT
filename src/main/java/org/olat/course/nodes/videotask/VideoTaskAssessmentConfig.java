@@ -46,7 +46,8 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 	
 	@Override
 	public boolean isAssessable() {
-		return true;
+		String mode = config.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE);
+		return VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode);
 	}
 	
 	@Override

@@ -205,7 +205,6 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 			myContent.contextPut("attemptsConfig", Boolean.FALSE);
 		}
 		
-		String mode = config.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE);
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			initElements();
 			myContent.contextPut("modeTitle", translate("practice.assign.title"));
@@ -219,10 +218,11 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		}
 		
 		String instruction = courseNode.getInstruction();
-		if(StringHelper.containsNonWhitespace(instruction) && StringHelper.isHtml(instruction)) {
+		if(StringHelper.containsNonWhitespace(instruction)) {
+			if(!StringHelper.isHtml(instruction)) {
+				instruction = "<p>" + instruction + "</p>";
+			}
 			myContent.contextPut("instructions", instruction);
-		} else {
-			myContent.contextPut("instructions", "<p>" + instruction + "</p>");
 		}
 		
 		VideoMeta metadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
@@ -338,7 +338,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(displayContainerCtrl == source) {
 			if(event instanceof FinishEvent fe) {
-				submit(fe.getTaskSession());
+				submit(ureq, fe.getTaskSession());// fire changed event
 				doFinishTask(ureq);
 				if(fe.isStartNextAttempt()) {
 					doStart(ureq);
@@ -375,18 +375,16 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		displayContainerCtrl.activate();
 	}
 	
-	private void submit(VideoTaskSession taskSession) {
+	private void submit(UserRequest ureq, VideoTaskSession taskSession) {
 		// Session only in test / assessment mode, not in practice
 		if(assessmentType) {
 			submitAssessedTask(taskSession);
 		} else {
 			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		}
-
-		AssessmentEvaluation assessmentEvaluation = userCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
-		AssessmentRunStatus runStatus = assessmentEvaluation.getAttempts() != null && assessmentEvaluation.getAttempts() > 0
-				? AssessmentRunStatus.done: null;
-		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, runStatus, Role.user);
+		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
+				AssessmentEntryStatus.done, Role.user);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
 	private void submitAssessedTask(VideoTaskSession taskSession) {
