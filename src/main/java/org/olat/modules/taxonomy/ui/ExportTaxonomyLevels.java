@@ -19,6 +19,7 @@
  */
 package org.olat.modules.taxonomy.ui;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -44,13 +45,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -62,6 +61,7 @@ public class ExportTaxonomyLevels implements MediaResource {
     private static final Logger log = Tracing.createLoggerFor(ExportTaxonomyLevels.class);
 
     private static final String MEDIA_FOLDER = "/media";
+    private static final String README_FILE = "readme.md";
 
     private final String encoding;
     private final Taxonomy taxonomy;
@@ -122,7 +122,7 @@ public class ExportTaxonomyLevels implements MediaResource {
         headerRow.addCell(col++, translator.translate("level.type"));
         headerRow.addCell(col++, translator.translate("level.sort.order"));
 
-        List<String> validLanguages = attributesToLevels.keySet().stream().map(l -> l.values().stream().distinct().findFirst().get()).distinct().collect(Collectors.toList());
+        List<String> validLanguages = attributesToLevels.keySet().stream().map(l -> l.values().stream().distinct().findFirst().get()).distinct().toList();
 
         for (int i = 0; i < validLanguages.size(); i++) {
             headerRow.addCell(col++, translator.translate("level.language"));
@@ -134,7 +134,7 @@ public class ExportTaxonomyLevels implements MediaResource {
     private void createData(List<TaxonomyLevel> taxonomyLevels, OpenXMLWorksheet worksheet) {
         worksheet.setHeaderRows(1);
 
-        taxonomyLevels = taxonomyLevels.stream().sorted(Comparator.comparing(TaxonomyLevel::getMaterializedPathIdentifiers)).collect(Collectors.toList());
+        taxonomyLevels = taxonomyLevels.stream().sorted(Comparator.comparing(TaxonomyLevel::getMaterializedPathIdentifiers)).toList();
 
         for (TaxonomyLevel level : taxonomyLevels) {
             OpenXMLWorksheet.Row dataRow = worksheet.newRow();
@@ -150,8 +150,11 @@ public class ExportTaxonomyLevels implements MediaResource {
             dataRow.addCell(c++, taxonomyType);
             dataRow.addCell(c++, taxonomySortOrder);
 
-            List<String> validLanguages = attributesToLevels.keySet().stream().map(l -> l.values().stream().distinct().findFirst().get()).distinct().collect(Collectors.toList());
-            Collections.sort(validLanguages);
+            List<String> validLanguages = attributesToLevels.keySet()
+                    .stream()
+                    .map(l -> l.values()
+                            .stream().distinct().findFirst()
+                            .get()).distinct().sorted().toList();
 
             for (String languageKey : validLanguages) {
                 String taxonomyDisplayName = "";
@@ -253,6 +256,14 @@ public class ExportTaxonomyLevels implements MediaResource {
             File excelExport = new File(WebappHelper.getTmpDir() + "/" + label + ".xlsx");
             createExcelSheet(excelExport);
             ZipUtil.addFileToZip(label + "/" + excelExport.getName(), excelExport, zout);
+
+            try (InputStream readme = ExportTaxonomyLevels.class.getResourceAsStream(README_FILE)) {
+                File readmeFile = new File(README_FILE);
+                FileUtils.copyInputStreamToFile(readme, readmeFile);
+                ZipUtil.addFileToZip(README_FILE, readmeFile, zout);
+            } catch (Exception e) {
+                log.error("Can not read readme.md", e);
+            }
 
             zout.flush();
         } catch (IOException e) {
