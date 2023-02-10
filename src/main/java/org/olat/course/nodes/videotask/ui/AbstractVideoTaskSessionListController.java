@@ -236,6 +236,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		filters.add(performanceFilter);
 
 		tableEl.setFilters(true, filters, false, true);
+		tableEl.setElementCssClass("o_videotask_details");
 	}
 	
 	protected List<Identity> getIdentities() {

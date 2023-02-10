@@ -251,6 +251,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_up_down:before { content: $fa-var-arrows-v; }
 .o_icon_notes:before { content: $fa-var-sticky-note-o; }
 .o_icon_not_correct:before { content: $fa-var-times; color: $brand-danger }
+.o_icon_not_correct_plus:before { content: $fa-var-plus; color: $brand-danger }
 .o_icon_not_identified:before { content: $fa-var-minus; }
 .o_icon_notice_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
 .o_icon_notice_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }

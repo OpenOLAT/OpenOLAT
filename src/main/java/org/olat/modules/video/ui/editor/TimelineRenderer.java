@@ -295,7 +295,12 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	private void renderEvent(StringOutput s, FlexiTableComponent ftC, Form form, TimelineModel timelineModel,
 							 TimelineRow event, int y, String cssClass, String idParameterName) {
 		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
-		long width = event.getDuration() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
+		long width;
+		if(event.getType() == TimelineEventType.CORRECT || event.getType() == TimelineEventType.INCORRECT) {
+			width = 2;
+		} else {
+			width = event.getDuration() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
+		}
 		if (x == 0) {
 			x += 1;
 			width -= 1;

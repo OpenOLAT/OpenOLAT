@@ -36,6 +36,8 @@ import org.olat.modules.video.model.VideoTaskCategoryScore;
  */
 public class SelectionCellRenderer implements FlexiCellRenderer {
 	
+	public static final int MAX_NOT_CORRECT = 8;
+	
 	private int maxCorrect = 0;
 	private int maxNotCorrect = 0;
 
@@ -66,17 +68,41 @@ public class SelectionCellRenderer implements FlexiCellRenderer {
 			} else {
 				rendererBlank(target, scoring.correct(), maxCorrect);
 				rendererIcon(target, scoring.correct(), "o_icon_correct_answer");
-				rendererIcon(target, scoring.notCorrect(), "o_icon_not_correct");
-				rendererBlank(target, scoring.notCorrect(), maxNotCorrect);
+				rendererNotCorrectIcon(target, scoring.notCorrect(), maxNotCorrect);
 			}
 		}
+	}
+	
+	private void rendererNotCorrectIcon(StringOutput target, int number, int max) {
+		int count = Math.min(max, MAX_NOT_CORRECT);
+		if(number > 0) {
+			for(int i=0; i<number && i<MAX_NOT_CORRECT-1; i++) {
+				target.append("<i class='o_icon o_icon-fw o_icon_not_correct'> </i>");
+				count--;
+			}
+			if(number == MAX_NOT_CORRECT) {
+				target.append("<i class='o_icon o_icon-fw o_icon_not_correct'> </i>");
+				count--;
+			} else if(number > MAX_NOT_CORRECT) {
+				target.append("<i class='o_icon o_icon-fw o_icon_not_correct_plus'> </i>");
+				count--;
+			}	
+		}
+
+		for(int i=count; i-->0; ) {
+			rendererBlank(target);
+		}
+	}
+	
+	private void rendererBlank(StringOutput target) {
+		target.append("<i class='o_icon o_icon-fw o_icon_disabled' aria-hidden='true' style='visibility: hidden'> </i>");
 	}
 	
 	private void rendererBlank(StringOutput target, int number, int max) {
 		int blank = max - number;
 		if(blank > 0) {
 			for(int i=0; i<blank; i++) {
-				target.append("<i class='o_icon o_icon-fw o_icon_disabled' aria-hidden='false' style='visibility: hidden'> </i>");
+				target.append("<i class='o_icon o_icon-fw o_icon_disabled' aria-hidden='true' style='visibility: hidden'> </i>");
 			}
 		}	
 	}
@@ -88,4 +114,6 @@ public class SelectionCellRenderer implements FlexiCellRenderer {
 			}
 		}	
 	}
+	
+	
 }
