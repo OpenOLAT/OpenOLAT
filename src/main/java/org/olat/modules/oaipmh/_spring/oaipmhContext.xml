@@ -24,4 +24,17 @@
         </property>
     </bean>
 
+    <bean id="oaiSeoTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="oaiSeoJobDetail" />
+        <!-- At 12:00 AM, every 7 days (once in a week) -->
+        <property name="cronExpression" value="0 0 0 */7 * ?" />
+        <!-- OLAT-5093 start delay ensures there's no conflict with server startup and db not being ready yet -->
+        <property name="startDelay" value="300000" />
+    </bean>
+
+    <bean id="oaiSeoJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+        <property name="jobClass" value="org.olat.modules.oaipmh.manager.OAISEOJob" />
+        <property name="durability" value="true" />
+    </bean>
+
 </beans>
