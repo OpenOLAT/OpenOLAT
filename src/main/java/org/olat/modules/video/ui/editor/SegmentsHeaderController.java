@@ -290,16 +290,16 @@ public class SegmentsHeaderController extends FormBasicController {
 		}
 	}
 
-	private static VideoSegment closestSegment(List<VideoSegment> segments, long t) {
-		long minDistSq = Long.MAX_VALUE;
+	static VideoSegment closestSegment(List<VideoSegment> segments, long t) {
+		long minDist = Long.MAX_VALUE;
 		VideoSegment bestCandidate = null;
 		for (VideoSegment segment : segments) {
 			long t0 = segment.getBegin().getTime() / 1000;
 			long t1 = t0 + segment.getDuration();
-			long distSq = (t0 + t1) - 2 * t;
-			if (distSq < minDistSq) {
+			long dist = Math.abs((t0 + t1) / 2 - t);
+			if (dist < minDist) {
 				bestCandidate = segment;
-				minDistSq = distSq;
+				minDist = dist;
 			}
 		}
 		return bestCandidate;
@@ -308,23 +308,24 @@ public class SegmentsHeaderController extends FormBasicController {
 	private List<VideoSegment> freeSegments() {
 		List<VideoSegment> freeSegments = new ArrayList<>();
 		long beginningOfFreeSpace = 0;
-		for (VideoSegment segment : segments.getSegments()) {
+		for (VideoSegment segment : segments.getSegments().stream().sorted(new SegmentComparator()).toList()) {
 			long start = segment.getBegin().getTime() / 1000;
-			if (start > beginningOfFreeSpace) {
+			long duration = start - beginningOfFreeSpace;
+			if (duration >= SegmentsHeaderController.DEFAULT_DURATION) {
 				VideoSegment newSegment = new VideoSegmentImpl();
-				newSegment.setBegin(new Date(beginningOfFreeSpace));
-				newSegment.setDuration(start - beginningOfFreeSpace);
-				if (newSegment.getDuration() >= SegmentsHeaderController.DEFAULT_DURATION) {
-					freeSegments.add(newSegment);
-				}
+				newSegment.setBegin(new Date(beginningOfFreeSpace * 1000));
+				newSegment.setDuration(duration);
+				freeSegments.add(newSegment);
 			}
 			beginningOfFreeSpace = start + segment.getDuration();
 		}
+
 		if (videoDurationInSeconds > beginningOfFreeSpace) {
-			VideoSegment newSegment = new VideoSegmentImpl();
-			newSegment.setBegin(new Date(beginningOfFreeSpace * 1000));
-			newSegment.setDuration(videoDurationInSeconds - beginningOfFreeSpace);
-			if (newSegment.getDuration() >= SegmentsHeaderController.DEFAULT_DURATION) {
+			long duration = videoDurationInSeconds - beginningOfFreeSpace;
+			if (duration >= SegmentsHeaderController.DEFAULT_DURATION) {
+				VideoSegment newSegment = new VideoSegmentImpl();
+				newSegment.setBegin(new Date(beginningOfFreeSpace * 1000));
+				newSegment.setDuration(duration);
 				freeSegments.add(newSegment);
 			}
 		}
