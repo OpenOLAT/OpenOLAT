@@ -689,8 +689,20 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		postCopyCourseStyleImage(course, this, course, copyInstance, author);
 		postCopyGradeScale(courseEntry, getIdent(), courseEntry, copyInstance.getIdent());
-		
+
+		createInstanceForCopy(copyInstance, copyInstance.getPreConditionAccess());
+		createInstanceForCopy(copyInstance, copyInstance.getPreConditionVisibility());
+
 		return copyInstance;
+	}
+	
+	private void createInstanceForCopy(CourseNode copyInstance, Condition copyCondition) {
+		if(copyCondition != null
+				&& !copyCondition.isExpertMode()
+				&& copyCondition.getEasyModeAssessmentModeNodeId() != null) {
+			copyCondition.setEasyModeAssessmentModeNodeId(copyInstance.getIdent());
+			copyCondition.setConditionExpression(copyCondition.getConditionFromEasyModeConfiguration());
+		}
 	}
 	
 	private void postCopyCourseStyleImage(ICourse sourceCourse, CourseNode sourceNode, ICourse targetCourse, CourseNode targetNode, Identity author) {
