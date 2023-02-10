@@ -58,6 +58,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	private final VideoManager videoManager;
 	private final VideoAssessmentService videoAssessmentService;
 
+	private VideoSegments videoSegments;
 	private List<TimelineRow> rows = new ArrayList<>();
 	private List<FlexiTableFilter> filters;
 	private List<TimelineRow> filteredRows = new ArrayList<>();
@@ -79,12 +80,12 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 					TimelineEventType.QUIZ, videoQuestion.getTitle(), videoQuestion.getStyle()));
 		}
 
-		VideoSegments videoSegments = videoManager.loadSegments(olatResource);
+		videoSegments = videoManager.loadSegments(olatResource);
 		for (VideoSegment videoSegment : videoSegments.getSegments()) {
-			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent((c) -> rows.add(
+			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent(c -> rows.add(
 					new TimelineRow(videoSegment.getId(), videoSegment.getBegin().getTime(),
 					videoSegment.getDuration() * 1000, TimelineEventType.SEGMENT, c.getLabelAndTitle(),
-					c.getColor())
+					c.getColor(), c.getId())
 			));
 		}
 
@@ -110,13 +111,22 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				String color = sel.isCorrect() ? "o_selection_correct" : "o_selection_incorrect";
 				VideoSegmentCategory category = videoSegments.getCategory(sel.getCategoryId()).orElse(null);
 				String categoryTitle = category == null ? null : category.getLabelAndTitle();
-				rows.add(new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, categoryTitle, color));
+				TimelineRow row = new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, categoryTitle, color);
+				if(category != null) {
+					row.setCategoryId(category.getId());
+					row.setColor(row.getColor() + " " + category.getColor());
+				}
+				rows.add(row);
 			});
 		}
 
 		rows.sort(Comparator.comparing(TimelineRow::getStartTime));
 
 		applyFilters();
+	}
+	
+	public VideoSegments getVideoSegments() {
+		return videoSegments;
 	}
 
 	public List<TimelineRow> getRows() {
@@ -144,6 +154,13 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 					} else if (TimelineFilter.COLOR.name().equals(filter.getFilter())) {
 						for (String colorString : multiSelectionFilter.getValues()) {
 							if (r.getColor().equals(colorString)) {
+								matchFound = true;
+								break;
+							}
+						}
+					} else if (TimelineFilter.CATEGORY.name().equals(filter.getFilter())) {
+						for (String categoryId : multiSelectionFilter.getValues()) {
+							if (categoryId.equals(r.getCategoryId())) {
 								matchFound = true;
 								break;
 							}
@@ -197,7 +214,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				videoManager.saveMarkers(videoMarkers, olatResource);
 			}
 			case SEGMENT -> {
-				VideoSegments videoSegments = videoManager.loadSegments(olatResource);
+				videoSegments = videoManager.loadSegments(olatResource);
 				videoSegments.getSegments().stream().filter(s -> row.getId().equals(s.getId())).findFirst()
 						.ifPresent(s -> videoSegments.getSegments().remove(s));
 				videoManager.saveSegments(videoSegments, olatResource);
@@ -217,7 +234,8 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 
 	public enum TimelineFilter {
 		TYPE("filter.type"),
-		COLOR("filter.color");
+		COLOR("filter.color"),
+		CATEGORY("filter.category");
 
 		private final String i18nKey;
 

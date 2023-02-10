@@ -38,18 +38,23 @@ public class TimelineRow {
 	private TimelineEventType type;
 	private String text;
 	private String color;
+	private String categoryId;
 
 	private boolean selected;
 	private FormLink toolLink;
 
-
 	public TimelineRow(String id, long startTime, long duration, TimelineEventType type, String text, String color) {
+		this(id, startTime, duration, type, text, color, null);
+	}
+
+	public TimelineRow(String id, long startTime, long duration, TimelineEventType type, String text, String color, String categoryId) {
 		this.id = id;
 		this.startTime = startTime;
 		this.duration = duration;
 		this.type = type;
 		this.text = text;
 		this.color = color;
+		this.categoryId = categoryId;
 	}
 
 	public String getId() {
@@ -94,6 +99,14 @@ public class TimelineRow {
 
 	public void setColor(String color) {
 		this.color = color;
+	}
+
+	public String getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(String categoryId) {
+		this.categoryId = categoryId;
 	}
 
 	public boolean isSelected() {

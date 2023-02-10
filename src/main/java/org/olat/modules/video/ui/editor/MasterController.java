@@ -22,6 +22,8 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -68,12 +70,12 @@ import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
+import org.olat.modules.video.VideoSegmentCategory;
+import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
-
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -111,6 +113,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private ToolsController toolsController;
 	private String currentTimeCode;
 	private final boolean showVideoTrack;
+	private final boolean showCategoryFilter;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 							List<VideoTaskSession> sessions, String videoElementId) {
@@ -120,6 +123,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineDataSource = new TimelineDataSource(repositoryEntry.getOlatResource(), sessions);
 		videoFile = videoManager.getMasterVideoFile(repositoryEntry.getOlatResource());
 		showVideoTrack = videoFile != null;
+		showCategoryFilter = sessions != null && !sessions.isEmpty();
 
 		if (showVideoTrack) {
 			videoFrameCount = videoManager.getVideoFrameCount(videoFile);
@@ -249,7 +253,17 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		colorKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.COLOR.getI18nKey()),
 				TimelineDataSource.TimelineFilter.COLOR.name(), colorKV, true));
-
+		
+		if(showCategoryFilter) {
+			SelectionValues categoryKV = new SelectionValues();
+			VideoSegments videoSegments = timelineDataSource.getVideoSegments();
+			for(VideoSegmentCategory category:videoSegments.getCategories()) {
+				categoryKV.add(SelectionValues.entry(category.getId(), category.getLabelAndTitle()));
+			}
+			filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.CATEGORY.getI18nKey()),
+					TimelineDataSource.TimelineFilter.CATEGORY.name(), categoryKV, true));
+		}
+		
 		timelineTableEl.setFilters(true, filters, true, false);
 		timelineTableEl.expandFilters(true);
 	}
