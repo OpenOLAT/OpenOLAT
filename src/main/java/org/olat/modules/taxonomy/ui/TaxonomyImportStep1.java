@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -199,7 +198,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 					uploadFileEl.clearError();
 				} else {
 					uploadFileEl.reset();
-					uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD, new String[0]);
+					uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD);
 				}
 			}
 		}
@@ -293,7 +292,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 								return false;
 							}
 						} else {
-							uploadFileEl.setErrorKey("import.taxonomy.error.no.match", new String[0]);
+							uploadFileEl.setErrorKey("import.taxonomy.error.no.match");
 							return false;
 						}
 					}
@@ -316,7 +315,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				allOk = false;
 				log.error("Error processing Zip-File as Stream: {}", e.getMessage());
 				uploadFileEl.reset();
-				uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD, new String[0]);
+				uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD);
 			}
 			return allOk;
 		}
@@ -341,7 +340,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 						destination = TEASER;
 					} else {
 						uploadFileEl.reset();
-						uploadFileEl.setErrorKey("import.taxonomy.error.wrong.structure", new String[0]);
+						uploadFileEl.setErrorKey("import.taxonomy.error.wrong.structure");
 						return false;
 					}
 
@@ -353,12 +352,12 @@ public class TaxonomyImportStep1 extends BasicStep {
 							FileUtils.copyInputStreamToFile(in, image);
 						} else {
 							uploadFileEl.reset();
-							uploadFileEl.setErrorKey("import.taxonomy.error.image", new String[] { fileName });
+							uploadFileEl.setErrorKey("import.taxonomy.error.image", fileName);
 							return false;
 						}
 					} else {
 						uploadFileEl.reset();
-						uploadFileEl.setErrorKey("error.mimetype", new String[0]);
+						uploadFileEl.setErrorKey("error.mimetype");
 						return false;
 					}
 
@@ -374,7 +373,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 				} catch (IOException e) {
 					log.error("Error processing Zip-File: {}", e.getMessage());
 					uploadFileEl.reset();
-					uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD, new String[0]);
+					uploadFileEl.setErrorKey(ERROR_MEDIA_ZIP_UPLOAD);
 				}
 			}
 			return allOk;
@@ -502,7 +501,7 @@ public class TaxonomyImportStep1 extends BasicStep {
 			List<Locale> locales = i18nModule.getEnabledLanguageKeys().stream()
 					.map(key -> i18nManager.getLocaleOrNull(key))
 					.filter(Objects::nonNull)
-					.collect(Collectors.toList());
+					.toList();
 
 			return locales.stream().anyMatch(l -> l.toString().toUpperCase().equals(language));
 		}
@@ -681,8 +680,8 @@ public class TaxonomyImportStep1 extends BasicStep {
 			}
 			
 			// Check existing types
-			List<TaxonomyLevelType> possibleTypes = existingLevelTypes.stream().filter(levelType -> levelType.getIdentifier().equals(type)).collect(Collectors.toList());
-			
+			List<TaxonomyLevelType> possibleTypes = existingLevelTypes.stream().filter(levelType -> levelType.getIdentifier().equals(type)).toList();
+
 			// If more than one found, show error
 			if (possibleTypes != null && possibleTypes.size() > 1) {
 				return null;
@@ -691,8 +690,8 @@ public class TaxonomyImportStep1 extends BasicStep {
 			} 
 			
 			// Check new types
-			List<TaxonomyLevelType> possibleNewTypes = newLevelTypes.stream().filter(newLevelType -> newLevelType.getIdentifier().equals(type)).collect(Collectors.toList());
-			
+			List<TaxonomyLevelType> possibleNewTypes = newLevelTypes.stream().filter(newLevelType -> newLevelType.getIdentifier().equals(type)).toList();
+
 			// If more than one found, show error
 			if (possibleNewTypes != null && possibleNewTypes.size() > 1) {
 				return null;
@@ -722,8 +721,8 @@ public class TaxonomyImportStep1 extends BasicStep {
 			final String parentPath = parent;
 			
 			// Search existing taxonomy levels
-			List<TaxonomyLevel> existingLevels = allExistingLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(path)).collect(Collectors.toList());
-			if (existingLevels != null && existingLevels.size() != 0) {
+			List<TaxonomyLevel> existingLevels = allExistingLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(path)).toList();
+			if (existingLevels != null && !existingLevels.isEmpty()) {
 				// If multiple entries found, don't proceed
 				if (existingLevels.size() > 1) {
 					return null;
@@ -736,8 +735,8 @@ public class TaxonomyImportStep1 extends BasicStep {
 			}
 			
 			// Search possible parents in existing levels
-			List<TaxonomyLevel> possibleParents = allExistingLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(parentPath)).collect(Collectors.toList());
-			if (possibleParents != null && possibleParents.size() != 0) {
+			List<TaxonomyLevel> possibleParents = allExistingLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(parentPath)).toList();
+			if (possibleParents != null && !possibleParents.isEmpty()) {
 				// If multiple parents found, don't proceed
 				if (possibleParents.size() > 1) {
 					return null;
@@ -753,8 +752,8 @@ public class TaxonomyImportStep1 extends BasicStep {
 			}
 			
 			// Search possible parents in new levels
-			List<TaxonomyLevel> possibleNewParents = newLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(parentPath)).collect(Collectors.toList());
-			if (possibleNewParents != null && possibleNewParents.size() != 0) {
+			List<TaxonomyLevel> possibleNewParents = newLevels.stream().filter(level -> level.getMaterializedPathIdentifiers().equals(parentPath)).toList();
+			if (possibleNewParents != null && !possibleNewParents.isEmpty()) {
 				// If multiple new parents found, don't proceed
 				if (possibleNewParents.size() > 1) {
 					return null;
