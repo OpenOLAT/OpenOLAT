@@ -54,26 +54,33 @@ public class OAISEOJob extends JobWithDB {
 		OAIPmhModule oaiPmhModule = CoreSpringFactory.getImpl(OAIPmhModule.class);
 		List<String> urlList = new ArrayList<>();
 
-		if (oaiService == null || oaiPmhModule == null) {
+		if (oaiService == null
+				|| oaiPmhModule == null
+				|| !oaiPmhModule.isEnabled() && !oaiPmhModule.isSearchEngineEnabled()) {
 			log.info("Skipping execution of SEO propagation job.");
 			return false;
 		}
 
 		boolean allOk = false;
 
-		if (isValidInputUrl(oaiPmhModule.getSearchEngineGoogleUrl())) {
+		if (oaiPmhModule.isSearchEngineGoogle()
+				&& isValidInputUrl(oaiPmhModule.getSearchEngineGoogleUrl())) {
 			urlList.add(oaiPmhModule.getSearchEngineGoogleUrl());
 		}
-		if (isValidInputUrl(oaiPmhModule.getSearchEngineCustomSitemapUrl())) {
+		if (oaiPmhModule.isSearchEngineCustomSitemap()
+				&& isValidInputUrl(oaiPmhModule.getSearchEngineCustomSitemapUrl())) {
 			urlList.add(oaiPmhModule.getSearchEngineCustomSitemapUrl());
 		}
-		if (isValidInputUrl(oaiPmhModule.getSearchEngineBingUrl())) {
+		if (oaiPmhModule.isSearchEngineBing()
+				&& isValidInputUrl(oaiPmhModule.getSearchEngineBingUrl())) {
 			urlList.add(oaiPmhModule.getSearchEngineBingUrl());
 		}
-		if (isValidInputUrl(oaiPmhModule.getSearchEngineYandexUrl())) {
+		if (oaiPmhModule.isSearchEngineYandex()
+				&& isValidInputUrl(oaiPmhModule.getSearchEngineYandexUrl())) {
 			urlList.add(oaiPmhModule.getSearchEngineYandexUrl());
 		}
-		if (isValidInputUrl(oaiPmhModule.getSearchEngineCustomIndexnowUrl())) {
+		if (oaiPmhModule.isSearchEngineCustomIndexnow()
+				&& isValidInputUrl(oaiPmhModule.getSearchEngineCustomIndexnowUrl())) {
 			urlList.add(oaiPmhModule.getSearchEngineCustomIndexnowUrl());
 		}
 
