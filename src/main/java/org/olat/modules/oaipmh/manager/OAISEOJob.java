@@ -56,7 +56,8 @@ public class OAISEOJob extends JobWithDB {
 
 		if (oaiService == null
 				|| oaiPmhModule == null
-				|| !oaiPmhModule.isEnabled() && !oaiPmhModule.isSearchEngineEnabled()) {
+				|| !oaiPmhModule.isEnabled()
+				|| !oaiPmhModule.isSearchEngineEnabled()) {
 			log.info("Skipping execution of SEO propagation job.");
 			return false;
 		}
