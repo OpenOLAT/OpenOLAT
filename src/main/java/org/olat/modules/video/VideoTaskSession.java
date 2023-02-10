@@ -72,10 +72,16 @@ public interface VideoTaskSession extends CreateInfo, ModifiedInfo {
 
 	public void setMaxScore(BigDecimal maxScore);
 
+	/**
+	 * @return The raw results, can be negative
+	 */
 	public BigDecimal getResult();
 
 	public void setResult(BigDecimal result);
 	
+	/**
+	 * @return The results in percent, always between 0% - 100%
+	 */
 	public BigDecimal getResultInPercent();
 
 	public int getSegments();

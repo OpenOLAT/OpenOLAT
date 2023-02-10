@@ -22,6 +22,7 @@ package org.olat.modules.video.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.video.VideoTaskSession;
+import org.olat.modules.video.model.VideoTaskSessionImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -218,5 +220,18 @@ public class VideoTaskSessionDAOTest extends OlatTestCase {
 		Assert.assertEquals(2, taskSessions);
 	}
 	
-
+	@Test
+	public void getResultInPercent() {
+		VideoTaskSessionImpl session = new VideoTaskSessionImpl();
+		Assert.assertNull(session.getResultInPercent());
+		
+		session.setResult(BigDecimal.valueOf(-0.25d));
+		Assert.assertEquals(0.0d, session.getResultInPercent().doubleValue(), 0.0001);
+		
+		session.setResult(BigDecimal.valueOf(1.25d));
+		Assert.assertEquals(100.0d, session.getResultInPercent().doubleValue(), 0.0001);
+		
+		session.setResult(BigDecimal.valueOf(0.55d));
+		Assert.assertEquals(55.0d, session.getResultInPercent().doubleValue(), 0.0001);
+	}
 }

@@ -280,7 +280,18 @@ public class VideoTaskSessionImpl implements VideoTaskSession, Persistable {
 	@Override
 	@Transient
 	public BigDecimal getResultInPercent() {
-		return result == null ? null : result.multiply(BigDecimal.valueOf(100l));
+		if(result == null) {
+			return null;
+		}
+		
+		BigDecimal percent = result.multiply(BigDecimal.valueOf(100l));
+		if(percent.compareTo(BigDecimal.ZERO) < 0) {
+			return BigDecimal.ZERO;
+		}
+		if(percent.compareTo(BigDecimal.valueOf(100l)) > 0) {
+			return BigDecimal.valueOf(100l);
+		}
+		return percent;
 	}
 
 	@Override
