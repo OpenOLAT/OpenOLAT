@@ -28,6 +28,8 @@
 @use "sass:math";
 @use "sass:color";
 
+@import "functions";
+
 /* bootstrap default is very white, use just a little bit more than just white */
 $btn-default-bg					: #fcfcfc !default;
 $dropdown-bg					: #fcfcfc !default; 
