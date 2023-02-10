@@ -49,8 +49,10 @@ public class VideoController extends BasicController {
 	private final long durationInSeconds;
 	private TimelineEventType timelineEventType;
 	private TimelineEventSelectedEvent selectedTimelineEvent;
+	private Integer videoViewWidth;
 
-	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+						   boolean showPoster) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("video_editor_player");
@@ -62,6 +64,7 @@ public class VideoController extends BasicController {
 		displayOptions.setAlwaysShowControls(true);
 		displayOptions.setClickToPlayPause(false);
 		displayOptions.setAuthorMode(true);
+		displayOptions.setShowPoster(showPoster);
 		videoDisplayController = new VideoDisplayController(ureq, wControl, repositoryEntry, null,
 				null, displayOptions);
 		listenTo(videoDisplayController);
@@ -88,10 +91,13 @@ public class VideoController extends BasicController {
 						long t1 = t0 + 1000L * selectedTimelineEvent.getDurationInSeconds();
 						if (timeInMillis < t0 || timeInMillis > t1) {
 							videoDisplayController.clearMarkerLayer();
+							videoDisplayController.hideSegment();
 						} else {
 							switch (timelineEventType) {
 								case ANNOTATION -> videoDisplayController.loadMarker(ureq, videoEvent.getTimeCode(),
 										selectedTimelineEvent.getId());
+								case SEGMENT -> videoDisplayController.setSegment(selectedTimelineEvent.getId(),
+										videoViewWidth);
 								default -> {}
 							}
 						}
@@ -160,10 +166,15 @@ public class VideoController extends BasicController {
 			case SEGMENT -> {
 				videoDisplayController.clearMarkerLayer();
 				videoDisplayController.setSegments(ureq);
+				videoDisplayController.setSegment(selectedTimelineEvent.getId(), videoViewWidth);
 			}
 			default -> {}
 		}
 
 		selectTime(selectedTimelineEvent.getStartTimeInMillis() / 1000, isYoutube);
+	}
+
+	public void setViewWidth(int videoViewWidth) {
+		this.videoViewWidth = videoViewWidth;
 	}
 }

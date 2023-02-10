@@ -64,7 +64,7 @@ public class VideoEditorController extends BasicController {
 		mainVC.contextPut("videoWidth", videoMetadata.getWidth());
 		mainVC.contextPut("videoHeight", videoMetadata.getHeight());
 
-		videoController = new VideoController(ureq, wControl, repositoryEntry);
+		videoController = new VideoController(ureq, wControl, repositoryEntry, !isYoutube);
 		listenTo(videoController);
 		String videoElementId = videoController.getVideoElementId();
 		mainVC.put("video", videoController.getInitialComponent());
@@ -89,6 +89,11 @@ public class VideoEditorController extends BasicController {
 			if (availableWidth != masterController.getAvailableWidth()) {
 				masterController.setAvailableWidth(availableWidth);
 				masterController.getInitialComponent().setDirty(true);
+			}
+			String videoViewWidthString = ureq.getHttpReq().getParameter("videoViewWidth");
+			if (videoViewWidthString != null) {
+				int videoViewWidth = Integer.parseInt(videoViewWidthString);
+				videoController.setViewWidth(videoViewWidth);
 			}
 		}
 	}

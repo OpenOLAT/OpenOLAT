@@ -305,7 +305,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 					timelineModel.select(annotationId);
 					timelineModel.getTimelineRow(TimelineEventType.ANNOTATION, annotationId)
 									.ifPresent(a -> fireEvent(ureq, new AnnotationSelectedEvent(a.getId(),
-											a.getStartTime(), a.getDuration())));
+											a.getStartTime(), a.getDuration() / 1000)));
 				}
 				String chapterId = ureq.getParameter("chapterId");
 				if (chapterId != null) {
@@ -318,7 +318,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 					timelineModel.select(segmentId);
 					timelineModel.getTimelineRow(TimelineEventType.SEGMENT, segmentId)
 							.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getStartTime(),
-									s.getDuration())));
+									s.getDuration() / 1000)));
 				}
 			} else if (event instanceof FlexiTableRenderEvent renderEvent) {
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
@@ -355,10 +355,10 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		switch (timelineRow.getType()) {
 			case QUIZ -> fireEvent(ureq, new QuestionSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case ANNOTATION -> fireEvent(ureq, new AnnotationSelectedEvent(timelineRow.getId(), timelineRow.getStartTime(),
-					timelineRow.getDuration()));
+					timelineRow.getDuration() / 1000));
 			case CHAPTER -> fireEvent(ureq, new ChapterSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case SEGMENT -> fireEvent(ureq, new SegmentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime(),
-					timelineRow.getDuration()));
+					timelineRow.getDuration() / 1000));
 			case VIDEO -> {
 			}
 		}

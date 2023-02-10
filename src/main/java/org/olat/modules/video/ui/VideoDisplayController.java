@@ -805,6 +805,22 @@ public class VideoDisplayController extends BasicController {
 		segmentsPanel.setContent(null);
 	}
 
+	public void setSegment(String segmentId, Integer videoViewWidth) {
+		if (videoSegmentController == null) {
+			return;
+		}
+
+		videoSegmentController.showSegment(segmentId, videoViewWidth);
+	}
+
+	public void hideSegment() {
+		if (videoSegmentController == null) {
+			return;
+		}
+
+		videoSegmentController.hideSegment();
+	}
+
 	/**
 	 * Update the users preferred resolution in the GUI prefs from the given video URL
 	 * @param ureq

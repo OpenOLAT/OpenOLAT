@@ -28,10 +28,13 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.ui.editor.VideoEditorController;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +53,7 @@ public class VideoSegmentController extends BasicController {
 	private VideoManager videoManager;
 	private VideoSegments segments;
 	private final long totalDurationInMillis;
+	private final Translator editorTranslator;
 
 	public VideoSegmentController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								  long totalDuratrionInMillis) {
@@ -57,6 +61,7 @@ public class VideoSegmentController extends BasicController {
 
 		this.repositoryEntry = repositoryEntry;
 		this.totalDurationInMillis = totalDuratrionInMillis;
+		editorTranslator = Util.createPackageTranslator(VideoEditorController.class, getLocale());
 		mainVC = createVelocityContainer("video_segments");
 
 		putInitialPanel(mainVC);
@@ -80,6 +85,40 @@ public class VideoSegmentController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 
+	}
+
+	public void showSegment(String segmentId, Integer videoViewWidth) {
+		if (totalDurationInMillis <= 0) {
+			return;
+		}
+		VideoSegment segment = segments.getSegments().stream().filter(s -> s.getId().equals(segmentId)).findFirst().orElse(null);
+		if (segment == null) {
+			return;
+		}
+		VideoSegmentCategory category = segments.getCategories().stream().filter(c -> c.getId().equals(segment.getCategoryId())).findFirst().orElse(null);
+		if (category == null) {
+			return;
+		}
+
+		mainVC.contextPut("showSegmentBox", true);
+
+		if (videoViewWidth == null) {
+			double left = (double) (segment.getBegin().getTime() + segment.getDuration() * 500) / totalDurationInMillis;
+			mainVC.contextPut("segmentBoxLeft", String.format("%.2f%%", left * 100));
+		} else {
+			long leftInPixels =
+					(videoViewWidth - 20) * (segment.getBegin().getTime() + segment.getDuration() * 500) / totalDurationInMillis;
+			leftInPixels = Long.max(leftInPixels, 64);
+			leftInPixels = Long.min(leftInPixels, videoViewWidth - 20 - 64);
+			mainVC.contextPut("segmentBoxLeft", String.format("%dpx", leftInPixels));
+		}
+		mainVC.contextPut("segmentStyle", category.getColor());
+		mainVC.contextPut("segmentLabelTitle", category.getLabelAndTitle());
+		mainVC.contextPut("segmentDuration", editorTranslator.translate("segment.duration", Long.toString(segment.getDuration())));
+	}
+
+	public void hideSegment() {
+		mainVC.contextPut("showSegmentBox", false);
 	}
 
 	public static class Segment {

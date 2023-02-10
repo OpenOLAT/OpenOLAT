@@ -47,7 +47,8 @@
 		video.height(videoViewHeight);
 		window.dispatchEvent(new Event('resize'));
 
-		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error', 'availableWidth', availableWidth);
+		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error',
+			'availableWidth', availableWidth, 'videoViewWidth', videoViewWidth);
 
 		// var toolbarOffset = toolbar.offset();
 		// var toolbarTop = toolbarOffset.top;
