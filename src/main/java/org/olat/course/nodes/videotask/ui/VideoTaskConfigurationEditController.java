@@ -337,9 +337,9 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		String mode = modeEl.getSelectedKey();
 		if(currentMode == null || currentMode.equals(mode) ||
 			((currentMode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS) || currentMode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS))
-				&& (mode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS) ||  mode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS)))
+				&& (mode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS) || mode.equals(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS)))
 			|| videoAssessmentService.countTaskSessions(entry, subIdent) == 0l) {
-			updateConfig(ureq, false);
+			updateConfig(ureq, !mode.equals(currentMode));
 		} else {
 			doConfirmChangeMde(ureq);
 		}
