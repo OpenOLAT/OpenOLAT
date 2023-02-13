@@ -216,7 +216,7 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 			return session.getCategoryScoring(colIndex);
 		}
 		return null;
-	}
+	} 
 	
 	@Override
 	public void setObjects(List<VideoTaskSessionRow> objects) {

@@ -41,7 +41,12 @@ public class PercentCellRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if(cellValue instanceof BigDecimal val) {
 			long percent = Math.round(val.doubleValue());
-			target.append(percent).append("%");
+			if(percent < 0.0d || percent == Double.NaN) {
+				target.append("0");
+			} else {
+				target.append(percent);
+			}
+			target.append("%");
 		}
 	}
 }

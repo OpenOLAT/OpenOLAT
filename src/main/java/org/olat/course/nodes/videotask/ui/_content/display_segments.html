@@ -1,6 +1,16 @@
 <div class="o_videotask_layer">
-	<div id="o_videotask_messages" class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
+	<div id="o_videotask_messages" #if($r.isNotEmpty($messageTimerId)) data-timer-id="${messageTimerId}" #end class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
 		<span>$message</span>
+		#if($r.isNotEmpty($messageTimerId))
+		<script>
+		"use strict";
+		jQuery(function() {
+			setTimeout(function(){
+				jQuery(".o_videotask_messages[data-timer-id='${messageTimerId}']").addClass('hide').removeClass('show');
+			}, 5000);
+		});
+		</script>
+		#end
 	</div>
 	#if($r.isTrue($enableDisableCategories))
 	<div id="o_videotask_start_message" class="o_videotask_messages hide">
@@ -10,7 +20,7 @@
 	<div id="o_videotask_categories" class="o_videotask_categories">
 	#foreach ($category in $categories)
 		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
-			#if($r.isNotEmpty($category.iconCssClass)) <i class="o_icon $category.iconCssClass"> </i> #end${category.title}</button>
+			#if($r.isNotEmpty($category.iconCssClass)) <i class="o_icon $category.iconCssClass"> </i> #end${category.labelAndTitle}</button>
 	#end
 	</div>
 	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">

@@ -400,10 +400,12 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
 		
-		Float cutValue = (Float)courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		BigDecimal score = taskSession.getScore();
 		Float scoreAsFloat = taskSession.getScoreAsFloat();
-		Boolean updatePassed = null;
+		Float cutValue = (Float)courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		
+		Boolean updatePassed;
+		AssessmentEntryStatus assessmentStatus;
 		if(assessmentConfig.hasGrade() && score != null && gradeModule.isEnabled()) {
 			if (assessmentConfig.isAutoGrade() || isAssessmentWithGrade()) {
 				GradeScale gradeScale = gradeService.getGradeScale(
@@ -415,23 +417,24 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 				gradeSystemIdent = gradeScoreRange.getGradeSystemIdent();
 				performanceClassIdent = gradeScoreRange.getPerformanceClassIdent();
 				updatePassed = gradeScoreRange.getPassed();
+				assessmentStatus = AssessmentEntryStatus.done;
 			} else {
 				updatePassed = null;
+				assessmentStatus = AssessmentEntryStatus.inReview;
 			}
-		} else if(score != null && cutValue != null) {
+		} else if(score != null) {
 			updatePassed = taskSession.getPassed();
-		}
-		
-		Boolean visibility;
-		AssessmentEntryStatus assessmentStatus;
-		if(updatePassed == null) {
-			assessmentStatus = AssessmentEntryStatus.inReview;
-			visibility = Boolean.FALSE;
+			if(courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false) && cutValue == null) {
+				assessmentStatus = AssessmentEntryStatus.inReview;
+			} else {
+				assessmentStatus = AssessmentEntryStatus.done;
+			}
 		} else {
+			updatePassed = taskSession.getPassed();
 			assessmentStatus = AssessmentEntryStatus.done;
-			visibility = Boolean.TRUE;
 		}
 		
+		Boolean visibility = (assessmentStatus == AssessmentEntryStatus.done); 
 		ScoreEvaluation sceval = new ScoreEvaluation(scoreAsFloat, grade, gradeSystemIdent, performanceClassIdent,
 				updatePassed, assessmentStatus, visibility, taskSession.getCreationDate(), null,
 				AssessmentRunStatus.done, taskSession.getKey());

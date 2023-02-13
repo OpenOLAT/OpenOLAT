@@ -74,7 +74,17 @@ public class VideoTaskSessionRow {
 	}
 	
 	public BigDecimal getResultInPercent() {
-		return scoring == null ? null : scoring.resultInPercent();
+		if(scoring == null) {
+			return null;
+		}
+		BigDecimal score = scoring.resultInPercent();
+		if(score.compareTo(BigDecimal.ZERO) < 0) {
+			return BigDecimal.ZERO;
+		}
+		if(score.compareTo(BigDecimal.valueOf(100)) > 0) {
+			return BigDecimal.valueOf(100);
+		}
+		return scoring.resultInPercent();
 	}
 	
 	public BigDecimal getScore() {

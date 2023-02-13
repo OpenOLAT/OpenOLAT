@@ -276,6 +276,14 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
+	public List<GroupMembership> getMemberships(Collection<Group> groups, String role) {
+		return dbInstance.getCurrentEntityManager()
+			.createNamedQuery("membershipsByGroupsAndRole", GroupMembership.class)
+			.setParameter("groupKeys", groups.stream().map(Group::getKey).toList())
+			.setParameter("role", role)
+			.getResultList();
+	}
+	
 	public List<GroupMembership> getMemberships(Group group, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()
 			.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)

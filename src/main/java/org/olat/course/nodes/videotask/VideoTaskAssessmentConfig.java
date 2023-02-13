@@ -75,10 +75,25 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 	public boolean ignoreInCourseAssessment() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT);
 	}
+	
+	@Override
+	public boolean hasMaxAttempts() {
+		return hasAttempts();
+	}
+
+	@Override
+	public Integer getMaxAttempts() {
+		int attempts = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
+		if(attempts > 0) {
+			return Integer.valueOf(attempts);
+		}
+		return null;
+	}
 
 	@Override
 	public boolean hasAttempts() {
-		return true;
+		int attempts = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
+		return attempts > 0;
 	}
 
 	@Override
