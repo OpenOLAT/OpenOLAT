@@ -39,7 +39,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -952,18 +951,4 @@ public class VFSManager {
 		return path;
 	}
 	
-	public static VFSContainer getContainer(VFSLeaf leaf) {
-		VFSMetadata metadata = leaf.getMetaInfo();
-		if(metadata != null) {
-			VFSRepositoryService repositoryService = CoreSpringFactory.getImpl(VFSRepositoryService.class);
-			VFSMetadata parentMetadata = repositoryService.getParent(metadata);
-			if(parentMetadata != null) {
-				VFSItem item = repositoryService.getItemFor(parentMetadata);
-				if(item instanceof VFSContainer container) {
-					return container;
-				}
-			}
-		}
-		return null;
-	}
 }

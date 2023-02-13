@@ -479,14 +479,14 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	}
 
 	private void addStaticMessageItem(ProjTimelineRow row) {
-		StaticTextElement messageItem = uifactory.addStaticTextElement("o_tl_" + counter++, row.getMessage(), flc);
+		StaticTextElement messageItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, row.getMessage(), flc);
 		messageItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setMessageItem(messageItem);
 	}
 
 	private void addActionIconItem(ProjTimelineRow row, ProjActivity activity) {
 		String icon = "<i class=\"o_icon o_icon-lg " + ProjectUIFactory.getActionIconCss(activity.getAction()) +"\"> </i>";
-		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, icon, flc);
 		iconItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setIconItem(iconItem);
 	}

@@ -44,6 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSStatus;
@@ -756,8 +757,10 @@ public class ProjectServiceImpl implements ProjectService {
 		searchParams.setArtefacts(List.of(reloadedNote.getArtefact()));
 		List<ProjActivity> activities = activityDao.loadActivities(searchParams, 0, -1);
 		activityDao.delete(activities);
+		
+		noteDao.delete(reloadedNote);
+		
 		deleteArtefactPermanent(reloadedNote.getArtefact());
-		noteDao.delete(note);
 	}
 
 	@Override
@@ -801,6 +804,11 @@ public class ProjectServiceImpl implements ProjectService {
 		}
 		
 		return infos;
+	}
+	
+	@Override
+	public VFSContainer getProjectContainer(ProjProjectRef project) {
+		return fileStorage.getOrCreateFileContainer(project);
 	}
 	
 	

@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.io.InputStream;
 import java.util.List;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
@@ -48,6 +49,7 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjFile;
@@ -201,7 +203,16 @@ public class ProjFileCreateController extends FormBasicController {
 	}
 	
 	private void doOpen(UserRequest ureq, VFSLeaf vfsLeaf) {
-		DocEditorConfigs configs = DocEditorConfigs.builder().withMode(DocEditor.Mode.EDIT).build(vfsLeaf);
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
+				.withAllowCustomMediaFactory(false)
+				.withDisableMedia(true)
+				.build();
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withMode(DocEditor.Mode.EDIT)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
+		 
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 	}

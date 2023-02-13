@@ -28,6 +28,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.vfs.VFSContainer;
 
 /**
  * 
@@ -135,6 +136,8 @@ public interface ProjectService {
 	public List<ProjNote> getNotes(ProjNoteSearchParams searchParams);
 	
 	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams);
+
+	public VFSContainer getProjectContainer(ProjProjectRef project);
 	
 	
 	/*

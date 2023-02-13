@@ -64,7 +64,7 @@ public class ProjFileStorage {
 		}
 		
 		try {
-			VFSContainer fileContainer = createFileContainer(project);
+			VFSContainer fileContainer = getOrCreateFileContainer(project);
 			return tryToStore(fileContainer, savedBy, filename, inputStream);
 		} catch (Exception e) {
 			log.error("", e);
@@ -72,7 +72,7 @@ public class ProjFileStorage {
 		}
 	}
 	
-	private VFSContainer createFileContainer(ProjProjectRef project) {
+	public VFSContainer getOrCreateFileContainer(ProjProjectRef project) {
 		File storage = new File(projectDirectory, project.getKey().toString());
 		if (!storage.exists()) {
 			storage.mkdirs();
@@ -94,7 +94,7 @@ public class ProjFileStorage {
 	}
 
 	public boolean exists(ProjProjectRef project, String filename) {
-		return createFileContainer(project).resolve(filename) != null? true: false;
+		return getOrCreateFileContainer(project).resolve(filename) != null? true: false;
 	}
 	
 }

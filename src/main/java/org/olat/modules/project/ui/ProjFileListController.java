@@ -77,9 +77,9 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.project.ProjArtefact;
@@ -572,22 +572,22 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	}
 	
 	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf, Mode mode) {
-
-		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(VFSManager.getContainer(vfsLeaf), vfsLeaf.getName())
-					.withAllowCustomMediaFactory(false)
-					.withDisableMedia(true)
-					.build();
-		 
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
+				.withAllowCustomMediaFactory(false)
+				.withDisableMedia(true)
+				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
-					.withMode(mode)
-					.addConfig(htmlEditorConfig)
-					.build(vfsLeaf);
+				.withMode(mode)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
 		 
 		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		
 		if (Mode.EDIT == mode) {
 			projectService.createActivityEdit(getIdentity(), file);
+			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());
 		}
