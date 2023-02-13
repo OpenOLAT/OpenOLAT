@@ -48,12 +48,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.Fle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -74,6 +76,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
@@ -214,7 +218,48 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				filters.add(filter);
 			}
 		}
-
+		
+		// groups
+		SelectionValues groupValues = new SelectionValues();
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			List<BusinessGroup> coachedGroups;
+			if(assessmentCallback.isAdmin()) {
+				coachedGroups = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+			} else {
+				coachedGroups = assessmentCallback.getCoachedGroups();
+			}
+			
+			if(coachedGroups != null && !coachedGroups.isEmpty()) {
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+					groupValues.add(new SelectionValue("businessgroup-" + coachedGroup.getKey(), groupName, null,
+							"o_icon o_icon_group", null, true));
+				}
+			}
+		}
+		
+		if(assessmentCallback.canAssessCurriculumMembers()) {
+			List<CurriculumElement> coachedCurriculumElements;
+			if(assessmentCallback.isAdmin()) {
+				coachedCurriculumElements = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllCurriculumElements();
+			} else {
+				coachedCurriculumElements = coachCourseEnv.getCoachedCurriculumElements();
+			}
+			
+			if(!coachedCurriculumElements.isEmpty()) {
+				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					groupValues.add(new SelectionValue("curriculumelement-" + coachedCurriculumElement.getKey(), name, null,
+							"o_icon o_icon_curriculum_element", null, true));
+				}
+			}
+		}
+		
+		if(!groupValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
+		}
+		
 		tableEl.setFilters(true, filters, false, false);
 	}
 
@@ -307,6 +352,30 @@ public class PracticeCoachController extends FormBasicController implements Acti
 				params.setParticipantTypes(participants);
 			}
 		}
+		
+		List<Long> businessGroupKeys = null;
+		List<Long> curriculumElementKeys = null;
+		FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_GROUPS);
+		if(groupsFilter != null && groupsFilter.isSelected()) {
+			businessGroupKeys = new ArrayList<>();
+			curriculumElementKeys = new ArrayList<>();
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					if(index > 0) {
+						Long key = Long.valueOf(filterValue.substring(index + 1));
+						if(filterValue.startsWith("businessgroup-")) {
+							businessGroupKeys.add(key);
+						} else if(filterValue.startsWith("curriculumelement-")) {
+							curriculumElementKeys.add(key);
+						}
+					}
+				}
+			}
+		}
+		params.setBusinessGroupKeys(businessGroupKeys);
+		params.setCurriculumElementKeys(curriculumElementKeys);
 		
 		return params;
 	}

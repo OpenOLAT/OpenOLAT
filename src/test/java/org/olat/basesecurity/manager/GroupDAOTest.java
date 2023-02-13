@@ -22,6 +22,7 @@ package org.olat.basesecurity.manager;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Collections;
 import java.util.List;
@@ -333,6 +334,27 @@ public class GroupDAOTest extends OlatTestCase {
 		Identity stayingMemberAlt = stayingMembershipsAlt.get(0).getIdentity();
 		Assert.assertNotNull(stayingMemberAlt);
 		Assert.assertEquals(id2, stayingMemberAlt);
+	}
+	
+	@Test
+	public void removeMembership_byGroupsAndRole() {
+		Identity id11 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id12 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id13 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id21 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity id31 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Group group1 = groupDao.createGroup();
+		Group group2 = groupDao.createGroup();
+		Group group3 = groupDao.createGroup();
+		GroupMembership membership11 = groupDao.addMembershipTwoWay(group1, id11, "pilot");
+		GroupMembership membership12 = groupDao.addMembershipTwoWay(group1, id12, "pilot");
+		groupDao.addMembershipTwoWay(group1, id13, "commander");
+		GroupMembership membership21 = groupDao.addMembershipTwoWay(group2, id21, "pilot");
+		groupDao.addMembershipTwoWay(group3, id31, "pilot");
+		dbInstance.commitAndCloseSession();
+		
+		List<GroupMembership> memberships = groupDao.getMemberships(List.of(group1, group2), "pilot");
+		assertThat(memberships).containsExactlyInAnyOrder(membership11, membership12, membership21);
 	}
 	
 	@Test

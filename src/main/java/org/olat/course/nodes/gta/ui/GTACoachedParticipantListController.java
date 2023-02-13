@@ -34,8 +34,11 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
@@ -64,6 +67,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiT
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -108,6 +112,7 @@ import org.olat.course.nodes.gta.ui.events.SelectIdentityEvent;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -116,11 +121,16 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
 import org.olat.modules.co.ContactFormController;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -152,13 +162,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private CoachParticipantsTableModel tableModel;
 
 	private final List<UserPropertiesRow> assessableIdentities;
-	private final Set<Long> fakeParticipantKeys;
 	private final UserCourseEnvironment coachCourseEnv;
 	
 	private int count;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final boolean markedDefault;
 	private final AssessmentConfig assessmentConfig;
+	private final AssessmentToolSecurityCallback assessmentCallback;
+	private final Set<Long> fakeParticipantKeys;
+	private Map<String, List<Long>> groupKeyToIdentityKeys;
 
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -175,6 +187,10 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -197,17 +213,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		this.markedDefault = markedDefault;
 		
 		assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(coachCourseEnv), gtaNode);
+		assessmentCallback = getAssessmentToolSecurityCallback(ureq);
+		fakeParticipantKeys = assessmentCallback.getFakeParticipants().stream().map(IdentityRef::getKey).collect(Collectors.toSet());
 		
 		Set<Identity> identities = new HashSet<>(getAssessableIdentities());
-		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(
-				courseEnv.getCourseGroupManager().getCourseEntry(), getIdentity(), coachCourseEnv.isAdmin(),
-				coachCourseEnv.isCoach());
-		identities.addAll(securityManager.loadIdentityByRefs(fakeParticipants));
+		identities.addAll(securityManager.loadIdentityByRefs(assessmentCallback.getFakeParticipants()));
 		
 		assessableIdentities = identities.stream()
 				.map(participant -> new UserPropertiesRow(participant, userPropertyHandlers, getLocale()))
 				.collect(Collectors.toList());
-		fakeParticipantKeys = fakeParticipants.stream().map(IdentityRef::getKey).collect(Collectors.toSet());
 		
 		initForm(ureq);
 		int rows = updateModel(ureq);
@@ -215,6 +229,21 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			tableEl.setSelectedFilterTab(ureq, allTab);
 			updateModel(ureq);
 		}
+	}
+	
+	private AssessmentToolSecurityCallback getAssessmentToolSecurityCallback(UserRequest ureq) {
+		RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach();
+		boolean nonMembers = reSecurity.isEntryAdmin();
+		List<BusinessGroup> coachedGroups = null;
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = coachCourseEnv.getCoachedGroups();
+		}
+		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
+				coachCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
+		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 	
 	public boolean hasIdentityKey(Long identityKey) {
@@ -409,6 +438,69 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			filters.add(membersFilter);
 		}
 		
+		// groups
+		SelectionValues groupValues = new SelectionValues();
+		groupKeyToIdentityKeys = new HashMap<>();
+		if(assessmentCallback.canAssessBusinessGoupMembers()) {
+			List<BusinessGroup> coachedGroups;
+			if(assessmentCallback.isAdmin()) {
+				coachedGroups = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+			} else {
+				coachedGroups = assessmentCallback.getCoachedGroups();
+			}
+			
+			if(coachedGroups != null && !coachedGroups.isEmpty()) {
+				List<Group> baseGroups = coachedGroups.stream().map(BusinessGroup::getBaseGroup).toList();
+				List<GroupMembership> memberships = groupDao.getMemberships(baseGroups, GroupRoles.participant.name());
+				Map<Group, List<GroupMembership>> groupToMembership = memberships.stream().collect(Collectors.groupingBy(GroupMembership::getGroup));
+				
+				for(BusinessGroup coachedGroup:coachedGroups) {
+					String key = "businessgroup-" + coachedGroup.getKey();
+					String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+					groupValues.add(new SelectionValue(key, groupName, null, "o_icon o_icon_group", null, true));
+					
+					List<GroupMembership> groupMemberships = groupToMembership.get(coachedGroup.getBaseGroup());
+					List<Long> identities = groupMemberships != null && !groupMemberships.isEmpty()
+							? groupMemberships.stream().map(GroupMembership::getIdentity).map(Identity::getKey).toList()
+							: List.of();
+					groupKeyToIdentityKeys.put(key, identities);
+				}
+			}
+		}
+		
+		if(assessmentCallback.canAssessCurriculumMembers()) {
+			List<CurriculumElement> coachedCurriculumElements;
+			if(assessmentCallback.isAdmin()) {
+				coachedCurriculumElements = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllCurriculumElements();
+			} else {
+				coachedCurriculumElements = coachCourseEnv.getCoachedCurriculumElements();
+			}
+			
+			if(!coachedCurriculumElements.isEmpty()) {
+				List<Group> baseGroups = coachedCurriculumElements.stream().map(CurriculumElement::getGroup).toList();
+				List<GroupMembership> memberships = groupDao.getMemberships(baseGroups, GroupRoles.participant.name());
+				Map<Group, List<GroupMembership>> groupToMembership = memberships.stream().collect(Collectors.groupingBy(GroupMembership::getGroup));
+				
+				for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+					String key = "curriculumelement-" + coachedCurriculumElement.getKey();
+					String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+					groupValues.add(new SelectionValue(key, name, null,
+							"o_icon o_icon_curriculum_element", null, true));
+					
+					List<GroupMembership> groupMemberships = groupToMembership.get(coachedCurriculumElement.getGroup());
+					List<Long> identities = groupMemberships != null && !groupMemberships.isEmpty()
+							? groupMemberships.stream().map(GroupMembership::getIdentity).map(Identity::getKey).toList()
+							: List.of();
+					groupKeyToIdentityKeys.put(key, identities);
+				}
+			}
+		}
+		
+		if(!groupValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
+		}
+		
 		if (!filters.isEmpty()) {
 			tableEl.setFilters(true, filters, false, false);
 		}
@@ -417,6 +509,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	protected int updateModel(UserRequest ureq) {
 		List<AssessmentObligation> filterObligations = getFilterObligations();
 		Set<ParticipantType> filterParticipants = getFilterParticipants();
+		List<String> filterGroupKeys = getFilterGroupKeys();
 		
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
@@ -458,7 +551,9 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			}
 			
 			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
-			if (isExcludedByObligation(filterObligations, assessment) || isExcludedByParticipant(filterParticipants, assessableIdentity)) {
+			if (isExcludedByObligation(filterObligations, assessment)
+					|| isExcludedByParticipant(filterParticipants, assessableIdentity)
+					|| isExcludedByGroup(filterGroupKeys, assessableIdentity)) {
 				continue;
 			}
 			
@@ -576,6 +671,31 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				return !fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());
 			}
 			return fakeParticipantKeys.contains(assessableIdentity.getIdentityKey());
+		}
+		return false;
+	}
+	
+	private List<String> getFilterGroupKeys() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter groupFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_GROUPS);
+		if(groupFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues;
+			}
+		}
+		return null;
+	}
+	
+	private boolean isExcludedByGroup(List<String> filterGroupKeys, UserPropertiesRow assessableIdentity) {
+		if (filterGroupKeys != null && !filterGroupKeys.isEmpty()) {
+			for (String groupKey : filterGroupKeys) {
+				List<Long> identities = groupKeyToIdentityKeys.get(groupKey);
+				if (identities != null && identities.contains(assessableIdentity.getIdentityKey())) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
