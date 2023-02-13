@@ -132,8 +132,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		this.courseNode = courseNode;
 		entry = courseEnv.getCourseGroupManager().getCourseEntry();
 
-		Float max = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
+		maxScore = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);

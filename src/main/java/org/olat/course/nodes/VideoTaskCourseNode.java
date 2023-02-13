@@ -226,8 +226,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry videoEntry = getReferencedRepositoryEntry();
 		Long videoEntryKey = videoEntry.getKey();
 
-		Float max = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		Float maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
+		Float maxScore = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		Float cutValue = (Float) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		int rounding = getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);

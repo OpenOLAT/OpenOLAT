@@ -108,6 +108,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private ConfirmFinishTaskController confirmFinishTaskCtrl;
 	private ConfirmNextAttemptController confirmNextAttemptCtrl;
 	
+	private int count = 0;
 	private final List<String> categoriesIds;
 	private final long totalDurationInMillis;
 	private final List<SegmentMarker> segmentSelections = new ArrayList<>();
@@ -136,8 +137,8 @@ public class VideoTaskDisplayController extends BasicController {
 				.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
 		mode = courseNode.getModuleConfiguration()
 				.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE, VideoTaskEditController.CONFIG_KEY_MODE_DEFAULT);
-		Float max = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		maxScore = max != null ? max : MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
+		maxScore = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+
 		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
@@ -212,7 +213,7 @@ public class VideoTaskDisplayController extends BasicController {
 
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)
 				|| VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
-			segmentsCtrl.setMessage(translate("feedback.test.initial"));
+			segmentsCtrl.setMessage(translate("feedback.test.initial"), false);
 		}
 	}
 	
@@ -291,7 +292,7 @@ public class VideoTaskDisplayController extends BasicController {
 				
 				feedback(category, segmentId, correct);
 			} else {
-				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"));
+				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"), false);
 			}
 		}
 	}
@@ -309,13 +310,15 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	private void feedback(VideoSegmentCategory category, String segmentId, boolean correct) {
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
-			segmentsCtrl.setMessage("");
+			segmentsCtrl.setMessage("", false);
 			return;
 		}
 		
 		String i18nKey;
 		long attemptsLeft = 0;
+		boolean timer = false;
 		if(correct) {
+			timer = true;
 			i18nKey = "feedback.correct";
 		} else if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode) && maxAttemptsPerSegments > 0) {
 			attemptsLeft = maxAttemptsPerSegments - getAttemptOnSegment(segmentId);
@@ -327,6 +330,9 @@ public class VideoTaskDisplayController extends BasicController {
 				i18nKey = "feedback.not.correct.assign.attempts.left.plural";
 			}
 		} else {
+			if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
+				timer = true;
+			}
 			i18nKey = "feedback.not.correct";
 		}
 		
@@ -337,7 +343,7 @@ public class VideoTaskDisplayController extends BasicController {
 				segmentsCtrl.temporaryDisableCategories();
 			}
 		}
-		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)));
+		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)), timer);
 	}
 	
 	private long getAttemptOnSegment(String segment) {
@@ -460,7 +466,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		segmentsCtrl.setSegmentsSelections(solutionList);
 		segmentsCtrl.setCategories(List.of());
-		segmentsCtrl.setMessage("");
+		segmentsCtrl.setMessage("", false);
 		segmentsCtrl.setShowSolution(true);
 		segmentsCtrl.setShowTooltips(true);
 		segmentsCtrl.setEnableDisableCategories(false);
@@ -540,6 +546,10 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		public String getLabel() {
 			return segmentCategory.getLabel();
+		}
+		
+		public String getLabelAndTitle() {
+			return segmentCategory.getLabelAndTitle();
 		}
 		
 		public VideoSegmentCategory getCategory() {
@@ -675,8 +685,13 @@ public class VideoTaskDisplayController extends BasicController {
 			flc.contextPut("showTooltips", Boolean.valueOf(showTooltips));
 		}
 
-		public void setMessage(String message) {
+		public void setMessage(String message, boolean timer) {
 			flc.contextPut("message", message);
+			if(timer) {
+				flc.contextPut("messageTimerId", "timer_" + (++count));
+			} else {
+				flc.contextRemove("messageTimerId");
+			}
 		}
 
 		@Override
