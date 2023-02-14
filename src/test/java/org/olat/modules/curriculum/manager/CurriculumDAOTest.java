@@ -251,6 +251,22 @@ public class CurriculumDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void searchWithInfos_managerInOrganisation() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1b");
+		Organisation organisation = organisationService.createOrganisation("Curriculum-mgmt", "cur-mgmt", "Curriculum management", null, null);
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for managers", "Managers", "Short desc.", false, organisation);
+		organisationService.addMember(organisation, manager, OrganisationRoles.curriculummanager);
+		dbInstance.commitAndCloseSession();
+		
+		// search curriculum for the manager
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setCurriculumAdmin(manager);
+		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
+		Assert.assertEquals(1, managedCurriculums.size());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
+	}
+	
+	@Test
 	public void searchWithInfos_administrator() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-4");
 		Identity administrator = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-administrator-2");
