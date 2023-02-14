@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.client.utils.URIBuilder;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
@@ -92,8 +93,6 @@ import org.olat.modules.video.ui.segment.VideoSegmentController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -661,7 +660,7 @@ public class VideoDisplayController extends BasicController {
 			if(event == Event.BACK_EVENT) {
 				doGoBackAfterQuestion(questionCtrl.getCurrentQuestion());
 			} else if(event == Event.DONE_EVENT) {
-				doContinueAfterQuestion();
+				doContinueAfterQuestion(ureq, questionCtrl.getCurrentTime());
 			}
 		} else if (licenseController == source) {
 			VideoLicenseAcceptEvent licenseEvent = (VideoLicenseAcceptEvent) event;
@@ -691,9 +690,10 @@ public class VideoDisplayController extends BasicController {
 		super.event(ureq, source, event);
 	}
 	
-	private void doContinueAfterQuestion() {
-		markerPanel.setContent(null);
-
+	private void doContinueAfterQuestion(UserRequest ureq, String currentTime) {
+		if(StringHelper.containsNonWhitespace(currentTime)) {
+			loadMarker(ureq, currentTime, null);
+		}
 		ContinueCommand cmd = new ContinueCommand(getVideoElementId());
 		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
@@ -752,17 +752,21 @@ public class VideoDisplayController extends BasicController {
 	
 	public void loadMarker(UserRequest ureq, String currentTime, String markerId) {
 		double time = Double.parseDouble(currentTime);
+		
 		VideoQuestion questionToPresent = null;
 		if(displayOptions.isShowQuestions() && videoQuestions != null && StringHelper.containsNonWhitespace(markerId)) {
+			List<String>  markerIdList = List.of(markerId.split("[,]"));
 			for(VideoQuestion question:videoQuestions.getQuestions()) {
-				if(markerId.equals(question.getId())) {
+				if(markerIdList.contains(question.getId())) {
 					questionToPresent = question;
+					break; // only one question at once
 				}
 			}
 		}
 		
 		if(questionToPresent != null && !questionToPresent.equals(backToQuestion)
 				&& questionCtrl.present(ureq, questionToPresent, videoQuestions.getQuestions())) {
+			questionCtrl.setCurrentTime(currentTime);
 			markerPanel.setContent(questionCtrl.getInitialComponent());
 		} else {
 			List<VideoMarkerWrapper> currentMarkers = new ArrayList<>();

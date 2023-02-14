@@ -76,6 +76,7 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 	private final RepositoryEntry videoEntry;
 	private final CourseNode courseNode;
 	private final boolean authorMode;
+	private String currentTime;
 	private VideoQuestion currentQuestion;
 	private List<VideoQuestion> allQuestions;
 	
@@ -104,6 +105,14 @@ public class VideoAssessmentItemController extends BasicController implements Ou
 		return currentQuestion;
 	}
 	
+	public String getCurrentTime() {
+		return currentTime;
+	}
+
+	public void setCurrentTime(String currentTime) {
+		this.currentTime = currentTime;
+	}
+
 	public boolean present(UserRequest ureq, VideoQuestion question, List<VideoQuestion> allAvailableQuestions) {
 		removeAsListenerAndDispose(assessmentItemCtrl);
 

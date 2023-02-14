@@ -27,8 +27,6 @@ Object.assign(MediaElementPlayer.prototype, {
 		}
 
 		var t = this,
-		    currentPos = -1,
-		    currentMarker = -1,
 		    lastPlayPos = -1,
 		    lastMarkerCallBack = -1;
 
@@ -45,7 +43,7 @@ Object.assign(MediaElementPlayer.prototype, {
 			player.setmarkers(controls);
 		});
 		media.addEventListener('timeupdate', function () {
-			currentPos = Math.floor(media.currentTime);
+			var currentPos = Math.floor(media.currentTime);
 			if (lastPlayPos > currentPos) {
 				if (lastMarkerCallBack > currentPos) {
 					lastMarkerCallBack = -1;
@@ -55,12 +53,17 @@ Object.assign(MediaElementPlayer.prototype, {
 			}
 
 			if (player.options.markers.length) {
+				var markersList = new Array();
 				for (var _i = 0, _total = player.options.markers.length; _i < _total; ++_i) {
-					currentMarker = Math.floor(player.options.markers[_i].time);
+					var currentMarker = Math.floor(player.options.markers[_i].time);
 					if (currentPos === currentMarker && currentMarker !== lastMarkerCallBack) {
-						player.options.markerCallback(media, media.currentTime, player.options.markers[_i].id);
-						lastMarkerCallBack = currentMarker;
+						markersList.push(player.options.markers[_i].id);
 					}
+				}
+				
+				if(markersList.length > 0) {
+					player.options.markerCallback(media, media.currentTime, markersList.join(","));
+					lastMarkerCallBack = currentPos;
 				}
 			}
 		}, false);
