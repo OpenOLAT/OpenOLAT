@@ -316,8 +316,12 @@
 	position: absolute;
 	height: 20px;
 	line-height: 22px;
-	font-size: 8px;
+	font-size: 11px;
 	text-align: center;
+}
+
+.o_videotask_segments .o_video_me_segment {
+	font-size: 11px;
 }
 
 .o_videotask_segment.o_segment_correct:after {

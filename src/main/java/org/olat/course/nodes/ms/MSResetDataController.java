@@ -110,7 +110,7 @@ public class MSResetDataController extends FormBasicController {
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("tool.reset.data.confirm.error", null);
+			confirmationEl.setErrorKey("tool.reset.data.confirm.error");
 			allOk &= false;
 		}
 		

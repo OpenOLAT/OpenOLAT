@@ -401,7 +401,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 		// user info text
 		if (infotextUser.getValue().length() > 4000) {
-			infotextUser.setErrorKey("input.toolong", new String[] {"4000"});
+			infotextUser.setErrorKey("input.toolong", "4000");
 			return false;
 		} else {
 			infotextUser.clearError();
@@ -409,16 +409,16 @@ public class MSEditFormController extends FormBasicController {
 		// score flag
 		if (scoreGranted.isSelected(0)) {
 			if (!minVal.getValue().matches(scoreRex)) {
-				minVal.setErrorKey("form.error.wrongFloat", null);
+				minVal.setErrorKey("form.error.wrongFloat");
 				return false;
 			} else {
 				minVal.clearError();
 			}
 			if (!maxVal.getValue().matches(scoreRex)) {
-				maxVal.setErrorKey("form.error.wrongFloat", null);
+				maxVal.setErrorKey("form.error.wrongFloat");
 				return false;
 			} else if (Float.parseFloat(minVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
-				maxVal.setErrorKey("form.error.minGreaterThanMax", null);
+				maxVal.setErrorKey("form.error.minGreaterThanMax");
 				return false;
 			} else {
 				maxVal.clearError();
@@ -428,15 +428,15 @@ public class MSEditFormController extends FormBasicController {
 		displayType.clearError();
 		if (displayPassed.isSelected(0) && displayType.isSelected(0)) {
 			if (Boolean.valueOf(displayType.getSelectedKey()).booleanValue() && !scoreGranted.isSelected(0)) {
-				displayType.setErrorKey("form.error.cutButNoScore", null);
+				displayType.setErrorKey("form.error.cutButNoScore");
 				return false;
 			}
 			if (!cutVal.getValue().matches(scoreRex)) {
-				cutVal.setErrorKey("form.error.wrongFloat", null);
+				cutVal.setErrorKey("form.error.wrongFloat");
 				return false;
 			} else if (Float.parseFloat(cutVal.getValue()) < Float.parseFloat(minVal.getValue())
 					|| Float.parseFloat(cutVal.getValue()) > Float.parseFloat(maxVal.getValue())) {
-				cutVal.setErrorKey("form.error.cutOutOfRange", null);
+				cutVal.setErrorKey("form.error.cutOutOfRange");
 				return false;
 			} else {
 				cutVal.clearError();

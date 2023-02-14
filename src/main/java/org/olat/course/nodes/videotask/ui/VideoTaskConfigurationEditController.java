@@ -41,6 +41,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.MSCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoManager;
@@ -341,11 +342,11 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 			|| videoAssessmentService.countTaskSessions(entry, subIdent) == 0l) {
 			updateConfig(ureq, !mode.equals(currentMode));
 		} else {
-			doConfirmChangeMde(ureq);
+			doConfirmChangeMode(ureq);
 		}
 	}
 	
-	private void doConfirmChangeMde(UserRequest ureq) {
+	private void doConfirmChangeMode(UserRequest ureq) {
 		long sessions = videoAssessmentService.countTaskSessions(entry, subIdent);
 		confirmChangeModeCtrl = new ConfirmChangeModeController(ureq, getWindowControl(), entry, subIdent, currentMode, sessions);
 		listenTo(confirmChangeModeCtrl);
@@ -385,6 +386,11 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		
 		String sort = sortCategoriesEl.getSelectedKey();
 		config.setStringValue(VideoTaskEditController.CONFIG_KEY_SORT_CATEGORIES, sort);
+		
+		if(!VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(currentMode)) {
+			config.setStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE.toString());
+			VideoTaskAssessmentEditController.resetConfiguration(config);
+		}
 
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		if(triggersEvent) {

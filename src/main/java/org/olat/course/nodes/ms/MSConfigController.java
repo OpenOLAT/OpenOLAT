@@ -485,7 +485,7 @@ public class MSConfigController extends FormBasicController {
 		
 		evaluationFormNotChoosen.clearError();
 		if (evaluationFormNotChoosen.isVisible() && formEntry == null) {
-			evaluationFormNotChoosen.setErrorKey("form.legende.mandatory", null);
+			evaluationFormNotChoosen.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		
@@ -495,15 +495,15 @@ public class MSConfigController extends FormBasicController {
 		boolean maxIsFloat = isFloat(maxEl.getValue());
 		if (minEl.isVisible() && minEl.isEnabled()) {
 			if (!minIsFloat) {
-				minEl.setErrorKey("form.error.wrongFloat", null);
+				minEl.setErrorKey("form.error.wrongFloat");
 				allOk = false;
 			}
 			if (!maxIsFloat) {
-				maxEl.setErrorKey("form.error.wrongFloat", null);
+				maxEl.setErrorKey("form.error.wrongFloat");
 				allOk = false;
 			}
 			if (minIsFloat && maxIsFloat && isNotGreaterFloat(minEl.getValue(), maxEl.getValue())) {
-				maxEl.setErrorKey("form.error.minGreaterThanMax", null);
+				maxEl.setErrorKey("form.error.minGreaterThanMax");
 				allOk = false;
 			}
 		}
@@ -511,7 +511,7 @@ public class MSConfigController extends FormBasicController {
 		passedTypeEl.clearError();
 		if (passedTypeEl.isVisible()) {
 			if (!passedTypeEl.isOneSelected()) {
-				passedTypeEl.setErrorKey("form.legende.mandatory", null);
+				passedTypeEl.setErrorKey("form.legende.mandatory");
 				allOk = false;
 			}
 		}
@@ -520,12 +520,12 @@ public class MSConfigController extends FormBasicController {
 		if (cutEl.isVisible()) {
 			boolean cutIsFloat = isFloat(cutEl.getValue());
 			if (!cutIsFloat) {
-				cutEl.setErrorKey("form.error.wrongFloat", null);
+				cutEl.setErrorKey("form.error.wrongFloat");
 				allOk = false;
 			}
 			if (cutIsFloat && minIsFloat && maxIsFloat
 					&& notInRange(minEl.getValue(), maxEl.getValue(), cutEl.getValue())) {
-				cutEl.setErrorKey("form.error.cutOutOfRange", null);
+				cutEl.setErrorKey("form.error.cutOutOfRange");
 				allOk = false;
 			}
 		}
@@ -534,20 +534,20 @@ public class MSConfigController extends FormBasicController {
 		if (scaleEl.isVisible()) {
 			boolean scaleIsFloat = isFloat(scaleEl.getValue());
 			if (!scaleIsFloat) {
-				scaleEl.setErrorKey("form.error.wrongFloat", null);
+				scaleEl.setErrorKey("form.error.wrongFloat");
 				allOk = false;
 			}
 		}
 		
 		infotextCoachEl.clearError();
 		if (infotextCoachEl.getValue().length() > 4000) {
-			infotextCoachEl.setErrorKey("input.toolong", new String[] {"4000"});
+			infotextCoachEl.setErrorKey("input.toolong", "4000");
 			allOk = false;
 		}
 		
 		infotextUserEl.clearError();
 		if (infotextUserEl.getValue().length() > 4000) {
-			infotextUserEl.setErrorKey("input.toolong", new String[] {"4000"});
+			infotextUserEl.setErrorKey("input.toolong", "4000");
 			allOk = false;
 		}
 		
