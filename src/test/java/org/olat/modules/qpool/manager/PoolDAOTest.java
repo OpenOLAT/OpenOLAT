@@ -62,8 +62,6 @@ public class PoolDAOTest extends OlatTestCase {
 	@Autowired
 	private QItemTypeDAO qItemTypeDao;
 	@Autowired
-	private QuestionItemDAO questionDao;
-	@Autowired
 	private QItemQueriesDAO qItemQueriesDao;
 	@Autowired
 	private QuestionItemDAO questionItemDao;
@@ -155,8 +153,8 @@ public class PoolDAOTest extends OlatTestCase {
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		BusinessGroup group = businessGroupDao.createAndPersist(owner, "gdao", "gdao-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
-		QuestionItem item = questionDao.createAndPersist(owner, "Shared-Item-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		questionDao.share(item, group.getResource());
+		QuestionItem item = questionItemDao.createAndPersist(owner, "Shared-Item-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
+		questionItemDao.share(item, group.getResource());
 
 		businessGroupRelationDao.addRole(participant, group, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();

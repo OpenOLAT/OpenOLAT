@@ -563,7 +563,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		el.clearError();
 		if(!el.isOneSelected()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;
@@ -574,10 +574,10 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger", null);
+			el.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		
