@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
@@ -44,6 +45,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
+import org.olat.course.nodes.ms.MSConfigController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -104,7 +106,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	public VideoTaskAssessmentEditController(UserRequest ureq, WindowControl wControl,
 			ICourse course, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(),
+				Util.createPackageTranslator(MSConfigController.class, getLocale(), getTranslator())));
 		config = courseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.nodeIdent = courseNode.getIdent();
@@ -345,6 +348,73 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 
 	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		minEl.clearError();
+		maxEl.clearError();
+		boolean minIsFloat = isFloat(minEl.getValue());
+		boolean maxIsFloat = isFloat(maxEl.getValue());
+		if (minEl.isVisible() && minEl.isEnabled()) {
+			if (!minIsFloat) {
+				minEl.setErrorKey("form.error.wrongFloat");
+				allOk &= false;
+			}
+			if (!maxIsFloat) {
+				maxEl.setErrorKey("form.error.wrongFloat");
+				allOk &= false;
+			}
+			if (minIsFloat && maxIsFloat && isNotGreaterFloat(minEl.getValue(), maxEl.getValue())) {
+				maxEl.setErrorKey("form.error.minGreaterThanMax");
+				allOk &= false;
+			}
+		}
+		
+		passedTypeEl.clearError();
+		if (passedTypeEl.isVisible() && !passedTypeEl.isOneSelected()) {
+			passedTypeEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		cutEl.clearError();
+		if (cutEl.isVisible()) {
+			boolean cutIsFloat = isFloat(cutEl.getValue());
+			if (!cutIsFloat) {
+				cutEl.setErrorKey("form.error.wrongFloat");
+				allOk &= false;
+			}
+			if (cutIsFloat && minIsFloat && maxIsFloat
+					&& notInRange(minEl.getValue(), maxEl.getValue(), cutEl.getValue())) {
+				cutEl.setErrorKey("form.error.cutOutOfRange");
+				allOk &= false;
+			}
+		}
+		
+		return allOk;
+	}
+	
+	private boolean isFloat(String val) {
+		if (StringHelper.containsNonWhitespace(val)) {
+			try {
+				Float.parseFloat(val);
+				return true;
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return false;
+	}
+	
+	private boolean isNotGreaterFloat(String min, String max) {
+		return Float.parseFloat(min) >= Float.parseFloat(max);
+	}
+	
+	private boolean notInRange(String min, String max, String cut) {
+		return Float.parseFloat(cut) < Float.parseFloat(min)
+				|| Float.parseFloat(cut) > Float.parseFloat(max);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		updateConfig();
 		fireEvent(ureq, Event.DONE_EVENT);
@@ -389,20 +459,20 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			String weight = weightingEl.getSelectedKey();
 			config.setStringValue(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS, weight);
 		} else {
-			resetConfiguration();
+			resetConfiguration(config);
 		}
 	}
 	
-	protected void resetConfiguration() {
-		config.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		config.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		config.remove(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING);
-		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true);
-		config.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-		config.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
-		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
-		config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		config.remove(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS);
+	protected static void resetConfiguration(ModuleConfiguration configuration) {
+		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
+		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
+		configuration.remove(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING);
+		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true);
+		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
+		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
+		configuration.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		configuration.remove(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS);
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {

@@ -26,6 +26,8 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -33,7 +35,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
+import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
@@ -96,6 +101,13 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 			resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
 			resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
+	}
+	
+	@Override
+	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(IdentityCourseElementCols.tools);
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
 	}
 	
 	@Override
@@ -186,5 +198,38 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		listenTo(playCtrl);
 
 		stackPanel.pushController(translate("play"), playCtrl);
+	}
+
+	@Override
+	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+		if(assessmentConfig.isAssessable()) {
+			return super.createCalloutController(ureq, assessedIdentity);
+		}
+		return new VideoTaskToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
+	}
+	
+	private class VideoTaskToolsController extends AbstractToolsController {
+		
+		public VideoTaskToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+				Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+			super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
+			
+			initTools();
+		}
+
+		@Override
+		protected void initDetails() {
+			//;
+		}
+
+		@Override
+		protected void initApplyGrade() {
+			//;
+		}
+
+		@Override
+		protected void initStatus() {
+			//;
+		}
 	}
 }

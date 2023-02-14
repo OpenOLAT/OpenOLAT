@@ -329,7 +329,7 @@ public class CurriculumDAO {
 				sb.append("or organis.group.key in (select admGroup.key from bgroupmember as admMembership")
 				  .append("  inner join admMembership.group as admGroup")
 				  .append("  where admMembership.identity.key=:managerKey")
-					  .append("  and admMembership.role ").in(OrganisationRoles.administrator)
+					  .append("  and admMembership.role ").in(OrganisationRoles.administrator, CurriculumRoles.curriculummanager)
 					  .append(")");
 			}
 			

@@ -203,7 +203,8 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			List<Segment> segmentsList = new ArrayList<>();
-			for(VideoSegment videoSegment:segments.getSegments()) {
+			List<VideoSegment> availableSegmentsList = VideoTaskHelper.getSelectedSegments(segments, categoriesIds);
+			for(VideoSegment videoSegment:availableSegmentsList) {
 				segmentsList.add(Segment.valueOf(videoSegment.getBegin(), videoSegment.getDuration(), totalDurationInMillis, "o_video_marker_gray", ""));
 			}
 			segmentsCtrl.setSegments(segmentsList, "", true);
@@ -367,7 +368,9 @@ public class VideoTaskDisplayController extends BasicController {
 			Date begin = segment.getBegin();
 			long startInMilliSeconds = begin.getTime();
 			long endInMilliSeconds = startInMilliSeconds + (segment.getDuration() * 1000l);
-			if(startInMilliSeconds <= positionInMilliSeconds && (endInMilliSeconds >= positionInMilliSeconds)) {
+			if(startInMilliSeconds <= positionInMilliSeconds
+					&& (endInMilliSeconds >= positionInMilliSeconds)
+					&& categoriesIds.contains(segment.getCategoryId())) {
 				return segment;
 			}	
 		}
@@ -455,7 +458,8 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	private void doShowSolution() {
 		List<SegmentMarker> solutionList = new ArrayList<>();
-		for(VideoSegment videoSegment:segments.getSegments()) {
+		List<VideoSegment> segmentsList = VideoTaskHelper.getSelectedSegments(segments, categoriesIds);
+		for(VideoSegment videoSegment:segmentsList) {
 			VideoSegmentCategory category = segments.getCategory(videoSegment.getCategoryId()).orElse(null);
 			String durationString = translate("duration.description", Long.toString(videoSegment.getDuration()));
 			

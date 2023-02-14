@@ -176,7 +176,6 @@ public class PracticeQuestionItemQueries {
 				if(types.contains(rule.getType())) {
 					continue;
 				}
-				types.add(rule.getType());
 				Operator operator = rule.getOperator();
 				
 				Type type = rule.getType();
@@ -186,12 +185,14 @@ public class PracticeQuestionItemQueries {
 					} else {
 						sb.and().append(" (item.assessmentType is null or item.assessmentType not in (:assessmentTypes))");
 					}
+					types.add(rule.getType());
 				} else if(type == Type.educationalContextLevel) {
 					if(operator.equals(Operator.equals)) {
 						sb.and().append(" item.educationalContext.key in (:educationalContextKeys)");
 					} else {
 						sb.and().append(" (item.educationalContext.key is null or item.educationalContext.key not in (:educationalContextKeys))");
 					}
+					types.add(rule.getType());
 				} else if(type == Type.keyword) {
 					if(operator == Operator.equals) {
 						sb.and().appendFuzzyLike("item.keywords", "keywords_" + (count++));
@@ -204,6 +205,7 @@ public class PracticeQuestionItemQueries {
 					} else {
 						sb.and().append(" (item.language is null or item.language not in (:languages))");
 					}
+					types.add(rule.getType());
 				}
 			}
 		}

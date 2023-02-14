@@ -28,7 +28,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -73,7 +72,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	public void deleteItems() {
 		//create a group to share 2 items
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-rm-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Share-rm-");
 		BusinessGroup group = businessGroupDao.createAndPersist(id, "gdrm", "gdrm-desc", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, false, false, false);
 		QuestionItem item1 = questionDao.createAndPersist(id, "Share-item-rm-1", QTI21Constants.QTI_21_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -101,7 +100,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	public void createCollection() {
 		//create an user with 2 items
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Coll-Owner-3-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Coll-Owner-3");
 		QuestionItem item1 = questionDao.createAndPersist(id, "NGC 92", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		QuestionItem item2 = questionDao.createAndPersist(id, "NGC 97", QTI21Constants.QTI_21_FORMAT, Locale.GERMAN.getLanguage(), null, null, null, fibType);
 		dbInstance.commit();
@@ -134,7 +133,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 
 	@Test
 	public void importItem_qti12_item() throws IOException, URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Imp-Owner-1-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-Owner-1");
 		dbInstance.commit();
 		URL itemUrl = QuestionPoolServiceTest.class.getResource("mchc_i_001.xml");
 		assertNotNull(itemUrl);
@@ -145,7 +144,7 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 	
 	@Test
 	public void importItem_qti12_assessment() throws IOException, URISyntaxException {
-		Identity owner = JunitTestHelper.createAndPersistIdentityAsUser("Imp-Owner-2-" + UUID.randomUUID().toString());
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("Imp-Owner-2");
 		dbInstance.commit();
 		URL itemUrl = QuestionPoolServiceTest.class.getResource("mchc_asmimr_101.xml");
 		assertNotNull(itemUrl);

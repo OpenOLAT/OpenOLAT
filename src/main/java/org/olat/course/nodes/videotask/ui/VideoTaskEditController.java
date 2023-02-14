@@ -276,7 +276,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 
 			// reset assessment
 			config.setStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE.toString());
-			assessmentCtrl.resetConfiguration();
+			VideoTaskAssessmentEditController.resetConfiguration(config);
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			updateTabs();
 		}

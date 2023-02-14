@@ -191,7 +191,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	private final boolean showTitle;
 	private final boolean learningPath;
-	private final AssessmentConfig assessmentConfig;
+	protected final AssessmentConfig assessmentConfig;
 	protected final boolean canEditUserVisibility;
 	private GradeSystemType gradeSystemType;
 
@@ -581,10 +581,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel) {
+		if(assessmentConfig.hasAttempts()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
+		}
+		
 		if(assessmentConfig.isAssessable()) {
-			if(assessmentConfig.hasAttempts()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
-			}
 			if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility, new UserVisibilityCellRenderer(false)));
 			}
