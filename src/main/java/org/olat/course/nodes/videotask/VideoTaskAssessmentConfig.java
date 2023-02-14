@@ -78,7 +78,8 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 	
 	@Override
 	public boolean hasMaxAttempts() {
-		return hasAttempts();
+		int attempts = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
+		return attempts > 0;
 	}
 
 	@Override
@@ -92,8 +93,7 @@ public class VideoTaskAssessmentConfig extends ModuleAssessmentConfig {
 
 	@Override
 	public boolean hasAttempts() {
-		int attempts = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS, 0);
-		return attempts > 0;
+		return true;
 	}
 
 	@Override
