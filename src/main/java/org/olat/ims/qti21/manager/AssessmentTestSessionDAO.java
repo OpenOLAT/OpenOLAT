@@ -772,7 +772,7 @@ public class AssessmentTestSessionDAO {
 		StringBuilder responseSb  = new StringBuilder();
 		responseSb.append("delete from qtiassessmentresponse response where")
 		  .append("  response.assessmentItemSession.key in (")
-		  .append("   select itemSession from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   select itemSession.key from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
 		  .append("   where itemSession.assessmentTestSession.key=session.key and session.testEntry.key=:testEntryKey")
 		  .append(" )");
 		int responses = dbInstance.getCurrentEntityManager()
