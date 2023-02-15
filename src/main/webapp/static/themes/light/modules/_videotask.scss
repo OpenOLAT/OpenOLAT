@@ -17,91 +17,131 @@
 
 .o_videotask_box .o_videotask_marker,
 .o_videotask_categories .btn,
-.o_videotask_box .btn,
 .o_videotask_marker,
-.o_videotask_segment {	
+.o_videotask_segment {
+	color: #fcfcfc;
+	border-color: $o-video-border-color;
+
 	&.o_video_marker_lightgray {
 		background-color: $o-video-color-light-gray;
-		color: black;
 	}
 	&.o_video_marker_yellow {
 		background-color: $o-video-color-yellow;
-		color: black;
 	}
 	&.o_video_marker_orange {
 		background-color: $o-video-color-orange;
-		color: black;
+	}
+	&.o_video_marker_brown {
+		background-color: $o-video-color-brown;
 	}
 	&.o_video_marker_red {
 		background-color: $o-video-color-red;
-		color: black;
 	}
 	&.o_video_marker_orchid {
 		background-color: $o-video-color-orchid;
-		color: black;
 	}
 	&.o_video_marker_purple {
 		background-color: $o-video-color-purple;
-		color: black;
 	}
 	&.o_video_marker_lightblue {
 		background-color: $o-video-color-light-blue;
-		color: black;
 	}
 	&.o_video_marker_cobaltblue {
 		background-color: $o-video-color-cobalt-blue;
-		color: black;
+	}
+	&.o_video_marker_darkblue {
+		background-color: $o-video-color-dark-blue;
 	}
 	&.o_video_marker_lightgreen {
 		background-color: $o-video-color-light-green;
-		color: black;
 	}
 	&.o_video_marker_seagreen {
 		background-color: $o-video-color-sea-green;
-		color: black;
+	}
+}
+
+.o_videotask_categories .btn.btn-default.o_disabled,
+.o_videotask_categories .btn.btn-default:active {
+	color: $o-video-color !important;
+}
+
+.o_videotask_categories .btn.btn-default:hover {
+	border-color: darken($o-video-color,10%);
+
+	&.o_video_marker_lightgray {
+		background-color: darken($o-video-color-light-gray,10%);
+	}
+	&.o_video_marker_yellow {
+		background-color: darken($o-video-color-yellow,10%);
+	}
+	&.o_video_marker_orange {
+		background-color: darken($o-video-color-orange,10%);
+	}
+	&.o_video_marker_brown {
+		background-color: darken($o-video-color-brown,10%);
+	}
+	&.o_video_marker_red {
+		background-color: darken($o-video-color-red,10%);
+	}
+	&.o_video_marker_orchid {
+		background-color: darken($o-video-color-orchid,10%);
+	}
+	&.o_video_marker_purple {
+		background-color: darken($o-video-color-purple,10%);
+	}
+	&.o_video_marker_lightblue {
+		background-color: darken($o-video-color-light-blue,10%);
+	}
+	&.o_video_marker_cobaltblue {
+		background-color: darken($o-video-color-cobalt-blue,10%);
+	}
+	&.o_video_marker_darkblue {
+		background-color: darken($o-video-color-dark-blue,10%);
+	}
+	&.o_video_marker_lightgreen {
+		background-color: darken($o-video-color-light-green,10%);
+	}
+	&.o_video_marker_seagreen {
+		background-color: darken($o-video-color-sea-green,10%);
 	}
 }
 
 .o_videotask_tooltip {	
 	&.o_video_marker_lightgray .tooltip-inner {
 		background-color: $o-video-color-light-gray;
-		color: black;
 	}
 	&.o_video_marker_yellow .tooltip-inner {
 		background-color: $o-video-color-yellow;
-		color: black;
 	}
 	&.o_video_marker_orange .tooltip-inner {
 		background-color: $o-video-color-orange;
-		color: black;
+	}
+	&.o_video_marker_brown .tooltip-inner {
+		background-color: $o-video-color-brown;
 	}
 	&.o_video_marker_red .tooltip-inner {
 		background-color: $o-video-color-red;
-		color: black;
 	}
 	&.o_video_marker_orchid .tooltip-inner {
 		background-color: $o-video-color-orchid;
-		color: black;
 	}
 	&.o_video_marker_purple .tooltip-inner {
 		background-color: $o-video-color-purple;
-		color: black;
 	}
 	&.o_video_marker_lightblue .tooltip-inner {
 		background-color: $o-video-color-light-blue;
-		color: black;
 	}
 	&.o_video_marker_cobaltblue .tooltip-inner {
 		background-color: $o-video-color-cobalt-blue;
-		color: black;
+	}
+	&.o_video_marker_darkblue .tooltip-inner {
+		background-color: $o-video-color-dark-blue;
 	}
 	&.o_video_marker_lightgreen .tooltip-inner {
 		background-color: $o-video-color-light-green;
-		color: black;
 	}
 	&.o_video_marker_seagreen .tooltip-inner {
 		background-color: $o-video-color-sea-green;
-		color: black;
 	}
 }
 
@@ -123,6 +163,10 @@
 .o_videotask_marker.o_video_marker_orange > span {
 	background-color: $o-video-color-orange;
 }
+.o_videotask_marker.o_video_marker_brown:before,
+.o_videotask_marker.o_video_marker_brown > span {
+	background-color: $o-video-color-brown;
+}
 .o_videotask_marker.o_video_marker_red:before,
 .o_videotask_marker.o_video_marker_red > span {
 	background-color: $o-video-color-red;
@@ -142,6 +186,10 @@
 .o_videotask_marker.o_video_marker_cobaltblue:before,
 .o_videotask_marker.o_video_marker_cobaltblue > span {
 	background-color: $o-video-color-cobalt-blue;
+}
+.o_videotask_marker.o_video_marker_darkblue:before,
+.o_videotask_marker.o_video_marker_darkblue > span {
+	background-color: $o-video-color-dark-blue;
 }
 .o_videotask_marker.o_video_marker_lightgreen:before,
 .o_videotask_marker.o_video_marker_lightgreen > span {
@@ -226,14 +274,36 @@
 	text-align: center;
 	
 	>span {
-		background-color: white;
-		border: 1px solid black;
 		padding: 5px 30px;
 	}
 }
 
 .o_videotask_messages.hide {
 	display:none;
+}
+
+.o_videotask_messages, .o_videotask_start_message {
+	>span {
+		border-radius: $o-content-border-box-radius;
+	}
+
+	>.o_note {
+		background-color: $o-box-note-bg;
+		color: $o-box-note-color;
+		border: 1px solid $o-box-note-color;
+	}
+	
+	>.o_warning {
+		background-color: $o-box-warning-bg;
+		color: $o-box-warning-color;
+		border: 1px solid $o-box-warning-color;
+	}
+	
+	>.o_correct {
+		background-color: $o-box-success-bg;
+		color: $o-box-success-color;
+		border: 1px solid $o-box-success-color;
+	}
 }
 
 .o_videotask_marker {
@@ -246,7 +316,7 @@
 	text-align: center;
 	
 	>span {
-		border: 1px solid black;
+		border: 1px solid $o-video-border-color;
 		border-radius: 4px;
 		padding: 3px 6px 1px 5px;
 	}
@@ -262,9 +332,8 @@
 	height: 28px;
 	right: 0;
 	top: 19px;
-	margin-right: 3em;
+	margin-right: 41px;
 	width: 2px;
-	background-color: grey;
 }
 
 .o_videotask_marker.o_segment_marker_correct:after {
@@ -272,43 +341,51 @@
 	font-family: FontAwesome;
 	font-style: normal;
 	font-weight: normal;
-	font-size: 12px;
-	line-height: 10px;
+	font-size: 20px;
+	line-height: 16px;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: $brand-success;
 	background-color: white;
-	width: 10px;
-	height: 10px;
-	border-radius: 5px;
+	width: 16px;
+	height: 16px;
+	border-radius: 8px;
 
 	position: absolute;
-	top: 47px;
-	right: 2px;
-	margin-right: 3em;
+	top: 28px;
+	right: 0;
+	margin-right: 35px;
 	z-index: 4;
 }
 
+.o_videotask_marker.o_segment_marker_correct:before {
+	background-color: $brand-success !important;
+}
+
 .o_videotask_marker.o_segment_marker_not_correct:after {
-	content: $fa-var-times-circle-o;
+	content: $fa-var-times-circle;
 	font-family: FontAwesome;
 	font-style: normal;
 	font-weight: normal;
-	font-size: 12px;
-	line-height: 10px;
+	font-size: 20px;
+	line-height: 16px;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	color: $brand-danger;
 	background-color: white;
-	width: 10px;
-	height: 10px;
-	border-radius: 5px;
+	width: 16px;
+	height: 16px;
+	border-radius: 8px;
 
 	position: absolute;
-	top: 47px;
-	right: 2px;
-	margin-right: 3em;
+	top: 28px;
+	right: 0;
+	margin-right: 35px;
 	z-index: 4;
+}
+
+.o_videotask_marker.o_segment_marker_not_correct:before {
+	background-color: $brand-danger !important;
 }
 
 .o_videotask_segment {

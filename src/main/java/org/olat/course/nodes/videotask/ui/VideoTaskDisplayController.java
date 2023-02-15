@@ -214,7 +214,7 @@ public class VideoTaskDisplayController extends BasicController {
 
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)
 				|| VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
-			segmentsCtrl.setMessage(translate("feedback.test.initial"), false);
+			segmentsCtrl.setMessage(translate("feedback.test.initial"), "o_note", false);
 		}
 	}
 	
@@ -293,7 +293,7 @@ public class VideoTaskDisplayController extends BasicController {
 				
 				feedback(category, segmentId, correct);
 			} else {
-				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"), false);
+				segmentsCtrl.setMessage(translate("feedback.no.attempts.left"), "o_warning", false);
 			}
 		}
 	}
@@ -311,17 +311,20 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	private void feedback(VideoSegmentCategory category, String segmentId, boolean correct) {
 		if(VideoTaskEditController.CONFIG_KEY_MODE_TEST_IDENTIFY_SITUATIONS.equals(mode)) {
-			segmentsCtrl.setMessage("", false);
+			segmentsCtrl.setMessage("", "", false);
 			return;
 		}
 		
 		String i18nKey;
+		String cssClass;
 		long attemptsLeft = 0;
 		boolean timer = false;
 		if(correct) {
 			timer = true;
+			cssClass = "o_correct";
 			i18nKey = "feedback.correct";
 		} else if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode) && maxAttemptsPerSegments > 0) {
+			cssClass = "o_warning";
 			attemptsLeft = maxAttemptsPerSegments - getAttemptOnSegment(segmentId);
 			if(attemptsLeft <= 0l) {
 				i18nKey = "feedback.not.correct.assign.no.attempts.left";
@@ -334,6 +337,7 @@ public class VideoTaskDisplayController extends BasicController {
 			if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_IDENTIFY_SITUATIONS.equals(mode)) {
 				timer = true;
 			}
+			cssClass = "o_warning";
 			i18nKey = "feedback.not.correct";
 		}
 		
@@ -344,7 +348,7 @@ public class VideoTaskDisplayController extends BasicController {
 				segmentsCtrl.temporaryDisableCategories();
 			}
 		}
-		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)), timer);
+		segmentsCtrl.setMessage(translate(i18nKey, Long.toString(attemptsLeft)), cssClass, timer);
 	}
 	
 	private long getAttemptOnSegment(String segment) {
@@ -408,6 +412,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		String title = translate(titleI18nKey, Integer.toString(currentAttempt + 1));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmEndTaskCtrl.getInitialComponent(), title);
+		cmc.setCustomWindowCSS("o_modal_small");
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -470,7 +475,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		segmentsCtrl.setSegmentsSelections(solutionList);
 		segmentsCtrl.setCategories(List.of());
-		segmentsCtrl.setMessage("", false);
+		segmentsCtrl.setMessage("", "", false);
 		segmentsCtrl.setShowSolution(true);
 		segmentsCtrl.setShowTooltips(true);
 		segmentsCtrl.setEnableDisableCategories(false);
@@ -689,8 +694,9 @@ public class VideoTaskDisplayController extends BasicController {
 			flc.contextPut("showTooltips", Boolean.valueOf(showTooltips));
 		}
 
-		public void setMessage(String message, boolean timer) {
+		public void setMessage(String message, String cssClass, boolean timer) {
 			flc.contextPut("message", message);
+			flc.contextPut("messageCssClass", cssClass);
 			if(timer) {
 				flc.contextPut("messageTimerId", "timer_" + (++count));
 			} else {

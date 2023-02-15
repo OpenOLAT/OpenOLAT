@@ -1,6 +1,6 @@
 <div class="o_videotask_layer">
 	<div id="o_videotask_messages" #if($r.isNotEmpty($messageTimerId)) data-timer-id="${messageTimerId}" #end class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
-		<span>$message</span>
+		<span class="$messageCssClass">$message</span>
 		#if($r.isNotEmpty($messageTimerId))
 		<script>
 		"use strict";
@@ -14,7 +14,7 @@
 	</div>
 	#if($r.isTrue($enableDisableCategories))
 	<div id="o_videotask_start_message" class="o_videotask_messages hide">
-		<span>$r.translate("feedback.start.segment")</span>
+		<span class="o_note">$r.translate("feedback.start.segment")</span>
 	</div>
 	#end
 	<div id="o_videotask_categories" class="o_videotask_categories">
@@ -93,7 +93,13 @@
 			}
 
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
-				el.disabled = !findSegment || hasCorrectAnswer;
+				const disabled = !findSegment || hasCorrectAnswer;
+				el.disabled = disabled;
+				if(disabled) {
+					jQuery(el).addClass("o_disabled").addClass("disabled");
+				} else {
+					jQuery(el).removeClass("o_disabled").removeClass("disabled");
+				}
 			});
 			
 			if(startSegment) {

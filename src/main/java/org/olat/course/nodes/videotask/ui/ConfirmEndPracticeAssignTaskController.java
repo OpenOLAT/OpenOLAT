@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -86,6 +88,10 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			List<AttemptStats> stats = correctlyAssignedSegments(results);
 			layoutCont.contextPut("resultMsgList", stats);
+			
+			int correct = numOfCorrectlyAssignedSegments(results);
+			String resultMsg = translate("confirm.practice.assign.results", Integer.toString(segmentsList.size()), Integer.toString(correct));
+			layoutCont.contextPut("resultMsg", resultMsg);
 
 			List<VideoTaskSegmentSelection> resultSelections = results.stream()
 					.map(SegmentMarker::segmentSelection)
@@ -112,6 +118,19 @@ public class ConfirmEndPracticeAssignTaskController extends FormBasicController 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// Do nothing
+	}
+	
+	private int numOfCorrectlyAssignedSegments(List<SegmentMarker> resultMarkers) {
+		Set<String> segmentsIds = segmentsList.stream()
+				.map(VideoSegment::getId)
+				.collect(Collectors.toSet());
+		
+		for(SegmentMarker result:resultMarkers) {
+			if(result.segmentSelection().isCorrect()) {
+				segmentsIds.remove(result.segmentSelection().getSegmentId());
+			}
+		}
+		return segmentsList.size() - segmentsIds.size();
 	}
 	
 	private List<AttemptStats> correctlyAssignedSegments(List<SegmentMarker> resultMarkers) {
