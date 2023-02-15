@@ -71,7 +71,6 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.editor.importnodes.ImportSettings;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.LearningPathService;
@@ -89,7 +88,6 @@ import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.manager.GTAResultsExport;
 import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.rule.GTAReminderProvider;
-import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.course.reminder.CourseNodeReminderProvider;
@@ -1000,20 +998,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(GTAManager.class).createIfNotExists(re, this);
 		super.updateOnPublish(locale, course, publisher, publishEvents);
-	}
-	
-	public GTACoachedGroupListController getCoachedGroupListController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, boolean admin, List<BusinessGroup> coachedGroups) {
-		
-		List<BusinessGroup> groups;
-		CourseGroupManager gm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		if(admin) {
-			groups = gm.getAllBusinessGroups();
-		} else {
-			groups = coachedGroups;
-		}
-		groups = CoreSpringFactory.getImpl(GTAManager.class).filterBusinessGroups(groups, this);
-		return new GTACoachedGroupListController(ureq, wControl, stackPanel, coachCourseEnv, this, groups);
 	}
 
 	@Override

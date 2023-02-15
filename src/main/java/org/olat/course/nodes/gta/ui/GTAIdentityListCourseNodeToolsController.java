@@ -31,6 +31,7 @@ import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskProcess;
@@ -68,11 +69,20 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 	}
 
 	@Override
+	protected void initResetAttempts() {
+		if(GTAType.individual.name().equals(courseNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			super.initResetAttempts();
+		}
+	}
+
+	@Override
 	protected void initStatus() {
 		super.initStatus();
 
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
-		if(gtaManager.isDueDateEnabled((GTACourseNode)courseNode) && !config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
+		if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
+				&& gtaManager.isDueDateEnabled((GTACourseNode)courseNode)
+				&& !config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
 			addSeparator();
 
 			extendLink = addLink("duedates", "duedates", "o_icon o_icon-fw o_icon_extra_time");

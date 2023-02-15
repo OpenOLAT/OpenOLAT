@@ -19,7 +19,17 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.ui.GTAIdentityGroupListCourseNodeController;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -34,6 +44,15 @@ public class GTAAssessmentHandler extends AbstractGTAAssessmentHandler {
 	@Override
 	public String acceptCourseNodeType() {
 		return GTACourseNode.TYPE_GROUP;
+	}
+	
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
+		return new GTAIdentityGroupListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 }

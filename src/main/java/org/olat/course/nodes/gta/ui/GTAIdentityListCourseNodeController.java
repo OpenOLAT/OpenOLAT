@@ -112,11 +112,6 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		super.initBulkStatusTools(ureq, formLayout);
 		
 		ModuleConfiguration config =  courseNode.getModuleConfiguration();
-		if(gtaManager.isDueDateEnabled((GTACourseNode)courseNode) && !config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
-			bulkExtendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
-			bulkExtendButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
-			tableEl.addBatchButton(bulkExtendButton);
-		}
 		
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))
 			&& (config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
@@ -129,6 +124,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			if(!coachCourseEnv.isCourseReadOnly()
 					&& (config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION) || config.getBooleanSafe(GTACourseNode.GTASK_GRADING))){
 				initBulkAsssessmentTool(ureq, formLayout);
+			}
+			
+			if(gtaManager.isDueDateEnabled((GTACourseNode)courseNode) && !config.getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
+				bulkExtendButton = uifactory.addFormLink("extend.list", "duedates", "duedates", formLayout, Link.BUTTON);
+				bulkExtendButton.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
+				tableEl.addBatchButton(bulkExtendButton);
 			}
 			
 			if(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
