@@ -91,7 +91,7 @@ public class VideoPosterUploadForm extends FormBasicController {
 		if (posterField.isUploadSuccess()) {
 			if (remainingSpace != -1) {
 				if (posterField.getUploadFile().length() / 1024 > remainingSpace) {
-					posterField.setErrorKey("QuotaExceeded", null);
+					posterField.setErrorKey("QuotaExceeded");
 					FileUtils.deleteFile(posterField.getUploadFile());
 				}
 			} else {
