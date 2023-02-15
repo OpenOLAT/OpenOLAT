@@ -36,7 +36,7 @@
 		#set($helplink=$r.contextHelpLink("manual_user/login/Login_Page/#browsercheck"))
 		<div class="o_old_browser o_warning">$r.translate("warning.old.browser","$helplink")</div>
 		<div class="o_login_box">
-			#if ($r.isTrue($guestLogin) || ($providerSet && $providerSet.size() > 1))
+			#if ($r.isTrue($guestLogin) || ($providerLinks && $providerLinks.size() > 1))
 			<div class="o_login_providers" role="navigation" aria-label="$r.translate("login.provider.selection")">
 				<div class="btn-group btn-group-lg btn-group-justified">
 				#foreach ($providerLink in $providerLinks)
