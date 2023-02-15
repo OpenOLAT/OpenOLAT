@@ -534,11 +534,11 @@ public class ContactForm extends FormBasicController {
 		buttonGroupLayout.setElementCssClass("o_sel_contact_buttons");
 		formLayout.add(buttonGroupLayout);
 		
-		if (hasMsgCancel) {
-			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
-		}
 		if(hasMsgSave) {
 			uifactory.addFormSubmitButton("msg.save", buttonGroupLayout);
+		}
+		if (hasMsgCancel) {
+			uifactory.addFormCancelButton("msg.cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}
 

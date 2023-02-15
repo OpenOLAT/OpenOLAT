@@ -1,0 +1,37 @@
+<h4 onclick="jQuery('#collapse_group_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_group_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($groupOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("groups")
+</h4>
+<div id="collapse_group_${r.getCId()}" class="collapse #if($groupOpen) in #end">$r.render("group")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_group_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_group_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$r.javaScriptCommand("panel","groupOpen","false");
+	})
+	jQuery('#collapse_group_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_group_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$r.javaScriptCommand("panel","groupOpen","true");
+	})
+});
+</script>
+
+#if($r.isNotNull($identityOpen))
+<h4 onclick="jQuery('#collapse_identity_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_identity_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($identityOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("participants")
+</h4>
+<div id="collapse_identity_${r.getCId()}" class="collapse #if($identityOpen) in #end">$r.render("identity")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_identity_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$r.javaScriptCommand("panel","identityOpen","false");
+		console.log('open');
+	})
+	jQuery('#collapse_identity_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$r.javaScriptCommand("panel","identityOpen","true");
+		console.log('close');
+	})
+});
+</script>
+#end

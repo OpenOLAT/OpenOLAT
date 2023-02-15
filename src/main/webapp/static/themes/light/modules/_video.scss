@@ -159,6 +159,9 @@
 	&.o_video_marker_orange {
 		border-left-color: $o-video-border-color-orange;
 	}
+	&.o_video_marker_brown {
+		border-left-color: $o-video-border-color-brown;
+	}
 	&.o_video_marker_red {
 		border-left-color: $o-video-border-color-red;
 	}
@@ -173,6 +176,9 @@
 	}
 	&.o_video_marker_cobaltblue {
 		border-left-color: $o-video-border-color-cobalt-blue;
+	}
+	&.o_video_marker_darkblue {
+		border-left-color: $o-video-border-color-dark-blue;
 	}
 	&.o_video_marker_lightgreen {
 		border-left-color: $o-video-border-color-light-green;
@@ -238,6 +244,9 @@
 	.o_video_marker_orange {
 		background: $o-video-border-color-orange;
 	}
+	.o_video_marker_brown {
+		background: $o-video-border-color-brown;
+	}
 	.o_video_marker_red {
 		background: $o-video-border-color-red;
 	}
@@ -252,6 +261,9 @@
 	}
 	.o_video_marker_cobaltblue {
 		background: $o-video-border-color-cobalt-blue;
+	}
+	.o_video_marker_darkblue {
+		background: $o-video-border-color-dark-blue;
 	}
 	.o_video_marker_lightgreen {
 		background: $o-video-border-color-light-green;
@@ -638,6 +650,12 @@
 			stroke: $o-video-border-color-orange;
 		}
 	}
+	&.o_video_marker_brown {
+		svg {
+			fill: $o-video-color-brown;
+			stroke: $o-video-border-color-brown;
+		}
+	}
 	&.o_video_marker_red {
 		svg {
 			fill: $o-video-color-red;
@@ -666,6 +684,12 @@
 		svg {
 			fill: $o-video-color-cobalt-blue;
 			stroke: $o-video-border-color-cobalt-blue;
+		}
+	}
+	&.o_video_marker_darkblue {
+		svg {
+			fill: $o-video-color-dark-blue;
+			stroke: $o-video-border-color-dark-blue;
 		}
 	}
 	&.o_video_marker_lightgreen {
@@ -716,42 +740,57 @@
 	&.o_video_marker_lightgray {
 		background-color: $o-video-color-light-gray;
 		border-color: $o-video-border-color-light-gray;
+		color: $o-video-color;
 	}
 	&.o_video_marker_yellow {
 		background-color: $o-video-color-yellow;
 		border-color: $o-video-border-color-yellow;
+		color: $o-video-color;
 	}
 	&.o_video_marker_orange {
 		background-color: $o-video-color-orange;
 		border-color: $o-video-border-color-orange;
+		color: $o-video-color;
+	}
+	&.o_video_marker_brown {
+		background-color: $o-video-color-brown;
+		border-color: $o-video-border-color-brown;
+		color: $o-video-color;
 	}
 	&.o_video_marker_red {
 		background-color: $o-video-color-red;
 		border-color: $o-video-border-color-red;
+		color: $o-video-color;
 	}
 	&.o_video_marker_orchid {
 		background-color: $o-video-color-orchid;
 		border-color: $o-video-border-color-orchid;
+		color: $o-video-color;
 	}
 	&.o_video_marker_purple {
 		background-color: $o-video-color-purple;
 		border-color: $o-video-border-color-purple;
+		color: $o-video-color;
 	}
 	&.o_video_marker_lightblue {
 		background-color: $o-video-color-light-blue;
 		border-color: $o-video-border-color-light-blue;
+		color: $o-video-color;
 	}
 	&.o_video_marker_cobaltblue {
 		background-color: $o-video-color-cobalt-blue;
 		border-color: $o-video-border-color-cobalt-blue;
+		color: $o-video-color;
 	}
 	&.o_video_marker_lightgreen {
 		background-color: $o-video-color-light-green;
 		border-color: $o-video-border-color-light-green;
+		color: $o-video-color;
 	}
 	&.o_video_marker_seagreen {
 		background-color: $o-video-color-sea-green;
 		border-color: $o-video-border-color-sea-green;
+		color: $o-video-color;
 	}
 }
 
@@ -811,6 +850,10 @@
 		background-color: $o-video-color-orange;
 		border-color: $o-video-border-color-orange;
 	}
+	&.o_video_marker_brown {
+		background-color: $o-video-color-brown;
+		border-color: $o-video-border-color-brown;
+	}
 	&.o_video_marker_red {
 		background-color: $o-video-color-red;
 		border-color: $o-video-border-color-red;
@@ -830,6 +873,10 @@
 	&.o_video_marker_cobaltblue {
 		background-color: $o-video-color-cobalt-blue;
 		border-color: $o-video-border-color-cobalt-blue;
+	}
+	&.o_video_marker_darkblue {
+		background-color: $o-video-color-dark-blue;
+		border-color: $o-video-border-color-dark-blue;
 	}
 	&.o_video_marker_lightgreen {
 		background-color: $o-video-color-light-green;
@@ -851,6 +898,9 @@
 	&.o_video_marker_orange {
 		background-color: $o-video-color-orange;
 	}
+	&.o_video_marker_brown {
+		background-color: $o-video-color-brown;
+	}
 	&.o_video_marker_red {
 		background-color: $o-video-color-red;
 	}
@@ -865,6 +915,9 @@
 	}
 	&.o_video_marker_cobaltblue {
 		background-color: $o-video-color-cobalt-blue;
+	}
+	&.o_video_marker_darkblue {
+		background-color: $o-video-color-dark-blue;
 	}
 	&.o_video_marker_lightgreen {
 		background-color: $o-video-color-light-green;

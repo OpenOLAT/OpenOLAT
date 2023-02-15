@@ -19,7 +19,10 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,12 +82,14 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		
 		assignmentDueDateEl = uifactory.addDateChooser("assignment.duedate", null, formLayout);
 		assignmentDueDateEl.setDateChooserTimeEnabled(true);
+		initDate(assignmentDueDateEl, Task::getAssignmentDueDate);
 		DueDate standardAssignmentDueDate = gtaManager.getAssignmentDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(assignmentDueDateEl, standardAssignmentDueDate);
 		assignmentDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		
 		submissionDueDateEl = uifactory.addDateChooser("submission.duedate", null, formLayout);
 		submissionDueDateEl.setDateChooserTimeEnabled(true);
+		initDate(submissionDueDateEl, Task::getSubmissionDueDate);
 		DueDate standardSubmissionDueDate = gtaManager.getSubmissionDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate);
 		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
@@ -102,20 +107,40 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		
 		revisionDueDateEl = uifactory.addDateChooser("revisions.duedate", null, formLayout);
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
+		initDate(revisionDueDateEl, Task::getRevisionsDueDate);
 		revisionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
 		
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", null, formLayout);
 		solutionDueDateEl.setDateChooserTimeEnabled(true);
+		initDate(solutionDueDateEl, Task::getSolutionDueDate);
 		DueDate standardSolutionDueDate = gtaManager.getSolutionDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(solutionDueDateEl, standardSolutionDueDate);
 		solutionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
+	private void initDate(DateChooser dateEl, Function<Task, Date> dateFunction) {
+		boolean firstDate = true;
+		Date date = null;
+		
+		for (Task task : tasks) {
+			Date taskDate = dateFunction.apply(task);
+			if (firstDate) {
+				date = taskDate;
+				firstDate = false;
+			} else if (!Objects.equals(date, taskDate)) {
+				dateEl.setWarningKey("duedate.individuals");
+				return;
+			}
+		}
+		
+		dateEl.setDate(date);
+	}
+
 	private void setDueDateExplanation(DateChooser dateEl, DueDate standardDueDate) {
 		if(standardDueDate != null) {
 			if(standardDueDate.getDueDate() != null) {

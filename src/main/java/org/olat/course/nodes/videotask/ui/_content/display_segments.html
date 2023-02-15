@@ -1,6 +1,6 @@
 <div class="o_videotask_layer">
 	<div id="o_videotask_messages" #if($r.isNotEmpty($messageTimerId)) data-timer-id="${messageTimerId}" #end class="o_videotask_messages #if($r.isNotEmpty($message)) show #else hide #end">
-		<span>$message</span>
+		<span class="$messageCssClass">$message</span>
 		#if($r.isNotEmpty($messageTimerId))
 		<script>
 		"use strict";
@@ -14,13 +14,13 @@
 	</div>
 	#if($r.isTrue($enableDisableCategories))
 	<div id="o_videotask_start_message" class="o_videotask_messages hide">
-		<span>$r.translate("feedback.start.segment")</span>
+		<span class="o_note">$r.translate("feedback.start.segment")</span>
 	</div>
 	#end
 	<div id="o_videotask_categories" class="o_videotask_categories">
 	#foreach ($category in $categories)
-		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
-			#if($r.isNotEmpty($category.iconCssClass)) <i class="o_icon $category.iconCssClass"> </i> #end${category.labelAndTitle}</button>
+		<button class='btn btn-default $category.color #if($r.isNotEmpty($category.status) && "incorrect" == $category.status) o_videotask_category_incorrect #end' href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
+			#if($r.isNotEmpty($category.status) && "correct" == $category.status) <i class="o_icon o_icon_correct_answer"> </i> #end${category.labelAndTitle}</button>
 	#end
 	</div>
 	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
@@ -93,7 +93,17 @@
 			}
 
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
-				el.disabled = !findSegment || hasCorrectAnswer;
+				const jEl = jQuery(el);
+				if(startSegment || changeSegment) {
+					jEl.removeClass("o_videotask_category_incorrect");
+				}
+				const disabled = !findSegment || hasCorrectAnswer || jEl.hasClass("o_videotask_category_incorrect");
+				el.disabled = disabled;
+				if(disabled) {
+					jEl.addClass("o_disabled").addClass("disabled");
+				} else {
+					jEl.removeClass("o_disabled").removeClass("disabled");
+				}
 			});
 			
 			if(startSegment) {

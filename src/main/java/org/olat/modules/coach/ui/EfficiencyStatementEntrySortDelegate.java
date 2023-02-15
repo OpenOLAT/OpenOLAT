@@ -49,11 +49,16 @@ public class EfficiencyStatementEntrySortDelegate extends SortableFlexiTableMode
 	@Override
 	protected void sort(List<EfficiencyStatementEntry> rows) {
 		int columnIndex = getColumnIndex();
-		EfficiencyStatementEntryTableDataModel.Columns column = EfficiencyStatementEntryTableDataModel.COLS[columnIndex];
-		switch(column) {
+		if (columnIndex < UserListController.USER_PROPS_OFFSET) {
+			EfficiencyStatementEntryTableDataModel.Columns column = EfficiencyStatementEntryTableDataModel.COLS[columnIndex];
+			switch(column) {
 			case completion: Collections.sort(rows, new CompletionPassedComparator()); break;
 			default: super.sort(rows); break;
+			}
+		} else {
+			super.sort(rows);
 		}
+
 	}
 	
 	private final class CompletionPassedComparator implements Comparator<EfficiencyStatementEntry> {

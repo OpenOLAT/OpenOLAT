@@ -1165,28 +1165,35 @@ $o-selection-light-green: #32CD3233;
 $o-selection-dark-green : #228B2233;
 
 /* Video Colors */
-$o-video-color-light-gray  : #E0E0E0;
-$o-video-color-yellow      : #FFE280;
-$o-video-color-orange      : #FFC580;
-$o-video-color-red         : #FF8080;
-$o-video-color-orchid      : #ECB7EA;
-$o-video-color-purple      : #BF80BF;
-$o-video-color-light-blue  : #D6EBF2;
-$o-video-color-cobalt-blue : #80A3D5;
-$o-video-color-light-green : #C7F6C7;
-$o-video-color-sea-green   : #C7DDC5;
-$o-video-color-practice    : #EAEAEA;
+$o-video-color             : #FCFCFC;
 
-$o-video-border-color-light-gray  : #C0C0C0;
-$o-video-border-color-yellow      : #FFC500;
-$o-video-border-color-orange      : #FF8C00;
-$o-video-border-color-red         : #FF0000;
-$o-video-border-color-orchid      : #DA70D6;
-$o-video-border-color-purple      : #800080;
-$o-video-border-color-light-blue  : #ADD8E6;
-$o-video-border-color-cobalt-blue : #0047AB;
-$o-video-border-color-light-green : #90EE90;
-$o-video-border-color-sea-green   : #8FBC8B;
+$o-video-color-light-gray  : #4f4f4f;
+$o-video-color-yellow      : #C69B02;
+$o-video-color-orange      : #C06613;
+$o-video-color-brown       : #855E3A;
+$o-video-color-red         : #D73939;
+$o-video-color-orchid      : #BE0C87;
+$o-video-color-purple      : #6F199D;
+$o-video-color-light-blue  : #2276D9;
+$o-video-color-cobalt-blue : #2422DB;
+$o-video-color-dark-blue   : #18188F;
+$o-video-color-light-green : #407303;
+$o-video-color-sea-green   : #00644F;
+$o-video-color-practice    : #FFFFFF;
+
+$o-video-border-color             : #FCFCFC;
+$o-video-border-color-light-gray  : $o-video-border-color;
+$o-video-border-color-yellow      : $o-video-border-color;
+$o-video-border-color-orange      : $o-video-border-color;
+$o-video-border-color-brown       : $o-video-border-color;
+$o-video-border-color-red         : $o-video-border-color;
+$o-video-border-color-orchid      : $o-video-border-color;
+$o-video-border-color-purple      : $o-video-border-color;
+$o-video-border-color-light-blue  : $o-video-border-color;
+$o-video-border-color-cobalt-blue : $o-video-border-color;
+$o-video-border-color-dark-blue   : $o-video-border-color;
+$o-video-border-color-light-green : $o-video-border-color;
+$o-video-border-color-sea-green   : $o-video-border-color;
 
 /* Educational course types */
 $o-edu-type-standard-course-color 			: $gray !default;
