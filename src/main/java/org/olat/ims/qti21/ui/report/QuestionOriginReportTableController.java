@@ -134,7 +134,7 @@ public class QuestionOriginReportTableController extends FormBasicController {
 			showWarning("warning.at.least.one.test");
 		} else {
 			String filename = "Questions_" + Formatter.formatDatetimeWithMinutes(ureq.getRequestTimestamp());
-			filename = StringHelper.transformDisplayNameToFileSystemName(filename);
+			filename = StringHelper.transformDisplayNameToFileSystemName(filename) + ".xlsx";
 			MediaResource report = new QuestionOriginMediaResource(filename, entries, getTranslator());
 			ureq.getDispatchResult().setResultingMediaResource(report);
 		}

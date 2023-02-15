@@ -771,5 +771,30 @@ public class AssessmentTestSessionDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, authorSessions.size());
 		Assert.assertEquals(testSession, authorSessions.get(0));
 	}
+	
+	@Test
+	public void deleteAllUserTestSessionsByTest() {
+		// prepare a test and 2 users
+		RepositoryEntry testEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-10");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("session-11");
+		AssessmentEntry assessmentEntry1 = assessmentService.getOrCreateAssessmentEntry(id1, null, testEntry, null, null, testEntry);
+		AssessmentEntry assessmentEntry2 = assessmentService.getOrCreateAssessmentEntry(id2, null, testEntry, null, null, testEntry);
+		dbInstance.commit();
+		//create an assessment test session
+		AssessmentTestSession testSession1 = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry1, id1, null, null, false);
+		AssessmentTestSession testSession2 = testSessionDao.createAndPersistTestSession(testEntry, testEntry, null, assessmentEntry2, id2, null, null, true);
+		dbInstance.commitAndCloseSession();
+		
+		//check that there isn't any active test session (only author mode)
+		int deletedRows = testSessionDao.deleteAllUserTestSessionsByTest(testEntry);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertTrue(deletedRows > 0);
+		AssessmentTestSession reloadedTestSession1 = testSessionDao.loadByKey(testSession1.getKey());
+		Assert.assertNull(reloadedTestSession1);
+		AssessmentTestSession reloadedTestSession2 = testSessionDao.loadByKey(testSession2.getKey());
+		Assert.assertNull(reloadedTestSession2);
+	}
 
 }
