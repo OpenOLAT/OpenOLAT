@@ -194,10 +194,10 @@ public class VideoResourceEditController extends FormBasicController {
 		if(urlEl != null) {
 			urlEl.clearError();
 			if(!StringHelper.containsNonWhitespace(urlEl.getValue())) {
-				urlEl.setErrorKey("form.legende.mandatory", null);
+				urlEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(VideoFormat.valueOfUrl(urlEl.getValue()) == null) {
-				urlEl.setErrorKey("error.format.not.supported", null);
+				urlEl.setErrorKey("error.format.not.supported");
 				allOk &= false;
 			}
 		}

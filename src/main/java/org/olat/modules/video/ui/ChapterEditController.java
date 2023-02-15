@@ -134,26 +134,26 @@ public class ChapterEditController extends FormBasicController {
 			try {
 				Date date = displayDateFormat.parse(beginEl.getValue());
 				if (outOfRange(date)){
-					beginEl.setErrorKey("chapter.error.out.of.range", null);
+					beginEl.setErrorKey("chapter.error.out.of.range");
 					allOk &= false;			
 				} else if (timeAlreadyExists(date)) {
-					beginEl.setErrorKey("chapter.error.already.exists", null);	
+					beginEl.setErrorKey("chapter.error.already.exists");	
 					allOk &= false;		
 				}
 			} catch (ParseException e) {
-				beginEl.setErrorKey("chapter.error.format", null);
+				beginEl.setErrorKey("chapter.error.format");
 				allOk &= false;
 			}
 		} else {
-			beginEl.setErrorKey("chapter.error.format", null);
+			beginEl.setErrorKey("chapter.error.format");
 		}
 
 		chapterTitleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(chapterTitleEl.getValue())) {
-			chapterTitleEl.setErrorKey("form.legende.mandatory", null);
+			chapterTitleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (chapterNameAlreadyExists(chapterTitleEl.getValue())){
-			chapterTitleEl.setErrorKey("chapter.error.name.already.exists", null);
+			chapterTitleEl.setErrorKey("chapter.error.name.already.exists");
 			allOk &= false;
 		}
 		

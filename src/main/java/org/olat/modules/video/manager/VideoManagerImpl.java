@@ -622,6 +622,9 @@ public class VideoManagerImpl implements VideoManager {
 	@Override
 	public VFSContainer getTranscodingContainer(OLATResource videoResource) {
 		VFSContainer baseContainer = videoModule.getTranscodingBaseContainer();
+		if(baseContainer == null) {
+			return null;
+		}
 		return VFSManager.getOrCreateContainer(baseContainer, String.valueOf(videoResource.getResourceableId()));
 	}
 	

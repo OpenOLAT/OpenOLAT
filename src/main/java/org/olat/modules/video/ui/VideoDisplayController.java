@@ -55,6 +55,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
@@ -555,8 +556,7 @@ public class VideoDisplayController extends BasicController {
 			} else if("marker_resized".equals(event.getCommand())) {
 				doMarkerResized(ureq);
 			}
-		} else if (source instanceof Link) {
-			Link sourceLink = (Link) source;
+		} else if (source instanceof Link sourceLink) {
 			if (sourceLink.getCommand().equals("download_video")) {
 				VideoTranscoding transcoding = (VideoTranscoding) sourceLink.getUserObject();
 				License license = licenseService.loadLicense(videoEntry.getOlatResource());
@@ -591,12 +591,18 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	private void downloadTranscoding(VideoTranscoding transcoding, UserRequest ureq) {
-		VFSItem videoFile = videoManager.getTranscodingContainer(videoMetadata.getVideoResource()).resolve(transcoding.getResolution() + "video.mp4");
-		
-		if (videoFile != null && videoFile.exists()) {
-			VFSMediaResource resource = new VFSMediaResource((VFSLeaf) videoFile);
-			resource.setDownloadable(true);
-			ureq.getDispatchResult().setResultingMediaResource(resource);
+		VFSContainer transcodingContainer = videoManager.getTranscodingContainer(videoMetadata.getVideoResource());
+		if(transcodingContainer == null) {
+			ureq.getDispatchResult().setResultingMediaResource(new NotFoundMediaResource());
+		} else {
+			VFSItem videoFile = transcodingContainer.resolve(transcoding.getResolution() + "video.mp4");
+			if (videoFile != null && videoFile.exists()) {
+				VFSMediaResource resource = new VFSMediaResource((VFSLeaf) videoFile);
+				resource.setDownloadable(true);
+				ureq.getDispatchResult().setResultingMediaResource(resource);
+			} else {
+				ureq.getDispatchResult().setResultingMediaResource(new NotFoundMediaResource());
+			}
 		}
 	}
 	

@@ -106,15 +106,15 @@ public class VideoTrackUploadForm extends FormBasicController {
 			String filename = fileEl.getUploadFileName();
 			String suffix = FileUtils.getFileSuffix(filename);
 			if (!VideoManager.FILETYPE_SRT.equals(suffix) && !VideoManager.FILETYPE_VTT.equals(suffix)) {
-				fileEl.setErrorKey("track.upload.error.filetype", null);
+				fileEl.setErrorKey("track.upload.error.filetype");
 				allOk &= false;
 			} else if (!VideoSubtitlesHelper.isVtt(fileEl.getUploadFile()) &&
 					!VideoSubtitlesHelper.isConvertibleSrt(fileEl.getUploadFile())) {
-				fileEl.setErrorKey("track.upload.error.filetype", null);
+				fileEl.setErrorKey("track.upload.error.filetype");
 				allOk &= false;
 			}
 		} else {
-			fileEl.setErrorKey("track.upload.error.nofile", null);
+			fileEl.setErrorKey("track.upload.error.nofile");
 			allOk &= false;
 		}
 
