@@ -71,7 +71,7 @@ public abstract class OpenXMLWorkbookResource extends DefaultMediaResource {
 		}
 
 		String urlEncodedLabel = StringHelper.urlEncodeUTF8(label);
-		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
+		hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);
 		hres.setHeader("Content-Description", urlEncodedLabel);
 		
 		try {
