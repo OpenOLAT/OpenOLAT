@@ -342,8 +342,8 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 		
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
-			String icon = correct ? "o_icon_correct_answer" : "o_icon_incorrect_response";
-			segmentsCtrl.setCategoryIconCssClass(category, segmentId, icon);
+			String status = correct ? "correct" : "incorrect";
+			segmentsCtrl.setCategoryStatus(category, segmentId, status);
 			if(correct) {
 				segmentsCtrl.temporaryDisableCategories();
 			}
@@ -520,20 +520,20 @@ public class VideoTaskDisplayController extends BasicController {
 	
 	public static class Category {
 		
+		private String status;
 		private String segmentId;
-		private String iconCssClass;
 		private final VideoSegmentCategory segmentCategory;
 		
 		public Category(VideoSegmentCategory segmentCategory) {
 			this.segmentCategory = segmentCategory;
 		}
 
-		public String getIconCssClass() {
-			return iconCssClass;
+		public String getStatus() {
+			return status;
 		}
 
-		public void setIconCssClass(String segmentId, String iconCssClass) {
-			this.iconCssClass = iconCssClass;
+		public void setStatus(String segmentId, String status) {
+			this.status = status;
 			this.segmentId = segmentId;
 		}
 		
@@ -670,14 +670,14 @@ public class VideoTaskDisplayController extends BasicController {
 			flc.contextPut("categories", categoriesList);
 		}
 		
-		public void setCategoryIconCssClass(VideoSegmentCategory segmentCategory, String segmentId, String iconCssClass) {
+		public void setCategoryStatus(VideoSegmentCategory segmentCategory, String segmentId, String status) {
 			if(segmentCategory == null || categoriesList == null || categoriesList.isEmpty()) return;
 			
 			for(Category category:categoriesList) {
 				if(category.getCategory().equals(segmentCategory)) {
-					category.setIconCssClass(segmentId, iconCssClass);
+					category.setStatus(segmentId, status);
 				} else if(category.getSegmentId() != null && !category.getSegmentId().equals(segmentId)) {
-					category.setIconCssClass(null, null);
+					category.setStatus(null, null);
 				}
 			}
 		}

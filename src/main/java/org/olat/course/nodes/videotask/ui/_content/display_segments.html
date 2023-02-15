@@ -19,8 +19,8 @@
 	#end
 	<div id="o_videotask_categories" class="o_videotask_categories">
 	#foreach ($category in $categories)
-		<button class="btn btn-default $category.color" href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
-			#if($r.isNotEmpty($category.iconCssClass)) <i class="o_icon $category.iconCssClass"> </i> #end${category.labelAndTitle}</button>
+		<button class='btn btn-default $category.color #if($r.isNotEmpty($category.status) && "incorrect" == $category.status) o_videotask_category_incorrect #end' href="javascript:;" role="button" onclick="$f.openFfXHREvent(false, false, true),'cid','category','category-id','${category.id}','position',jQuery('#o_so_vid${videoElementId}').data('player').media.currentTime);">
+			#if($r.isNotEmpty($category.status) && "correct" == $category.status) <i class="o_icon o_icon_correct_answer"> </i> #end${category.labelAndTitle}</button>
 	#end
 	</div>
 	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
@@ -93,12 +93,16 @@
 			}
 
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
-				const disabled = !findSegment || hasCorrectAnswer;
+				const jEl = jQuery(el);
+				if(startSegment || changeSegment) {
+					jEl.removeClass("o_videotask_category_incorrect");
+				}
+				const disabled = !findSegment || hasCorrectAnswer || jEl.hasClass("o_videotask_category_incorrect");
 				el.disabled = disabled;
 				if(disabled) {
-					jQuery(el).addClass("o_disabled").addClass("disabled");
+					jEl.addClass("o_disabled").addClass("disabled");
 				} else {
-					jQuery(el).removeClass("o_disabled").removeClass("disabled");
+					jEl.removeClass("o_disabled").removeClass("disabled");
 				}
 			});
 			

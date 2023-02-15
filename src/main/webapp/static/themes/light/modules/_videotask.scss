@@ -422,9 +422,13 @@
 	z-index: 4;
 }
 
-.o_videotask_details .o_test_session_cancelled i:before {
+.o_videotask_details .o_test_session_cancelled i:before,
+.o_videotask_category_incorrect,
+.o_videotask_category_incorrect:hover {
 	text-decoration: line-through;
 }
+
+
 
 
 
