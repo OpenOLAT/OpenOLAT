@@ -101,7 +101,7 @@ public class LectureBlockBlockStatistics {
 	public void aggregate(LectureBlockRollCall rollCall, AbsenceNotice notice) {
 		if(notice != null) {
 			if(notice.getNoticeType() == AbsenceNoticeType.absence) {
-				if(notice.getAbsenceAuthorized() && notice.getAbsenceAuthorized().booleanValue()) {
+				if(notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue()) {
 					numOfAbsenceAuthorized++;
 				} else {
 					numOfAbsenceUnauthorized++;
@@ -113,7 +113,7 @@ public class LectureBlockBlockStatistics {
 					numOfNoticeOfAbsenceUnauthorized++;
 				}
 			} else if(notice.getNoticeType() == AbsenceNoticeType.dispensation) {
-				if(notice.getAbsenceAuthorized() && notice.getAbsenceAuthorized().booleanValue()) {
+				if(notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue()) {
 					numOfDispensationAuthorized++;
 				} else {
 					numOfDispensationUnauthorized++;
