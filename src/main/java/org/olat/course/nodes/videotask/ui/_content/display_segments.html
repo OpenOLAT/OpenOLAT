@@ -31,7 +31,7 @@
 		#end
 		#foreach ($segmentMarker in $segmentsSelections)
 			#if(${segmentMarker.visible()})
-			<div data-label-title="${segmentMarker.getCategoryLabelAndTitle()}" data-duration-string="${segmentMarker.durationString()}" data-category-color="${segmentMarker.categoryColor}" class="o_vt_marker ${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
+			<div id="vt-marker-${foreach.count}" data-label-title="${segmentMarker.getCategoryLabelAndTitle()}" data-start="${segmentMarker.start()}" data-duration="${segmentMarker.duration()}" data-duration-string="${segmentMarker.durationString()}" data-index="${foreach.count}" data-category-color="${segmentMarker.categoryColor}" class="o_vt_marker ${segmentMarker.resultCssClass()} ${segmentMarker.categoryColor}" style="#if($r.isNotEmpty($segmentMarker.width())) width: ${segmentMarker.width()}; #end left: ${segmentMarker.left()};">
 				<span>${segmentMarker.categoryLabel}</span>
 			</div>
 			#end
@@ -42,6 +42,19 @@
 	<script>
 	"use strict";
 	jQuery(function() {
+		function findSolutionSegment(time) {
+			var segment = null;
+			jQuery('#o_videotask_segments>.o_vt_marker').each(function(i, el) {
+				const jEl = jQuery(el); 
+				const start = parseFloat(jEl.attr('data-start'));
+				const duration = parseFloat(jEl.attr('data-duration'));
+				if(start >= 0 && time >= start && time <= (start + duration)) {
+					segment = el; 
+				}
+			});
+			return segment;
+		}
+		
 		jQuery('#o_videotask_segments>.o_vt_marker').each(function(index, el) {
 			const jEl = jQuery(el);
 			const title = '<strong>' + jEl.attr('data-label-title') + '</strong><br>' + jEl.attr('data-duration-string');
@@ -49,6 +62,7 @@
 			jEl.tooltip({
 				html: true,
 				container: false,
+				delay: { "show": 0, "hide": 5000 },
 				title: title
 			}).on('show.bs.tooltip', function () {
 				jEl.tooltip().data('bs.tooltip')
@@ -56,6 +70,24 @@
 					.addClass('o_videotask_tooltip')
 					.addClass(categoryCssClass);
 			})
+		});
+
+		const videoElement = jQuery('#o_so_vid${videoElementId}');
+		const player = videoElement.data('player');
+		if(player.currentSegmentSolution == undefined) {
+			player.currentSegmentSolution = findSolutionSegment(player.media.currentTime);
+		}
+
+		player.media.addEventListener('timeupdate', function() {
+			const segment = findSolutionSegment(player.media.currentTime);
+			if(segment != null && (player.currentSegmentSolution == null
+					|| segment.getAttribute("data-index") != player.currentSegmentSolution.getAttribute("data-index"))) {
+				player.currentSegmentSolution = segment;
+				jQuery(segment).tooltip("show");
+				setTimeout(function() {
+					jQuery(segment).tooltip("hide");
+				}, 5000);
+			}
 		});
 	});
 	</script>
@@ -65,6 +97,25 @@
 	<script>
 	"use strict";
 	jQuery(function() {
+		function findCorrectCategory() {
+			const correctButtons = jQuery('#o_videotask_categories>button>i.o_icon_correct_answer');
+			return correctButtons.length > 0;
+		}
+		
+		function findSegmentIndex(time) {
+			var segmentIndex = -1;
+			jQuery('#o_videotask_segments>.o_video_me_segment').each(function(i, el) {
+				const jEl = jQuery(el); 
+				const start = parseFloat(jEl.attr('data-start'));
+				const duration = parseFloat(jEl.attr('data-duration'));
+				const index = parseInt(jEl.attr('data-index'));
+				if(start >= 0 && time >= start && time <= (start + duration)) {
+					segmentIndex = index;
+				}
+			});
+			return segmentIndex;
+		}
+		
 		const videoElement = jQuery('#o_so_vid${videoElementId}');
 		const player = videoElement.data('player');
 		if(window.startMessageTimeout && window.startMessageTimeout != null) {
@@ -94,7 +145,7 @@
 
 			jQuery('#o_videotask_categories>button').each(function(index, el) {
 				const jEl = jQuery(el);
-				if(startSegment || changeSegment) {
+				if(startSegment || changeSegment || !findSegment) {
 					jEl.removeClass("o_videotask_category_incorrect");
 				}
 				const disabled = !findSegment || hasCorrectAnswer || jEl.hasClass("o_videotask_category_incorrect");
@@ -130,25 +181,6 @@
 				player.currentSegment = segmentIndex;
 			}
 		});
-		
-		function findCorrectCategory() {
-			const correctButtons = jQuery('#o_videotask_categories>button>i.o_icon_correct_answer');
-			return correctButtons.length > 0;
-		}
-		
-		function findSegmentIndex(time) {
-			var segmentIndex = -1;
-			jQuery('#o_videotask_segments>.o_video_me_segment').each(function(i, el) {
-				const jEl = jQuery(el); 
-				const start = parseFloat(jEl.attr('data-start'));
-				const duration = parseFloat(jEl.attr('data-duration'));
-				const index = parseInt(jEl.attr('data-index'));
-				if(start >= 0 && time >= start && time <= (start + duration)) {
-					segmentIndex = index;
-				}
-			});
-			return segmentIndex;
-		}
 	});
 	</script>
 	#end
