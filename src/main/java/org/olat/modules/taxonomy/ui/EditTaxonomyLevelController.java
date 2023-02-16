@@ -460,10 +460,14 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		} else if(textEl.getValue().length() >= maxSize) {
 			textEl.setErrorKey("form.error.toolong", Integer.toString(maxSize));
 			allOk &= false;
-		} else if (!FileUtils.validateFilename(textEl.getValue())) {
+		}
+		// TODO To be discussed
+		// TODO import/export will have problems, if the identifier contains invalid (File)names
+		// TODO OO-6763
+		/*else if (!FileUtils.validateFilename(textEl.getValue())) {
 			textEl.setErrorKey("form.error.invalid", textEl.getValue());
 			allOk &= false;
-		}
+		}*/
 		
 		return allOk;
 	}
