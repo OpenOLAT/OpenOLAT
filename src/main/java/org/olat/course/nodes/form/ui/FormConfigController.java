@@ -20,7 +20,10 @@
 package org.olat.course.nodes.form.ui;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsPreviewController;
@@ -30,6 +33,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -39,9 +43,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.TranslatorHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.duedate.ui.DueDateConfigFormItem;
 import org.olat.course.duedate.ui.DueDateConfigFormatter;
@@ -77,6 +81,7 @@ public class FormConfigController extends FormBasicController {
 	private MultipleSelectionElement relativeDatesEl;
 	private DueDateConfigFormItem participationDeadlineEl;
 	private MultipleSelectionElement confirmationEl;
+	private TextElement externalMailTextEl;
 	
 	private CloseableModalController cmc;
 	private ReferencableEntriesSearchController searchCtrl;
@@ -137,12 +142,39 @@ public class FormConfigController extends FormBasicController {
 				useRelativeDates, formCourseNode.getDueDateConfig(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE));
 		participationDeadlineEl.setLabel("edit.participation.deadline", null);
 		formLayout.add(participationDeadlineEl);
+
+		String[] confirmationKeys = new String[]{
+				FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS,
+				FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES,
+				FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT,
+				FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL
+		};
+		String[] confirmationValues = new String[]{
+				translate("edit.confirmation.owners"),
+				translate("edit.confirmation.coaches"),
+				translate("edit.confirmation.participant"),
+				translate("edit.confirmation.external")
+		};
 		
-		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, ON_KEYS,
-				TranslatorHelper.translateAll(getTranslator(), ON_KEYS), 1);
+		confirmationEl = uifactory.addCheckboxesVertical("edit.confirmation.enabled", formLayout, confirmationKeys,
+				confirmationValues, 1);
 		confirmationEl.setHelpTextKey("edit.confirmation.help", null);
-		boolean confirmationEnabled = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED);
-		confirmationEl.select(confirmationEl.getKey(0), confirmationEnabled);
+
+		boolean isConfirmationOwnersSelected = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS);
+		boolean isConfirmationCoachesSelected = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES);
+		boolean isConfirmationParticipantsSelected = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT);
+		boolean isConfirmationExternalMailsSelected = config.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL);
+		String confirmationExternalMails = config.getStringValue(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS);
+
+		confirmationEl.select(confirmationKeys[0], isConfirmationOwnersSelected);
+		confirmationEl.select(confirmationKeys[1], isConfirmationCoachesSelected);
+		confirmationEl.select(confirmationKeys[2], isConfirmationParticipantsSelected);
+		confirmationEl.select(confirmationKeys[3], isConfirmationExternalMailsSelected);
+
+		confirmationEl.addActionListener(FormEvent.ONCHANGE);
+
+		externalMailTextEl = uifactory.addTextElement("external.mails", "", -1, confirmationExternalMails, formLayout);
+		externalMailTextEl.setPlaceholderKey("edit.confirmation.external.placeholder", null);
 		
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
@@ -168,6 +200,7 @@ public class FormConfigController extends FormBasicController {
 		evaluationFormLink.setVisible(formSelected);
 		replaceLink.setVisible(formSelected && replacePossible);
 		editLink.setVisible(formSelected);
+		externalMailTextEl.setVisible(confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL));
 	}
 	
 	private void updateParticipationDeadlineUI() {
@@ -186,6 +219,7 @@ public class FormConfigController extends FormBasicController {
 		} else if(relativeDatesEl == source) {
 			updateParticipationDeadlineUI();
 		}
+		updateUI();
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -257,7 +291,11 @@ public class FormConfigController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
-		
+
+		if (confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL)) {
+			allOk &= isValidEMail();
+		}
+
 		evaluationFormLink.clearError();
 		if (survey != null && formEntry != null) {
 			boolean isFormUpdateable = formManager.isFormUpdateable(survey);
@@ -268,6 +306,24 @@ public class FormConfigController extends FormBasicController {
 		}
 		
 		allOk &= participationDeadlineEl.validate();
+
+		return allOk;
+	}
+
+	private boolean isValidEMail() {
+		boolean allOk = true;
+
+		externalMailTextEl.clearError();
+		List<String> externalMails =
+				Stream.of(externalMailTextEl.getValue().split(","))
+				.collect(Collectors.toCollection(ArrayList<String>::new));
+
+		for (String externalMail : externalMails) {
+			if (!MailHelper.isValidEmailAddress(externalMail)) {
+				externalMailTextEl.setErrorKey("external.mail.invalid");
+				allOk = false;
+			}
+		}
 
 		return allOk;
 	}
@@ -291,8 +347,17 @@ public class FormConfigController extends FormBasicController {
 		config.setStringValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE_TO, dueDateConfig.getRelativeToType());
 		config.setDateValue(FormCourseNode.CONFIG_KEY_PARTICIPATION_DEADLINE, dueDateConfig.getAbsoluteDate());
 
-		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED, confirmationEl.isAtLeastSelected(1));
-		
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS, confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS));
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES, confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES));
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT, confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT));
+		config.setBooleanEntry(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL, confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL));
+		if (confirmationEl.isKeySelected(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL)) {
+			config.setStringValue(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS, externalMailTextEl.getValue());
+		} else {
+			config.setStringValue(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS, "");
+			externalMailTextEl.setValue("");
+		}
+
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
 

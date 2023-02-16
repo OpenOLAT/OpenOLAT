@@ -111,7 +111,11 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE = "participation.deadline";
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE = "participation.deadline.relative";
 	public static final String CONFIG_KEY_PARTICIPATION_DEADLINE_RELATIVE_TO = "participation.deadline.relative.to";
-	public static final String CONFIG_KEY_CONFIRMATION_ENABLED = "confirmation.enabled";
+	public static final String CONFIG_KEY_CONFIRMATION_OWNERS = "confirmation.owners";
+	public static final String CONFIG_KEY_CONFIRMATION_COACHES = "confirmation.coaches";
+	public static final String CONFIG_KEY_CONFIRMATION_PARTICIPANT = "confirmation.participant";
+	public static final String CONFIG_KEY_CONFIRMATION_EXTERNAL = "confirmation.external";
+	public static final String CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS = "confirmation.external.mails";
 
 	public FormCourseNode() {
 		super(TYPE);
@@ -339,6 +343,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		
 		if (version < 2) {
 			config.setBooleanEntry(CONFIG_KEY_RELATIVE_DATES, false);
+			config.setStringValue(CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS, "");
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

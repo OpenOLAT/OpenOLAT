@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -43,6 +44,7 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.mail.MailContextImpl;
@@ -60,16 +62,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
+ *
  * Initial date: 28 Apr 2021<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
 public class FormMailing {
-	
+
 	private static final Logger log = Tracing.createLoggerFor(FormMailing.class);
-	
+
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -78,25 +80,25 @@ public class FormMailing {
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
-	
-	public MailTemplate getConfirmationTemplate(RepositoryEntry courseEntry, CourseNode courseNode, Identity recipient,
+
+	public MailTemplate getConfirmationTemplate(RepositoryEntry courseEntry, CourseNode courseNode, Identity formParticipant,
 			EvaluationFormSession session) {
-		return createMailTemplate("mail.confirmation.subject", "mail.confirmation.body", courseEntry, courseNode, recipient, session);
+		return createMailTemplate("mail.confirmation.subject", "mail.confirmation.body", courseEntry, courseNode, formParticipant, session);
 	}
-	
+
 	private MailTemplate createMailTemplate(String subjectKey, String bodyKey, RepositoryEntry courseEntry,
-			CourseNode courseNode, Identity recipient, EvaluationFormSession session) {
+			CourseNode courseNode, Identity formParticipant, EvaluationFormSession session) {
 		final String courseUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey();
 		final String courseNodeUrl = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + courseEntry.getKey()
 				+ "/CourseNode/" + courseNode.getIdent();
-		
-		Locale locale = I18nManager.getInstance().getLocaleOrDefault(recipient.getUser().getPreferences().getLanguage());
+
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(formParticipant.getUser().getPreferences().getLanguage());
 		Translator trans = Util.createPackageTranslator(FormRunController.class, locale);
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey);
-		
+
 		return new MailTemplate(subject, body, null) {
-			
+
 			private static final String USER_DISPLAY_NAME = "userDisplayName";
 			private static final String COURSE_URL = "courseUrl";
 			private static final String COURSE_NAME = "courseName";
@@ -106,7 +108,7 @@ public class FormMailing {
 			private static final String COURSE_NODE_LONG_TITLE = "courseNodeShortTitle";
 			private static final String PARTICIPATION_DATE = "participationDate";
 			private static final String PARTICIPATION_TIME = "participationTime";
-			
+
 			@Override
 			public Collection<String> getVariableNames() {
 				Set<String> variableNames = new HashSet<>();
@@ -124,11 +126,11 @@ public class FormMailing {
 				}
 				return variableNames;
 			}
-			
+
 			@Override
 			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-				fillContextWithStandardIdentityValues(context, identity, locale);
-				context.put(USER_DISPLAY_NAME, userManager.getUserDisplayName(identity.getKey()));
+				fillContextWithStandardIdentityValues(context, formParticipant, locale);
+				context.put(USER_DISPLAY_NAME, userManager.getUserDisplayName(formParticipant.getKey()));
 				context.put(COURSE_URL, courseUrl);
 				context.put(COURSE_NAME, courseEntry.getDisplayname());
 				context.put(COURSE_DESCRIPTION, courseEntry.getDescription());
@@ -143,25 +145,27 @@ public class FormMailing {
 			}
 		};
 	}
-	
-	public void sendEmail(MailTemplate template, RepositoryEntry courseEntry, CourseNode courseNode, Identity recipient) {
+
+	public void sendEmails(MailTemplate template, RepositoryEntry courseEntry,
+						   CourseNode courseNode, List<ContactList> recipients,
+						   Identity formParticipant) {
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]");
 		MailerResult result = new MailerResult();
-		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
-		if(bundle != null) {
-			mailManager.sendMessage(bundle);
-			if (!result.isSuccessful()) {
-				log.warn("E-mail in form course element not sent: {}, course node {}, {}", courseEntry, courseNode.getIdent(), recipient);
-			}
+		MailBundle bundle = mailManager.makeMailBundle(context, template, formParticipant, null, result);
+		bundle.setContactLists(recipients);
+
+		mailManager.sendMessage(bundle);
+		if (!result.isSuccessful()) {
+			log.warn("E-mail in form course element not sent: {}, course node {}, {}", courseEntry, courseNode.getIdent(), recipients);
 		}
 	}
-	
+
 	public void deleteTempDir(MailTemplate mailTemplate) {
 		if (mailTemplate.getAttachmentsTmpDir() != null) {
 			FileUtils.deleteDirsAndFiles(mailTemplate.getAttachmentsTmpDir(), true, true);
 		}
 	}
-	
+
 	public void addFormPdfAttachment(MailTemplate mailTemplate, CourseNode courseNode, UserCourseEnvironment coachedCourseEnv) {
 		if (pdfModule.isEnabled()) {
 			File attachmentsTmpDir = FileUtils.createTempDir("formattachment", null, null);
@@ -170,7 +174,7 @@ public class FormMailing {
 			addFormPdfAttachment(mailTemplate, courseNode, coachedCourseEnv, formPdf);
 		}
 	}
-	
+
 	private void addFormPdfAttachment(MailTemplate mailTemplate, CourseNode courseNode, UserCourseEnvironment coachedCourseEnv, File formPdf) {
 		ControllerCreator controllerCreator = (lureq, lwControl) -> new FormParticipationController(lureq, lwControl,
 				courseNode, coachedCourseEnv);
@@ -183,5 +187,5 @@ public class FormMailing {
 			log.error("Error while generating form pdf! Path: " + formPdf.getAbsolutePath(), e);
 		}
 	}
-	
+
 }

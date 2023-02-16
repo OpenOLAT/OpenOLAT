@@ -28,15 +28,21 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -50,9 +56,11 @@ import org.olat.course.nodes.form.FormManager;
 import org.olat.course.nodes.form.FormParticipation;
 import org.olat.course.nodes.form.FormParticipationSearchParams;
 import org.olat.course.nodes.form.model.FormParticipationImpl;
+import org.olat.course.nodes.form.ui.FormConfigController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ParticipantType;
@@ -250,8 +258,11 @@ public class FormManagerImpl implements FormManager {
 		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
 				AssessmentEntryStatus.done, Role.user);
-		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_ENABLED)) {
+
+		if (courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS)
+		|| courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES)
+		|| courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT)
+		|| courseNode.getModuleConfiguration().getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL)) {
 			sendConfirmationEmail(courseNode, userCourseEnv);
 		}
 		
@@ -261,17 +272,62 @@ public class FormManagerImpl implements FormManager {
 	}
 
 	private void sendConfirmationEmail(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		Translator translator = Util.createPackageTranslator(FormConfigController.class, Locale.getDefault());
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentifier(courseNode, courseEntry);
 		EvaluationFormSurvey survey = loadSurvey(surveyIdent);
 		EvaluationFormParticipation participation = loadParticipation(survey, identity);
 		EvaluationFormSession session = participation != null? loadOrCreateSession(participation): null;
-		
+		List<ContactList> contactList = new ArrayList<>();
+		ModuleConfiguration moduleConfiguration = courseNode.getModuleConfiguration();
+
+		if (moduleConfiguration.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_OWNERS)) {
+			contactList.add(getOwnersContactList(courseEntry, translator));
+		}
+		if (moduleConfiguration.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_COACHES)) {
+			contactList.add(getCoachesContactList(courseEntry, translator));
+		}
+		if (moduleConfiguration.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_PARTICIPANT)) {
+			ContactList cl = new ContactList(translator.translate("recipient.participant"));
+			cl.add(identity);
+			contactList.add(cl);
+		}
+		if (moduleConfiguration.getBooleanSafe(FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL)) {
+			ContactList cl = new ContactList(translator.translate("recipient.external"));
+			for (String externalMail : getExternalMailList(moduleConfiguration)) {
+				cl.add(externalMail);
+			}
+			contactList.add(cl);
+		}
+
 		MailTemplate mailTemplate = formMailing.getConfirmationTemplate(courseEntry, courseNode, identity, session);
 		formMailing.addFormPdfAttachment(mailTemplate, courseNode, userCourseEnv);
-		formMailing.sendEmail(mailTemplate, courseEntry, courseNode, identity);
+		formMailing.sendEmails(mailTemplate, courseEntry, courseNode, contactList, identity);
 		formMailing.deleteTempDir(mailTemplate);
+	}
+
+	private ContactList getOwnersContactList(RepositoryEntry entry, Translator translator) {
+		ContactList cl = new ContactList(translator.translate("recipient.owners"));
+		List<Identity> identities = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.owner.name());
+		cl.addAllIdentites(identities);
+		return cl;
+	}
+
+	private ContactList getCoachesContactList(RepositoryEntry entry, Translator translator) {
+		ContactList cl = new ContactList(translator.translate("recipient.coaches"));
+		Collection<Identity> identities = repositoryService.getMembers(entry, RepositoryEntryRelationType.all, GroupRoles.coach.name());
+		cl.addAllIdentites(identities);
+		return cl;
+	}
+
+	private List<String> getExternalMailList(ModuleConfiguration moduleConfiguration) {
+		List<String> externalMails = Stream.of(moduleConfiguration.getStringValue(
+						FormCourseNode.CONFIG_KEY_CONFIRMATION_EXTERNAL_MAILS).split(","))
+				.collect(Collectors.toCollection(ArrayList<String>::new));
+		externalMails.removeIf(externalMail -> !MailHelper.isValidEmailAddress(externalMail));
+
+		return externalMails;
 	}
 
 	@Override
