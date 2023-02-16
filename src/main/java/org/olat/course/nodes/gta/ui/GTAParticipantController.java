@@ -790,7 +790,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 	
 	@Override
-	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine) {
+	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now,
+			boolean done, boolean userDeadLine, TaskProcess step) {
+		
 		Date refDate = dueDate.getReferenceDueDate();
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate.getOverridenDueDate();
@@ -830,7 +832,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 					// some hours left
 					i18nKey = dateOnly ? "msg.extended.dateonly.within.hours" : "msg.extended.within.hours";
 				}
-				text = translate(i18nKey, dueDateArgs.args());
+				String extendedPeriod = translateExtendedPeriod(step);
+				text = translate(i18nKey, mergeArguments(dueDateArgs.args(), new String[] { extendedPeriod }));
 			}
 		}
 		
@@ -870,7 +873,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 						lateI18nKey = lateDateOnly ? "msg.late.standard.dateonly.late.part" : "msg.late.standard.late.part";
 					}
 					// standard is 6
-					text = translate(lateI18nKey, mergeArguments(lateDueDateArgs.args(), new String[] {text}));
+					String extendedPeriod = translateExtendedPeriod(step);
+					text = translate(lateI18nKey, mergeArguments(lateDueDateArgs.args(), new String[]{ text, extendedPeriod }));
 				}
 				// We are late
 				else {
