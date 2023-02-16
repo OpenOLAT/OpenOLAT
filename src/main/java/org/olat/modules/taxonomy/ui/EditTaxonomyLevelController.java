@@ -433,7 +433,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 			try {
 				Integer.parseInt(sortOrderEl.getValue());
 			} catch (NumberFormatException e) {
-				sortOrderEl.setErrorKey("error.sort.order.integer", null);
+				sortOrderEl.setErrorKey("error.sort.order.integer");
 				allOk &= false;
 			}
 		}
@@ -441,7 +441,7 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		teaserImageEl.validate();
 
 		if(!StringHelper.containsNonWhitespace(defaultLocaleDisplayNameEl.getValue())) {
-			defaultLocaleDisplayNameEl.setErrorKey("form.legende.mandatory", null);
+			defaultLocaleDisplayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 			tabbedPane.setSelectedPane(ureq, defaultLocaleTabIndex);
 		}
@@ -455,13 +455,13 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		
 		textEl.clearError();
 		if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
-			textEl.setErrorKey("form.legende.mandatory", null);
+			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(textEl.getValue().length() >= maxSize) {
-			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			textEl.setErrorKey("form.error.toolong", Integer.toString(maxSize));
 			allOk &= false;
 		} else if (!FileUtils.validateFilename(textEl.getValue())) {
-			textEl.setErrorKey("form.error.invalid", new String[] { textEl.getValue() });
+			textEl.setErrorKey("form.error.invalid", textEl.getValue());
 			allOk &= false;
 		}
 		

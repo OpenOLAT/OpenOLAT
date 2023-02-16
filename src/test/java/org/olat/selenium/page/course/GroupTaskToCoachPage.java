@@ -46,7 +46,7 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage selectBusinessGroupToCoach(String name) {
-		By selectBy = By.xpath("//table[contains(@class,'table')]//tr[td[contains(@class,'o_dnd_label')][text()[contains(.,'" + name + "')]]]/td/a[contains(@onclick,'select')]");
+		By selectBy = By.xpath("//table[contains(@class,'table')]//tr/td[contains(@class,'o_dnd_label')]/a[text()[contains(.,'" + name + "')]][contains(@onclick,'select')]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		By processBy = By.cssSelector("div.o_process");

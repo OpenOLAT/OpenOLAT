@@ -129,7 +129,7 @@ public class MergeTaxonomyLevelController extends FormBasicController {
 		
 		mergeToEl.clearError();
 		if(!mergeToEl.isOneSelected()) {
-			mergeToEl.setErrorKey("form.legende.mandatory", null);
+			mergeToEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

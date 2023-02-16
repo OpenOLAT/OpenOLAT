@@ -183,13 +183,13 @@ public class MoveTaxonomyLevelController extends FormBasicController {
 		
 		taxonomyEl.clearError();
 		if(taxonomyEl.getSelectedNode() == null) {
-			taxonomyEl.setErrorKey("error.select.target.level", null);
+			taxonomyEl.setErrorKey("error.select.target.level");
 			allOk &= false;
 		} else if(isParent()) {
-			taxonomyEl.setErrorKey("error.target.no.parent", null);
+			taxonomyEl.setErrorKey("error.target.no.parent");
 			allOk &= false;
 		} else if(!targetableNodes.contains(taxonomyEl.getSelectedNode())) {
-			taxonomyEl.setErrorKey("error.target.not.allowed", null);
+			taxonomyEl.setErrorKey("error.target.not.allowed");
 			allOk &= false;
 		}
 
