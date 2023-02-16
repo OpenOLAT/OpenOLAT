@@ -17,6 +17,7 @@
 
 .o_videotask_box .o_videotask_marker,
 .o_videotask_categories .btn,
+.o_videotask_categories .btn.btn-default.o_disabled:hover,
 .o_videotask_marker,
 .o_videotask_segment {
 	color: #fcfcfc;
@@ -106,7 +107,15 @@
 	}
 }
 
-.o_videotask_tooltip {	
+.o_videotask_tooltip {
+	.tooltip-inner {
+		border: 1px solid darken($o-video-color,10%);
+	}
+	
+	&.tooltip.top .tooltip-arrow {
+		border-top-color: darken($o-video-color,10%);
+	}
+
 	&.o_video_marker_lightgray .tooltip-inner {
 		background-color: $o-video-color-light-gray;
 	}
@@ -267,6 +276,10 @@
 
 .o_videotask_categories>button.btn {
 	margin-top: 10px;
+}
+
+.o_videotask_box .o_videotask_categories {
+	text-align: left;
 }
 
 .o_videotask_messages {
