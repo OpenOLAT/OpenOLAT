@@ -146,13 +146,13 @@ public class EditTaxonomyLevelTypeController extends FormBasicController {
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
+			displayNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		identifierEl.clearError();
 		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
-			identifierEl.setErrorKey("form.legende.mandatory", null);
+			identifierEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

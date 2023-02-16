@@ -119,7 +119,7 @@ public class TypeTaxonomyLevelController extends FormBasicController {
 		
 		typeEl.clearError();
 		if(!typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.legende.mandatory", null);
+			typeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

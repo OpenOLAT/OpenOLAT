@@ -20,6 +20,7 @@
 package org.olat.modules.taxonomy.manager;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,6 +54,7 @@ public class TaxonomyLevelTypeDAO {
 		type.setDisplayName(displayName);
 		type.setDescription(description);
 		type.setExternalId(externalId);
+		type.setAllowedTaxonomyLevelSubTypes(new HashSet<>());
 		// default settings
 		type.setDocumentsLibraryManageCompetenceEnabled(true);
 		type.setDocumentsLibraryTeachCompetenceReadEnabled(true);
