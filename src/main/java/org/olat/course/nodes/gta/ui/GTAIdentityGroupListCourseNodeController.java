@@ -72,6 +72,7 @@ public class GTAIdentityGroupListCourseNodeController extends BasicController im
 		identityCtrl = new GTAIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, courseNode,
 				coachCourseEnv, toolContainer, assessmentCallback, false);
 		listenTo(identityCtrl);
+		identityCtrl.reload(ureq);
 		mainVC.put("identity", identityCtrl.getInitialComponent());
 		mainVC.contextPut("identityOpen", identityOpen);
 	}
