@@ -123,6 +123,10 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
 		displayOptions.setShowSegments(showSegments);
+		if(displayOptions.isShowSegments()) {
+			// Segments use the full width of the video
+			displayOptions.setProgressFullWidth(true);
+		}
 		
 		switch(config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_SELECT, "none")) {
 			case "customDescription":
