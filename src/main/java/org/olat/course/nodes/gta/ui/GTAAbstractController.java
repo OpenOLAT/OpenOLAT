@@ -319,7 +319,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(dueDate.getDueDate() != null) {
 				Date date = dueDate.getDueDate();
 				boolean done = isDone(assignedTask, TaskProcess.assignment);
-				DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true);
+				DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true, TaskProcess.assignment);
 				mainVC.contextPut("assignmentDueDate", dueDateValues.asString());
 				mainVC.contextPut("assignmentRemainingTime", Long.toString(dueDateValues.remainingTime()));
 				
@@ -393,12 +393,25 @@ public abstract class GTAAbstractController extends BasicController implements G
 		mainVC.contextPut(stepPrefix.concat("Status"), translate(statusI18nKey));
 	}
 
-	protected abstract DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine);
+	protected abstract DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now,
+			boolean done, boolean userDeadLine, TaskProcess step);
 	
 	protected boolean isDateOnly(Date date) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		return (cal.get(Calendar.HOUR_OF_DAY) == 0 && cal.get(Calendar.MINUTE) == 0);
+	}
+	
+	protected String translateExtendedPeriod(TaskProcess step) {
+		if(step == null) {
+			return translate("msg.step.extended.period");
+		}
+		switch(step) {
+			case submit: return translate("msg.step.extended.submit");
+			case assignment: return translate("msg.step.extended.assignment");
+			case revision: return translate("msg.step.extended.revision");
+			default: return translate("msg.step.extended.period");
+		}
 	}
 	
 	protected DueDateArguments formatDueDateArguments(Date date, Date now, boolean late, boolean countDown, boolean userDeadLine) {
@@ -471,7 +484,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			if(dueDate.getDueDate() != null) {
 				Date deadline = gtaManager.getDeadlineOf(dueDate, lateDueDate);
 				boolean done = isDone(assignedTask, TaskProcess.submit);
-				DueDateValues dueDateValues = formatDueDate(dueDate, lateDueDate, ureq.getRequestTimestamp(), done, true);
+				DueDateValues dueDateValues = formatDueDate(dueDate, lateDueDate, ureq.getRequestTimestamp(), done, true, TaskProcess.submit);
 				mainVC.contextPut("submitRemainingTime", Long.toString(dueDateValues.remainingTime()));
 				if(lateDueDate != null && lateDueDate.getDueDate() != null) {
 					mainVC.contextPut("lateSubmitRemainingTime", Long.toString(dueDateValues.lateRemainingTime()));
@@ -595,7 +608,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 			Date date =  assignedTask.getRevisionsDueDate();
 			DueDate dueDate = new DueDate(false, date, null, date);
 			boolean done = isDone(assignedTask, TaskProcess.revision);
-			DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true);
+			DueDateValues dueDateValues = formatDueDate(dueDate, null, ureq.getRequestTimestamp(), done, true, TaskProcess.revision);
 			mainVC.contextPut("revisionDueDate", dueDateValues.asString());
 			mainVC.contextPut("revisionRemainingTime", Long.toString(dueDateValues.remainingTime()));
 			

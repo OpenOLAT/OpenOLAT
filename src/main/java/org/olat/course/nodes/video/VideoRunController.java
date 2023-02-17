@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.video;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,8 +44,13 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoSegment;
+import org.olat.modules.video.VideoSegmentCategory;
+import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
+import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -69,6 +77,8 @@ public class VideoRunController extends BasicController {
 	private final UserCourseEnvironment userCourseEnv;
 	private double currentProgress = 0d;
 
+	@Autowired
+	private VideoManager videoManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -207,6 +217,13 @@ public class VideoRunController extends BasicController {
 			}
 		}
 		
+		if(displayOptions.isShowSegments()) {
+			long totalDurationInMillis = VideoHelper.durationInSeconds(videoEntry, videoDispCtr) * 1000l;
+			SegmentsController segmentsCtrl = new SegmentsController(ureq, getWindowControl(),
+					videoEntry, videoDispCtr.getVideoElementId(), totalDurationInMillis);
+			listenTo(segmentsCtrl);
+			videoDispCtr.addLayer(segmentsCtrl);
+		}
 		listenTo(videoDispCtr);
 		
 		myContent.put("videoDisplay", videoDispCtr.getInitialComponent());
@@ -219,5 +236,60 @@ public class VideoRunController extends BasicController {
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq) {
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), this, userCourseEnv, videoNode, "o_icon_video");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	public record RuntimeSegment(VideoSegmentCategory category, String width, String left,
+			double start, double duration, String durationString) {
+		
+		public static RuntimeSegment valueOf(VideoSegmentCategory category, VideoSegment segment,
+				long totalDurationInMillis, String durationString) {
+			double dleft = (double) segment.getBegin().getTime() / totalDurationInMillis;
+			double dwidth = (segment.getDuration() * 1000.0d) / totalDurationInMillis;
+			double startInSeconds = segment.getBegin().getTime() / 1000.0d;
+			return new RuntimeSegment(category,
+					String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
+					startInSeconds, segment.getDuration(), durationString);
+		}
+
+		public String getCategoryLabel() {
+			return category.getLabel();
+		}
+		
+		public String getCategoryLabelAndTitle() {
+			return category.getLabelAndTitle();
+		}
+		
+		public String getCategoryColor() {
+			return category.getColor();
+		}
+	}
+	
+	private class SegmentsController extends BasicController {
+		
+		public SegmentsController(UserRequest ureq, WindowControl wControl,
+				RepositoryEntry videoEntry, String videoElementId, long totalDurationInMillis) {
+			super(ureq, wControl);
+			
+			VelocityContainer segmentsVC = createVelocityContainer("display_segments");
+			
+			VideoSegments segments = videoManager.loadSegments(videoEntry.getOlatResource());
+			List<VideoSegment> segmentsList = segments.getSegments();
+			List<RuntimeSegment> markers = new ArrayList<>(segmentsList.size());
+			for(VideoSegment videoSegment:segmentsList) {
+				VideoSegmentCategory category = segments.getCategory(videoSegment.getCategoryId()).orElse(null);
+				String durationString = translate("duration.description", Long.toString(videoSegment.getDuration()));
+				RuntimeSegment solution = RuntimeSegment.valueOf(category, videoSegment, totalDurationInMillis, durationString);
+				markers.add(solution);
+			}
+			segmentsVC.contextPut("segments", markers);
+			segmentsVC.contextPut("videoElementId", videoElementId);
+			
+			putInitialPanel(segmentsVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			//
+		}
 	}
 }

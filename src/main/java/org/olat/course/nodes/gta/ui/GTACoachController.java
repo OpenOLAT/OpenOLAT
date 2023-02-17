@@ -575,7 +575,9 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	@Override
-	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now, boolean done, boolean userDeadLine) {
+	protected DueDateValues formatDueDate(DueDate dueDate, DueDate lateDueDate, Date now,
+			boolean done, boolean userDeadLine, TaskProcess step) {
+		
 		Date refDate = dueDate.getReferenceDueDate();
 		Date refLateDate = lateDueDate == null ? null : lateDueDate.getReferenceDueDate();
 		Date extensionDate = dueDate.getOverridenDueDate();
@@ -599,7 +601,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			dueDateArgs = formatDueDateArguments(extensionDate, now, false, false, userDeadLine);
 			
 			String i18nKey = dateOnly ? "msg.extended.coach.dateonly" : "msg.extended.coach";
-			text = translate(i18nKey, dueDateArgs.args());
+			String extendedPeriod = translateExtendedPeriod(step);
+			text = translate(i18nKey, mergeArguments(dueDateArgs.args(), new String[]{ extendedPeriod }));
 		}
 		// Late date
 		else if(refLateDate != null && now.before(refLateDate)) {
@@ -616,7 +619,8 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 				} else {
 					i18nKey = dateOnly ? "msg.late.standard.coach.dateonly" : "msg.late.standard.coach";
 				}
-				text = translate(i18nKey, mergeArguments(lateDueDateArgs.args(), new String[] { text }));
+				String extendedPeriod = translateExtendedPeriod(step);
+				text = translate(i18nKey, mergeArguments(lateDueDateArgs.args(), new String[] { text, extendedPeriod }));
 				
 			} else {
 				String i18nKey = dateOnly ? "msg.end.dateonly.closed" : "msg.end.closed";
