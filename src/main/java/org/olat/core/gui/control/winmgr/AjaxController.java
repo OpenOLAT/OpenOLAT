@@ -356,11 +356,13 @@ public class AjaxController extends DefaultController {
 
 	@Override
 	protected void doDispose() {
-		List<MapperKey> mappers = new ArrayList<>();
-		mappers.add(mKey);
+		List<MapperKey> mappers = List.of(mKey);
+		CoreSpringFactory.getImpl(MapperService.class).cleanUp(mappers);
 		if (ajaxEnabled && pollCount == 0) {
 			//the controller should be older than 40s otherwise poll may not started yet
-			if ((System.currentTimeMillis() - creationTime) > 40000) log.warn("Client did not send a single polling request though ajax is enabled!");
+			if ((System.currentTimeMillis() - creationTime) > 40000) {
+				log.warn("Client did not send a single polling request though ajax is enabled!");
+			}
 		}
         super.doDispose();
 	}
