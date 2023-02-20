@@ -249,7 +249,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 
 	@Override
 	public List<TaxonomyLevel> loadContextTaxonomyLevels(AnalysisSearchParameter searchParams, boolean withParents) {
-		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevelsByRefs(null);
+		List<TaxonomyLevel> levels = taxonomyService.getTaxonomyLevels(List.of());
 		List<String> pathes = filterDao.loadContextTaxonomyLevelPathes(searchParams);
 		if (withParents) {
 			levels.removeIf(e -> isUnusedChild(e.getMaterializedPathKeys(), pathes));
@@ -324,7 +324,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 			Set<Rubric> rubrics, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy) {
 		if (groupBy == null || temporalGroupBy == null || rubrics == null || rubrics.size() == 0) return new MultiTrendSeries<>();
 		
-		List<String> identifiers = rubrics.stream().map(Rubric::getSliders).flatMap(s -> s.stream()).map(Slider::getId).collect(toList());
+		List<String> identifiers = rubrics.stream().map(Rubric::getSliders).flatMap(List::stream).map(Slider::getId).collect(toList());
 		List<RawGroupedStatistic> statisticsList;
 		if (hasWeights(rubrics)) {
 			statisticsList = filterDao.loadGroupedStatistic(searchParams, identifiers, true, groupBy, temporalGroupBy);
@@ -340,7 +340,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	private boolean hasWeights(Set<Rubric> rubrics) {
 		return rubrics.stream()
 				.map(Rubric::getSliders)
-				.flatMap(s -> s.stream())
+				.flatMap(List::stream)
 				.filter(s -> s.getWeight().intValue() != 1)
 				.findAny()
 				.isPresent();
