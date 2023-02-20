@@ -25,11 +25,15 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -55,6 +59,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditMultipleDueDatesController extends FormBasicController {
 	
 	private DateChooser assignmentDueDateEl, submissionDueDateEl, revisionDueDateEl, solutionDueDateEl;
+	private MultipleSelectionElement assignmentTakeOverEl, submissionTakeOverEl, revisionTakeOverEl, solutionTakeOverEl;
 	
 	private List<Task> tasks;
 	private GTACourseNode gtaNode;
@@ -79,20 +84,27 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		SelectionValues takeOverSV = new SelectionValues();
+		takeOverSV.add(SelectionValues.entry("key", translate("take.over")));
+		
+		assignmentTakeOverEl = uifactory.addCheckboxesVertical("assignment.take.over", "assignment.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
+		assignmentTakeOverEl.addActionListener(FormEvent.ONCHANGE);
 		
 		assignmentDueDateEl = uifactory.addDateChooser("assignment.duedate", null, formLayout);
 		assignmentDueDateEl.setDateChooserTimeEnabled(true);
-		initDate(assignmentDueDateEl, Task::getAssignmentDueDate);
+		initDate(assignmentTakeOverEl, assignmentDueDateEl, Task::getAssignmentDueDate, config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
 		DueDate standardAssignmentDueDate = gtaManager.getAssignmentDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(assignmentDueDateEl, standardAssignmentDueDate);
-		assignmentDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT));
+		
+		submissionTakeOverEl = uifactory.addCheckboxesVertical("submission.take.over", "submission.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
+		submissionTakeOverEl.addActionListener(FormEvent.ONCHANGE);
 		
 		submissionDueDateEl = uifactory.addDateChooser("submission.duedate", null, formLayout);
 		submissionDueDateEl.setDateChooserTimeEnabled(true);
-		initDate(submissionDueDateEl, Task::getSubmissionDueDate);
+		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
+		initDate(submissionTakeOverEl, submissionDueDateEl, Task::getSubmissionDueDate, submissionDeadline);
 		DueDate standardSubmissionDueDate = gtaManager.getSubmissionDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(submissionDueDateEl, standardSubmissionDueDate);
-		boolean submissionDeadline = config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT);
 		submissionDueDateEl.setVisible(submissionDeadline);
 		if(submissionDeadline) {
 			for(Task task:tasks) {
@@ -105,17 +117,21 @@ public class EditMultipleDueDatesController extends FormBasicController {
 			}
 		}
 		
+		revisionTakeOverEl = uifactory.addCheckboxesVertical("revision.take.over", "revision.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
+		revisionTakeOverEl.addActionListener(FormEvent.ONCHANGE);
+		
 		revisionDueDateEl = uifactory.addDateChooser("revisions.duedate", null, formLayout);
 		revisionDueDateEl.setDateChooserTimeEnabled(true);
-		initDate(revisionDueDateEl, Task::getRevisionsDueDate);
-		revisionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
+		initDate(revisionTakeOverEl, revisionDueDateEl, Task::getRevisionsDueDate, config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD));
+		
+		solutionTakeOverEl = uifactory.addCheckboxesVertical("solution.take.over", "solution.duedate", formLayout, takeOverSV.keys(), takeOverSV.values(), 1);
+		solutionTakeOverEl.addActionListener(FormEvent.ONCHANGE);
 		
 		solutionDueDateEl = uifactory.addDateChooser("solution.duedate", null, formLayout);
 		solutionDueDateEl.setDateChooserTimeEnabled(true);
-		initDate(solutionDueDateEl, Task::getSolutionDueDate);
+		initDate(solutionTakeOverEl, solutionDueDateEl, Task::getSolutionDueDate, config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 		DueDate standardSolutionDueDate = gtaManager.getSolutionDueDate(null, null, null, gtaNode, courseEntry, false);
 		setDueDateExplanation(solutionDueDateEl, standardSolutionDueDate);
-		solutionDueDateEl.setVisible(config.getBooleanSafe(GTACourseNode.GTASK_SAMPLE_SOLUTION));
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
@@ -123,7 +139,13 @@ public class EditMultipleDueDatesController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
-	private void initDate(DateChooser dateEl, Function<Task, Date> dateFunction) {
+	private void initDate(MultipleSelectionElement takeOverEl, DateChooser dateEl, Function<Task, Date> dateFunction, boolean configEnabled) {
+		if (!configEnabled) {
+			takeOverEl.setVisible(false);
+			dateEl.setVisible(false);
+			return;
+		}
+		
 		boolean firstDate = true;
 		Date date = null;
 		
@@ -133,12 +155,15 @@ public class EditMultipleDueDatesController extends FormBasicController {
 				date = taskDate;
 				firstDate = false;
 			} else if (!Objects.equals(date, taskDate)) {
+				dateEl.setEnabled(false);
+				dateEl.setLabel(null, null);
 				dateEl.setWarningKey("duedate.individuals");
 				return;
 			}
 		}
 		
 		dateEl.setDate(date);
+		takeOverEl.setVisible(false);
 	}
 
 	private void setDueDateExplanation(DateChooser dateEl, DueDate standardDueDate) {
@@ -152,13 +177,40 @@ public class EditMultipleDueDatesController extends FormBasicController {
 	}
 
 	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == assignmentTakeOverEl) {
+			updateDateUI(assignmentTakeOverEl, assignmentDueDateEl);
+		} else if (source == submissionTakeOverEl) {
+			updateDateUI(submissionTakeOverEl, submissionDueDateEl);
+		} else if (source == revisionTakeOverEl) {
+			updateDateUI(revisionTakeOverEl, revisionDueDateEl);
+		} else if (source == solutionTakeOverEl) {
+			updateDateUI(solutionTakeOverEl, solutionDueDateEl);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void updateDateUI(MultipleSelectionElement takeOverEl, DateChooser dateEl) {
+		boolean takeOver = takeOverEl.isAtLeastSelected(1);
+		dateEl.setEnabled(takeOver);
+	}
+
+	@Override
 	protected void formOK(UserRequest ureq) {
 		for (Task task : tasks) {
 			TaskDueDate dueDates = gtaManager.getDueDatesTask(task);
-			dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());	
-			dueDates.setSubmissionDueDate(submissionDueDateEl.getDate());	
-			dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
-			dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
+			if (assignmentDueDateEl.isEnabled()) {
+				dueDates.setAssignmentDueDate(assignmentDueDateEl.getDate());
+			}
+			if (submissionDueDateEl.isEnabled()) {
+				dueDates.setSubmissionDueDate(submissionDueDateEl.getDate());
+			}
+			if (revisionDueDateEl.isEnabled()) {
+				dueDates.setRevisionsDueDate(revisionDueDateEl.getDate());
+			}
+			if (solutionDueDateEl.isEnabled()) {
+				dueDates.setSolutionDueDate(solutionDueDateEl.getDate());
+			}
 			dueDates = gtaManager.updateTaskDueDate(dueDates);
 			
 			if(task.getTaskStatus().ordinal() > TaskProcess.submit.ordinal()
