@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.system;
 
+import org.olat.core.CoreSpringFactory;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
@@ -39,6 +40,9 @@ public class SamplerJob extends QuartzJobBean {
 
 	@Override
 	protected void executeInternal(JobExecutionContext context)  {
-		MonitoringWebService.takeSample();
+		SystemWebService systemWebService = CoreSpringFactory.getImpl(SystemWebService.class);
+		if(systemWebService != null) {// To make sure the service are loaded with Spring
+			MonitoringWebService.takeSample();
+		}
 	}
 }
