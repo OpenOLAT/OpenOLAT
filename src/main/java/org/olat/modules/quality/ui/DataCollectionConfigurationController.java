@@ -441,7 +441,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		Date start = startEl.getDate();
 		Date deadline = deadlineEl.getDate();
 		if (start != null && deadline != null && deadline.before(start)) {
-			deadlineEl.setErrorKey("error.deadline.before.start", null);
+			deadlineEl.setErrorKey("error.deadline.before.start");
 			allOk = false;
 		}
 		
@@ -454,7 +454,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		if (!titleEl.hasError()) {
 			String value = titleEl.getValue();
 			if (!StringHelper.containsNonWhitespace(value)) {
-				titleEl.setErrorKey("form.mandatory.hover", null);
+				titleEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -462,7 +462,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		if (validateStart) {
 			Date value = startEl.getDate();
 			if (value == null) {
-				startEl.setErrorKey("form.mandatory.hover", null);
+				startEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
@@ -470,53 +470,53 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		if (!deadlineEl.hasError()) {
 			Date deadline = deadlineEl.getDate();
 			if (deadline == null) {
-				deadlineEl.setErrorKey("form.mandatory.hover", null);
+				deadlineEl.setErrorKey("form.mandatory.hover");
 				allOk = false;
 			}
 		}
 		
 		if (organisationsEl.isVisible() && organisationsEl.getSelectedKeys().isEmpty()) {
-			organisationsEl.setErrorKey("form.mandatory.hover", null);
+			organisationsEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		}
 		
 		if (topicType == null) {
-			topicTypeEl.setErrorKey("form.mandatory.hover", null);
+			topicTypeEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		} else {
 			switch (topicType) {
 				case CUSTOM: {
 					String custom = topicCustomTextEl.getValue();
 					if (!StringHelper.containsNonWhitespace(custom)) {
-						topicCustomTextEl.setErrorKey("form.mandatory.hover", null);
+						topicCustomTextEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
 					break;
 				}
 				case IDENTIY: {
 					if (topicIdentity == null) {
-						topicIdentityNameEl.setErrorKey("form.mandatory.hover", null);
+						topicIdentityNameEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
 					break;
 				}
 				case CURRICULUM: {
 					if (topicCurriculum == null) {
-						topicCurriculumEl.setErrorKey("form.mandatory.hover", null);
+						topicCurriculumEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
 					break;
 				}
 				case CURRICULUM_ELEMENT: {
 					if (topicCurriculum == null) {
-						topicCurriculumElementEl.setErrorKey("form.mandatory.hover", null);
+						topicCurriculumElementEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
 					break;
 				}
 				case REPOSITORY: {
 					if (topicRepository == null) {
-						topicRepositoryNameEl.setErrorKey("form.mandatory.hover", null);
+						topicRepositoryNameEl.setErrorKey("form.mandatory.hover");
 						allOk = false;
 					}
 					break;
@@ -655,6 +655,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
+		formEntry = qualityService.loadFormEntry(dataCollection);
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
 		File formFile = new File(repositoryDir, FORM_XML_FILE);
 		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
