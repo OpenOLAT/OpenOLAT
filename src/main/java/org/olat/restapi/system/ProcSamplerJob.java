@@ -68,7 +68,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	@Override
 	protected void executeInternal(JobExecutionContext context)  {
 		MonitoringModule monitoringModule = CoreSpringFactory.getImpl(MonitoringModule.class);
-		if(StringHelper.containsNonWhitespace(monitoringModule.getProcFile())) {
+		if(monitoringModule != null && StringHelper.containsNonWhitespace(monitoringModule.getProcFile())) {
 			File xmlFile = new File(monitoringModule.getProcFile());
 			if(!xmlFile.exists()) {
 				File parent = xmlFile.getParentFile();
