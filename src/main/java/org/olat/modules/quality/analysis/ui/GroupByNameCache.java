@@ -42,6 +42,7 @@ import org.olat.modules.quality.analysis.GroupBy;
 import org.olat.modules.quality.analysis.GroupByKey;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.ui.QualityMainController;
+import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.repository.RepositoryEntry;
@@ -222,7 +223,7 @@ class GroupByNameCache {
 		List<CurriculumElement> elements = analysisService.loadContextCurriculumElements(searchParams, false);
 		for (CurriculumElement element : elements) {
 			String key = element.getKey().toString();
-			String value = element.getDisplayName();
+			String value = QualityUIFactory.getCurriculumElementName(element);
 			keyToName.put(key, new UnformatedName(value));
 		}
 		return keyToName;
