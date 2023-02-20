@@ -238,6 +238,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		setEmptyTableSettings("default.tableEmptyMessage", null, FlexiTableElement.TABLE_EMPTY_ICON);
 	}
 
+	@Override
 	public void setExternalRenderer(AbstractFlexiTableRenderer externalRenderer, String iconCssSelector) {
 		component.setExternalRenderer(externalRenderer);
 		externalTypeButton.setIconLeftCSS("o_icon " + iconCssSelector);
@@ -1199,7 +1200,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 				p = Integer.parseInt(pagesize);
 			}
 			selectPageSize(ureq, p);
-		} else if(StringHelper.containsNonWhitespace(sort)) {
+		} else if(StringHelper.containsNonWhitespace(sort) && dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 			String asc = form.getRequestParameter("asc");
 			sort(sort, "asc".equals(asc));
 			saveCustomSettings(ureq);

@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
@@ -67,7 +67,7 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 		}
 	}
 	
-	enum ReportAccessCols implements FlexiSortableColumnDef {
+	enum ReportAccessCols implements FlexiColumnDef {
 		name("report.access.name"),
 		online("report.access.online"),
 		emailTrigger("report.access.email.trigger");
@@ -82,16 +82,7 @@ class ReportAccessDataModel extends DefaultFlexiTableDataModel<ReportAccessRow>
 		public String i18nHeaderKey() {
 			return i18nKey;
 		}
-
-		@Override
-		public boolean sortable() {
-			return true;
-		}
-
-		@Override
-		public String sortKey() {
-			return name();
-		}
+		
 	}
 
 }
