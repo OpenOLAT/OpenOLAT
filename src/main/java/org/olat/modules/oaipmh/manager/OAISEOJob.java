@@ -32,6 +32,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.OAIService;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -40,6 +41,7 @@ import org.quartz.JobExecutionException;
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
+@DisallowConcurrentExecution
 public class OAISEOJob extends JobWithDB {
 
 	private static final Logger log = Tracing.createLoggerFor(OAISEOJob.class);
