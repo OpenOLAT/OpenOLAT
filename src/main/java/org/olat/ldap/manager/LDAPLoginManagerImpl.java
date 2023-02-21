@@ -241,12 +241,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
 			} else {
 				log.info("LDAP login is enabled");
-				
 				// Start LDAP cron sync job
-				if (ldapLoginModule.isLdapSyncCronSync()) {
+				if (ldapLoginModule.isLdapSyncOnStartup()) {
 					doHandleBatchSync();
-				} else {
-					log.info("LDAP cron sync is disabled");
 				}
 			}
 		}
