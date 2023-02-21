@@ -207,7 +207,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 			FormItem item = formComponents.get(formComponentName);
 			if(item instanceof FormLayoutContainer layoutContainer) {
 				layoutContainer.validateDeferred();
-			} else if(item.isValidationDeferred()) {
+			} else if(item != null && item.isValidationDeferred()) {
 				item.validate();
 			}
 		}
@@ -290,9 +290,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	// set the formtranslator, and parent
 		Translator itemTranslator = with.getTranslator();
 		if(itemTranslator != null && !itemTranslator.equals(translator)
-				&& itemTranslator instanceof PackageTranslator) {
+				&& itemTranslator instanceof PackageTranslator itemPt) {
 			//let the FormItem provide a more specialized translator
-			PackageTranslator itemPt = (PackageTranslator)itemTranslator;
 			itemTranslator = PackageTranslator.cascadeTranslators(itemPt, translator);
 		}else{
 			itemTranslator = translator;
