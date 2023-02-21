@@ -20,7 +20,6 @@
 package org.olat.course.nodes.appointments;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
@@ -63,7 +62,7 @@ public class CourseNodeOrganizerCandidateSupplier implements OrganizerCandidateS
 	public List<Identity> getOrganizerCandidates() {
 		return roles.length > 0
 				? getRepositoryService().getMembers(entry, RepositoryEntryRelationType.all, roles)
-				: Collections.emptyList();
+				: new ArrayList<>();
 	}
 
 	private RepositoryService getRepositoryService() {
