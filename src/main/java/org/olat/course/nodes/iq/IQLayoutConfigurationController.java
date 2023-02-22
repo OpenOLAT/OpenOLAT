@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.iq;
 
+import java.util.Set;
+
 import org.olat.core.commons.controllers.filechooser.FileRemoveEvent;
 import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
@@ -56,6 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class IQLayoutConfigurationController extends BasicController {
+	
+	private static final Set<String> UPLOAD_MIME_TYPE = Set.of("text/html", "application/zip");
+	private static final String[] SELECTION_SUFFIX = new String[] { "html", "htm" };
 
 	private VelocityContainer myContent;
 
@@ -103,7 +108,8 @@ public class IQLayoutConfigurationController extends BasicController {
 		}
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer,
 				disclaimer, relFilPathIsProposal, allowRelativeLinks, true,
-				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), null, null);
+				new CourseInternalLinkTreeModel(course.getEditorTreeModel()), null, null,
+				UPLOAD_MIME_TYPE, SELECTION_SUFFIX, null);
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());
 		myContent.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

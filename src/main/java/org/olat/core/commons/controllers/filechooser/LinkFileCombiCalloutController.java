@@ -23,6 +23,7 @@ package org.olat.core.commons.controllers.filechooser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorController;
@@ -79,8 +80,6 @@ import org.olat.modules.edusharing.VFSEdusharingProvider;
  */
 public class LinkFileCombiCalloutController extends BasicController {
 	
-	private static final Set<String> MIME_TYPE_HTML = Set.of("text/html", "application/zip");
-	
 	private VelocityContainer contentVC;
 	private EmptyState fileNotAvailableCmp;
 	private IconPanel fileCmp;
@@ -110,6 +109,9 @@ public class LinkFileCombiCalloutController extends BasicController {
 	private boolean relFilPathIsProposal;
 	private boolean allowEditorRelativeLinks;
 	private final VFSEdusharingProvider edusharingProvider;
+	private final Set<String> uploadMimeTypes;
+	private final String[] selectionSuffix;
+	private final Function<String, String> filenameWarning;
 
 	/**
 	 * 
@@ -135,13 +137,16 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 *            in HTML editor
 	 * @param courseToolLinkTreeModel 
 	 * @param courseToolLinkTreeModel 
-	 * @param edusharingProviderm
+	 * @param edusharingProvider
 	 *            Enable content from edu-sharing with this provider
+	 * @param uploadMimeTypes Allowed mimetypes when uploading a file
+	 * @param selectionSuffix Allowed suffixes when selection a file
 	 */
 	public LinkFileCombiCalloutController(UserRequest ureq, WindowControl wControl, VFSContainer baseContainer,
 			String relFilePath, boolean relFilPathIsProposal, boolean allowEditorRelativeLinks, boolean allowRemove,
 			CustomLinkTreeModel customLinkTreeModel, CourseToolLinkTreeModel courseToolLinkTreeModel,
-			VFSEdusharingProvider edusharingProvider) {
+			VFSEdusharingProvider edusharingProvider, Set<String> uploadMimeTypes, String[] selectionSuffix,
+			Function<String, String> filenameWarning) {
 		super(ureq, wControl);
 		this.baseContainer = baseContainer;
 		this.defaultRelFilePath = relFilePath;
@@ -150,6 +155,9 @@ public class LinkFileCombiCalloutController extends BasicController {
 		this.customLinkTreeModel = customLinkTreeModel;
 		this.courseToolLinkTreeModel = courseToolLinkTreeModel;
 		this.edusharingProvider = edusharingProvider;
+		this.uploadMimeTypes = uploadMimeTypes;
+		this.selectionSuffix = selectionSuffix;
+		this.filenameWarning = filenameWarning;
 		
 		// Main container for everything
 		contentVC = createVelocityContainer("combi_file_callout");
@@ -327,7 +335,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 				new VFSSystemItemFilter(),
 				new VFSOrFilter(List.of(
 						new VFSContainerFilter(),
-						new VFSItemSuffixFilter(new String[] { "html", "htm" })))));
+						new VFSItemSuffixFilter(selectionSuffix)))));
 		FileChooserController fileChooserCtrl = FileChooserUIFactory.createFileChooserController(ureq, getWindowControl(), baseContainer, filter, true);
 		fileChooserCtrl.setShowTitle(true);
 		fileChooserCtrl.selectPath(relFilePath);
@@ -342,7 +350,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 			folderPath = relFilePath.substring(0, relFilePath.lastIndexOf("/"));
 		}
 		FileUploadController fileUploadCtrl = new FileUploadController(getWindowControl(), baseContainer, ureq,
-				quotaLeftKB, quotaLeftKB, MIME_TYPE_HTML, false, true, false, false, true, true, folderPath);
+				quotaLeftKB, quotaLeftKB, uploadMimeTypes, false, true, false, false, true, true, folderPath);
 		displayModal(fileUploadCtrl);
 	}
 	
@@ -465,6 +473,12 @@ public class LinkFileCombiCalloutController extends BasicController {
 					: null;
 			labelTexts.add(new LabelText(translate("file.last.modified"), lastModified));
 			contentCmp.setLabelTexts(labelTexts);
+			if (filenameWarning != null) {
+				String warning = filenameWarning.apply(file.getName());
+				if (StringHelper.containsNonWhitespace(warning)) {
+					contentCmp.setWarning(warning);
+				}
+			}
 		}
 		
 		// Enable edit link when file is editable 
