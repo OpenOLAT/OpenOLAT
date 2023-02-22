@@ -46,6 +46,8 @@ public class StatusVO {
 	private int secureAuthenticatedCount;
 	@XmlAttribute(name="concurrentDispatchThreads", required=true)
 	private long concurrentDispatchThreads;
+	@XmlAttribute(name="unixTimestamp", required=true)
+	private String unixTimestamp;
 	
 	public boolean isWriteFile() {
 		return writeFile;
@@ -93,6 +95,14 @@ public class StatusVO {
 
 	public void setConcurrentDispatchThreads(long concurrentDispatchThreads) {
 		this.concurrentDispatchThreads = concurrentDispatchThreads;
+	}
+
+	public String getUnixTimestamp() {
+		return unixTimestamp;
+	}
+
+	public void setUnixTimestamp(String unixTimestamp) {
+		this.unixTimestamp = unixTimestamp;
 	}
 	
 }

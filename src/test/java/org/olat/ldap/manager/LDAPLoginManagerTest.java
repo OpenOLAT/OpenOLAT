@@ -1215,6 +1215,42 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void findIdentityByLdapAuthenticationWithUnicodeNull() throws LDAPException {
+		// Replace the given name with the NULL unicode
+		String dn = "uid=unicodenull,ou=person,dc=olattest,dc=org";
+		List<Modification> modifications = new ArrayList<>();
+		modifications.add(new Modification(ModificationType.REPLACE, "givenname", "\u0000"));
+		embeddedLdapRule.ldapConnection().modify(dn, modifications);
+
+		Identity id = securityManager.findIdentityByLogin("unicodenull");
+		ldapManager.doSyncSingleUserWithLoginAttribute(id);
+		
+		dbInstance.commit();
+		
+		Identity reloadedId = securityManager.findIdentityByLogin("unicodenull");
+		Assert.assertNotNull(reloadedId);
+		Assert.assertNull(reloadedId.getUser().getFirstName());
+	}
+	
+	@Test
+	public void findIdentityByLdapAuthenticationWithUnicodeNullAtTheEnd() throws LDAPException {
+		// Replace the given name with the NULL unicode
+		String dn = "uid=unicodenull,ou=person,dc=olattest,dc=org";
+		List<Modification> modifications = new ArrayList<>();
+		modifications.add(new Modification(ModificationType.REPLACE, "givenname", "FirstBut\u0000"));
+		embeddedLdapRule.ldapConnection().modify(dn, modifications);
+
+		Identity id = securityManager.findIdentityByLogin("unicodenull");
+		ldapManager.doSyncSingleUserWithLoginAttribute(id);
+		
+		dbInstance.commit();
+		
+		Identity reloadedId = securityManager.findIdentityByLogin("unicodenull");
+		Assert.assertNotNull(reloadedId);
+		Assert.assertEquals("FirstBut", reloadedId.getUser().getFirstName());
+	}
+	
+	@Test
 	public void findIdentityByLdapAuthenticationConvertFromOlat() {
 		LDAPError ldapError = new LDAPError();
 		

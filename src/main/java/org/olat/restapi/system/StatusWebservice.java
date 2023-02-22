@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -145,7 +146,7 @@ public class StatusWebservice {
 		//Concurrent dispatch threads
 		SessionStatsManager sessionStatsManager = CoreSpringFactory.getImpl(SessionStatsManager.class);
 		stats.setConcurrentDispatchThreads(sessionStatsManager.getConcurrentCounter());
-
+		stats.setUnixTimestamp(Long.toString(new Date().getTime() / 1000));
 		return Response.ok(stats).build();
 	}
 	
