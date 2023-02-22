@@ -25,7 +25,9 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.ims.qti21.QTI21Constants;
 
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
@@ -62,6 +64,11 @@ public class FeedbackResultComponentRenderer extends AssessmentObjectComponentRe
 				renderAssessmentItemCorrectSolutionModalFeedback(assessmentRenderer, sb, modalFeedback,
 						cmp, resolvedAssessmentItem, itemSessionState, ubu, translator);
 				sb.append("</div>");
+			}
+			
+			if(assessmentRenderer.isMathJax()
+            		|| (WebappHelper.isMathJaxMarkers() && (sb.contains("\\(") || sb.contains("\\[") || sb.contains("$$")))) {
+				sb.append(Formatter.elementLatexFormattingScript("o_c".concat(cmp.getDispatchID())));
 			}
 		}
 	}
