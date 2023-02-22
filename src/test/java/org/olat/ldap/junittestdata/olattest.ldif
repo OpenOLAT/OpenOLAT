@@ -181,6 +181,21 @@ userPassword: olat
 memberOf: ldapopenolat,ldapcoaching
 modifyTimestamp: 20100630180000Z
 
+dn: uid=unicodenull,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Unicode Null
+givenname: Unicode
+labeleduri: https://www.openolat.com/gstieger
+mail: unicode.null@openolat.com
+o: Informatik
+sn: unicodenull
+uid: unicodenull
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
 dn: uid=hcoulter,ou=person,dc=olattest,dc=org
 objectClass: organizationalPerson
 objectClass: person

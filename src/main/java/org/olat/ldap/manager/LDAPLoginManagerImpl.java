@@ -241,12 +241,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				log.error("LDAP connection test failed during module initialization, edit config or contact network administrator");
 			} else {
 				log.info("LDAP login is enabled");
-				
 				// Start LDAP cron sync job
-				if (ldapLoginModule.isLdapSyncCronSync()) {
+				if (ldapLoginModule.isLdapSyncOnStartup()) {
 					doHandleBatchSync();
-				} else {
-					log.info("LDAP cron sync is disabled");
 				}
 			}
 		}
@@ -562,9 +559,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					user.setProperty(propName, value);
 				}
 			} else {
-				if(value.length() > 255) {
-					value = value.substring(0, 255);
-				}
+				value = validateLdapValue(value);
 				user.setProperty(propName, value);
 			}
 		}
@@ -670,8 +665,8 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 					String ldapValue = getAttributeValue(attr);
 					if (olatProperty == null || ldapValue == null) {
 						continue;
-					} else if(ldapValue != null && ldapValue.length() > 250) {
-						ldapValue = ldapValue.substring(0, 250);
+					} else  {
+						ldapValue = validateLdapValue(ldapValue);
 					}
 					user.setProperty(olatProperty, ldapValue);
 				} 
@@ -705,6 +700,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		log.info("Created LDAP user username::{}", uid);
 		return identity;
+	}
+	
+	private String validateLdapValue(String ldapValue) {
+		if(ldapValue == null || "\u0000".equals(ldapValue)) {
+			return null;
+		}
+		ldapValue = ldapValue.replace("\u0000", "");
+		if(ldapValue.length() > 250) {
+			ldapValue = ldapValue.substring(0, 250);
+		}
+		return ldapValue;
 	}
 
 	/**

@@ -27,6 +27,7 @@ package org.olat.course.nodes.st;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
@@ -80,7 +81,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gnaegi
  */
 public class STCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
-
+	
+	private static final Set<String> UPLOAD_MIME_TYPE = Set.of("text/html", "application/zip");
+	private static final String[] SELECTION_SUFFIX = new String[] { "html", "htm" };
+	
 	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
@@ -411,7 +415,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer, relFilePath,
 				relFilPathIsProposal, allowRelativeLinks, false, new CourseInternalLinkTreeModel(editorModel),
-				new CourseToolLinkTreeModel(courseConfig, getLocale()), edusharingProvider);
+				new CourseToolLinkTreeModel(courseConfig, getLocale()), edusharingProvider, UPLOAD_MIME_TYPE,
+				SELECTION_SUFFIX, null);
 		listenTo(combiLinkCtr);
 		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		
 		configvc.contextPut("editorEnabled", combiLinkCtr.isEditorEnabled());

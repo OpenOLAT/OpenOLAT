@@ -36,6 +36,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -245,6 +246,7 @@ public class CatalogMainController extends BasicController implements Activateab
 						? catalogRepositoryEntryState.getSpecialFilterRepositoryEntryLabel()
 						: translate("search.results");
 				stackPanel.pushController(crumbName, catalogRepositoryEntryListCtrl);
+				getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 			}
 		}
 		catalogRepositoryEntryListCtrl.search(ureq, searchString, reset);
@@ -260,6 +262,7 @@ public class CatalogMainController extends BasicController implements Activateab
 			popUpToTaxonomyCtrl();
 			doOpenTaxonomyHeader(ureq, taxonomyLevel);
 			doOpenTaxonomyList(ureq, taxonomyLevel, eductaionalTypeKeys, resourceTypes);
+			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createScrollTop());
 		}
 	}
 	

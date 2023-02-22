@@ -242,8 +242,9 @@ public class LDAPLoginModule extends AbstractSpringModule {
 		}
 
 		// Start LDAP cron sync job
-		if (isLdapSyncCronSync()) {
-			initCronSyncJob();
+		JobDetail jobDetail = initSyncJob();
+		if (jobDetail != null && isLdapSyncCronSync()) {
+			initCronSyncTrigger(jobDetail);
 		} else {
 			log.info("LDAP cron sync is disabled");
 		}
@@ -256,23 +257,36 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	protected void initFromChangedProperties() {
 		//
 	}
-
-	/**
-	 * Internal helper to initialize the cron syncer job
-	 */
-	private void initCronSyncJob() {
+	
+	private JobDetail initSyncJob() {
 		try {
 			// Create job with cron trigger configuration
 			JobDetail jobDetail = newJob(LDAPUserSynchronizerJob.class)
 					.withIdentity("LDAP_Cron_Syncer_Job", Scheduler.DEFAULT_GROUP)
+					.storeDurably()
 					.build();
+			scheduler.addJob(jobDetail, true);
+			return jobDetail;
+		} catch (Exception e) {
+			log.error("LDAP configuration in attribute 'ldapSyncCronSyncExpression' is not valid ({}). See http://quartz.sourceforge.net/javadoc/org/quartz/CronTrigger.html to learn more about the cron syntax. Disabling LDAP cron syncing",
+				ldapSyncCronSyncExpression, e);
+			return null;
+		}
+	}
+
+	/**
+	 * Internal helper to initialize the cron syncer job
+	 */
+	private void initCronSyncTrigger(JobDetail jobDetail) {
+		try {
 			Trigger trigger = newTrigger()
+					.forJob(jobDetail)
 				    .withIdentity("LDAP_Cron_Syncer_Trigger")
 				    .withSchedule(cronSchedule(ldapSyncCronSyncExpression))
 				    .build();
 
 			// Schedule job now
-			scheduler.scheduleJob(jobDetail, trigger);
+			scheduler.scheduleJob(trigger);
 			log.info("LDAP cron syncer is enabled with expression::{}", ldapSyncCronSyncExpression);
 		} catch (Exception e) {
 			setLdapSyncCronSync(false);

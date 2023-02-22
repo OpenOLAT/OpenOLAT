@@ -20,7 +20,9 @@
 package org.olat.ldap.model;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.id.Organisation;
 
@@ -39,7 +41,9 @@ public class LDAPOrganisationGroup {
 	private LDAPOrganisationGroup(Organisation organisation, String commonName, List<String> members) {
 		this.commonName = commonName;
 		this.organisation = organisation;
-		this.members = Set.copyOf(members);
+		this.members = members.stream()
+				.filter(Objects::nonNull)
+				.map(String::toLowerCase).collect(Collectors.toSet());
 	}
 	
 	public static LDAPOrganisationGroup valueOf(LDAPGroup group, Organisation organisation) {
@@ -55,7 +59,7 @@ public class LDAPOrganisationGroup {
 	}
 	
 	public boolean isMember(String member) {
-		return members.contains(member);
+		if(member == null) return false;
+		return members.contains(member.toLowerCase());
 	}
-
 }

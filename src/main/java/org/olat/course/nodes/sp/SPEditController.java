@@ -26,6 +26,9 @@
 package org.olat.course.nodes.sp;
 
 
+import java.util.Set;
+import java.util.function.Function;
+
 import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -38,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptionsConfigurationController;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
@@ -63,6 +67,9 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class SPEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
+	
+	private static final Set<String> UPLOAD_MIME_TYPE = Set.of("text/html", "application/zip", "application/pdf");
+	private static final String[] SELECTION_SUFFIX = new String[] { "html", "htm", "pdf" };
 
 	public static final String PANE_TAB_SPCONFIG = "pane.tab.spconfig";
 	private static final  String PANE_TAB_DELIVERYOPTIONS = "pane.tab.layout";
@@ -127,7 +134,8 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer, relFilePath,
 				relFilPathIsProposal, allowRelativeLinks, false,
 				new CourseInternalLinkTreeModel(course.getEditorTreeModel()),
-				new CourseToolLinkTreeModel(course.getCourseConfig(), getLocale()), edusharingProvider);
+				new CourseToolLinkTreeModel(course.getCourseConfig(), getLocale()), edusharingProvider,
+				UPLOAD_MIME_TYPE, SELECTION_SUFFIX, new PfdWarning());
 		combiLinkCtr.setEditable(hasEditRights(relFilePath));
 		listenTo(combiLinkCtr);
 		myContent.put("combiCtr", combiLinkCtr.getInitialComponent());		
@@ -216,5 +224,17 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
+	}
+	
+	private final class PfdWarning implements Function<String, String> {
+
+		@Override
+		public String apply(String filename) {
+			if (StringHelper.containsNonWhitespace(filename) && filename.toLowerCase().endsWith(".pdf")) {
+				return getTranslator().translate("error.pdf.document");
+			}
+			return null;
+		}
+		
 	}
 }

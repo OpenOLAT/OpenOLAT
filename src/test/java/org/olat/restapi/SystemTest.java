@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.core.util.StringHelper;
 import org.olat.restapi.system.vo.ClasseStatisticsVO;
 import org.olat.restapi.system.vo.DatabaseVO;
 import org.olat.restapi.system.vo.EnvironmentInformationsVO;
@@ -73,6 +74,7 @@ public class SystemTest extends OlatRestTestCase {
 		Assert.assertTrue(stats.isWriteFile());
 		Assert.assertTrue(stats.getConcurrentDispatchThreads() >= 0l);
 		Assert.assertTrue(stats.getSecureAuthenticatedCount() >= 0l);
+		Assert.assertTrue(StringHelper.containsNonWhitespace(stats.getUnixTimestamp()));
 		conn.shutdown();
 	}
 	
