@@ -66,7 +66,6 @@ import org.olat.course.nodes.gta.TaskRevisionDate;
 import org.olat.course.nodes.gta.model.DueDate;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.nodes.gta.ui.GTARunController;
-import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -120,6 +119,8 @@ class GTANotifications {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentEntryDAO courseNodeAssessmentDao;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTANotifications(Subscriber subscriber, boolean markedOnly, Locale locale, Date compareDate) {
 		CoreSpringFactory.autowireObject(this);
@@ -139,13 +140,13 @@ class GTANotifications {
 			return header;
 		}
 		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			return translator.translate("notifications.group.header", new String[]{ displayName });
+			return translator.translate("notifications.group.header", displayName);
 		}
 		
 		if(markedOnly) {
-			return translator.translate("notifications.individual.favorite.header", new String[]{ displayName });
+			return translator.translate("notifications.individual.favorite.header", displayName);
 		}
-		return translator.translate("notifications.individual.header", new String[]{ displayName });
+		return translator.translate("notifications.individual.header", displayName);
 	}
 
 	public List<SubscriptionListItem> getItems() {
@@ -237,7 +238,7 @@ class GTANotifications {
 		} else {
 			Task task = gtaManager.getTask(subscriberIdentity, taskList);
 			if(task != null) {
-				header = translator.translate("notifications.individual.header.task", new String[]{ getTaskName(task), displayName });
+				header = translator.translate("notifications.individual.header.task", getTaskName(task), displayName);
 			}
 		}
 		
@@ -291,6 +292,7 @@ class GTANotifications {
 		
 		createReviewAndRevisionsItems(task, assessedIdentity, null, coach);
 		createAcceptedItem(task, assessedIdentity, null, coach);
+		createAssignedCoachItem(task, assessedIdentity, coach);
 	}
 	
 	private void createBusinessGroupsSubscriptionInfo(Identity subscriberIdentity) {
@@ -320,7 +322,7 @@ class GTANotifications {
 			if(groups.size() == 1 && !owner && !membership.isCoach()) {
 				Task task = gtaManager.getTask(groups.get(0), taskList);
 				if(task != null) {
-					header = translator.translate("notifications.group.header.task", new String[]{ getTaskName(task), displayName });
+					header = translator.translate("notifications.group.header.task", getTaskName(task), displayName);
 				}
 			}
 			
@@ -564,6 +566,31 @@ class GTANotifications {
 		}
 	}
 	
+	private void createAssignedCoachItem(Task task, Identity assessedIdentity, boolean coach) {
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, gtaNode);
+		if(assessmentConfig.hasCoachAssignment()) {
+			AssessmentEntry assessmentEntry = courseNodeAssessmentDao.loadAssessmentEntry(assessedIdentity, courseEntry, gtaNode.getIdent());
+			if(assessmentEntry != null && assessmentEntry.getCoach() != null
+					&& assessmentEntry.getCoachAssignmentDate() != null && assessmentEntry.getCoachAssignmentDate().after(compareDate)) {
+				
+				String taskOrElementName = task == null ? gtaNode.getShortTitle() : getTaskName(task);
+				String[] params = new String[] { 
+					taskOrElementName,
+					courseEntry.getDisplayname(),
+					userManager.getUserDisplayName(assessedIdentity),
+					userManager.getUserDisplayName(assessmentEntry.getCoach()),
+				};
+				
+				if(coach) {
+					appendSubscriptionItem("notifications.coach.assignment", params, assessedIdentity, assessmentEntry.getCoachAssignmentDate(), coach);
+				} else {
+					appendSubscriptionItem("notifications.coach.assigned", params, assessedIdentity, assessmentEntry.getCoachAssignmentDate(), coach);
+				}
+			}
+		}
+	}
+	
 	private void createAcceptedItem(Task task, Identity assessedIdentity, BusinessGroup assessedGroup, boolean coach) {
 		if(task == null || task.getAcceptationDate() == null || coach) return;
 
@@ -752,7 +779,7 @@ class GTANotifications {
 			if(deadline != null &&  deadline.before(new Date())) {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
 				task = gtaManager.submitTask(task, gtaNode, numOfDocs, null, Role.auto);
-				gtaManager.log("Submit", (SubmitEvent)null, task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);
+				gtaManager.log("Submit", "submit documents", task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);
 			}
 		}
 		return task;

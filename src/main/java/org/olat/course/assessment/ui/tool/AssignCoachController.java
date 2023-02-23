@@ -159,7 +159,7 @@ public class AssignCoachController extends FormBasicController {
 		if(selectedIndexes.size() == 1) {
 			Identity coach = tableModel.getObject(selectedIndexes.iterator().next().intValue());
 			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
-			courseAssessmentService.assignCoach(assessmentEntry, coach);
+			courseAssessmentService.assignCoach(assessmentEntry, coach, assessedUserCourseEnv.getCourseEnvironment(), courseNode);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

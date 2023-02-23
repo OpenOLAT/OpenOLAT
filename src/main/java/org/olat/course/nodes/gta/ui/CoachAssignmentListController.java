@@ -509,14 +509,14 @@ public class CoachAssignmentListController extends FormBasicController {
 				AssessmentEntry assessmentEntry = row.getAssessmentEntry();
 				if(NOT_ASSIGNED.equals(selectedCoachKey)) {
 					if(assessmentEntry != null) {
-						courseAssessmentService.unassignCoach(assessmentEntry, false);
+						courseAssessmentService.unassignCoach(assessmentEntry, false, coachCourseEnv.getCourseEnvironment(), gtaNode);
 					}
 				} else {
 					Identity currentCoach = assessmentEntry.getCoach();
 					Identity selectedCoach = identityKeyToCoach.computeIfAbsent(selectedCoachKey,
 							identityKey -> securityManager.loadIdentityByKey(Long.valueOf(selectedCoachKey)));
 					if(!Objects.equals(currentCoach, selectedCoach)) {
-						courseAssessmentService.assignCoach(assessmentEntry, selectedCoach);
+						courseAssessmentService.assignCoach(assessmentEntry, selectedCoach, coachCourseEnv.getCourseEnvironment(), gtaNode);
 					}	
 				}	
 			}

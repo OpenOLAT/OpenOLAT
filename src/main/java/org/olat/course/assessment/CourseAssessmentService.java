@@ -36,6 +36,7 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -369,9 +370,9 @@ public interface CourseAssessmentService {
 	 * @param assessmentEntry
 	 * @param coach If null, will added
 	 */
-	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach);
+	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach, CourseEnvironment courseEnv, CourseNode courseNode);
 	
-	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace);
+	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode);
 	
 	public void unassignCoach(RepositoryEntryRef entry, IdentityRef coach);
 

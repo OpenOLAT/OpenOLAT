@@ -328,6 +328,11 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	}
 	
 	private void doCoachAssignment(UserRequest ureq) {
+		if(coachAssignmentListCtrl != null) {
+			assessedIdentityStackPanel.popController(coachAssignmentListCtrl);
+			this.removeAsListenerAndDispose(coachAssignmentListCtrl);
+		}
+
 		List<Identity> assessedIdentities = participantListCtrl.getAssessableIdentities();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Assignments", 0l);

@@ -63,7 +63,9 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.st.assessment.STRootPassedEvaluator;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
@@ -110,6 +112,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private AssessmentHandlerRegistry assessmentHandlerRegistry;
@@ -127,6 +131,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private TaskExecutorManager taskExecutorManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+
 
 	private AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
 		return assessmentHandlerRegistry.getAssessmentHandler(courseNode);
@@ -596,7 +601,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach) {
+	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach, CourseEnvironment courseEnv, CourseNode courseNode) {
 		if(coach == null) {
 			List<Identity> identities = repositoryEntryRelationDao.getRelatedMembers(assessmentEntry.getRepositoryEntry(), assessmentEntry.getIdentity(), GroupRoles.participant, GroupRoles.coach);
 			if(identities.size() > 1) {
@@ -616,16 +621,19 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 		dbInstance.commit();
 		
+		if(courseNode instanceof GTACourseNode gtaNode) {
+			gtaManager.markNews(courseEnv, gtaNode);
+		}
 		// Send mail
 	}
 
 	@Override
-	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace) {
+	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode) {
 		assessmentEntry.setCoach(null);
 		assessmentEntry.setCoachAssignmentDate(null);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		if(replace) {
-			assignCoach(assessmentEntry, null);
+			assignCoach(assessmentEntry, null, courseEnv, courseNode);
 		}
 	}
 
@@ -639,11 +647,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 				for(AssessmentEntry entry:entries) {
 					CourseNode courseNode = course.getRunStructure().getNode(entry.getSubIdent());
 					if(courseNode == null) {
-						unassignCoach(entry, false);
+						unassignCoach(entry, false, course.getCourseEnvironment(), courseNode);
 					} else {
 						AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
 						boolean replace = assessmentConfig.getCoachAssignmentMode() == CoachAssignmentMode.automatic;
-						unassignCoach(entry, replace);
+						unassignCoach(entry, replace, course.getCourseEnvironment(), courseNode);
 					}
 				}
 			}
