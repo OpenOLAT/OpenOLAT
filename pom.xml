@@ -1542,6 +1542,7 @@
 						<!--
 						<attachClasses>true</attachClasses>
 						-->
+						<archiveClasses>true</archiveClasses>
 						<directory>src/main/java</directory>
 						<archive>
 							<manifest>
