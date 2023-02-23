@@ -154,14 +154,14 @@ public class SectionEditController extends FormBasicController {
 			Date begin = beginDateEl.getDate();
 			Date end = endDateEl.getDate();
 			if(begin != null && end != null && end.before(begin)) {
-				endDateEl.setErrorKey("error.begin.after.end", null);
+				endDateEl.setErrorKey("error.begin.after.end");
 				allOk &= false;
 			}
 		}
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

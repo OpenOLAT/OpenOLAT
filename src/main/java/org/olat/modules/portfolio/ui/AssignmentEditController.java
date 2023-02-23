@@ -404,14 +404,14 @@ public class AssignmentEditController extends FormBasicController {
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(sectionsEl != null) {
 			sectionsEl.clearError();
 			if(!sectionsEl.isOneSelected()) {
-				sectionsEl.setErrorKey("form.legende.mandatory", null);
+				sectionsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -422,12 +422,12 @@ public class AssignmentEditController extends FormBasicController {
 			AssignmentType type = AssignmentType.valueOf(typeEl.getSelectedKey());
 			if(type == AssignmentType.form) {
 				if(formEntry == null) {
-					selectFormLayout.setErrorKey("form.legende.mandatory", null);
+					selectFormLayout.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}	
 			}
 		} else {
-			typeEl.setErrorKey("form.legende.mandatory", null);
+			typeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -435,7 +435,7 @@ public class AssignmentEditController extends FormBasicController {
 		if(typeEl.isOneSelected() && AssignmentType.document.name().equals(typeEl.getSelectedKey())) {
 			List<?> files = (List<?>)filesLayout.contextGet("files");
 			if(files == null || files.isEmpty()) {
-				documentUploadEl.setErrorKey("form.legende.mandatory", null);
+				documentUploadEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -549,7 +549,7 @@ public class AssignmentEditController extends FormBasicController {
 		}
 
 		if (fileExists) {
-			documentUploadEl.setErrorKey("attachments.error.file.exists", null);
+			documentUploadEl.setErrorKey("attachments.error.file.exists");
 			FileUtils.deleteFile(documentUploadEl.getUploadFile());
 			documentUploadEl.showError(true);
 		} else {

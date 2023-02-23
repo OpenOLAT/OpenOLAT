@@ -285,28 +285,28 @@ public class InvitationEditRightsController extends FormBasicController {
 				if (MailHelper.isValidEmailAddress(mail)) {
 					List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(mail));
 					if (isAtLeastOneUser(shareWithIdentities)) {
-						mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[] { mail });
+						mailEl.setErrorKey("map.share.with.mail.error.olatUser", mail);
 						allOk &= false;
 					}
 				} else {
-					mailEl.setErrorKey("error.mail.invalid", null);
+					mailEl.setErrorKey("error.mail.invalid");
 					allOk &= false;
 				}
 			} else {
-				mailEl.setErrorKey("form.legende.mandatory", null);
+				mailEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
 		
 		firstNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(firstNameEl.getValue())) {
-			firstNameEl.setErrorKey("form.legende.mandatory", null);
+			firstNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		lastNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(lastNameEl.getValue())) {
-			lastNameEl.setErrorKey("form.legende.mandatory", null);
+			lastNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

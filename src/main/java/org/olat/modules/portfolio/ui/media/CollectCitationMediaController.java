@@ -286,7 +286,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

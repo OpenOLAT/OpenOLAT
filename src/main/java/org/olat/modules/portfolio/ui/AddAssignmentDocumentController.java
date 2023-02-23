@@ -77,7 +77,7 @@ public class AddAssignmentDocumentController extends FormBasicController {
 		
 		fileEl.clearError();
 		if(fileEl.getUploadFile() == null) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

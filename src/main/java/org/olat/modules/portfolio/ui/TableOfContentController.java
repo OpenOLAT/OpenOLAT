@@ -557,7 +557,7 @@ public class TableOfContentController extends BasicController implements TooledC
 			cleanUp();
 		} else if(binderMetadataCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				binder = binderMetadataCtrl.getBinder();
+				binder = portfolioService.getBinderByKey(binderMetadataCtrl.getBinder().getKey());
 				loadModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}

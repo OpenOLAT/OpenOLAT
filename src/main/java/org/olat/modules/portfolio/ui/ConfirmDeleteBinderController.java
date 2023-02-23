@@ -112,13 +112,13 @@ public class ConfirmDeleteBinderController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("form.mandatory.hover", null);
+			acknowledgeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
 		acknowledge2El.clearError();
 		if(!acknowledge2El.isAtLeastSelected(1)) {
-			acknowledge2El.setErrorKey("form.mandatory.hover", null);
+			acknowledge2El.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

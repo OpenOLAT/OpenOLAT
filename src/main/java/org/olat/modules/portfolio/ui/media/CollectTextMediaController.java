@@ -154,7 +154,7 @@ public class CollectTextMediaController extends FormBasicController implements P
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

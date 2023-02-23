@@ -176,7 +176,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			allOk &= fileEl.validate();
@@ -184,7 +184,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

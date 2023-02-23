@@ -144,7 +144,7 @@ public class RestorePageController extends FormBasicController {
 		if(sectionsEl != null && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 			sectionsEl.clearError();
 			if(!sectionsEl.isOneSelected() || !StringHelper.containsNonWhitespace(sectionsEl.getSelectedKey())) {
-				sectionsEl.setErrorKey("form.legende.mandatory", null);
+				sectionsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

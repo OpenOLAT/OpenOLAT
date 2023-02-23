@@ -168,20 +168,20 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		String fileName = fileNameEl.getValue();
 		fileNameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(fileName)) {
-			fileNameEl.setErrorKey("form.mandatory.hover", null);
+			fileNameEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
 		} else {
 			// update in GUI so user sees how we optimized
 			fileNameEl.setValue(fileName);
 			if (invalidFilenName(fileName)) {
-				fileNameEl.setErrorKey("create.file.name.notvalid", null);
+				fileNameEl.setErrorKey("create.file.name.notvalid");
 				allOk = false;
 			}
 		}

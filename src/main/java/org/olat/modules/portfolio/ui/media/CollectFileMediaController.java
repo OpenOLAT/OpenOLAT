@@ -171,13 +171,13 @@ public class CollectFileMediaController extends FormBasicController implements P
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

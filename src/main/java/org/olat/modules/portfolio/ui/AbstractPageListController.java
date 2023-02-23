@@ -1173,7 +1173,7 @@ public abstract class AbstractPageListController extends FormBasicController imp
 	
 	public boolean checkAndSetEmptySelectionError() {
 		if (tableEl.getMultiSelectedIndex().isEmpty()) {
-			tableEl.setErrorKey("page.list.selection.empty.error", null);
+			tableEl.setErrorKey("page.list.selection.empty.error");
 			return false;
 		}
 		

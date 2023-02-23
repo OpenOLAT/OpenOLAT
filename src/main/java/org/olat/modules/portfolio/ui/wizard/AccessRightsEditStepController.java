@@ -70,7 +70,7 @@ public class AccessRightsEditStepController extends StepFormBasicController {
 		accessRightsCtrl.getInitialFormItem().clearError();
 		List<AccessRightChange> accessRightChanges = accessRightsCtrl.getChanges();
 		if(accessRightChanges == null || accessRightChanges.isEmpty()) {
-			accessRightsCtrl.getInitialFormItem().setErrorKey("error.missing.permissions", null);
+			accessRightsCtrl.getInitialFormItem().setErrorKey("error.missing.permissions");
 			allOk &= false;
 		}
 		

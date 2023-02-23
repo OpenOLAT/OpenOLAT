@@ -139,16 +139,16 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		
 		fileEl.clearError();
 		if(fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(getHandler() == null) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} 
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
