@@ -17,39 +17,19 @@
 
 	<div class="previewPanel col-sm-6">
 		<div id="qtiworks_id_mathEntryMessages_${responseIdentifier}"></div>
-        <div id="qtiworks_id_mathEntryPreview_${responseIdentifier}" class="math">
-          ## Keep this in 
-          <math xmlns="http://www.w3.org/1998/Math/MathML"></math>
+        <div id="qtiworks_id_mathEntryPreview_${responseIdentifier}">
         </div>
 	</div>
 	<script>
 	o_info.latexit = true;
-
-	UpConversionAjaxController.setUpConversionServiceUrl('$r.contextPath()/math/verifyAsciiMath');
-    UpConversionAjaxController.setDelay(300);
-	
-	QtiWorksRendering.registerReadyCallback(function() {
-		var inputControlId = 'qtiworks_id_mathEntryInput_$responseIdentifier';
-		var messageContainerId = 'qtiworks_id_mathEntryMessages_$responseIdentifier';
-		var previewContainerId = 'qtiworks_id_mathEntryPreview_$responseIdentifier';
-		var helpContainerId = 'qtiworks_id_mathEntryHelp_$responseIdentifier';
-
-		var upConversionAjaxControl = UpConversionAjaxController.createUpConversionAjaxControl(messageContainerId, previewContainerId);
-		var widget = AsciiMathInputController.bindInputWidget(inputControlId, upConversionAjaxControl);
-		widget.setHelpButtonId(helpContainerId);
-		widget.init();
-		#if($r.isBadResponse($responseIdentifier))
-			widget.show('$asciiMathInput', {
-				cmathFailures: {}
-			});
-		#elseif($r.isNullValue($responseValue))
-			widget.syncWithInput();
-		#else
-			widget.show('$asciiMathInput', {
-				cmath: '$r.escapeForJavascriptString($r.getResponseValueForField($responseValue,"CMathML"))',
-				pmathBracketed: '$r.escapeForJavascriptString($r.getResponseValueForField($responseValue,"PMathMLBracketed"))'
-			});
-		#end
+	jQuery(function() {
+		jQuery("#qtiworks_id_mathEntryInput_${responseIdentifier}").on('keyup change', function(el) {
+			const tex = jQuery("#qtiworks_id_mathEntryInput_${responseIdentifier}").val();
+			jQuery("#qtiworks_id_mathEntryPreview_${responseIdentifier}").text('$$' + tex + '$$');
+			if (MathJax && MathJax.startup) {
+				MathJax.typeset();
+			}
+		});
 	});
 	</script>
 </div>

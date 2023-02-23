@@ -49,6 +49,7 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	private final FormLink markLink;
 	private final AssessmentEntry assessmentEntry;
 	private final String coachFullName;
+	private final Long coachKey;
 
 	private final int numOfSubmissionDocs;
 	private final int numOfCollectedDocs;
@@ -59,7 +60,8 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition,
 			DueDate submissionDueDate, DueDate lateSubmissionDueDate, Date syntheticSubmissionDate,
 			boolean hasSubmittedDocuments, FormLink markLink, FormLink toolsLink,
-			AssessmentEntry assessmentEntry, int numOfSubmissionDocs, int numOfCollectedDocs, String coachFullName) {
+			AssessmentEntry assessmentEntry, int numOfSubmissionDocs, int numOfCollectedDocs,
+			String coachFullName, Long coachKey) {
 		super(identity);
 		this.task = task;
 		this.taskDefinition = taskDefinition;
@@ -73,6 +75,7 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 		this.numOfSubmissionDocs = numOfSubmissionDocs;
 		this.numOfCollectedDocs = numOfCollectedDocs;
 		this.coachFullName = coachFullName;
+		this.coachKey = coachKey;
 	}
 
 	@Override
@@ -160,6 +163,10 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	
 	public String getCoachFullName() {
 		return coachFullName;
+	}
+	
+	public Long getCoachKey() {
+		return coachKey;
 	}
 	
 	public FormLink getToolsLink() {

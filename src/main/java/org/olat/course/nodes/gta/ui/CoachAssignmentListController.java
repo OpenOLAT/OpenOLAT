@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -35,6 +36,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -45,8 +48,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
@@ -55,6 +60,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -92,8 +98,11 @@ public class CoachAssignmentListController extends FormBasicController {
 	private static final String FILTER_GROUP_COACH = "groupcoach";
 	private static final String FILTER_CURRICULUM_COACH = "curriculumcoach";
 	
+	private static final String FILTER_PARTICIPANT = "participant";
+	
 	private FormLink backLink;
 	private FlexiTableElement tableEl;
+	private FormLink applyAssignmentButton;
 	private FormLink randomAssignmentButton;
 	private MultipleSelectionElement coachFilterEl;
 	private CoachAssignmentListTableModel tableModel;
@@ -106,6 +115,7 @@ public class CoachAssignmentListController extends FormBasicController {
 	private final GTACourseNode gtaNode;
 	private List<CoachColumn> coachesColumns;
 	private final RepositoryEntry repoEntry;
+	private final List<Identity> assessedIdentities;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> coachPropertyHandlers;
@@ -133,6 +143,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		this.gtaNode = gtaNode;
 		this.coachCourseEnv = coachCourseEnv;
+		this.assessedIdentities = new ArrayList<>(assessedIdentities);
 
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -149,7 +160,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		
 		initForm(ureq);
-		loadModel(assessedIdentities);
+		loadModel(this.assessedIdentities);
 		loadNumberedCoachColumnHeaders();
 	}
 
@@ -166,7 +177,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		randomAssignmentButton = uifactory.addFormLink("assign.random", formLayout, Link.BUTTON);
 		randomAssignmentButton.setIconLeftCSS("o_icon o_icon_shuffle");
 		
-		uifactory.addFormSubmitButton("apply.assignement", formLayout);
+		applyAssignmentButton = uifactory.addFormLink("apply.assignement", formLayout, Link.BUTTON);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
@@ -192,6 +203,23 @@ public class CoachAssignmentListController extends FormBasicController {
 
 		tableModel = new CoachAssignmentListTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "coachTable", tableModel, 50, false, getTranslator(), formLayout);
+		tableEl.setSearchEnabled(true);
+		
+		initFilters();
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		
+		SelectionValues assignedCoachValues = new SelectionValues();
+		for(Identity assessedIdentity:assessedIdentities) {
+			assignedCoachValues.add(SelectionValues.entry(assessedIdentity.getKey().toString(), userManager.getUserDisplayName(assessedIdentity)));
+		}
+		FlexiTableMultiSelectionFilter participantFilter = new FlexiTableMultiSelectionFilter(translate("filter.participants"),
+				FILTER_PARTICIPANT, assignedCoachValues, true);
+		filters.add(participantFilter);
+
+		tableEl.setFilters(true, filters, false, true);
 	}
 	
 	private void loadCoaches() {
@@ -279,7 +307,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		}
 	}
 	
-	private void loadModel(List<Identity> assessedIdentities) {
+	private void loadModel(List<Identity> participants) {
 		Map<Long,MemberView> participantsMap = participantsViews.stream()
 				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
 		Map<String,MemberView> coachesStringMap = coachesColumns.stream().map(CoachColumn::getMemberView)
@@ -302,8 +330,8 @@ public class CoachAssignmentListController extends FormBasicController {
 		String[] coachKeys = coachKeyValues.keys();
 		String[] coachValues = coachKeyValues.values();
 		
-		List<IdentityAssignmentRow> rows = new ArrayList<>(assessedIdentities.size());
-		for(Identity assessedIdentity: assessedIdentities) {
+		List<IdentityAssignmentRow> rows = new ArrayList<>(participants.size());
+		for(Identity assessedIdentity: participants) {
 			TaskLight task = identityToTasks.get(assessedIdentity.getKey());
 			String taskName = task == null ? null : task.getTaskName();
 			AssessmentEntry assessmentEntry = identityToAssessments.get(assessedIdentity.getKey());
@@ -398,21 +426,71 @@ public class CoachAssignmentListController extends FormBasicController {
 			fireEvent(ureq, Event.BACK_EVENT);
 		} else if(coachFilterEl == source) {
 			doFilterCoaches();
+		} else if(this.applyAssignmentButton == source) {
+			doAssignCoaches();
+			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(randomAssignmentButton == source) {
 			doRandomAssignCoaches();
+		} else if(tableEl == source) {
+			if(event instanceof FlexiTableSearchEvent ftse) {
+				doFilterParticipants(ftse.getFilters(), ftse.getSearch());
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doAssignCoaches();
-		fireEvent(ureq, Event.DONE_EVENT);
+		//
 	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doFilterParticipants(List<FlexiTableFilter> filters, String search) {
+		Set<Long> identityKeys = null;
+		FlexiTableFilter participantFilter = FlexiTableFilter.getFilter(filters, FILTER_PARTICIPANT);
+		if(participantFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)participantFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				identityKeys = filterValues.stream()
+						.map(Long::valueOf)
+						.collect(Collectors.toSet());
+			}
+		}
+		
+		List<Identity> filteredIdentities;
+		if(StringHelper.containsNonWhitespace(search) || (identityKeys != null && !identityKeys.isEmpty())) {
+			search = StringHelper.containsNonWhitespace(search) ? search.toLowerCase() : null;
+			filteredIdentities = new ArrayList<>(assessedIdentities.size());
+			for(Identity assessedIdentity:assessedIdentities) {
+				if(accept(assessedIdentity, identityKeys, search)) {
+					filteredIdentities.add(assessedIdentity);
+				}
+			}
+		} else {
+			filteredIdentities = assessedIdentities;
+		}
+		loadModel(filteredIdentities);
+	}
+	
+	private boolean accept(Identity identity, Set<Long> identityKeys, String search) {
+		if(identityKeys != null && identityKeys.contains(identity.getKey())) {
+			return true;
+		}
+		if(search != null) {
+			for(UserPropertyHandler userPropHandler:userPropertyHandlers) {
+				if(userPropHandler == null) continue;
+				
+				String val = identity.getUser().getProperty(userPropHandler.getName(), getLocale());
+				if(val != null && val.toLowerCase().contains(search)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private void doFilterCoaches() {

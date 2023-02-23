@@ -82,7 +82,7 @@
 		<version.selenium>4.8.0</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
 		<activemq.artemis.version>2.28.0</activemq.artemis.version>
-		<qtiworks.version>1.0.29</qtiworks.version>
+		<qtiworks.version>1.0.30</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1542,6 +1542,7 @@
 						<!--
 						<attachClasses>true</attachClasses>
 						-->
+						<archiveClasses>true</archiveClasses>
 						<directory>src/main/java</directory>
 						<archive>
 							<manifest>

@@ -95,7 +95,7 @@ public abstract class AbstractToolsController extends BasicController {
 	protected final AssessmentConfig assessmentConfig;
 	
 	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	protected CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private GradeModule gradeModule;
 	@Autowired
@@ -257,7 +257,7 @@ public abstract class AbstractToolsController extends BasicController {
 		}
 	}
 	
-	private void cleanUp() {
+	protected void cleanUp() {
 		removeAsListenerAndDispose(resetAttemptsConfirmationCtrl);
 		removeAsListenerAndDispose(applyGradeCtrl);
 		removeAsListenerAndDispose(cmc);

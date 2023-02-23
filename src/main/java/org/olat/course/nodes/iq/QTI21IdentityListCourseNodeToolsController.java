@@ -44,7 +44,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
@@ -140,8 +139,6 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private TeamsModule teamsModule;
 	@Autowired
 	private BigBlueButtonModule bigBlueButtonModule;
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
@@ -315,8 +312,10 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
-	
-	private void cleanUp() {
+
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeAsListenerAndDispose(removeCompensationExtraTimeCtrl);
 		removeAsListenerAndDispose(compensationExtraTimeCtrl);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);

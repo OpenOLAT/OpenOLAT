@@ -41,11 +41,11 @@ implements SortableFlexiTableDataModel<IdentityAssignmentRow> {
 	
 	private Locale locale;
 	
-	public CoachAssignmentListTableModel( FlexiTableColumnModel columnModel, Locale locale) {
+	public CoachAssignmentListTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 	}
-	
+
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
