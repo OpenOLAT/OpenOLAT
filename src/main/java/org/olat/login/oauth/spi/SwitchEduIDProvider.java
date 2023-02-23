@@ -81,7 +81,7 @@ public class SwitchEduIDProvider implements OAuthSPI {
 		return new ServiceBuilder(oauthModule.getSwitchEduIDApiKey())
                 .apiSecret(oauthModule.getSwitchEduIDApiSecret())
                 .callback(oauthModule.getCallbackUrl())
-                .defaultScope("openid email")
+                .defaultScope("openid profile email https://login.eduid.ch/authz/User.Read")
                 .responseType("code")
                 .build(new SwitchEduIDApi(this));
 	}
