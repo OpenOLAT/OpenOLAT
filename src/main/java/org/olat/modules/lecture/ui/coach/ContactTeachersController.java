@@ -191,22 +191,22 @@ public class ContactTeachersController extends FormBasicController {
 		teachersEl.clearError();
 		masterCoachesEl.clearError();
 		if(withButtons && getRecipients().isEmpty()) {
-			teachersEl.setErrorKey("form.legende.mandatory", null);
-			masterCoachesEl.setErrorKey("form.legende.mandatory", null);
+			teachersEl.setErrorKey("form.legende.mandatory");
+			masterCoachesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())
 				&& (withButtons || teachersEl.isAtLeastSelected(1) || masterCoachesEl.isAtLeastSelected(1))) {
-			subjectEl.setErrorKey("form.legende.mandatory", null);
+			subjectEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		bodyEl.clearError();
 		if(!StringHelper.containsNonWhitespace(bodyEl.getValue())
 				&& (withButtons || teachersEl.isAtLeastSelected(1) || masterCoachesEl.isAtLeastSelected(1))) {
-			bodyEl.setErrorKey("form.legende.mandatory", null);
+			bodyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

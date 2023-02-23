@@ -1034,7 +1034,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 						.createAndInitUserCourseEnvironment(identity, course.getCourseEnvironment());
 				AssessmentEntry entry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 				if(entry.getCoach() == null) {
-					courseAssessmentService.assignCoach(entry, null);
+					courseAssessmentService.assignCoach(entry, null, course.getCourseEnvironment(), this);
 				}
 			}
 		} else if(!assign) {

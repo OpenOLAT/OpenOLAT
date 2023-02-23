@@ -78,7 +78,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 				si = notificationsManager.getNoSubscriptionInfo();
 			}
 		} catch (Exception e) {
-			log.error("Cannot create gtask notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Cannot create gtask notifications for subscriber: {}", subscriber.getKey(), e);
 			si = notificationsManager.getNoSubscriptionInfo();
 		}
 		return si;
@@ -91,9 +91,9 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 			Translator translator = Util.createPackageTranslator(GTARunController.class, locale);
 			Long resId = subscriber.getPublisher().getResId();
 			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			title = translator.translate("notifications.header", new String[]{ displayName });
+			title = translator.translate("notifications.header", displayName);
 		} catch (Exception e) {
-			log.error("Error while creating task notifications for subscriber: " + subscriber.getKey(), e);
+			log.error("Error while creating task notifications for subscriber: {}", subscriber.getKey(), e);
 			title = "-";
 		}
 		return title;

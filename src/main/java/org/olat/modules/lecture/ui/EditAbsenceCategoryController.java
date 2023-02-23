@@ -96,19 +96,19 @@ public class EditAbsenceCategoryController extends FormBasicController {
 		
 		enableEl.clearError();
 		if(!enableEl.isOneSelected()) {
-			enableEl.setErrorKey("form.legende.mandatory", null);
+			enableEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		descriptionEl.clearError();
 		if(!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
-			descriptionEl.setErrorKey("form.legende.mandatory", null);
+			descriptionEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

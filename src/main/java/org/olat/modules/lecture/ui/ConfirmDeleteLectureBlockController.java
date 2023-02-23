@@ -122,7 +122,7 @@ public class ConfirmDeleteLectureBlockController extends FormBasicController {
 		if(confirmEl != null) {
 			confirmEl.clearError();
 			if(!confirmEl.isAtLeastSelected(1)) {
-				confirmEl.setErrorKey("form.legende.mandatory", null);
+				confirmEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

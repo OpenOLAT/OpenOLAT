@@ -64,7 +64,7 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 		try {
 			final File root = new File(WebappHelper.getContextRoot(), "WEB-INF/classes");
 			final Path fPath = root.toPath();
-			if(!fPath.toFile().exists()) {
+			if(fPath.toFile().exists()) {
 				loadClasspath(fPath, numOfTemplates, context);
 			} else {
 				CodeSource src = VelocityTemplatesPreWarm.class.getProtectionDomain().getCodeSource();

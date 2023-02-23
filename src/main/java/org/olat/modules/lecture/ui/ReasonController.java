@@ -121,7 +121,7 @@ public class ReasonController extends FormBasicController {
 		
 		absenceCategoriesEl.clearError();
 		if(absenceCategoriesEl.isVisible() && !absenceCategoriesEl.isOneSelected()) {
-			absenceCategoriesEl.setErrorKey("form.legende.mandatory", null);
+			absenceCategoriesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

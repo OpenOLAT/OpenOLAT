@@ -188,8 +188,9 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		
 		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", formLayout);
 		assessmentFollowupTimeEl = uifactory.addTextElement("lecture.assessment.mode.followup.time", "lecture.assessment.mode.followup.time", 8, "", formLayout);
-		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 8, "", formLayout);
-		assessmentSafeExamBrowserEl = uifactory.addTextElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 8, "", formLayout);
+		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 1024, "", formLayout);
+		assessmentSafeExamBrowserEl = uifactory.addTextAreaElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 16000, 4, 60, false, false, "", formLayout);
+		assessmentSafeExamBrowserEl.setMaxLength(16000);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
