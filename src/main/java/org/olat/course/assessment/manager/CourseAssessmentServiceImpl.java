@@ -23,11 +23,13 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -37,9 +39,18 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
+import org.olat.core.util.mail.MailerResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
@@ -92,6 +103,7 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -113,6 +125,12 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private MailManager mailManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
@@ -616,6 +634,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			return;
 		}
 		
+		Identity currentCoach = assessmentEntry.getCoach();
+
 		assessmentEntry.setCoach(coach);
 		assessmentEntry.setCoachAssignmentDate(new Date());
 		assessmentService.updateAssessmentEntry(assessmentEntry);
@@ -624,16 +644,36 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		if(courseNode instanceof GTACourseNode gtaNode) {
 			gtaManager.markNews(courseEnv, gtaNode);
 		}
-		// Send mail
+		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		Identity assessedIdentity = assessmentEntry.getIdentity();
+		sendMail("notifications.mail.type.assign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
+				coach, assessedIdentity, coach, courseEntry, courseNode);
+		sendMail("notifications.mail.type.assign", "notifications.mail.to.participant.assigment.subject", "notifications.mail.to.participant.assigment.body",
+				assessedIdentity, assessedIdentity, coach, courseEntry, courseNode);
+		if(currentCoach != null) {
+			currentCoach = securityManager.loadIdentityByKey(currentCoach.getKey());
+			sendMail("notifications.mail.type.unassign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
+					currentCoach, assessedIdentity, currentCoach, courseEntry, courseNode);
+		}
 	}
-
+	
 	@Override
 	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode) {
+		final Identity currentCoach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
+		
 		assessmentEntry.setCoach(null);
 		assessmentEntry.setCoachAssignmentDate(null);
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		if(replace) {
 			assignCoach(assessmentEntry, null, courseEnv, courseNode);
+		}
+		
+		if(currentCoach != null && !replace) {
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			Identity assessedIdentity = assessmentEntry.getIdentity();
+			sendMail("notifications.mail.type.unassign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
+					currentCoach, assessedIdentity, currentCoach, courseEntry, courseNode);
 		}
 	}
 
@@ -655,6 +695,48 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 					}
 				}
 			}
+		}
+	}
+	
+	@Override
+	public void orderCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv,
+			CourseNode courseNode) {
+		if(assessmentEntry.getCoach() == null) return;
+		
+		Identity coach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
+		
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		Identity assessedIdentity = assessmentEntry.getIdentity();
+		sendMail("notifications.mail.type.order", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
+				coach, assessedIdentity, coach, courseEntry, courseNode);
+	}
+
+	private void sendMail(String actionI18nKey, String i18nSubjectKey, String i18nBodyKey, Identity recipient,
+			Identity assessedIdentity, Identity coach, RepositoryEntry courseEntry, CourseNode courseNode) {
+		
+		String language = recipient.getUser().getPreferences().getLanguage();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
+		Translator translator = Util.createPackageTranslator(CourseAssessmentService.class, locale);
+		
+		String[] args = new String[] {
+			translator.translate(actionI18nKey),
+			courseEntry.getDisplayname(),
+			courseEntry.getExternalRef(),
+			courseNode.getShortTitle(),
+			userManager.getUserDisplayName(assessedIdentity),
+			userManager.getUserDisplayName(coach)
+		};
+		
+		String subject = translator.translate(i18nSubjectKey, args);
+		String body = translator.translate(i18nBodyKey, args);
+		
+		MailerResult result = new MailerResult();
+		MailTemplate template = new CoachAssignmentMailTemplate(subject, body, courseEntry, courseNode);
+		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]");
+		
+		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
+		if(bundle != null) {
+			mailManager.sendMessageAsync(bundle);
 		}
 	}
 }

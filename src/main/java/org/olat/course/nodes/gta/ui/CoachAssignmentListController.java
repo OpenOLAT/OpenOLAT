@@ -44,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -102,8 +103,8 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	private FormLink backLink;
 	private FlexiTableElement tableEl;
-	private FormLink applyAssignmentButton;
 	private FormLink randomAssignmentButton;
+	private FormSubmit applyAssignmentButton;
 	private MultipleSelectionElement coachFilterEl;
 	private CoachAssignmentListTableModel tableModel;
 	private final FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -177,7 +178,8 @@ public class CoachAssignmentListController extends FormBasicController {
 		randomAssignmentButton = uifactory.addFormLink("assign.random", formLayout, Link.BUTTON);
 		randomAssignmentButton.setIconLeftCSS("o_icon o_icon_shuffle");
 		
-		applyAssignmentButton = uifactory.addFormLink("apply.assignement", formLayout, Link.BUTTON);
+		applyAssignmentButton = uifactory.addFormSubmitButton("apply.assignement", formLayout);
+		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
@@ -441,7 +443,8 @@ public class CoachAssignmentListController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		doAssignCoaches();
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
