@@ -42,6 +42,7 @@ public class CourseElementMock implements CourseElement {
 	private boolean autoGrade;
 	private Mode passedMode;
 	private BigDecimal cutValue;
+	private boolean coachAssignment;
 	private RepositoryEntry repositoryEntry;
 	private String subIdent;
 	
@@ -133,6 +134,15 @@ public class CourseElementMock implements CourseElement {
 
 	public void setCutValue(BigDecimal cutValue) {
 		this.cutValue = cutValue;
+	}
+	
+	@Override
+	public boolean isCoachAssignment() {
+		return coachAssignment;
+	}
+
+	public void setCoachAssignment(boolean coachAssignment) {
+		this.coachAssignment = coachAssignment;
 	}
 
 	@Override

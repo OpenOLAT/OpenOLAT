@@ -164,6 +164,14 @@ public class UserShortDescription extends BasicController {
 			mainVC.contextRemove("additionalRows");
 		}	
 	}
+	
+	public void setTitle(String title) {
+		if (title != null) {
+			mainVC.contextPut("title", title);
+		} else {
+			mainVC.contextRemove("title");
+		}
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

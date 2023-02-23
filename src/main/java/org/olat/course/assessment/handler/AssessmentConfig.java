@@ -33,6 +33,11 @@ public interface AssessmentConfig {
 		evaluated
 	}
 	
+	public enum CoachAssignmentMode {
+		manual,
+		automatic	
+	}
+	
 	/**
 	 * Real assessments are in efficiency statements and are shown in the assessment tool.
 	 * 
@@ -154,5 +159,9 @@ public interface AssessmentConfig {
 	public boolean isExternalGrading();
 	
 	public boolean isObligationOverridable();
+	
+	public boolean hasCoachAssignment();
+	
+	public CoachAssignmentMode getCoachAssignmentMode();
 
 }

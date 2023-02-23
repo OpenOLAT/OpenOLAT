@@ -60,5 +60,7 @@ public interface CoachingAssessmentEntry {
 	boolean isOwner();
 
 	boolean isCoach();
+	
+	Identity getAssignedCoach();
 
 }

@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -62,6 +63,9 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.duedate.DueDateConfig;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -100,6 +104,8 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -163,6 +169,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
 	public static final String GTASK_ASSIGNEMENT_TYPE_AUTO = "auto";
 	public static final String GTASK_ASSIGNEMENT_TYPE_MANUAL = "manual";
+	
+	public static final String GTASK_COACH_ASSIGNMENT = "grouptask.coach.assignment";
+	public static final String GTASK_COACH_ASSIGNMENT_MODE = "grouptask.coach.assignment.mode";
+	public static final String GTASK_COACH_ASSIGNMENT_MODE_DEFAULT = CoachAssignmentMode.manual.name();
 
 	public static final String GTASK_USERS_TEXT = "grouptask.users.text";
 	public static final String GTASK_PREVIEW = "grouptask.preview";
@@ -998,6 +1008,43 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		CoreSpringFactory.getImpl(GTAManager.class).createIfNotExists(re, this);
 		super.updateOnPublish(locale, course, publisher, publishEvents);
+		
+		updateCoachAssignment(course);
+	}
+	
+	private void updateCoachAssignment(ICourse course) {
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentService assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
+		
+		boolean assign = courseAssessmentService.getAssessmentConfig(courseEntry, this).hasCoachAssignment();
+		boolean auto = assign && courseAssessmentService
+				.getAssessmentConfig(courseEntry, this).getCoachAssignmentMode() == CoachAssignmentMode.automatic;
+		if(auto) {
+			List<Identity> identities = course.getCourseEnvironment().getCoursePropertyManager().getAllIdentitiesWithCourseAssessmentData(null);
+			List<AssessmentEntry> entries = assessmentService.getAssessmentEntryCoachAssignment(courseEntry, getIdent(), true);
+			List<Identity> alreadyCoachedIdentities = entries.stream()
+					.filter(entry -> entry.getCoach() != null)
+					.map(AssessmentEntry::getIdentity)
+					.toList();
+			identities.removeAll(alreadyCoachedIdentities);
+			
+			for(Identity identity:identities) {
+				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+						.createAndInitUserCourseEnvironment(identity, course.getCourseEnvironment());
+				AssessmentEntry entry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+				if(entry.getCoach() == null) {
+					courseAssessmentService.assignCoach(entry, null);
+				}
+			}
+		} else if(!assign) {
+			List<AssessmentEntry> entries = assessmentService.getAssessmentEntryCoachAssignment(courseEntry, getIdent(), true);
+			for(AssessmentEntry entry:entries) {
+				entry.setCoach(null);
+				assessmentService.updateAssessmentEntry(entry);
+				DBFactory.getInstance().commit();
+			}
+		}
 	}
 
 	@Override

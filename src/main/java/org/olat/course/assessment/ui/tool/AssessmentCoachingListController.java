@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -35,6 +36,9 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -46,19 +50,27 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
@@ -71,6 +83,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CoachingAssessmentEntry;
+import org.olat.course.assessment.CoachingAssessmentSearchParams;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
@@ -101,13 +114,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AssessmentCoachingListController extends FormBasicController {
+public abstract class AssessmentCoachingListController extends FormBasicController implements Activateable2 {
 	
 	private static final String CMD_OPEN_COURSE = "open.course";
 	private static final String CMD_OPEN_COURSE_NODE = "open.course.node";
 	private static final String CMD_ASSESS = "assess";
 	private static final String CMD_DETAILS = "details";
 	private static final String CMD_APPLY_GRADE = "apply";
+	
+	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
+	public static final String ALL_TAB_ID = "All";
+	
+	public static final String FILTER_ASSIGNED_COACH = "assignedCoach";
+	
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab assignedToMeTab;
 
 	private TooledStackedPanel stackPanel;
 	private List<UserPropertyHandler> userPropertyHandlers;
@@ -122,6 +143,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	private AssessedIdentityController currentIdentityCtrl;
 	
 	private final String translatedFormTitle;
+	protected final AssessmentCoachingListOptions options;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -140,13 +162,14 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	@Autowired
 	private RepositoryManager repositoryManager;
 
-	public AssessmentCoachingListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
+	public AssessmentCoachingListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, AssessmentCoachingListOptions options) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackPanel = stackPanel;
-		this.translatedFormTitle = translatedFormTitle;
+		this.options = options;
+		this.translatedFormTitle = options.getTranslatedFormTitle();
 		
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(AssessmentCoachingTableModel.USER_PROPS_ID, isAdministrativeUser);
@@ -158,11 +181,28 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 
 	protected abstract boolean isShowLastUserModified();
 	protected abstract boolean isShowStatusDoneInfo();
+	protected abstract boolean isShowAssignedToMeFilter();
 	protected abstract boolean canEditUserVisibility();
 	protected abstract boolean canAssess();
 	protected abstract boolean canViewDetails();
 	protected abstract boolean canApplyGrade();
 	protected abstract List<CoachingAssessmentEntry> loadModel();
+	
+	protected void applyFiltersToSearchParams(CoachingAssessmentSearchParams  params) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter assignmentFilter = FlexiTableFilter.getFilter(filters, FILTER_ASSIGNED_COACH);
+		if (assignmentFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)assignmentFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<Long> assignedCoachKeys = filterValues.stream()
+						.map(Long::valueOf)
+						.filter(val -> val.longValue() > 0)
+						.toList();
+				params.setAssignedCoachKeys(assignedCoachKeys);
+				params.setCoachNotAssigned(filterValues.contains("-1"));
+			}
+		}
+	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -181,10 +221,14 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 			colPos++;
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseKey, CMD_OPEN_COURSE));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.course, CMD_OPEN_COURSE));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalId, CMD_OPEN_COURSE));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalRef, CMD_OPEN_COURSE));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.assignedCoach, UserDisplayNameCellRenderer.get()));
+
+		if(options.getCourseEntry() == null) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseKey, CMD_OPEN_COURSE));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.course, CMD_OPEN_COURSE));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalId, CMD_OPEN_COURSE));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, AssessmentCoachingsCol.courseExternalRef, CMD_OPEN_COURSE));
+		}
 		IndentedNodeRenderer intendedNodeRenderer = new IndentedNodeRenderer();
 		intendedNodeRenderer.setIndentationEnabled(false);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AssessmentCoachingsCol.courseNode, CMD_OPEN_COURSE_NODE, intendedNodeRenderer));
@@ -220,7 +264,52 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		tableEl.setSearchEnabled(true);
 		tableEl.setMultiSelect(true);
 		tableEl.setSelectAllEnable(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "assessment.coaching");
+		initFilters();
+		if(initFiltersPresets()) {
+			tableEl.setSelectedFilterTab(ureq, allTab);
+		}
+		tableEl.setAndLoadPersistedPreferences(ureq, "assessment.coaching.v2");
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		if(isShowAssignedToMeFilter()) {
+			SelectionValues assignedCoachValues = new SelectionValues();
+			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
+			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
+					FILTER_ASSIGNED_COACH, assignedCoachValues, true);
+			filters.add(membersFilter);
+		}
+
+		if(!filters.isEmpty()) {
+			tableEl.setFilters(true, filters, false, false);
+		}
+	}
+	
+	protected final boolean initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+		
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.nothing, List.of());
+		allTab.setElementCssClass("o_sel_assessment_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		if(isShowAssignedToMeFilter()) {
+			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
+					TabSelectionBehavior.clear, List.of(
+							FlexiTableFilterValue.valueOf(FILTER_ASSIGNED_COACH, List.of(getIdentity().getKey().toString()))));
+			assignedToMeTab.setFiltersExpanded(true);
+			tabs.add(assignedToMeTab);
+		}
+		
+		if(tabs.size() > 1) {
+			tableEl.setFilterTabs(true, tabs);
+			return true;
+		}
+		return false;
 	}
 	
 	private void initMultiSelectionTools() {
@@ -254,10 +343,23 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String resourceType = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if(ASSIGNED_TO_ME_TAB_ID.equalsIgnoreCase(resourceType) && assignedToMeTab != null) {
+			tableEl.setSelectedFilterTab(ureq, assignedToMeTab);
+			reload();
+		} else if(ALL_TAB_ID.equalsIgnoreCase(resourceType) && allTab != null) {
+			tableEl.setSelectedFilterTab(ureq, this.allTab);
+			reload();
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(currentIdentityCtrl == source) {
-			if(event instanceof AssessmentFormEvent) {
-				AssessmentFormEvent aee = (AssessmentFormEvent)event;
+			if(event instanceof AssessmentFormEvent aee) {
 				reload();
 				if(aee.isClose()) {
 					stackPanel.popController(currentIdentityCtrl);
@@ -301,8 +403,7 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		} else if (bulkVisibleButton == source) {
 			doSetUserVisibility(true);
 		} else if (tableEl == source) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if (event instanceof SelectionEvent se) {
 				if (CMD_ASSESS.equals(se.getCommand())) {
 					doAssess(ureq, dataModel.getObject(se.getIndex()));
 				} else if (CMD_DETAILS.equals(se.getCommand())) {

@@ -79,6 +79,7 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 			case lastUserModified: return row.getLastUserModified();
 			case statusDoneBy: return row.getStatusDoneBy();
 			case statusDoneAt: return row.getStatusDoneAt();
+			case assignedCoach: return row.getAssignedCoach();
 			default: return "ERROR";
 			}
 		}
@@ -98,7 +99,8 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 		courseNode("table.header.course.node"),
 		lastUserModified("table.header.lastUserModificationDate"),
 		statusDoneBy("table.header.status.done.by"),
-		statusDoneAt("table.header.status.done.at");
+		statusDoneAt("table.header.status.done.at"),
+		assignedCoach("table.header.assigned.coach");
 		
 		private final String i18nKey;
 		

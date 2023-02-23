@@ -66,9 +66,9 @@ public class CourseNodeToReleaseSmallController extends CourseNodeToReviewAbstra
 	protected String getTitleI18nKey() {
 		return "user.visibility.hidden.title";
 	}
-
+	
 	@Override
-	protected String getTitleNumberI18nKey() {
+	protected String getLinkNumberI18nKey() {
 		return "user.visibility.hidden.title.number";
 	}
 

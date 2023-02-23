@@ -62,15 +62,15 @@ public class IndentedNodeRenderer implements CustomCellRenderer, FlexiCellRender
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof IndentedCourseNode) {
-			render(target, (IndentedCourseNode)cellValue);
+		if(cellValue instanceof IndentedCourseNode node) {
+			render(target, node);
 		}
 	}
 
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof IndentedCourseNode) {
-			render(sb, (IndentedCourseNode)val);
+		if(val instanceof IndentedCourseNode node) {
+			render(sb, node);
 		}
 	}
 	

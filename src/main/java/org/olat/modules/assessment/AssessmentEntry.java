@@ -206,4 +206,15 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	 */
 	public Identity getIdentity();
 	
+	/**
+	 * @return The assigned coach or null
+	 */
+	public Identity getCoach();
+	
+	public void setCoach(Identity identity);
+	
+	public Date getCoachAssignmentDate();
+
+	public void setCoachAssignmentDate(Date coachAssignmentDate);
+	
 }

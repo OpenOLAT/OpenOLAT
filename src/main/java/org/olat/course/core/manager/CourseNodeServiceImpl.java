@@ -151,6 +151,7 @@ public class CourseNodeServiceImpl implements CourseNodeService, GenericEventLis
 				&& courseElement.isAutoGrade() == assessmentConfig.isAutoGrade()
 				&& Objects.equals(courseElement.getPassedMode(), assessmentConfig.getPassedMode())
 				&& compareCutVaue(courseElement.getCutValue(), assessmentConfig.getCutValue())
+				&& courseElement.isCoachAssignment() == assessmentConfig.hasCoachAssignment()
 				;
 	}
 	

@@ -694,6 +694,7 @@ public class UserAdminController extends BasicController implements Activateable
 		}
 		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), identity, rowsBuilder.build());
 		myContent.put("userShortDescription", userShortDescrCtr.getInitialComponent());
+		listenTo(userShortDescrCtr);
 		
 		int status = identity.getStatus().intValue();
 		if(status <= Identity.STATUS_ACTIV) {

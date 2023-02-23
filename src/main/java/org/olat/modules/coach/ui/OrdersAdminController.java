@@ -54,12 +54,14 @@ public class OrdersAdminController extends BasicController implements Activateab
 
 	private final Link gradersLink;
 	private final Link gradersAssignmentsLink;
+	private final Link openCoachAssignmentsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final TooledStackedPanel stackPanel;
 	
 	private GradersListController gradersCtrl;
 	private GradingAssignmentsListController assignmentsCtrl;
+	private CourseCoachAssignmentsController coachAssignmentsCtrl;
 	
 	private final GradingSecurityCallback secCallback;
 	
@@ -82,6 +84,10 @@ public class OrdersAdminController extends BasicController implements Activateab
 		gradersAssignmentsLink = LinkFactory.createLink("orders.admin.assignments", mainVC, this);
 		gradersAssignmentsLink.setVisible(secCallback.canManage());
 		segmentView.addSegment(gradersAssignmentsLink, false);
+		
+		openCoachAssignmentsLink = LinkFactory.createLink("orders.coach.assignments", mainVC, this);
+		openCoachAssignmentsLink.setVisible(secCallback.canManage());
+		segmentView.addSegment(openCoachAssignmentsLink, false);
 
 		if (mainVC.contextGet("segmentCmp") == null) {
 			EmptyStateFactory.create("emptyStateCmp", mainVC, this);
@@ -115,6 +121,8 @@ public class OrdersAdminController extends BasicController implements Activateab
 					doOpenGraders(ureq);
 				} else if (clickedLink == gradersAssignmentsLink) {
 					doOpenAssignments(ureq);
+				} else if(clickedLink == openCoachAssignmentsLink) {
+					doOpenCoachAssignment(ureq);
 				}
 			}
 		}
@@ -123,8 +131,8 @@ public class OrdersAdminController extends BasicController implements Activateab
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(gradersCtrl == source) {
-			if(event instanceof OpenAssignmentsEvent) {
-				doOpenAssignments(ureq).activate((OpenAssignmentsEvent)event);
+			if(event instanceof OpenAssignmentsEvent oae) {
+				doOpenAssignments(ureq).activate(oae);
 				segmentView.select(gradersAssignmentsLink);
 			}
 		}
@@ -154,4 +162,14 @@ public class OrdersAdminController extends BasicController implements Activateab
 		return assignmentsCtrl;
 	}
 	
+	private CourseCoachAssignmentsController doOpenCoachAssignment(UserRequest ureq) {
+		if(coachAssignmentsCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("CoachAssignments"), null);
+			coachAssignmentsCtrl = new CourseCoachAssignmentsController(ureq, swControl);
+			listenTo(coachAssignmentsCtrl);
+		}
+		addToHistory(ureq, coachAssignmentsCtrl);
+		mainVC.put("segmentCmp", coachAssignmentsCtrl.getInitialComponent());
+		return coachAssignmentsCtrl;
+	}
 }

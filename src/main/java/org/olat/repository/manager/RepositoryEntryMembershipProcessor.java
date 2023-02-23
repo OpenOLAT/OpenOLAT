@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.fullWebApp.NotificationEvent;
@@ -37,6 +38,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -86,6 +88,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	private InvitationService invitationService;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	
@@ -152,6 +156,10 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 			
 			// Inactivate the invitations
 			invitationService.inactivateInvitations(re, identity);
+		}
+		
+		if(!remainingRoles.contains(GroupRoles.coach.name()) || !remainingRoles.contains(GroupRoles.owner.name())) {
+			courseAssessmentService.unassignCoach(re, identity);	
 		}
 	}
 	

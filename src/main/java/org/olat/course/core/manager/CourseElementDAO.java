@@ -79,11 +79,11 @@ public class CourseElementDAO {
 				? new BigDecimal(Float.toString(assessmentConfig.getCutValue()))
 				: null;
 		courseElement.setCutValue(cutValue);
+		courseElement.setCoachAssignment(assessmentConfig.hasCoachAssignment());
 	}
 	
 	public CourseElement update(CourseElement courseElement, CourseNode courseNode, AssessmentConfig assessmentConfig) {
-		if (courseElement instanceof CourseElementImpl) {
-			CourseElementImpl impl = (CourseElementImpl)courseElement;
+		if (courseElement instanceof CourseElementImpl impl) {
 			updateAttributes(impl, courseNode, assessmentConfig);
 			return update(impl);
 		}
@@ -91,8 +91,7 @@ public class CourseElementDAO {
 	}
 	
 	public CourseElement update(CourseElement courseElement) {
-		if (courseElement instanceof CourseElementImpl) {
-			CourseElementImpl impl = (CourseElementImpl)courseElement;
+		if (courseElement instanceof CourseElementImpl impl) {
 			impl.setLastModified(new Date());
 			return dbInstance.getCurrentEntityManager().merge(impl);
 		}

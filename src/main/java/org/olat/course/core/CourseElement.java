@@ -52,6 +52,8 @@ public interface CourseElement extends CourseElementRef {
 	public Mode getPassedMode();
 
 	public BigDecimal getCutValue();
+	
+	public boolean isCoachAssignment();
 
 	public RepositoryEntry getRepositoryEntry();
 

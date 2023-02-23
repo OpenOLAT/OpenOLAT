@@ -68,9 +68,9 @@ public class CourseNodeToApplyGradeSmallController extends CourseNodeToReviewAbs
 	protected String getTitleI18nKey() {
 		return "grades.to.apply";
 	}
-
+	
 	@Override
-	protected String getTitleNumberI18nKey() {
+	protected String getLinkNumberI18nKey() {
 		return "grades.to.apply.number";
 	}
 

@@ -132,5 +132,12 @@ public interface AssessmentService {
 	 * @return
 	 */
 	public List<Long> getIdentityKeys(RepositoryEntry entry, String subIdent, Collection<AssessmentObligation> obligations);
+	
+	public boolean hasAssessmentEntryWithoutCoachAssignment(RepositoryEntryRef entry, String subIdent);
+	
+	public List<AssessmentEntry> getAssessmentEntryCoachAssignment(RepositoryEntryRef entry, String subIdent, boolean withCoachAssigned);
+	
+	public List<AssessmentEntry> getAssessmentEntriesForCoachAssignment(RepositoryEntryRef entry, IdentityRef coach);
+	
 
 }

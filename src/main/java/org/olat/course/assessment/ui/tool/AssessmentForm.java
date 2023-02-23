@@ -344,23 +344,23 @@ public class AssessmentForm extends FormBasicController {
 			try {
 				fscore = parseFloat(score);
 				if(fscore == null) {
-					score.setErrorKey("form.error.wrongFloat", null);
+					score.setErrorKey("form.error.wrongFloat");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				score.setErrorKey("form.error.wrongFloat", null);
+				score.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 			
 			if(fscore != null) {
 				if ((min != null && fscore < min.floatValue()) 
 						|| fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
-					score.setErrorKey("form.error.scoreOutOfRange", null);
+					score.setErrorKey("form.error.scoreOutOfRange");
 					allOk &= false;
 				}
 				if ((max != null && fscore > max.floatValue())
 						|| fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
-					score.setErrorKey("form.error.scoreOutOfRange", null);
+					score.setErrorKey("form.error.scoreOutOfRange");
 					allOk &= false;
 				}
 			}

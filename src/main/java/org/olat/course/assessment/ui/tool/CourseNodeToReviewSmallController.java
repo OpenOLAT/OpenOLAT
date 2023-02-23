@@ -66,10 +66,10 @@ public class CourseNodeToReviewSmallController extends CourseNodeToReviewAbstrac
 	protected String getTitleI18nKey() {
 		return "review.open";
 	}
-
+	
 	@Override
-	protected String getTitleNumberI18nKey() {
-		return "review.open.number";
+	protected String getLinkNumberI18nKey() {
+		return "review.open.number.link";
 	}
 
 	@Override

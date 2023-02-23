@@ -44,6 +44,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -79,6 +80,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 
 	private Controller coachingCtrl;
 	private GTACoachedGroupListController groupListCtrl;
+	private CoachAssignmentListController coachAssignmentListCtrl;
 	private GTACoachedParticipantListController participantListCtrl;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
 	
@@ -86,6 +88,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private final Link downloadButton;
 	private final Link nextIdentityLink;
 	private final Link previousIdentityLink;
+	private final Link coachAssignmentButton;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel assessedIdentityStackPanel;
 
@@ -118,6 +121,10 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		solutionMapperUri = registerMapper(ureq, new DownloadDocumentMapper(solutionsDir));
 		solutionDownloadCmp = new DisplayOrDownloadComponent("download", null);
 		mainVC.put("solutionDownload", solutionDownloadCmp);
+		
+		coachAssignmentButton = LinkFactory.createButton("bulk.coach.assignment", mainVC, this);
+		coachAssignmentButton.setElementCssClass("o_sel_assessment_bulk_coach_assignment");
+		coachAssignmentButton.setVisible(isCoachAssignmentAvailable());
 		
 		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
 		downloadButton.setTranslator(getTranslator());
@@ -185,6 +192,13 @@ public class GTACoachSelectionController extends BasicController implements Acti
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_GRADING);
 	}
+	
+	private boolean isCoachAssignmentAvailable() {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		return config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)
+				&& !coachCourseEnv.isCourseReadOnly()
+				&& coachCourseEnv.isAdmin();
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -206,30 +220,38 @@ public class GTACoachSelectionController extends BasicController implements Acti
 					doSelectBusinessGroup(ureq, group).activate(ureq, subEntries, entries.get(0).getTransientState());
 				}
 			}
-		} else if("Solution".equals(type) && entries.size() > 1) {
+		} else if("Solution".equalsIgnoreCase(type) && entries.size() > 1) {
 			String path = BusinessControlFactory.getInstance().getPath(entries.get(1));
 			String url = solutionMapperUri + "/" + path;
 			solutionDownloadCmp.triggerFileDownload(url);
+		} else if("Assignments".equalsIgnoreCase(type)
+				&& coachAssignmentButton != null && coachAssignmentButton.isVisible()) {
+			doCoachAssignment(ureq);
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(groupListCtrl == source) {
-			if(event instanceof SelectBusinessGroupEvent) {
-				SelectBusinessGroupEvent selectEvent = (SelectBusinessGroupEvent)event;
+			if(event instanceof SelectBusinessGroupEvent selectEvent) {
 				doSelectBusinessGroup(ureq, selectEvent.getBusinessGroup());
 				backLink.setVisible(true);
 			}
 		} else if(participantListCtrl == source) {
-			if(event instanceof SelectIdentityEvent) {
-				SelectIdentityEvent selectEvent = (SelectIdentityEvent)event;
+			if(event instanceof SelectIdentityEvent selectEvent) {
 				Identity selectedIdentity = securityManager.loadIdentityByKey(selectEvent.getIdentityKey());
 				doSelectParticipant(ureq, selectedIdentity);
 				backLink.setVisible(true);
-			} else if (event instanceof MakedEvent) {
-				markedOnly = ((MakedEvent)event).isMarked();
+			} else if (event instanceof MakedEvent makedEvent) {
+				markedOnly = makedEvent.isMarked();
 				initSubscription(ureq);
+			}
+		} else if(coachAssignmentListCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				reload(ureq);
+				back(ureq);
+			} else if(event == Event.BACK_EVENT || event == Event.CANCELLED_EVENT) {
+				back(ureq);
 			}
 		} else if(source instanceof GTAAssessedBusinessGroupController) {
 			if(event == Event.BACK_EVENT) {
@@ -246,6 +268,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			back(ureq);
 		} else if(downloadButton == source) {
 			doBulkDownload(ureq);
+		} else if(coachAssignmentButton == source) {
+			doCoachAssignment(ureq);
 		} else if(nextIdentityLink == source) {
 			doNextIdentity(ureq);
 		} else if(previousIdentityLink == source) {
@@ -273,6 +297,13 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			removeAsListenerAndDispose(coachingCtrl);
 			coachingCtrl = null;
 		}
+		if(coachAssignmentListCtrl != null) {
+			assessedIdentityStackPanel.popController(coachAssignmentListCtrl);
+			mainVC.remove("selectionStack");
+			mainVC.remove(coachAssignmentListCtrl.getInitialComponent());
+			removeAsListenerAndDispose(coachAssignmentListCtrl);
+			coachAssignmentListCtrl = null;
+		}
 		backLink.setVisible(false);
 		if (participantListCtrl != null) {
 			participantListCtrl.updateModel(ureq);			
@@ -285,7 +316,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private void doBulkDownload(UserRequest ureq) {
 		if (participantListCtrl != null) {
 			ArchiveOptions asOptions = new ArchiveOptions();
-			asOptions.setIdentities(getIdentitesForBulkDownload(ureq));
+			asOptions.setIdentities(getIdentitiesForBulkDownload(ureq));
 			OLATResource ores = courseEnv.getCourseGroupManager().getCourseResource();
 			ArchiveResource resource = new ArchiveResource(gtaNode, ores, asOptions, getLocale());
 			ureq.getDispatchResult().setResultingMediaResource(resource);
@@ -296,12 +327,27 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		}
 	}
 	
+	private void doCoachAssignment(UserRequest ureq) {
+		List<Identity> assessedIdentities = participantListCtrl.getAssessableIdentities();
+
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Assignments", 0l);
+		WindowControl bwControl = BusinessControlFactory.getInstance()
+				.createBusinessWindowControl(ores, null, getWindowControl());
+		coachAssignmentListCtrl = new CoachAssignmentListController(ureq, bwControl,
+				assessedIdentities, coachCourseEnv, gtaNode);
+		listenTo(coachAssignmentListCtrl);
+		
+		assessedIdentityStackPanel.pushController(translate("coach.assignment"), coachAssignmentListCtrl);
+		mainVC.put("selectionStack", assessedIdentityStackPanel);
+		assessedIdentityStackPanel.getToolBar().setVisible(false);
+	}
+	
 	private void doNextIdentity(UserRequest ureq) {
 		assessedIdentityStackPanel.popController(coachingCtrl);
 		removeAsListenerAndDispose(coachingCtrl);
 		
-		if(coachingCtrl instanceof GTAAssessedIdentityController) {
-			Identity currentIdentity = ((GTAAssessedIdentityController)coachingCtrl).getAssessedIdentity();
+		if(coachingCtrl instanceof GTAAssessedIdentityController assessedIdentityCtlr) {
+			Identity currentIdentity = assessedIdentityCtlr.getAssessedIdentity();
 			int nextIndex = participantListCtrl.indexOfIdentity(currentIdentity) + 1;
 			int rowCount = participantListCtrl.numOfIdentities();
 			if(nextIndex >= 0 && nextIndex < rowCount) {
@@ -318,8 +364,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		assessedIdentityStackPanel.popController(coachingCtrl);
 		removeAsListenerAndDispose(coachingCtrl);
 		
-		if(coachingCtrl instanceof GTAAssessedIdentityController) {
-			Identity currentIdentity = ((GTAAssessedIdentityController)coachingCtrl).getAssessedIdentity();
+		if(coachingCtrl instanceof GTAAssessedIdentityController assessedIdentityCtlr) {
+			Identity currentIdentity = assessedIdentityCtlr.getAssessedIdentity();
 			int previousIndex = participantListCtrl.indexOfIdentity(currentIdentity) - 1;
 			int rowCount = participantListCtrl.numOfIdentities();
 			if(previousIndex >= 0 && previousIndex < rowCount) {
@@ -332,7 +378,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		}
 	}
 
-	private List<Identity> getIdentitesForBulkDownload(UserRequest ureq) {
+	private List<Identity> getIdentitiesForBulkDownload(UserRequest ureq) {
 		List<Identity> identities = participantListCtrl.getAssessableIdentities();
 		if (markedOnly) {
 			RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -369,6 +415,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		String fullName = userManager.getUserDisplayName(identity);
 		assessedIdentityStackPanel.pushController(fullName, coachingCtrl);
 		mainVC.put("selectionStack", assessedIdentityStackPanel);
+		assessedIdentityStackPanel.getToolBar().setVisible(true);
 		
 		int index = participantListCtrl.indexOfIdentity(identity);
 		int numOfRows = participantListCtrl.numOfIdentities();

@@ -214,4 +214,13 @@ public class STAssessmentConfig implements AssessmentConfig {
 		return !isRoot;
 	}
 	
+	@Override
+	public boolean hasCoachAssignment() {
+		return false;
+	}
+	
+	@Override
+	public CoachAssignmentMode getCoachAssignmentMode() {
+		return null;
+	}
 }

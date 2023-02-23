@@ -72,6 +72,9 @@ public class SearchAssessedIdentityParams {
 	
 	private Map<String,String> userProperties;
 	private List<UserPropertyHandler> userPropertyHandlers;
+
+	private boolean coachNotAssigned;
+	private List<Long> assignedCoachKeys;
 	
 	public SearchAssessedIdentityParams(RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, 
 			AssessmentToolSecurityCallback secCallback) {
@@ -263,6 +266,26 @@ public class SearchAssessedIdentityParams {
 			return getParticipantTypes() != null && getParticipantTypes().contains(ParticipantType.member);
 		}
 		return false;
+	}
+	
+	public boolean hasAssignedCoachKeys() {
+		return assignedCoachKeys != null && !assignedCoachKeys.isEmpty();
+	}
+
+	public List<Long> getAssignedCoachKeys() {
+		return assignedCoachKeys;
+	}
+
+	public void setAssignedCoachKeys(List<Long> assignedCoachKeys) {
+		this.assignedCoachKeys = assignedCoachKeys;
+	}
+
+	public boolean isCoachNotAssigned() {
+		return coachNotAssigned;
+	}
+
+	public void setCoachNotAssigned(boolean coachNotAssigned) {
+		this.coachNotAssigned = coachNotAssigned;
 	}
 
 	public List<UserPropertyHandler> getUserPropertyHandlers() {

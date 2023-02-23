@@ -39,7 +39,7 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class SingleSelectionRenderer extends DefaultComponentRenderer {
+public class SingleSelectionRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void renderComponent(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
@@ -229,5 +229,21 @@ class SingleSelectionRenderer extends DefaultComponentRenderer {
 		sb.append("</label>")
 		  .append("</div>", !inline) // normal radios need a wrapper (bootstrap)
 		  .append(" ", source.isTrailingSpace());
+	}
+	
+	public void renderSingleRadio(StringOutput sb, Component source, int index) {
+		SingleSelectionComponent teC = (SingleSelectionComponent) source;
+		RadioElementComponent[] radios = teC.getRadioComponents();
+		if(index >= 0 && index < radios.length) {
+			RadioElementComponent ssec = radios[index];
+			String formDispatchId = ssec.getFormDispatchId();
+			sb.append("<input id='").append(formDispatchId).append("'")
+			  .append(" type='radio' name='").append(ssec.getGroupingName()).append("'")
+			  .append(" value='").append(ssec.getKey()).append("' ")
+			  .append(" checked='checked' ", ssec.isSelected())
+			  .append(" disabled ", !ssec.isEnabled());
+			
+			sb.append(">");
+		}
 	}
 }

@@ -39,12 +39,14 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.ui.tool.AssessmentApplyGradeListController;
+import org.olat.course.assessment.ui.tool.AssessmentCoachingListOptions;
 import org.olat.course.assessment.ui.tool.AssessmentReleaseListController;
 import org.olat.course.assessment.ui.tool.AssessmentReviewListController;
 import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.grading.GradingSecurityCallback;
 import org.olat.modules.grading.GradingSecurityCallbackFactory;
 import org.olat.modules.grading.ui.GradingAssignmentsListController;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -67,15 +69,18 @@ public class OrdersOverviewController extends BasicController implements Activat
 	private AssessmentApplyGradeListController assessmentApplyGradeCtrl;
 	private GradingAssignmentsListController gradingAssignmentsCtrl;
 	
+	private final RepositoryEntry courseEntry;
 	private final CoachingSecurity coachingSec;
 	private final GradingSecurityCallback secCallback;
 	
 	public OrdersOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			CoachingSecurity coachingSec, GradingSecurityCallback gradingSec) {
+			RepositoryEntry courseEntry, CoachingSecurity coachingSec, GradingSecurityCallback gradingSec) {
+		
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.coachingSec = coachingSec;
 		this.secCallback = gradingSec;
+		this.courseEntry = courseEntry;
 		
 		mainVC = createVelocityContainer("segments");
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
@@ -115,14 +120,15 @@ public class OrdersOverviewController extends BasicController implements Activat
 		if(entries == null || entries.isEmpty()) return;
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		StateEntry nextState = entries.get(0).getTransientState();
 		if("Review".equalsIgnoreCase(type) && coachingSec.isCoach()) {
-			doOpenAssessmentReview(ureq);
+			doOpenAssessmentReview(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReviewLink);
-		} else if("Release".equalsIgnoreCase(type)&& coachingSec.isCoach()) {
-			doOpenAssessmentRelease(ureq);
+		} else if("Release".equalsIgnoreCase(type) && coachingSec.isCoach()) {
+			doOpenAssessmentRelease(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReleaseLink);
-		} else if("ApplyGrade".equalsIgnoreCase(type)&& coachingSec.isCoach()) {
-			doOpenAssessmentApplyGrade(ureq);
+		} else if("ApplyGrade".equalsIgnoreCase(type) && coachingSec.isCoach()) {
+			doOpenAssessmentApplyGrade(ureq).activate(ureq, entries.subList(1, entries.size()), nextState);
 			segmentView.select(assessmentReleaseLink);
 		} else if("Assignments".equalsIgnoreCase(type) && secCallback.canGrade()) {
 			doOpenMyGradingAssignments(ureq);
@@ -133,8 +139,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == assessmentReviewLink) {
@@ -150,22 +155,25 @@ public class OrdersOverviewController extends BasicController implements Activat
 		}
 	}
 	
-	private void doOpenAssessmentReview(UserRequest ureq) {
+	private AssessmentReviewListController doOpenAssessmentReview(UserRequest ureq) {
 		if(assessmentReviewCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Review"), null);
-			assessmentReviewCtrl = new AssessmentReviewListController(ureq, swControl, stackPanel, translate("orders.review"));
+			assessmentReviewCtrl = new AssessmentReviewListController(ureq, swControl, stackPanel,
+					new AssessmentCoachingListOptions(courseEntry, true, translate("orders.review")));
 			listenTo(assessmentReviewCtrl);
 		} else {
 			assessmentReviewCtrl.reload();
 		}
 		addToHistory(ureq, assessmentReviewCtrl);
 		mainVC.put("segmentCmp", assessmentReviewCtrl.getInitialComponent());
+		return assessmentReviewCtrl;
 	}
 	
 	private AssessmentReleaseListController doOpenAssessmentRelease(UserRequest ureq) {
 		if(assessmentReleaseCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Release"), null);
-			assessmentReleaseCtrl = new AssessmentReleaseListController(ureq, swControl, stackPanel, translate("orders.release"));
+			assessmentReleaseCtrl = new AssessmentReleaseListController(ureq, swControl, stackPanel,
+					new AssessmentCoachingListOptions(courseEntry, true, translate("orders.release")));
 			listenTo(assessmentReleaseCtrl);
 		} else {
 			assessmentReleaseCtrl.reload();
@@ -178,7 +186,8 @@ public class OrdersOverviewController extends BasicController implements Activat
 	private AssessmentApplyGradeListController doOpenAssessmentApplyGrade(UserRequest ureq) {
 		if(assessmentApplyGradeCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("ApplyGrade"), null);
-			assessmentApplyGradeCtrl = new AssessmentApplyGradeListController(ureq, swControl, stackPanel, translate("orders.apply.grade"));
+			assessmentApplyGradeCtrl = new AssessmentApplyGradeListController(ureq, swControl, stackPanel,
+					new AssessmentCoachingListOptions(courseEntry, true, translate("orders.apply.grade")));
 			listenTo(assessmentApplyGradeCtrl);
 		} else {
 			assessmentApplyGradeCtrl.reload();
@@ -188,7 +197,7 @@ public class OrdersOverviewController extends BasicController implements Activat
 		return assessmentApplyGradeCtrl;
 	}
 
-	private void doOpenMyGradingAssignments(UserRequest ureq) {
+	private GradingAssignmentsListController doOpenMyGradingAssignments(UserRequest ureq) {
 		if(gradingAssignmentsCtrl == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assignments"), null);
 			GradingSecurityCallback mySecCallback = GradingSecurityCallbackFactory.mySecurityCalllback(secCallback);
@@ -198,5 +207,6 @@ public class OrdersOverviewController extends BasicController implements Activat
 		}
 		addToHistory(ureq, gradingAssignmentsCtrl);
 		mainVC.put("segmentCmp", gradingAssignmentsCtrl.getInitialComponent());
+		return gradingAssignmentsCtrl;
 	}
 }

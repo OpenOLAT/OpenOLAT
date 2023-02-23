@@ -43,6 +43,7 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
@@ -59,6 +60,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -66,11 +68,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiF
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -148,6 +154,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	public static final String MARKED_TAB_ID = "Marked";
 	public static final String ALL_TAB_ID = "All";
+	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
 	
 	private FormLink bulkDoneButton;
 	private FormLink bulkEmailButton;
@@ -158,6 +165,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab markedTab;
+	private FlexiFiltersTab assignedToMeTab;
 	private FlexiTableElement tableEl;
 	private CoachParticipantsTableModel tableModel;
 
@@ -172,9 +180,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private final Set<Long> fakeParticipantKeys;
 	private Map<String, List<Long>> groupKeyToIdentityKeys;
 
+	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private EditDueDatesController editDueDatesCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
 	
 	@Autowired
@@ -299,7 +309,10 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			}
 			columnsModel.addFlexiColumnModel(col);
 		}
-
+		
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.coachAssignment));
+		}
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskTitle));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CGCols.taskName));
@@ -317,10 +330,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
-		if(gtaManager.isDueDateEnabled(gtaNode) && !coachCourseEnv.isCourseReadOnly()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
-		}
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CGCols.tools);
+		toolsCol.setExportable(false);
+		toolsCol.setIconHeader("o_icon o_icon_actions o_icon-fw o_icon-lg");
+		columnsModel.addFlexiColumnModel(toolsCol);
+		
 		tableModel = new CoachParticipantsTableModel(getLocale(), columnsModel);
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 24, false, getTranslator(), formLayout);
@@ -329,7 +343,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		tableEl.setExportEnabled(true);
 		tableEl.setSelectAllEnable(true);
 		tableEl.setMultiSelect(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v3-false");
+		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-v4-false");
 		
 		initBulkTools(ureq, formLayout);
 		initFiltersPresets(ureq);
@@ -410,6 +424,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
+		if(assessmentConfig.hasCoachAssignment()) {
+			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
+					TabSelectionBehavior.clear, List.of(
+							FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_ASSIGNED_COACH, List.of(getIdentity().getKey().toString()))));
+			assignedToMeTab.setFiltersExpanded(true);
+			tabs.add(assignedToMeTab);
+		}
+		
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSelectedFilterTab(ureq, markedDefault? markedTab: allTab);
 	}
@@ -435,6 +457,16 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
 					AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
 			membersFilter.setValues(List.of(ParticipantType.member.name()));
+			filters.add(membersFilter);
+		}
+		
+		if (assessmentConfig.hasCoachAssignment()) {
+			SelectionValues assignedCoachValues = new SelectionValues();
+			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
+			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
+					AssessedIdentityListState.FILTER_ASSIGNED_COACH, assignedCoachValues, true);
+
 			filters.add(membersFilter);
 		}
 		
@@ -510,6 +542,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		List<AssessmentObligation> filterObligations = getFilterObligations();
 		Set<ParticipantType> filterParticipants = getFilterParticipants();
 		List<String> filterGroupKeys = getFilterGroupKeys();
+		Set<Long> assignmentKeys = getFilterAssignmentKeys();
 		
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		Map<String,TaskDefinition> fileNameToDefinitions = taskDefinitions.stream()
@@ -553,7 +586,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			AssessmentEntry assessment = identityToAssessments.get(assessableIdentity.getIdentityKey());
 			if (isExcludedByObligation(filterObligations, assessment)
 					|| isExcludedByParticipant(filterParticipants, assessableIdentity)
-					|| isExcludedByGroup(filterGroupKeys, assessableIdentity)) {
+					|| isExcludedByGroup(filterGroupKeys, assessableIdentity)
+					|| isExcludedByAssignment(assignmentKeys, assessment)) {
 				continue;
 			}
 			
@@ -605,9 +639,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			taskDefinition = fileNameToDefinitions.get(taskName);
 		}
 		
+		String coach = assessment.getCoach() == null ? null : userManager.getUserDisplayName(assessment.getCoach());
+		
+		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		
 		CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition,
-				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate,
-				hasSubmittedDocument, markLink, assessment, numSubmittedDocs, numOfCollectedDocs);
+				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument,
+				markLink, toolsLink, assessment, numSubmittedDocs, numOfCollectedDocs, coach);
+		toolsLink.setUserObject(row);
 		if(taskDefinition != null) {
 			File file = new File(tasksFolder, taskDefinition.getFilename());
 			DownloadLink downloadLink = uifactory.addDownloadLink("task_" + (count++), taskDefinition.getFilename(), null, file, tableEl);
@@ -700,6 +740,28 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		return false;
 	}
 	
+	private Set<Long> getFilterAssignmentKeys() {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		FlexiTableFilter assignmentFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_ASSIGNED_COACH);
+		if(assignmentFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)assignmentFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(Long::valueOf)
+						.collect(Collectors.toSet());
+			}
+		}
+		return null;
+	}
+	
+	private boolean isExcludedByAssignment(Set<Long> filterAssignmentKeys, AssessmentEntry entry) {
+		if(filterAssignmentKeys == null) return false;
+		
+		Identity assignedCoach = entry.getCoach();
+		return (assignedCoach == null && !filterAssignmentKeys.contains(Long.valueOf(-1l)))
+					|| (assignedCoach != null && !filterAssignmentKeys.contains(assignedCoach.getKey()));
+	}
+
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source) {
@@ -711,6 +773,13 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		} else if(contactCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
+		} else if(toolsCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				toolsCalloutCtrl.deactivate();
+				cleanUp();
+			}
+		} else if(toolsCalloutCtrl == source) {
+			cleanUp();
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -720,19 +789,22 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private void cleanUp() {
 		removeAsListenerAndDispose(editMultipleDueDatesCtrl);
 		removeAsListenerAndDispose(editDueDatesCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		editMultipleDueDatesCtrl = null;
 		editDueDatesCtrl = null;
+		toolsCalloutCtrl = null;
 		contactCtrl = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				CoachedIdentityRow row = tableModel.getObject(se.getIndex());
 				if("duedates".equals(cmd)) {
@@ -761,14 +833,15 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			doEmail(ureq);
 		} else if(bulkDownloadButton == source) {
 			doBulkDownload(ureq);
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("mark".equals(cmd)) {
 				Long assessableIdentityKey = (Long)link.getUserObject();
 				boolean marked = doToogleMark(ureq, assessableIdentityKey);
 				link.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 				link.getComponent().setDirty(true);
+			} else if("tools".equals(cmd) && link.getUserObject() instanceof CoachedIdentityRow row) {
+				doOpenTools(ureq, row, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -985,6 +1058,23 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 	}
 	
+	private void doOpenTools(UserRequest ureq, CoachedIdentityRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private void doSelect(UserRequest ureq, CoachedIdentityRow row) {
+		fireEvent(ureq, new SelectIdentityEvent(row.getIdentityKey()));	
+	}
+	
 	public static final class MakedEvent extends Event {
 
 		private static final long serialVersionUID = 1916268792292314400L;
@@ -1000,5 +1090,37 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			return marked;
 		}
 		
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final Link selectLink;
+		private final Link dueDatesLink;
+		
+		private final CoachedIdentityRow row;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, CoachedIdentityRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			VelocityContainer mainVC = createVelocityContainer("tools");
+			
+			selectLink = LinkFactory.createLink("select.assess", "select", getTranslator(), mainVC, this, Link.LINK);
+			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
+			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
+			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+
+			putInitialPanel(mainVC);
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(selectLink == source) {
+				doSelect(ureq, row);
+			} else if(dueDatesLink == source) {
+				doEditDueDate(ureq, row);
+			}
+		}
 	}
 }

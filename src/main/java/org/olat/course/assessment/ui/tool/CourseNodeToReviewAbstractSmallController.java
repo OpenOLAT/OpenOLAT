@@ -56,6 +56,7 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.ui.tool.CourseNodeToReviewTableModel.ToReviewCols;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
+import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ParticipantType;
@@ -76,6 +77,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	private static final String CMD_IDENTITIES = "identities";
 	private static final String CMD_IDENTITY = "identity";
 
+	private FormLink link;
 	private FlexiTableElement tableEl;
 	private CourseNodeToReviewTableModel usersTableModel;
 	
@@ -92,7 +94,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	
 	protected abstract String getIconCssClass();
 	protected abstract String getTitleI18nKey();
-	protected abstract String getTitleNumberI18nKey();
+	protected abstract String getLinkNumberI18nKey();
 	protected abstract String getTableEmptyI18nKey();
 	protected abstract Map<String, List<AssessmentEntry>> loadNodeIdentToEntries(Collection<ParticipantType> participants);
 	protected abstract Supplier<AssessedIdentityListState> getIdentityFilter();
@@ -110,11 +112,10 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		TreeModel tm = AssessmentHelper.assessmentTreeModel(course, getLocale());
 		new TreeVisitor(node -> {
-			if(node instanceof TreeNode) {
-				Object uobject = ((TreeNode)node).getUserObject();
-				if(uobject instanceof CourseNode) {
-					CourseNode tNode = (CourseNode)uobject;
-					nodeIdentToCourseNode.put(tNode.getIdent(), tNode);
+			if(node instanceof TreeNode tNode) {
+				Object uobject = tNode.getUserObject();
+				if(uobject instanceof CourseNode cNode) {
+					nodeIdentToCourseNode.put(cNode.getIdent(), cNode);
 				}
 			}
 		}, tm.getRootNode(), false).visitAll();
@@ -125,6 +126,7 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		flc.contextPut("iconCssClass", getIconCssClass());
+		flc.contextPut("title", translate(getTitleI18nKey()));
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		
@@ -141,6 +143,10 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		tableEl.setExportEnabled(false);
 		tableEl.setCustomizeColumns(false);
 		tableEl.setEmptyTableSettings(getTableEmptyI18nKey(), null, getIconCssClass());
+		
+		String linkI18n = getLinkNumberI18nKey();
+		link = uifactory.addFormLink("link", linkI18n, null, formLayout, Link.LINK | Link.NONTRANSLATED);
+		link.setIconLeftCSS("o_icon ".concat(getIconCssClass()));
 	}
 	
 	public void loadModel(Collection<ParticipantType> participants) {
@@ -171,11 +177,12 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 		}
 		
 		int numReviews = rows.stream().mapToInt(row -> row.getIdentities().size()).sum();
-		String title = numReviews > 0
-				? translate(getTitleNumberI18nKey(), Integer.toString(numReviews))
+		String linkTitle = numReviews > 0
+				? translate(getLinkNumberI18nKey(), Integer.toString(numReviews))
 				: translate(getTitleI18nKey());
-		flc.contextPut("title", title);
-		
+		link.getComponent().setCustomDisplayText(linkTitle);
+		link.setVisible(numReviews > 0);
+
 		usersTableModel.setObjects(rows);
 		tableEl.reset();
 	}
@@ -183,16 +190,16 @@ public abstract class CourseNodeToReviewAbstractSmallController extends FormBasi
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if(CMD_IDENTITIES.equals(se.getCommand())) {
 					int index = se.getIndex();
 					CourseNodeToReviewRow row = usersTableModel.getObject(index);
 					doSelectIdentity(ureq, row.getCourseNodeIdent(), null);
 				}
 			}
-		} else if (source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(link == source) {
+			this.fireEvent(ureq, new ShowOrdersEvent());
+		} else if (source instanceof FormLink link) {
 			if (CMD_IDENTITY.equals(link.getCmd())) {
 				CourseNodeToReviewRow row = (CourseNodeToReviewRow)link.getUserObject();
 				doSelectIdentity(ureq, row, link);

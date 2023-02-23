@@ -64,6 +64,19 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 	void setRadioComponents(RadioElementComponent[] radioComponents) {
 		this.radioComponents = radioComponents;
 	}
+	
+	boolean isEnabled(int which) {
+		if(which >= 0 && which < radioComponents.length) {
+			return radioComponents[which].isEnabled();
+		}
+		return false;
+	}
+	
+	void setEnabled(int which, boolean enable) {
+		if(which >= 0 && which < radioComponents.length) {
+			radioComponents[which].setEnabled(enable);
+		}
+	}
 
 	public int getWidthInPercent() {
 		return widthInPercent;
@@ -108,7 +121,7 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		private final String iconCssClass;
 		private final String customCssClass;
 		private final boolean selected;
-		private final boolean enabled;
+		private boolean enabled;
 
 		RadioElementComponent(SingleSelection selectionWrapper, int which, String key, String value, String description, String iconCssClass, String customCssClass, boolean enabled, boolean selected) {
 			this.selectionWrapper = selectionWrapper;
@@ -173,6 +186,10 @@ class SingleSelectionComponent extends FormBaseComponentImpl {
 		 */
 		public boolean isEnabled() {
 			return enabled;
+		}
+		
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
 		}
 		
 		/**

@@ -270,5 +270,14 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	public void setObligationOverridable(boolean obligationOverridable) {
 		this.obligationOverridable = obligationOverridable;
 	}
+	
+	@Override
+	public boolean hasCoachAssignment() {
+		return false;
+	}
 
+	@Override
+	public CoachAssignmentMode getCoachAssignmentMode() {
+		return null;
+	}
 }

@@ -46,9 +46,12 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ObligationContext;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -61,6 +64,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.group.ui.edit.BusinessGroupRepositoryEntryEvent;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembershipEvent;
@@ -425,6 +429,10 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		scoreAccounting.evaluateAll(true);
 		log.debug("Evaluated all assessment entries of {} in {}", identity, courseEntry);
 		dbInstance.commitAndCloseSession();
+		
+		// assign coaches
+		assignCoachRecursive(userCourseEnv, course.getRunStructure().getRootNode());
+		dbInstance.commitAndCloseSession();
 	}
 	
 	private void tryProcessPublish(PublishEvent pe) {
@@ -438,4 +446,17 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		}
 	}
 	
+	private void assignCoachRecursive(UserCourseEnvironment userCourseEnv, CourseNode courseNode) {
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if(assessmentConfig.hasCoachAssignment() && assessmentConfig.getCoachAssignmentMode() == CoachAssignmentMode.automatic) {
+			AssessmentEntry entry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
+			courseAssessmentService.assignCoach(entry, null);
+		}
+		
+		int numOfChild = courseNode.getChildCount();
+		for(int i=0; i<numOfChild; i++) {
+			assignCoachRecursive(userCourseEnv, (CourseNode)courseNode.getChildAt(i));
+		}
+	}
 }

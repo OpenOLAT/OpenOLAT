@@ -234,7 +234,17 @@ public class SelectboxSelectionImpl extends FormItemImpl implements SingleSelect
 			throw new AssertException("could not set <" + key + "> to " + select + " because key was not found!");
 		}
 	}
-	
+		
+	@Override
+	public boolean isEnabled(int which) {
+		return true;
+	}
+
+	@Override
+	public void setEnabled(int radioIndex, boolean isEnabled) {
+		// TODO gta
+	}
+
 	/**
 	 * These options is not supported by this element.
 	 * 

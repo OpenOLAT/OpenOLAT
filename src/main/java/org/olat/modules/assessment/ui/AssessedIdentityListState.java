@@ -48,6 +48,7 @@ public class AssessedIdentityListState implements StateEntry {
 	public static final String FILTER_MEMBERS = "members";
 	public static final String FILTER_GROUPS = "groups";
 	public static final String FILTER_OBLIGATION = "obligation";
+	public static final String FILTER_ASSIGNED_COACH = "assignedCoach";
 	
 	private String tabId;
 	private boolean filtersExpanded;

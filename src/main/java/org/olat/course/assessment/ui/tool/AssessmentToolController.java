@@ -150,8 +150,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			cleanUp();
 			doBulkAssessmentView(ureq);
 		} else if (stackPanel == source) {
-			if (event instanceof PopEvent) {
-				PopEvent pe = (PopEvent) event;
+			if (event instanceof PopEvent pe) {
 				if (pe.isClose()) {
 					stackPanel.popUpToRootController(ureq);
 				} else if (pe.getController() != null && (pe.getController() == courseTreeCtrl || pe.getController() == bulkAssessmentOverviewCtrl)) {
@@ -168,22 +167,20 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if (assessmentEventToState != null && assessmentEventToState.handlesEvent(source, event)) {
 			doTreeView(ureq).activate(ureq, createRootNodeContextEntry(), assessmentEventToState.getState(event));
 		} else if (courseTreeCtrl == source) {
-			if (event instanceof CourseNodeIdentityEvent) {
-				CourseNodeIdentityEvent cnie = (CourseNodeIdentityEvent) event;
+			if (event instanceof CourseNodeIdentityEvent cnie) {
 				if (StringHelper.isLong(cnie.getCourseNodeIdent())) {
 					if (cnie.getAssessedIdentity() == null) {
 						OLATResourceable resource = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(cnie.getCourseNodeIdent()));
 						List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromResourceable(resource, cnie.getFilter().get());
-						doTreeView(ureq).activate(ureq, entries, null);
+						doTreeView(ureq).activate(ureq, entries, cnie.getFilter().get());
 					} else {
 						OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(cnie.getCourseNodeIdent()));
 						OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", cnie.getAssessedIdentity().getKey());
 						List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
-						doTreeView(ureq).activate(ureq, entries, null);
+						doTreeView(ureq).activate(ureq, entries, cnie.getFilter().get());
 					}
 				}
-			} else if (event instanceof CourseNodeEvent) {
-				CourseNodeEvent cne = (CourseNodeEvent) event;
+			} else if (event instanceof CourseNodeEvent cne) {
 				if (cne.getIdent() != null) {
 					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(cne.getIdent()));
 					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes);
@@ -193,8 +190,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 				fireEvent(ureq, event);
 			}
 		} else if (source == assessmentResetCtrl) {
-			if (event instanceof AssessmentResetEvent) {
-				AssessmentResetEvent are = (AssessmentResetEvent) event;
+			if (event instanceof AssessmentResetEvent are) {
 				doRecalculate(are);
 			}
 			cmc.deactivate();

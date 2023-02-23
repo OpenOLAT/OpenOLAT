@@ -256,6 +256,15 @@ public class MaxScoreCumulatorTest {
 			return false;
 		}
 		
+		@Override
+		public boolean hasCoachAssignment() {
+			return false;
+		}
+		
+		@Override
+		public CoachAssignmentMode getCoachAssignmentMode() {
+			return null;
+		}
 	}
 
 }

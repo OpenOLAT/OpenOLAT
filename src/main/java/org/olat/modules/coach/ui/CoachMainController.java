@@ -317,7 +317,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 				GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
-				ordersOverviewCtrl = new OrdersOverviewController(ureq, bwControl, content, coachingSec, secCallback);
+				ordersOverviewCtrl = new OrdersOverviewController(ureq, bwControl, content, null, coachingSec, secCallback);
 				listenTo(ordersOverviewCtrl);
 			}
 			selectedCtrl = ordersOverviewCtrl;

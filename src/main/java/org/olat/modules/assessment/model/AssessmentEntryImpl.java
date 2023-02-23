@@ -207,6 +207,12 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@JoinColumn(name="fk_identity", nullable=true, insertable=true, updatable=false)
     private Identity identity;
 	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_coach", nullable=true, insertable=true, updatable=true)
+    private Identity coach;
+	@Column(name="a_coach_assignment_date", nullable=true, insertable=true, updatable=true)
+	private Date coachAssignmentDate;
+	
 	public AssessmentEntryImpl() {
 		//
 	}
@@ -766,6 +772,26 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	}
 
 	@Override
+	public Identity getCoach() {
+		return coach;
+	}
+
+	@Override
+	public void setCoach(Identity coach) {
+		this.coach = coach;
+	}
+
+	@Override
+	public Date getCoachAssignmentDate() {
+		return coachAssignmentDate;
+	}
+
+	@Override
+	public void setCoachAssignmentDate(Date coachAssignmentDate) {
+		this.coachAssignmentDate = coachAssignmentDate;
+	}
+
+	@Override
 	public int hashCode() {
 		return key == null ? -864687 : key.hashCode();
 	}
@@ -775,9 +801,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof AssessmentEntryImpl) {
-			AssessmentEntryImpl session = (AssessmentEntryImpl)obj;
-			return getKey() != null && getKey().equals(session.getKey());
+		if(obj instanceof AssessmentEntryImpl entry) {
+			return getKey() != null && getKey().equals(entry.getKey());
 		}
 		return false;
 	}

@@ -36,6 +36,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BGRepositoryEntryRelation;
@@ -75,6 +76,8 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 	private InfoMessageFrontendManager infoMessageManager;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
@@ -163,10 +166,13 @@ public class BusinessGroupMembershipProcessor implements InitializingBean, Gener
 			for(BGRepositoryEntryRelation relation:relations) {
 				Long repositoryEntryKey = relation.getRepositoryEntryKey();
 				RepositoryEntryRef entryRef = new RepositoryEntryRefImpl(repositoryEntryKey);
-				List<String> remaingRoles = repositoryEntryRelationDao.getRoles(identityRef, entryRef);
-				if(remaingRoles.isEmpty()) {
+				List<String> remainingRoles = repositoryEntryRelationDao.getRoles(identityRef, entryRef);
+				if(remainingRoles.isEmpty()) {
 					OLATResource resource = repositoryManager.lookupRepositoryEntryResource(entryRef.getKey());
 					notificationsManager.unsubscribeAllForIdentityAndResId(identityRef, resource.getResourceableId());
+				}
+				if(!remainingRoles.contains(GroupRoles.coach.name()) || !remainingRoles.contains(GroupRoles.owner.name())) {
+					courseAssessmentService.unassignCoach(entryRef, identityRef);	
 				}
 			}
 		}

@@ -36,8 +36,9 @@ import org.olat.course.assessment.handler.AssessmentConfig.Mode;
  */
 public class AssessmentApplyGradeListController extends AssessmentCoachingListController {
 
-	public AssessmentApplyGradeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
-		super(ureq, wControl, stackPanel, translatedFormTitle);
+	public AssessmentApplyGradeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			AssessmentCoachingListOptions options) {
+		super(ureq, wControl, stackPanel, options);
 	}
 
 	@Override
@@ -52,6 +53,11 @@ public class AssessmentApplyGradeListController extends AssessmentCoachingListCo
 
 	@Override
 	protected boolean isShowStatusDoneInfo() {
+		return false;
+	}
+	
+	@Override
+	protected boolean isShowAssignedToMeFilter() {
 		return false;
 	}
 
@@ -81,6 +87,8 @@ public class AssessmentApplyGradeListController extends AssessmentCoachingListCo
 		params.setConfigHasGrade(Boolean.TRUE);
 		params.setConfigIsAutoGrade(Boolean.FALSE);
 		params.setGradeApplicable(true);
+		params.setRepositoryEntry(options.getCourseEntry());
+		applyFiltersToSearchParams(params);
 		
 		return assessmentToolManager.getCoachingEntries(params);
 	}

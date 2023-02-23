@@ -182,6 +182,22 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
+	public boolean hasAssessmentEntryWithoutCoachAssignment(RepositoryEntryRef entry, String subIdent) {
+		return assessmentEntryDao.hasAssessmentEntryWithoutCoachAssignment(entry, subIdent);
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntryCoachAssignment(RepositoryEntryRef entry, String subIdent,
+			boolean withCoachAssigned) {
+		return assessmentEntryDao.loadAssessmentEntriesCoachAssigned(entry, subIdent, withCoachAssigned);
+	}
+
+	@Override
+	public List<AssessmentEntry> getAssessmentEntriesForCoachAssignment(RepositoryEntryRef entry, IdentityRef coach) {
+		return assessmentEntryDao.loadAssessmentEntriesForCoach(entry, coach);
+	}
+
+	@Override
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
 		assessmentEntryDao.setLastVisit(nodeAssessment, lastVisit);
 	}

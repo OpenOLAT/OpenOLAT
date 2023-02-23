@@ -21,6 +21,9 @@
 		#if($r.available("assessmentModes"))
 			$r.render("assessmentModes")
 		#end
+		#if($r.available("assigned"))
+			$r.render("assigned")
+		#end
 		#if($r.available("toReview"))
 			$r.render("toReview")
 		#end

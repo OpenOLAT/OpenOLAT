@@ -36,8 +36,9 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class AssessmentReleaseListController extends AssessmentCoachingListController {
 
-	public AssessmentReleaseListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, String translatedFormTitle) {
-		super(ureq, wControl, stackPanel, translatedFormTitle);
+	public AssessmentReleaseListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			AssessmentCoachingListOptions options) {
+		super(ureq, wControl, stackPanel, options);
 	}
 
 	@Override
@@ -53,6 +54,11 @@ public class AssessmentReleaseListController extends AssessmentCoachingListContr
 	@Override
 	protected boolean isShowStatusDoneInfo() {
 		return true;
+	}
+	
+	@Override
+	protected boolean isShowAssignedToMeFilter() {
+		return false;
 	}
 
 	@Override
@@ -78,6 +84,8 @@ public class AssessmentReleaseListController extends AssessmentCoachingListContr
 		params.setStatus(AssessmentEntryStatus.done);
 		params.setUserVisibility(Boolean.FALSE);
 		params.setUserVisibilitySettable(true);
+		params.setRepositoryEntry(options.getCourseEntry());
+		applyFiltersToSearchParams(params);
 		
 		return assessmentToolManager.getCoachingEntries(params);
 	}

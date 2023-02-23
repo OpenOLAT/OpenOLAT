@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.UserShortDescription;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -73,7 +74,9 @@ import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.user.DisplayPortraitController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -84,6 +87,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class GTAParticipantController extends GTAAbstractController implements Activateable2 {
+	
+	private static final String COACH_PROPS_ID = CoachAssignmentListController.class.getCanonicalName();
 	
 	private Link submitButton;
 	private Link openGroupButton;
@@ -126,6 +131,21 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	@Override
 	protected void initContainer(UserRequest ureq) {
 		mainVC = createVelocityContainer("run");
+		
+		if(config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(gtaNode, userCourseEnv);
+			if(assessmentEntry != null && assessmentEntry.getCoach() != null) {
+				Identity coachIdentity = assessmentEntry.getCoach();
+				DisplayPortraitController portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), coachIdentity, true, true);
+				mainVC.put("portrait", portraitCtr.getInitialComponent());
+				listenTo(portraitCtr);
+				
+				UserShortDescription userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), coachIdentity, COACH_PROPS_ID);
+				userShortDescrCtr.setTitle(translate("coached.by"));
+				listenTo(userShortDescrCtr);
+				mainVC.put("userShortDescription", userShortDescrCtr.getInitialComponent());
+			}
+		}
 		
 		resetTaskButton = LinkFactory.createCustomLink("participant.reset.button", "reset", "participant.reset.button", Link.BUTTON, mainVC, this);
 		resetTaskButton.setElementCssClass("o_sel_course_gta_reset");

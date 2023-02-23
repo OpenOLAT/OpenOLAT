@@ -57,6 +57,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private int numOfAssessmentDocs;
 	private AssessmentEntryStatus status;
 	private String graderFullName;
+	private String coachFullName;
 	
 	private Object details;
 	private Date initialCourseLaunchDate;
@@ -65,17 +66,17 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	private TimeElement currentStart;
 	private CompletionItem currentCompletion;
 	
-	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, String graderFullName,
+	public AssessedIdentityElementRow(Identity identity, AssessmentEntry entry, String graderFullName, String coachFullName,
 			TimeElement currentStart, CompletionItem currentCompletion, FormLink toolsLink,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 		this.currentCompletion = currentCompletion;
 		this.currentStart = currentStart;
 		this.toolsLink = toolsLink;
-		setAssessmentEntry(entry, graderFullName);
+		setAssessmentEntry(entry, graderFullName, coachFullName);
 	}
 	
-	public void setAssessmentEntry(AssessmentEntry entry, String graderFullName) {
+	public void setAssessmentEntry(AssessmentEntry entry, String graderFullName, String coachFullName) {
 		if(entry != null) {
 			attempts = entry.getAttempts();
 			score = entry.getScore();
@@ -92,6 +93,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			status = entry.getAssessmentStatus();
 			numOfAssessmentDocs = entry.getNumberOfAssessmentDocuments();
 			this.graderFullName = graderFullName;
+			this.coachFullName = coachFullName;
 		} else {
 			attempts = null;
 			score = null;
@@ -105,6 +107,7 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 			status = null;
 			numOfAssessmentDocs = 0;
 			this.graderFullName = null;
+			this.coachFullName = null;
 		}
 	}
 
@@ -190,6 +193,10 @@ public class AssessedIdentityElementRow extends UserPropertiesRow {
 	
 	public String getGraderFullName() {
 		return graderFullName;
+	}
+	
+	public String getCoachFullName() {
+		return coachFullName;
 	}
 
 	public Object getDetails() {
