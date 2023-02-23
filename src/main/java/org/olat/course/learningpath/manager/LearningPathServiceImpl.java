@@ -63,6 +63,8 @@ import org.springframework.stereotype.Service;
 public class LearningPathServiceImpl implements LearningPathService, GenericEventListener {
 	
 	@Autowired
+	private CourseModule courseModule;
+	@Autowired
 	private LearningPathRegistry registry;
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -73,7 +75,7 @@ public class LearningPathServiceImpl implements LearningPathService, GenericEven
 	
 	@PostConstruct
 	public void init() {
-		CourseModule.registerForCourseType(this, null);
+		courseModule.registerForCourseType(this, null);
 	}
 	
 	@Override

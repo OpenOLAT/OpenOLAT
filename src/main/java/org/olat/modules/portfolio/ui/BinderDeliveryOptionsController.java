@@ -213,7 +213,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 			
 			acknowledgeEl.clearError();
 			if(!acknowledgeEl.isAtLeastSelected(1)) {
-				acknowledgeEl.setErrorKey("form.mandatory.hover", null);
+				acknowledgeEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
 			}
 			

@@ -605,14 +605,14 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(sectionsEl != null && sectionsEl.isEnabled() && sectionsEl.isVisible()) {
 			sectionsEl.clearError();
 			if(!sectionsEl.isOneSelected() || !StringHelper.containsNonWhitespace(sectionsEl.getSelectedKey())) {
-				sectionsEl.setErrorKey("form.legende.mandatory", null);
+				sectionsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -620,7 +620,7 @@ public class PageMetadataEditController extends FormBasicController {
 		if(assignmentsTemplatesEl != null) {
 			assignmentsTemplatesEl.clearError();
 			if(assignmentsTemplatesEl.isVisible() && !assignmentsTemplatesEl.isOneSelected()) {
-				assignmentsTemplatesEl.setErrorKey("form.legende.mandatory", null);
+				assignmentsTemplatesEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -630,7 +630,7 @@ public class PageMetadataEditController extends FormBasicController {
 			if(updateGlobalEntriesEl.isVisible()) {
 				if(updateGlobalEntriesEl.getSelectedKeys().size() < 1) {
 					allOk &= false;
-					updateGlobalEntriesEl.setErrorKey("form.legende.mandatory", null);
+					updateGlobalEntriesEl.setErrorKey("form.legende.mandatory");
 				}
 				
 			}

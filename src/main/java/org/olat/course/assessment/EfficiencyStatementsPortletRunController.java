@@ -87,6 +87,8 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 	private Link showAllLink;
 	
 	@Autowired
+	private CourseModule courseModule;
+	@Autowired
 	private EfficiencyStatementManager esm;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -131,7 +133,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 
 		putInitialPanel(efficiencyStatementsVC);
 		
-		CourseModule.registerForCourseType(this, ureq.getIdentity());
+		courseModule.registerForCourseType(this, ureq.getIdentity());
 		getWindowControl().getWindowBackOffice().addCycleListener(this);
 	}
 	
@@ -223,7 +225,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 
 	@Override
 	protected void doDispose() {
-		CourseModule.deregisterForCourseType(this);
+		courseModule.deregisterForCourseType(this);
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 		super.doDispose();
 	}

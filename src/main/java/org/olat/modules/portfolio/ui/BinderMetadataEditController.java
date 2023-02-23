@@ -219,7 +219,7 @@ public class BinderMetadataEditController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

@@ -105,17 +105,17 @@ public class InvitationEmailController extends FormBasicController {
 		String mail = mailEl.getValue();
 		if (StringHelper.containsNonWhitespace(mail)) {
 			if (!MailHelper.isValidEmailAddress(mail)) {
-				mailEl.setErrorKey("error.mail.invalid", null);
+				mailEl.setErrorKey("error.mail.invalid");
 				allOk &= false;
 			}
 		} else {
-			mailEl.setErrorKey("form.legende.mandatory", null);
+			mailEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		existingInviteeEl.clearError();
 		if(existingInviteeEl.isVisible() && !existingInviteeEl.isOneSelected()) {
-			existingInviteeEl.setErrorKey("error.existing.invitee.selection", null);
+			existingInviteeEl.setErrorKey("error.existing.invitee.selection");
 			allOk &= false;
 		}
 		
@@ -144,7 +144,7 @@ public class InvitationEmailController extends FormBasicController {
 					inviteeValues[i] = userManager.getUserDisplayName(shareWithIdentities.get(i));
 				}
 				existingInviteeEl.setKeysAndValues(inviteeKeys, inviteeValues, null);
-				existingInviteeEl.setErrorKey("error.existing.invitee.selection", null);
+				existingInviteeEl.setErrorKey("error.existing.invitee.selection");
 				existingInviteeEl.setVisible(true);
 			}
 		}

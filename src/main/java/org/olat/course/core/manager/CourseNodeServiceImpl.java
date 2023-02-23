@@ -65,13 +65,15 @@ public class CourseNodeServiceImpl implements CourseNodeService, GenericEventLis
 	private static final Logger log = Tracing.createLoggerFor(CourseNodeServiceImpl.class);
 	
 	@Autowired
+	private CourseModule courseModule;
+	@Autowired
 	private CourseElementDAO courseElementDao;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	@PostConstruct
 	public void init() {
-		CourseModule.registerForCourseType(this, null);
+		courseModule.registerForCourseType(this, null);
 	}
 	
 	@Override

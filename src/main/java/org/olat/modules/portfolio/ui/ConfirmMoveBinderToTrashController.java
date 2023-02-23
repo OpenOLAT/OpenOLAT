@@ -108,7 +108,7 @@ public class ConfirmMoveBinderToTrashController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("form.mandatory.hover", null);
+			acknowledgeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		

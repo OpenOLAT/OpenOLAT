@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -64,8 +66,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -694,8 +694,14 @@ public class BinderDAO {
 	}
 	
 	public Binder loadByKey(Long key) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select binder from pfbinder as binder")
+		  .append(" left join fetch binder.baseGroup as baseGroup")
+		  .append(" left join fetch binder.olatResource as olatResource")
+		  .append(" where binder.key=:portfolioKey");
+
 		List<Binder> binders = dbInstance.getCurrentEntityManager()
-			.createNamedQuery("loadBinderByKey", Binder.class)
+			.createQuery(sb.toString(), Binder.class)
 			.setParameter("portfolioKey", key)
 			.getResultList();
 		return binders == null || binders.isEmpty() ? null : binders.get(0);
