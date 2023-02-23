@@ -89,6 +89,8 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private CourseModule courseModule;
+	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private RepositoryService repositoryService;
@@ -112,7 +114,7 @@ public class ScoreAccountingProcessor implements GenericEventListener {
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(CurriculumElement.class));
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(Organisation.class));
 		coordinator.getCoordinator().getEventBus().registerFor(this, null, OresHelper.lookupType(Identity.class));
-		CourseModule.registerForCourseType(this, null);
+		courseModule.registerForCourseType(this, null);
 	}
 
 	@Override

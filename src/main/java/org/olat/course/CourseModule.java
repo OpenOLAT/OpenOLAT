@@ -108,12 +108,12 @@ public class CourseModule extends AbstractSpringModule {
 	public static final OLATResourceable ORESOURCEABLE_TYPE_COURSE = OresHelper.lookupType(CourseModule.class);
 	public static final String ORES_COURSE_ASSESSMENT = OresHelper.calculateTypeName(AssessmentManager.class);
 	
-	private static CoordinatorManager coordinatorManager;
+	private CoordinatorManager coordinatorManager;
 
 	@Autowired
 	public CourseModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
-		CourseModule.coordinatorManager = coordinatorManager;
+		this.coordinatorManager = coordinatorManager;
 	}
 	
 	@Override
@@ -233,11 +233,11 @@ public class CourseModule extends AbstractSpringModule {
 		return new SubscriptionContext(getCourseTypeName(), ce.getCourseResourceableId(), cn.getIdent() + ":" + subsubId);
 	}
 	
-	public static void registerForCourseType(GenericEventListener gel, Identity identity) {
+	public void registerForCourseType(GenericEventListener gel, Identity identity) {
 		coordinatorManager.getCoordinator().getEventBus().registerFor(gel, identity, ORESOURCEABLE_TYPE_COURSE);
 	}
 
-	public static void deregisterForCourseType(GenericEventListener gel) {
+	public void deregisterForCourseType(GenericEventListener gel) {
 		coordinatorManager.getCoordinator().getEventBus().deregisterFor(gel, ORESOURCEABLE_TYPE_COURSE);
 	}
 
