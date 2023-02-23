@@ -266,8 +266,8 @@ public class UserDetailsController extends BasicController implements Activateab
 
 	private void efficiencyStatementChanged() {
 		List<Identity> assessedIdentityList = Collections.singletonList(assessedIdentity);
-		RepositoryEntry re = statementEntry.getCourse();
-		efficiencyStatementManager.updateEfficiencyStatements(re, assessedIdentityList);
+		RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
+		efficiencyStatementManager.updateEfficiencyStatements(entry, assessedIdentityList);
 	}
 	
 	private AssessmentIdentityCourseController doOpenAssessmentController(UserRequest ureq) {
