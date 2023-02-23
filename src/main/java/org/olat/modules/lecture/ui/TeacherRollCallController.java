@@ -555,7 +555,7 @@ public class TeacherRollCallController extends FormBasicController {
 				String reason = row.getRollCall().getAbsenceReason();
 				if(row.getAbsenceNotice() == null && row.getAuthorizedAbsence() != null
 						&& row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
-					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
+					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory");
 					allOk &= false;
 				}
 			}

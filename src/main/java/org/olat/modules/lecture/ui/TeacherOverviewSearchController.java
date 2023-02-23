@@ -138,12 +138,12 @@ public class TeacherOverviewSearchController extends FormBasicController impleme
 		
 		if(forceDates) {
 			if(startEl.getDate() == null) {
-				startEl.setErrorKey("form.legende.mandatory", null);
+				startEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			if(endEl.getDate() == null) {
-				endEl.setErrorKey("form.legende.mandatory", null);
+				endEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

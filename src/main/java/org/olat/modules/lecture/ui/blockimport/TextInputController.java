@@ -99,7 +99,7 @@ public class TextInputController extends StepFormBasicController {
 				converter.parse(inputElement.getValue());
 				List<ImportedLectureBlock> blocks = converter.getImportedLectureBlocks();
 				if(blocks == null || blocks.isEmpty()) {
-					inputElement.setErrorKey("form.mandatory.hover", null);
+					inputElement.setErrorKey("form.mandatory.hover");
 					allOk &= false;
 				} else {
 					for(ImportedLectureBlock block:blocks) {
@@ -108,12 +108,12 @@ public class TextInputController extends StepFormBasicController {
 				}
 			} catch (Exception e) {
 				logError("", e);
-				inputElement.setErrorKey("error.at.line", new String[] { Integer.toString(converter.getCurrentLine()) });
+				inputElement.setErrorKey("error.at.line", Integer.toString(converter.getCurrentLine()));
 				allOk &= false;
 			}
 			
 			if(errors.length() > 0) {
-				inputElement.setErrorKey("errors.at", new String[] { errors.toString() });
+				inputElement.setErrorKey("errors.at", errors.toString());
 				allOk &= false;
 			}
 		}

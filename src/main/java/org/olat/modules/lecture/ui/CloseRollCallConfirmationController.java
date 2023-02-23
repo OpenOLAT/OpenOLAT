@@ -213,14 +213,14 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			allOk &= validateInt(effectiveEndHourEl, 24);
 			allOk &= validateInt(effectiveEndMinuteEl, 60);
 		} else {
-			effectiveEndHourEl.setErrorKey("form.legende.mandatory", null);
+			effectiveEndHourEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(effectiveEndReasonEl != null) {
 			effectiveEndReasonEl.clearError();
 			if(effectiveEndReasonEl.isVisible() && !effectiveEndReasonEl.isOneSelected() || effectiveEndReasonEl.isSelected(0)) {
-				effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+				effectiveEndReasonEl.setErrorKey("error.reason.mandatory");
 				allOk &= false;
 			}
 		}
@@ -228,7 +228,7 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 		if(effectiveLecturesEl != null) {
 			effectiveLecturesEl.clearError();
 			if(!effectiveLecturesEl.isOneSelected()) {
-				effectiveLecturesEl.setErrorKey("form.legende.mandatory", null);
+				effectiveLecturesEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -244,15 +244,15 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(element.getValue());
 				if(val < 0 || val > max) {
-					element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+					element.setErrorKey("error.integer.between", "0", Integer.toString(max));
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				element.setErrorKey("error.integer.between", new String[] { "0", Integer.toString(max)} );
+				element.setErrorKey("error.integer.between", "0", Integer.toString(max));
 				allOk &= false;
 			}
 		} else {
-			element.setErrorKey("form.legende.mandatory", null);
+			element.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

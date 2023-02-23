@@ -138,9 +138,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		assessmentLeadTimeEl = uifactory.addTextElement("lecture.assessment.mode.leading.time", "lecture.assessment.mode.leading.time", 8, "", courseCont);
 		assessmentFollowupTimeEl = uifactory.addTextElement("lecture.assessment.mode.followup.time", "lecture.assessment.mode.followup.time", 8, "", courseCont);
-		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 8, "", courseCont);
-		assessmentSafeExamBrowserEl = uifactory.addTextElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 8, "", courseCont);
-
+		assessmentIpsEl = uifactory.addTextElement("lecture.assessment.mode.ips", "lecture.assessment.mode.ips", 1024, "", courseCont);
+		assessmentSafeExamBrowserEl = uifactory.addTextAreaElement("lecture.assessment.mode.seb", "lecture.assessment.mode.seb", 16000, 4, 60, false, false, "", courseCont);
+		assessmentSafeExamBrowserEl.setMaxLength(16000);
+		
 		//global configuration
 		globalCont = FormLayoutContainer.createDefaultFormLayout("global", getTranslator());
 		globalCont.setFormTitle(translate("lecture.admin.global.title"));
@@ -389,15 +390,15 @@ public class LectureSettingsAdminController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(attendanceRateEl.getValue());
 				if(val <= 0 && val > 100) {
-					attendanceRateEl.setErrorKey("error.integer.between", new String[] {"1", "100"});
+					attendanceRateEl.setErrorKey("error.integer.between", "1", "100");
 					allOk &= false;
 				}
 			} catch (Exception e) {
-				attendanceRateEl.setErrorKey("form.error.nointeger", null);
+				attendanceRateEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			attendanceRateEl.setErrorKey("form.legende.mandatory", null);
+			attendanceRateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -417,7 +418,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		boolean validatePlannedLectures = validateInt(defaultPlannedLecturesEl);
 		if(validatePlannedLectures && Integer.parseInt(defaultPlannedLecturesEl.getValue()) > 12) {
-			defaultPlannedLecturesEl.setErrorKey("lecture.def.planned.lectures.max", null);
+			defaultPlannedLecturesEl.setErrorKey("lecture.def.planned.lectures.max");
 			validatePlannedLectures = false;
 		}
 		allOk &= validatePlannedLectures;
@@ -435,15 +436,15 @@ public class LectureSettingsAdminController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(el.getValue());
 				if(val <= 0) {
-					el.setErrorKey("error.integer.positive", null);
+					el.setErrorKey("error.integer.positive");
 					allOk &= false;
 				}
 			} catch (Exception e) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

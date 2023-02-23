@@ -108,11 +108,11 @@ public class EditAppealController extends FormBasicController {
 		statusEl.clearError();
 		reasonEl.clearError();
 		if(!statusEl.isOneSelected()) {
-			statusEl.setErrorKey("form.legende.mandatory", null);
+			statusEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(LectureBlockAppealStatus.pending.name().equals(statusEl.getSelectedKey())
 				&& !StringHelper.containsNonWhitespace(reasonEl.getValue())) {
-			reasonEl.setErrorKey("form.legende.mandatory", null);
+			reasonEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;	
 		}
 		

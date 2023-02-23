@@ -118,7 +118,7 @@ public class CancelRollCallConfirmationController extends FormBasicController {
 		
 		effectiveEndReasonEl.clearError();
 		if(effectiveEndReasonEl.isEnabled() && !effectiveEndReasonEl.isOneSelected()) {
-			effectiveEndReasonEl.setErrorKey("error.reason.mandatory", null);
+			effectiveEndReasonEl.setErrorKey("error.reason.mandatory");
 			allOk &= false;
 		}
 

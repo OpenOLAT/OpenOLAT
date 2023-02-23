@@ -261,7 +261,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		if(!absenceDefaultAuthorized && authorizedAbsencedEl != null
 				&& authorizedAbsencedEl.isAtLeastSelected(1) && absenceReasonEl != null) {
 			if(!StringHelper.containsNonWhitespace(absenceReasonEl.getValue())) {
-				absenceReasonEl.setErrorKey("error.reason.mandatory", null);
+				absenceReasonEl.setErrorKey("error.reason.mandatory");
 				allOk &= false;
 			}
 		}
@@ -271,7 +271,7 @@ public class SingleParticipantCallController extends FormBasicController {
 			if(absenceCategoriesEl.isVisible()) {
 				List<Integer> absenceList = getAbsenceList();
 				if((!absenceCategoriesEl.isOneSelected() || absenceCategoriesEl.isSelected(0)) && !absenceList.isEmpty()) {
-					absenceCategoriesEl.setErrorKey("error.reason.mandatory", null);
+					absenceCategoriesEl.setErrorKey("error.reason.mandatory");
 					allOk &= false;
 				}
 			}

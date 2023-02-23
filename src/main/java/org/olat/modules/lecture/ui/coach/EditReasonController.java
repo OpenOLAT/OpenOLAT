@@ -259,13 +259,13 @@ public class EditReasonController extends FormBasicController {
 		
 		absenceCategoriesEl.clearError();
 		if(absenceCategoriesEl.isVisible() && !absenceCategoriesEl.isOneSelected()) {
-			absenceCategoriesEl.setErrorKey("form.legende.mandatory", null);
+			absenceCategoriesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		typeEl.clearError();
 		if(typeEl.isVisible() && !typeEl.isOneSelected()) {
-			typeEl.setErrorKey("form.legende.mandatory", null);
+			typeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -327,7 +327,7 @@ public class EditReasonController extends FormBasicController {
 		if (fileExists) {
 			try {
 				Files.delete(documentUploadEl.getUploadFile().toPath());
-				documentUploadEl.setErrorKey("attachments.error.file.exists", null);
+				documentUploadEl.setErrorKey("attachments.error.file.exists");
 				documentUploadEl.showError(true);
 			} catch (IOException e) {
 				logError("Cannot delete uploaded file", e);

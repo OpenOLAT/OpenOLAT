@@ -111,11 +111,11 @@ public class EditParticipantSummaryController extends FormBasicController {
 			try {
 				int val = Integer.parseInt(rateEl.getValue());
 				if(val < 0 || val > 100) {
-					rateEl.setErrorKey("error.integer.between", new String[] {"0", "100"});
+					rateEl.setErrorKey("error.integer.between", "0", "100");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				rateEl.setErrorKey("form.error.nointeger", null);
+				rateEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
