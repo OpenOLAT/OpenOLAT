@@ -52,6 +52,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.oaipmh.OAIService;
+import org.olat.modules.oaipmh.common.util.URLEncoder;
 import org.olat.repository.ResourceInfoDispatcher;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -333,8 +334,10 @@ public class OAIPmhAdminController extends FormBasicController {
 
 	private boolean isValidInputUrl(String url) {
 		boolean allOk = false;
-		UrlValidator urlValidator = new UrlValidator(new String[]{"https"});
-
+		UrlValidator urlValidator = new UrlValidator(new String[]{"https", "http"});
+		// add sitemap.xml to template before validating
+		String sitemapUrlEncoded = URLEncoder.encode(ResourceInfoDispatcher.getUrl("sitemap.xml"));
+		url = String.format(url, sitemapUrlEncoded);
 		// check first on ServerDomainName, because we don't want test servers getting indexed
 		if (!Settings.getServerDomainName().equals("testing.frentix.com")
 				&& StringHelper.containsNonWhitespace(url)
