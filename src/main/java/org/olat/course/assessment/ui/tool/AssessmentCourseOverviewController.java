@@ -34,6 +34,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessagePanelController;
+import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseFactory;
@@ -48,6 +50,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
+import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -80,6 +83,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private final AssessmentStatisticsController statisticCtrl;
 	private final CourseNodeToReviewSmallController toReviewCtrl;
 	private final Controller toReleaseCtrl;
+	private CourseNodeAssignedSmallController assignedCtrl;
 	private CourseNodeToApplyGradeSmallController toApplyGradeCtrl;
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 	
@@ -156,6 +160,12 @@ public class AssessmentCourseOverviewController extends BasicController {
 		listenTo(statisticCtrl);
 		mainVC.put("statistic", statisticCtrl.getInitialComponent());
 		
+		if(hasCoachAssignment(courseEntry, coachUserEnv.getCourseEnvironment().getRunStructure().getRootNode())) {
+			assignedCtrl = new CourseNodeAssignedSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
+			listenTo(assignedCtrl);
+			mainVC.put("assigned", assignedCtrl.getInitialComponent());
+		}
+		
 		toReviewCtrl = new CourseNodeToReviewSmallController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(toReviewCtrl);
 		mainVC.put("toReview", toReviewCtrl.getInitialComponent());
@@ -188,6 +198,22 @@ public class AssessmentCourseOverviewController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
+	private boolean hasCoachAssignment(RepositoryEntry courseEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		if(assessmentConfig.hasCoachAssignment()) {
+			return true;
+		}
+		
+		int childCount = courseNode.getChildCount();
+		for (int i = 0; i < childCount; i++) {
+			INode child = courseNode.getChildAt(i);
+			if (child instanceof CourseNode childCourseNode && hasCoachAssignment(courseEntry, childCourseNode)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private void addManualGradeSubIdents(List<String> manualGradeSubIdents, RepositoryEntry courseEntry, CourseNode courseNode) {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		if (Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade()) {
@@ -196,8 +222,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 		int childCount = courseNode.getChildCount();
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode)child;
+			if (child instanceof CourseNode childCourseNode) {
 				addManualGradeSubIdents(manualGradeSubIdents, courseEntry, childCourseNode);
 			}
 		}
@@ -222,12 +247,16 @@ public class AssessmentCourseOverviewController extends BasicController {
 
 	private void reloadToDos() {
 		toReviewCtrl.loadModel(params.getParticipantTypes());
-		if (toReleaseCtrl instanceof CourseNodeToReleaseSmallController) {
-			((CourseNodeToReleaseSmallController)toReleaseCtrl).loadModel(params.getParticipantTypes());
+		if (toReleaseCtrl instanceof CourseNodeToReleaseSmallController smallToReleaseCtrl) {
+			smallToReleaseCtrl.loadModel(params.getParticipantTypes());
 		}
 		if (toApplyGradeCtrl != null) {
 			toApplyGradeCtrl.loadModel(params.getParticipantTypes());
 		}
+		if(assignedCtrl != null) {
+			assignedCtrl.loadModel(params.getParticipantTypes());
+		}
+		
 	}
 	
 	public void reloadAssessmentModes() {
@@ -237,8 +266,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == userFilterCtrl) {
-			if (event instanceof UserFilterEvent) {
-				UserFilterEvent ufe = (UserFilterEvent)event;
+			if (event instanceof UserFilterEvent ufe) {
 				List<ParticipantType> participantTypes = new ArrayList<>(3);
 				if (ufe.isWithMembers()) {
 					participantTypes.add(ParticipantType.member);
@@ -256,14 +284,26 @@ public class AssessmentCourseOverviewController extends BasicController {
 		} else if(toReviewCtrl == source) {
 			if(event instanceof CourseNodeIdentityEvent) {
 				fireEvent(ureq, event);
+			} else if(event instanceof ShowOrdersEvent) {
+				fireEvent(ureq, new ShowOrdersEvent(getEntries("Review", null)));
+			}
+		} else if(assignedCtrl == source) {
+			if(event instanceof CourseNodeIdentityEvent) {
+				fireEvent(ureq, event);
+			} else if(event instanceof ShowOrdersEvent) {
+				fireEvent(ureq, new ShowOrdersEvent(getEntries("Review", "AssignedToMe")));
 			}
 		} else if(toReleaseCtrl == source) {
 			if(event instanceof CourseNodeIdentityEvent) {
 				fireEvent(ureq, event);
+			} else if(event instanceof ShowOrdersEvent) {
+				fireEvent(ureq, new ShowOrdersEvent(getEntries("Release", null)));
 			}
 		} else if(toApplyGradeCtrl == source) {
 			if(event instanceof CourseNodeIdentityEvent) {
 				fireEvent(ureq, event);
+			} else if(event instanceof ShowOrdersEvent) {
+				fireEvent(ureq, new ShowOrdersEvent(getEntries("ApplyGrade", null)));
 			}
 		} else if(assessmentModeListCtrl == source) {
 			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
@@ -273,6 +313,17 @@ public class AssessmentCourseOverviewController extends BasicController {
 			fireEvent(ureq, event);
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private List<ContextEntry> getEntries(String resourceType, String subType) {
+		List<ContextEntry> entries = BusinessControlFactory.getInstance()
+				.createCEListFromResourceType(resourceType);
+		if(subType != null) {
+			List<ContextEntry> subEntries = BusinessControlFactory.getInstance()
+					.createCEListFromResourceType(subType);
+			entries.addAll(subEntries);
+		}
+		return entries;
 	}
 
 	@Override

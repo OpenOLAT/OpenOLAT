@@ -183,4 +183,14 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	public boolean isObligationOverridable() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasCoachAssignment() {
+		return false;
+	}
+	
+	@Override
+	public CoachAssignmentMode getCoachAssignmentMode() {
+		return null;
+	}
 }

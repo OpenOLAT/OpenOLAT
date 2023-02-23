@@ -49,10 +49,13 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 	private final Date statusDoneAt;
 	private final boolean owner;
 	private final boolean coach;
+	private final Long assignedCoachKey;
+	private Identity assignedCoach;
 	
 	public CoachingAssessmentEntryImpl(Long assessmentEntryKey, Long assessedIdentityKey, Long repositoryEntryKey,
 			String subIdent, String courseElementType, String courseElementShortTitle, String courseElementLongTitle,
-			Date lastUserModified, Long statusDoneByKey, Date statusDoneAt, boolean owner, boolean coach) {
+			Date lastUserModified, Long statusDoneByKey, Date statusDoneAt, boolean owner, boolean coach,
+			Long assignedCoachKey) {
 		this.assessmentEntryKey = assessmentEntryKey;
 		this.assessedIdentityKey = assessedIdentityKey;
 		this.repositoryEntryKey = repositoryEntryKey;
@@ -65,6 +68,7 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 		this.statusDoneAt = statusDoneAt;
 		this.owner = owner;
 		this.coach = coach;
+		this.assignedCoachKey = assignedCoachKey;
 	}
 
 	@Override
@@ -168,6 +172,19 @@ public class CoachingAssessmentEntryImpl implements CoachingAssessmentEntry {
 	@Override
 	public boolean isCoach() {
 		return coach;
+	}
+	
+	public Long getAssignedCoachKey() {
+		return assignedCoachKey;
+	}
+
+	@Override
+	public Identity getAssignedCoach() {
+		return assignedCoach;
+	}
+
+	public void setAssignedCoach(Identity assignedCoach) {
+		this.assignedCoach = assignedCoach;
 	}
 
 	@Override

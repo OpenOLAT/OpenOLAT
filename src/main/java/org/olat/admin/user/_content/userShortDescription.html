@@ -1,4 +1,7 @@
 <div class="o_userShortDescription" id="$r.getCId()">
+#if($r.isNotEmpty($title))
+	<h3>$r.escapeHtml($title)</h3>
+#end
 <table class="table table-bordered table-condensed table-striped">
 	#foreach($row in $additionalRows.getRows())
 		#if($r.isTrue($row.before))

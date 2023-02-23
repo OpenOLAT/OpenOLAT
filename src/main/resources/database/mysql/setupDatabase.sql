@@ -1489,6 +1489,8 @@ create table o_as_entry (
    fk_identity_obligation_mod bigint,
    fk_identity_status_done bigint,
    a_anon_identifier varchar(128) default null,
+   a_coach_assignment_date datetime default null,
+   fk_coach bigint default null,
    primary key (id),
    unique (fk_identity, fk_entry, a_subident)
 );
@@ -3596,6 +3598,7 @@ create table o_course_element (
    c_auto_grade bool not null default false,
    c_passed_mode varchar(16) not null,
    c_cut_value float(65,30),
+   c_coach_assignment bool default false not null,
    fk_entry bigint not null,
    c_subident varchar(64) not null,
    primary key (id)
@@ -4519,6 +4522,7 @@ alter table o_as_user_course_infos add unique (fk_identity, fk_resource_id);
 alter table o_as_entry add constraint as_entry_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_as_entry add constraint as_entry_to_coach_idx foreign key (fk_coach) references o_bs_identity (id);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start);

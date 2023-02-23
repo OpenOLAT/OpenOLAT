@@ -9,8 +9,11 @@
 	$r.render("selectionStack")
 
 #elseif($r.available("list"))
-	#if($r.available("contextualSubscription") || $r.available("bulk.download.title"))
+	#if($r.available("contextualSubscription") || $r.available("bulk.download.title") || $r.available("bulk.coach.assignment"))
 	<div class="o_button_group o_button_group_right">
+		#if($r.available("bulk.coach.assignment"))
+			$r.render("bulk.coach.assignment")
+		#end
 		#if($r.available("bulk.download.title"))
 			$r.render("bulk.download.title")
 		#end

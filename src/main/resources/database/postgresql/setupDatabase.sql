@@ -1509,6 +1509,8 @@ create table o_as_entry (
    fk_identity_obligation_mod int8,
    fk_identity_status_done int8,
    a_anon_identifier varchar(128) default null,
+   a_coach_assignment_date timestamp default null,
+   fk_coach int8 default null,
    primary key (id),
    unique(fk_identity, fk_entry, a_subident)
 );
@@ -3614,6 +3616,7 @@ create table o_course_element (
    c_auto_grade bool not null default false,
    c_passed_mode varchar(16) not null,
    c_cut_value decimal,
+   c_coach_assignment bool default false not null,
    fk_entry int8 not null,
    c_subident varchar(64) not null,
    primary key (id)
@@ -4427,6 +4430,8 @@ alter table o_as_entry add constraint as_entry_to_entry_idx foreign key (fk_entr
 create index idx_as_entry_to_entry_idx on o_as_entry (fk_entry);
 alter table o_as_entry add constraint as_entry_to_refentry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_as_entry_to_refentry_idx on o_as_entry (fk_reference_entry);
+alter table o_as_entry add constraint as_entry_to_coach_idx foreign key (fk_coach) references o_bs_identity (id);
+create index idx_as_entry_to_coach_idx on o_as_entry (fk_coach);
 
 create index idx_as_entry_to_id_idx on o_as_entry (a_assessment_id);
 create index idx_as_entry_start_idx on o_as_entry (a_date_start) where a_date_start is not null;
@@ -4513,7 +4518,7 @@ create index vid_transcoder_trans_idx on o_vid_transcoding(vid_transcoder);
 alter table o_vid_metadata add constraint vid_meta_rsrc_idx foreign key (fk_resource_id) references o_olatresource (resource_id);
 create index idx_vid_meta_rsrc_idx on o_vid_metadata(fk_resource_id);
 
--- video taks
+-- video task
 alter table o_vid_task_session add constraint vid_sess_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_vid_sess_to_repo_entry_idx on o_vid_task_session (fk_entry);
 alter table o_vid_task_session add constraint vid_sess_to_vid_entry_idx foreign key (fk_reference_entry) references o_repositoryentry (repositoryentry_id);

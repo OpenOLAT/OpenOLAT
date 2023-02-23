@@ -48,6 +48,7 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 	private final Date lastUserModified;
 	private final Identity statusDoneBy;
 	private final Date statusDoneAt;
+	private final Identity assignedCoach;
 	
 	public AssessmentCoachingRow(CoachingAssessmentEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(entry.getAssessedIdentity(), userPropertyHandlers, locale);
@@ -62,6 +63,7 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 		this.lastUserModified = entry.getLastUserModified();
 		this.statusDoneBy = entry.getStatusDoneBy();
 		this.statusDoneAt = entry.getStatusDoneAt();
+		this.assignedCoach = entry.getAssignedCoach();
 	}
 
 	public Long getRepositoryEntryKey() {
@@ -114,6 +116,10 @@ public class AssessmentCoachingRow extends UserPropertiesRow implements Indented
 
 	public Date getStatusDoneAt() {
 		return statusDoneAt;
+	}
+
+	public Identity getAssignedCoach() {
+		return assignedCoach;
 	}
 	
 }

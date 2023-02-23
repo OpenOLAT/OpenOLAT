@@ -1,3 +1,8 @@
+#if($r.visible("coach.assignment"))
+<div class="o_warning">
+	$r.translate("warning.coach.assignment") $r.render("coach.assignment")
+</div>
+#end
 <div class="clearfix">
 	$r.render("segments")
 	#if($r.available("segmentCmp"))

@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -361,5 +362,17 @@ public interface CourseAssessmentService {
 	 * courses where the lifecycle is over.
 	 */
 	public void evaluateLifecycleOver(Date validToBefore);
+	
+	/**
+	 * 
+	 * @param assessedIdentity
+	 * @param assessmentEntry
+	 * @param coach If null, will added
+	 */
+	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach);
+	
+	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace);
+	
+	public void unassignCoach(RepositoryEntryRef entry, IdentityRef coach);
 
 }

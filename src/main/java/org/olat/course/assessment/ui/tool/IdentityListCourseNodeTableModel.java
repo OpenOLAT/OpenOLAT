@@ -134,6 +134,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 				case lastUserModified: return row.getLastUserModified();
 				case lastCoachModified: return row.getLastCoachModified();
 				case externalGrader: return row.getGraderFullName();
+				case coachAssignment: return row.getCoachFullName();
 				case tools: return row.getToolsLink();
 				case details: return row.getDetails();
 				default: return "ERROR";
@@ -174,7 +175,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		details("table.header.details"),
 		cut("table.header.cut"),
 		externalGrader("table.header.external.grader"),
-		currentRunStart("table.header.run.start");
+		currentRunStart("table.header.run.start"),
+		coachAssignment("table.header.coach.assignment");
 		
 		private final String i18nKey;
 		private final String icon;

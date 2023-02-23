@@ -20,10 +20,12 @@
 package org.olat.course.assessment;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -44,6 +46,9 @@ public class CoachingAssessmentSearchParams {
 	private Boolean userVisibility;
 	private boolean userVisibilitySettable;
 	private boolean gradeApplicable;
+	private RepositoryEntry repositoryEntry;
+	private boolean coachNotAssigned;
+	private List<Long> assignedCoachKeys;
 	
 	public String getSearchString() {
 		return searchString;
@@ -133,4 +138,31 @@ public class CoachingAssessmentSearchParams {
 		this.gradeApplicable = gradeApplicable;
 	}
 
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
+	}
+
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
+	}
+
+	public boolean isCoachNotAssigned() {
+		return coachNotAssigned;
+	}
+
+	public void setCoachNotAssigned(boolean coachNotAssigned) {
+		this.coachNotAssigned = coachNotAssigned;
+	}
+	
+	public boolean hasAssignedCoachKeys() {
+		return assignedCoachKeys != null && !assignedCoachKeys.isEmpty();
+	}
+
+	public List<Long> getAssignedCoachKeys() {
+		return assignedCoachKeys;
+	}
+
+	public void setAssignedCoachKeys(List<Long> assignedCoachKeys) {
+		this.assignedCoachKeys = assignedCoachKeys;
+	}
 }

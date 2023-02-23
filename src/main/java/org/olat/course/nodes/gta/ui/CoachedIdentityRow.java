@@ -48,16 +48,18 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	private final boolean hasSubmittedDocuments;
 	private final FormLink markLink;
 	private final AssessmentEntry assessmentEntry;
+	private final String coachFullName;
 
 	private final int numOfSubmissionDocs;
 	private final int numOfCollectedDocs;
 	
+	private FormLink toolsLink;
 	private DownloadLink downloadTaskFileLink;
 	
 	public CoachedIdentityRow(UserPropertiesRow identity, TaskLight task, TaskDefinition taskDefinition,
 			DueDate submissionDueDate, DueDate lateSubmissionDueDate, Date syntheticSubmissionDate,
-			boolean hasSubmittedDocuments, FormLink markLink, AssessmentEntry assessmentEntry,
-			int numOfSubmissionDocs, int numOfCollectedDocs) {
+			boolean hasSubmittedDocuments, FormLink markLink, FormLink toolsLink,
+			AssessmentEntry assessmentEntry, int numOfSubmissionDocs, int numOfCollectedDocs, String coachFullName) {
 		super(identity);
 		this.task = task;
 		this.taskDefinition = taskDefinition;
@@ -66,9 +68,11 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 		this.hasSubmittedDocuments = hasSubmittedDocuments;
 		this.syntheticSubmissionDate = syntheticSubmissionDate;
 		this.markLink = markLink;
+		this.toolsLink = toolsLink;
 		this.assessmentEntry = assessmentEntry;
 		this.numOfSubmissionDocs = numOfSubmissionDocs;
 		this.numOfCollectedDocs = numOfCollectedDocs;
+		this.coachFullName = coachFullName;
 	}
 
 	@Override
@@ -153,6 +157,14 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	public int getNumOfCollectedDocs() {
 		return numOfCollectedDocs;
 	}
+	
+	public String getCoachFullName() {
+		return coachFullName;
+	}
+	
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
 
 	public DownloadLink getDownloadTaskFileLink() {
 		return downloadTaskFileLink;
@@ -161,4 +173,5 @@ public class CoachedIdentityRow extends UserPropertiesRow implements CoachedElem
 	public void setDownloadTaskFileLink(DownloadLink downloadTaskFileLink) {
 		this.downloadTaskFileLink = downloadTaskFileLink;
 	}
+	
 }

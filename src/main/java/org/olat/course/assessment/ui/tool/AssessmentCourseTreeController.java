@@ -54,6 +54,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.event.ShowOrdersEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -63,6 +64,10 @@ import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.ParticipantTypeFilterEvent;
+import org.olat.modules.coach.model.CoachingSecurity;
+import org.olat.modules.coach.ui.OrdersOverviewController;
+import org.olat.modules.grading.GradingSecurityCallback;
+import org.olat.modules.grading.GradingSecurityCallbackFactory;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -76,6 +81,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	
 	private final VelocityContainer mainVC;
 	private final MenuTree overviewMenuTree;
+	private final GenericTreeNode ordersNode;
 	private final GenericTreeNode overviewNode;
 	private final MenuTree menuTree;
 	private final SegmentViewComponent segmentView;
@@ -83,6 +89,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 	private final Link courseNodeOverviewLink;
 	private final Link participantsLink;
 
+	private OrdersOverviewController ordersCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private AssessmentCourseNodeOverviewController courseNodeOverviewCtrl;
 	private AssessmentEventToState assessmentEventToState;
@@ -116,12 +123,22 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		// Overview navigation
 		overviewMenuTree = new MenuTree("menuTree");
 		GenericTreeModel overviewTreeModel = new GenericTreeModel();
+		GenericTreeNode overviewRootNode = new GenericTreeNode();
+		overviewTreeModel.setRootNode(overviewRootNode);
+
 		overviewNode = new GenericTreeNode();
 		overviewNode.setTitle(translate("assessment.tool.overview"));
 		overviewNode.setIconCssClass("o_icon_assessment_tool");
-		overviewTreeModel.setRootNode(overviewNode);
+		overviewRootNode.addChild(overviewNode);
+		
+		ordersNode = new GenericTreeNode();
+		ordersNode.setTitle(translate("assessment.tool.orders"));
+		ordersNode.setIconCssClass("o_icon_list");
+		overviewRootNode.addChild(ordersNode);
+		
 		overviewMenuTree.setTreeModel(overviewTreeModel);
 		overviewMenuTree.setSelectedNodeId(overviewNode.getIdent());
+		overviewMenuTree.setRootVisible(false);
 		overviewMenuTree.addListener(this);
 
 		// Navigation menu
@@ -232,17 +249,19 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				TreeNode selectedTreeNode = overviewMenuTree.getSelectedNode();
 				if (selectedTreeNode == overviewNode) {
 					doOpenOverview(ureq);
+				} else if(selectedTreeNode == ordersNode) {
+					doOpenOrders(ureq);
 				}
 			}
 		} else if (source == menuTree) {
 			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 				TreeNode selectedTreeNode = menuTree.getSelectedNode();
 				Object uo = selectedTreeNode.getUserObject();
-				if(uo instanceof CourseNode) {
+				if(uo instanceof CourseNode courseNode) {
 					if (segmentView.isSelected(courseNodeOverviewLink)) {
-						doOpenCourseNodeOverview(ureq, selectedTreeNode, (CourseNode)uo);
+						doOpenCourseNodeOverview(ureq, selectedTreeNode, courseNode);
 					} else {
-						processSelectCourseNodeWithMemory(ureq, selectedTreeNode, (CourseNode)uo);
+						processSelectCourseNodeWithMemory(ureq, selectedTreeNode, courseNode);
 					}
 				}
 			}
@@ -253,11 +272,11 @@ public class AssessmentCourseTreeController extends BasicController implements A
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				TreeNode selectedTreeNode = menuTree.getSelectedNode();
 				Object uo = selectedTreeNode.getUserObject();
-				if (uo instanceof CourseNode) {
+				if (uo instanceof CourseNode courseNode) {
 					if (clickedLink == courseNodeOverviewLink) {
-						doOpenCourseNodeOverview(ureq, selectedTreeNode, (CourseNode)uo);
+						doOpenCourseNodeOverview(ureq, selectedTreeNode, courseNode);
 					} else if (clickedLink == participantsLink) {
-						doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, syncParticipantTypes(null));
+						doOpenParticipants(ureq, selectedTreeNode, courseNode).activate(ureq, null, syncParticipantTypes(null));
 					}
 				}
 			}
@@ -269,23 +288,26 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		if (assessmentEventToState != null && assessmentEventToState.handlesEvent(source, event)) {
 			TreeNode selectedTreeNode = menuTree.getSelectedNode();
 			Object uo = selectedTreeNode.getUserObject();
-			if (uo instanceof CourseNode) {
+			if (uo instanceof CourseNode courseNode) {
 				AssessedIdentityListState state = assessmentEventToState.getState(event);
-				doOpenParticipants(ureq, selectedTreeNode, (CourseNode)uo).activate(ureq, null, syncParticipantTypes(state));
+				doOpenParticipants(ureq, selectedTreeNode, courseNode).activate(ureq, null, syncParticipantTypes(state));
 			}
 		} else if (source == overviewCtrl) {
-			if (event instanceof ParticipantTypeFilterEvent) {
-				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			if (event instanceof ParticipantTypeFilterEvent filterEvent) {
+				participantTypeFilter = filterEvent.getParticipantTypes();
+			} else if(event instanceof ShowOrdersEvent showEvent) {
+				doOpenOrders(ureq).activate(ureq, showEvent.getEntries(), null);
+				overviewMenuTree.setSelectedNode(ordersNode);
 			} else {
 				fireEvent(ureq, event);
 			}
 		} else if (source == courseNodeOverviewCtrl) {
-			if (event instanceof ParticipantTypeFilterEvent) {
-				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			if (event instanceof ParticipantTypeFilterEvent filterEvent) {
+				participantTypeFilter = filterEvent.getParticipantTypes();
 			}
 		} else if (source == identityListCtrl) {
-			if (event instanceof ParticipantTypeFilterEvent) {
-				participantTypeFilter = ((ParticipantTypeFilterEvent)event).getParticipantTypes();
+			if (event instanceof ParticipantTypeFilterEvent filterEvent) {
+				participantTypeFilter = filterEvent.getParticipantTypes();
 			}
 		}
 		super.event(ureq, source, event);
@@ -373,6 +395,29 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		addToHistory(ureq, overviewCtrl);
 		mainVC.put("overview", overviewCtrl.getInitialComponent());
 		mainVC.remove("segments");
+	}
+	
+	private OrdersOverviewController doOpenOrders(UserRequest ureq) {
+		overviewMenuTree.setHighlightSelection(true);
+		menuTree.setHighlightSelection(false);
+		
+		stackPanel.popUpToController(this);
+		stackPanel.changeDisplayname(translate("assessment.tool.orders"), "o_icon o_icon_list", this);
+		
+		removeAsListenerAndDispose(ordersCtrl);
+	
+		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Orders", Long.valueOf(0));
+		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, getWindowControl());
+		
+		CoachingSecurity coachingSecurity = new CoachingSecurity(false, true, false, false);
+		GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getManagerCalllback(getIdentity(), ureq.getUserSession().getRoles());
+		
+		ordersCtrl = new OrdersOverviewController(ureq, bwControl, stackPanel, courseEntry, coachingSecurity, secCallback);
+		listenTo(ordersCtrl);
+		addToHistory(ureq, ordersCtrl);
+		mainVC.put("overview", ordersCtrl.getInitialComponent());
+		mainVC.remove("segments");
+		return ordersCtrl;
 	}
 
 	public void reload() {

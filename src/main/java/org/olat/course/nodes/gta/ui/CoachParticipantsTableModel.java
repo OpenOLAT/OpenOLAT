@@ -100,6 +100,8 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 					}
 					return row.getNumOfSubmissionDocs();
 				case assessmentStatus: return row.getAssessmentStatus();
+				case coachAssignment: return row.getCoachFullName();
+				case tools: return row.getToolsLink();
 				default: return "ERROR";	
 			}
 		} else if(col >= GTACoachedGroupGradingController.USER_PROPS_OFFSET) {
@@ -119,7 +121,9 @@ public class CoachParticipantsTableModel extends DefaultFlexiTableDataModel<Coac
 		score("table.header.score"),
 		passed("table.header.passed"),
 		numOfSubmissionDocs("table.header.num.submissionDocs"),
-		assessmentStatus("table.header.assessmentStatus");
+		assessmentStatus("table.header.assessmentStatus"),
+		coachAssignment("table.header.coach.assignment"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

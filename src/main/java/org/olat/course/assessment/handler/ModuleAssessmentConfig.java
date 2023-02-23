@@ -145,4 +145,13 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 		return true;
 	}
 
+	@Override
+	public boolean hasCoachAssignment() {
+		return false;
+	}
+	
+	@Override
+	public CoachAssignmentMode getCoachAssignmentMode() {
+		return null;
+	}
 }

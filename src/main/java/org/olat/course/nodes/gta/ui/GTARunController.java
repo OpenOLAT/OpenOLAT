@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -48,6 +49,7 @@ import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,6 +72,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private Link coachLink;
 	private Link manageLink;
 	private Link remindersLink;
+	private Link coachAssignmentLink;
 	private VelocityContainer mainVC;
 	private CourseNodeSegmentPrefs segmentPrefs;
 	private SegmentViewComponent segmentView;
@@ -79,6 +82,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
@@ -123,6 +128,9 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 			
 			doOpenPreferredSegment(ureq);
+			if(userCourseEnv.isAdmin() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+				coachAssignmentWarning();
+			}
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
@@ -134,6 +142,16 @@ public class GTARunController extends BasicController implements Activateable2 {
 			Controller msgCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 			listenTo(msgCtrl);
 			putInitialPanel(msgCtrl.getInitialComponent());
+		}
+	}
+	
+	private void coachAssignmentWarning() {
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		if(assessmentService.hasAssessmentEntryWithoutCoachAssignment(courseEntry, gtaNode.getIdent())) {
+			coachAssignmentLink = LinkFactory.createLink("coach.assignment", getTranslator(), this);
+			coachAssignmentLink.setIconRightCSS("o_icon o_icon_start");
+			coachAssignmentLink.setElementCssClass("o_process_assignment");
+			mainVC.put("coach.assignment", coachAssignmentLink);
 		}
 	}
 	
@@ -211,9 +229,12 @@ public class GTARunController extends BasicController implements Activateable2 {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+		if(coachAssignmentLink == source) {
+			List<ContextEntry> entries = BusinessControlFactory.getInstance()
+					.createCEListFromResourceType("Assignments");
+			doOpenCoach(ureq, true).activate(ureq, entries, null);
+		} else if(source == segmentView) {
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == runLink) {

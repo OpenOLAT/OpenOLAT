@@ -177,6 +177,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 
 	public static final String TO_REVIEW_TAB_ID = "ToReview";
 	public static final String TO_RELEASE_TAB_ID = "ToRelease";
+	public static final String ASSIGNED_TO_ME_TAB_ID = "AssignedToMe";
 	public static final String PASSED_TAB_ID = "Passed";
 	public static final String FAILED_TAB_ID = "Failed";
 	public static final String ALL_TAB_ID = "All";
@@ -198,6 +199,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab toReviewTab;
 	private FlexiFiltersTab toReleaseTab;
+	private FlexiFiltersTab assignedToMeTab;
 	private FlexiFiltersTab passedTab;
 	private FlexiFiltersTab failedTab;
 	
@@ -385,6 +387,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			colIndex++;
 		}
 		
+		
 		initAssessmentColumns(columnsModel);
 		initStatusColumns(columnsModel);
 		initModificationDatesColumns(columnsModel);
@@ -452,6 +455,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 			});
 		}
 		
+		if(assessmentConfig.hasCoachAssignment()) {
+			assignedToMeTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ASSIGNED_TO_ME_TAB_ID, translate("filter.assigned.to.me"),
+					TabSelectionBehavior.clear, List.of(
+							FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_ASSIGNED_COACH, List.of(getIdentity().getKey().toString()))));
+			assignedToMeTab.setFiltersExpanded(true);
+			tabs.add(assignedToMeTab);
+		}
+		
 		tableEl.setFilterTabs(true, tabs);
 	}
 	
@@ -514,6 +525,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 				membersFilter.setValues(List.of(ParticipantType.member.name()));
 				filters.add(membersFilter);
 			}
+		}
+		
+		if (assessmentConfig.hasCoachAssignment()) {
+			SelectionValues assignedCoachValues = new SelectionValues();
+			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
+			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
+					AssessedIdentityListState.FILTER_ASSIGNED_COACH, assignedCoachValues, true);
+
+			filters.add(membersFilter);
 		}
 
 		// groups
@@ -581,6 +602,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel) {
+		if(assessmentConfig.hasCoachAssignment()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.coachAssignment));
+		}
 		if(assessmentConfig.hasAttempts()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 		}
@@ -756,11 +780,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 				AssessmentRunStatus status = entry.getCurrentRunStatus();
 				currentCompletion.setEnded(status != null && AssessmentRunStatus.done.equals(status));
 				grader = assessmentEntriesKeysToGraders.get(entry.getKey());
-				
+				String assignedCoach = entry.getCoach() == null ? null : userManager.getUserDisplayName(entry.getCoach());
+
 				FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 				toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 			
-				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader,
+				AssessedIdentityElementRow row = new AssessedIdentityElementRow(assessedIdentity, entry, grader, assignedCoach,
 						currentStart, currentCompletion, toolsLink, userPropertyHandlers, getLocale());
 				toolsLink.setUserObject(row);
 				rows.add(row);
@@ -879,6 +904,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 						.map(AssessmentObligation::valueOf)
 						.collect(Collectors.toList());
 				params.setAssessmentObligations(assessmentObligations);
+			}
+		}
+		
+		FlexiTableFilter assignmentFilter = FlexiTableFilter.getFilter(filters, AssessedIdentityListState.FILTER_ASSIGNED_COACH);
+		if (assignmentFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)assignmentFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<Long> assignedCoachKeys = filterValues.stream()
+						.map(Long::valueOf)
+						.filter(val -> val.longValue() > 0)
+						.toList();
+				params.setAssignedCoachKeys(assignedCoachKeys);
+				params.setCoachNotAssigned(filterValues.contains("-1"));
 			}
 		}
 		
@@ -1509,7 +1547,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 					grader = userManager.getUserDisplayName(assignment.getGrader().getIdentity());
 				}
 			}
-			row.setAssessmentEntry(assessmentEntry, grader);
+			String coach = null;
+			if(assessmentConfig.hasCoachAssignment()) {
+				Identity assignedCoach = assessmentEntry.getCoach();
+				if(assignedCoach != null) {
+					coach = userManager.getUserDisplayName(assessmentEntry.getCoach());
+				}
+			}
+			row.setAssessmentEntry(assessmentEntry, grader, coach);
 			tableEl.getComponent().setDirty(true);
 		}
 	}

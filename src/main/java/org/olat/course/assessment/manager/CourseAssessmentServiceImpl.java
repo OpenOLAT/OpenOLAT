@@ -20,9 +20,11 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -39,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.AssessmentToolManager;
@@ -47,6 +50,7 @@ import org.olat.course.assessment.ScoreAccountingTrigger;
 import org.olat.course.assessment.ScoreAccountingTriggerData;
 import org.olat.course.assessment.ScoreAccountingTriggerSearchParams;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeOverviewController;
@@ -84,6 +88,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.manager.RepositoryEntryDAO;
+import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -99,8 +105,12 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentServiceImpl.class);
 
+    private final Random random = new Random();
+
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private AssessmentHandlerRegistry assessmentHandlerRegistry;
 	@Autowired
@@ -115,6 +125,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private TaskExecutorManager taskExecutorManager;
+	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 
 	private AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
 		return assessmentHandlerRegistry.getAssessmentHandler(courseNode);
@@ -582,5 +594,59 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		}
 		return false;
 	}
-	
+
+	@Override
+	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach) {
+		if(coach == null) {
+			List<Identity> identities = repositoryEntryRelationDao.getRelatedMembers(assessmentEntry.getRepositoryEntry(), assessmentEntry.getIdentity(), GroupRoles.participant, GroupRoles.coach);
+			if(identities.size() > 1) {
+				Collections.shuffle(identities, random);
+			}
+			if(!identities.isEmpty()) {
+				coach = identities.get(0);
+			}
+		}
+		
+		if(coach == null) {
+			return;
+		}
+		
+		assessmentEntry.setCoach(coach);
+		assessmentEntry.setCoachAssignmentDate(new Date());
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+		dbInstance.commit();
+		
+		// Send mail
+	}
+
+	@Override
+	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace) {
+		assessmentEntry.setCoach(null);
+		assessmentEntry.setCoachAssignmentDate(null);
+		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		if(replace) {
+			assignCoach(assessmentEntry, null);
+		}
+	}
+
+	@Override
+	public void unassignCoach(RepositoryEntryRef re, IdentityRef coach) {
+		List<AssessmentEntry> entries = assessmentService.getAssessmentEntriesForCoachAssignment(re, coach);
+		if(!entries.isEmpty()) {
+			RepositoryEntry courseEntry = repositoryEntryDao.loadByKey(re.getKey());
+			if(CourseModule.ORES_TYPE_COURSE.equals(courseEntry.getOlatResource().getResourceableTypeName())) {
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				for(AssessmentEntry entry:entries) {
+					CourseNode courseNode = course.getRunStructure().getNode(entry.getSubIdent());
+					if(courseNode == null) {
+						unassignCoach(entry, false);
+					} else {
+						AssessmentConfig assessmentConfig = getAssessmentConfig(courseEntry, courseNode);
+						boolean replace = assessmentConfig.getCoachAssignmentMode() == CoachAssignmentMode.automatic;
+						unassignCoach(entry, replace);
+					}
+				}
+			}
+		}
+	}
 }

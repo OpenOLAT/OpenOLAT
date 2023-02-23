@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig.CoachAssignmentMode;
 import org.olat.course.condition.AreaSelectionController;
 import org.olat.course.condition.GroupSelectionController;
 import org.olat.course.duedate.DueDateConfig;
@@ -108,6 +109,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private SingleSelection solutionVisibleToAllEl;
 	private FormLayoutContainer documentsCont;
 	private MultipleSelectionElement coachAllowedUploadEl;
+	private MultipleSelectionElement coachAssignmentEnabledEl;
+	private SingleSelection coachAssignmentModeEl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -154,6 +157,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 		initTypeForm(formLayout);
 		initStepForm(formLayout);
 		initDocumentsForm(formLayout);
+		initCoaching(formLayout);
 		initButtonsForm(formLayout, ureq);
 	}
 	
@@ -377,6 +381,32 @@ public class GTAWorkflowEditController extends FormBasicController {
 		updateDocuments();
 	}
 	
+	private void initCoaching(FormItemContainer formLayout) {
+		FormLayoutContainer coachingLayout = uifactory.addDefaultFormLayout("coaching", null, formLayout);
+		coachingLayout.setFormTitle(translate("coach.assignment.title"));
+		
+		String[] onValues = new String[]{ translate("coach.assignment.enabled") };
+		coachAssignmentEnabledEl = uifactory.addCheckboxesVertical("coach.assignment", coachingLayout, onKeys, onValues, 1);
+		coachAssignmentEnabledEl.addActionListener(FormEvent.ONCHANGE);
+		boolean coachAssignment = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT, false);
+		if(coachAssignment) {
+			coachAssignmentEnabledEl.select(onKeys[0], true);
+		}
+		
+		SelectionValues assignmentModesKV = new SelectionValues();
+		assignmentModesKV.add(SelectionValues.entry(CoachAssignmentMode.manual.name(), translate("coach.assignment.mode.manual")));
+		assignmentModesKV.add(SelectionValues.entry(CoachAssignmentMode.automatic.name(), translate("coach.assignment.mode.auto")));
+		coachAssignmentModeEl = uifactory.addRadiosHorizontal("coach.assignment.mode", "coach.assignment.mode", coachingLayout,
+				assignmentModesKV.keys(), assignmentModesKV.values());
+		coachAssignmentModeEl.setVisible(coachAssignment);
+		String mode = config.getStringValue(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE, GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE_DEFAULT);
+		if(StringHelper.containsNonWhitespace(mode) && assignmentModesKV.containsKey(mode)) {
+			coachAssignmentModeEl.select(mode, true);
+		} else {
+			coachAssignmentModeEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE_DEFAULT, true);
+		}
+	}
+	
 	private void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
 		FormLayoutContainer buttonsWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonswrapper", getTranslator());
 		buttonsWrapperCont.setRootForm(mainForm);
@@ -427,6 +457,12 @@ public class GTAWorkflowEditController extends FormBasicController {
 				&& !sampleEl.isAtLeastSelected(1) && !gradingEl.isAtLeastSelected(1)) {
 
 			taskAssignmentEl.setErrorKey("error.select.atleastonestep");
+			allOk &= false;
+		}
+		
+		coachAssignmentModeEl.clearError();
+		if(!coachAssignmentModeEl.isOneSelected()) {
+			coachAssignmentModeEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 
@@ -521,6 +557,16 @@ public class GTAWorkflowEditController extends FormBasicController {
 			boolean coachUploadAllowed = coachAllowedUploadEl.isAtLeastSelected(1);
 			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
 		}
+		
+		boolean coachAssignment = coachAssignmentEnabledEl.isAtLeastSelected(1);
+		config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT, coachAssignment);
+		
+		String assignmentMode = coachAssignmentModeEl.getSelectedKey();
+		if(coachAssignment) {
+			config.setStringValue(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE, assignmentMode);
+		} else {
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE);
+		}
 	}
 
 	@Override
@@ -539,6 +585,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 			updateDocuments();
 		} else if (reviewEl == source) {
 			updateRevisions();
+		} else if(this.coachAssignmentEnabledEl == source) {
+			updateCoaching();
 		} else if(chooseGroupButton == source) {
 			doChooseGroup(ureq);
 		} else if(chooseAreaButton == source) {
@@ -625,6 +673,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateDocuments() {
 		boolean visible = taskAssignmentEl.isAtLeastSelected(1) || sampleEl.isAtLeastSelected(1);
 		documentsCont.setVisible(visible);
+	}
+	
+	private void updateCoaching() {
+		boolean visible = coachAssignmentEnabledEl.isAtLeastSelected(1);
+		coachAssignmentModeEl.setVisible(visible);
 	}
 	
 	@Override

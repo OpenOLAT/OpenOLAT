@@ -25,6 +25,7 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
@@ -140,6 +141,10 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		if (noSelectionElement) {
 			addNoSelectionEntry();
 		}
+		if(enabledStates == null || enabledStates.length != keys.length) {
+			enabledStates = new Boolean[keys.length];
+			Arrays.fill(enabledStates, Boolean.TRUE);
+		}
 		initSelectionElements();
 	}
 
@@ -153,7 +158,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	public void setKeysAndValuesAndEnableCardStyle(String[] keys, String[] values, String[] descriptions, String[] iconsCssClasses) {
 		this.descriptions = descriptions;
 		this.iconsCssClasses = iconsCssClasses;
-		this.setKeysAndValues(keys, values, null);
+		setKeysAndValues(keys, values, null);
 		this.renderAsCard = true;
 	}
 	
@@ -167,7 +172,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 	public void setKeysAndValuesAndEnableButtonGroupStyle(String[] keys, String[] values, String[] customCssClases, Boolean[] enabledStates) {
 		this.customCssClasses = customCssClases;
 		this.enabledStates = enabledStates;
-		this.setKeysAndValues(keys, values, null);
+		setKeysAndValues(keys, values, null);
 		this.renderAsButtonGroup = true;
 	}
 
@@ -248,6 +253,22 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 		}
 		if (keys != null) {
 			initSelectionElements();
+		}
+	}
+	
+	@Override
+	public boolean isEnabled(int which) {
+		if(enabledStates != null && which >= 0 && which < enabledStates.length) {
+			return enabledStates[which];
+		}
+		return component.isEnabled(which);
+	}
+
+	@Override
+	public void setEnabled(int which, boolean isEnabled) {
+		component.setEnabled(which, isEnabled);
+		if(enabledStates != null && which >= 0 && which < enabledStates.length) {
+			enabledStates[which] = isEnabled;
 		}
 	}
 
@@ -413,7 +434,7 @@ public class SingleSelectionImpl extends FormItemImpl implements SingleSelection
 			String desc = (descriptions != null ? descriptions[i] : null);
 			String icon = (iconsCssClasses != null ? iconsCssClasses[i] : null);
 			String customCss = (customCssClasses != null && customCssClasses.length > 0 ? customCssClasses[i] : null);	
-			boolean enabled = (enabledStates != null && enabledStates.length > 0 && enabledStates[i] != null ? enabledStates[i] : true);	
+			boolean enabled = (enabledStates != null && enabledStates.length > 0 && i < enabledStates.length && enabledStates[i] != null ? enabledStates[i] : true);	
 			
 			radios[i] = new RadioElementComponent(this, i, keys[i], values[i],  desc, icon, customCss, enabled, selectedIndex == i);
 		}

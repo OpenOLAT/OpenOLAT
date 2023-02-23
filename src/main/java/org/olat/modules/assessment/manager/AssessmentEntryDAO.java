@@ -664,6 +664,25 @@ public class AssessmentEntryDAO {
 				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
 				.getResultList();
 	}
+	
+	public boolean hasAssessmentEntryWithoutCoachAssignment(RepositoryEntryRef repositoryEntry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae.key")
+		  .append("  from assessmententry ae")
+		  .and().append("ae.identity.key is not null")
+		  .and().append("ae.coach.key is null")
+		  .and().append("ae.repositoryEntry.key=:repositoryEntryKey")
+		  .and().append("ae.subIdent=:subIdent");
+		
+		List<Long> counts = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", repositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return counts != null && !counts.isEmpty() && counts.get(0) != null && counts.get(0).longValue() > 0;
+	}
 
 	public List<Long> loadIdentityKeys(RepositoryEntry entry, String subIdent, Collection<AssessmentObligation> obligations) {
 		QueryBuilder sb = new QueryBuilder();
@@ -691,6 +710,39 @@ public class AssessmentEntryDAO {
 			query.setParameter("assessmentObligations", obligations);
 		}
 		return query.getResultList();
+	}
+	
+	public List<AssessmentEntry> loadAssessmentEntriesCoachAssigned(RepositoryEntryRef entry, String subIdent, boolean withCoachAssign) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae from assessmententry ae")
+		  .append(" inner join fetch ae.identity as ident")
+		  .where().append("ae.repositoryEntry.key=:entryKey");
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			sb.and().append("ae.subIdent=:subIdent");
+		}
+		sb.and().append("ae.coach.key is").append(" not", withCoachAssign).append(" null");
+		
+		TypedQuery<AssessmentEntry> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("entryKey", entry.getKey());
+		if (StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		return query.getResultList();
+	}
+	
+	public List<AssessmentEntry> loadAssessmentEntriesForCoach(RepositoryEntryRef entry, IdentityRef coach) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae from assessmententry ae")
+		  .append(" inner join fetch ae.identity as ident")
+		  .where().append("ae.repositoryEntry.key=:entryKey")
+		  .and().append("ae.coach.key=:coachKey");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("coachKey", coach.getKey())
+				.getResultList();
 	}
 	
 	/**

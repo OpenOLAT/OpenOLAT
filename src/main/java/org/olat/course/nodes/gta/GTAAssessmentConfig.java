@@ -19,7 +19,9 @@
  */
 package org.olat.course.nodes.gta;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.logging.Tracing;
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -33,6 +35,8 @@ import org.olat.repository.RepositoryEntryRef;
  *
  */
 public class GTAAssessmentConfig extends ModuleAssessmentConfig {
+	
+	private static final Logger log = Tracing.createLoggerFor(GTAAssessmentConfig.class);
 
 	private final RepositoryEntryRef courseEntry;
 	private final String nodeIdent;
@@ -116,5 +120,23 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
 	}
+
+	@Override
+	public boolean hasCoachAssignment() {
+		return config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT, false);
+	}
 	
+	@Override
+	public CoachAssignmentMode getCoachAssignmentMode() {
+		if(hasCoachAssignment()) {
+			String mode = config.getStringValue(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE, GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE_DEFAULT);
+			try {
+				return CoachAssignmentMode.valueOf(mode);
+			} catch (Exception e) {
+				log.error("Cannot map mode: {}", mode, e);
+				return CoachAssignmentMode.manual;
+			}
+		}
+		return null;
+	}
 }

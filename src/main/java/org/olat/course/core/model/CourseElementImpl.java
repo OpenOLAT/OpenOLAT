@@ -89,6 +89,9 @@ public class CourseElementImpl implements Persistable, ModifiedInfo, CreateInfo,
 	@Column(name="c_cut_value", nullable=true, insertable=true, updatable=true)
 	private BigDecimal cutValue;
 	
+	@Column(name="c_coach_assignment", nullable=false, insertable=true, updatable=true)
+	private boolean coachAssignment;
+	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false)
 	private RepositoryEntry repositoryEntry;
@@ -202,6 +205,15 @@ public class CourseElementImpl implements Persistable, ModifiedInfo, CreateInfo,
 	
 	public void setCutValue(BigDecimal cutValue) {
 		this.cutValue = cutValue;
+	}
+	
+	@Override
+	public boolean isCoachAssignment() {
+		return coachAssignment;
+	}
+
+	public void setCoachAssignment(boolean coachAssignment) {
+		this.coachAssignment = coachAssignment;
 	}
 
 	@Override

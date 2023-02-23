@@ -50,6 +50,10 @@ public interface SingleSelection extends SelectionElement {
 
 	public int getSelected();
 	
+	public boolean isEnabled(int which);
+	
+	public void setEnabled(int which, boolean isEnabled);
+	
 	/**
 	 * Set a fix width to the enclosing div/label of the radio elements. Spaced
 	 * had a space after the end div/label.
