@@ -43,9 +43,11 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -189,6 +191,10 @@ public class ResourceInfoDispatcher implements Dispatcher {
 				WindowControl wControl = chiefController.getWindowControl();
 				NewControllerFactory.getInstance().launch(ureq, wControl);
 				Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
+				// set a search engine friendly page title
+				Translator trans = Util.createPackageTranslator(ResourceInfoDispatcher.class, ureq.getLocale());
+				w.setTitle(trans, trans.translate("resource.info.page.title", entry.getDisplayname()));
+				// dispatch and go
 				w.dispatchRequest(ureq, false); // renderOnly
 				chiefController.resetReload();
 			} catch (Exception e) {
