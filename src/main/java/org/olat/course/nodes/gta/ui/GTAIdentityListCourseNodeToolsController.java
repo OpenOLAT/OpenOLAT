@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -27,6 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.ui.tool.AssignCoachController;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -38,6 +40,7 @@ import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -52,14 +55,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GTAIdentityListCourseNodeToolsController extends AbstractToolsController {
 
 	private Link extendLink;
+	private Link coachAssignmentLink;
 	
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	
 	private CloseableModalController cmc;
-	private EditDueDatesController editDueDatesCtrl; 
+	private AssignCoachController assignCoachCtrl;
+	private EditDueDatesController editDueDatesCtrl;
 	
 	public GTAIdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
 			CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -87,11 +94,15 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 
 			extendLink = addLink("duedates", "duedates", "o_icon o_icon-fw o_icon_extra_time");
 		}
+		
+		if(assessmentConfig.hasCoachAssignment()) {
+			coachAssignmentLink = addLink("assign.coach", "assign.coach", "o_icon o_icon-fw o_icon_coach");
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editDueDatesCtrl == source) {
+		if(editDueDatesCtrl == source || assignCoachCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else {
@@ -106,10 +117,14 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		super.event(ureq, source, event);
 	}
 	
-	private void cleanUp() {
+	@Override
+	protected void cleanUp() {
+		super.cleanUp();
 		removeControllerListener(editDueDatesCtrl);
+		removeControllerListener(assignCoachCtrl);
 		removeControllerListener(cmc);
 		editDueDatesCtrl = null;
+		assignCoachCtrl = null;
 		cmc = null;
 	}
 
@@ -118,6 +133,9 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		if(extendLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doEditDueDate(ureq);
+		} else if(coachAssignmentLink == source) {
+			fireEvent(ureq, Event.CLOSE_EVENT);
+			doAssignCoach(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -161,8 +179,25 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		listenTo(editDueDatesCtrl);
 		
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
-		String title = translate("duedates.user", new String[] { fullname });
+		String title = translate("duedates.user", fullname);
 		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAssignCoach(UserRequest ureq) {
+		Identity currentCoach = null;
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, assessedUserCourseEnv);
+		if(assessmentEntry.getCoach() != null) {
+			currentCoach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
+		}
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		assignCoachCtrl = new AssignCoachController(ureq, getWindowControl(), assessedIdentity, currentCoach, courseEnv, courseNode);
+		listenTo(assignCoachCtrl);
+
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("assign.coach.to", fullname);
+		cmc = new CloseableModalController(getWindowControl(), "close", assignCoachCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

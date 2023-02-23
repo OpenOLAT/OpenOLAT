@@ -82,6 +82,10 @@ public class AssessmentToolSecurityCallback {
 	public boolean canStartStopAllAssessments() {
 		return admin;
 	}
+	
+	public boolean canAssignCoaches() {
+		return admin;
+	}
 
 	public List<BusinessGroup> getCoachedGroups() {
 		return coachedGroups;

@@ -94,6 +94,7 @@ import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
+import org.olat.course.assessment.ui.tool.AssignCoachController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.UserVisibilityCellRenderer;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -184,6 +185,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
 	private EditDueDatesController editDueDatesCtrl;
+	private AssignCoachController assignCoachCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private EditMultipleDueDatesController editMultipleDueDatesCtrl;
 	
@@ -463,11 +465,17 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		if (assessmentConfig.hasCoachAssignment()) {
 			SelectionValues assignedCoachValues = new SelectionValues();
 			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
-			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
-			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
+			
+			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+			List<Identity> coaches = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name(), GroupRoles.coach.name());
+			for(Identity coach:coaches) {
+				assignedCoachValues.add(SelectionValues.entry(coach.getKey().toString(), userManager.getUserDisplayName(coach)));
+			}
+
+			FlexiTableMultiSelectionFilter assignedCoachFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
 					AssessedIdentityListState.FILTER_ASSIGNED_COACH, assignedCoachValues, true);
 
-			filters.add(membersFilter);
+			filters.add(assignedCoachFilter);
 		}
 		
 		// groups
@@ -640,13 +648,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		
 		String coach = assessment.getCoach() == null ? null : userManager.getUserDisplayName(assessment.getCoach());
+		Long coachKey = assessment.getCoach() == null ? null : assessment.getCoach().getKey();
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		
 		CoachedIdentityRow row = new CoachedIdentityRow(assessableIdentity, task, taskDefinition,
 				submissionDueDate, lateSubmissionDueDate, syntheticSubmissionDate, hasSubmittedDocument,
-				markLink, toolsLink, assessment, numSubmittedDocs, numOfCollectedDocs, coach);
+				markLink, toolsLink, assessment, numSubmittedDocs, numOfCollectedDocs, coach, coachKey);
 		toolsLink.setUserObject(row);
 		if(taskDefinition != null) {
 			File file = new File(tasksFolder, taskDefinition.getFilename());
@@ -764,7 +773,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source) {
+		if(editDueDatesCtrl == source || editMultipleDueDatesCtrl == source || assignCoachCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel(ureq);
 			}
@@ -790,12 +799,14 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		removeAsListenerAndDispose(editMultipleDueDatesCtrl);
 		removeAsListenerAndDispose(editDueDatesCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(assignCoachCtrl);
 		removeAsListenerAndDispose(contactCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		editMultipleDueDatesCtrl = null;
 		editDueDatesCtrl = null;
 		toolsCalloutCtrl = null;
+		assignCoachCtrl = null;
 		contactCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -889,6 +900,22 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			refs.add(new IdentityRefImpl(row.getIdentityKey()));
 		}
 		return securityManager.loadIdentityByRefs(refs);
+	}
+	
+	private void doAssignCoach(UserRequest ureq, CoachedIdentityRow row) {
+		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+		Identity currentCoach = null;
+		if(row.getCoachKey() != null) {
+			currentCoach = securityManager.loadIdentityByKey(row.getCoachKey());
+		}
+		assignCoachCtrl = new AssignCoachController(ureq, getWindowControl(), assessedIdentity, currentCoach, courseEnv, gtaNode);
+		listenTo(assignCoachCtrl);
+
+		String fullname = userManager.getUserDisplayName(assessedIdentity);
+		String title = translate("assign.coach.to", fullname);
+		cmc = new CloseableModalController(getWindowControl(), "close", assignCoachCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doEditDueDate(UserRequest ureq, CoachedIdentityRow row) {
@@ -1094,6 +1121,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	
 	private class ToolsController extends BasicController {
 		
+		private Link assignCoachLink;
 		private final Link selectLink;
 		private final Link dueDatesLink;
 		
@@ -1109,6 +1137,11 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
 			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			
+			if(assessmentConfig.hasCoachAssignment() && assessmentCallback.canAssignCoaches()) {
+				assignCoachLink = LinkFactory.createLink("assign.coach", "assign.coach", getTranslator(), mainVC, this, Link.LINK);
+				assignCoachLink.setIconLeftCSS("o_icon o_icon-fw o_icon_coach");
+			}
 
 			putInitialPanel(mainVC);
 		}
@@ -1120,6 +1153,8 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 				doSelect(ureq, row);
 			} else if(dueDatesLink == source) {
 				doEditDueDate(ureq, row);
+			} else if(assignCoachLink == source) {
+				doAssignCoach(ureq, row);
 			}
 		}
 	}
