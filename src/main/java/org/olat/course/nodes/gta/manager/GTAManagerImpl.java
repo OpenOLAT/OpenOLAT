@@ -34,6 +34,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.CacheRetrieveMode;
+import jakarta.persistence.CacheStoreMode;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.Query;
+
 import org.apache.logging.log4j.Logger;
 import org.hibernate.jpa.SpecHints;
 import org.olat.basesecurity.GroupRoles;
@@ -99,6 +104,8 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.edusharing.EdusharingService;
@@ -112,11 +119,6 @@ import org.springframework.stereotype.Service;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
-
-import jakarta.persistence.CacheRetrieveMode;
-import jakarta.persistence.CacheStoreMode;
-import jakarta.persistence.LockModeType;
-import jakarta.persistence.Query;
 
 
 /**
@@ -148,6 +150,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	private GTATaskRevisionDateDAO taskRevisionDateDao;
 	@Autowired
 	private BGAreaManager areaManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
@@ -1794,6 +1798,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	@Override
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
+		TaskProcess currentStatus = taskImpl.getTaskStatus();
 		taskImpl.setTaskStatus(newStatus);
 		syncDates(taskImpl, newStatus);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
@@ -1803,6 +1808,18 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
 		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode, true), null, false);
 		notificationsManager.markPublisherNews(getSubscriptionContext(resource, cNode, false), null, false);
+		
+		if(GTAType.individual.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))
+				&& cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)
+				&& (currentStatus == TaskProcess.submit || currentStatus == TaskProcess.revision)) {
+			TaskList taskList = getTaskList(taskImpl);
+			RepositoryEntry courseRepoEntry = taskList.getEntry();
+			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
+			Identity assessedIdentity = task.getIdentity();
+			AssessmentEntry assessmentEntry = assessmentService.loadAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent());
+			courseAssessmentService.orderCoach(assessmentEntry, false, course.getCourseEnvironment(), cNode);
+		}
+		
 		return taskImpl;
 	}
 	

@@ -375,5 +375,7 @@ public interface CourseAssessmentService {
 	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode);
 	
 	public void unassignCoach(RepositoryEntryRef entry, IdentityRef coach);
+	
+	public void orderCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode);
 
 }
