@@ -348,7 +348,7 @@ $r.render("instantmessagepanel")
 ## ---- END #o_modal ---
 
 ## ----- START #o_form_dirty_message ----------
-<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="$r.getId('o_md_')" id="o_form_dirty_message">
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="$r.getId('o_md_')" id="o_form_dirty_message" data-nosnippet>
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -376,7 +376,7 @@ $r.render("instantmessagepanel")
 ## ---- END #o_form_dirty_message ---
 
 ## the div for the busy-wait animated-gif
-<div id="o_ajax_busy">
+<div id="o_ajax_busy" data-nosnippet>
 	<i class="o_icon o_icon_busy o_icon-5x o_icon-spin"></i>	
 	<div id="o_ajax_progress">
 		<div class="o_label">$r.translate("ajax.busy.progress")</div>
