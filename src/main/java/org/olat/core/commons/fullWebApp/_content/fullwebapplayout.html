@@ -240,7 +240,7 @@ $r.renderForce("development")
 ## the content comes here
 <!-- START olatContentPanel -->
 
-<a href="#o_main_container" class="sr-only">$r.translate("access.skip.to.content")</a>
+<a href="#o_main_container" class="sr-only" data-nosnippet>$r.translate("access.skip.to.content")</a>
 #if($screenMode.standardScreen)
 	<div id="o_beta_logo"></div>
 #end
@@ -249,12 +249,12 @@ $r.renderForce("development")
 ## Messages are absolute positioned using EXT, thus it's ok to have them at the end of the page. 
 ## This prevents an ugly IE bug that appears when the messages are at the top of the page.
 ## IE can't render empty div's properly which results in an ugly white bar.
-<div id="o_messages" class="hidden-print">$r.renderForce("guimessage")</div>
+<div id="o_messages" class="hidden-print" data-nosnippet>$r.renderForce("guimessage")</div>
 ## ---- END #o_messages ---
-<a id='o_top' aria-hidden="true"></a>	
+<a id='o_top' aria-hidden="true" data-nosnippet></a>	
 ## ---- START #o_header ---
 #if($screenMode.standardScreen)
-<div id="o_header_wrapper"> 
+<div id="o_header_wrapper" data-nosnippet> 
 	<div id="o_header_container" class="o_container_offcanvas container-fluid"> 
 		<div id="o_logo" aria-hidden="true"></div>
 		<div id="o_right_logo" aria-hidden="true"></div>
@@ -270,7 +270,7 @@ $r.renderForce("development")
 
 ## ---- START #o_navbar ---
 #if($screenMode.standardScreen)
-<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation" aria-label="$r.translate("accesskey.side")">
+<div id="o_offcanvas_right" class="o_navbar o_navbar-offcanvas " role="navigation" aria-label="$r.translate("accesskey.side")" data-nosnippet>
 	<a href="javascript:;" class="o_offcanvas_close" title="$r.translate("close")"><i class='o_icon o_icon_close o_icon-lg'> </i> <span class="visually-hidden">$r.translate("close.dialog")</span></a>
 	<div id="o_offcanvas_right_container" class="o_navbar-collapse">
 		#if($r.available("menuComponent"))
@@ -278,7 +278,7 @@ $r.renderForce("development")
 		#end
 	</div>
 </div>
-<div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")">
+<div id="o_navbar_wrapper" class="o_navbar" role="navigation" aria-label="$r.translate("accesskey.nav")" data-nosnippet>
 	<div id="o_navbar_container" class="o_container_offcanvas container-fluid">
 		#set($logoLinkUri = $logoInfos.logoLinkUri)
 		<a class="o_navbar-brand #if($logoInfos.logo) o_custom_navbar-brand #end" href="$logoLinkUri.uri" title="$logoInfos.logoAlt" #if($logoLinkUri.target) target="$logoLinkUri.target" #end rel="noopener noreferrer" aria-hidden="true"></a>
@@ -302,7 +302,7 @@ $r.renderForce("development")
 		
 	</div>
 </div>
-<div id="o_container_page_width_toggler" aria-hidden="true">
+<div id="o_container_page_width_toggler" aria-hidden="true" data-nosnippet>
 	<div id="o_go_standard_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-primary btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_collapse o_icon-fw"> </i></div>
 	<div id="o_go_full_width" title="$r.translateInAttribute("content.width.standard")" class="btn btn-default btn-xs o_noprint" role="button"><i class="o_icon o_icon_width_expand o_icon-fw"> </i></div>
 </div>

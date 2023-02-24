@@ -20,9 +20,7 @@
 package org.olat.modules.oaipmh.manager;
 
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,16 +34,19 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.helpers.Settings;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientService;
 import org.olat.modules.oaipmh.DataProvider;
@@ -56,6 +57,7 @@ import org.olat.modules.oaipmh.common.exceptions.XmlWriteException;
 import org.olat.modules.oaipmh.common.model.Granularity;
 import org.olat.modules.oaipmh.common.services.impl.SimpleResumptionTokenFormat;
 import org.olat.modules.oaipmh.common.services.impl.UTCDateProvider;
+import org.olat.modules.oaipmh.common.util.URLEncoder;
 import org.olat.modules.oaipmh.common.xml.XmlWritable;
 import org.olat.modules.oaipmh.common.xml.XmlWriter;
 import org.olat.modules.oaipmh.dataprovider.builder.OAIRequestParametersBuilder;
@@ -79,7 +81,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class OAIServiceImpl implements OAIService {
-
+	private static final Logger log = Tracing.createLoggerFor(OAIServiceImpl.class);
 	private static final String METADATA_DEFAULT_PREFIX = "oai_dc";
 
 	@Autowired
@@ -174,50 +176,74 @@ public class OAIServiceImpl implements OAIService {
 	@Override
 	public Map<String, Integer> propagateSearchEngines(List<String> searchEngineUrls) {
 		List<RepositoryEntry> repositoryEntries = repositoryService.loadRepositoryForMetadata(RepositoryEntryStatusEnum.published);
-		HttpResponse response;
+		HttpResponse response = null;
 		List<String> urlList = new ArrayList<>();
-		JSONObject json = new JSONObject();
+		JSONObject json = null;
 		Map<String, Integer> searchEngineToResponseCode = new HashMap<>();
 
 		for (RepositoryEntry entry : repositoryEntries) {
 			urlList.add(ResourceInfoDispatcher.getUrl(entry.getKey().toString()));
 		}
+		if (urlList.size() == 0) {
+			// nothing to publish
+			return searchEngineToResponseCode;
+		}
 
 		if (oaiPmhModule.getUuid().equals("none")) {
+			// init uuid needed for indexnow if not already done
 			oaiPmhModule.setUuid(UUID.randomUUID().toString());
 		}
 
+
+		for (String url : searchEngineUrls) {
+			try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
+				if (url.contains("sitemap")) {					
+					// 1) Submit to sitemap capable search engines
+					String sitemapUrlEncoded = URLEncoder.encode(ResourceInfoDispatcher.getUrl("sitemap.xml"));
+					url = String.format(url, sitemapUrlEncoded);
+					HttpGet getRequest = new HttpGet(url);
+					response = httpClient.execute(getRequest);
+				} else if (url.contains("indexnow")) {
+					// 2) Submit list to indexnow capable search engines
+					HttpPost postRequest = new HttpPost(url);
+					if (json == null) {
+						// build only once
+						json = buildIndexNowPostJson(urlList);
+					}
+					StringEntity postParams = new StringEntity(json.toString());
+					postParams.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+					postParams.setContentEncoding("UTF-8");
+					postRequest.setEntity(postParams);
+					response = httpClient.execute(postRequest);
+				}
+				if (response != null) {
+					// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
+					EntityUtils.consume(response.getEntity());
+					searchEngineToResponseCode.put(new URI(url).getHost(), response.getStatusLine().getStatusCode());
+				}
+			} catch (Exception e) {
+				searchEngineToResponseCode.clear();
+				searchEngineToResponseCode.put("Error: " + url, HttpStatus.SC_INTERNAL_SERVER_ERROR);
+				log.warn("Error when submitting URL::" + url + " to search engine", e);
+			}
+		}
+		return searchEngineToResponseCode;
+	}
+
+	/**
+	 * Helper to build the json object with the given URL list to submit to indexnow search engines
+	 * @param urlList
+	 * @return json
+	 */
+	private JSONObject buildIndexNowPostJson(List<String> urlList) {
+		JSONObject json = new JSONObject();
 		json.put("host", Settings.createServerURI());
 		json.put("key", oaiPmhModule.getUuid());
 		// set keyLocation behind resourceinfo/ so only urls like .../resourceinfo/1234 can be indexed
 		// https://www.indexnow.org/documentation
 		json.put("keyLocation", ResourceInfoDispatcher.getUrl(oaiPmhModule.getUuid() + ".txt"));
 		json.put("urlList", urlList);
-
-		try (CloseableHttpClient httpClient = httpClientService.createHttpClient()) {
-			for (String url : searchEngineUrls) {
-				HttpPost postRequest = new HttpPost(url);
-				if (url.contains("indexnow")) {
-					StringEntity postParams = new StringEntity(json.toString());
-					postParams.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-					postParams.setContentEncoding("UTF-8");
-					postRequest.setEntity(postParams);
-				}
-				response = httpClient.execute(postRequest);
-
-				if (response != null) {
-					// Ensures that the entity content is fully consumed and the content stream, if exists, is closed.
-					EntityUtils.consume(response.getEntity());
-					searchEngineToResponseCode.put(new URI(url).getHost(), response.getStatusLine().getStatusCode());
-				}
-			}
-		} catch (IOException e) {
-			searchEngineToResponseCode.clear();
-			searchEngineToResponseCode.put("Error", HttpStatus.SC_INTERNAL_SERVER_ERROR);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException(e);
-		}
-		return searchEngineToResponseCode;
+		return json;
 	}
 
 	private List<MetadataItems> repositoryItems(String metadataprefix, MetadataSetRepository setRepository) {
