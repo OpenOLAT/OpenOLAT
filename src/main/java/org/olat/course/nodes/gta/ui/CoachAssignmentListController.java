@@ -186,18 +186,31 @@ public class CoachAssignmentListController extends FormBasicController {
 	private void initFilterForm(FormLayoutContainer formLayout) {
 		formLayout.setFormTitle(translate("bulk.coach.assignment"));
 		
+		boolean hasBusinessGroups = !coachCourseEnv.getCourseEnvironment().getCourseGroupManager()
+				.getAllBusinessGroups().isEmpty();
+		boolean hasCurriculum = !coachCourseEnv.getCourseEnvironment().getCourseGroupManager()
+				.getAllCurriculumElements().isEmpty();
+		
 		SelectionValues filterValues = new SelectionValues();
 		filterValues.add(SelectionValues.entry(FILTER_OWNER, translate("filter.coaches.by.role.course.owners")));
 		filterValues.add(SelectionValues.entry(FILTER_COURSE_COACH, translate("filter.coaches.by.role.course.coaches")));
-		filterValues.add(SelectionValues.entry(FILTER_GROUP_COACH, translate("filter.coaches.by.role.group.coaches")));
-		filterValues.add(SelectionValues.entry(FILTER_CURRICULUM_COACH, translate("filter.coaches.by.role.curriculum.coaches")));
+		if(hasBusinessGroups) {
+			filterValues.add(SelectionValues.entry(FILTER_GROUP_COACH, translate("filter.coaches.by.role.group.coaches")));
+		}
+		if(hasCurriculum) {
+			filterValues.add(SelectionValues.entry(FILTER_CURRICULUM_COACH, translate("filter.coaches.by.role.curriculum.coaches")));
+		}
 		coachFilterEl = uifactory.addCheckboxesVertical("filter.coaches.by.role", formLayout, filterValues.keys(), filterValues.values(), 1);
 		coachFilterEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Default
 		coachFilterEl.select("coursecoach", true);
-		coachFilterEl.select("groupcoach", true);
-		coachFilterEl.select("curriculumcoach", true);
+		if(hasBusinessGroups) {
+			coachFilterEl.select("groupcoach", true);
+		}
+		if(hasCurriculum) {
+			coachFilterEl.select("curriculumcoach", true);
+		}
 	}
 	
 	private void initTableForm(FormItemContainer formLayout) {
@@ -499,6 +512,7 @@ public class CoachAssignmentListController extends FormBasicController {
 	private void doFilterCoaches() {
 		loadColumnsModel();
 		tableEl.reset(true, true, true);
+		loadNumberedCoachColumnHeaders();
 	}
 	
 	private void doAssignCoaches() {
