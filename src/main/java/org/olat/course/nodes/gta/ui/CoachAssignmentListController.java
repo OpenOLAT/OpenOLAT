@@ -511,7 +511,7 @@ public class CoachAssignmentListController extends FormBasicController {
 				String selectedCoachKey = choice.getSelectedKey();
 				AssessmentEntry assessmentEntry = row.getAssessmentEntry();
 				if(NOT_ASSIGNED.equals(selectedCoachKey)) {
-					if(assessmentEntry != null) {
+					if(assessmentEntry != null && assessmentEntry.getCoach() != null) {
 						courseAssessmentService.unassignCoach(assessmentEntry, false, coachCourseEnv.getCourseEnvironment(), gtaNode);
 					}
 				} else {
