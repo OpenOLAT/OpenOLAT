@@ -117,7 +117,7 @@ public class I18nModule extends AbstractSpringModule {
 	private final Set<String> overlayLanguagesKeys = new HashSet<>();
 	private final Set<String> enabledLanguagesKeys = new HashSet<>();
 	// keys: String language code, values: gender strategy
-	private final Map<Locale, GenderStrategy> genderStrategies = new HashMap<Locale,GenderStrategy>();
+	private final Map<Locale, GenderStrategy> genderStrategies = new HashMap<>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
@@ -399,14 +399,20 @@ public class I18nModule extends AbstractSpringModule {
 		// fallbackLangKey can't be null because EN is guaranteed to be available,
 		// see above
 		fallbackLocale = allLocales.get(fallbackLanguage);
+		if(fallbackLocale == null) {
+			fallbackLocale = allLocales.get(Locale.ENGLISH.toString());
+		}
+		if(fallbackLocale == null) {
+			fallbackLocale = allLocales.get(Locale.GERMAN.toString());
+		}
 
 		// Check if translation tool reference languages are available
-		if (isTransToolEnabled() && transToolReferenceLanguages.size() == 0) {
+		if (isTransToolEnabled() && transToolReferenceLanguages.isEmpty()) {
 			log.error("Did not find the fallback language configuration in the configuration, using language::en instead");
 		} else {
 			for (String langKey : transToolReferenceLanguages) {
 				if (!allLocales.containsKey(langKey)) {
-					log.error("The configured fallback language::" + langKey + " does not exist. Using language::en instead");
+					log.error("The configured fallback language::{} does not exist. Using language::en instead", langKey);
 				}
 			}
 		}
