@@ -213,7 +213,9 @@ public class GTARunController extends BasicController implements Activateable2 {
 			if(runCtrl != null && segmentView == null) {
 				runCtrl.activate(ureq, entries, state);
 			}
-			
+			if(coachCtrl != null) {
+				coachCtrl.activate(ureq, entries, state);
+			}
 		}
 	}
 

@@ -161,6 +161,11 @@ public class CoachAssignmentListController extends FormBasicController {
 		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		
 		initForm(ureq);
+		
+		if(coachesColumns.isEmpty()) {
+			coachFilterEl.select(FILTER_OWNER, true);
+			loadColumnsModel();
+		}
 		loadModel(this.assessedIdentities);
 		loadNumberedCoachColumnHeaders();
 	}
@@ -319,6 +324,13 @@ public class CoachAssignmentListController extends FormBasicController {
 			col.setCellRenderer(new CoachSingleSelectionCellRenderer(whichCoach));
 			coachColumn.setColumnModel(col);
 			columnsModel.addFlexiColumnModel(col);
+		}
+		
+		//Make sure all coach columns are visible
+		if(tableEl != null) {
+			for(CoachColumn colum: coachesColumns) {
+				tableEl.setColumnModelVisible(colum.getColumnModel(), true);
+			}
 		}
 	}
 	
@@ -511,8 +523,9 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	private void doFilterCoaches() {
 		loadColumnsModel();
-		tableEl.reset(true, true, true);
 		loadNumberedCoachColumnHeaders();
+		tableEl.reset(true, true, true);
+		
 	}
 	
 	private void doAssignCoaches() {
