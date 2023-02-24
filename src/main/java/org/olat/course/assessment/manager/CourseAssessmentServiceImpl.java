@@ -660,11 +660,13 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public void unassignCoach(AssessmentEntry assessmentEntry, boolean replace, CourseEnvironment courseEnv, CourseNode courseNode) {
-		final Identity currentCoach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
-		
-		assessmentEntry.setCoach(null);
-		assessmentEntry.setCoachAssignmentDate(null);
-		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		Identity currentCoach = null;
+		if(assessmentEntry.getCoach() != null) {
+			currentCoach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
+			assessmentEntry.setCoach(null);
+			assessmentEntry.setCoachAssignmentDate(null);
+			assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		}
 		if(replace) {
 			assignCoach(assessmentEntry, null, courseEnv, courseNode);
 		}
