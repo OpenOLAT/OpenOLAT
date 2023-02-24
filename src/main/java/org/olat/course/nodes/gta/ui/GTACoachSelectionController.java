@@ -202,7 +202,12 @@ public class GTACoachSelectionController extends BasicController implements Acti
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		if(entries == null || entries.isEmpty()) {
+			if(coachAssignmentListCtrl != null) {
+				back(ureq);
+			}
+			return;
+		}
 		
 		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		Long key = entries.get(0).getOLATResourceable().getResourceableId();

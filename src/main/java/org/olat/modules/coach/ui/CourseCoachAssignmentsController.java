@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseCoachAssignmentsController extends FormBasicController {
 	
+	private static final String CMD_OPEN_ASSIGN = "assign";
 	private static final String CMD_COURSE_ELEMENT = "course-element";
 	private static final String CMD_OPEN_ASSIGNMENTS = "open-assignments";
 
@@ -75,8 +76,8 @@ public class CourseCoachAssignmentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CAssignmentsCol.entryExternalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CAssignmentsCol.entryExternalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CAssignmentsCol.courseElement, CMD_COURSE_ELEMENT, new IndentedNodeRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CAssignmentsCol.openAssignments, "open-assignments"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("assign", translate("assign"), "assign"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CAssignmentsCol.openAssignments, CMD_OPEN_ASSIGNMENTS));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("assign", translate("assign"), CMD_OPEN_ASSIGN));
 		
 		tableModel = new CourseCoachAssignmentsTableModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
@@ -101,6 +102,8 @@ public class CourseCoachAssignmentsController extends FormBasicController {
 				if(CMD_COURSE_ELEMENT.equals(cmd)) {
 					doOpenCourseElement(ureq, tableModel.getObject(se.getIndex()));
 				} else if(CMD_OPEN_ASSIGNMENTS.equals(cmd)) {
+					doOpenCourseElement(ureq, tableModel.getObject(se.getIndex()));
+				} else if(CMD_OPEN_ASSIGN.equals(cmd)) {
 					doOpenAssignments(ureq, tableModel.getObject(se.getIndex()));
 				}
 			}
