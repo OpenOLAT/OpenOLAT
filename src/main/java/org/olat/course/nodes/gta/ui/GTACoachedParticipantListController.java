@@ -1136,7 +1136,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			selectLink = LinkFactory.createLink("select.assess", "select", getTranslator(), mainVC, this, Link.LINK);
 			selectLink.setIconLeftCSS("o_icon o_icon-fw o_icon_copy");
 			dueDatesLink = LinkFactory.createLink("duedates", "duedates", getTranslator(), mainVC, this, Link.LINK);
-			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
+			dueDatesLink.setIconLeftCSS("o_icon o_icon-fw o_icon_extra_time");
 			
 			if(assessmentConfig.hasCoachAssignment() && assessmentCallback.canAssignCoaches()) {
 				assignCoachLink = LinkFactory.createLink("assign.coach", "assign.coach", getTranslator(), mainVC, this, Link.LINK);
