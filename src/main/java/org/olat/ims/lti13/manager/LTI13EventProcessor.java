@@ -167,6 +167,7 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 		if(connection != null) {
 			try {
 				ltiSession.close();
+				connection.stop();
 				connection.close();
 			} catch (JMSException e) {
 				log.error("", e);
@@ -205,8 +206,7 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 	@Override
 	public void onMessage(Message message) {
 		try {
-			if(message instanceof MapMessage) {
-				MapMessage mm = (MapMessage)message;
+			if(message instanceof MapMessage mm) {
 				Long identityKey = mm.getLong("identity");
 				Long serviceKey = mm.getLong("service");
 				String operation = mm.getString("operation");

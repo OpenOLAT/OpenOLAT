@@ -238,7 +238,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	@Override
 	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		return new GTAIdentityListCourseNodeToolsController(ureq, getWindowControl(), courseNode, assessedIdentity,
-				coachCourseEnv);
+				coachCourseEnv, getAssessmentCallback());
 	}
 
 	@Override

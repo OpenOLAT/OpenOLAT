@@ -242,7 +242,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private void startQueue() throws JMSException {
 		connection = (QueueConnection)connectionFactory.createConnection();
 		connection.start();
-		log.info("springInit: JMS connection started with connectionFactory=" + connectionFactory);
+		log.info("springInit: JMS connection started with connectionFactory={}", connectionFactory);
 
 		//listen to the queue only if indexing node
 		certificateSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -266,6 +266,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(connection != null) {
 			try {
 				certificateSession.close();
+				connection.stop();
 				connection.close();
 			} catch (JMSException e) {
 				log.error("", e);

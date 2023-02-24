@@ -230,6 +230,7 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 		if(connection != null) {
 			try {
 				indexerSession.close();
+				connection.stop();
 				connection.close();
 			} catch (JMSException e) {
 				log.error("", e);

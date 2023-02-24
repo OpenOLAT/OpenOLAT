@@ -132,6 +132,7 @@ public class JmsSearchProvider implements MessageListener {
 		searchService.stop();
 		try {
 			session.close();
+			connection.stop();
 			connection.close();
 			log.info("ClusteredSearchProvider stopped");
 		} catch (JMSException e) {
@@ -159,8 +160,8 @@ public class JmsSearchProvider implements MessageListener {
 		
 	@Override
 	public void onMessage(Message message) {
-		if ( log.isDebugEnabled() ) {
-			log.debug("onMessage, message=" + message);
+		if (log.isDebugEnabled() ) {
+			log.debug("onMessage, message={}", message);
 		}
 		try{
 			long sentTimestamp = message.getJMSTimestamp();

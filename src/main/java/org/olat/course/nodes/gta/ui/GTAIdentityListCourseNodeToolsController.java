@@ -42,6 +42,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,8 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 	private Link extendLink;
 	private Link coachAssignmentLink;
 	
+	private final AssessmentToolSecurityCallback assessmentCallback;
+	
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
@@ -69,8 +72,10 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 	private EditDueDatesController editDueDatesCtrl;
 	
 	public GTAIdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
-			CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+			CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolSecurityCallback assessmentCallback) {
 		super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
+		this.assessmentCallback = assessmentCallback;
 		
 		initTools();
 	}
@@ -95,7 +100,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 			extendLink = addLink("duedates", "duedates", "o_icon o_icon-fw o_icon_extra_time");
 		}
 		
-		if(assessmentConfig.hasCoachAssignment()) {
+		if(assessmentConfig.hasCoachAssignment() && assessmentCallback.canAssignCoaches()) {
 			coachAssignmentLink = addLink("assign.coach", "assign.coach", "o_icon o_icon-fw o_icon_coach");
 		}
 	}

@@ -468,8 +468,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		isClusterInfoEventThreadRunning = false;
 		try {
 			jmsExecutor.shutdownNow();
+
+			producer.close();
 			sessionProducer.close();
 			sessionConsumer.close();
+			
+			connection.stop();
 			connection.close();
 			log.info("ClusterEventBus stopped");
 		} catch (JMSException e) {
