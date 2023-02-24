@@ -320,6 +320,11 @@ public class CoachAssignmentListController extends FormBasicController {
 			coachColumn.setColumnModel(col);
 			columnsModel.addFlexiColumnModel(col);
 		}
+		
+		//Make sure all coach columns are visible
+		for(CoachColumn colum: coachesColumns) {
+			tableEl.setColumnModelVisible(colum.getColumnModel(), true);
+		}
 	}
 	
 	private void loadModel(List<Identity> participants) {
@@ -511,8 +516,9 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	private void doFilterCoaches() {
 		loadColumnsModel();
-		tableEl.reset(true, true, true);
 		loadNumberedCoachColumnHeaders();
+		tableEl.reset(true, true, true);
+		
 	}
 	
 	private void doAssignCoaches() {
