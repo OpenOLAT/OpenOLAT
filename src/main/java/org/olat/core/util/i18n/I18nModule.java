@@ -41,7 +41,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -351,8 +350,10 @@ public class I18nModule extends AbstractSpringModule {
 		// Finished detecting available languages
 		//
 		// Proceed with some sanity checks
-		if (availableLanguages.size() == 0 || !availableLanguages.contains(Locale.ENGLISH.toString())) { throw new OLATRuntimeException(
-			"Did not find any language files, not even 'en'! At least 'en' must be available.", null); }
+		if (availableLanguages.isEmpty() || !availableLanguages.contains(Locale.ENGLISH.toString())) {
+			// Load official packs
+			availableLanguages.addAll(List.of("en", "de", "it", "fr", "pt_BR",  "bg", "jp", "el", "lt", "es", "cs", "ar", "en_GB", "zh_TW",  "zh_CN", "fa", "pl", "pt_PT", "da", "sq", "tr", "nl_NL", "ru"));
+		}
 		List<String> toRemoveLangs = new ArrayList<>();
 		//
 		// Build list of all locales and the overlay locales if available
