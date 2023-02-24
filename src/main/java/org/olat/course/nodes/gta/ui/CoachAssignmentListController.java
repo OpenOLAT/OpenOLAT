@@ -161,6 +161,11 @@ public class CoachAssignmentListController extends FormBasicController {
 		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		
 		initForm(ureq);
+		
+		if(coachesColumns.isEmpty()) {
+			coachFilterEl.select(FILTER_OWNER, true);
+			loadColumnsModel();
+		}
 		loadModel(this.assessedIdentities);
 		loadNumberedCoachColumnHeaders();
 	}
@@ -322,8 +327,10 @@ public class CoachAssignmentListController extends FormBasicController {
 		}
 		
 		//Make sure all coach columns are visible
-		for(CoachColumn colum: coachesColumns) {
-			tableEl.setColumnModelVisible(colum.getColumnModel(), true);
+		if(tableEl != null) {
+			for(CoachColumn colum: coachesColumns) {
+				tableEl.setColumnModelVisible(colum.getColumnModel(), true);
+			}
 		}
 	}
 	
