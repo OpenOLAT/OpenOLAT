@@ -523,9 +523,9 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	private void doFilterCoaches() {
 		loadColumnsModel();
-		loadNumberedCoachColumnHeaders();
+		loadModel(assessedIdentities);
 		tableEl.reset(true, true, true);
-		
+		loadNumberedCoachColumnHeaders();
 	}
 	
 	private void doAssignCoaches() {
@@ -605,8 +605,10 @@ public class CoachAssignmentListController extends FormBasicController {
 		for(IdentityAssignmentRow row:rows) {
 			SingleSelection selection = row.getChoices();
 			int selected = selection.getSelected();
-			if(selected > 0) {
+			if(selected > 0 && selected < coaches.size()) {
 				coaches.get(selected - 1).increment();
+			} else {
+				System.out.println();
 			}
 		}
 		
