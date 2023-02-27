@@ -157,10 +157,15 @@ public class NavigationPage {
 			openMoreMenu();
 		}
 
-		OOGraphene.waitElement(linkBy, browser);
-		browser.findElement(linkBy).click();
-		OOGraphene.waitBusy(browser);
-		OOGraphene.waitingTransition(browser);
+		try {
+			OOGraphene.waitElement(linkBy, browser);
+			browser.findElement(linkBy).click();
+			OOGraphene.waitBusy(browser);
+			OOGraphene.waitingTransition(browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Navigate", browser);
+			throw e;
+		}
 	}
 	
 	public void openCourse(String title) {
