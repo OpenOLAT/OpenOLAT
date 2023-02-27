@@ -108,9 +108,13 @@ public class OpenOLATServlet extends HttpServlet {
 		}
 		
 		if(Settings.isSecurePortAvailable()) {
-			SessionCookieConfig cookieConfig = servletConfig.getServletContext().getSessionCookieConfig();
-			cookieConfig.setSecure(true);
-			cookieConfig.setHttpOnly(true);
+			try {
+				SessionCookieConfig cookieConfig = servletConfig.getServletContext().getSessionCookieConfig();
+				cookieConfig.setSecure(true);
+				cookieConfig.setHttpOnly(true);
+			} catch (Exception e) {
+				log.error("Cannot setup cookie configuration", e);
+			}
 		}
 
 		//preload extensions

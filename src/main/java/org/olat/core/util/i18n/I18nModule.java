@@ -41,7 +41,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -118,7 +117,7 @@ public class I18nModule extends AbstractSpringModule {
 	private final Set<String> overlayLanguagesKeys = new HashSet<>();
 	private final Set<String> enabledLanguagesKeys = new HashSet<>();
 	// keys: String language code, values: gender strategy
-	private final Map<Locale, GenderStrategy> genderStrategies = new HashMap<Locale,GenderStrategy>();
+	private final Map<Locale, GenderStrategy> genderStrategies = new HashMap<>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
@@ -351,8 +350,10 @@ public class I18nModule extends AbstractSpringModule {
 		// Finished detecting available languages
 		//
 		// Proceed with some sanity checks
-		if (availableLanguages.size() == 0 || !availableLanguages.contains(Locale.ENGLISH.toString())) { throw new OLATRuntimeException(
-			"Did not find any language files, not even 'en'! At least 'en' must be available.", null); }
+		if (availableLanguages.isEmpty() || !availableLanguages.contains(Locale.ENGLISH.toString())) {
+			// Load official packs
+			availableLanguages.addAll(List.of("en", "de", "it", "fr", "pt_BR",  "bg", "jp", "el", "lt", "es", "cs", "ar", "en_GB", "zh_TW",  "zh_CN", "fa", "pl", "pt_PT", "da", "sq", "tr", "nl_NL", "ru"));
+		}
 		List<String> toRemoveLangs = new ArrayList<>();
 		//
 		// Build list of all locales and the overlay locales if available
@@ -398,14 +399,20 @@ public class I18nModule extends AbstractSpringModule {
 		// fallbackLangKey can't be null because EN is guaranteed to be available,
 		// see above
 		fallbackLocale = allLocales.get(fallbackLanguage);
+		if(fallbackLocale == null) {
+			fallbackLocale = allLocales.get(Locale.ENGLISH.toString());
+		}
+		if(fallbackLocale == null) {
+			fallbackLocale = allLocales.get(Locale.GERMAN.toString());
+		}
 
 		// Check if translation tool reference languages are available
-		if (isTransToolEnabled() && transToolReferenceLanguages.size() == 0) {
+		if (isTransToolEnabled() && transToolReferenceLanguages.isEmpty()) {
 			log.error("Did not find the fallback language configuration in the configuration, using language::en instead");
 		} else {
 			for (String langKey : transToolReferenceLanguages) {
 				if (!allLocales.containsKey(langKey)) {
-					log.error("The configured fallback language::" + langKey + " does not exist. Using language::en instead");
+					log.error("The configured fallback language::{} does not exist. Using language::en instead", langKey);
 				}
 			}
 		}

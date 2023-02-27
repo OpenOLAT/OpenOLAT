@@ -154,7 +154,7 @@ public class CurriculumRepositoryEntryRelationDAO {
 	public List<CurriculumElement> getCurriculumElements(RepositoryEntryRef entry, Identity identity, Collection<CurriculumRoles> roles) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select el from curriculumelement as el")
-		  .append(" inner join el.group as bGroup")
+		  .append(" inner join fetch el.group as bGroup")
 		  .append(" inner join bGroup.members as memberships")
 		  .append(" inner join repoentrytogroup as rel on (bGroup.key=rel.group.key)")
 		  .append(" inner join fetch el.curriculum as curriculum")
