@@ -72,6 +72,7 @@ import org.olat.ims.qti21.ui.components.FeedbackResultFormItem;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.components.ItemBodyResultFormItem;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -147,6 +148,8 @@ public class AssessmentResultController extends FormBasicController {
 	private PdfService pdfService;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public AssessmentResultController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, boolean anonym,
 			AssessmentTestSession candidateSession, File fUnzippedDirRoot, String mapperUri, String submissionMapperUri,
@@ -625,7 +628,8 @@ public class AssessmentResultController extends FormBasicController {
 		
 		String subIdent = session.getSubIdent();
 		if(StringHelper.containsNonWhitespace(subIdent)) {
-			ICourse course = CourseFactory.loadCourse(session.getRepositoryEntry());
+			RepositoryEntry entry = repositoryService.loadBy(session.getRepositoryEntry());
+			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode node = course.getRunStructure().getNode(subIdent);
 			if(node != null) {
 				if(StringHelper.containsNonWhitespace(node.getShortTitle())) {
