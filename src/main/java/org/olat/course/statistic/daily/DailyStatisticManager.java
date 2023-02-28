@@ -28,6 +28,7 @@ package org.olat.course.statistic.daily;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -86,7 +87,7 @@ public class DailyStatisticManager implements IStatisticManager {
 			DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, ureq.getLocale());
 			header = df.format(c.getTime());
 		} catch(ParseException pe) {
-			log.warn("createColumnDescriptor: ParseException while parsing "+headerId+".", pe);
+			log.warn("createColumnDescriptor: ParseException while parsing {}.", headerId, pe);
 		}
 		TotalAwareColumnDescriptor cd = new TotalAwareColumnDescriptor(header, column, 
 				StatisticDisplayController.CLICK_TOTAL_ACTION+column, ureq.getLocale(), ColumnDescriptor.ALIGNMENT_RIGHT);
@@ -122,9 +123,30 @@ public class DailyStatisticManager implements IStatisticManager {
 			dbQuery.setParameter("toDate", toDate, TemporalType.TIMESTAMP);
 		}
 		
-		StatisticResult statisticResult = new StatisticResult(course, dbQuery.getResultList());
+		List<String> headers = getColumnHeaders(fromDate, toDate);
+		StatisticResult statisticResult = new StatisticResult(course, dbQuery.getResultList(), headers);
 		fillGapsInColumnHeaders(statisticResult);
 		return statisticResult;
+	}
+	
+	List<String> getColumnHeaders(Date start, Date end) {
+		if(start == null || end == null) return List.of();
+		
+		List<String> headers = new ArrayList<>();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+
+		for(int i=0; i<255; i++) {
+			Date current = cal.getTime();
+			if(current.after(end)) {
+				break;
+			}
+			String header = columnHeaderFormat.format(current);
+			headers.add(header);
+			cal.add(Calendar.DATE, 1);
+		}
+		return headers;
 	}
 
 	/** fill any gaps in the column headers between the first and the last days **/
