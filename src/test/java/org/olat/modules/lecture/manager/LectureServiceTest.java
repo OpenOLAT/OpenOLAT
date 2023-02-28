@@ -757,6 +757,82 @@ public class LectureServiceTest extends OlatTestCase {
 		Assert.assertNotNull(notice);
 	}
 	
+	@Test
+	public void deleteNotice_lectureblocks() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block, teacher);
+
+		dbInstance.commit();
+		
+		List<LectureBlock> lectureBlocks = List.of(block);
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				start, end, null, null, null, null, lectureBlocks, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// first roll call
+		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, block, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall = lectureService.getRollCall(rollCall);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall);
+		Assert.assertEquals(notice, reloadedRollCall.getAbsenceNotice());
+		
+		// Delete the lecture block
+		lectureService.deleteLectureBlock(block, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock deletedBlock = lectureService.getLectureBlock(block);
+		Assert.assertNull(deletedBlock);
+	}
+	
+	@Test
+	public void deleteNoticeByRepository() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block, teacher);
+
+		dbInstance.commit();
+		
+		List<LectureBlock> lectureBlocks = List.of(block);
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				start, end, null, null, null, null, lectureBlocks, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// first roll call
+		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, block, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall = lectureService.getRollCall(rollCall);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall);
+		Assert.assertEquals(notice, reloadedRollCall.getAbsenceNotice());
+		
+		// Delete the lecture block
+		lectureService.delete(entry);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock deletedBlock = lectureService.getLectureBlock(block);
+		Assert.assertNull(deletedBlock);
+	}
+	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
 		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
 		lectureBlock.setStartDate(new Date());

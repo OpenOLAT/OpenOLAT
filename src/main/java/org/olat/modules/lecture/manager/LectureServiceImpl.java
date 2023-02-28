@@ -433,21 +433,29 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		LectureBlock reloadedBlock = lectureBlockDao.loadByKey(lectureBlock.getKey());
 		RepositoryEntry entry = reloadedBlock.getEntry();
 		RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		internalDeleteLectureBlock(reloadedBlock, actingIdentity, entry, config);
+	}
+	
+	private int internalDeleteLectureBlock(LectureBlock lectureBlock, Identity actingIdentity,
+			RepositoryEntry entry, RepositoryEntryLectureConfiguration config) {
 		if(ConfigurationHelper.isSyncCourseCalendarEnabled(config, lectureModule)) {
 			unsyncCourseCalendar(lectureBlock, entry);
 		}
+		
+		
 		if(ConfigurationHelper.isSyncTeacherCalendarEnabled(config, lectureModule)) {
-			List<Identity> teachers = getTeachers(reloadedBlock);
-			unsyncInternalCalendar(reloadedBlock, teachers);
+			List<Identity> teachers = getTeachers(lectureBlock);
+			unsyncInternalCalendar(lectureBlock, teachers);
 		}
 		
 		List<AbsenceNotice> absenceNotices = getAbsenceNoticeUniquelyRelatedTo(Collections.singletonList(lectureBlock));
 		for(AbsenceNotice absenceNotice:absenceNotices) {
 			deleteAbsenceNotice(absenceNotice, actingIdentity);
 		}
-		absenceNoticeToLectureBlockDao.deleteRelations(reloadedBlock);
-		lectureBlockDao.delete(reloadedBlock);
+		int rows = absenceNoticeToLectureBlockDao.deleteRelations(lectureBlock);
+		rows += lectureBlockDao.delete(lectureBlock);
 		dbInstance.commit();// make it quick
+		return rows;
 	}
 
 	@Override
@@ -482,10 +490,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 	@Override
 	public int delete(RepositoryEntry entry) {
+		final RepositoryEntryLectureConfiguration config = getRepositoryEntryLectureConfiguration(entry);
+		
 		int rows = 0;
 		List<LectureBlock> blocksToDelete = lectureBlockDao.getLectureBlocks(entry);
 		for(LectureBlock blockToDelete:blocksToDelete) {
-			rows += lectureBlockDao.delete(blockToDelete);
+			rows += internalDeleteLectureBlock(blockToDelete, null, entry, config);
 		}
 		rows += lectureConfigurationDao.deleteConfiguration(entry);
 		rows += lectureParticipantSummaryDao.deleteSummaries(entry);
