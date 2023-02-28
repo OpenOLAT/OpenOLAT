@@ -9,7 +9,7 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 Visit the [OpenOlat project homepage](https://www.openolat.com) and the [OpenOlat documentation](https://docs.openolat.org) for more information.
 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/openolat/OpenOlat) [![Twitter Follow](https://img.shields.io/twitter/follow/openolat?style=social)](https://twitter.com/openolat)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/openolat/OpenOlat) [![Twitter Follow](https://img.shields.io/twitter/follow/openolat?style=social)](https://twitter.com/openolat) [![Mastodon Follow](https://img.shields.io/mastodon/follow/108248790140395927?style=social)](https://mastodon.social/@openolat)
 
 ## Table of Contents
 
