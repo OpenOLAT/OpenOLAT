@@ -27,16 +27,18 @@ package org.olat.course.statistic.weekly;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
@@ -119,9 +121,10 @@ public class WeeklyStatisticManager implements IStatisticManager {
 			dbQuery.setParameter("toDate", toDateStr);
 		}
 		
-		log.info("generateStatisticResult: Searching with params "+infoMsg.toString());
+		log.info("generateStatisticResult: Searching with params {}", infoMsg);
 		
-		StatisticResult statisticResult = new StatisticResult(course, dbQuery.getResultList());
+		List<String> headers = getColumnHeaders(fromDate, toDate);
+		StatisticResult statisticResult = new StatisticResult(course, dbQuery.getResultList(), headers);
 		fillGapsInColumnHeaders(statisticResult);
 		return statisticResult;
 	}
@@ -148,6 +151,26 @@ public class WeeklyStatisticManager implements IStatisticManager {
 		if (resultingColumnHeaders!=null) {
 			statisticResult.setColumnHeaders(resultingColumnHeaders);
 		}
+	}
+	
+	List<String> getColumnHeaders(Date start, Date end) {
+		if(start == null || end == null) return List.of();
+		
+		List<String> headers = new ArrayList<>();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(start);
+
+		for(int i=0; i<255; i++) {
+			Date current = cal.getTime();
+			if(current.after(end)) {
+				break;
+			}
+			String header = sdf.format(current);
+			headers.add(header);
+			cal.add(Calendar.DATE, 7);
+		}
+		return headers;
 	}
 	
 	List<String> fillGapsInColumnHeaders(List<String> columnHeaders) {

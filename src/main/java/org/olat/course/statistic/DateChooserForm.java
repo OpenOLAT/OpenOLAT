@@ -101,19 +101,19 @@ public class DateChooserForm extends FormBasicController {
 				 */
 				if (fromDateVal.after(toDateVal)) {				
 					fromDate.setTranslator(Util.createPackageTranslator(org.olat.course.condition.Condition.class, ureq.getLocale(), fromDate.getTranslator()));
-					fromDate.setErrorKey("form.easy.error.bdateafteredate", null);
+					fromDate.setErrorKey("form.easy.error.bdateafteredate");
 					retVal = false;
 				}
 			} else {
 				if (fromDateVal == null && !fromDate.isEmpty()) {
 					//not a correct begin date
 					fromDate.setTranslator(Util.createPackageTranslator(org.olat.course.condition.Condition.class, ureq.getLocale(), fromDate.getTranslator()));
-					fromDate.setErrorKey("form.easy.error.bdate", null);
+					fromDate.setErrorKey("form.easy.error.bdate");
 					retVal = false;
 				}
 				if (toDateVal == null && !toDate.isEmpty()) {
 					toDate.setTranslator(Util.createPackageTranslator(org.olat.course.condition.Condition.class, ureq.getLocale(), toDate.getTranslator()));
-					toDate.setErrorKey("form.easy.error.edate", null);
+					toDate.setErrorKey("form.easy.error.edate");
 					retVal = false;
 				}
 			}

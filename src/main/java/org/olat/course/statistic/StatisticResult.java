@@ -26,7 +26,6 @@ package org.olat.course.statistic;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,33 +68,31 @@ public class StatisticResult implements TableDataModel {
 | [RepositoryEntry:393216][CourseNode:73156787421533] |   4 |    34 |
 	 */
 	public StatisticResult(ICourse course, List<Object[]> result) {
-		final Set<String> groupByKeys = new HashSet<>();
+		this(course, result, List.of());
+	}
+
+	public StatisticResult(ICourse course, List<Object[]> result, List<String> groupByKeysList) {
+		final Set<String> groupByKeys = new HashSet<>(groupByKeysList);
 		doAddQueryListResultsForNodeAndChildren(course.getRunStructure().getRootNode(), result, groupByKeys);
 		if (!result.isEmpty()) {
-			log.error("ERROR - should have 0 left....: " + result.size());
+			log.error("ERROR - should have 0 left....: {}", result.size());
 		}
 		
 		columnHeaders_ = new LinkedList<>(groupByKeys);
-		Collections.sort(columnHeaders_, new Comparator<String>() {
-
-			@Override 
-			public int compare(String o1, String o2){
-				try{
-					Integer n1 = Integer.parseInt(o1);
-					Integer n2 = Integer.parseInt(o2);
-					if (n1>n2) {
-						return 1;
-					} else if (n1<n2) {
-						return -1;
-					} else {
-						return 0;
-					}
-				} catch(NumberFormatException nfe) {
-					return o1.compareTo(o2);
+		Collections.sort(columnHeaders_, (String o1, String o2) -> {
+			try{
+				Integer n1 = Integer.parseInt(o1);
+				Integer n2 = Integer.parseInt(o2);
+				if (n1>n2) {
+					return 1;
 				}
-				
+				if (n1<n2) {
+					return -1;
+				}
+				return 0;
+			} catch(NumberFormatException nfe) {
+				return o1.compareTo(o2);
 			}
-			
 		});
 	}
 	
@@ -145,8 +142,8 @@ public class StatisticResult implements TableDataModel {
 		int childCount = node.getChildCount();
 		for(int i = 0; i < childCount; i++) {
 			INode n = node.getChildAt(i);
-			if(n instanceof CourseNode) {
-				doAddQueryListResultsForNodeAndChildren((CourseNode)n, result, groupByKeys);
+			if(n instanceof CourseNode cn) {
+				doAddQueryListResultsForNodeAndChildren(cn, result, groupByKeys);
 			}
 		}
 	}
