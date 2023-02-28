@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -90,6 +89,7 @@ public class OpenXMLDocument {
 	private int currentNumberingId = 0;
 	private String documentHeader;
 	private Set<String> imageFilenames = new HashSet<>();
+	private Map<URL, DocReference> urlToImagesMap = new HashMap<>();
 	private Map<File, DocReference> fileToImagesMap = new HashMap<>();
 	
 	private List<Node> cursorStack = new ArrayList<>();
@@ -134,7 +134,14 @@ public class OpenXMLDocument {
 	}
 	
 	public Collection<DocReference> getImages() {
-		return fileToImagesMap.values();
+		List<DocReference> references = new ArrayList<>();
+		if(!fileToImagesMap.isEmpty()) {
+			references.addAll(fileToImagesMap.values());
+		}
+		if(!urlToImagesMap.isEmpty()) {
+			references.addAll(urlToImagesMap.values());
+		}
+		return references;
 	}
 	
 	public Collection<HeaderReference> getHeaders() {
@@ -687,9 +694,8 @@ public class OpenXMLDocument {
 				name = checked ? "image1_noborder.png" : "image2_noborder.png";
 			}
 			URL imgUrl = OpenXMLDocument.class.getResource("_resources/" + name);
-			File imgFile = new File(imgUrl.toURI());
-			return createImageEl(imgFile);
-		} catch (URISyntaxException e) {
+			return createImageEl(imgUrl, name, OpenXMLConstants.PAGE_FULL_WIDTH_CM);
+		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
@@ -1115,8 +1121,7 @@ public class OpenXMLDocument {
 		if(mediaContainer == null) return null;
 		
 		VFSItem media = mediaContainer.resolve(path);
-		if(media instanceof LocalFileImpl) {
-			LocalFileImpl file = (LocalFileImpl)media;
+		if(media instanceof LocalFileImpl file) {
 			return createImageEl(file.getBasefile(), maxWidthCm);
 		}
 		return null;
@@ -1185,13 +1190,25 @@ public class OpenXMLDocument {
 	
 	public Element createImageEl(File image, double widthCm) {
 		DocReference ref = registerImage(image, widthCm);
-		if (ref == null)
+		if (ref == null) {
 			return null;
-		
-		String id = ref.getId();
-		OpenXMLSize emuSize = ref.getEmuSize();
-		String filename = ref.getFilename();
+		}
+		return createImageEl(ref);
+	}
+	
+	public Element createImageEl(URL url, String filename, double widthCm) {
+		DocReference ref = registerImage(url, filename, widthCm);
+		if (ref == null) {
+			return null;
+		}
+		return createImageEl(ref);
+	}
 
+	private Element createImageEl(DocReference docReference) {
+		String id = docReference.getId();
+		OpenXMLSize emuSize = docReference.getEmuSize();
+		String filename = docReference.getFilename();
+		
 		Element drawingEl = document.createElement("w:drawing");
 		Element inlineEl = (Element)drawingEl.appendChild(document.createElement("wp:inline"));
 		inlineEl.setAttribute("distT", "0");
@@ -1293,6 +1310,24 @@ public class OpenXMLDocument {
 			String filename = getUniqueFilename(image);
 			ref = new DocReference(id, filename, emuSize, image);
 			fileToImagesMap.put(image, ref);
+		}
+		return ref;
+	}
+	
+	private DocReference registerImage(URL url, String filename, double widthCm) {
+		DocReference ref;
+		if(urlToImagesMap.containsKey(url)) {
+			ref = urlToImagesMap.get(url);
+		} else {
+			String id = generateId();
+			Size size = ImageUtils.getImageSize(url, filename);
+			if (size == null) {
+				return null;
+			}
+			OpenXMLSize	emuSize = OpenXMLUtils.convertPixelToEMUs(size, DPI, widthCm/* cm */);
+			filename = getUniqueFilename(filename);
+			ref = new DocReference(id, filename, emuSize, url);
+			urlToImagesMap.put(url, ref);
 		}
 		return ref;
 	}
@@ -1736,6 +1771,10 @@ public class OpenXMLDocument {
 	
 	private String getUniqueFilename(File image) {
 		String filename = image.getName().toLowerCase();
+		return getUniqueFilename(filename);
+	}
+	
+	private String getUniqueFilename(String filename) {
 		int extensionIndex = filename.lastIndexOf('.');
 		if(extensionIndex > 0) {
 			String name = filename.substring(0, extensionIndex);

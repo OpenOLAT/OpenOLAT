@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -54,6 +55,16 @@ public class ImageUtils {
 		try(InputStream in = new FileInputStream(image);
 				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
 			String suffix = FileUtils.getFileSuffix(image.getName());
+			return getImageSize(suffix, bis);
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	public static Size getImageSize(URL image, String filename) {
+		try(InputStream in = image.openStream();
+				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
+			String suffix = FileUtils.getFileSuffix(filename);
 			return getImageSize(suffix, bis);
 		} catch (IOException e) {
 			return null;

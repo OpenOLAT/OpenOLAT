@@ -273,16 +273,11 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 	}
 	
 	private void sendMessage(JmsIndexWork workUnit) {
-		QueueSender sender;
-		QueueSession session;
-		try {
-			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+				QueueSender sender = session.createSender(getJmsQueue())) {
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
-			
-			sender = session.createSender(getJmsQueue());
 			sender.send(message, DeliveryMode.NON_PERSISTENT, 3, 120000);
-			session.close();
 		} catch (JMSException e) {
 			log.error("", e );
 		}
@@ -295,9 +290,8 @@ public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff
 
 	@Override
 	public void onMessage(Message message) {
-		if(message instanceof ObjectMessage) {
+		if(message instanceof ObjectMessage objMsg) {
 			try {
-				ObjectMessage objMsg = (ObjectMessage)message;
 				JmsIndexWork workUnit = (JmsIndexWork)objMsg.getObject();
 				if(JmsIndexWork.INDEX.equals(workUnit.getAction())) {
 					doIndex(workUnit);

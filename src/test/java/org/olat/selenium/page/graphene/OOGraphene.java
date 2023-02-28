@@ -36,6 +36,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
@@ -142,7 +143,7 @@ public class OOGraphene {
 		try {
 			new WebDriverWait(browser, driverTimeout)
 				.withTimeout(timeoutDuration).pollingEvery(poolingSlow)
-				.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
+				.until(absenceOfElementLocated(modalBy));
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("waitModalDialogDisappears", browser);
 			throw e;
@@ -319,6 +320,12 @@ public class OOGraphene {
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingSlower)
 			.until(ExpectedConditions.invisibilityOfElementLocated(element));
+	}
+	
+	public static void waitElementAbsence(By element, int timeoutInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
+			.until(absenceOfElementLocated(element));
 	}
 	
 	public static void nextStep(WebDriver browser) {
@@ -805,7 +812,7 @@ public class OOGraphene {
 		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
 		waitElement(closeButtonBy, browser);
 		browser.findElement(closeButtonBy).click();
-		waitModalDialogDisappears(browser);
+		waitModalDialogDisappears(browser);	
 	}
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
@@ -908,5 +915,26 @@ public class OOGraphene {
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	public static ExpectedCondition<Boolean> absenceOfElementLocated(final By locator) {
+		return new ExpectedCondition<Boolean>() {
+			@Override
+			public Boolean apply(WebDriver driver) {
+				try {
+					driver.findElement(locator);
+					return false;
+				} catch (NoSuchElementException e) {
+					return true;
+				} catch (StaleElementReferenceException e) {
+					return true;
+				}
+			}
+
+			@Override
+			public String toString() {
+				return "element to not being present: " + locator;
+			}
+		};
 	}
 }

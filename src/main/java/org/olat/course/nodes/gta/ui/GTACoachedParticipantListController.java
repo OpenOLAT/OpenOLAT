@@ -647,8 +647,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			taskDefinition = fileNameToDefinitions.get(taskName);
 		}
 		
-		String coach = assessment.getCoach() == null ? null : userManager.getUserDisplayName(assessment.getCoach());
-		Long coachKey = assessment.getCoach() == null ? null : assessment.getCoach().getKey();
+		String coach = null;
+		Long coachKey = null;
+		if(assessment != null && assessment.getCoach() != null) {
+			coach = userManager.getUserDisplayName(assessment.getCoach());
+			coachKey = assessment.getCoach().getKey();
+		}
 		
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++count), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");

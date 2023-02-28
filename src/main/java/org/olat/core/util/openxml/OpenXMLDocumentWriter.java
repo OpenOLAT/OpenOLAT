@@ -19,10 +19,12 @@
  */
 package org.olat.core.util.openxml;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Locale;
@@ -182,18 +184,41 @@ public class OpenXMLDocumentWriter {
 		out.closeEntry();
 	}
 	
-	protected void appendMedias(ZipOutputStream out, OpenXMLDocument document)
+	protected final void appendMedias(ZipOutputStream out, OpenXMLDocument document)
 	throws IOException {
 		for(DocReference img:document.getImages()) {
-			try(FileInputStream in = new FileInputStream(img.getFile())) {
-				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFilename());
-				out.putNextEntry(wordDocument);
-				IOUtils.copy(in, out);
-				out.closeEntry();
-			} catch(Exception e) {
-				log.error("", e);
+			if(img.getUrl() != null) {
+				appendMediaURL(out, img.getUrl(), img.getFilename());
+			} else if(img.getFile() != null) {
+				appendMediaFile(out, img.getFile(), img.getFilename());
 			}
 		}
+	}
+	
+	protected final void appendMediaFile(ZipOutputStream out, File file, String filename)
+	throws IOException {	
+		try(InputStream in = new FileInputStream(file)) {
+			appendMediaURL(out, in, filename);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	protected final void appendMediaURL(ZipOutputStream out, URL url, String filename)
+	throws IOException {	
+		try(InputStream in = url.openStream()) {
+			appendMediaURL(out, in, filename);
+		} catch(Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	protected final void appendMediaURL(ZipOutputStream out, InputStream in, String filename)
+	throws IOException {	
+		ZipEntry wordDocument = new ZipEntry("word/media/" + filename);
+		out.putNextEntry(wordDocument);
+		IOUtils.copy(in, out);
+		out.closeEntry();
 	}
 	
 	private void appendNumbering(ZipOutputStream out, OpenXMLDocument document) {
