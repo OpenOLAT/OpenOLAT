@@ -782,6 +782,11 @@
 		border-color: $o-video-border-color-cobalt-blue;
 		color: $o-video-color;
 	}
+	&.o_video_marker_darkblue {
+		background-color: $o-video-color-dark-blue;
+		border-color: $o-video-border-color-dark-blue;
+		color: $o-video-color;
+	}
 	&.o_video_marker_lightgreen {
 		background-color: $o-video-color-light-green;
 		border-color: $o-video-border-color-light-green;
