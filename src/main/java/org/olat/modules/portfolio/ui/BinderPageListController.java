@@ -90,6 +90,7 @@ import org.olat.modules.portfolio.ui.export.ExportBinderAsPDFResource;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.modules.portfolio.ui.renderer.SharedPageStatusCellRenderer;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -127,6 +128,8 @@ public class BinderPageListController extends AbstractPageListController {
 	private PdfModule pdfModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public BinderPageListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
@@ -137,6 +140,7 @@ public class BinderPageListController extends AbstractPageListController {
 		
 		RepositoryEntry repoEntry = binder.getEntry();
 		if (repoEntry != null) {
+			repoEntry = repositoryService.loadBy(binder.getEntry());
 			flc.contextPut("referenceEntryName", repoEntry.getDisplayname());
 			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + repoEntry.getKey();
 			flc.contextPut("referenceEntryUrl", url);

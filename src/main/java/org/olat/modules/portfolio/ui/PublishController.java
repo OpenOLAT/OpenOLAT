@@ -77,6 +77,7 @@ import org.olat.modules.portfolio.ui.wizard.AddMember_1_ChooseMemberStep;
 import org.olat.modules.portfolio.ui.wizard.AddMember_1_CourseMemberChoiceStep;
 import org.olat.modules.portfolio.ui.wizard.AddMember_3_ChoosePermissionStep;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -119,6 +120,8 @@ public class PublishController extends BasicController implements TooledControll
 	private InvitationModule invitationModule;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public PublishController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder, BinderConfiguration config) {
@@ -129,7 +132,7 @@ public class PublishController extends BasicController implements TooledControll
 		this.stackPanel = stackPanel;
 		
 		if(binder.getEntry() != null) {
-			entry = binder.getEntry();
+			entry = repositoryService.loadBy(binder.getEntry());
 		}
 		
 		mainVC = createVelocityContainer("publish");
