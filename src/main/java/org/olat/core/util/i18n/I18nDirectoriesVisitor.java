@@ -42,7 +42,7 @@ class I18nDirectoriesVisitor implements FileVisitor {
 	private final List<String> referenceLangKeys;
 
 	/**
-	 * Packag scope constructor
+	 * Package scope constructor
 	 * 
 	 * @param basePathConfig The base path to be subtracted from the file name to
 	 *          get the classname
@@ -52,9 +52,7 @@ class I18nDirectoriesVisitor implements FileVisitor {
 		this.referenceLangKeys = referenceLangKeys;
 	}
 
-	/**
-	 * @see org.olat.core.util.FileVisitor#visit(java.io.File)
-	 */
+	@Override
 	public void visit(File file) {
 		// collect all bundles for a drop-down list later;
 		if (file.isFile()) { // regular file
@@ -65,8 +63,10 @@ class I18nDirectoriesVisitor implements FileVisitor {
 				if (toBeChechedkFilName.equals(computedFileName)) {
 					File parentFile = file.getParentFile();
 					if (!(parentFile.getName()).equals(I18nManager.I18N_DIRNAME)) {
-						if (!file.getAbsolutePath().contains("org/olat/core/util/i18n/testdata/")) log.warn(computedFileName + " must be in a >>.../"
-								+ I18nManager.I18N_DIRNAME + "<< folder! instead of " + parentFile.getAbsolutePath());
+						if (!file.getAbsolutePath().contains("org/olat/core/util/i18n/testdata/")) {
+							log.warn("{} must be in a >>.../{}<< folder! instead of {}",
+									computedFileName, I18nManager.I18N_DIRNAME,  parentFile.getAbsolutePath());
+						}
 						continue;
 					}
 					File grandParentFile = parentFile.getParentFile();

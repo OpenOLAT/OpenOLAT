@@ -148,8 +148,8 @@ class I18nConfigController extends FormBasicController {
 		}
 		
 		// Add gender configuration
-		genderStrategies = new HashMap<String, SingleSelection>();
-		Map translatedLanguages = new HashMap<String, String>();
+		genderStrategies = new HashMap<>();
+		Map<String, String> translatedLanguages = new HashMap<>();
 		String[] genderStrategyKeys = Stream.of(GenderStrategy.values()).map(GenderStrategy::name)
 				.toArray(String[]::new);
 		String[] genderStrategyValues = new String[genderStrategyKeys.length];
