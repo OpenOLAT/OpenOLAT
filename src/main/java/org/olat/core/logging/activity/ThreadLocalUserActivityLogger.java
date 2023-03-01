@@ -95,7 +95,7 @@ public class ThreadLocalUserActivityLogger {
 			if(log_.isDebugEnabled()) {//only generate this exception in debug
 				log_.warn("No UserActivityLogger set! Reinitializing now.", new Exception("stacktrace"));
 			}
-			return new UserActivityLoggerImpl();
+			return new UserActivityLoggerImpl(false);
 		}
 		return logger;
 	}

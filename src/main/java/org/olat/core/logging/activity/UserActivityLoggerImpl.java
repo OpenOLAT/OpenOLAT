@@ -161,6 +161,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	 * This is very deep framework.
 	 */
 	private UserActivityLoggerImpl runtimeParent_;
+	
+	private final boolean backgroundJob;
 
 	/**
 	 * package protected constructor of the UserActivityLoggerImpl based on a
@@ -174,12 +176,14 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	UserActivityLoggerImpl(HttpServletRequest hReq) {
 		propageToThreadLocal_ = false;
 		runtimeParent_ = null;
+		backgroundJob = false;
 		initWithRequest(hReq);
 	}
 	
 	UserActivityLoggerImpl(UserSession session) {
 		propageToThreadLocal_ = false;
 		runtimeParent_ = null;
+		backgroundJob = false;
 		session_ = session;
 		if (session_!=null) {
 			identity_ = session_.getIdentity();
@@ -205,8 +209,12 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	 * package protected constructor of the UserActivityLoggerImpl 
 	 * <p>
 	 * This is used to set up a UserActivityLoggerImpl initially by OLATServlet.init()
+	 * 
+	 * @param backgroundJob True if the logger need to work without identity, will set
+	 *    a fake identity key 0l
 	 */
-	UserActivityLoggerImpl() {
+	UserActivityLoggerImpl(boolean backgroundJob) {
+		this.backgroundJob = backgroundJob;
 		propageToThreadLocal_ = false;
 		runtimeParent_ = null;
 	}
@@ -229,6 +237,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 
 		// initialize fields
 		propageToThreadLocal_ = propageToThreadLocal;
+		this.backgroundJob = false;
 
 		// copy field values from the blueprint
 		session_ = bluePrint.session_;
@@ -626,6 +635,10 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				}
 			}
 		}
+		if(identityKey == null && backgroundJob) {
+			identityKey = 0l;// add a fake identity key for background jobs
+		}
+		
 		if (identityKey == null) {
 			// no identity available - odd
 			log_.error("No identity available to UserActivityLogger. Cannot write log entry: {}:{}, {}, {}",
@@ -643,7 +656,8 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				if (lr.getResourceableType()==StringResourceableType.targetIdentity && lr.getId().equals(identityKeyStr)) {
 					if (log_.isDebugEnabled()) {
 						// complain
-						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug(), new Exception("OLAT-4955 debug stacktrac"));
+						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action={}, fieldId={}",
+								loggingAction, loggingAction.getJavaFieldIdForDebug(), new Exception("OLAT-4955 debug stacktrac"));
 					}
 					// remove targetIdentity (fxdiff: only if same as executing identity!)
 					it.remove();

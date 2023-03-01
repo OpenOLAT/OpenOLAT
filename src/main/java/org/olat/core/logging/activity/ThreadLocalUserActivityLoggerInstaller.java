@@ -87,7 +87,7 @@ public class ThreadLocalUserActivityLoggerInstaller {
 		if (logger==null) {
 			if (originalLogger==null) {
 				log_.warn("runWithUserActivityLogger: no logger available. Reinitializing...");
-				logger = new UserActivityLoggerImpl();
+				logger = new UserActivityLoggerImpl(false);
 //				throw new IllegalStateException("logger was null and no ThreadLocal UserActivityLogger set");
 			}else{ 
 				logger = originalLogger;
@@ -133,7 +133,11 @@ public class ThreadLocalUserActivityLoggerInstaller {
 	 * @param request
 	 */
 	public static void initEmptyUserActivityLogger() {
-		ThreadLocalUserActivityLogger.userActivityLogger_.set(new UserActivityLoggerImpl());
+		ThreadLocalUserActivityLogger.userActivityLogger_.set(new UserActivityLoggerImpl(false));
+	}
+	
+	public static void initBackgroundUserActivityLogger() {
+		ThreadLocalUserActivityLogger.userActivityLogger_.set(new UserActivityLoggerImpl(true));
 	}
 
 	/**
@@ -141,7 +145,7 @@ public class ThreadLocalUserActivityLoggerInstaller {
 	 * Returns an empty UserActivityLogger
 	 */
 	public static IUserActivityLogger createEmptyUserActivityLogger() {
-		return new UserActivityLoggerImpl();
+		return new UserActivityLoggerImpl(false);
 	}
 
 	/**
