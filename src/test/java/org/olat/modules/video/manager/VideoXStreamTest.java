@@ -29,6 +29,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.modules.video.VideoComment;
+import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoQuestion;
@@ -36,6 +38,8 @@ import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.model.VideoCommentImpl;
+import org.olat.modules.video.model.VideoCommentsImpl;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoQuestionImpl;
@@ -185,6 +189,47 @@ public class VideoXStreamTest {
 			Assert.assertNotNull(segment.getId());
 			Assert.assertEquals(1000, segment.getDuration());
 			Assert.assertEquals(categoryId, segment.getCategoryId());
+		} catch (IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+	}
+
+	@Test
+	public void writeRead_comments() {
+		byte[] content = null;
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+			VideoCommentsImpl comments = new VideoCommentsImpl();
+
+			VideoCommentImpl comment = new VideoCommentImpl();
+			comment.setId(UUID.randomUUID().toString());
+			comment.setStart(new Date());
+			comment.setColor("blue");
+			comment.setAuthor("user1");
+			comment.setText("Test text");
+			comments.getComments().add(comment);
+
+			VideoXStream.toXml(outputStream, comments);
+			content = outputStream.toByteArray();
+		} catch (IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+
+		Assert.assertNotNull(content);
+
+		try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content)) {
+			VideoComments comments = VideoXStream.fromXml(inputStream, VideoComments.class);
+
+			Assert.assertNotNull(comments);
+			Assert.assertEquals(1, comments.getComments().size());
+
+			VideoComment comment = comments.getComments().get(0);
+			Assert.assertNotNull(comment.getId());
+			Assert.assertNotNull(comment.getStart());
+			Assert.assertEquals("blue", comment.getColor());
+			Assert.assertEquals("user1", comment.getAuthor());
+			Assert.assertEquals("Test text", comment.getText());
 		} catch (IOException e) {
 			log.error("", e);
 			Assert.fail();

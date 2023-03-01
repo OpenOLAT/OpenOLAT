@@ -222,7 +222,7 @@ class I18nConfigSubNewLangController extends FormBasicController {
 			newVariant.setVisible(visible);
 		}
 		if (!newVariant.isEmpty() && newCountry.isEmpty()) {
-			newCountry.setErrorKey("configuration.management.create.variant.error.noCountry", null);
+			newCountry.setErrorKey("configuration.management.create.variant.error.noCountry");
 		}
 	}
 }

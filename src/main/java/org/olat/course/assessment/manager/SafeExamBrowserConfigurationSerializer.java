@@ -82,17 +82,22 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("browserWindowWebView", 3);
 			plist.add("URLFilterEnable", configuration.isUrlFilter());
 			plist.add("URLFilterEnableContentFilter", configuration.isUrlContentFilter());
-			
+			plist.addArray("URLFilterIgnoreList");
+			plist.add("URLFilterMessage", 1);
+			plist.add("urlFilterRegex", isUrlFilterRegex(configuration));
+
 			if(StringHelper.containsNonWhitespace(configuration.getAllowedUrlExpressions())
 					|| StringHelper.containsNonWhitespace(configuration.getAllowedUrlRegex())
 					|| StringHelper.containsNonWhitespace(configuration.getBlockedUrlExpressions())
 					|| StringHelper.containsNonWhitespace(configuration.getBlockedUrlRegex())) {
 				Element rulesEl = plist.addArray("URLFilterRules");
-				addFilterRule(configuration.getAllowedUrlExpressions(), true, false, rulesEl, plist);
-				addFilterRule(configuration.getAllowedUrlRegex(), true, true, rulesEl, plist);
-				addFilterRule(configuration.getBlockedUrlExpressions(), false, false, rulesEl, plist);
-				addFilterRule(configuration.getBlockedUrlRegex(), false, true, rulesEl, plist);
+				addFilterRules(configuration.getAllowedUrlExpressions(), true, false, rulesEl, plist);
+				addFilterRules(configuration.getAllowedUrlRegex(), true, true, rulesEl, plist);
+				addFilterRules(configuration.getBlockedUrlExpressions(), false, false, rulesEl, plist);
+				addFilterRules(configuration.getBlockedUrlRegex(), false, true, rulesEl, plist);
 			}
+			plist.add("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
+			plist.add("whitelistURLFilter", "");
 			
 			plist.add("startURL", configuration.getStartUrl());
 			plist.add("sendBrowserExamKey", true);
@@ -102,6 +107,13 @@ public class SafeExamBrowserConfigurationSerializer {
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
+		}
+	}
+	
+	private static void addFilterRules(String expression, boolean allow, boolean regex, Element rulesEl, PList plist) {
+		String[] expressions = expression.split("\r?\n");
+		for(String exp:expressions) {
+			addFilterRule(exp, allow, regex, rulesEl, plist);
 		}
 	}
 	
@@ -143,23 +155,47 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.addProperty("showTaskBar", configuration.isShowTaskBar());
 			plist.addProperty("showTime", configuration.isShowTimeClock());
 			plist.addProperty("startURL", configuration.getStartUrl());
-			plist.addProperty("URLFilterEnable", false);
-			plist.addProperty("URLFilterEnableContentFilter", false);
+			plist.addProperty("URLFilterEnable", configuration.isUrlFilter());
+			plist.addProperty("URLFilterEnableContentFilter", configuration.isUrlContentFilter());
+			plist.add("URLFilterIgnoreList", new JsonArray());
+			plist.addProperty("URLFilterMessage", Integer.valueOf(1));
+			plist.addProperty("urlFilterRegex", isUrlFilterRegex(configuration));
+			
 			if(StringHelper.containsNonWhitespace(configuration.getAllowedUrlExpressions())
 					|| StringHelper.containsNonWhitespace(configuration.getAllowedUrlRegex())
 					|| StringHelper.containsNonWhitespace(configuration.getBlockedUrlExpressions())
 					|| StringHelper.containsNonWhitespace(configuration.getBlockedUrlRegex())) {
 				JsonArray urlFilterRules = new JsonArray();
 				plist.add("URLFilterRules", urlFilterRules);
-				urlFilterRules.add(addFilterRule(true, configuration.getAllowedUrlExpressions(), false));
-				urlFilterRules.add(addFilterRule(true, configuration.getAllowedUrlRegex(), true));
-				urlFilterRules.add(addFilterRule(false, configuration.getBlockedUrlExpressions(), false));
-				urlFilterRules.add(addFilterRule(false, configuration.getBlockedUrlRegex(), true));
+				addFilterRules(true, configuration.getAllowedUrlExpressions(), false, urlFilterRules);
+				addFilterRules(true, configuration.getAllowedUrlRegex(), true, urlFilterRules);
+				addFilterRules(false, configuration.getBlockedUrlExpressions(), false, urlFilterRules);
+				addFilterRules(false, configuration.getBlockedUrlRegex(), true, urlFilterRules);
 			}
+
+			plist.addProperty("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
+			plist.addProperty("whitelistURLFilter", "");
+			
 			return plist.toString();
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
+		}
+	}
+	
+	private static boolean isUrlFilterRegex(SafeExamBrowserConfiguration configuration) {
+		return StringHelper.containsNonWhitespace(configuration.getAllowedUrlRegex())
+				|| StringHelper.containsNonWhitespace(configuration.getBlockedUrlRegex());
+	}
+	
+	private static boolean isUrlFilterTrustedContent(SafeExamBrowserConfiguration configuration) {
+		return configuration.isUrlFilter() || configuration.isUrlContentFilter();
+	}
+	
+	private static void addFilterRules(boolean allow, String expression, boolean regex, JsonArray urlFilterRules) {
+		String[] expressions = expression.split("\r?\n");
+		for(String exp:expressions) {
+			urlFilterRules.add(addFilterRule(allow, exp, regex));
 		}
 	}
 	

@@ -440,14 +440,14 @@ public class LTI13PlatformDispatcherDelegate {
 
 		if(deployment.getEntry() != null && StringHelper.containsNonWhitespace(deployment.getSubIdent())) {
 			RepositoryEntry entry = deployment.getEntry();
-			resourceLink.put("id", entry.getKey() + "_" + StringHelper.containsNonWhitespace(deployment.getSubIdent()));
+			resourceLink.put("id", deployment.getDeploymentResourceId());
 			resourceLink.put("title", entry.getDisplayname());
 			if(StringHelper.containsNonWhitespace(entry.getDescription())) {
 				resourceLink.put("description", entry.getDescription());
 			}
 		} else if(deployment.getBusinessGroup() != null) {
 			BusinessGroup businessGroup = deployment.getBusinessGroup();
-			resourceLink.put("id", businessGroup.getKey().toString());
+			resourceLink.put("id", deployment.getDeploymentResourceId());
 			resourceLink.put("title", businessGroup.getName());
 			if(StringHelper.containsNonWhitespace(businessGroup.getDescription())) {
 				resourceLink.put("description", businessGroup.getDescription());

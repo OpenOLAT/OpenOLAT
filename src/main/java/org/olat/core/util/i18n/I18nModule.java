@@ -23,6 +23,8 @@ package org.olat.core.util.i18n;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +37,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
@@ -72,6 +76,9 @@ public class I18nModule extends AbstractSpringModule {
 	// Some general variables
 	public static final String LOCAL_STRINGS_FILE_PREFIX = "LocalStrings_";
 	public static final String LOCAL_STRINGS_FILE_POSTFIX = ".properties";
+	public static final String I18N_FOLDER = "/_i18n/";
+	public static final String JAR_FILE_PREFIX = "org/olat" + I18N_FOLDER + LOCAL_STRINGS_FILE_PREFIX;
+
 	// Location of customizing directory and i18n configuration (configured at
 	// runtime)
 	private static File LANG_CUSTOMIZING_DIRECTORY;
@@ -281,10 +288,10 @@ public class I18nModule extends AbstractSpringModule {
 					if (availableLanguages.contains(languageCode)) {
 						String path = "";
 						if (transToolApplicationOptLanguagesSrcDir != null) path = transToolApplicationOptLanguagesSrcDir.getAbsolutePath();
-						log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path );
+						log.debug("Skipping duplicate or previously loaded language::{} found in {}", languageCode, path );
 						continue;
 					}
-					log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath());
+					log.debug("Detected translatable language {} in {}", languageCode, transToolApplicationLanguagesDir.getAbsolutePath());
 					availableLanguages.add(languageCode);
 					translatableLanguages.add(languageCode);
 					translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationLanguagesDir);
@@ -295,53 +302,49 @@ public class I18nModule extends AbstractSpringModule {
 		if (isTransToolEnabled()) {
 			for (String languageCode : searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
+					log.debug("Skipping duplicate or previously loaded language::{} found in {}", languageCode, transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
 					continue;
 				}
-				log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
+				log.debug("Detected translatable language {} in {}", languageCode, transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
 				availableLanguages.add(languageCode);
 				translatableLanguages.add(languageCode);
 				translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationOptLanguagesSrcDir);
 			}
 		}
 
+		Object discoveryLocation;
+		Set<String> discoveryLanguages;
 		String folderRoot = WebappHelper.getBuildOutputFolderRoot();
 		if(StringHelper.containsNonWhitespace(folderRoot)) {
 			//started from WEB-INF/classes
 			File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
-			for (String languageCode : searchForAvailableLanguages(libDir)) {
-				if (availableLanguages.contains(languageCode)) {
-					log.debug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath());
-					continue;
-				}
-				log.debug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath());
-				availableLanguages.add(languageCode);
-				// don't add to translatable languages nor to source lookup maps - those
-				// langs are read only
-			}
+			discoveryLanguages = searchForAvailableLanguages(libDir);
+			discoveryLocation = libDir;
 		} else {
-			//started from jar (like weblogic does) -> load from the configuration
-			String enabledLanguagesConfig = getStringPropertyValue(CONFIG_LANGUAGES_ENABLED, false);
-			String[] enabledLanguages = enabledLanguagesConfig.split(",");
-			for (String languageCode : enabledLanguages) {
-				if (availableLanguages.contains(languageCode)) {
-					log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
-							+ LANG_PACKS_DIRECTORY.getAbsolutePath());
-					continue;
-				}
-				log.debug("Force non-translatable language " + languageCode + " defined from enabledLanguages.");
-				availableLanguages.add(languageCode);
-			}
+			CodeSource src = I18nModule.class.getProtectionDomain().getCodeSource();
+			discoveryLanguages = searchForAvailableLanguages(src);
+			discoveryLocation = src.getLocation();
 		}
+		for (String languageCode : discoveryLanguages) {
+			if (availableLanguages.contains(languageCode)) {
+				log.debug("Skipping duplicate or previously loaded  language::{} found in {}", languageCode, discoveryLocation);
+				continue;
+			}
+			log.debug("Detected non-translatable language {} in {}", languageCode, discoveryLocation);
+			availableLanguages.add(languageCode);
+			// don't add to translatable languages nor to source lookup maps - those
+			// langs are read only
+		}
+		log.info("Languages discovered in org/olat: {}", availableLanguages);
 		
 		// 4) Add languages from the customizing lang packs
 		for (String languageCode : searchForAvailableLanguages(LANG_PACKS_DIRECTORY)) {
 			if (availableLanguages.contains(languageCode)) {
-				log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
-						+ LANG_PACKS_DIRECTORY.getAbsolutePath());
+				log.warn("Skipping duplicate or previously loaded  language::{} found in {}",
+						languageCode,  LANG_PACKS_DIRECTORY.getAbsolutePath());
 				continue;
 			}
-			log.debug("Detected non-translatable language " + languageCode + " in " + LANG_PACKS_DIRECTORY.getAbsolutePath());
+			log.debug("Detected non-translatable language {} in {}", languageCode, LANG_PACKS_DIRECTORY.getAbsolutePath());
 			availableLanguages.add(languageCode);
 			// don't add to translatable languages nor to source lookup maps - those
 			// langs are read only
@@ -352,6 +355,7 @@ public class I18nModule extends AbstractSpringModule {
 		// Proceed with some sanity checks
 		if (availableLanguages.isEmpty() || !availableLanguages.contains(Locale.ENGLISH.toString())) {
 			// Load official packs
+			log.warn("Available languages empty or en not found: {}, load default packs", availableLanguages);
 			availableLanguages.addAll(List.of("en", "de", "it", "fr", "pt_BR",  "bg", "jp", "el", "lt", "es", "cs", "ar", "en_GB", "zh_TW",  "zh_CN", "fa", "pl", "pt_PT", "da", "sq", "tr", "nl_NL", "ru"));
 		}
 		List<String> toRemoveLangs = new ArrayList<>();
@@ -360,7 +364,7 @@ public class I18nModule extends AbstractSpringModule {
 		for (String langKey : availableLanguages) {
 			Locale locale = createLocale(langKey);
 			if (locale == null) {
-				log.error("Could not create locale for lang::" + langKey + ", skipping language and remove it from list of available languages");
+				log.error("Could not create locale for lang::{}, skipping language and remove it from list of available languages", langKey);
 				toRemoveLangs.add(langKey);
 				continue;
 			}
@@ -376,7 +380,7 @@ public class I18nModule extends AbstractSpringModule {
 				// same as overlayLocale.toString(), this would add '_' for each element
 				String overlayKey = getLocaleKey(overlayLocale);
 				if (overlayLocale == null) {
-					log.error("Could not create overlay locale for lang::" + langKey + " (" + overlayKey + "), skipping language");
+					log.error("Could not create overlay locale for lang::{} ({}), skipping language", langKey, overlayKey);
 					continue;
 				}
 				// Don't add same overlay twice
@@ -439,7 +443,32 @@ public class I18nModule extends AbstractSpringModule {
 			for (String langFileName : langFiles) {
 				String lang = langFileName.substring(I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), langFileName.lastIndexOf("."));
 				foundLanguages.add(lang);
-				log.debug("Adding lang::" + lang + " from filename::" + langFileName + " from dir::" + i18nDir.getAbsolutePath());
+				log.debug("Adding lang::{} from filename::{} from dir::{}", lang, langFileName, i18nDir.getAbsolutePath());
+			}
+		}
+		return foundLanguages;
+	}
+	
+	Set<String> searchForAvailableLanguages(CodeSource src) {
+		Set<String> foundLanguages = new TreeSet<>();
+		if(src != null) {
+			try(InputStream in=src.getLocation().openStream();
+					ZipInputStream zip = new ZipInputStream(in)) {
+				while(true) {
+					ZipEntry e = zip.getNextEntry();
+					if (e == null) {
+						break;
+				    }
+					String langFileName = e.getName();
+					if(langFileName.endsWith(LOCAL_STRINGS_FILE_POSTFIX) && langFileName.contains(JAR_FILE_PREFIX)) {
+						int localStringPrefixIndex = langFileName.indexOf(I18nModule.LOCAL_STRINGS_FILE_PREFIX);
+						String lang = langFileName.substring(localStringPrefixIndex + I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), langFileName.lastIndexOf("."));
+						foundLanguages.add(lang);
+						log.debug("Adding lang::{} from filename::{} from dir::{}", lang, langFileName, src.getLocation());
+					}
+				}
+			} catch(Exception e) {
+				log.error("", e);
 			}
 		}
 		return foundLanguages;
@@ -591,12 +620,12 @@ public class I18nModule extends AbstractSpringModule {
 				enabledLanguagesKeys.add(langKey);
 			} // else skip this entry
 		}
-		log.info("Enabling languages::" + enabledLanguagesConfig);
+		log.info("Enabling languages::{}", enabledLanguagesConfig);
 		// Make sure that the configured default language is enabled
 		if (!enabledLanguagesKeys.contains(getDefaultLocale().toString())) {
 			String defLang = getDefaultLocale().toString();
 			enabledLanguagesKeys.add(defLang);
-			log.warn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang);
+			log.warn("The configured default language::{} is not in the list of enabled languages. Enabling language::{}", defLang, defLang);
 		}
 	}
 	
@@ -615,7 +644,7 @@ public class I18nModule extends AbstractSpringModule {
 				}				
 				genderStrategies.put(locale, genderStrategy);
 			} else {
-				log.error("Locale for key::" + langKey + " not found in allLocales.");
+				log.error("Locale for key::{} not found in allLocales.",langKey );
 			}
 		}		
 	}
@@ -868,8 +897,7 @@ public class I18nModule extends AbstractSpringModule {
 				} catch (IOException e) {
 					throw new StartupException("Could not find classpath resource for: test-classes/olat.local.property ", e);
 	  			}
-	
-	
+
 				I18nDirectoriesVisitor juniSrcVisitor = new I18nDirectoriesVisitor(jUnitSrcPath, getTransToolReferenceLanguages());
 				FileUtils.visitRecursively(new File(jUnitSrcPath), juniSrcVisitor);
 				foundBundles.addAll(juniSrcVisitor.getBundlesContainingI18nFiles());
@@ -877,9 +905,39 @@ public class I18nModule extends AbstractSpringModule {
 			// Sort alphabetically
 			Collections.sort(foundBundles);
 		} else {
-			foundBundles = new ArrayList<>();
+			CodeSource src = I18nModule.class.getProtectionDomain().getCodeSource();
+			foundBundles = getBundlesContainingI18nFiles(src);
 		}
 		return foundBundles;
+	}
+	
+	private List<String> getBundlesContainingI18nFiles(CodeSource src) {
+		final Set<String> foundBundles = new TreeSet<>();
+		if(src != null) {
+			try(InputStream in=src.getLocation().openStream();
+					ZipInputStream zip = new ZipInputStream(in)) {
+				while(true) {
+					ZipEntry e = zip.getNextEntry();
+					if (e == null) {
+						break;
+				    }
+					String langFileName = e.getName();
+					if(langFileName.endsWith(LOCAL_STRINGS_FILE_POSTFIX) && langFileName.contains(I18N_FOLDER)) {
+						String bundle = langFileName.substring(0, langFileName.indexOf(I18N_FOLDER));
+						bundle = bundle.replace('/', '.');// Replace ZIP folder separator
+						if(foundBundles.add(bundle)) {
+							log.debug("Adding bundle::{} from filename::{} from dir::{}", bundle, langFileName, src.getLocation());
+						}
+					}
+				}
+			} catch(Exception e) {
+				log.error("", e);
+			}
+		}
+		
+		List<String> foundBundlesList = new ArrayList<>(foundBundles);
+		Collections.sort(foundBundlesList);
+		return foundBundlesList;
 	}
 
 	/**

@@ -81,6 +81,7 @@ import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
@@ -94,6 +95,7 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
+import org.olat.modules.video.model.VideoCommentsImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
@@ -133,6 +135,7 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String FILENAME_CHAPTERS_VTT = "chapters.vtt";
 	private static final String FILENAME_MARKERS_XML = "markers.xml";
 	private static final String FILENAME_SEGMENTS_XML = "segments.xml";
+	private static final String FILENAME_COMMENTS_XML = "comments.xml";
 	private static final String FILENAME_QUESTIONS_XML = "questions.xml";
 	private static final String FILENAME_VIDEO_METADATA_XML = "video_metadata.xml";
 	
@@ -1219,6 +1222,36 @@ public class VideoManagerImpl implements VideoManager {
 		if (segmentsItem instanceof VFSLeaf segmentsLeaf) {
 			try (OutputStream out = segmentsLeaf.getOutputStream(false)) {
 				VideoXStream.toXml(out, segments);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+	}
+
+	@Override
+	public VideoComments loadComments(OLATResource olatResource) {
+		VFSContainer vfsContainer = getMasterContainer(olatResource);
+		VFSItem commentsItem = vfsContainer.resolve(FILENAME_COMMENTS_XML);
+		if (commentsItem instanceof VFSLeaf commentsLeaf) {
+			try (InputStream in = commentsLeaf.getInputStream()) {
+				return VideoXStream.fromXml(in, VideoComments.class);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+		return new VideoCommentsImpl();
+	}
+
+	@Override
+	public void saveComments(VideoComments comments, OLATResource olatResource) {
+		VFSContainer vfsContainer = getMasterContainer(olatResource);
+		VFSItem commentsItem = vfsContainer.resolve(FILENAME_COMMENTS_XML);
+		if (commentsItem == null) {
+			commentsItem = vfsContainer.createChildLeaf(FILENAME_COMMENTS_XML);
+		}
+		if (commentsItem instanceof VFSLeaf commentsLeaf) {
+			try (OutputStream out = commentsLeaf.getOutputStream(false)) {
+				VideoXStream.toXml(out, comments);
 			} catch (IOException e) {
 				log.error("", e);
 			}

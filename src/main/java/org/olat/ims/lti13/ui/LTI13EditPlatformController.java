@@ -161,7 +161,7 @@ public class LTI13EditPlatformController extends FormBasicController {
 		
 		el.clearError();
 		if(!el.isOneSelected()) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -174,10 +174,10 @@ public class LTI13EditPlatformController extends FormBasicController {
 		el.clearError();
 		String val = el.getValue();
 		if(!StringHelper.containsNonWhitespace(val)) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(val.length() > maxLength) {
-			el.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxLength) } );
+			el.setErrorKey("form.error.toolong", Integer.toString(maxLength));
 			allOk &= false;
 		}
 		

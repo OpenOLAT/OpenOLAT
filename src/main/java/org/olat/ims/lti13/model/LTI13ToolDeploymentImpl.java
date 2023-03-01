@@ -78,6 +78,9 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
     @Column(name="l_target_url", nullable=true, insertable=true, updatable=true)
 	private String targetUrl;
     
+    @Column(name="l_deployment_resource_id", nullable=true, insertable=true, updatable=true)
+	private String deploymentResourceId;
+    
     @Column(name="l_send_attributes", nullable=true, insertable=true, updatable=true)
 	private String sendAttributes;
     @Column(name="l_send_custom_attributes", nullable=true, insertable=true, updatable=true)
@@ -174,6 +177,15 @@ public class LTI13ToolDeploymentImpl implements LTI13ToolDeployment, Persistable
 	@Override
 	public void setTargetUrl(String targetUrl) {
 		this.targetUrl = targetUrl;
+	}
+
+	@Override
+	public String getDeploymentResourceId() {
+		return deploymentResourceId;
+	}
+
+	public void setDeploymentResourceId(String deploymentResourceId) {
+		this.deploymentResourceId = deploymentResourceId;
 	}
 
 	public String getSendAttributes() {

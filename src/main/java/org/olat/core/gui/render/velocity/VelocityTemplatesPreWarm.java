@@ -42,6 +42,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.io.SystemFilenameFilter;
 import org.springframework.stereotype.Service;
 
 /**
@@ -64,7 +65,7 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 		try {
 			final File root = new File(WebappHelper.getContextRoot(), "WEB-INF/classes");
 			final Path fPath = root.toPath();
-			if(fPath.toFile().exists()) {
+			if(hasClasses(fPath)) {
 				loadClasspath(fPath, numOfTemplates, context);
 			} else {
 				CodeSource src = VelocityTemplatesPreWarm.class.getProtectionDomain().getCodeSource();
@@ -76,6 +77,15 @@ public class VelocityTemplatesPreWarm implements PreWarm {
 			log.error("", e);
 		}
 		log.info("Velocity cache filled with {} templates in (ms): {}", numOfTemplates, CodeHelper.nanoToMilliTime(start));
+	}
+	
+	private boolean hasClasses(Path fPath) {
+		File path = fPath.toFile();
+		if(!path.exists()) {
+			return false;
+		}
+		File[] content = path.listFiles(new SystemFilenameFilter(true, true));
+		return content != null && content.length > 0;
 	}
 	
 	private void loadJar(URL jar, AtomicInteger numOfTemplates, VelocityContext context) {

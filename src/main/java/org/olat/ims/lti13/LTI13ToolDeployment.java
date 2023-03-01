@@ -58,6 +58,14 @@ public interface LTI13ToolDeployment extends CreateInfo, ModifiedInfo {
 	
 	public void setSendCustomAttributes(String configuration);
 	
+	/**
+	 * For simple deployment, without extra context and resource link (which
+	 * are not implemented yet in OpenOlat)
+	 * 
+	 * @return
+	 */
+	public String getDeploymentResourceId();
+	
 	// roles
 
 	public String getAuthorRoles();

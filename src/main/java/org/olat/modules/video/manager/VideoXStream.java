@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.video.VideoComment;
+import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
 import org.olat.modules.video.VideoQuestion;
@@ -31,6 +33,8 @@ import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
+import org.olat.modules.video.model.VideoCommentImpl;
+import org.olat.modules.video.model.VideoCommentsImpl;
 import org.olat.modules.video.model.VideoMarkerImpl;
 import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoQuestionImpl;
@@ -53,11 +57,13 @@ public class VideoXStream {
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {
-		Class<?>[] types = new Class[] {
+		Class<?>[] types;
+		types = new Class[] {
 				VideoMarker.class, VideoMarkerImpl.class, VideoMarkers.class, VideoMarkersImpl.class,
 				VideoSegment.class, VideoSegmentImpl.class, VideoSegments.class, VideoSegmentsImpl.class,
 				VideoSegmentCategory.class, VideoSegmentCategoryImpl.class,
-				VideoQuestion.class, VideoQuestionImpl.class, VideoQuestions.class, VideoQuestionsImpl.class
+				VideoQuestion.class, VideoQuestionImpl.class, VideoQuestions.class, VideoQuestionsImpl.class,
+				VideoComment.class, VideoCommentImpl.class, VideoComments.class, VideoCommentsImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.ignoreUnknownElements();
@@ -71,6 +77,9 @@ public class VideoXStream {
 
 		xstream.alias("question", VideoQuestionImpl.class);
 		xstream.alias("questions", VideoQuestions.class);
+
+		xstream.alias("comment", VideoCommentImpl.class);
+		xstream.alias("comments", VideoComments.class);
 	}
 	
 	public static void toXml(OutputStream out, Object obj) {

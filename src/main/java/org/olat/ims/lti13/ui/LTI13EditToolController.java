@@ -155,15 +155,15 @@ public class LTI13EditToolController extends FormBasicController {
 		publicKeyEl.clearError();
 		publicKeyUrlEl.clearError();
 		if(!publicKeyTypeEl.isOneSelected()) {
-			publicKeyTypeEl.setErrorKey("form.legende.mandatory", null);
+			publicKeyTypeEl.setErrorKey("form.legende.mandatory");
 			allOk  &= false;
 		} else if(PublicKeyType.KEY.name().equals(publicKeyTypeEl.getSelectedKey())
 				&& !StringHelper.containsNonWhitespace(publicKeyEl.getValue())) {
-			publicKeyEl.setErrorKey("form.legende.mandatory", null);
+			publicKeyEl.setErrorKey("form.legende.mandatory");
 			allOk  &= false;
 		} else if(PublicKeyType.URL.name().equals(publicKeyTypeEl.getSelectedKey())
 				&& !StringHelper.containsNonWhitespace(publicKeyUrlEl.getValue())) {
-			publicKeyUrlEl.setErrorKey("form.legende.mandatory", null);
+			publicKeyUrlEl.setErrorKey("form.legende.mandatory");
 			allOk  &= false;
 		}
 		
@@ -181,10 +181,10 @@ public class LTI13EditToolController extends FormBasicController {
 		el.clearError();
 		String val = el.getValue();
 		if(!StringHelper.containsNonWhitespace(val) && mandatory) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(val) && val.length() > maxLength) {
-			el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+			el.setErrorKey("input.toolong", Integer.toString(maxLength));
 			allOk &= false;
 		}
 		

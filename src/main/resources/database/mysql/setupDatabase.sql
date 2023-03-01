@@ -2746,6 +2746,7 @@ create table o_lti_tool_deployment (
    lastmodified datetime not null,
    l_deployment_id varchar(128) not null unique,
    l_context_id varchar(255),
+   l_deployment_resource_id varchar(255),
    l_target_url varchar(1024),
    l_send_attributes varchar(2048),
    l_send_custom_attributes text,

@@ -83,7 +83,7 @@ public class DialogCourseNodeEditController extends ActivateableTabbableDefaultC
 		if (!node.hasCustomPreConditions()) {
 			CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
 			configCtrl = new NodeRightsController(ureq, getWindowControl(), courseGroupManager,
-					DialogCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), null);
+					DialogCourseNode.NODE_RIGHT_TYPES, courseNode.getModuleConfiguration(), "manual_user/course_elements/Communication_and_Collaboration/#file_dialog");
 			listenTo(configCtrl);
 		} else {
 			accessContent = createVelocityContainer("edit_access");

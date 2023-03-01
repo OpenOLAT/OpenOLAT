@@ -319,10 +319,12 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		
 		allowedExpressionsEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.allow.exp", "mode.safeexambrowser.url.filter.allow.exp",
 				2000, 2, 60, false, false, sebConfig.getAllowedUrlExpressions(), sebConfigCont);
+		allowedExpressionsEl.setHelpText(translate("mode.safeexambrowser.url.filter.allow.exp.hint"));
 		allowedRegexEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.allow.regex", "mode.safeexambrowser.url.filter.allow.regex",
 				2000, 2, 60, false, false, sebConfig.getAllowedUrlRegex(), sebConfigCont);
 		blockedExpressionsEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.blocked.exp", "mode.safeexambrowser.url.filter.blocked.exp",
 				2000, 2, 60, false, false, sebConfig.getBlockedUrlExpressions(), sebConfigCont);
+		blockedExpressionsEl.setHelpText(translate("mode.safeexambrowser.url.filter.blocked.exp.hint"));
 		blockedRegexEl = uifactory.addTextAreaElement("mode.safeexambrowser.url.filter.blocked.regex", "mode.safeexambrowser.url.filter.blocked.regex",
 				2000, 2, 60, false, false, sebConfig.getBlockedUrlRegex(), sebConfigCont);
 		

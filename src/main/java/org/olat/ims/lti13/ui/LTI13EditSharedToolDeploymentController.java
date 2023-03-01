@@ -180,22 +180,22 @@ public class LTI13EditSharedToolDeploymentController extends FormBasicController
 		
 		publicKeyTypeEl.clearError();
 		if(!publicKeyTypeEl.isOneSelected()) {
-			publicKeyTypeEl.setErrorKey("form.legende.mandatory", null);
+			publicKeyTypeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
 		platformsEl.clearError();
 		if(!platformsEl.isOneSelected()) {
-			platformsEl.setErrorKey("form.legende.mandatory", null);
+			platformsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		deploymentIdEl.clearError();
 		if(!StringHelper.containsNonWhitespace(deploymentIdEl.getValue())) {
-			deploymentIdEl.setErrorKey("form.legende.mandatory", null);
+			deploymentIdEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!validateUniqueDeployment()) {
-			deploymentIdEl.setErrorKey("error.unique.deployment", null);
+			deploymentIdEl.setErrorKey("error.unique.deployment");
 			allOk &= false;
 		}
 		

@@ -725,33 +725,30 @@ public class I18nManager {
 	 * @return
 	 */
 	public void sortI18nItems(List<I18nItem> i18nItems, final boolean afterBundlePriorities, final boolean afterKeyPriorities) {
-		Comparator<I18nItem> comparator = new Comparator<I18nItem>() {
-			@Override
-			public int compare(I18nItem item1, I18nItem item2) {
-				// 1) compare bundle
-				if (afterBundlePriorities) {
-					int item1BundlePrio = item1.getBundlePriority();
-					int item2BundlePrio = item2.getBundlePriority();
-					if (item1BundlePrio < item2BundlePrio) return -1;
-					if (item1BundlePrio > item2BundlePrio) return 1;
-					// 2) in same bundle, compare key
-					if (afterKeyPriorities) {
-						int item1KeyPrio = item1.getKeyPriority();
-						int item2KeyPrio = item2.getKeyPriority();
-						if (item1KeyPrio < item2KeyPrio) return -1;
-						if (item1KeyPrio > item2KeyPrio) return 1;
-					}
+		Comparator<I18nItem> comparator = (I18nItem item1, I18nItem item2) -> {
+			// 1) compare bundle
+			if (afterBundlePriorities) {
+				int item1BundlePrio = item1.getBundlePriority();
+				int item2BundlePrio = item2.getBundlePriority();
+				if (item1BundlePrio < item2BundlePrio) return -1;
+				if (item1BundlePrio > item2BundlePrio) return 1;
+				// 2) in same bundle, compare key
+				if (afterKeyPriorities) {
+					int item1KeyPrio = item1.getKeyPriority();
+					int item2KeyPrio = item2.getKeyPriority();
+					if (item1KeyPrio < item2KeyPrio) return -1;
+					if (item1KeyPrio > item2KeyPrio) return 1;
 				}
-				// 3) same bundle or key prio or no prios used, compare
-				// alphabetically
-				// on bundle name
-				int compareBundleNameResult = item1.getBundleName().compareTo(item2.getBundleName());
-				if (compareBundleNameResult != 0) {
-					return compareBundleNameResult;
-				} else {
-					// 4) in same bundle, compare alphabetically on key
-					return item1.getKey().compareTo(item2.getKey());
-				}
+			}
+			// 3) same bundle or key prio or no prios used, compare
+			// alphabetically
+			// on bundle name
+			int compareBundleNameResult = item1.getBundleName().compareTo(item2.getBundleName());
+			if (compareBundleNameResult != 0) {
+				return compareBundleNameResult;
+			} else {
+				// 4) in same bundle, compare alphabetically on key
+				return item1.getKey().compareTo(item2.getKey());
 			}
 		};
 		Collections.sort(i18nItems, comparator);
@@ -766,22 +763,18 @@ public class I18nManager {
 	 * @param afterBundlePriorities
 	 */
 	public void sortBundles(List<String> bundleNames, final boolean afterBundlePriorities) {
-		Comparator<String> comparator = new Comparator<String>() {
-			@Override
-			public int compare(String bundle1, String bundle2) {
-				// 1) compare bundle priority
-				if (afterBundlePriorities) {
-					int bundle1Prio = getBundlePriority(bundle1);
-					int bundle2Prio = getBundlePriority(bundle2);
-					if (bundle1Prio < bundle2Prio) return -1;
-					if (bundle1Prio > bundle2Prio) return 1;
-				}
-				// 2) compare alphabetically on bundle name
-				return bundle1.compareTo(bundle2);
+		Comparator<String> comparator = (String bundle1, String bundle2) -> {
+			// 1) compare bundle priority
+			if (afterBundlePriorities) {
+				int bundle1Prio = getBundlePriority(bundle1);
+				int bundle2Prio = getBundlePriority(bundle2);
+				if (bundle1Prio < bundle2Prio) return -1;
+				if (bundle1Prio > bundle2Prio) return 1;
 			}
+			// 2) compare alphabetically on bundle name
+			return bundle1.compareTo(bundle2);
 		};
 		Collections.sort(bundleNames, comparator);
-
 	}
 
 	/**
