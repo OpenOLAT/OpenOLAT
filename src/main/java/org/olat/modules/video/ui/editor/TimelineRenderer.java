@@ -257,6 +257,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 			for (TimelineRow event : eventsByLane) {
 				switch (type) {
 					case QUIZ -> renderQuestion(s, ftC, theForm, timelineModel, event, y);
+					case COMMENT -> renderComment(s, ftC, theForm, timelineModel, event, y);
 					case ANNOTATION -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_annotation", "annotationId");
 					case CHAPTER -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_chapter", "chapterId");
 					case SEGMENT -> renderEvent(s, ftC, theForm, timelineModel, event, y, "o_video_segment", "segmentId");
@@ -288,6 +289,28 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("\">")
 				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
 						"<path d=\"M284.3 11.7c-15.6-15.6-40.9-15.6-56.6 0l-216 216c-15.6 15.6-15.6 40.9 0 56.6l216 216c15.6 15.6 40.9 15.6 56.6 0l216-216c15.6-15.6 15.6-40.9 0-56.6l-216-216z\"/>" +
+						"</svg>")
+				.append("</div>");
+	}
+
+	private void renderComment(StringOutput s, FlexiTableComponent ftC, Form form, TimelineModel timelineModel,
+							   TimelineRow event, int y) {
+		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
+		if (x == 0) {
+			x += 1;
+		}
+		s.append("<div id=\"o_video_event_").append(event.getId())
+				.append("\" class=\"o_video_question ").append(event.getColor()).append(event.isSelected() ? " o_video_selected" : "")
+				.append("\" style=\"left: ").append(x - 14).append("px; top: ").append(y - VERTICAL_CHANNEL_PADDING)
+				.append("px; \" onclick=\"")
+				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
+				.append("jQuery(this).addClass('o_video_selected'); ")
+				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
+						false, false, false,
+						new NameValuePair("commentId", event.getId())))
+				.append("\">")
+				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
+						"<circle cx=\"256\" cy=\"256\" r=\"220\" />" +
 						"</svg>")
 				.append("</div>");
 	}

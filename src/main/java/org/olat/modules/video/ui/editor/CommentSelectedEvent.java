@@ -17,28 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video;
+package org.olat.modules.video.ui.editor;
 
-import java.util.Date;
+import java.io.Serial;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * Initial date: 2023-02-28<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface VideoComment {
-	String getId();
-	Date getStart();
-	void setStart(Date start);
-	String getColor();
-	void setColor(String color);
-	String getAuthor();
-	void setAuthor(String author);
-	String getText();
-	void setText(String text);
-	String getFileName();
-	void setFileName(String fileName);
-	String getUrl();
-	void setUrl(String url);
-	String getDisplayText();
+public class CommentSelectedEvent extends Event implements TimelineEventSelectedEvent {
+
+	@Serial
+	private static final long serialVersionUID = 7849037944113941110L;
+	private static final String COMMAND = "comment.selected";
+	private final String id;
+	private final long startTimeInMillis;
+
+	public CommentSelectedEvent(String id, long startTimeInMillis) {
+		super(COMMAND);
+		this.id = id;
+		this.startTimeInMillis = startTimeInMillis;
+	}
+
+	@Override
+	public String getId() {
+		return id;
+	}
+
+	@Override
+	public long getStartTimeInMillis() {
+		return startTimeInMillis;
+	}
+
+	@Override
+	public long getDurationInSeconds() {
+		return 0;
+	}
 }

@@ -188,11 +188,12 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		timelineModel.setScaleFactor(0.1);
 		timelineModel.setVideoLength(videoDurationInMillis);
 		if (showVideoTrack) {
-			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
-					TimelineEventType.SEGMENT, TimelineEventType.CHAPTER, TimelineEventType.VIDEO));
+			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.COMMENT,
+					TimelineEventType.ANNOTATION, TimelineEventType.SEGMENT, TimelineEventType.CHAPTER,
+					TimelineEventType.VIDEO));
 		} else {
-			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
-					TimelineEventType.SEGMENT, TimelineEventType.CHAPTER));
+			timelineModel.setVisibleChannels(List.of(TimelineEventType.QUIZ, TimelineEventType.COMMENT,
+					TimelineEventType.ANNOTATION, TimelineEventType.SEGMENT, TimelineEventType.CHAPTER));
 		}
 		fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
 
@@ -320,6 +321,12 @@ public class MasterController extends FormBasicController implements FlexiTableC
 							.ifPresent(s -> fireEvent(ureq, new SegmentSelectedEvent(s.getId(), s.getStartTime(),
 									s.getDuration() / 1000)));
 				}
+				String commentId = ureq.getParameter("commentId");
+				if (commentId != null) {
+					timelineModel.select(commentId);
+					timelineModel.getTimelineRow(TimelineEventType.COMMENT, commentId)
+							.ifPresent(c -> fireEvent(ureq, new CommentSelectedEvent(c.getId(), c.getStartTime())));
+				}
 			} else if (event instanceof FlexiTableRenderEvent renderEvent) {
 				if (FlexiTableRenderEvent.CHANGE_RENDER_TYPE.equals(event.getCommand())) {
 					if (renderEvent.getRendererType() == FlexiTableRendererType.external) {
@@ -359,6 +366,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 			case CHAPTER -> fireEvent(ureq, new ChapterSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case SEGMENT -> fireEvent(ureq, new SegmentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime(),
 					timelineRow.getDuration() / 1000));
+			case COMMENT -> fireEvent(ureq, new CommentSelectedEvent(timelineRow.getId(), timelineRow.getStartTime()));
 			case VIDEO -> {
 			}
 		}

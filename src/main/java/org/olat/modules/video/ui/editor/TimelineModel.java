@@ -57,7 +57,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	private int availableWidth;
 	private String mediaUrl;
 	private List<TimelineEventType> visibleChannels = List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
-			TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT);
+			TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT, TimelineEventType.COMMENT);
 
 	public TimelineModel(FlexiTableDataSourceDelegate<TimelineRow> dataSource, FlexiTableColumnModel columnModel) {
 		super(dataSource, columnModel);

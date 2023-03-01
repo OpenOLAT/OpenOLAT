@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.modules.video.VideoAssessmentService;
+import org.olat.modules.video.VideoComment;
+import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -87,6 +89,12 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 					videoSegment.getDuration() * 1000, TimelineEventType.SEGMENT, c.getLabelAndTitle(),
 					c.getColor(), c.getId())
 			));
+		}
+
+		VideoComments comments = videoManager.loadComments(olatResource);
+		for (VideoComment comment : comments.getComments()) {
+			rows.add(new TimelineRow(comment.getId(), comment.getStart().getTime(), 1000,
+					TimelineEventType.COMMENT, comment.getDisplayText(), comment.getColor()));
 		}
 
 		VideoMarkers videoMarkers = videoManager.loadMarkers(olatResource);
@@ -224,6 +232,12 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				chapters.stream().filter(c -> row.getStartTime() == c.getBegin().getTime()).findFirst()
 						.ifPresent(chapters::remove);
 				videoManager.saveChapters(chapters, olatResource);
+			}
+			case COMMENT -> {
+				VideoComments videoComments = videoManager.loadComments(olatResource);
+				videoComments.getComments().stream().filter(c -> row.getId().equals(c.getId())).findFirst()
+						.ifPresent(c -> videoComments.getComments().remove(c));
+				videoManager.saveComments(videoComments, olatResource);
 			}
 			default -> {
 				//

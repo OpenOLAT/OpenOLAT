@@ -45,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoEditorController extends BasicController {
 
-	private final VelocityContainer mainVC;
 	private final VideoController videoController;
 	private final DetailsController detailsController;
 	private final MasterController masterController;
@@ -57,7 +56,7 @@ public class VideoEditorController extends BasicController {
 
 	public VideoEditorController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl);
-		mainVC = createVelocityContainer("video_editor");
+		VelocityContainer mainVC = createVelocityContainer("video_editor");
 
 		VideoMeta videoMetadata = videoManager.getVideoMetadata(repositoryEntry.getOlatResource());
 		isYoutube = videoMetadata.getVideoFormat() == VideoFormat.youtube;
@@ -122,6 +121,8 @@ public class VideoEditorController extends BasicController {
 				masterController.reload();
 			} else if (event == SegmentsController.RELOAD_SEGMENTS_EVENT) {
 				masterController.reload();
+			} else if (event == CommentsController.RELOAD_COMMENTS_EVENT) {
+				masterController.reload();
 			} else if (event instanceof EditQuestionEvent editQuestionEvent) {
 				fireEvent(ureq, editQuestionEvent);
 			} else if (event instanceof SelectTimeEvent selectTimeCommand) {
@@ -138,6 +139,9 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof QuestionSelectedEvent questionSelectedEvent) {
 				videoController.processTimelineEvent(ureq, questionSelectedEvent, TimelineEventType.QUIZ, isYoutube);
 				masterController.select(questionSelectedEvent.getId());
+			} else if (event instanceof CommentSelectedEvent commentSelectedEvent) {
+				videoController.processTimelineEvent(ureq, commentSelectedEvent, TimelineEventType.COMMENT, isYoutube);
+				masterController.select(commentSelectedEvent.getId());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {
@@ -152,6 +156,9 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof SegmentSelectedEvent segmentSelectedEvent) {
 				videoController.processTimelineEvent(ureq, segmentSelectedEvent, TimelineEventType.SEGMENT, isYoutube);
 				detailsController.showSegment(ureq, segmentSelectedEvent.getId());
+			} else if (event instanceof CommentSelectedEvent commentSelectedEvent) {
+				videoController.processTimelineEvent(ureq, commentSelectedEvent, TimelineEventType.COMMENT, isYoutube);
+				detailsController.showComment(ureq, commentSelectedEvent.getId());
 			} else if (event instanceof  TimelineEventDeletedEvent timelineEventDeletedEvent) {
 				detailsController.handleDeleted(timelineEventDeletedEvent.getType(), timelineEventDeletedEvent.getId());
 			}

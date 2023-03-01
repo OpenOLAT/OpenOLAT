@@ -168,6 +168,10 @@ public class VideoController extends BasicController {
 				videoDisplayController.setSegments(ureq);
 				videoDisplayController.setSegment(selectedTimelineEvent.getId(), videoViewWidth);
 			}
+			case COMMENT -> {
+				videoDisplayController.clearSegments();
+				videoDisplayController.clearMarkerLayer();
+			}
 			default -> {}
 		}
 

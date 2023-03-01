@@ -17,28 +17,40 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.video;
+package org.olat.modules.video.ui.editor;
 
+import java.util.Comparator;
 import java.util.Date;
+
+import org.olat.modules.video.VideoComment;
 
 /**
  * Initial date: 2023-02-28<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface VideoComment {
-	String getId();
-	Date getStart();
-	void setStart(Date start);
-	String getColor();
-	void setColor(String color);
-	String getAuthor();
-	void setAuthor(String author);
-	String getText();
-	void setText(String text);
-	String getFileName();
-	void setFileName(String fileName);
-	String getUrl();
-	void setUrl(String url);
-	String getDisplayText();
+public class CommentComparator implements Comparator<VideoComment> {
+
+	@Override
+	public int compare(VideoComment o1, VideoComment o2) {
+		if (o1 == null && o2 == null) {
+			return 0;
+		} else if (o1 == null) {
+			return -1;
+		} else if (o2 == null) {
+			return 1;
+		}
+
+		Date s1 = o1.getStart();
+		Date s2 = o2.getStart();
+		if (s1 == null && s2 == null) {
+			return 0;
+		} else if (s1 == null) {
+			return -1;
+		} else if (s2 == null) {
+			return 1;
+		}
+
+		return s1.compareTo(s2);
+	}
 }

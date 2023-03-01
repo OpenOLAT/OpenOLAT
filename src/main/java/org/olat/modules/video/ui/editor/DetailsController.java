@@ -41,6 +41,7 @@ public class DetailsController extends BasicController {
 	private final ChaptersController chaptersController;
 	private final AnnotationsController annotationsController;
 	private final SegmentsController segmentsController;
+	private final CommentsController commentsController;
 	private final QuestionsController questionsController;
 
 	public DetailsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
@@ -64,6 +65,10 @@ public class DetailsController extends BasicController {
 		listenTo(segmentsController);
 		tabbedPane.addTab(translate("video.editor.panes.segments"), segmentsController);
 
+		commentsController = new CommentsController(ureq, wControl, repositoryEntry, durationInSeconds);
+		listenTo(commentsController);
+		tabbedPane.addTab(translate("video.editor.panes.comments"), commentsController);
+
 		questionsController = new QuestionsController(ureq, wControl, repositoryEntry);
 		listenTo(questionsController);
 		tabbedPane.addTab(translate("video.editor.panes.quiz"), questionsController);
@@ -83,6 +88,8 @@ public class DetailsController extends BasicController {
 					questionsController.sendSelectionEvent(ureq);
 				} else if (segmentsController == tabbedPaneChangedEvent.getNewController()) {
 					segmentsController.sendSelectionEvent(ureq);
+				} else if (commentsController == tabbedPaneChangedEvent.getNewController()) {
+					commentsController.sendSelectionEvent(ureq);
 				}
 			}
 		}
@@ -98,6 +105,8 @@ public class DetailsController extends BasicController {
 			fireEvent(ureq, event);
 		} else if (source instanceof QuestionsController) {
 			fireEvent(ureq, event);
+		} else if (source instanceof CommentsController) {
+			fireEvent(ureq, event);
 		}
 	}
 
@@ -106,6 +115,7 @@ public class DetailsController extends BasicController {
 		annotationsController.setCurrentTimeCode(currentTimeCode);
 		questionsController.setCurrentTimeCode(currentTimeCode);
 		segmentsController.setCurrentTimeCode(currentTimeCode);
+		commentsController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showAnnotation(UserRequest ureq, String annotationId) {
@@ -122,8 +132,13 @@ public class DetailsController extends BasicController {
 		segmentsController.showSegment(segmentId);
 	}
 
-	public void showQuestion(UserRequest ureq, String questionId) {
+	public void showComment(UserRequest ureq, String commentId) {
 		tabbedPane.setSelectedPane(ureq, 3);
+		commentsController.showComment(commentId);
+	}
+
+	public void showQuestion(UserRequest ureq, String questionId) {
+		tabbedPane.setSelectedPane(ureq, 4);
 		questionsController.showQuestion(questionId);
 	}
 
@@ -144,6 +159,7 @@ public class DetailsController extends BasicController {
 			case CHAPTER -> chaptersController.handleDeleted();
 			case ANNOTATION -> annotationsController.handleDeleted(id);
 			case SEGMENT -> segmentsController.handleDeleted(id);
+			case COMMENT -> commentsController.handleDeleted(id);
 			case QUIZ -> questionsController.handleDeleted(id);
 		}
 	}
