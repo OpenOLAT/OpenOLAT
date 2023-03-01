@@ -54,7 +54,7 @@ public abstract class JobWithDB extends QuartzJobBean {
 		boolean success = false;
 		try {
 			//init logging framework
-			ThreadLocalUserActivityLoggerInstaller.initEmptyUserActivityLogger();
+			ThreadLocalUserActivityLoggerInstaller.initBackgroundUserActivityLogger();
 			
 			executeWithDB(arg0);
 			DBFactory.getInstance().commitAndCloseSession();
