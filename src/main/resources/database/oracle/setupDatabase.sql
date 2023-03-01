@@ -2790,6 +2790,7 @@ create table o_lti_tool_deployment (
    lastmodified date not null,
    l_deployment_id varchar2(128) not null unique,
    l_context_id varchar(255),
+   l_deployment_resource_id varchar(255),
    l_target_url varchar2(1024),
    l_send_attributes varchar2(2048),
    l_send_custom_attributes CLOB,

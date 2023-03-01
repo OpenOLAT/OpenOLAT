@@ -204,7 +204,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		organisationsEl.clearError();
 		if(moduleEnabled.isAtLeastSelected(1)) {
 			if(!organisationsEl.isOneSelected()) {
-				organisationsEl.setErrorKey("form.legende.mandatory", null);
+				organisationsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

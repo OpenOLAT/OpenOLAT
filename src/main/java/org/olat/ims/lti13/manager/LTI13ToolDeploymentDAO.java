@@ -21,6 +21,7 @@ package org.olat.ims.lti13.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -55,6 +56,7 @@ public class LTI13ToolDeploymentDAO {
 		deployment.setLastModified(deployment.getCreationDate());
 		deployment.setDeploymentId(idGenerator.newId());
 		deployment.setContextId(idGenerator.newId());
+		deployment.setDeploymentResourceId(UUID.randomUUID().toString());
 		deployment.setTargetUrl(targetUrl);
 		deployment.setTool(tool);
 		deployment.setEntry(entry);
