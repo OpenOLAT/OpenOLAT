@@ -113,7 +113,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			.addRole(NodeRightRole.coach, true)
 			.build();
 	public static final NodeRightType UPLOAD = NodeRightTypeBuilder.ofIdentifier("upload")
-			.setLabel(DialogCourseNodeEditController.class, "edit.upload")
+			.setLabel(DialogCourseNodeEditController.class, "edit.upload.and.topic")
 			.addRole(NodeRightRole.coach, true)
 			.addRole(NodeRightRole.participant, true)
 			.build();
