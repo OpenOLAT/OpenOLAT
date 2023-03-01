@@ -192,7 +192,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 	private List<RepositoryEntry> getPublicVisibleEntries() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select re from repositoryentry re")
-		  .append(" where re.allUsers is true or re.guests is true or re.bookable is true");
+		  .append(" where re.allUsers=true or re.guests=true or re.bookable=true");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntry.class)
