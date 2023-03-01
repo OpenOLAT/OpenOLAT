@@ -1,0 +1,21 @@
+<ul class="o_dropdown list-unstyled">
+	#if ($r.available("text"))
+	<li>$r.render("text")</li>
+	#end
+
+	#if ($showSeparator)
+	<li><hr style="margin: 0;" /></li>
+	#end
+
+	#if ($r.available("record"))
+	<li>$r.render("record")</li>
+	#end
+
+	#if ($r.available("importFile"))
+	<li>$r.render("importFile")</li>
+	#end
+
+	#if ($r.available("importUrl"))
+	<li>$r.render("importUrl")</li>
+	#end
+</ul>

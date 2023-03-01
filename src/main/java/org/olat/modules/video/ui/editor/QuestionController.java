@@ -107,7 +107,7 @@ public class QuestionController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		startEl = uifactory.addTextElement("start", "form.question.start", 8,
+		startEl = uifactory.addTextElement("start", "form.common.start", 8,
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
 
@@ -115,7 +115,7 @@ public class QuestionController extends FormBasicController {
 				"", formLayout);
 		timeLimitEl.setExampleKey("form.question.timeLimit.example", null);
 
-		colorDropdown = uifactory.addDropdownSingleselect("color", "form.question.color", formLayout,
+		colorDropdown = uifactory.addDropdownSingleselect("color", "form.common.color", formLayout,
 				colorsKV.keys(), colorsKV.values());
 
 		options = uifactory.addCheckboxesVertical("options", "form.question.options", formLayout,
