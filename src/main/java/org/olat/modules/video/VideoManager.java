@@ -355,6 +355,10 @@ public interface VideoManager {
 	VideoSegments loadSegments(OLATResource olatResource);
 
 	void saveSegments(VideoSegments segments, OLATResource olatResource);
+
+	VideoComments loadComments(OLATResource olatResource);
+
+	void saveComments(VideoComments comments, OLATResource olatResource);
 	
 	public VideoQuestions loadQuestions(OLATResource videoResource);
 
