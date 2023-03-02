@@ -19,6 +19,9 @@
  */
 package org.olat.modules.coach.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -34,15 +37,21 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 public class CourseCoachAssignmentsTableModel extends DefaultFlexiTableDataModel<CourseCoachAssignmentRow>
 implements SortableFlexiTableDataModel<CourseCoachAssignmentRow> {
 	
-	private CAssignmentsCol[] COLS = CAssignmentsCol.values();
+	private static final CAssignmentsCol[] COLS = CAssignmentsCol.values();
 	
-	public CourseCoachAssignmentsTableModel(FlexiTableColumnModel columnModel) {
+	private final Locale locale;
+	
+	public CourseCoachAssignmentsTableModel(FlexiTableColumnModel columnModel, Locale locale) {
 		super(columnModel);
+		this.locale = locale;
 	}
 	
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<CourseCoachAssignmentRow> rows = new CourseCoachAssignmentsTableSortDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override

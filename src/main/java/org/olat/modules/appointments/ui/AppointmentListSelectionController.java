@@ -109,6 +109,7 @@ public class AppointmentListSelectionController extends AppointmentListControlle
 		ParticipationSearchParams pParams = new ParticipationSearchParams();
 		pParams.setTopic(topic);
 		pParams.setFetchAppointments(true);
+		pParams.setFetchIdentities(true);
 		List<Participation> allPrticipations = appointmentsService.getParticipations(pParams);
 		Map<Long, List<Participation>> appointmentKeyToParticipation = allPrticipations.stream()
 				.collect(Collectors.groupingBy(p -> p.getAppointment().getKey()));

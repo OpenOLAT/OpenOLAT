@@ -633,7 +633,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	}
 	
 	@Override
-	public List<CoachingAssignmentStatistics> getCoachingAssignmentStatistcs(Identity manager, AssessmentEntryStatus status) {
+	public List<CoachingAssignmentStatistics> getCoachingAssignmentStatistics(Identity manager, AssessmentEntryStatus status) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select elem,")
 		  .append(" (select count(aentry.key) from assessmententry aentry")
