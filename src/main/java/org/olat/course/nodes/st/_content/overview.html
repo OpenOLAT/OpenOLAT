@@ -17,14 +17,15 @@
 								<div>
 									<span><i class="o_icon o_icon-fw o_icon_warning"> </i> $noAccessMessage #if($r.isNotEmpty($noAccessMessageInfos))<i id="${r.getCId()}_more_infos" class="o_icon o_icon-fw o_icon_info_ap"> </i>#end</span>
 									#if($r.isNotEmpty($noAccessMessageInfos))
+									<div id="${r.getCId()}_more_infos_content" style="display:none;">$r.xssScan($noAccessMessageInfos)</div> 
 									<script>
+									"use strict";
 									jQuery('#${r.getCId()}_more_infos').each(function(index, el) {
-										const jEl = jQuery(el);
-										jEl.tooltip({
+										jQuery(el).tooltip({
 											html: true,
-											container: false,
+											container: 'body',
 											delay: { "show": 0, "hide": 1000 },
-											title: '$noAccessMessageInfos'
+											title: function(){ return jQuery('#${r.getCId()}_more_infos_content').html(); }
 										});
 									});
 									</script>
