@@ -117,14 +117,18 @@ public class PracticeRankListController extends FormBasicController {
 		this.shared = share;
 		
 		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-		assessmentEntry.setShare(Boolean.valueOf(share));
-		userCourseEnv.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(assessmentEntry);
-		
-		showEl.setVisible(!shared);
-		if(shared) {
-			loadModel();
+		if(assessmentEntry != null) {
+			assessmentEntry.setShare(Boolean.valueOf(share));
+			userCourseEnv.getCourseEnvironment().getAssessmentManager().updateAssessmentEntry(assessmentEntry);
+			
+			showEl.setVisible(!shared);
+			if(shared) {
+				loadModel();
+			} else {
+				flc.contextRemove("rankList");
+			}
 		} else {
-			flc.contextRemove("rankList");
+			showWarning("warning.share.not.available");
 		}
 	}
 
