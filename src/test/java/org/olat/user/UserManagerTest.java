@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.manager.NotificationsManagerImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
@@ -50,6 +51,8 @@ public class UserManagerTest extends OlatTestCase {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private NotificationsManagerImpl notificationsManager;
 	
 	
 	@Test
@@ -145,6 +148,29 @@ public class UserManagerTest extends OlatTestCase {
 		Assert.assertNotNull(identities);
 		Assert.assertEquals(1, identities.size());
 		Assert.assertEquals(id, identities.get(0));
+	}
+	
+	@Test
+	public void updatePreferences() {
+		String defaultInterval = notificationsManager.getDefaultNotificationInterval();
+		
+		//create a user
+		Identity id = createUser(UUID.randomUUID().toString());
+		dbInstance.commitAndCloseSession();
+
+		User user = id.getUser();
+		user.getPreferences().setInformSessionTimeout(true);
+		Assert.assertEquals(defaultInterval, user.getPreferences().getNotificationInterval());
+		userManager.updateUserFromIdentity(id);
+		dbInstance.commitAndCloseSession();
+		
+		notificationsManager.setDefaultNotificationInterval("weekly");
+		
+		User reloadedUser = userManager.loadUserByKey(user.getKey());
+		Assert.assertEquals(true, reloadedUser.getPreferences().getInformSessionTimeout());
+		Assert.assertEquals("weekly", reloadedUser.getPreferences().getNotificationInterval());
+
+		notificationsManager.setDefaultNotificationInterval(defaultInterval);
 	}
 	
 	private Identity createUser(String uuid) {

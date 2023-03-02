@@ -103,11 +103,11 @@ public class PreferencesImpl implements Preferences {
 		NotificationsManager notiMgr = CoreSpringFactory.getImpl(NotificationsManager.class);
 		if (!StringHelper.containsNonWhitespace(notificationInterval)) {
 			if(notiMgr != null) {
-				notificationInterval = notiMgr.getDefaultNotificationInterval();
+				return notiMgr.getDefaultNotificationInterval();
 			}
 		} else if(notiMgr != null && notiMgr.getEnabledNotificationIntervals() != null
 			&& !notiMgr.getEnabledNotificationIntervals().contains(notificationInterval)) {
-			notificationInterval = notiMgr.getDefaultNotificationInterval();
+			return notiMgr.getDefaultNotificationInterval();
 		}
 		return notificationInterval;
 	}
