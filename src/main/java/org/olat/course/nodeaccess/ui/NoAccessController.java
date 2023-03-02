@@ -89,7 +89,7 @@ public class NoAccessController extends BasicController {
 		emptyState.setIndicatorIconCss("o_no_icon");
 		emptyState.setIconCss("o_icon_status_not_ready");
 		emptyState.setMessageI18nKey("noTransOnlyParam");
-		String message = translate("no.access.course.node", new String[] {courseNode.getLongTitle()});
+		String message = translate("no.access.course.node", courseNode.getLongTitle());
 		emptyState.setMessageI18nArgs(new String[] {message});
 		emptyState.setHintI18nKey("noTransOnlyParam");
 		emptyState.setHintI18nArgs(new String[] {NoAccessResolver.translate(getTranslator(), noAccessMessage, false)});

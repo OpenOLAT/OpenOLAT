@@ -81,6 +81,7 @@ public class OverviewController extends BasicController {
 		
 		mainVC.contextPut("handlingRange", getHandlingRange(overview));
 		mainVC.contextPut("noAccessMessage", NoAccessResolver.translate(getTranslator(), overview.getNoAccessMessage(), true));
+		mainVC.contextPut("noAccessMessageInfos", NoAccessResolver.translate(getTranslator(), overview.getNoAccessMessage(), false));
 		
 		if (peekViewCtrl != null) {
 			mainVC.put("peekView", this.peekViewCtrl.getInitialComponent());

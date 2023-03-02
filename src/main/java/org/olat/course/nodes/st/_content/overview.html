@@ -15,7 +15,20 @@
 							#end
 								#if($r.isNotEmpty($noAccessMessage))
 								<div>
-									<span><i class="o_icon o_icon-fw o_icon_warning"> </i> $noAccessMessage</span>
+									<span><i class="o_icon o_icon-fw o_icon_warning"> </i> $noAccessMessage #if($r.isNotEmpty($noAccessMessageInfos))<i id="${r.getCId()}_more_infos" class="o_icon o_icon-fw o_icon_info_ap"> </i>#end</span>
+									#if($r.isNotEmpty($noAccessMessageInfos))
+									<script>
+									jQuery('#${r.getCId()}_more_infos').each(function(index, el) {
+										const jEl = jQuery(el);
+										jEl.tooltip({
+											html: true,
+											container: false,
+											delay: { "show": 0, "hide": 1000 },
+											title: '$noAccessMessageInfos'
+										});
+									});
+									</script>
+									#end
 								</div>
 								#end
 							#if($r.isNotEmpty($handlingRange))
