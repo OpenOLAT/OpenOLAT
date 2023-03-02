@@ -122,6 +122,7 @@ public class VideoEditorController extends BasicController {
 			} else if (event == SegmentsController.RELOAD_SEGMENTS_EVENT) {
 				masterController.reload();
 			} else if (event == CommentsController.RELOAD_COMMENTS_EVENT) {
+				videoController.reloadComments();
 				masterController.reload();
 			} else if (event instanceof EditQuestionEvent editQuestionEvent) {
 				fireEvent(ureq, editQuestionEvent);

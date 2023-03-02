@@ -50,6 +50,7 @@ public class VideoController extends BasicController {
 	private TimelineEventType timelineEventType;
 	private TimelineEventSelectedEvent selectedTimelineEvent;
 	private Integer videoViewWidth;
+	private final CommentLayerController commentLayerController;
 
 	public VideoController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 						   boolean showPoster) {
@@ -68,6 +69,11 @@ public class VideoController extends BasicController {
 		videoDisplayController = new VideoDisplayController(ureq, wControl, repositoryEntry, null,
 				null, displayOptions);
 		listenTo(videoDisplayController);
+
+		commentLayerController = new CommentLayerController(ureq, wControl, repositoryEntry);
+		listenTo(commentLayerController);
+		videoDisplayController.addLayer(commentLayerController);
+
 		videoElementId = videoDisplayController.getVideoElementId();
 		durationInSeconds = VideoHelper.durationInSeconds(repositoryEntry, videoDisplayController);
 		videoDisplayController.setTimeUpdateListener(true);
@@ -78,6 +84,7 @@ public class VideoController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 	@Override
@@ -92,6 +99,7 @@ public class VideoController extends BasicController {
 						if (timeInMillis < t0 || timeInMillis > t1) {
 							videoDisplayController.clearMarkerLayer();
 							videoDisplayController.hideSegment();
+							commentLayerController.hideComment();
 						} else {
 							switch (timelineEventType) {
 								case ANNOTATION -> videoDisplayController.loadMarker(ureq, videoEvent.getTimeCode(),
@@ -132,6 +140,10 @@ public class VideoController extends BasicController {
 		videoDisplayController.forceReload();
 	}
 
+	public void reloadComments() {
+		commentLayerController.loadComments();
+	}
+
 	public void selectTime(long timeInSeconds, boolean isYoutube) {
 		SelectTimeCommand selectTimeCommand = new SelectTimeCommand(videoElementId, timeInSeconds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(selectTimeCommand);
@@ -152,6 +164,8 @@ public class VideoController extends BasicController {
 
 		reloadMarkers();
 
+		commentLayerController.hideComment();
+
 		switch (timelineEventType) {
 			case ANNOTATION, QUIZ -> {
 				videoDisplayController.clearSegments();
@@ -171,6 +185,7 @@ public class VideoController extends BasicController {
 			case COMMENT -> {
 				videoDisplayController.clearSegments();
 				videoDisplayController.clearMarkerLayer();
+				commentLayerController.setComment(selectedTimelineEvent.getId());
 			}
 			default -> {}
 		}
