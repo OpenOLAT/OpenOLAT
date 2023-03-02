@@ -97,4 +97,15 @@ public class UserPropertiesRow {
 	public String getIdentityProp(int index) {
 		return identityProps[index];
 	}
+	
+	public String getIdentityProp(String property, List<UserPropertyHandler> userPropertyHandlers) {
+		int numOfHandlers = userPropertyHandlers.size();
+		for(int i=0; i<numOfHandlers; i++) {
+			if(property.equals(userPropertyHandlers.get(i).getName()) && i<identityProps.length) {
+				return getIdentityProp(i);
+			}
+		}
+		
+		return null;
+	}
 }

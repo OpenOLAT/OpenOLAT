@@ -128,9 +128,7 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 			
 			doOpenPreferredSegment(ureq);
-			if(userCourseEnv.isAdmin() && config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
-				coachAssignmentWarning();
-			}
+			coachAssignmentWarning();
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
 		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
@@ -146,12 +144,18 @@ public class GTARunController extends BasicController implements Activateable2 {
 	}
 	
 	private void coachAssignmentWarning() {
-		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		if(assessmentService.hasAssessmentEntryWithoutCoachAssignment(courseEntry, gtaNode.getIdent())) {
-			coachAssignmentLink = LinkFactory.createLink("coach.assignment", getTranslator(), this);
-			coachAssignmentLink.setIconRightCSS("o_icon o_icon_start");
-			coachAssignmentLink.setElementCssClass("o_process_assignment");
-			mainVC.put("coach.assignment", coachAssignmentLink);
+		if(userCourseEnv.isAdmin() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			if(assessmentService.hasAssessmentEntryWithoutCoachAssignment(courseEntry, gtaNode.getIdent())) {
+				coachAssignmentLink = LinkFactory.createLink("coach.assignment", getTranslator(), this);
+				coachAssignmentLink.setIconRightCSS("o_icon o_icon_start");
+				coachAssignmentLink.setElementCssClass("o_process_assignment");
+				mainVC.put("coach.assignment", coachAssignmentLink);
+			} else {
+				mainVC.remove("coach.assignment");
+			}
+		} else {
+			mainVC.remove("coach.assignment");
 		}
 	}
 	
@@ -224,6 +228,10 @@ public class GTARunController extends BasicController implements Activateable2 {
 		if(runCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, event);
+			}
+		} else if(coachCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				coachAssignmentWarning();
 			}
 		}
 		super.event(ureq, source, event);

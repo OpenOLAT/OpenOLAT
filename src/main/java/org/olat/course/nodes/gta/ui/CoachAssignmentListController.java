@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
+import org.olat.group.model.comparator.MemberViewNamesComparator;
 import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -250,6 +252,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		params.setPending(false);
 		params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach });
 		List<MemberView> coachesViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
+		Collections.sort(coachesViews, new MemberViewNamesComparator(coachPropertyHandlers, getLocale()));
 		
 		coachesColumns = new ArrayList<>();
 		
@@ -261,16 +264,8 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		for(MemberView member:coachesViews) {
 			if(acceptCoach(member, owners, courseCoaches, groupCoaches, curriculumCoaches)) {
-				StringBuilder sb = new StringBuilder();
-				for(String prop:member.getIdentityProps()) {
-					if(sb.length() > 0) {
-						sb.append(" ");
-					}
-					sb.append(prop);
-				}
-				
 				String coachKey = member.getIdentityKey().toString();
-				String fullName = sb.toString();
+				String fullName = userManager.getUserDisplayName(member, coachPropertyHandlers);
 				coachesColumns.add(new CoachColumn(coachKey, fullName, member));
 				coachKeyValues.add(SelectionValues.entry(coachKey, fullName));
 			}
@@ -303,7 +298,7 @@ public class CoachAssignmentListController extends FormBasicController {
 					|| UserConstants.LASTNAME.equals(propName)) {
 				col = new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(),
 						colIndex, userPropertyHandler.getName(), true, propName,
-						new StaticFlexiCellRenderer(userPropertyHandler.getName(), new TextFlexiCellRenderer()));
+						new StaticFlexiCellRenderer(null, new TextFlexiCellRenderer()));
 			} else {
 				col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex, true, propName);
 			}
@@ -604,11 +599,9 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		for(IdentityAssignmentRow row:rows) {
 			SingleSelection selection = row.getChoices();
-			int selected = selection.getSelected();
+			int selected = selection.getSelected() - 1;
 			if(selected > 0 && selected < coaches.size()) {
-				coaches.get(selected - 1).increment();
-			} else {
-				System.out.println();
+				coaches.get(selected).increment();
 			}
 		}
 		

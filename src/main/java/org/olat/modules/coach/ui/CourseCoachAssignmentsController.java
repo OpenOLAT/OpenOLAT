@@ -79,16 +79,18 @@ public class CourseCoachAssignmentsController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CAssignmentsCol.openAssignments, CMD_OPEN_ASSIGNMENTS));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("assign", translate("assign"), CMD_OPEN_ASSIGN));
 		
-		tableModel = new CourseCoachAssignmentsTableModel(columnsModel);
+		tableModel = new CourseCoachAssignmentsTableModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 25, false, getTranslator(), formLayout);
 		tableEl.setAndLoadPersistedPreferences(ureq, "orders-coach-assignments-v1");
 	}
 	
 	private void loadModel() {
-		List<CoachingAssignmentStatistics> statistics = assessmentToolManager.getCoachingAssignmentStatistcs(getIdentity(), AssessmentEntryStatus.inReview);
+		List<CoachingAssignmentStatistics> statistics = assessmentToolManager.getCoachingAssignmentStatistics(getIdentity(), AssessmentEntryStatus.inReview);
 		List<CourseCoachAssignmentRow> rows = new ArrayList<>(statistics.size());
 		for(CoachingAssignmentStatistics stats:statistics) {
-			rows.add(new CourseCoachAssignmentRow(stats.getRepositoryEntry(), stats.getCourseElement(), stats.getNumOfAssignments()));
+			if(stats.getNumOfAssignments() > 0l) {
+				rows.add(new CourseCoachAssignmentRow(stats.getRepositoryEntry(), stats.getCourseElement(), stats.getNumOfAssignments()));
+			}
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);

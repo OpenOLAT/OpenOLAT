@@ -69,7 +69,7 @@ public interface AssessmentToolManager {
 	
 	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 	
-	public List<CoachingAssignmentStatistics> getCoachingAssignmentStatistcs(Identity manager, AssessmentEntryStatus status);
+	public List<CoachingAssignmentStatistics> getCoachingAssignmentStatistics(Identity manager, AssessmentEntryStatus status);
 	
 	/**
 	 * 

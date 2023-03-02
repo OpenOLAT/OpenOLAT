@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
@@ -56,7 +55,7 @@ implements SortableFlexiTableDataModel<AssessmentCoachingRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<AssessmentCoachingRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<AssessmentCoachingRow> rows = new AssessmentCoachingTableSortDelegate(orderBy, this, locale).sort();
 			super.setObjects(rows);
 		}
 	}

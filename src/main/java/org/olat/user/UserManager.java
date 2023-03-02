@@ -254,6 +254,8 @@ public abstract class UserManager {
 	
 	public abstract String getUserDisplayName(IdentityRef identity);
 	
+	public abstract String getUserDisplayName(UserPropertiesRow row, List<UserPropertyHandler> userPropertyHandlers);
+	
 	/**
 	 * 
 	 * @param identityKeys

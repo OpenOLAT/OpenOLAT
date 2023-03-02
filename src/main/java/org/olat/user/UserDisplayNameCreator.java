@@ -19,9 +19,12 @@
 **/
 package org.olat.user;
 
+import java.util.List;
+
 import org.olat.basesecurity.IdentityNames;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * <h3>Description:</h3>
@@ -56,6 +59,12 @@ public class UserDisplayNameCreator {
 
 	public String getUserDisplayName(IdentityNames identity) {
 		return getDisplayName(identity.getFirstName(), identity.getLastName());
+	}
+	
+	public String getUserDisplayName(UserPropertiesRow identity, List<UserPropertyHandler> userPropertiesHandler) {
+		String firstName = identity.getIdentityProp(UserConstants.FIRSTNAME, userPropertiesHandler);
+		String lastName = identity.getIdentityProp(UserConstants.LASTNAME, userPropertiesHandler);
+		return getDisplayName(firstName, lastName);
 	}
 	
 	protected String getDisplayName(String firstName, String lastName) {

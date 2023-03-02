@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
@@ -100,6 +101,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private final UserCourseEnvironment coachCourseEnv;
 	private boolean markedOnly = false;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
 	@Autowired
@@ -255,6 +258,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 			if(event == Event.DONE_EVENT) {
 				reload(ureq);
 				back(ureq);
+				dbInstance.commit();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event == Event.BACK_EVENT || event == Event.CANCELLED_EVENT) {
 				back(ureq);
 			}
