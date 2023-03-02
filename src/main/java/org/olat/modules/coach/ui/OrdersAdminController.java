@@ -39,10 +39,13 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.grading.GradingModule;
 import org.olat.modules.grading.GradingSecurityCallback;
+import org.olat.modules.grading.model.GradingSecurity;
 import org.olat.modules.grading.ui.GradersListController;
 import org.olat.modules.grading.ui.GradingAssignmentsListController;
 import org.olat.modules.grading.ui.event.OpenAssignmentsEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,8 +55,8 @@ import org.olat.modules.grading.ui.event.OpenAssignmentsEvent;
  */
 public class OrdersAdminController extends BasicController implements Activateable2 {
 
-	private final Link gradersLink;
-	private final Link gradersAssignmentsLink;
+	private Link gradersLink;
+	private Link gradersAssignmentsLink;
 	private final Link openCoachAssignmentsLink;
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
@@ -65,7 +68,11 @@ public class OrdersAdminController extends BasicController implements Activateab
 	
 	private final GradingSecurityCallback secCallback;
 	
-	public OrdersAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, GradingSecurityCallback secCallback) {
+	@Autowired
+	private GradingModule gradingModule;
+	
+	public OrdersAdminController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			GradingSecurityCallback secCallback, GradingSecurity gradingSec) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.secCallback = secCallback;
@@ -74,20 +81,27 @@ public class OrdersAdminController extends BasicController implements Activateab
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
 		
-		gradersLink = LinkFactory.createLink("orders.admin.graders", mainVC, this);
-		gradersLink.setVisible(secCallback.canManage());
-		segmentView.addSegment(gradersLink, true);
-		if(secCallback.canManage()) {
-			doOpenGraders(ureq);
+		boolean gradingEnabled = gradingModule.isEnabled() && gradingSec.isGradedResourcesManager();
+		if(gradingEnabled) {
+			gradersLink = LinkFactory.createLink("orders.admin.graders", mainVC, this);
+			gradersLink.setVisible(secCallback.canManage());
+			segmentView.addSegment(gradersLink, true);
+			if(secCallback.canManage()) {
+				doOpenGraders(ureq);
+			}
+	
+			gradersAssignmentsLink = LinkFactory.createLink("orders.admin.assignments", mainVC, this);
+			gradersAssignmentsLink.setVisible(secCallback.canManage());
+			segmentView.addSegment(gradersAssignmentsLink, false);
 		}
-
-		gradersAssignmentsLink = LinkFactory.createLink("orders.admin.assignments", mainVC, this);
-		gradersAssignmentsLink.setVisible(secCallback.canManage());
-		segmentView.addSegment(gradersAssignmentsLink, false);
 		
 		openCoachAssignmentsLink = LinkFactory.createLink("orders.coach.assignments", mainVC, this);
 		openCoachAssignmentsLink.setVisible(secCallback.canManage());
 		segmentView.addSegment(openCoachAssignmentsLink, false);
+		if(!gradingEnabled) {
+			doOpenCoachAssignment(ureq);
+			segmentView.select(openCoachAssignmentsLink);
+		}
 
 		if (mainVC.contextGet("segmentCmp") == null) {
 			EmptyStateFactory.create("emptyStateCmp", mainVC, this);
@@ -113,8 +127,7 @@ public class OrdersAdminController extends BasicController implements Activateab
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == gradersLink) {
@@ -164,8 +177,9 @@ public class OrdersAdminController extends BasicController implements Activateab
 	
 	private CourseCoachAssignmentsController doOpenCoachAssignment(UserRequest ureq) {
 		if(coachAssignmentsCtrl == null) {
+			boolean withTitle = segmentView.getSegments().size() <= 1;
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("CoachAssignments"), null);
-			coachAssignmentsCtrl = new CourseCoachAssignmentsController(ureq, swControl);
+			coachAssignmentsCtrl = new CourseCoachAssignmentsController(ureq, swControl, withTitle);
 			listenTo(coachAssignmentsCtrl);
 		}
 		addToHistory(ureq, coachAssignmentsCtrl);

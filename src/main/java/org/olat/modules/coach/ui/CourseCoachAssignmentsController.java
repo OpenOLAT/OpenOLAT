@@ -57,18 +57,23 @@ public class CourseCoachAssignmentsController extends FormBasicController {
 	private FlexiTableElement tableEl;
 	private CourseCoachAssignmentsTableModel tableModel;
 	
+	private final boolean withTitle;
+	
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
-	public CourseCoachAssignmentsController(UserRequest ureq, WindowControl wControl) {
+	public CourseCoachAssignmentsController(UserRequest ureq, WindowControl wControl, boolean withTitle) {
 		super(ureq, wControl, "course_coach_assignments");
-		
+		this.withTitle = withTitle;
 		initForm(ureq);
 		loadModel();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(withTitle) {
+			setFormTitle("orders.coach.assignments");
+		}
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CAssignmentsCol.entryId));

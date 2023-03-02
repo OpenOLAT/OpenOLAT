@@ -91,6 +91,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private final boolean showLineManagerView;
 	private final GradingSecurity gradingSec;
 	private final CoachingSecurity coachingSec;
+	private final boolean coachAssignmentsAvailable;
 
 	private GroupListController groupListCtrl;
 	private UserSearchController userSearchCtrl;
@@ -134,6 +135,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			organisations = organisationService.getOrganisations(getIdentity(), OrganisationRoles.linemanager);
 			organisationMap = organisations.stream().collect(Collectors.toMap(org -> org.getKey().toString(), org -> org));
 		}
+		coachAssignmentsAvailable = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal() || roles.isAuthor();
 
 		menu = new MenuTree(null, "coachMenu", this);
 		menu.setExpandSelectedNode(false);
@@ -321,13 +323,13 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(ordersOverviewCtrl);
 			}
 			selectedCtrl = ordersOverviewCtrl;
-		} else if("ordersadmin".equalsIgnoreCase(cmd) && gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+		} else if("ordersadmin".equalsIgnoreCase(cmd) && ((gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) || coachAssignmentsAvailable)) {
 			if(ordersAdminCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("OrdersAdmin", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 				GradingSecurityCallback secCallback = GradingSecurityCallbackFactory.getSecurityCalllback(getIdentity(), gradingSec);
-				ordersAdminCtrl = new OrdersAdminController(ureq, bwControl, content, secCallback);
+				ordersAdminCtrl = new OrdersAdminController(ureq, bwControl, content, secCallback, gradingSec);
 				listenTo(ordersAdminCtrl);
 			}
 			selectedCtrl = ordersAdminCtrl;
@@ -528,7 +530,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			root.addChild(ordersNode);
 		}
 		
-		if (gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) {
+		if ((gradingModule.isEnabled() && gradingSec.isGradedResourcesManager()) || coachAssignmentsAvailable) {
 			GenericTreeNode ordersAdminNode = new GenericTreeNode();
 			ordersAdminNode.setUserObject("OrdersAdmin");
 			ordersAdminNode.setTitle(translate("orders.admin.menu.title"));
