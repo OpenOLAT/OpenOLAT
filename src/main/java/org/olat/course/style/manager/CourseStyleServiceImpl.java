@@ -84,6 +84,7 @@ public class CourseStyleServiceImpl implements CourseStyleService {
 	@PostConstruct
 	public void initProvidedSystemImages() throws Exception {
 		Set<String> systemImagesProvided = courseModule.getSystemImagesProvided();
+		log.info("System images: {}", systemImagesProvided);
 		if (!systemImagesProvided.contains("oo_16_0_1")) {
 			try {
 				systemImageStorage.initProvidedSystemImages("oo_16_0_1");

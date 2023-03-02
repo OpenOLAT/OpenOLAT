@@ -21,15 +21,19 @@ package org.olat.course.style.manager;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.CodeSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.PostConstruct;
 
@@ -37,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.io.ShieldInputStream;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.ImageSourceType;
 import org.olat.course.style.model.ImageSourceImpl;
@@ -63,9 +68,36 @@ public class SystemImageStorage {
 	}
 	
 	public void initProvidedSystemImages(String path) throws Exception {
-		URL providedUrl = SystemImageStorage.class.getResource("_system_images/" + path + "/");
-		File providedDir = new File(providedUrl.toURI());
-		FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
+		String imagesPath = "_system_images/" + path + "/";
+		URL providedUrl = SystemImageStorage.class.getResource(imagesPath);
+		if("jar".equals(providedUrl.getProtocol())) {
+			CodeSource src = SystemImageStorage.class.getProtectionDomain().getCodeSource();
+			initProvidedSystemImagesFromJar(src.getLocation(), imagesPath);
+		} else {
+			File providedDir = new File(providedUrl.toURI());
+			FileUtils.copyDirContentsToDir(providedDir, ROOT_PATH.toFile(), false, "");
+		}
+	}
+	
+	private void initProvidedSystemImagesFromJar(URL jar, String imagesPath) {
+		try(InputStream in=jar.openStream();
+				ZipInputStream zip = new ZipInputStream(in)) {
+			while(true) {
+				ZipEntry e = zip.getNextEntry();
+				if (e == null) {
+					break;
+			    }
+				String name = e.getName();
+				if(name.endsWith(".png") && name.contains(imagesPath)) {
+					int lastIndex = name.lastIndexOf('/');
+					String imageName = name.substring(lastIndex, name.length());
+					File targetFile = new File(ROOT_PATH.toFile(), imageName);
+					FileUtils.copyToFile(new ShieldInputStream(zip), targetFile, "");
+				}
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}	
 	}
 
 	public File store(File file, String filename) {
