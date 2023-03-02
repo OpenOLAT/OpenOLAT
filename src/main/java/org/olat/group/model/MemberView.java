@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupManagedFlag;
@@ -138,6 +139,28 @@ public class MemberView extends UserPropertiesRow {
 		}
 		groups.add(group);
 	}
+	
+	public boolean isInOneOfGroups(Set<Long> groupKeys) {
+		if(groups != null) {
+			for(BusinessGroupShort group:groups) {
+				if(groupKeys.contains(group.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isInGroup(Long groupKey) {
+		if(groups != null) {
+			for(BusinessGroupShort group:groups) {
+				if(groupKey.equals(group.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	public List<CurriculumElementShort> getCurriculumElements() {
 		return curriculumElements;
@@ -152,6 +175,28 @@ public class MemberView extends UserPropertiesRow {
 			curriculumElements = new ArrayList<>(3);
 		}
 		curriculumElements.add(curriculumElement);
+	}
+	
+	public boolean isInOneOfCurriculumElements(Set<Long> elementKeys) {
+		if(curriculumElements != null) {
+			for(CurriculumElementShort curriculumElement:curriculumElements) {
+				if(elementKeys.contains(curriculumElement.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isInCurriculumElement(Long elementKey) {
+		if(curriculumElements != null) {
+			for(CurriculumElementShort curriculumElement:curriculumElements) {
+				if(elementKey.equals(curriculumElement.getKey())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public CourseMembership getMemberShip() {
