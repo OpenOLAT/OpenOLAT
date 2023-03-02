@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProjectSecurityCallback;
@@ -128,6 +129,30 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canDeleteNote(ProjNote note, boolean participant) {
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != note.getArtefact().getStatus() 
+				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	}
+	
+	@Override
+	public boolean canCreateAppointments() {
+		return !projectReadOnly && hasRole(OWN_OBJECTS);
+	}
+
+	@Override
+	public boolean canEditAppointments() {
+		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+	}
+
+	@Override
+	public boolean canEditAppointment(ProjAppointment appointment, boolean participant) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
+				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && participant));
+	}
+
+	@Override
+	public boolean canDeleteAppointment(ProjAppointment appointment, boolean participant) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
 				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
 	}
 

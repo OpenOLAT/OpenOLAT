@@ -45,6 +45,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			String[] args) {
 
 		Dropdown dropdown = (Dropdown)source;
+		sb.append("<div>", dropdown.getFormItem() != null && "horizontal".equals(layout(dropdown, args)));
 		sb.append("<div class='btn-group'>", dropdown.isEmbbeded());
 		
 		boolean hasComponents = dropdown.size() > 0;
@@ -165,6 +166,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 			sb.append("</ul>");
 		}
 		sb.append("</div>", dropdown.isEmbbeded());
+		sb.append("</div>", dropdown.getFormItem() != null && "horizontal".equals(layout(dropdown, args)));
 		
 		if (hasComponents) {
 			// Check if dropdown has enough space in center main container, enlarge if necessary

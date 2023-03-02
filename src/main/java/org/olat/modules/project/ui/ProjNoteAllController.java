@@ -56,7 +56,7 @@ public class ProjNoteAllController extends ProjNoteListController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		createLink = uifactory.addFormLink("note.create", formLayout, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setVisible(secCallback.canCreateFiles());
+		createLink.setVisible(secCallback.canCreateNotes());
 		
 		super.initForm(formLayout, listener, ureq);
 	}

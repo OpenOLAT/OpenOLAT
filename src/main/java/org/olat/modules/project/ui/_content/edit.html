@@ -8,11 +8,11 @@ $r.render("content")
 jQuery(function() {
 	jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.ffXHREvent("referenceOpen","false");
+		$f.openFfXHREvent(false, false, false), "referenceOpen","false");
 	})
 	jQuery('#collapse_reference_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.ffXHREvent("referenceOpen","true");
+		$f.openFfXHREvent(false, false, false), "referenceOpen","true");
 	})
 });
 </script>
@@ -26,18 +26,19 @@ jQuery(function() {
 jQuery(function() {
 	jQuery('#collapse_member_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.ffXHREvent("memberOpen","false");
+		$f.openFfXHREvent(false, false, false), "memberOpen","false");
 		console.log('open');
 	})
 	jQuery('#collapse_member_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.ffXHREvent("memberOpen","true");
+		$f.openFfXHREvent(false, false, false), "memberOpen","true");
 		console.log('close');
 	})
 });
 </script>
 #end
 
+#if($r.available("metadata"))
 <h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')">
 	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.metadata.title")
 </h4>
@@ -46,16 +47,17 @@ jQuery(function() {
 jQuery(function() {
 	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.ffXHREvent("metadataOpen","false");
+		$f.openFfXHREvent(false, false, false), "metadataOpen","false");
 		console.log('open');
 	})
 	jQuery('#collapse_metadata_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.ffXHREvent("metadataOpen","true");
+		$f.openFfXHREvent(false, false, false), "metadataOpen","true");
 		console.log('close');
 	})
 });
 </script>
+#end
 
 #if($r.available("buttons") && $r.visible("buttons"))
 	<div class="o_block_top">

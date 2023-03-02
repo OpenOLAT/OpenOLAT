@@ -21,14 +21,19 @@ package org.olat.modules.project.ui;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -67,13 +72,15 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.ActionTarget;
 import org.olat.modules.project.ProjActivitySearchParams;
+import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
-import org.olat.modules.project.ProjProjectRef;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.manager.ProjectXStream;
@@ -113,7 +120,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private FlexiTableElement tableEl;
 	private ProjTimelineDataModel dataModel;
 
-	private final ProjProjectRef project;
+	private final ProjProject project;
 	private final List<Identity> members;
 	private final MapperKey avatarMapperKey;
 	private int counter;
@@ -122,8 +129,10 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private ProjectService projectService;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private CalendarManager calendarManager;
 
-	public ProjTimelineController(UserRequest ureq, WindowControl wControl, ProjProjectRef project, List<Identity> members, MapperKey avatarMapperKey) {
+	public ProjTimelineController(UserRequest ureq, WindowControl wControl, ProjProject project, List<Identity> members, MapperKey avatarMapperKey) {
 		super(ureq, wControl, "timeline");
 		this.project = project;
 		this.members = members;
@@ -180,6 +189,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		typeValues.add(SelectionValues.entry(ActionTarget.project.name(), translate("timeline.filter.type.project")));
 		typeValues.add(SelectionValues.entry(ActionTarget.file.name(), translate("timeline.filter.type.file")));
 		typeValues.add(SelectionValues.entry(ActionTarget.note.name(), translate("timeline.filter.type.note")));
+		typeValues.add(SelectionValues.entry(ActionTarget.appointment.name(), translate("timeline.filter.type.appointment")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("timeline.filter.type"), FILTER_TYPE, typeValues, true));
 		
 		SelectionValues userValues = new SelectionValues();
@@ -215,10 +225,12 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		// Future range: add todos and appointments
 		// Today: add todos and appointments, load today activities if open
 		// Past: add todos and appointments, add preloaded activities
-		loadActivites(ureq, todayLink);
+		loadAppointments();
+		doMoreRows(ureq, todayLink);
+		doMoreRows(ureq, next7DaysLink);
 		addRows();
 	}
-	
+
 	private void addRows() {
 		List<ProjTimelineRow> rows = new ArrayList<>();
 		
@@ -246,9 +258,16 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private void addRows(List<ProjTimelineRow> rows, FormLink rangeLink) {
 		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
 		if (rangeUserObject.isShow()) {
-			if (rangeUserObject.getRows() != null && !rangeUserObject.getRows().isEmpty()) {
-				rows.addAll(rangeUserObject.getRows());
-			} else {
+			boolean rangeRows = false;
+			if (rangeUserObject.getActivityRows() != null && !rangeUserObject.getActivityRows().isEmpty()) {
+				rows.addAll(rangeUserObject.getActivityRows());
+				rangeRows = true;
+			} 
+			if (rangeUserObject.getAppointmentRows() != null && !rangeUserObject.getAppointmentRows().isEmpty()) {
+				rows.addAll(rangeUserObject.getAppointmentRows());
+				rangeRows = true;
+			} 
+			if (!rangeRows) {
 				ProjTimelineRow row = new ProjTimelineRow();
 				row.setRangeEmpty(translate("timeline.range.empty"));
 				row.setDate(DateUtils.addSeconds(rangeUserObject.getDateRange().getTo(), -1));
@@ -257,9 +276,69 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		}
 	}
 	
-	private void loadActivites(UserRequest ureq, FormLink rangeLink) {
-		boolean today = rangeLink == todayLink;
+	private void loadAppointments() {
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setProject(project);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjAppointment> appointments = projectService.getAppointments(searchParams);
+		Map<String, ProjAppointment> appointmentIdentToAppointment = appointments.stream()
+				.collect(Collectors.toMap(ProjAppointment::getIdentifier, Function.identity()));
+		
+		Kalendar kalendar = projectService.toKalendar(appointments);
+		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar, project.getCreationDate(), DateUtils.addDays(new Date(), 8), true);
+		appointmentEvents.sort(Comparator.comparing(KalendarEvent::getBegin, Comparator.reverseOrder())
+				.thenComparing(Comparator.comparing(KalendarEvent::getEnd, Comparator.reverseOrder())));
+		
+		resetAppointments(next7DaysLink);
+		resetAppointments(todayLink);
+		resetAppointments(last7DaysLink);
+		resetAppointments(last4WeeksLink);
+		resetAppointments(last12MonthLink);
+		resetAppointments(more12MonthLink);
+		
+		for (KalendarEvent appointmentEvent : appointmentEvents) {
+			addAppointmentEvent(next7DaysLink, appointmentEvent, appointmentIdentToAppointment);
+			addAppointmentEvent(todayLink, appointmentEvent, appointmentIdentToAppointment);
+			addAppointmentEvent(last7DaysLink, appointmentEvent, appointmentIdentToAppointment);
+			addAppointmentEvent(last4WeeksLink, appointmentEvent, appointmentIdentToAppointment);
+			addAppointmentEvent(last12MonthLink, appointmentEvent, appointmentIdentToAppointment);
+			addAppointmentEvent(more12MonthLink, appointmentEvent, appointmentIdentToAppointment);
+		}
+	}
+	
+	private void resetAppointments(FormLink rangeLink) {
 		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
+		rangeUserObject.getAppointmentEvents().clear();
+		rangeUserObject.getAppointments().clear();
+	}
+
+	private void addAppointmentEvent(FormLink rangeLink, KalendarEvent appointmentEvent, Map<String, ProjAppointment> appointmentIdentToAppointment) {
+		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
+		ProjDateRange dateRange = rangeUserObject.getDateRange();
+		Date eventBegin = appointmentEvent.getBegin();
+		if (dateRange.getFrom().before(eventBegin) && dateRange.getTo().after(eventBegin)) {
+			rangeUserObject.getAppointmentEvents().add(appointmentEvent);
+			rangeUserObject.getAppointments().add(appointmentIdentToAppointment.get(appointmentEvent.getExternalId()));
+		}
+	}
+
+	private void doMoreRows(UserRequest ureq, FormLink rangeLink) {
+		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
+		if (rangeLink == todayLink || rangeLink == next7DaysLink) {
+			resetRows(rangeUserObject);
+		}
+		doMoreActivites(ureq, rangeLink);
+		doMoreAppointments(rangeLink);
+		if (!rangeUserObject.moreActivitiesAvailable && !hasMoreAppointments(rangeUserObject)) {
+			rangeUserObject.setMoreAvailable(false);
+		}
+	}
+
+	private void doMoreActivites(UserRequest ureq, FormLink rangeLink) {
+		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
+		if (!rangeUserObject.isMoreActivitiesAvailable()) {
+			return;
+		}
 		
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProject(project);
@@ -267,8 +346,9 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		searchParams.setCreatedDateRanges(List.of(rangeUserObject.getDateRange()));
 		applyFilters(searchParams);
 		
+		boolean today = rangeLink == todayLink;
 		int maxResults = today? -1: NUM_LOAD_MORE;
-		List<ProjActivity> activities = projectService.getActivities(searchParams, rangeUserObject.getOffset(), maxResults);
+		List<ProjActivity> activities = projectService.getActivities(searchParams, rangeUserObject.getActivitiesOffset(), maxResults);
 		Set<ProjArtefact> artefacts = activities.stream()
 				.map(ProjActivity::getArtefact)
 				.filter(Objects::nonNull)
@@ -285,17 +365,82 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		for (ProjActivity activity : activities) {
 			addActivityRows(ureq, rows, activity, artefactItems, artefactKeyToIdentityKeys);
 		}
-		if (today) {
-			rangeUserObject.setRows(rows);
-		} else {
-			rangeUserObject.getRows().addAll(rows);
-			rangeUserObject.setOffset(rangeUserObject.getOffset() + activities.size());
+		rangeUserObject.getActivityRows().addAll(rows);
+		if (!today) {
+			rangeUserObject.setActivitiesOffset(rangeUserObject.getActivitiesOffset() + activities.size());
 			if (activities.size() < NUM_LOAD_MORE) {
-				rangeUserObject.setMoreAvailable(false);
+				rangeUserObject.setMoreActivitiesAvailable(false);
 			}
 		}
 	}
+	
+	private void doMoreAppointments(FormLink rangeLink) {
+		RangeUserObject rangeUserObject = (RangeUserObject)rangeLink.getUserObject();
+		if (rangeLink == todayLink || rangeLink == next7DaysLink) {
+			for (int i = 0; i < rangeUserObject.getAppointmentEvents().size(); i++) {
+				ProjTimelineRow row = createAppointmentRow(
+						rangeUserObject.getAppointmentEvents().get(i),
+						rangeUserObject.getAppointments().get(i));
+				rangeUserObject.getAppointmentRows().add(row);
+			}
+		} else {
+			// Add all appointments after the earliest visible activity
+			if (hasMoreAppointments(rangeUserObject) && !rangeUserObject.getActivityRows().isEmpty()) {
+				Date earliestActivityDate = rangeUserObject.getActivityRows().get(rangeUserObject.getActivityRows().size() - 1).getDate();
+				for (int i = rangeUserObject.getAppointmentOffset(); i < rangeUserObject.getAppointmentEvents().size(); i++) {
+					KalendarEvent kalendarEvent = rangeUserObject.getAppointmentEvents().get(i);
+					if (kalendarEvent.getBegin().after(earliestActivityDate)) {
+						ProjTimelineRow row = createAppointmentRow(kalendarEvent, rangeUserObject.getAppointments().get(i));
+						rangeUserObject.getAppointmentRows().add(row);
+						rangeUserObject.setAppointmentOffset(i + 1);
+					}
+				}
+				
+			}
+			// Add some more appointments
+			if (hasMoreAppointments(rangeUserObject) && !rangeUserObject.isMoreActivitiesAvailable()) {
+				int toOffset = rangeUserObject.getAppointmentEvents().size() - rangeUserObject.getAppointmentOffset() >= 5
+						? rangeUserObject.getAppointmentOffset() + 5
+						: rangeUserObject.getAppointmentEvents().size();
+				for (int i = rangeUserObject.getAppointmentOffset(); i < toOffset; i++) {
+					ProjTimelineRow row = createAppointmentRow(
+							rangeUserObject.getAppointmentEvents().get(i),
+							rangeUserObject.getAppointments().get(i));
+					rangeUserObject.getAppointmentRows().add(row);
+					rangeUserObject.setAppointmentOffset(i + 1);
+				}
+			}
+		}
+		
+	}
+	
+	private boolean hasMoreAppointments(RangeUserObject rangeUserObject) {
+		return rangeUserObject.getAppointmentOffset() < rangeUserObject.getAppointmentEvents().size();
+	}
 
+	private ProjTimelineRow createAppointmentRow(KalendarEvent kalendarEvent, ProjAppointment appointment) {
+		ProjTimelineRow row = new ProjTimelineRow();
+		
+		String icon = "<i class=\"o_icon o_icon-lg o_icon_proj_appointment\"> </i>";
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		iconItem.setDomWrapperElement(DomWrapperElement.span);
+		row.setIconItem(iconItem);
+		
+		String message = StringHelper.containsNonWhitespace(kalendarEvent.getSubject())
+				? kalendarEvent.getSubject()
+				: ProjectUIFactory.getNoTitle(getTranslator());
+		row.setMessage(message);
+		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+		String url = ProjectBCFactory.getAppointmentUrl(appointment);
+		link.setUrl(url);
+		link.setUserObject(appointment.getArtefact());
+		row.setMessageItem(link);
+		
+		row.setDate(kalendarEvent.getBegin());
+		row.setActionTarget(ActionTarget.appointment);
+		return row;
+	}
+	
 	private void applyFilters(ProjActivitySearchParams searchParams) {
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		if (filters == null || filters.isEmpty()) return;
@@ -333,6 +478,13 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 					rows.removeIf(row -> row.getIdentityKeys() != null && !row.getIdentityKeys().stream().anyMatch(key -> selectedIdentityKeys.contains(key)));
 				}
 			}
+			if (FILTER_TYPE.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					List<ActionTarget> targets = values.stream().filter(ActionTarget::isValid).map(ActionTarget::valueOf).collect(Collectors.toList());
+					rows.removeIf(row -> row.getActionTarget() != null && !targets.contains(row.getActionTarget()));
+				}
+			}
 		}
 	}
 
@@ -342,6 +494,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		case project: addActivityProjectRows(ureq, rows, activity);
 		case file: addActivityFileRows(rows, activity, artefactItems, artefactKeyToIdentityKeys);
 		case note: addActivityNoteRows(rows, activity, artefactItems, artefactKeyToIdentityKeys);
+		case appointment: addActivityAppointmentRows(rows, activity, artefactItems, artefactKeyToIdentityKeys);
 		default: //
 		}
 	}
@@ -444,6 +597,25 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		case noteCreate: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.note.create.timeline", displayName)); break;
 		case noteContentUpdate: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.note.update.content.timeline", displayName)); break;
 		case noteStatusDelete: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.note.delete.timeline", displayName)); break;
+		default: //
+		}
+	}
+	
+	private void addActivityAppointmentRows(List<ProjTimelineRow> rows, ProjActivity activity, ProjArtefactItems artefactItems,
+			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
+		if (activity.getArtefact() == null) {
+			return;
+		}
+		ProjAppointment appointment = artefactItems.getAppointment(activity.getArtefact());
+		if (appointment == null) {
+			return;
+		}
+		
+		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), appointment);
+		switch (activity.getAction()) {
+		case appointmentCreate: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.appointment.create.timeline", displayName)); break;
+		case appointmentContentUpdate: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.appointment.update.content.timeline", displayName)); break;
+		case appointmentStatusDelete: addArtefactRow(rows, activity, artefactKeyToIdentityKeys, translate("activity.appointment.delete.timeline", displayName)); break;
 		default: //
 		}
 	}
@@ -590,7 +762,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 			if (CMD_RANGE.equals(link.getCmd()) && link.getUserObject() instanceof RangeUserObject) {
 				doToggleRange(ureq, link);
 			} else if (CMD_MORE.equals(link.getCmd()) && link.getUserObject() instanceof RangeUserObject) {
-				loadActivites(ureq, link);
+				doMoreRows(ureq, link);
 				addRows();
 			} else if (CMD_ARTEFACT.equals(link.getCmd()) && link.getUserObject() instanceof ProjArtefact) {
 				fireEvent(ureq, new OpenArtefactEvent((ProjArtefact)link.getUserObject()));
@@ -605,14 +777,21 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		updateRangeIcon(link, rangeUserObject);
 		
 		if (rangeUserObject.isShow()) {
-			loadActivites(ureq, link);
+			doMoreRows(ureq, link);
 		} else {
-			rangeUserObject.getRows().clear();
-			rangeUserObject.setOffset(0);
-			rangeUserObject.setMoreAvailable(true);
+			resetRows(rangeUserObject);
 		}
 		
 		addRows();
+	}
+
+	private void resetRows(RangeUserObject rangeUserObject) {
+		rangeUserObject.getActivityRows().clear();
+		rangeUserObject.setActivitiesOffset(0);
+		rangeUserObject.setMoreActivitiesAvailable(true);
+		rangeUserObject.getAppointmentRows().clear();
+		rangeUserObject.setAppointmentOffset(0);
+		rangeUserObject.setMoreAvailable(true);
 	}
 
 	@Override
@@ -644,8 +823,13 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		private final ProjDateRange dateRange;
 		private boolean show;
-		private List<ProjTimelineRow> rows = new ArrayList<>();
-		private int offset = 0;
+		private final List<ProjTimelineRow> activityRows = new ArrayList<>();
+		private int activitiesOffset = 0;
+		private boolean moreActivitiesAvailable = true;
+		private final List<ProjTimelineRow> appointmentRows = new ArrayList<>();
+		private final List<KalendarEvent> appointmentEvents = new ArrayList<>();
+		private final List<ProjAppointment> appointments = new ArrayList<>();
+		private int appointmentOffset = 0;
 		private boolean moreAvailable = true;
 		private FormLink moreLink;
 		
@@ -665,20 +849,44 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 			this.show = show;
 		}
 
-		public List<ProjTimelineRow> getRows() {
-			return rows;
+		public List<ProjTimelineRow> getActivityRows() {
+			return activityRows;
 		}
 
-		public void setRows(List<ProjTimelineRow> rows) {
-			this.rows = rows;
+		public int getActivitiesOffset() {
+			return activitiesOffset;
 		}
 
-		public int getOffset() {
-			return offset;
+		public void setActivitiesOffset(int activitiesOffset) {
+			this.activitiesOffset = activitiesOffset;
 		}
 
-		public void setOffset(int offset) {
-			this.offset = offset;
+		public boolean isMoreActivitiesAvailable() {
+			return moreActivitiesAvailable;
+		}
+
+		public void setMoreActivitiesAvailable(boolean moreActivitiesAvailable) {
+			this.moreActivitiesAvailable = moreActivitiesAvailable;
+		}
+
+		public List<ProjTimelineRow> getAppointmentRows() {
+			return appointmentRows;
+		}
+
+		public List<KalendarEvent> getAppointmentEvents() {
+			return appointmentEvents;
+		}
+
+		public List<ProjAppointment> getAppointments() {
+			return appointments;
+		}
+
+		public int getAppointmentOffset() {
+			return appointmentOffset;
+		}
+
+		public void setAppointmentOffset(int appointmentOffset) {
+			this.appointmentOffset = appointmentOffset;
 		}
 
 		public boolean isMoreAvailable() {

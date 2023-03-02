@@ -35,6 +35,7 @@ import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjActivitySearchParams;
 import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.model.ProjActivityImpl;
@@ -128,6 +129,18 @@ public class ProjActivityDAO {
 		dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("activitiesKeys", activities.stream().map(ProjActivity::getKey).collect(Collectors.toList()))
+				.executeUpdate();
+	}
+	
+	public void delete(ProjArtefactRef artefact) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("delete from projactivity activity");
+		sb.and().append("activity.artefact.key = :artefactKey");
+		sb.append(" or activity.artefactReference.key = :artefactKey");
+		
+		dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("artefactKey", artefact.getKey())
 				.executeUpdate();
 	}
 	

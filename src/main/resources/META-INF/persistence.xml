@@ -248,6 +248,7 @@
 		<class>org.olat.modules.portfolio.model.BinderUserInfosImpl</class>
 		<class>org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.project.model.ProjActivityImpl</class>
+		<class>org.olat.modules.project.model.ProjAppointmentImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactToArtefactImpl</class>
 		<class>org.olat.modules.project.model.ProjFileImpl</class>

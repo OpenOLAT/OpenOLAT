@@ -81,7 +81,6 @@ public class ProjNoteDAO {
 		sb.append("  from projnote note");
 		sb.append("       inner join note.artefact artefact");
 		appendQuery(searchParams, sb);
-		appendOrderBy(searchParams, sb);
 		
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class);

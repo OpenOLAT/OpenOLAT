@@ -929,6 +929,8 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 /* Projects */
 .o_icon_proj_file:before { content: $fa-var-file-o; }
 .o_icon_proj_note:before { content: $fa-var-sticky-note-o; }
+.o_icon_proj_appointment:before { content: $fa-var-calendar; }
+.o_icon_proj_recurrence:before { content: $fa-var-refresh; }
 .o_icon_proj_reference:before { content: $fa-var-link; }
 .o_icon_proj_project:before { content: $fa-var-leaf; }
 .o_icon_proj_project_status_active:before { content: $fa-var-check;}

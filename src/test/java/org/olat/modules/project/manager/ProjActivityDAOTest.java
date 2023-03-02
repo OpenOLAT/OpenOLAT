@@ -122,6 +122,28 @@ public class ProjActivityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldDeleteByArtefact() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = createProject(creator);
+		ProjArtefact artefact1 = createArtefact(project, creator);
+		ProjArtefact artefact2 = createArtefact(project, creator);
+		ProjActivity activity = sut.create(Action.noteCreate, null, null, creator, project);
+		sut.create(Action.noteCreate, null, null, creator, artefact1);
+		sut.create(Action.noteCreate, null, null, creator, artefact1, artefact2);
+		ProjActivity activity2 = sut.create(Action.noteCreate, null, null, creator, artefact2);
+		sut.create(Action.noteCreate, null, null, creator, artefact2, artefact1);
+		dbInstance.commitAndCloseSession();
+		
+		sut.delete(artefact1);
+		dbInstance.commitAndCloseSession();
+		
+		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
+		searchParams.setProject(project);
+		List<ProjActivity> activities = sut.loadActivities(searchParams, 0, -1);
+		assertThat(activities).containsExactlyInAnyOrder(activity, activity2);
+	}
+	
+	@Test
 	public void shouldLoadByTempIdentifier() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = createProject(creator);
@@ -218,9 +240,9 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		ProjProject project = createProject(creator);
 		ProjArtefact artefact1 = createArtefact(project, creator);
 		ProjArtefact artefact2 = createArtefact(project, creator);
-		ProjActivity activity11 = sut.create(Action.noteCreate, null, null, null, creator, artefact1);
-		ProjActivity activity12 = sut.create(Action.noteCreate, null, null, null, creator, artefact1);
-		ProjActivity activity21 = sut.create(Action.noteCreate, null, null, null, creator, artefact2);
+		ProjActivity activity11 = sut.create(Action.noteCreate, null, null, creator, artefact1);
+		ProjActivity activity12 = sut.create(Action.noteCreate, null, null, creator, artefact1);
+		ProjActivity activity21 = sut.create(Action.noteCreate, null, null, creator, artefact2);
 		sut.create(Action.noteCreate, null, null, null, creator, createArtefact(project, creator));
 		dbInstance.commitAndCloseSession();
 		

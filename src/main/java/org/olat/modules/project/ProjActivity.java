@@ -76,7 +76,10 @@ public interface ProjActivity extends CreateInfo {
 			Action.fileStatusDelete,
 			Action.noteCreate,
 			Action.noteContentUpdate,
-			Action.noteStatusDelete);
+			Action.noteStatusDelete,
+			Action.appointmentCreate,
+			Action.appointmentContentUpdate,
+			Action.appointmentStatusDelete);
 	
 	
 	public enum Action {
@@ -112,7 +115,15 @@ public interface ProjActivity extends CreateInfo {
 		noteReferenceRemove(ActionTarget.note),
 		noteStatusDelete(ActionTarget.note),
 		noteRead(ActionTarget.note),
-		noteDownload(ActionTarget.note);
+		noteDownload(ActionTarget.note),
+		appointmentCreate(ActionTarget.appointment),
+		appointmentContentUpdate(ActionTarget.appointment),
+		appointmentMemberAdd(ActionTarget.appointment),
+		appointmentMemberRemove(ActionTarget.appointment),
+		appointmentRolesUpdate(ActionTarget.appointment),
+		appointmentReferenceAdd(ActionTarget.appointment),
+		appointmentReferenceRemove(ActionTarget.appointment),
+		appointmentStatusDelete(ActionTarget.appointment);
 		
 		private final ActionTarget target;
 		
@@ -128,6 +139,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberAdd;
 			case ProjNote.TYPE: return noteMemberAdd;
+			case ProjAppointment.TYPE: return appointmentMemberAdd;
 			default:
 				throw new AssertException("No add member project action for " + type);
 			}
@@ -137,6 +149,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberRemove;
 			case ProjNote.TYPE: return noteMemberRemove;
+			case ProjAppointment.TYPE: return appointmentMemberRemove;
 			default:
 				throw new AssertException("No remove member project action for " + type);
 			}
@@ -146,6 +159,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileRolesUpdate;
 			case ProjNote.TYPE: return noteRolesUpdate;
+			case ProjAppointment.TYPE: return appointmentRolesUpdate;
 			default:
 				throw new AssertException("No update roles project action for " + type);
 			}
@@ -155,6 +169,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceAdd;
 			case ProjNote.TYPE: return noteReferenceAdd;
+			case ProjAppointment.TYPE: return appointmentReferenceAdd;
 			default:
 				throw new AssertException("No add reference project action for " + type);
 			}
@@ -164,6 +179,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceRemove;
 			case ProjNote.TYPE: return noteReferenceRemove;
+			case ProjAppointment.TYPE: return appointmentReferenceRemove;
 			default:
 				throw new AssertException("No remove reference project action for " + type);
 			}
@@ -192,7 +208,8 @@ public interface ProjActivity extends CreateInfo {
 	public enum ActionTarget {
 		project,
 		file,
-		note;
+		note,
+		appointment;
 		
 		private static final Set<String> NAMES = Arrays.stream(values()).map(ActionTarget::name).collect(Collectors.toSet());
 		

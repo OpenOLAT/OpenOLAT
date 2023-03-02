@@ -1,0 +1,60 @@
+<div class="o_proj_appointment_preview">
+	<h3>$r.escapeHtml($subject)</h3>
+	
+	<div class="o_proj_appointment_date">
+		<i class="o_icon o_icon-fw o_icon_calendar"> </i>
+		$date
+	</div>
+	#if($r.isNotEmpty($date2))
+		<div class="o_proj_appointment_time">
+			<i class="o_icon o_icon-fw "> </i>
+			$date2
+		</div>
+	#end
+	#if($r.isNotEmpty($time))
+		<div class="o_proj_appointment_time">
+			<i class="o_icon o_icon-fw o_icon_time"> </i>
+			$time
+		</div>
+	#end
+	#if($r.isNotEmpty($location))
+		<div class="o_proj_appointment_location">
+			<i class="o_icon o_icon-fw o_icon_home"> </i>
+			$location
+		</div>
+	#end
+	#if($r.isNotEmpty($recurrence))
+		<div class="o_proj_appointment_reccurence">
+			<i class="o_icon o_icon-fw o_icon_proj_recurrence"> </i>
+			$recurrence
+		</div>
+		<div class="o_proj_appointment_reccurence_end">
+			<i class="o_icon o_icon-fw"> </i>
+			$recurrenceEnd
+		</div>
+	#end
+	#if($r.isNotEmpty($members))
+		<div class="o_proj_appointment_members">
+			<i class="o_icon o_icon-fw o_icon_user"> </i>
+			$members
+		</div>
+	#end
+	#if($r.isNotEmpty($description))
+		<div class="o_proj_appointment_description o_block_small_top">
+			$r.xssScan($description)
+		</div>
+	#end
+	<div class="o_proj_appointment_references">
+		$r.render("references")
+	</div>
+	#if($r.available("edit") || $r.available("delete"))
+		<div class="o_button_group o_button_group_left">
+			#if($r.available("edit"))
+				$r.render("edit")
+			#end
+			#if($r.available("delete"))
+				$r.render("delete")
+			#end
+		</div>
+	#end
+</div>

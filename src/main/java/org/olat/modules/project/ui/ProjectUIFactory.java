@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -31,14 +32,17 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjActivity.Action;
+import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.model.ProjFormattedDateRange;
 import org.olat.user.UserManager;
 
 /**
@@ -48,6 +52,8 @@ import org.olat.user.UserManager;
  *
  */
 public class ProjectUIFactory {
+	
+	public static final String COLOR_APPOINTMENT = KalendarRenderWrapper.CALENDAR_COLOR_BLUE;
 	
 	public static String getStatusIconCss(ProjectStatus status) {
 		if (status != null) {
@@ -89,7 +95,54 @@ public class ProjectUIFactory {
 	public static String getDisplayName(Translator translator, ProjNote note) {
 		return StringHelper.containsNonWhitespace(note.getTitle())
 				? note.getTitle()
-				: translator.translate("no.title");
+				: getNoTitle(translator);
+	}
+	
+	public static String getDisplayName(Translator translator, ProjAppointment appointment) {
+		return StringHelper.containsNonWhitespace(appointment.getSubject())
+				? appointment.getSubject()
+				: getNoTitle(translator);
+	}
+	
+	public static String getNoTitle(Translator translator) {
+		return translator.translate("no.title");
+	}
+	
+	public static ProjFormattedDateRange formatRange(Translator translator, Date start, Date end) {
+		ProjFormattedDateRange formatedRange = new ProjFormattedDateRange();
+		
+		boolean sameDay = DateUtils.isSameDay(start, end);
+		boolean sameTime = DateUtils.isSameTime(start, end);
+		String startDate = StringHelper.formatLocaleDateFull(start.getTime(), translator.getLocale());
+		String startTime = StringHelper.formatLocaleTime(start.getTime(), translator.getLocale());
+		String endDate = StringHelper.formatLocaleDateFull(end.getTime(), translator.getLocale());
+		String endTime = StringHelper.formatLocaleTime(end.getTime(), translator.getLocale());
+		if (sameDay) {
+			formatedRange.setDate(startDate);
+			StringBuilder timeSb = new StringBuilder();
+			if (sameTime) {
+				timeSb.append(translator.translate("full.day"));
+			} else {
+				timeSb.append(startTime);
+				timeSb.append(" - ");
+				timeSb.append(endTime);
+			}
+			formatedRange.setTime(timeSb.toString());
+		} else {
+			StringBuilder dateSbShort1 = new StringBuilder();
+			dateSbShort1.append(startDate);
+			dateSbShort1.append(" ");
+			dateSbShort1.append(startTime);
+			dateSbShort1.append(" -");
+			formatedRange.setDate(dateSbShort1.toString());
+			StringBuilder dateSb2 = new StringBuilder();
+			dateSb2.append(endDate);
+			dateSb2.append(" ");
+			dateSb2.append(endTime);
+			formatedRange.setDate2(dateSb2.toString());
+		}
+		
+		return formatedRange;
 	}
 	
 	public static MultipleSelectionElement createMembersElement(FormUIFactory uifactory, FormItemContainer formLayout,
@@ -116,6 +169,7 @@ public class ProjectUIFactory {
 		case project: return "o_icon_proj_project";
 		case file: return "o_icon_proj_file";
 		case note: return "o_icon_proj_note";
+		case appointment: return "o_icon_proj_appointment";
 		default: return null;
 		}
 	}

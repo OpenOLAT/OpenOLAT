@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.modules.project.ProjActivity.ActionTarget;
 
 /**
  * 
@@ -38,6 +39,8 @@ public class ProjTimelineRow {
 	private String doerDisplyName;
 	private Collection<Long> identityKeys;
 	private String rangeEmpty;
+	// Helper value for the filter
+	private ActionTarget actionTarget;
 	private FormItem iconItem;
 	private FormItem messageItem;
 	private FormLink rangeLink;
@@ -73,6 +76,14 @@ public class ProjTimelineRow {
 
 	public void setIdentityKeys(Collection<Long> identityKeys) {
 		this.identityKeys = identityKeys;
+	}
+
+	public ActionTarget getActionTarget() {
+		return actionTarget;
+	}
+
+	public void setActionTarget(ActionTarget actionTarget) {
+		this.actionTarget = actionTarget;
 	}
 
 	public String getRangeEmpty() {

@@ -21,11 +21,13 @@ package org.olat.modules.project;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.vfs.VFSContainer;
@@ -138,6 +140,37 @@ public interface ProjectService {
 	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams);
 
 	public VFSContainer getProjectContainer(ProjProjectRef project);
+	
+	
+	/*
+	 * Appointments
+	 */
+	
+	public ProjAppointment createAppointment(Identity doer, ProjProject project);
+
+	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
+			String subject, String description, String location, String color, boolean allDay, String recurrenceRule);
+	
+	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate);
+
+	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
+			Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate);
+	
+	public void addAppointmentExclusion(Identity doer, String identifier, Date exclusionDate, boolean single);
+
+	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate);
+
+	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment);
+
+	public void deleteAppointmentPermanent(ProjAppointmentRef appointment);
+	
+	public ProjAppointment getAppointment(ProjAppointmentRef appointment);
+
+	public List<ProjAppointment> getAppointments(ProjAppointmentSearchParams searchParams);
+	
+	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams);
+	
+	public Kalendar toKalendar(List<ProjAppointment> appointments);
 	
 	
 	/*

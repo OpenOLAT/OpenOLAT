@@ -420,7 +420,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 				selectFilterTab(ureq, tab);
 			} else {
 				selectFilterTab(ureq, tabAll);
-				if (ProjNote.TYPE.equals(type)) {
+				if (ProjectBCFactory.TYPE_NOTE.equals(type)) {
 					Long key = entry.getOLATResourceable().getResourceableId();
 					activate(ureq, key, false);
 				}

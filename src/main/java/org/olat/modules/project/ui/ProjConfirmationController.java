@@ -49,13 +49,20 @@ public class ProjConfirmationController extends FormBasicController {
 	private Object userObject;
 	
 	public ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
-			String confirmationI18nKey, String confirmButtonI18nKey) {
+			String confirmationI18nKey, String confirmButtonI18nKey) { 
+		this(ureq, wControl, message, confirmationI18nKey, confirmButtonI18nKey, true);
+	}
+	
+	protected ProjConfirmationController(UserRequest ureq, WindowControl wControl, String message,
+			String confirmationI18nKey, String confirmButtonI18nKey, boolean init) {
 		super(ureq, wControl, "confirmation");
 		this.message = message;
 		this.confirmationI18nKey = confirmationI18nKey;
 		this.confirmButtonI18nKey = confirmButtonI18nKey;
 		
-		initForm(ureq);
+		if (init) {
+			initForm(ureq);
+		}
 	}
 
 	public Object getUserObject() {
@@ -65,6 +72,11 @@ public class ProjConfirmationController extends FormBasicController {
 	public void setUserObject(Object userObject) {
 		this.userObject = userObject;
 	}
+	
+	@SuppressWarnings("unused")
+	protected void initFormElements(FormLayoutContainer confirmCont) {
+		//
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -72,20 +84,21 @@ public class ProjConfirmationController extends FormBasicController {
 			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
 			layout.contextPut("message", message);
 			
-			FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
-			formLayout.add("confirm", layoutCont);
-			layoutCont.setRootForm(mainForm);
+			FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
+			formLayout.add("confirm", confirmCont);
+			confirmCont.setRootForm(mainForm);
+			
+			initFormElements(confirmCont);
 			
 			String[] acknowledge = new String[] { translate(confirmationI18nKey) };
-			confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", layoutCont, new String[]{ "" }, acknowledge);
+			confirmationEl = uifactory.addCheckboxesHorizontal("confirmation", "confirmation", confirmCont, new String[]{ "" }, acknowledge);
 			
 			FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-			layoutCont.add(buttonsCont);
+			confirmCont.add(buttonsCont);
 			confirmLink = uifactory.addFormLink(confirmButtonI18nKey, buttonsCont, Link.BUTTON);
 			uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		}
 	}
-
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);

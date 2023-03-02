@@ -28,6 +28,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.model.ProjAppointmentImpl;
 import org.olat.modules.project.model.ProjArtefactImpl;
 import org.olat.modules.project.model.ProjFileImpl;
 import org.olat.modules.project.model.ProjNoteImpl;
@@ -48,13 +49,14 @@ public class ProjectXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {
 		Class<?>[] types = new Class[] {
-				ProjArtefactImpl.class,
-				ProjFileImpl.class,
 				ProjProjectImpl.class,
 				ProjectStatus.class,
+				ProjArtefactImpl.class,
+				ProjFileImpl.class,
 				ProjNoteImpl.class,
-				VFSMetadataImpl.class,
-				IdentityImpl.class
+				ProjAppointmentImpl.class,
+				IdentityImpl.class,
+				VFSMetadataImpl.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("Project", ProjProjectImpl.class);
@@ -66,6 +68,7 @@ public class ProjectXStream {
 		
 		xstream.alias("File", ProjFileImpl.class);
 		xstream.alias("Note", ProjNoteImpl.class);
+		xstream.alias("Appointment", ProjAppointmentImpl.class);
 		
 		xstream.alias("Identity", IdentityImpl.class);
 		xstream.omitField(IdentityImpl.class, "version");

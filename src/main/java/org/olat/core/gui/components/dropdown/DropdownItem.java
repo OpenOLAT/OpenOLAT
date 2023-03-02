@@ -46,7 +46,7 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	
 	public DropdownItem(String name, String label, Translator translator) {
 		super(name);
-		dropdown = new Dropdown(name, label, false, translator);
+		dropdown = new Dropdown(this, label, false, translator);
 	}
 	
 	public void setButton(boolean button) {

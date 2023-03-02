@@ -338,6 +338,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.portfolio.manager.MetadataXStreamTest.class,
 	org.olat.modules.portfolio.handler.BinderXStreamTest.class,
 	org.olat.modules.project.manager.ProjActivityDAOTest.class,
+	org.olat.modules.project.manager.ProjAppointmentDAOTest.class,
 	org.olat.modules.project.manager.ProjArtefactDAOTest.class,
 	org.olat.modules.project.manager.ProjArtefactToArtefactDAOTest.class,
 	org.olat.modules.project.manager.ProjFileDAOTest.class,

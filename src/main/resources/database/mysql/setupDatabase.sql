@@ -3847,6 +3847,25 @@ create table o_proj_note (
    fk_artefact bigint not null,
    primary key (id)
 );
+create table o_proj_appointment (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_identifier varchar(64) not null,
+   p_event_id varchar(64) not null,
+   p_recurrence_id varchar(500),
+   p_start_date datetime,
+   p_end_date datetime,
+   p_subject varchar(256),
+   p_description longtext,
+   p_location varchar(1024),
+   p_color varchar(50),
+   p_all_day bool default false not null,
+   p_recurrence_rule varchar(100),
+   p_recurrence_exclusion varchar(4000),
+   fk_artefact bigint not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4232,6 +4251,7 @@ alter table o_proj_artefact ENGINE = InnoDB;
 alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
 alter table o_proj_file ENGINE = InnoDB;
 alter table o_proj_note ENGINE = InnoDB;
+alter table o_proj_appointment ENGINE = InnoDB;
 alter table o_proj_activity ENGINE = InnoDB;
 
 
@@ -5097,6 +5117,8 @@ alter table o_proj_artefact_to_artefact add constraint projata_creator_idx forei
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity (id);
 alter table o_proj_activity add constraint activity_project_idx foreign key (fk_project) references o_proj_project (id);

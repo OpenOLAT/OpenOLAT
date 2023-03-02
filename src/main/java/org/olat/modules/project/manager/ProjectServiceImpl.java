@@ -20,7 +20,9 @@
 package org.olat.modules.project.manager;
 
 import java.io.InputStream;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,18 +32,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.commons.calendar.CalendarUtils;
+import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -51,6 +59,10 @@ import org.olat.core.util.vfs.VFSStatus;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjActivitySearchParams;
+import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjAppointmentInfo;
+import org.olat.modules.project.ProjAppointmentRef;
+import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
@@ -74,12 +86,16 @@ import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.model.ProjAppointmentInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
 import org.olat.modules.project.model.ProjMemberInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import net.fortuna.ical4j.model.Recur;
+import net.fortuna.ical4j.model.property.RRule;
 
 /**
  * 
@@ -89,6 +105,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ProjectServiceImpl implements ProjectService {
+
+	private static final Logger log = Tracing.createLoggerFor(ProjectServiceImpl.class);
 	
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
@@ -112,6 +130,10 @@ public class ProjectServiceImpl implements ProjectService {
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private ProjNoteDAO noteDao;
+	@Autowired
+	private ProjAppointmentDAO appointmentDao;
+	@Autowired
+	private ProjCalendarHelper calendarHelper;
 	@Autowired
 	private ProjActivityDAO activityDao;
 	@Autowired
@@ -138,11 +160,13 @@ public class ProjectServiceImpl implements ProjectService {
 		String before = ProjectXStream.toXml(reloadedProject);
 		
 		boolean contentChanged = false;
+		boolean titleChanged = false;
 		if (!Objects.equals(reloadedProject.getExternalRef(), project.getExternalRef())) {
 			contentChanged = true;
 		}
 		if (!Objects.equals(reloadedProject.getTitle(), project.getTitle())) {
 			contentChanged = true;
+			titleChanged = true;
 		}
 		if (!Objects.equals(reloadedProject.getTeaser(), project.getTeaser())) {
 			contentChanged = true;
@@ -157,6 +181,13 @@ public class ProjectServiceImpl implements ProjectService {
 			
 			String after = ProjectXStream.toXml(updatedProject);
 			activityDao.create(Action.projectContentContent, before, after, doer, updatedProject);
+			
+			if (titleChanged) {
+				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+				searchParams.setProject(reloadedProject);
+				searchParams.setStatus(List.of(ProjectStatus.active));
+				getAppointmentInfos(searchParams).forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
+			}
 		}
 		
 		return updatedProject;
@@ -197,7 +228,6 @@ public class ProjectServiceImpl implements ProjectService {
 		ProjProject reloadedProject = getProject(project);
 		if (ProjectStatus.deleted != reloadedProject.getStatus()) {
 			// Delete all members but owners
-			
 			ProjMemberInfoSearchParameters params = new ProjMemberInfoSearchParameters();
 			params.setProject(reloadedProject);
 			Map<Identity,Set<ProjectRole>> memberToRoles = getMemberToRoles(params);
@@ -208,6 +238,12 @@ public class ProjectServiceImpl implements ProjectService {
 					updateMember(doer, reloadedProject, entry.getKey(), Set.of());
 				}
 			}
+			
+			// Delete all appointment events from user calendars
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setProject(reloadedProject);
+			searchParams.setStatus(List.of(ProjectStatus.active));
+			getAppointmentInfos(searchParams).forEach(info -> calendarHelper.deleteEvent(info.getAppointment(), info.getMembers()));
 			
 			String before = ProjectXStream.toXml(reloadedProject);
 			
@@ -508,6 +544,14 @@ public class ProjectServiceImpl implements ProjectService {
 			artefacts.setNotes(notes);
 		}
 		
+		List<ProjArtefact> appointmentArtefacts = typeToArtefacts.get(ProjAppointment.TYPE);
+		if (appointmentArtefacts != null) {
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setArtefacts(appointmentArtefacts);
+			List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
+			artefacts.setAppointments(appointments);
+		}
+		
 		return artefacts;
 	}
 	
@@ -523,23 +567,33 @@ public class ProjectServiceImpl implements ProjectService {
 		ProjArtefact artefact = getArtefact(artefactRef);
 		if (artefact == null) return;
 		
-		Group group = artefact.getBaseGroup();
-		List<Identity> currentMembers = groupDao.getMembers(group, DEFAULT_ROLE_NAME);
 		List<Identity> members = securityManager.loadIdentityByRefs(identities);
 		
+		updateMembers(doer, artefact, members);
+	}
+
+	private void updateMembers(Identity doer, ProjArtefact artefact, List<Identity> members) {
+		Group group = artefact.getBaseGroup();
+		List<Identity> currentMembers = groupDao.getMembers(group, DEFAULT_ROLE_NAME);
+		
+		List<Identity> membersAdded = new ArrayList<>();
 		boolean contentChange = false;
 		for (Identity member : members) {
 			if (!currentMembers.contains(member)) {
+				membersAdded.add(member);
 				groupDao.addMembershipOneWay(group, member, DEFAULT_ROLE_NAME);
 				activityDao.create(Action.addMember(artefact.getType()), null, null, doer, artefact, member);
 				String rolesAfterXml = ProjectXStream.rolesToXml(List.of(DEFAULT_ROLE_NAME));
 				activityDao.create(Action.updateRoles(artefact.getType()), null, rolesAfterXml, doer, artefact, member);
 				contentChange = true;
+				
 			}
 		}
 		
+		List<Identity> membersRemoved = new ArrayList<>();
 		for (Identity currentMember : currentMembers) {
 			if (!members.contains(currentMember)) {
+				membersRemoved.add(currentMember);
 				groupDao.removeMembership(group, currentMember);
 				activityDao.create(Action.removeMember(artefact.getType()), null, null, doer, artefact, currentMember);
 				// Load from DB if more than one role possible.
@@ -549,11 +603,27 @@ public class ProjectServiceImpl implements ProjectService {
 			}
 		}
 		
+		onUpdateMembers(artefact, membersAdded, membersRemoved);
+		
 		if (contentChange) {
 			updateContentModified(artefact, doer);
 		}
 	}
 	
+	// Maybe move individual artefact logic to a handler
+	private void onUpdateMembers(ProjArtefact artefact, List<Identity> membersAdded, List<Identity> membersRemoved) {
+		if (ProjAppointment.TYPE.equals(artefact.getType())) {
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setArtefacts(List.of(artefact));
+			List<ProjAppointment> appointments = getAppointments(searchParams);
+			if (!appointments.isEmpty()) {
+				ProjAppointment appointment = appointments.get(0);
+				calendarHelper.createOrUpdateEvent(appointment, membersAdded);
+				calendarHelper.deleteEvent(appointment, membersRemoved);
+			}
+		}
+	}
+
 	@Override
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts) {
 		Collection<Long> groupKeys = artefacts.stream().map(artefact -> artefact.getBaseGroup().getKey()).collect(Collectors.toList());
@@ -581,6 +651,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	private void deleteArtefactPermanent(ProjArtefact artefact) {
+		activityDao.delete(artefact);
 		artefactToArtefactDao.delete(artefact);
 		groupDao.removeMemberships(artefact.getBaseGroup());
 		groupDao.removeGroup(artefact.getBaseGroup());
@@ -753,14 +824,9 @@ public class ProjectServiceImpl implements ProjectService {
 			return;
 		}
 		
-		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
-		searchParams.setArtefacts(List.of(reloadedNote.getArtefact()));
-		List<ProjActivity> activities = activityDao.loadActivities(searchParams, 0, -1);
-		activityDao.delete(activities);
-		
-		noteDao.delete(reloadedNote);
-		
-		deleteArtefactPermanent(reloadedNote.getArtefact());
+		ProjArtefact artefact = reloadedNote.getArtefact();
+		noteDao.delete(note);
+		deleteArtefactPermanent(artefact);
 	}
 
 	@Override
@@ -809,6 +875,342 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public VFSContainer getProjectContainer(ProjProjectRef project) {
 		return fileStorage.getOrCreateFileContainer(project);
+	}
+	
+	
+	/*
+	 * Appointments
+	 */
+	
+	@Override
+	public ProjAppointment createAppointment(Identity doer, ProjProject project) {
+		return createAppointment(doer, true, project);
+	}
+
+	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project) {
+		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
+		// Add some time to start after the creation of the activity (below)
+		Date now = DateUtils.addMinutes(new Date(), 1);
+		ProjAppointment appointment = appointmentDao.create(artefact, now, DateUtils.addHours(now, 1));
+		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
+		if (createActivity) {
+			String after = ProjectXStream.toXml(appointment);
+			activityDao.create(Action.appointmentCreate, null, after, null, doer, artefact);
+		}
+		return appointment;
+	}
+	
+	@Override
+	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
+			String subject, String description, String location, String color, boolean allDay, String recurrenceRule) {
+		ProjAppointment reloadedAppointment = getAppointment(appointment);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(), startDate,
+				endDate, subject, description, location, color, allDay, recurrenceRule,
+				reloadedAppointment.getRecurrenceExclusion());
+	}
+	
+	@Override
+	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate) {
+		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		
+		moveReloadedAppointment(doer, true, reloadedAppointment, days, minutes, moveStartDate);
+	}
+	
+	@Override
+	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier,
+			String recurrenceId, Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate) {
+		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		if (reloadedAppointment == null) {
+			return null;
+		}
+		
+		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject());
+		List<Identity> currentMembers = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+		updateMembers(doer, clonedAppointment.getArtefact(), currentMembers);
+		
+		clonedAppointment.setEventId(reloadedAppointment.getEventId());
+		clonedAppointment = updateReloadedAppointment(doer, false, clonedAppointment, recurrenceId,
+				new Date(startDate.getTime()), new Date(endDate.getTime()), reloadedAppointment.getSubject(),
+				reloadedAppointment.getDescription(), reloadedAppointment.getLocation(), reloadedAppointment.getColor(),
+				reloadedAppointment.isAllDay(), null, reloadedAppointment.getRecurrenceExclusion());
+		
+		clonedAppointment = moveReloadedAppointment(doer, false, clonedAppointment, days, minutes, moveStartDate);
+		
+		String after = ProjectXStream.toXml(clonedAppointment);
+		activityDao.create(Action.appointmentCreate, null, after, null, doer, clonedAppointment.getArtefact());
+		
+		return clonedAppointment;
+	}
+
+	private ProjAppointment updateReloadedAppointment(Identity doer, boolean createActivity,
+			ProjAppointment reloadedAppointment, String recurrenceId, Date startDate, Date endDate, String subject,
+			String description, String location, String color, boolean allDay, String recurrenceRule,
+			String recurrenceExclusion) {
+		String before = ProjectXStream.toXml(reloadedAppointment);
+		
+		boolean contentChanged = false;
+		if (!Objects.equals(reloadedAppointment.getRecurrenceId(), recurrenceId)) {
+			reloadedAppointment.setRecurrenceId(recurrenceId);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedAppointment.getStartDate(), startDate)) {
+			reloadedAppointment.setStartDate(startDate);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedAppointment.getEndDate(), endDate)) {
+			reloadedAppointment.setEndDate(endDate);
+			contentChanged = true;
+		}
+		String subjectCleaned = StringHelper.containsNonWhitespace(subject)? subject: null;
+		if (!Objects.equals(reloadedAppointment.getSubject(), subjectCleaned)) {
+			reloadedAppointment.setSubject(subjectCleaned);
+			contentChanged = true;
+		}
+		String descriptionCleaned = StringHelper.containsNonWhitespace(description)? description: null;
+		if (!Objects.equals(reloadedAppointment.getDescription(), descriptionCleaned)) {
+			reloadedAppointment.setDescription(descriptionCleaned);
+			contentChanged = true;
+		}
+		String locationCleaned = StringHelper.containsNonWhitespace(location)? location: null;
+		if (!Objects.equals(reloadedAppointment.getLocation(), locationCleaned)) {
+			reloadedAppointment.setLocation(locationCleaned);
+			contentChanged = true;
+		}
+		String colorCleaned = StringHelper.containsNonWhitespace(color)? color: null;
+		if (!Objects.equals(reloadedAppointment.getColor(), colorCleaned)) {
+			reloadedAppointment.setColor(colorCleaned);
+			contentChanged = true;
+		}
+		if (reloadedAppointment.isAllDay() != allDay) {
+			reloadedAppointment.setAllDay(allDay);
+			contentChanged = true;
+		}
+		String recurrenceRuleCleaned = StringHelper.containsNonWhitespace(recurrenceRule)? recurrenceRule: null;
+		if (!Objects.equals(reloadedAppointment.getRecurrenceRule(), recurrenceRuleCleaned)) {
+			reloadedAppointment.setRecurrenceRule(recurrenceRuleCleaned);
+			contentChanged = true;
+		}
+		if (!Objects.equals(reloadedAppointment.getRecurrenceExclusion(), recurrenceExclusion)) {
+			reloadedAppointment.setRecurrenceExclusion(recurrenceExclusion);
+			contentChanged = true;
+		}
+		
+		if (contentChanged) {
+			reloadedAppointment = appointmentDao.save(reloadedAppointment);
+			updateContentModified(reloadedAppointment.getArtefact(), doer);
+			
+			List<Identity> members = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+			calendarHelper.createOrUpdateEvent(reloadedAppointment, members);
+			
+			if (createActivity) {
+				String after = ProjectXStream.toXml(reloadedAppointment);
+				activityDao.create(Action.appointmentContentUpdate, before, after, null, doer, reloadedAppointment.getArtefact());
+			}
+		}
+		
+		return reloadedAppointment;
+	}
+
+	private ProjAppointment moveReloadedAppointment(Identity doer, boolean createActivity, ProjAppointment reloadedAppointment, Long days,
+			Long minutes, boolean moveStartDate) {
+		Date startDate = reloadedAppointment.getStartDate();
+		if (moveStartDate) {
+			startDate = move(reloadedAppointment.getStartDate(), days, minutes);
+		}
+		Date endDate = move(reloadedAppointment.getEndDate(), days, minutes);
+		
+		return updateReloadedAppointment(doer, createActivity, reloadedAppointment,
+				reloadedAppointment.getRecurrenceId(), startDate, endDate, reloadedAppointment.getSubject(),
+				reloadedAppointment.getDescription(), reloadedAppointment.getLocation(), reloadedAppointment.getColor(),
+				reloadedAppointment.isAllDay(), reloadedAppointment.getRecurrenceRule(),
+				reloadedAppointment.getRecurrenceExclusion());
+	}
+	
+	private Date move(Date date, Long dayDelta, Long minuteDelta) {
+		if (date == null) {
+			return date;
+		}
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		if (dayDelta != null) {
+			cal.add(Calendar.DATE, dayDelta.intValue());
+		}
+		if (minuteDelta != null) {
+			cal.add(Calendar.MINUTE, minuteDelta.intValue());
+		}
+		return cal.getTime();
+	}
+	
+	@Override
+	public void addAppointmentExclusion(Identity doer, String identifier, Date exclusionDate, boolean single) {
+		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		if (!StringHelper.containsNonWhitespace(reloadedAppointment.getRecurrenceRule())) {
+			return;
+		}
+		
+		if (single) {
+			addAppointmentSingleExclusion(doer, true, reloadedAppointment, exclusionDate);
+		} else {
+			addAppointmentFutureExclusion(doer, reloadedAppointment, exclusionDate);
+		}
+	}
+	
+	private void addAppointmentSingleExclusion(Identity doer, boolean createActivity, ProjAppointment reloadedAppointment, Date exclusionDate) {
+		List<Date> exclisionDates = CalendarUtils.getRecurrenceExcludeDates(reloadedAppointment.getRecurrenceExclusion());
+		exclisionDates.add(exclusionDate);
+		String recurrenceExclusion = CalendarUtils.getRecurrenceExcludeRule(exclisionDates);
+		updateReloadedAppointment(doer, createActivity, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
+				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),
+				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
+				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(),
+				reloadedAppointment.getRecurrenceRule(), recurrenceExclusion);
+	}
+	
+	private void addAppointmentFutureExclusion(Identity doer, ProjAppointment reloadedAppointment, Date exclusionDate) {
+		String recurrenceRule = getExclusionRecurrenceRule(reloadedAppointment.getRecurrenceRule(), exclusionDate);
+		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
+				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),
+				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
+				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(),
+				recurrenceRule, reloadedAppointment.getRecurrenceExclusion());
+	}
+	
+	@SuppressWarnings("deprecation")
+	private String getExclusionRecurrenceRule(String recurrenceRule, Date exclusionDate) {
+		try {
+			Recur recur = new Recur(recurrenceRule);
+			recur.setUntil(CalendarUtils.createDate(exclusionDate));
+			RRule rrule = new RRule(recur);
+			return rrule.getValue();
+		} catch (ParseException e) {
+			log.debug("", e);
+		}
+		return null;
+	}
+	
+	@Override
+	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate) {
+		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		
+		if (reloadedAppointment.getRecurrenceId() != null) {
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setProject(reloadedAppointment.getArtefact().getProject());
+			searchParams.setEventIds(List.of(reloadedAppointment.getEventId()));
+			searchParams.setRecurrenceIdAvailable(Boolean.FALSE);
+			List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
+			if (appointments != null && !appointments.isEmpty()) {
+				ProjAppointment rootAppointment = appointments.get(0);
+				addAppointmentSingleExclusion(doer, false, rootAppointment, occurenceDate);
+			}
+			deleteReloadedAppointment(doer, reloadedAppointment);
+		} else {
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setProject(reloadedAppointment.getArtefact().getProject());
+			searchParams.setEventIds(List.of(reloadedAppointment.getEventId()));
+			List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
+			appointments.forEach(appointment -> deleteReloadedAppointment(doer, appointment));
+		}
+	}
+
+	@Override
+	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment) {
+		ProjAppointment reloadedAppointment = getAppointment(appointment);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		deleteReloadedAppointment(doer, reloadedAppointment);
+	}
+
+	private void deleteReloadedAppointment(Identity doer, ProjAppointment reloadedAppointment) {
+		String before = ProjectXStream.toXml(reloadedAppointment);
+		
+		deleteArtefactSoftly(reloadedAppointment.getArtefact());
+		
+		ProjAppointment deletedAppointment = getAppointment(reloadedAppointment);
+		String after = ProjectXStream.toXml(deletedAppointment);
+		activityDao.create(Action.appointmentStatusDelete, before, after, null, doer, deletedAppointment.getArtefact());
+		
+		List<Identity> members = groupDao.getMembers(deletedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+		calendarHelper.deleteEvent(deletedAppointment, members);
+	}
+
+	@Override
+	public void deleteAppointmentPermanent(ProjAppointmentRef appointment) {
+		ProjAppointment reloadedAppointment = getAppointment(appointment);
+		if (reloadedAppointment == null) {
+			return;
+		}
+		
+		ProjArtefact artefact = reloadedAppointment.getArtefact();
+		appointmentDao.delete(appointment);
+		deleteArtefactPermanent(artefact);
+	}
+
+	@Override
+	public ProjAppointment getAppointment(ProjAppointmentRef appointment) {
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setAppointments(List.of(appointment));
+		List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
+		return appointments != null && !appointments.isEmpty()? appointments.get(0): null;
+	}
+
+	private ProjAppointment getAppointment(String identifier) {
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setIdentifiers(List.of(identifier));
+		List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
+		return appointments != null && !appointments.isEmpty()? appointments.get(0): null;
+	}
+	
+	@Override
+	public List<ProjAppointment> getAppointments(ProjAppointmentSearchParams searchParams) {
+		return appointmentDao.loadAppointments(searchParams);
+	}
+
+	@Override
+	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams) {
+		List<ProjAppointment> appointments = getAppointments(searchParams);
+		
+		List<Long> groupKeys = new ArrayList<>(appointments.size());
+		List<ProjArtefact> artefacts = new ArrayList<>(appointments.size());
+		for (ProjAppointment appointment : appointments) {
+			groupKeys.add(appointment.getArtefact().getBaseGroup().getKey());
+			artefacts.add(appointment.getArtefact());
+		}
+		Map<Long, Set<Identity>> groupKeyToIdentities = memberQueries.getGroupKeyToIdentities(groupKeys);
+		
+		List<ProjAppointmentInfo> infos = new ArrayList<>(appointments.size());
+		for (ProjAppointment appointment : appointments) {
+			ProjAppointmentInfoImpl info = new ProjAppointmentInfoImpl();
+			info.setAppointment(appointment);
+			info.setMembers(groupKeyToIdentities.get(appointment.getArtefact().getBaseGroup().getKey()));
+			infos.add(info);
+		}
+		
+		return infos;
+	}
+	
+	@Override
+	public Kalendar toKalendar(List<ProjAppointment> appointments) {
+		// Should the key contain the project key?
+		Kalendar calendar = new Kalendar(UUID.randomUUID().toString(), "Project");
+		appointments.stream()
+				.map(calendarHelper::toEvent)
+				.forEach(event -> calendar.addEvent(event));
+		
+		return calendar;
 	}
 	
 	

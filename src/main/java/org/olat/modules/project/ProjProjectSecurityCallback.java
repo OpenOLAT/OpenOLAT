@@ -57,4 +57,12 @@ public interface ProjProjectSecurityCallback {
 
 	boolean canDeleteNote(ProjNote note, boolean participant);
 
+	boolean canCreateAppointments();
+	
+	boolean canEditAppointments();
+
+	boolean canEditAppointment(ProjAppointment appointment, boolean participant);
+
+	boolean canDeleteAppointment(ProjAppointment appointment, boolean participant);
+
 }

@@ -203,6 +203,19 @@ public class DateUtils {
 		
 		return dates;
 	}
+
+	public static boolean isOverlapping(Date start1, Date end1, Date start2, Date end2) {
+		if (start1.before(start2)) {
+			if (end1.before(start2)) {
+				return false;
+			}
+		} else {
+			if (end2.before(start1)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 	public static long countDays(Date date1, Date date2) {
 		LocalDate lDate1 = toLocalDate(date1);

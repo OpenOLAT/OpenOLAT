@@ -37,4 +37,8 @@ public interface ProjArtefactItems {
 
 	public ProjNote getNote(ProjArtefactRef artefact);
 	
+	public List<ProjAppointment> getAppointments();
+
+	public ProjAppointment getAppointment(ProjArtefactRef artefact);
+	
 }

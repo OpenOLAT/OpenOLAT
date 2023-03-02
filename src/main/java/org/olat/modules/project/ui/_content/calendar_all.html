@@ -1,0 +1,17 @@
+<div class="o_proj_calendar_all">
+	<div class="o_proj_title o_block">
+		<div>
+			<h2>
+				$r.translate("calendar.all.title")
+			</h2>
+		</div>
+		<div class="o_proj_title_cmds">
+			#if($r.available("appointment.create") && $r.visible("appointment.create"))
+				$r.render("appointment.create")
+			#end
+		</div>
+	</div>
+	<div class="o_cal">
+		$r.render("calendar")
+	</div>
+</div>

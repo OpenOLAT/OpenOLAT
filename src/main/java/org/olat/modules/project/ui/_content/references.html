@@ -8,12 +8,14 @@
 				#if($r.available($row.getDisplayNameLinkName()))
 					$r.render($row.getDisplayNameLinkName())
 				#else
-					<i class="o_icon $row.iconCss"></i> $row.displayName
+					<i class="o_icon o_icon-fw $row.iconCss"></i> $row.displayName
 				#end
 			</div>
 			<div>
 				$r.render($row.getOpenInNewWindowLinkName())
-				$r.render($row.getDeleteLinkName())
+				#if($r.available($row.getDisplayNameLinkName()))
+					$r.render($row.getDisplayNameLinkName())
+				#end
 			</div>
 		</div>
 	#end

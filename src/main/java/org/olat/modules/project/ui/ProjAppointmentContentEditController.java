@@ -25,52 +25,53 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.Formatter;
-import org.olat.modules.project.ProjArtefact;
-import org.olat.modules.project.ProjNote;
-import org.olat.user.UserManager;
+import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 22 Dec 2022<br>
+ * Initial date: 16 Feb 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjNoteMetadataController extends FormBasicController {
-	
-	private final ProjArtefact artefact;
-	private final Formatter formatter;
+public class ProjAppointmentContentEditController extends FormBasicController {
+
+	private ProjAppointmentContentEditForm appointmentContentEditForm;
+
+	private final ProjAppointment appointment;
 	
 	@Autowired
-	private UserManager userManager;
+	private ProjectService projectService;
 
-	public ProjNoteMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjNote note) {
+	public ProjAppointmentContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
+			ProjAppointment appointment) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
-		this.artefact = note.getArtefact();
-		formatter = Formatter.getInstance(getLocale());
+		this.appointment = appointment;
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormStyle("o_proj_metadata");
-		
-		String createdDateBy = translate("date.by",
-				formatter.formatDate(artefact.getCreationDate()),
-				userManager.getUserDisplayName(artefact.getCreator().getKey()));
-		uifactory.addStaticTextElement("created", createdDateBy, formLayout);
-		
-		String modifiedDateBy = translate("date.by",
-				formatter.formatDate(artefact.getContentModifiedDate()),
-				userManager.getUserDisplayName(artefact.getContentModifiedBy()));
-		uifactory.addStaticTextElement("last.modified", modifiedDateBy, formLayout);
+		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment);
+		listenTo(appointmentContentEditForm);
+		formLayout.add(appointmentContentEditForm.getInitialFormItem());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		//
+		projectService.updateAppointment(getIdentity(), appointment, 
+				appointmentContentEditForm.getStartDate(),
+				appointmentContentEditForm.getEndDate(),
+				appointmentContentEditForm.getSubject(),
+				appointmentContentEditForm.getDescription(),
+				appointmentContentEditForm.getLocation(),
+				appointmentContentEditForm.getColor(),
+				appointmentContentEditForm.isAllDay(),
+				appointmentContentEditForm.getRecurrenceRule()
+				);
+
 	}
 
 }

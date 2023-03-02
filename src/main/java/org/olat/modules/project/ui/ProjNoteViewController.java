@@ -41,7 +41,7 @@ public class ProjNoteViewController extends FormBasicController {
 	private ProjNoteContentViewController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
 	private ProjMembersAvatarController memberCtrl;
-	private ProjNoteMetadataController metadataCtrl;
+	private ProjArtefactMetadataController metadataCtrl;
 
 	private final ProjNoteInfo noteInfo;
 	private final boolean withOpenInSameWindow;
@@ -64,7 +64,7 @@ public class ProjNoteViewController extends FormBasicController {
 		formLayout.add("content", new ComponentWrapperElement("contentView", contentCtrl.getInitialComponent()));
 		
 		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
-				noteInfo.getNote().getArtefact(), withOpenInSameWindow);
+				noteInfo.getNote().getArtefact(), true, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -74,7 +74,7 @@ public class ProjNoteViewController extends FormBasicController {
 		formLayout.add("member", memberCtrl.getInitialFormItem());
 		flc.contextPut("memberOpen", memberOpen);
 		
-		metadataCtrl = new ProjNoteMetadataController(ureq, getWindowControl(), mainForm, noteInfo.getNote());
+		metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, noteInfo.getNote().getArtefact());
 		listenTo(metadataCtrl);
 		formLayout.add("metadata", metadataCtrl.getInitialFormItem());
 		flc.contextPut("metadataOpen", metadataOpen);

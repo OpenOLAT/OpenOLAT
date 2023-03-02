@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjFile;
@@ -38,9 +39,11 @@ import org.olat.modules.project.ProjNote;
 public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	
 	private List<ProjFile> files;
-	private List<ProjNote> notes;
 	private Map<Long, ProjFile> artefactKeyToFile;
+	private List<ProjNote> notes;
 	private Map<Long, ProjNote> artefactKeyToNote;
+	private List<ProjAppointment> appointments;
+	private Map<Long, ProjAppointment> artefactKeyToAppointment;
 	
 	@Override
 	public List<ProjFile> getFiles() {
@@ -78,6 +81,25 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 			}
 		}
 		return artefactKeyToNote != null? artefactKeyToNote.get(artefact.getKey()): null;
+	}
+	
+	@Override
+	public List<ProjAppointment> getAppointments() {
+		return appointments;
+	}
+	
+	public void setAppointments(List<ProjAppointment> appointments) {
+		this.appointments = appointments;
+	}
+	
+	@Override
+	public ProjAppointment getAppointment(ProjArtefactRef artefact) {
+		if (artefactKeyToAppointment == null) {
+			if (appointments != null) {
+				artefactKeyToAppointment = appointments.stream().collect(Collectors.toMap(appointment -> appointment.getArtefact().getKey(), Function.identity()));
+			}
+		}
+		return artefactKeyToAppointment != null? artefactKeyToAppointment.get(artefact.getKey()): null;
 	}
 
 }

@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjNote;
@@ -46,6 +48,8 @@ public class ProjectBCFactory {
 	public static final String TYPE_FILE = "Projectfile";
 	public static final String TYPE_NOTES = "Notes";
 	public static final String TYPE_NOTE = "Note";
+	public static final String TYPE_CALENDAR = "Calendar";
+	public static final String TYPE_APPOINTMENT = "Appointment";
 	
 	private static List<ContextEntry> createProjectsCes() {
 		List<ContextEntry> ces = new ArrayList<>();
@@ -91,6 +95,22 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_NOTE, noteRef.getKey()));
 	}
 	
+	private static List<ContextEntry> createCalendarCes(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createProjectCes(projectRef);
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_CALENDAR)));
+		return ces;
+	}
+	
+	private static List<ContextEntry> createAppointmentCes(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
+		List<ContextEntry> ces = createCalendarCes(projectRef);
+		ces.add(createAppointmentCe(appointmentRef));
+		return ces;
+	}
+	
+	public static ContextEntry createAppointmentCe(ProjAppointmentRef appointmentRef) {
+		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_APPOINTMENT, appointmentRef.getKey()));
+	}
+	
 	public static String getProjectUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
@@ -124,10 +144,25 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
+	public static String getCalendarUrl(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createCalendarCes(projectRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
+	public static String getAppointmentUrl(ProjAppointment appointment) {
+		return getAppointmentUrl(appointment.getArtefact().getProject(), appointment);
+	}
+	
+	public static String getAppointmentUrl(ProjProjectRef projectRef, ProjAppointmentRef appointmentRef) {
+		List<ContextEntry> ces = createAppointmentCes(projectRef, appointmentRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
 	public static String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
 		switch (artefactType) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
 		case ProjNote.TYPE: return getNoteUrl(project, () -> key);
+		case ProjAppointment.TYPE: return getAppointmentUrl(project, () -> key);
 		default: return getProjectUrl(project);
 		}
 	}

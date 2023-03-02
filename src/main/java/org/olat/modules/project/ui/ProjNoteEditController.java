@@ -58,7 +58,7 @@ public class ProjNoteEditController extends FormBasicController {
 	private ProjNoteContentEditController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
 	private ProjArtefactMembersEditController memberCtrl;
-	private ProjNoteMetadataController metadataCtrl;
+	private ProjArtefactMetadataController metadataCtrl;
 
 	private final ProjNote note;
 	private final Set<Identity> members;
@@ -93,7 +93,7 @@ public class ProjNoteEditController extends FormBasicController {
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
 		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, note.getArtefact(),
-				withOpenInSameWindow);
+				false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
@@ -103,7 +103,7 @@ public class ProjNoteEditController extends FormBasicController {
 		formLayout.add("member", memberCtrl.getInitialFormItem());
 		flc.contextPut("memberOpen", memberOpen);
 		
-		metadataCtrl = new ProjNoteMetadataController(ureq, getWindowControl(), mainForm, note);
+		metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, note.getArtefact());
 		listenTo(metadataCtrl);
 		formLayout.add("metadata", metadataCtrl.getInitialFormItem());
 		flc.contextPut("metadataOpen", metadataOpen);

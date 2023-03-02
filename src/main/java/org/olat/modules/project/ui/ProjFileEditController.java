@@ -70,7 +70,7 @@ public class ProjFileEditController extends FormBasicController {
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
 		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, file.getArtefact(),
-				withOpenInSameWindow);
+				false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);

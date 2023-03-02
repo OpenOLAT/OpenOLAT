@@ -25,7 +25,9 @@
 			#end
 		</div>
 		<div class="o_proj_timeline_doer">
-			$row.doerDisplyName
+			#if($row.doerDisplyName)
+				$row.doerDisplyName
+			#end
 		</div>
 	</div>
 	<div class="o_proj_timeline_date">

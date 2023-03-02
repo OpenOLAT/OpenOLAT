@@ -61,13 +61,16 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	
 	private MultipleSelectionElement fileEl;
 	private MultipleSelectionElement noteEl;
+	private MultipleSelectionElement appointmentEl;
 	
 	private final ProjArtefact artefact;
 	private final ProjArtefactItems artefactItems;
 	private final SelectionValues fileSV;
-	private final SelectionValues noteSV;
 	private final Set<String> fileSelectedKeys = new HashSet<>();
+	private final SelectionValues noteSV;
 	private final Set<String> noteSelectedKeys = new HashSet<>();
+	private final SelectionValues appointmentSV;
+	private final Set<String> appointmentSelectedKeys = new HashSet<>();
 
 	@Autowired
 	private ProjectService projectService;
@@ -100,6 +103,13 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					ProjectUIFactory.getDisplayName(getTranslator(), note),
 					"o_icon_proj_note")));
 		}
+		appointmentSV = new SelectionValues();
+		if (artefactItems.getAppointments() != null) {
+			artefactItems.getAppointments().forEach(appointment -> appointmentSV.add(createSVEntry(
+					appointment.getArtefact(),
+					ProjectUIFactory.getDisplayName(getTranslator(), appointment),
+					"o_icon_proj_appointment")));
+		}
 		
 		initForm(ureq);
 	}
@@ -131,6 +141,10 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		noteEl.setEscapeHtml(false);
 		noteEl.addActionListener(FormEvent.ONCHANGE);
 		
+		appointmentEl = uifactory.addCheckboxesVertical("reference.appointments", listsCont, appointmentSV.keys(), appointmentSV.values(), appointmentSV.icons(), 1);
+		appointmentEl.setEscapeHtml(false);
+		appointmentEl.addActionListener(FormEvent.ONCHANGE);
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("reference.select.button", buttonLayout);
@@ -146,7 +160,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private void updateUI() {
 		fileEl.setVisible(!fileEl.getKeys().isEmpty());
 		noteEl.setVisible(!noteEl.getKeys().isEmpty());
-		flc.contextPut("itemsAvailable", fileEl.isVisible() || noteEl.isVisible());
+		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
+		flc.contextPut("itemsAvailable", fileEl.isVisible() || appointmentEl.isVisible());
 	}
 	
 	@Override
@@ -155,6 +170,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 			doSelectItem(fileEl, fileSelectedKeys);
 		} else if (noteEl == source) {
 			doSelectItem(noteEl, noteSelectedKeys);
+		} else if (appointmentEl == source) {
+			doSelectItem(appointmentEl, appointmentSelectedKeys);
 		} else if (quickSearchEl == source) {
 			doQuickSearch();
 		} else if (quickSearchButton == source) {
@@ -181,6 +198,11 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					.filter(note -> noteSelectedKeys.contains(note.getArtefact().getKey().toString()))
 					.forEach(note -> projectService.linkArtefacts(getIdentity(), artefact, note.getArtefact()));
 		}
+		if (artefactItems.getAppointments() != null) {
+			artefactItems.getAppointments().stream()
+					.filter(appointment -> appointmentSelectedKeys.contains(appointment.getArtefact().getKey().toString()))
+					.forEach(appointment -> projectService.linkArtefacts(getIdentity(), artefact, appointment.getArtefact()));
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -206,6 +228,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		
 		doQuickSearch(fileEl, fileSV, fileSelectedKeys, searchText);
 		doQuickSearch(noteEl, noteSV, noteSelectedKeys, searchText);
+		doQuickSearch(appointmentEl, appointmentSV, appointmentSelectedKeys, searchText);
 		updateUI();
 	}
 

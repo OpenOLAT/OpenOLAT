@@ -175,48 +175,7 @@
 		
 	}
 }
-.o_proj_references {
-	margin-bottom: 15px;
-}
-.o_proj_metadata {
-	display: grid;
-	grid-template-columns: 50% 50%;
-	@media (max-width: $screen-xs-max) {
-		grid-template-columns: 100%;
-	}
-}
-.o_proj_reference_selection_results {
-	height: 400px;
-	overflow-y: auto;
-}
 
-.o_proj_members_avatar {
-	display: grid;
-	gap: 20px;
-	grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
-	@media (max-width: $screen-md-max) {
-		grid-template-columns: 50% 50%;
-	}
-	@media (max-width: $screen-xs-max) {
-		grid-template-columns: 100%;
-	}
-	.o_proj_member {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: 50px auto;
-		.o_portrait {
-			img {
-				width: 50px;
-				height: 50px;
-			}
-		}
-		.o_properties {
-			:not(.o_name) {
-				color: $text-muted;
-			}
-		}
-	}
-}
 .o_proj_note {
 	.o_proj_note_header {
 		.o_proj_note_header_infos {
@@ -224,6 +183,47 @@
 			flex-wrap: wrap;
 			align-items: center;
 			gap: 30px;
+		}
+	}
+}
+.o_proj_calendar_widget {
+	.o_proj_appointments {
+		display: grid;
+		grid-template-columns: max-content auto;
+		gap: 10px 20px; 
+		.o_proj_full_row {
+			grid-column: span 2;	
+		}
+	}
+}
+.o_proj_appointment_edit {
+	.o_proj_two_cols {
+		@media (min-width: $screen-sm-max) {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+	}
+	.o_proj_all_day {
+		div {
+			display: inline-block;
+		}
+	}
+	.o_first_date.form-group {
+		>div {
+			margin-bottom: 0;
+		}
+	}
+	.o_proj_appointment_color.dropdown-menu {
+		min-width: 46px;
+		li {
+			height: 32px;
+		}
+		.form-group {
+			margin-bottom: 0;
+		}
+		.o_cal_color_element {
+			margin: 0px 12px;
 		}
 	}
 }
@@ -278,6 +278,54 @@
 		display: none;
 	}
 }
+.o_proj_calendar_all {
+	.fc-print-button {
+		display: none;
+	}
+}
+
+.o_proj_references {
+	margin-bottom: 15px;
+}
+.o_proj_reference_selection_results {
+	height: 400px;
+	overflow-y: auto;
+}
+.o_proj_metadata {
+	display: grid;
+	grid-template-columns: 50% 50%;
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+}
+
+.o_proj_members_avatar {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
+	@media (max-width: $screen-md-max) {
+		grid-template-columns: 50% 50%;
+	}
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+	.o_proj_member {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: 50px auto;
+		.o_portrait {
+			img {
+				width: 50px;
+				height: 50px;
+			}
+		}
+		.o_properties {
+			:not(.o_name) {
+				color: $text-muted;
+			}
+		}
+	}
+}
 
 /* Helpers */
 .o_proj_title {
@@ -290,4 +338,3 @@
 		}
 	}
 }
-

@@ -102,6 +102,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjFileAllController fileAllCtrl;
 	private ProjNoteWidgetController noteWidgetCtrl;
 	private ProjNoteAllController noteAllCtrl;
+	private ProjCalendarWidgetController calendarWidgetCtrl;
+	private ProjCalendarAllController calendarAllCtrl;
 	private ProjTimelineController timelineCtrl;
 
 	private ProjProject project;
@@ -174,6 +176,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 		listenTo(noteWidgetCtrl);
 		mainVC.put("notes", noteWidgetCtrl.getInitialComponent());
 		
+		calendarWidgetCtrl = new ProjCalendarWidgetController(ureq, wControl, project, secCallback);
+		listenTo(calendarWidgetCtrl);
+		mainVC.put("calendar", calendarWidgetCtrl.getInitialComponent());
+		
 		// Timeline
 		timelineCtrl = new ProjTimelineController(ureq, wControl, project, members, avatarMapperKey);
 		listenTo(timelineCtrl);
@@ -193,6 +199,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		if (exceptCtrl != noteWidgetCtrl) {
 			noteWidgetCtrl.reload(ureq);
+		}
+		if (exceptCtrl != calendarWidgetCtrl) {
+			calendarWidgetCtrl.reload();
 		}
 		if (exceptCtrl != timelineCtrl) {
 			timelineCtrl.reload(ureq);
@@ -232,6 +241,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenNotes(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			noteAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if (ProjectBCFactory.TYPE_CALENDAR.equalsIgnoreCase(typeName)) {
+			doOpenCalendar(ureq);
+			List<ContextEntry> subEntries = entries.subList(1, entries.size());
+			calendarAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 		}
 	}
 
@@ -276,6 +289,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenNotes(ureq);
 			} else if (event instanceof OpenNoteEvent) {
 				doOpenNote(ureq, (OpenNoteEvent)event);
+			}
+		} else if (source == calendarWidgetCtrl) {
+			if (event == SHOW_ALL) {
+				doOpenCalendar(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				reload(ureq, calendarWidgetCtrl);
 			}
 		} else if (event instanceof OpenArtefactEvent) {
 			OpenArtefactEvent oae = (OpenArtefactEvent)event;
@@ -435,6 +454,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 		stackPanel.pushController(translate("note.all.title"), noteAllCtrl);
 	}
 	
+	private void doOpenCalendar(UserRequest ureq) {
+		removeAsListenerAndDispose(calendarAllCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_CALENDAR), null);
+		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback);
+		listenTo(calendarAllCtrl);
+		stackPanel.pushController(translate("calendar.all.title"), calendarAllCtrl);
+	}
+	
 	private void doOpenArtefact(UserRequest ureq, ProjArtefact artefact) {
 		stackPanel.popUpToController(this);
 		
@@ -450,6 +478,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenNotes(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createNoteCe(artefacts.getNotes().get(0)));
 			noteAllCtrl.activate(ureq, contextEntries, null);
+		} else if (artefacts.getAppointments() != null && !artefacts.getAppointments().isEmpty()) {
+			doOpenCalendar(ureq);
+			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createAppointmentCe(artefacts.getAppointments().get(0)));
+			calendarAllCtrl.activate(ureq, contextEntries, null);
 		}
 	}
 	

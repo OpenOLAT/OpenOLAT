@@ -68,6 +68,25 @@ create table o_proj_note (
    fk_artefact int8 not null,
    primary key (id)
 );
+create table o_proj_appointment (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_identifier varchar(64) not null,
+   p_event_id varchar(64) not null,
+   p_recurrence_id varchar(500),
+   p_start_date timestamp,
+   p_end_date timestamp,
+   p_subject varchar(256),
+   p_description text,
+   p_location varchar(1024),
+   p_color varchar(50),
+   p_all_day bool default false not null,
+   p_recurrence_rule varchar(100),
+   p_recurrence_exclusion varchar(4000),
+   fk_artefact int8 not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id bigserial,
    creationdate timestamp not null,
@@ -123,6 +142,10 @@ create index idx_file_metadata_idx on o_proj_file (fk_metadata);
 
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_note_artefact_idx on o_proj_file (fk_artefact);
+
+alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
+create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);
