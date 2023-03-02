@@ -1130,6 +1130,31 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertNull(((BusinessGroupImpl)permanentBg3).getSoftDeleteEmailDate());
 	}
 	
+	/**
+	 * For OO-6811
+	 */
+	@Test
+	public void definitivelyDeleteBusinessGroupTwice() {
+		businessGroupModule.setAutomaticGroupDefinitivelyDeleteEnabled("true");
+		businessGroupModule.setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(80);
+		
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecycle-21.1");
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "Group cycle 21.1", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		setSoftDeleteDate(group, BusinessGroupStatusEnum.trash, DateUtils.addDays(new Date(), -205));
+		dbInstance.commitAndCloseSession();
+		
+		Set<BusinessGroup> vetoed = new HashSet<>();
+		lifecycleManager.definitivelyDeleteBusinessGroups(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup deletedGroup = businessGroupService.loadBusinessGroup(group);
+		Assert.assertNull(deletedGroup);
+		
+		lifecycleManager.deleteBusinessGroup(group, coach, false);
+		dbInstance.commitAndCloseSession();
+	}
+	
 	@Test
 	public void getEmailRecipientsWithCoach() {
 		RepositoryEntry resource = JunitTestHelper.createAndPersistRepositoryEntry();

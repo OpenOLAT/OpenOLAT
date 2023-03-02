@@ -839,6 +839,9 @@ public class BusinessGroupLifecycleManagerImpl implements BusinessGroupLifecycle
 	
 			// refresh object to avoid stale object exceptions
 			group = businessGroupDao.load(group.getKey());
+			if(group == null) {
+				return;// Already deleted, nothing to do
+			}
 			
 			List<Long> memberKeys = businessGroupRelationDao
 					.getMemberKeys(Collections.singletonList(group), GroupRoles.coach.name(), GroupRoles.participant.name());
