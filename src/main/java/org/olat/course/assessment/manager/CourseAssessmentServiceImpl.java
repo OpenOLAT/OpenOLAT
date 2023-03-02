@@ -99,6 +99,7 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.manager.RepositoryEntryDAO;
@@ -622,6 +623,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	public void assignCoach(AssessmentEntry assessmentEntry, Identity coach, CourseEnvironment courseEnv, CourseNode courseNode) {
 		if(coach == null) {
 			List<Identity> identities = repositoryEntryRelationDao.getRelatedMembers(assessmentEntry.getRepositoryEntry(), assessmentEntry.getIdentity(), GroupRoles.participant, GroupRoles.coach);
+			if(courseNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, false)) {
+				List<Identity> owners = repositoryEntryRelationDao.getMembers(assessmentEntry.getRepositoryEntry(), RepositoryEntryRelationType.all, GroupRoles.owner.name());
+				identities.addAll(owners);
+			}
 			if(identities.size() > 1) {
 				Collections.shuffle(identities, random);
 			}

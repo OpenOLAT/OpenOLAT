@@ -21,6 +21,7 @@ package org.olat.course.nodes.gta.ui;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,6 +141,7 @@ import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
+import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -468,6 +470,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			List<Identity> coaches = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name(), GroupRoles.coach.name());
+			Collections.sort(coaches, IdentityComporatorFactory.createLastnameFirstnameComporator());
 			for(Identity coach:coaches) {
 				assignedCoachValues.add(SelectionValues.entry(coach.getKey().toString(), userManager.getUserDisplayName(coach)));
 			}

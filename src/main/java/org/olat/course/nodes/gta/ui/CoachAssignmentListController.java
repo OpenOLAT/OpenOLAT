@@ -20,9 +20,9 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,12 +39,11 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
@@ -54,8 +53,13 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -63,13 +67,16 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachAssignmentListTableModel.CACols;
 import org.olat.course.nodes.gta.ui.component.CoachSingleSelectionCellRenderer;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
@@ -78,8 +85,11 @@ import org.olat.group.ui.main.CourseMembership;
 import org.olat.group.ui.main.SearchMembersParams;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementShort;
+import org.olat.modules.curriculum.ui.CurriculumHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,18 +106,20 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	protected static final String NOT_ASSIGNED = "-1";
 	
-	private static final String FILTER_OWNER = "owner";
-	private static final String FILTER_COURSE_COACH = "coursecoach";
-	private static final String FILTER_GROUP_COACH = "groupcoach";
-	private static final String FILTER_CURRICULUM_COACH = "curriculumcoach";
-	
 	private static final String FILTER_PARTICIPANT = "participant";
+	private static final String FILTER_GROUP = "group";
+	private static final String FILTER_COACH = "coach";
+	private static final String FILTER_NOT_ASSIGNED = "not-assigned";
+	
+	private static final String ALL_TAB_ID = "all";
+	private static final String NOT_ASSIGNED_TAB_ID = "notAssigned";
+	
+	private FlexiFiltersTab allTab;
 	
 	private FormLink backLink;
 	private FlexiTableElement tableEl;
 	private FormLink randomAssignmentButton;
 	private FormSubmit applyAssignmentButton;
-	private MultipleSelectionElement coachFilterEl;
 	private CoachAssignmentListTableModel tableModel;
 	private final FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
@@ -142,7 +154,7 @@ public class CoachAssignmentListController extends FormBasicController {
 	
 	public CoachAssignmentListController(UserRequest ureq, WindowControl wControl, List<Identity> assessedIdentities,
 			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
-		super(ureq, wControl, "coach_assignment");
+		super(ureq, wControl, "coach_assignment", Util.createPackageTranslator(IdentityListCourseNodeController.class, ureq.getLocale()));
 		
 		this.gtaNode = gtaNode;
 		this.coachCourseEnv = coachCourseEnv;
@@ -163,85 +175,101 @@ public class CoachAssignmentListController extends FormBasicController {
 		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		
 		initForm(ureq);
-		
-		if(coachesColumns.isEmpty()) {
-			coachFilterEl.select(FILTER_OWNER, true);
-			loadColumnsModel();
-		}
-		loadModel(this.assessedIdentities);
+		loadModel(this.assessedIdentities, Set.of(), false);
 		loadNumberedCoachColumnHeaders();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer filterCont = uifactory.addDefaultFormLayout("filters", null, formLayout);
-		initFilterForm(filterCont);
-		String page = velocity_root + "/coach_assignment_table.html";
-		FormLayoutContainer tableCont = uifactory.addCustomFormLayout("table", null, page, formLayout);
-		initTableForm(tableCont);
+		loadColumnsModel();
+
+		tableModel = new CoachAssignmentListTableModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
+		tableEl.setSearchEnabled(true);
+		initFilters();
+		initFiltersPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		
 		backLink = uifactory.addFormLink("back", formLayout, Link.LINK_BACK);
 		
 		randomAssignmentButton = uifactory.addFormLink("assign.random", formLayout, Link.BUTTON);
 		randomAssignmentButton.setIconLeftCSS("o_icon o_icon_shuffle");
-		
 		applyAssignmentButton = uifactory.addFormSubmitButton("apply.assignement", formLayout);
-		
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
-	private void initFilterForm(FormLayoutContainer formLayout) {
-		formLayout.setFormTitle(translate("bulk.coach.assignment"));
+	private final void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(2);
 		
-		boolean hasBusinessGroups = !coachCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.getAllBusinessGroups().isEmpty();
-		boolean hasCurriculum = !coachCourseEnv.getCourseEnvironment().getCourseGroupManager()
-				.getAllCurriculumElements().isEmpty();
+		allTab = FlexiFiltersTabFactory.tabWithFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.clear, List.of());
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
 		
-		SelectionValues filterValues = new SelectionValues();
-		filterValues.add(SelectionValues.entry(FILTER_OWNER, translate("filter.coaches.by.role.course.owners")));
-		filterValues.add(SelectionValues.entry(FILTER_COURSE_COACH, translate("filter.coaches.by.role.course.coaches")));
-		if(hasBusinessGroups) {
-			filterValues.add(SelectionValues.entry(FILTER_GROUP_COACH, translate("filter.coaches.by.role.group.coaches")));
-		}
-		if(hasCurriculum) {
-			filterValues.add(SelectionValues.entry(FILTER_CURRICULUM_COACH, translate("filter.coaches.by.role.curriculum.coaches")));
-		}
-		coachFilterEl = uifactory.addCheckboxesVertical("filter.coaches.by.role", formLayout, filterValues.keys(), filterValues.values(), 1);
-		coachFilterEl.addActionListener(FormEvent.ONCHANGE);
+		FlexiFiltersTab notAssignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_ASSIGNED_TAB_ID, translate("filter.not.assigned"),
+					TabSelectionBehavior.clear, List.of(
+							FlexiTableFilterValue.valueOf(FILTER_NOT_ASSIGNED, List.of(FILTER_NOT_ASSIGNED))));
+		notAssignedTab.setFiltersExpanded(true);
+		tabs.add(notAssignedTab);
 		
-		// Default
-		coachFilterEl.select("coursecoach", true);
-		if(hasBusinessGroups) {
-			coachFilterEl.select("groupcoach", true);
-		}
-		if(hasCurriculum) {
-			coachFilterEl.select("curriculumcoach", true);
-		}
-	}
-	
-	private void initTableForm(FormItemContainer formLayout) {
-		loadColumnsModel();
-
-		tableModel = new CoachAssignmentListTableModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "coachTable", tableModel, 50, false, getTranslator(), formLayout);
-		tableEl.setSearchEnabled(true);
-		
-		initFilters();
+		tableEl.setFilterTabs(true, tabs);
 	}
 	
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
-		SelectionValues assignedCoachValues = new SelectionValues();
-		for(Identity assessedIdentity:assessedIdentities) {
-			assignedCoachValues.add(SelectionValues.entry(assessedIdentity.getKey().toString(), userManager.getUserDisplayName(assessedIdentity)));
+		SelectionValues participantsKV = new SelectionValues();
+		List<Identity> participants = new ArrayList<>(assessedIdentities);
+		Collections.sort(participants, IdentityComporatorFactory.createLastnameFirstnameComporator());
+		for(Identity participant:participants) {
+			participantsKV.add(SelectionValues.entry(participant.getKey().toString(), userManager.getUserDisplayName(participant)));
 		}
 		FlexiTableMultiSelectionFilter participantFilter = new FlexiTableMultiSelectionFilter(translate("filter.participants"),
-				FILTER_PARTICIPANT, assignedCoachValues, true);
+				FILTER_PARTICIPANT, participantsKV, true);
 		filters.add(participantFilter);
-
-		tableEl.setFilters(true, filters, false, true);
+		
+		SelectionValues coachesKV = new SelectionValues();
+		for(CoachColumn coachColumn:coachesColumns) {
+			coachesKV.add(SelectionValues.entry(coachColumn.getCoachKey().toString(), coachColumn.getFullName()));
+		}
+		FlexiTableMultiSelectionFilter coachFilter = new FlexiTableMultiSelectionFilter(translate("filter.coaches"),
+				FILTER_COACH, coachesKV, true);
+		filters.add(coachFilter);
+		
+		// groups
+		SelectionValues groupValues = new SelectionValues();
+		List<BusinessGroup> coachedGroups = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllBusinessGroups();
+		if(coachedGroups != null && !coachedGroups.isEmpty()) {
+			for(BusinessGroup coachedGroup:coachedGroups) {
+				String key = "businessgroup-" + coachedGroup.getKey();
+				String groupName = StringHelper.escapeHtml(coachedGroup.getName());
+				groupValues.add(new SelectionValue(key, groupName, null, "o_icon o_icon_group", null, true));
+			}
+		}
+		
+		List<CurriculumElement> coachedCurriculumElements = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getAllCurriculumElements();	
+		if(!coachedCurriculumElements.isEmpty()) {
+			for(CurriculumElement coachedCurriculumElement:coachedCurriculumElements) {
+				String key = "curriculumelement-" + coachedCurriculumElement.getKey();
+				String name = CurriculumHelper.getLabel(coachedCurriculumElement, getTranslator());
+				groupValues.add(new SelectionValue(key, name, null,
+						"o_icon o_icon_curriculum_element", null, true));
+			}
+		}
+	
+		if(!groupValues.isEmpty()) {
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
+					FILTER_GROUP, groupValues, true));
+		}
+		
+		SelectionValues notAssignedKV = new SelectionValues();
+		notAssignedKV.add(SelectionValues.entry(FILTER_NOT_ASSIGNED, FILTER_NOT_ASSIGNED));
+		FlexiTableMultiSelectionFilter notAssignedFilter = new FlexiTableMultiSelectionFilter(translate("filter.not.assigned"),
+				FILTER_NOT_ASSIGNED, participantsKV, true);
+		notAssignedFilter.setDefaultVisible(false);
+		filters.add(notAssignedFilter);
+		
+		tableEl.setFilters(true, filters, false, false);
 	}
 	
 	private void loadCoaches() {
@@ -256,28 +284,12 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		coachesColumns = new ArrayList<>();
 		
-		Collection<String> selectedFilters = coachFilterEl.getSelectedKeys();
-		boolean owners = selectedFilters.contains(FILTER_OWNER);
-		boolean courseCoaches = selectedFilters.contains(FILTER_COURSE_COACH);
-		boolean groupCoaches = selectedFilters.contains(FILTER_GROUP_COACH);
-		boolean curriculumCoaches = selectedFilters.contains(FILTER_CURRICULUM_COACH);
-		
 		for(MemberView member:coachesViews) {
-			if(acceptCoach(member, owners, courseCoaches, groupCoaches, curriculumCoaches)) {
-				String coachKey = member.getIdentityKey().toString();
-				String fullName = userManager.getUserDisplayName(member, coachPropertyHandlers);
-				coachesColumns.add(new CoachColumn(coachKey, fullName, member));
-				coachKeyValues.add(SelectionValues.entry(coachKey, fullName));
-			}
+			String coachKey = member.getIdentityKey().toString();
+			String fullName = userManager.getUserDisplayName(member, coachPropertyHandlers);
+			coachesColumns.add(new CoachColumn(coachKey, fullName, member));
+			coachKeyValues.add(SelectionValues.entry(coachKey, fullName));
 		}
-	}
-	
-	private boolean acceptCoach(MemberView member, boolean owners, boolean courseCoaches, boolean groupCoaches, boolean curriculumCoaches) {
-		CourseMembership membership = member.getMemberShip();
-		return (membership.isRepositoryEntryOwner() && owners)
-				|| (membership.isRepositoryEntryCoach() && courseCoaches)
-				|| (membership.isBusinessGroupCoach() && groupCoaches)
-				|| (membership.isCurriculumElementCoach() && curriculumCoaches);
 	}
 	
 	private void loadColumnsModel() {
@@ -329,7 +341,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		}
 	}
 	
-	private void loadModel(List<Identity> participants) {
+	private void loadModel(List<Identity> participants, Set<String> filteredCoachKeys, boolean onlyNotAssigned) {
 		Map<Long,MemberView> participantsMap = participantsViews.stream()
 				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
 		Map<String,MemberView> coachesStringMap = coachesColumns.stream().map(CoachColumn::getMemberView)
@@ -365,6 +377,10 @@ public class CoachAssignmentListController extends FormBasicController {
 			MemberView assessedMember = participantsMap.get(assessedIdentity.getKey());
 			if(assessedMember != null) {
 				enableDisable(assessedMember, coachChoices, assessmentEntry, coachesStringMap);
+			}
+			if((onlyNotAssigned && !row.isNotAssigned())
+					|| (filteredCoachKeys != null && !filteredCoachKeys.isEmpty() && !filteredCoachKeys.contains(row.getSelectedCoachKey()))) {
+				continue;
 			}
 			rows.add(row);
 		}
@@ -446,16 +462,16 @@ public class CoachAssignmentListController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(backLink == source) {
 			fireEvent(ureq, Event.BACK_EVENT);
-		} else if(coachFilterEl == source) {
-			doFilterCoaches();
-		} else if(this.applyAssignmentButton == source) {
+		} else if(applyAssignmentButton == source) {
 			doAssignCoaches();
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if(randomAssignmentButton == source) {
 			doRandomAssignCoaches();
 		} else if(tableEl == source) {
 			if(event instanceof FlexiTableSearchEvent ftse) {
-				doFilterParticipants(ftse.getFilters(), ftse.getSearch());
+				loadModelWithFilters(ftse.getSearch());
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				loadModelWithFilters(tableEl.getQuickSearchString());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -472,8 +488,16 @@ public class CoachAssignmentListController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void doFilterParticipants(List<FlexiTableFilter> filters, String search) {
-		Set<Long> identityKeys = null;
+	private void loadModelWithFilters(String search) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		
+		boolean notAssigned = false;
+		FlexiTableFilter notAssignedFilter = FlexiTableFilter.getFilter(filters, FILTER_NOT_ASSIGNED);
+		if(notAssignedFilter != null && notAssignedFilter.isSelected()) {
+			notAssigned = !((FlexiTableExtendedFilter)notAssignedFilter).getValues().isEmpty();
+		}
+
+		Set<Long> identityKeys = Set.of();
 		FlexiTableFilter participantFilter = FlexiTableFilter.getFilter(filters, FILTER_PARTICIPANT);
 		if(participantFilter != null) {
 			List<String> filterValues = ((FlexiTableExtendedFilter)participantFilter).getValues();
@@ -484,25 +508,69 @@ public class CoachAssignmentListController extends FormBasicController {
 			}
 		}
 		
+		Set<String> coachKeys = Set.of();
+		FlexiTableFilter coachFilter = FlexiTableFilter.getFilter(filters, FILTER_COACH);
+		if(coachFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)coachFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				coachKeys = filterValues.stream()
+						.collect(Collectors.toSet());
+			}
+		}
+		
+		Set<Long> businessGroupKeys = new HashSet<>();
+		Set<Long> curriculumElementKeys = new HashSet<>();
+		FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(filters, FILTER_GROUP);
+		if(groupsFilter != null && groupsFilter.isSelected()) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					if(index > 0) {
+						Long key = Long.valueOf(filterValue.substring(index + 1));
+						if(filterValue.startsWith("businessgroup-")) {
+							businessGroupKeys.add(key);
+						} else if(filterValue.startsWith("curriculumelement-")) {
+							curriculumElementKeys.add(key);
+						}
+					}
+				}
+			}
+		}
+		
+		Map<Long,MemberView> participantsMap = participantsViews.stream()
+				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
+
 		List<Identity> filteredIdentities;
-		if(StringHelper.containsNonWhitespace(search) || (identityKeys != null && !identityKeys.isEmpty())) {
+		if(StringHelper.containsNonWhitespace(search) || !identityKeys.isEmpty()
+				|| !businessGroupKeys.isEmpty() || !curriculumElementKeys.isEmpty()) {
 			search = StringHelper.containsNonWhitespace(search) ? search.toLowerCase() : null;
 			filteredIdentities = new ArrayList<>(assessedIdentities.size());
 			for(Identity assessedIdentity:assessedIdentities) {
-				if(accept(assessedIdentity, identityKeys, search)) {
+				MemberView participant = participantsMap.get(assessedIdentity.getKey());
+				if(participant != null && accept(assessedIdentity, participant, identityKeys, businessGroupKeys, curriculumElementKeys, search)) {
 					filteredIdentities.add(assessedIdentity);
 				}
 			}
 		} else {
 			filteredIdentities = assessedIdentities;
 		}
-		loadModel(filteredIdentities);
+		loadModel(filteredIdentities, coachKeys, notAssigned);
 	}
 	
-	private boolean accept(Identity identity, Set<Long> identityKeys, String search) {
-		if(identityKeys != null && identityKeys.contains(identity.getKey())) {
-			return true;
+	private boolean accept(Identity identity, MemberView participant,
+			Set<Long> identityKeys, Set<Long> businessGroupKeys,
+			Set<Long> curriculumElementKeys, String search) {
+		if(!identityKeys.isEmpty() && !identityKeys.contains(identity.getKey())) {
+			return false;
 		}
+		if(!businessGroupKeys.isEmpty() && !participant.isInOneOfGroups(businessGroupKeys)) {
+			return false;
+		}
+		if(!curriculumElementKeys.isEmpty() && !participant.isInOneOfCurriculumElements(curriculumElementKeys)) {
+			return false;
+		}
+		
 		if(search != null) {
 			for(UserPropertyHandler userPropHandler:userPropertyHandlers) {
 				if(userPropHandler == null) continue;
@@ -512,15 +580,9 @@ public class CoachAssignmentListController extends FormBasicController {
 					return true;
 				}
 			}
+			return false;
 		}
-		return false;
-	}
-	
-	private void doFilterCoaches() {
-		loadColumnsModel();
-		loadModel(assessedIdentities);
-		tableEl.reset(true, true, true);
-		loadNumberedCoachColumnHeaders();
+		return true;
 	}
 	
 	private void doAssignCoaches() {
@@ -538,8 +600,12 @@ public class CoachAssignmentListController extends FormBasicController {
 					}
 				} else {
 					Identity currentCoach = assessmentEntry.getCoach();
+					if(currentCoach != null) {
+						currentCoach = identityKeyToCoach.computeIfAbsent(currentCoach.getKey().toString(),
+								identityKey -> securityManager.loadIdentityByKey(Long.valueOf(identityKey)));
+					}
 					Identity selectedCoach = identityKeyToCoach.computeIfAbsent(selectedCoachKey,
-							identityKey -> securityManager.loadIdentityByKey(Long.valueOf(selectedCoachKey)));
+							identityKey -> securityManager.loadIdentityByKey(Long.valueOf(identityKey)));
 					if(!Objects.equals(currentCoach, selectedCoach)) {
 						courseAssessmentService.assignCoach(assessmentEntry, selectedCoach, coachCourseEnv.getCourseEnvironment(), gtaNode);
 					}	

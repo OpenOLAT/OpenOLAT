@@ -52,6 +52,14 @@ public class IdentityAssignmentRow extends UserPropertiesRow {
 		return taskName;
 	}
 	
+	public boolean isNotAssigned() {
+		return coachChoices.isSelected(0);
+	}
+	
+	public String getSelectedCoachKey() {
+		return coachChoices.getSelectedKey();
+	}
+	
 	public SingleSelection getChoices() {
 		return coachChoices;
 	}

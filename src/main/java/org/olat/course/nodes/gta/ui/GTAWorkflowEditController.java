@@ -82,6 +82,9 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private static final String[] optionalKeys = new String[] { AssessmentObligation.mandatory.name(), AssessmentObligation.optional.name() };
 	private static final String[] solutionVisibleToAllKeys = new String[] { "all", "restricted" };
 	
+	private static final String ASSIGNMENT_COACHES = "coaches";
+	private static final String ASSIGNMENT_COACHES_AND_OWNERS = "coaches-owners";
+	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmChangesCtrl;
 	private AreaSelectionController areaSelectionCtrl;
@@ -111,6 +114,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private MultipleSelectionElement coachAllowedUploadEl;
 	private MultipleSelectionElement coachAssignmentEnabledEl;
 	private SingleSelection coachAssignmentModeEl;
+	private SingleSelection coachOrCoachAndOwnerModeEl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -392,7 +396,20 @@ public class GTAWorkflowEditController extends FormBasicController {
 		if(coachAssignment) {
 			coachAssignmentEnabledEl.select(onKeys[0], true);
 		}
-		
+
+		SelectionValues assignmentChoachesAndOwnersKV = new SelectionValues();
+		assignmentChoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES, translate("coach.assignment.mode.coaches.only")));
+		assignmentChoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES_AND_OWNERS, translate("coach.assignment.mode.coaches.and.owners")));
+		coachOrCoachAndOwnerModeEl = uifactory.addRadiosVertical("coach.assignment.mode.owners", "coach.assignment.mode.owners", coachingLayout,
+				assignmentChoachesAndOwnersKV.keys(), assignmentChoachesAndOwnersKV.values());
+		coachOrCoachAndOwnerModeEl.setVisible(coachAssignment);
+		boolean withOwners = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, false);
+		if(withOwners) {
+			coachOrCoachAndOwnerModeEl.select(ASSIGNMENT_COACHES_AND_OWNERS, true);
+		} else {
+			coachOrCoachAndOwnerModeEl.select(ASSIGNMENT_COACHES, true);
+		}
+
 		SelectionValues assignmentModesKV = new SelectionValues();
 		assignmentModesKV.add(SelectionValues.entry(CoachAssignmentMode.manual.name(), translate("coach.assignment.mode.manual")));
 		assignmentModesKV.add(SelectionValues.entry(CoachAssignmentMode.automatic.name(), translate("coach.assignment.mode.auto")));
@@ -561,11 +578,18 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean coachAssignment = coachAssignmentEnabledEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT, coachAssignment);
 		
-		String assignmentMode = coachAssignmentModeEl.getSelectedKey();
 		if(coachAssignment) {
+			String assignmentMode = coachAssignmentModeEl.getSelectedKey();
 			config.setStringValue(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE, assignmentMode);
+			
+			String coachAndOwnersKey = coachOrCoachAndOwnerModeEl.getSelectedKey();
+			boolean coachAndOwners = ASSIGNMENT_COACHES_AND_OWNERS.equals(coachAndOwnersKey);
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, coachAndOwners);
+
+			
 		} else {
 			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE);
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS);
 		}
 	}
 
@@ -678,6 +702,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void updateCoaching() {
 		boolean visible = coachAssignmentEnabledEl.isAtLeastSelected(1);
 		coachAssignmentModeEl.setVisible(visible);
+		coachOrCoachAndOwnerModeEl.setVisible(visible);
 	}
 	
 	@Override

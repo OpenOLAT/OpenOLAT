@@ -97,7 +97,6 @@ public class SafeExamBrowserConfigurationSerializer {
 				addFilterRules(configuration.getBlockedUrlRegex(), false, true, rulesEl, plist);
 			}
 			plist.add("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
-			plist.add("whitelistURLFilter", "");
 			
 			plist.add("startURL", configuration.getStartUrl());
 			plist.add("sendBrowserExamKey", true);
@@ -113,7 +112,9 @@ public class SafeExamBrowserConfigurationSerializer {
 	private static void addFilterRules(String expression, boolean allow, boolean regex, Element rulesEl, PList plist) {
 		String[] expressions = expression.split("\r?\n");
 		for(String exp:expressions) {
-			addFilterRule(exp, allow, regex, rulesEl, plist);
+			if(StringHelper.containsNonWhitespace(expression)) {
+				addFilterRule(exp, allow, regex, rulesEl, plist);
+			}
 		}
 	}
 	
@@ -174,8 +175,6 @@ public class SafeExamBrowserConfigurationSerializer {
 			}
 
 			plist.addProperty("urlFilterTrustedContent", isUrlFilterTrustedContent(configuration));
-			plist.addProperty("whitelistURLFilter", "");
-			
 			return plist.toString();
 		} catch (Exception e) {
 			log.error("", e);
@@ -195,7 +194,9 @@ public class SafeExamBrowserConfigurationSerializer {
 	private static void addFilterRules(boolean allow, String expression, boolean regex, JsonArray urlFilterRules) {
 		String[] expressions = expression.split("\r?\n");
 		for(String exp:expressions) {
-			urlFilterRules.add(addFilterRule(allow, exp, regex));
+			if(StringHelper.containsNonWhitespace(expression)) {
+				urlFilterRules.add(addFilterRule(allow, exp, regex));
+			}
 		}
 	}
 	

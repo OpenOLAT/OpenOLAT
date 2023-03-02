@@ -42,6 +42,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.Control;
@@ -387,43 +388,47 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 		
 		if (ldapError.isEmpty() && attrs != null) { 
-			Authentication auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
-			if (!ldapError.isEmpty()) {
-				return null;
-			}
-			
-			Identity identity = null;
-			if (auth == null) {
-				if(ldapLoginModule.isCreateUsersOnLogin()) {
-					// User authenticated but not yet existing - create as new OLAT user
-					identity = createAndPersistUser(attrs);
-					auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
-				} else {
-					ldapError.insert("login.notauthenticated");
-				}
-			} else {
-				// User does already exist - just sync attributes
-				identity = auth.getIdentity();
-				Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, identity);
-				if (olatProToSync != null) {
-					identity = syncUser(olatProToSync, identity);
-				}
-			}
-			// Add or update an OLAT authentication token for this user if configured in the module
-			if (identity != null && auth != null) {
-				if(ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
-					// there is no WEBDAV token but an HA1, the HA1 is linked to the OLAT one.
-					CoreSpringFactory.getImpl(OLATAuthManager.class)
-						.synchronizeOlatPasswordAndUsername(identity, identity, auth.getAuthusername(), pwd);
+			try {
+				Authentication auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
+				if (!ldapError.isEmpty()) {
+					return null;
 				}
 				
-				if(syncConfiguration.syncGroupWithLDAPGroup()
-						|| syncConfiguration.syncGroupWithAttribute()
-						|| syncConfiguration.syncOrganisationWithLDAPGroup()) {
-					syncUser(identity, auth);
+				Identity identity = null;
+				if (auth == null) {
+					if(ldapLoginModule.isCreateUsersOnLogin()) {
+						// User authenticated but not yet existing - create as new OLAT user
+						identity = createAndPersistUser(attrs);
+						auth = findAuthenticationByLdapAuthentication(attrs, ldapError);
+					} else {
+						ldapError.insert("login.notauthenticated");
+					}
+				} else {
+					// User does already exist - just sync attributes
+					identity = auth.getIdentity();
+					Map<String, String> olatProToSync = prepareUserPropertyForSync(attrs, identity);
+					if (olatProToSync != null) {
+						identity = syncUser(olatProToSync, identity);
+					}
 				}
+				// Add or update an OLAT authentication token for this user if configured in the module
+				if (identity != null && auth != null) {
+					if(ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()) {
+						// there is no WEBDAV token but an HA1, the HA1 is linked to the OLAT one.
+						CoreSpringFactory.getImpl(OLATAuthManager.class)
+							.synchronizeOlatPasswordAndUsername(identity, identity, auth.getAuthusername(), pwd);
+					}
+					
+					if(syncConfiguration.syncGroupWithLDAPGroup()
+							|| syncConfiguration.syncGroupWithAttribute()
+							|| syncConfiguration.syncOrganisationWithLDAPGroup()) {
+						syncUser(identity, auth);
+					}
+				}
+				return identity;
+			} catch (InvalidAttributeValueException e) {
+				log.error("", e);
 			}
-			return identity;
 		} 
 		return null;
 	}
@@ -711,6 +716,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 			ldapValue = ldapValue.substring(0, 250);
 		}
 		return ldapValue;
+	}
+	
+	private boolean isValidLdapValue(String ldapValue) {
+		if(ldapValue == null || ldapValue.contains("\u0000")) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -1033,11 +1045,17 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	 */
 	@Override
 	public Identity findIdentityByLdapAuthentication(Attributes attrs, LDAPError errors) {
-		Authentication auth = findAuthenticationByLdapAuthentication(attrs, errors);
-		return auth == null ? null : auth.getIdentity();
+		try {
+			Authentication auth = findAuthenticationByLdapAuthentication(attrs, errors);
+			return auth == null ? null : auth.getIdentity();
+		} catch (InvalidAttributeValueException e) {
+			log.error("Invalid value", e);
+			return null;
+		}
 	}
 	
-	private Authentication findAuthenticationByLdapAuthentication(Attributes attrs, LDAPError errors) {
+	private Authentication findAuthenticationByLdapAuthentication(Attributes attrs, LDAPError errors)
+	throws InvalidAttributeValueException {
 		if(attrs == null) {
 			errors.insert("findIdentyByLdapAuthentication: attrs::null");
 			return null;
@@ -1050,6 +1068,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		for(String loginAttribute:loginAttributes) {
 			String loginToken = getSingleAttributeValue(attrs.get(loginAttribute.trim()));
 			if(StringHelper.containsNonWhitespace(loginToken)) {
+				if(!isValidLdapValue(loginToken)) {
+					throw new InvalidAttributeValueException("Invalid login token value: " + loginToken);
+				}
+				
 				Authentication ldapAuth = authenticationDao.getAuthentication(loginToken, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 				if(ldapAuth != null) {
 					return ldapAuth;
@@ -1062,6 +1084,9 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 		}
 
 		String uid = getSingleAttributeValue(attrs.get(uidAttribute));
+		if(!isValidLdapValue(uid)) {
+			throw new InvalidAttributeValueException("Invalid uid value: " + uid);
+		}
 		Authentication ldapAuth = authenticationDao.getAuthentication(uid, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		if(ldapAuth != null) {
 			if(StringHelper.containsNonWhitespace(token) && !token.equals(ldapAuth.getAuthusername())) {
@@ -1614,7 +1639,13 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				Attributes userAttrs = ldapUser.getAttributes();
 				String uidProp = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
 				user = getSingleAttributeValue(userAttrs.get(uidProp));
-				Identity identity = findIdentityByLdapAuthentication(userAttrs, errors);
+				
+				Identity identity = null;
+				Authentication authentication = findAuthenticationByLdapAuthentication(userAttrs, errors);
+				if(authentication != null) {
+					identity = authentication.getIdentity();
+				}
+				
 				if (identity != null) {
 					Map<String, String> changedAttrMap = prepareUserPropertyForSync(userAttrs, identity);
 					if (changedAttrMap != null) {
@@ -1634,15 +1665,20 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 				} else {
 					log.warn(errors.get());
 				}
+				if(count % 10 == 0) {
+					dbInstance.commitAndCloseSession();
+				} else {
+					dbInstance.commit();
+				}
+			} catch(InvalidAttributeValueException e1) {
+				log.error("Try to sync a user with an invalid attribute value, actual user {} ({}). Will still continue with others.", user, ldapUser.getDn(), e1);
+				errors.insert("Cannot sync user: " + user);
+				dbInstance.rollbackAndCloseSession();	
 			} catch (Exception e) {
 				// catch here to go on with other users on exceptions!
-				log.error("some error occured in looping over set of changed user-attributes, actual user {}. Will still continue with others.", user, e);
+				log.error("some error occured in looping over set of changed user-attributes, actual user {} ({}). Will still continue with others.", user, ldapUser.getDn(), e);
 				errors.insert("Cannot sync user: " + user);
-			} finally {
-				dbInstance.commit();
-				if(count % 10 == 0) {
-					dbInstance.closeSession();
-				}
+				dbInstance.rollbackAndCloseSession();
 			}
 			if(count % 1000 == 0) {
 				log.info("Retrieve {}/{} users in LDAP server", count, ldapUserList.size());

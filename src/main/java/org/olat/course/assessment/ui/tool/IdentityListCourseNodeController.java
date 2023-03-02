@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
@@ -157,7 +158,9 @@ import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
+import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -530,7 +533,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if (assessmentConfig.hasCoachAssignment()) {
 			SelectionValues assignedCoachValues = new SelectionValues();
 			assignedCoachValues.add(SelectionValues.entry("-1", translate("filter.coach.not.assigned")));
-			assignedCoachValues.add(SelectionValues.entry(getIdentity().getKey().toString(), userManager.getUserDisplayName(getIdentity())));
+			List<Identity> coaches = repositoryService.getMembers(courseEntry, RepositoryEntryRelationType.all, GroupRoles.owner.name(), GroupRoles.coach.name());
+			Collections.sort(coaches, IdentityComporatorFactory.createLastnameFirstnameComporator());
+			for(Identity coach:coaches) {
+				assignedCoachValues.add(SelectionValues.entry(coach.getKey().toString(), userManager.getUserDisplayName(coach)));
+			}
+			
 			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.coach.assigned"),
 					AssessedIdentityListState.FILTER_ASSIGNED_COACH, assignedCoachValues, true);
 
