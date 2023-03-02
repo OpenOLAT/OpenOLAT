@@ -33,6 +33,7 @@ import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.DateUtils;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
@@ -420,6 +421,9 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		businessGroupModule.setNumberOfDayBeforeDeactivationMail(30);
 		businessGroupModule.setMailCopyAfterDeactivation(null);
 		
+		// Like the background job
+		ThreadLocalUserActivityLoggerInstaller.initBackgroundUserActivityLogger();
+		
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("group-lifecycle-3");
 		BusinessGroup group1 = businessGroupService.createBusinessGroup(coach, "Group cycle 3.1", "", BusinessGroup.BUSINESS_TYPE,
 				-1, -1, false, false, null);
@@ -438,6 +442,8 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertTrue(hasTo(coach.getUser().getEmail(), inactivedMessages));
 		Assert.assertFalse(hasTo("copy@openolat.org", inactivedMessages));
 		getSmtpServer().reset();
+		
+		ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 	}
 	
 	@Test
@@ -1122,6 +1128,31 @@ public class BusinessGroupLifecycleManagerTest extends OlatTestCase {
 		Assert.assertNotNull(((BusinessGroupImpl)permanentBg3).getSoftDeleteDate());
 		Assert.assertEquals(BusinessGroupStatusEnum.trash, permanentBg3.getGroupStatus());
 		Assert.assertNull(((BusinessGroupImpl)permanentBg3).getSoftDeleteEmailDate());
+	}
+	
+	/**
+	 * For OO-6811
+	 */
+	@Test
+	public void definitivelyDeleteBusinessGroupTwice() {
+		businessGroupModule.setAutomaticGroupDefinitivelyDeleteEnabled("true");
+		businessGroupModule.setNumberOfSoftDeleteDayBeforeDefinitivelyDelete(80);
+		
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gp-lifecycle-21.1");
+		BusinessGroup group = businessGroupService.createBusinessGroup(coach, "Group cycle 21.1", "", BusinessGroup.BUSINESS_TYPE,
+				-1, -1, false, false, null);
+		setSoftDeleteDate(group, BusinessGroupStatusEnum.trash, DateUtils.addDays(new Date(), -205));
+		dbInstance.commitAndCloseSession();
+		
+		Set<BusinessGroup> vetoed = new HashSet<>();
+		lifecycleManager.definitivelyDeleteBusinessGroups(vetoed);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup deletedGroup = businessGroupService.loadBusinessGroup(group);
+		Assert.assertNull(deletedGroup);
+		
+		lifecycleManager.deleteBusinessGroup(group, coach, false);
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
