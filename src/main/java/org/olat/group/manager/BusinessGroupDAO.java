@@ -459,29 +459,39 @@ public class BusinessGroupDAO {
 		return getMembershipInfoInBusinessGroups(groupKeys, identityArr);
 	}
 	
-	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identity) {	
+	public List<BusinessGroupMembershipViewImpl> getMembershipInfoInBusinessGroups(Collection<Long> groupKeys, Identity... identities) {	
 		QueryBuilder sb = new QueryBuilder(); 
 		sb.append("select membership from bgmembershipview as membership ");
-		if(identity != null && identity.length > 0) {
+		if(identities != null && identities.length > 0) {
 			sb.and().append("membership.identityKey in (:identIds) ");
 		}
 		if(groupKeys != null && !groupKeys.isEmpty()) {
 			sb.and().append("membership.groupKey in (:groupKeys)");
 		}
 		
-		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class);
-		if(identity != null && identity.length > 0) {
-			List<Long> ids = new ArrayList<>(identity.length);
-			for(Identity id:identity) {
-				ids.add(id.getKey());
-			}
-			query.setParameter("identIds", ids);
-		}	
-		if(groupKeys != null && !groupKeys.isEmpty()) {
+		TypedQuery<BusinessGroupMembershipViewImpl> query = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), BusinessGroupMembershipViewImpl.class);
+		if (groupKeys != null && !groupKeys.isEmpty()) {
 			query.setParameter("groupKeys", groupKeys);
 		}
 		
-		return query.getResultList();
+		if (identities != null && identities.length > 0) {
+			List<Long> ids = new ArrayList<>(identities.length);
+			for (Identity identity : identities) {
+				ids.add(identity.getKey());
+			}
+			
+			List<BusinessGroupMembershipViewImpl> businessGroupMembershipViews = new ArrayList<>(ids.size());
+			for (List<Long> chunkOfIds : PersistenceHelper.collectionOfChunks(new ArrayList<>(ids), 2)) {
+				query.setParameter("identIds", chunkOfIds);
+				List<BusinessGroupMembershipViewImpl> chunkOfBusinessGroupMembershipViews = query.getResultList();
+				businessGroupMembershipViews.addAll(chunkOfBusinessGroupMembershipViews);
+			}
+			
+			return businessGroupMembershipViews;
+		}  else {
+			return query.getResultList();
+		}
 	}
 
 	public List<Long> isIdentityInBusinessGroups(Identity identity, boolean owner, boolean attendee, boolean waiting, List<BusinessGroup> groups) {
