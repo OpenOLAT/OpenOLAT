@@ -174,6 +174,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	public static final String GTASK_COACH_ASSIGNMENT_MODE = "grouptask.coach.assignment.mode";
 	public static final String GTASK_COACH_ASSIGNMENT_MODE_DEFAULT = CoachAssignmentMode.manual.name();
 	public static final String GTASK_COACH_ASSIGNMENT_OWNERS = "grouptask.coach.assignment.owners";
+	
+	public static final String GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT = "grouptask.coach.assignment.coach.notification.assignment";
+	public static final String GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT = "grouptask.coach.assignment.coach.notification.unassignment";
+	public static final String GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER = "grouptask.coach.assignment.coach.notification.neworder";
+	public static final String GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT = "grouptask.coach.assignment.participant.notification.assignment";
 
 	public static final String GTASK_USERS_TEXT = "grouptask.users.text";
 	public static final String GTASK_PREVIEW = "grouptask.preview";

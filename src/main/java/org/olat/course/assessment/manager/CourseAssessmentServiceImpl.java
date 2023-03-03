@@ -652,11 +652,18 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		Identity assessedIdentity = assessmentEntry.getIdentity();
-		sendMail("notifications.mail.type.assign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
-				coach, assessedIdentity, coach, courseEntry, courseNode);
-		sendMail("notifications.mail.type.assign", "notifications.mail.to.participant.assigment.subject", "notifications.mail.to.participant.assigment.body",
-				assessedIdentity, assessedIdentity, coach, courseEntry, courseNode);
-		if(currentCoach != null) {
+		if(courseNode.getModuleConfiguration()
+				.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT, true)) {
+			sendMail("notifications.mail.type.assign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
+					coach, assessedIdentity, coach, courseEntry, courseNode);
+		}
+		if(courseNode.getModuleConfiguration()
+				.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT, true)) {
+			sendMail("notifications.mail.type.assign", "notifications.mail.to.participant.assigment.subject", "notifications.mail.to.participant.assigment.body",
+					assessedIdentity, assessedIdentity, coach, courseEntry, courseNode);
+		}
+		if(currentCoach != null && courseNode.getModuleConfiguration()
+				.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT, true)) {
 			currentCoach = securityManager.loadIdentityByKey(currentCoach.getKey());
 			sendMail("notifications.mail.type.unassign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
 					currentCoach, assessedIdentity, currentCoach, courseEntry, courseNode);
@@ -676,7 +683,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			assignCoach(assessmentEntry, null, courseEnv, courseNode);
 		}
 		
-		if(currentCoach != null && !replace) {
+		if(currentCoach != null && !replace && courseNode.getModuleConfiguration()
+				.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT, true)) {
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			Identity assessedIdentity = assessmentEntry.getIdentity();
 			sendMail("notifications.mail.type.unassign", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
@@ -711,7 +719,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		if(assessmentEntry.getCoach() == null) return;
 		
 		Identity coach = securityManager.loadIdentityByKey(assessmentEntry.getCoach().getKey());
-		
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		Identity assessedIdentity = assessmentEntry.getIdentity();
 		sendMail("notifications.mail.type.order", "notifications.mail.to.coach.assigment.subject", "notifications.mail.to.coach.assigment.body",
@@ -726,12 +733,16 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Translator translator = Util.createPackageTranslator(CourseAssessmentService.class, locale);
 		
 		String[] args = new String[] {
-			translator.translate(actionI18nKey),
-			courseEntry.getDisplayname(),
-			courseEntry.getExternalRef(),
-			courseNode.getShortTitle(),
-			userManager.getUserDisplayName(assessedIdentity),
-			userManager.getUserDisplayName(coach)
+			translator.translate(actionI18nKey),				// 0
+			courseEntry.getDisplayname(),						// 1
+			courseEntry.getExternalRef(),						// 2
+			courseNode.getShortTitle(),							// 3
+			userManager.getUserDisplayName(assessedIdentity),	// 4
+			userManager.getUserDisplayName(coach),				// 5
+			assessedIdentity.getUser().getFirstName(),			// 6
+			assessedIdentity.getUser().getLastName(),			// 7
+			coach.getUser().getFirstName(),						// 8
+			coach.getUser().getLastName()						// 9
 		};
 		
 		String subject = translator.translate(i18nSubjectKey, args);
