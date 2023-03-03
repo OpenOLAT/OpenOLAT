@@ -349,7 +349,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		WindowControl bwControl = BusinessControlFactory.getInstance()
 				.createBusinessWindowControl(ores, null, getWindowControl());
 		coachAssignmentListCtrl = new CoachAssignmentListController(ureq, bwControl,
-				assessedIdentities, coachCourseEnv, gtaNode);
+				assessedIdentities, coachCourseEnv, courseEnv, gtaNode);
 		listenTo(coachAssignmentListCtrl);
 		
 		assessedIdentityStackPanel.pushController(translate("coach.assignment"), coachAssignmentListCtrl);
