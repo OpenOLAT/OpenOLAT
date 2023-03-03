@@ -125,6 +125,7 @@ public class SegmentController extends FormBasicController {
 		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+		startApplyPositionButton.setTitle(translate("form.common.setToCurrentPosition"));
 
 		endEl = uifactory.addTextElement("end", "form.segment.startEnd", 8, "",
 				formLayout);
@@ -133,6 +134,7 @@ public class SegmentController extends FormBasicController {
 		endApplyPositionButton = uifactory.addFormLink("endApplyPosition", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+		endApplyPositionButton.setTitle(translate("form.common.setToCurrentPosition"));
 
 		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 3,
 				"", formLayout);
