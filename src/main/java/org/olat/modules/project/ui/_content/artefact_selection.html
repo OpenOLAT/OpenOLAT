@@ -2,11 +2,8 @@
 	<div class="input-group">$r.render("quicksearch")<div class="input-group-btn">$r.render("resetQuickSearch") $r.render("quickSearchButton")</div></div>
 </div>
 <div class="o_proj_reference_selection_results">
-	#if($r.itemsAvailable)
 		$r.render("lists")
-	#else
-		$r.translate("no.values.available")
-	#end
+		$r.render("no.values.available")
 </div>
 <div class="o_block_top">
 	$r.render("buttons")

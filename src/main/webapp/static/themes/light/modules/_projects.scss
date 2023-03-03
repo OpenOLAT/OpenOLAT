@@ -1,7 +1,4 @@
 .o_proj_projects {
-	.o_proj_header {
-		align-items: baseline;
-	}
 	.o_proj_project_list {
 		.o_rendertype_custom {
 			.o_proj_project_rows {
@@ -45,8 +42,32 @@
 		color: 				$o-repo-deleted-color;
 	}
 }
+.o_proj_project_status_badge {
+	float: right;
+	display: inline-block;
+	padding: 1px 25px;
+	border-radius: $border-radius-small;
+	
+	&.o_proj_project_status_active {
+		background-color: 	$o-repo-published-color;
+		color: 				#fff;
+	}
+	&.o_proj_project_status_done {
+		background-color: 	$o-repo-closed-color;
+		color: 				#fff;
+	}
+	&.o_proj_project_status_deleted {
+		background-color: 	$o-repo-deleted-color;
+		color: 				#fff;
+	}
+}
 
 .o_proj_dashboard {
+	.o_proj_header {
+		.o_proj_dashboard_title {
+			display: inline;
+		}
+	}
 	.o_proj_widgets {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
@@ -330,6 +351,14 @@
 /* Helpers */
 .o_proj_title {
 	@extend %o_flex_first_grow_base;
+	align-items: start;
+	h2 {
+		margin: 0;
+		display: inline;
+	}
+	.o_title_cmds {
+		margin-left: 5px;
+	}
 }
 .btn-group {
  	>.btn:first-child {

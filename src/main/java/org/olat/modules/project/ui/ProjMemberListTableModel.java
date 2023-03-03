@@ -70,6 +70,7 @@ public class ProjMemberListTableModel extends DefaultFlexiTableDataModel<ProjMem
 		if(col < USER_PROPS_OFFSET) {
 			switch(COLS[col]) {
 				case id: return row.getIdentity().getKey();
+				case lastVisitDate: return row.getLastVisitDate();
 				case roles: return row.getTranslatedRoles();
 				case tools: return row.getToolsLink();
 				default: return null;

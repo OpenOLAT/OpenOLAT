@@ -54,7 +54,7 @@ public class ProjectMailing {
 		String subject = trans.translate(subjectKey);
 		String body = trans.translate(bodyKey);
 		
-		return new ProjProjectMailTemplate(project, subject, body, locale);
+		return new ProjProjectMailTemplate(subject, body, project, actor, locale);
 	}
 	
 	public static class ProjProjectMailTemplate extends MailTemplate {
@@ -64,11 +64,13 @@ public class ProjectMailing {
 		private static final String PROJECT_URL = "projectUrl";
 		
 		private final ProjProject project;
+		private final Identity actor;
 		private final Locale locale;
 		private String url;
 		
-		public ProjProjectMailTemplate(ProjProject project, String subject, String body, Locale locale) {
-			super(subject, body, null);	
+		public ProjProjectMailTemplate(String subject, String body, ProjProject project, Identity actor, Locale locale) {
+			super(subject, body, null);
+			this.actor = actor;	
 			this.locale = locale;
 			this.project = project;
 		}
@@ -89,7 +91,7 @@ public class ProjectMailing {
 		
 		@Override
 		public void putVariablesInMailContext(VelocityContext context, Identity identity) {
-			fillContextWithStandardIdentityValues(context, identity, locale);
+			fillContextWithStandardIdentityValues(context, actor, locale);
 			
 			String title = project.getTitle();
 			context.put(PROJECT_TITLE, title);

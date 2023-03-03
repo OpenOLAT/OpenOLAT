@@ -51,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
@@ -174,7 +173,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.id));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.displayName, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.displayName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
@@ -328,7 +327,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				}
 			}
 			
-			forgeSelectLink(row, vfsMetadata);
+			forgeSelectLink(row, file, vfsMetadata, ureq.getUserSession().getRoles());
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -401,7 +400,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 	}
 	
-	private void forgeSelectLink(ProjFileRow row, VFSMetadata vfsMetadata) {
+	private void forgeSelectLink(ProjFileRow row, ProjFile file, VFSMetadata vfsMetadata, Roles roles) {
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
 		link.setI18nKey(row.getDisplayName());
 		link.setElementCssClass("o_link_plain");
@@ -409,6 +408,15 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		link.setIconLeftCSS("o_icon " + iconCSS);
 		if (vfsMetadata.isLocked()) {
 			link.setIconRightCSS("o_icon o_icon_locked");
+		}
+		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+				link.setNewWindow(true, true, false);
+			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
+				link.setNewWindow(true, true, false);
+			}
+			
 		}
 		link.setUserObject(row);
 		row.setSelectLink(link);
@@ -514,14 +522,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (source == createLink){
 			doCreateFile(ureq);
 		} else if (tableEl == source) {
-			if (event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				String cmd = se.getCommand();
-				ProjFileRow row = dataModel.getObject(se.getIndex());
-				if (CMD_SELECT.equals(cmd)) {
-					doOpenOrDownload(ureq, row.getKey());
-				}
-			} else if (event instanceof FlexiTableSearchEvent) {
+			if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq, false);
 			} else if (event instanceof FlexiTableFilterTabEvent) {
 				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());

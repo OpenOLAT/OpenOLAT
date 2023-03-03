@@ -449,6 +449,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (noteCreateCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

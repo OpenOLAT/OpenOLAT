@@ -62,7 +62,7 @@ public class ProjTimelineDataModel extends DefaultFlexiTableDataModel<ProjTimeli
 	public Object getValueAt(ProjTimelineRow row, int col) {
 		switch(COLS[col]) {
 		case message: return row.getMessage();
-		case date: return row.getDate();
+		case date: return row.getFormattedDate();
 		case doerDisplayName: return row.getDoerDisplyName();
 		default: return null;
 		}

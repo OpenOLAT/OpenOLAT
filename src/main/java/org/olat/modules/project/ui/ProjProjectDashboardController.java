@@ -209,8 +209,11 @@ public class ProjProjectDashboardController extends BasicController implements A
 	}
 	
 	private void putProjectToVC() {
+		mainVC.contextPut("projectExternalRef", project.getExternalRef());
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("projectTeaser", project.getTeaser());
+		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
+		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
 	}
 	
 	private void updateCmdsUI() {
@@ -287,6 +290,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
 				doOpenNotes(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				reload(ureq, noteWidgetCtrl);
 			} else if (event instanceof OpenNoteEvent) {
 				doOpenNote(ureq, (OpenNoteEvent)event);
 			}

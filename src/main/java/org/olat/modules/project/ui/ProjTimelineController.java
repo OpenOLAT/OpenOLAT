@@ -68,6 +68,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.ActionTarget;
@@ -123,6 +124,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private final ProjProject project;
 	private final List<Identity> members;
 	private final MapperKey avatarMapperKey;
+	private final Formatter formatter;
 	private int counter;
 	
 	@Autowired
@@ -137,6 +139,8 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		this.project = project;
 		this.members = members;
 		this.avatarMapperKey = avatarMapperKey;
+		this.formatter = Formatter.getInstance(getLocale());
+		
 		initForm(ureq);
 		loadModel(ureq, true);
 	}
@@ -437,6 +441,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		row.setMessageItem(link);
 		
 		row.setDate(kalendarEvent.getBegin());
+		row.setFormattedDate(getFormattedDate(row.getDate()));
 		row.setActionTarget(ActionTarget.appointment);
 		return row;
 	}
@@ -539,6 +544,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		row.setIdentityKeys(identityKeys);
 		
 		row.setDate(activity.getCreationDate());
+		row.setFormattedDate(getFormattedDate(row.getDate()));
 		row.setDoerDisplyName(userManager.getUserDisplayName(activity.getDoer().getKey()));
 		addStaticMessageItem(row);
 		
@@ -630,6 +636,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setMessage(message);
 		row.setDate(activity.getCreationDate());
+		row.setFormattedDate(getFormattedDate(row.getDate()));
 		row.setDoerDisplyName(userManager.getUserDisplayName(activity.getDoer().getKey()));
 	
 		addArtefactMesssageItem(row, activity.getArtefact());
@@ -668,6 +675,12 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		portraitComp.setUsers(UsersPortraitsFactory.createPortraitUsers(List.of(member)));
 		portraitComp.setSize(PortraitSize.small);
 		row.setIconItem(new ComponentWrapperElement(portraitComp));
+	}
+	
+	private String getFormattedDate(Date date) {
+		return DateUtils.isSameDay(new Date(), date)
+				? translate("today")
+				: formatter.formatDate(date);
 	}
 
 	private void createRangeLinks() {

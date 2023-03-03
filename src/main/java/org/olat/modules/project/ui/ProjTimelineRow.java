@@ -36,6 +36,7 @@ public class ProjTimelineRow {
 	
 	private String message;
 	private Date date;
+	private String formattedDate;
 	private String doerDisplyName;
 	private Collection<Long> identityKeys;
 	private String rangeEmpty;
@@ -60,6 +61,14 @@ public class ProjTimelineRow {
 
 	public void setDate(Date date) {
 		this.date = date;
+	}
+
+	public String getFormattedDate() {
+		return formattedDate;
+	}
+
+	public void setFormattedDate(String formattedDate) {
+		this.formattedDate = formattedDate;
 	}
 
 	public String getDoerDisplyName() {

@@ -147,6 +147,24 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		
 		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
 	}
+	
+	@Test
+	public void shouldLoad_filter_status() {
+		ProjArtefact artefact1 = createRandomArtefact();
+		artefact1.setStatus(ProjectStatus.deleted);
+		sut.save(artefact1);
+		ProjArtefact artefact2 = createRandomArtefact();
+		artefact2.setStatus(ProjectStatus.deleted);
+		sut.save(artefact2);
+		ProjArtefact artefact3 = createRandomArtefact();
+		
+		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
+		searchParams.setArtefacts(List.of(artefact1, artefact2, artefact3));
+		searchParams.setStatus(List.of(ProjectStatus.deleted));
+		List<ProjArtefact> artefacts = sut.loadArtefacts(searchParams);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
+	}
 
 	private ProjArtefact createRandomArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());

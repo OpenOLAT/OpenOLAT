@@ -33,6 +33,7 @@ public class ProjArtefactSearchParams {
 	private ProjProjectRef project;
 	private Collection<Long> artefactKeys;
 	private Collection<Long> excludedArtefactKeys;
+	private Collection<ProjectStatus> status;
 
 	public ProjProjectRef getProject() {
 		return project;
@@ -56,6 +57,14 @@ public class ProjArtefactSearchParams {
 	
 	public void setExcludedArtefacts(Collection<ProjArtefactRef> excludedArtefacts) {
 		this.excludedArtefactKeys = excludedArtefacts.stream().map(ProjArtefactRef::getKey).collect(Collectors.toSet());
+	}
+	
+	public Collection<ProjectStatus> getStatus() {
+		return status;
+	}
+
+	public void setStatus(Collection<ProjectStatus> status) {
+		this.status = status;
 	}
 	
 }

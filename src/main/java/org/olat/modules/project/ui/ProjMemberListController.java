@@ -405,7 +405,7 @@ public class ProjMemberListController extends FormBasicController implements Act
 		getWindowControl().pushAsModalDialog(addMembersWizardCtrl.getInitialComponent());
 	}
 	
-	protected void doInvitation(UserRequest ureq) {
+	private void doInvitation(UserRequest ureq) {
 		removeAsListenerAndDispose(invitationWizardCtrl);
 
 		InvitationContext invitationContext = InvitationContext.valueOf(getIdentity(), project);

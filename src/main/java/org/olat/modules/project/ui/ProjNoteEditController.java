@@ -111,6 +111,7 @@ public class ProjNoteEditController extends FormBasicController {
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		closeLink = uifactory.addFormLink("close", buttonLayout, Link.BUTTON);
+		closeLink.setPrimary(true);
 		if (withCancel) {
 			cancelLink = uifactory.addFormLink("cancel", buttonLayout, Link.BUTTON);
 		}

@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -45,6 +46,7 @@ import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ProjectStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,9 +61,11 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private FormLink quickSearchButton;
 	private FormLink resetQuickSearchButton;
 	
+	private FormLayoutContainer listsCont;
 	private MultipleSelectionElement fileEl;
 	private MultipleSelectionElement noteEl;
 	private MultipleSelectionElement appointmentEl;
+	private StaticTextElement noValuesAvailableEl;
 	
 	private final ProjArtefact artefact;
 	private final ProjArtefactItems artefactItems;
@@ -86,6 +90,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		
 		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
 		searchParams.setProject(artefact.getProject());
+		searchParams.setStatus(List.of(ProjectStatus.active));
 		searchParams.setExcludedArtefacts(excludedArtefacts);
 		artefactItems = projectService.getArtefactItems(searchParams);
 		
@@ -129,7 +134,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
 		
-		FormLayoutContainer listsCont = FormLayoutContainer.createVerticalFormLayout("lists", getTranslator());
+		listsCont = FormLayoutContainer.createVerticalFormLayout("lists", getTranslator());
 		listsCont.setRootForm(mainForm);
 		formLayout.add("lists", listsCont);
 		
@@ -144,6 +149,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		appointmentEl = uifactory.addCheckboxesVertical("reference.appointments", listsCont, appointmentSV.keys(), appointmentSV.values(), appointmentSV.icons(), 1);
 		appointmentEl.setEscapeHtml(false);
 		appointmentEl.addActionListener(FormEvent.ONCHANGE);
+		
+		noValuesAvailableEl = uifactory.addStaticTextElement("no.values.available", null, translate("no.values.available"), formLayout);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -161,7 +168,15 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		fileEl.setVisible(!fileEl.getKeys().isEmpty());
 		noteEl.setVisible(!noteEl.getKeys().isEmpty());
 		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
-		flc.contextPut("itemsAvailable", fileEl.isVisible() || appointmentEl.isVisible());
+		noValuesAvailableEl.setVisible(!fileEl.isVisible() && !noteEl.isVisible() && !appointmentEl.isVisible());
+		listsCont.setDirty(true);
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem source, FormEvent fe) {
+		if(source != quickSearchEl && source != quickSearchButton && source != resetQuickSearchButton) {
+			super.propagateDirtinessToContainer(source, fe);
+		}
 	}
 	
 	@Override

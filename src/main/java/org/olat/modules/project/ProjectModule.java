@@ -45,13 +45,10 @@ import org.springframework.stereotype.Service;
 public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String KEY_ENABLED = "project.enabled";
-	private static final String KEY_CREATE_ALL_ROLES = "project.create.roles.all";
 	private static final String KEY_CREATE_ROLES= "project.create.roles";
 
 	@Value("${project.enabled:true}")
 	private boolean enabled;
-	@Value("${project.create.roles.all:false}")
-	private boolean createAllRoles;
 	@Value("${project.create.roles}")
 	private String createRolesStr;
 	private Set<OrganisationRoles> createRoles;
@@ -68,11 +65,6 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 		String enabledObj = getStringPropertyValue(KEY_ENABLED, true);
 		if (StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
-		}
-		
-		String createAllRolesObj = getStringPropertyValue(KEY_CREATE_ALL_ROLES, true);
-		if (StringHelper.containsNonWhitespace(createAllRolesObj)) {
-			createAllRoles = "true".equals(createAllRolesObj);
 		}
 		
 		createRolesStr = getStringPropertyValue(KEY_CREATE_ROLES, createRolesStr);
@@ -93,20 +85,11 @@ public class ProjectModule extends AbstractSpringModule implements ConfigOnOff {
 		this.enabled = enabled;
 		setBooleanProperty(KEY_ENABLED, enabled, true);
 	}
-
-	public boolean isCreateAllRoles() {
-		return createAllRoles;
-	}
-
-	public void setCreateAllRoles(boolean createAllRoles) {
-		this.createAllRoles = createAllRoles;
-		setBooleanProperty(KEY_CREATE_ALL_ROLES, createAllRoles, true);
-	}
 	
 	public boolean canCreateProject(Roles roles) {
-		return createAllRoles
-				|| roles.isAdministrator()
+		return roles.isAdministrator()
 				|| roles.isProjectManager()
+				|| getCreateRoles().isEmpty()
 				|| getCreateRoles().stream().anyMatch(role -> roles.hasRole(role));
 	}
 	

@@ -71,7 +71,7 @@ public class ProjectsSettingsController extends FormBasicController {
 		
 		createRestrictedEl = uifactory.addCheckboxesVertical("admin.create.roles.restricted", formLayout, ON_KEYS, onValues, 1);
 		createRestrictedEl.addActionListener(FormEvent.ONCHANGE);
-		createRestrictedEl.select(createRestrictedEl.getKey(0), !projectModule.isCreateAllRoles());
+		createRestrictedEl.select(createRestrictedEl.getKey(0), !projectModule.getCreateRoles().isEmpty());
 		
 		SelectionValues createRolesSV = new SelectionValues();
 		createRolesSV.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("admin.role.authors")));
@@ -107,8 +107,6 @@ public class ProjectsSettingsController extends FormBasicController {
 	
 	private void doUpdateCreateRoles() {
 		boolean createRestriced = createRestrictedEl.isAtLeastSelected(1);
-		projectModule.setCreateAllRoles(!createRestriced);
-		
 		Set<OrganisationRoles> createRoles = createRestriced
 				? createRolesEl.getSelectedKeys().stream().map(OrganisationRoles::valueOf).collect(Collectors.toSet())
 				: null;

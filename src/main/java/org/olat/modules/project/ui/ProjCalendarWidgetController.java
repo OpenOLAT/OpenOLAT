@@ -140,6 +140,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		if (appointmentEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				reload();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if (event == Event.CANCELLED_EVENT && appointmentEditCtrl.isFirstEdit()) {
 				projectService.deleteAppointmentPermanent(appointmentEditCtrl.getAppointment());
 			}

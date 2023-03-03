@@ -1,8 +1,12 @@
 <div class="o_proj_dashboard">
-	<div class="o_proj_header o_flex_first_grow o_block">
-		<div class="o_proj_dashboard_title">
-			<h2>$projectTitle</h2>
+	<div class="o_proj_title o_block_large">
+		<div>
+			<h2 class="o_proj_dashboard_title o_proj_title">$projectTitle</h2>
+			#if($projectExternalRef)
+				<small class="text-muted">$projectExternalRef</small>
+			#end
 		</div>
+		<span class="o_proj_project_status_badge $statusCssClass">$status</span>
 		<div class="o_title_cmds">
 			#if($r.available("cmds") && $r.visible("cmds"))
 				<div>$r.render("cmds")</div>
