@@ -93,6 +93,7 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		
 		String platformIss = lti13Module.getPlatformIss();
 		platformIssEl = uifactory.addTextElement("lti13.platform.iss", "lti13.platform.iss", 255, platformIss, settingsCont);
+		platformIssEl.setElementCssClass("o_sel_lti13_admin_platform_iss");
 		platformIssEl.setEnabled(false);
 		
 		initOrganisationsEl(settingsCont);
@@ -136,7 +137,6 @@ public class LTI13AdminConfigurationController extends FormBasicController {
 		permissionsKeyValues.add(SelectionValues.entry(DeploymentConfigurationPermission.perResource.name(), translate("activate.per.course")));
 		entryOwnerPermissionEl = uifactory.addRadiosVertical("repo.owner.permission", "repo.owner.permission", formLayout,
 				permissionsKeyValues.keys(), permissionsKeyValues.values());
-		entryOwnerPermissionEl.setHelpText(translate("course.owner.permission.help"));
 		
 		DeploymentConfigurationPermission permission = lti13Module.getDeploymentRepositoryEntryOwnerPermission();
 		if(permission != null && permissionsKeyValues.containsKey(permission.name())) {

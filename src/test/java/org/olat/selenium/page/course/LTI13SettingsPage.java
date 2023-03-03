@@ -41,6 +41,8 @@ public class LTI13SettingsPage {
 		By enableBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings .o_sel_lti13_admin_enable input[name='lti13.module.enabled']");
 		OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(browser.findElement(enableBy), Boolean.TRUE);
+		By platformIssBy = By.cssSelector("fieldset.o_sel_lti13_admin_settings .o_sel_lti13_admin_platform_iss");
+		OOGraphene.waitElement(platformIssBy, browser);
 		return this;
 	}
 	

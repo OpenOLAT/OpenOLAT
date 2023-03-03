@@ -581,19 +581,23 @@ public class OOGraphene {
 	 * @param checkboxEl
 	 * @param val
 	 */
-	public static final void check(WebElement checkboxEl, Boolean val) {
-		if(val == null) return;
+	public static final boolean check(WebElement checkboxEl, Boolean val) {
+		if(val == null) return false;
 		
+		boolean valueChanged = false;
 		String checked = checkboxEl.getAttribute("checked");
 		if(Boolean.TRUE.equals(val)) {
 			if(checked == null) {
 				checkboxEl.click();
+				valueChanged = true;
 			}
 		} else {
 			if(checked != null) {
 				checkboxEl.click();
+				valueChanged = true;
 			}
 		}
+		return valueChanged;
 	}
 	
 	public static final void textarea(WebElement textareaEl, String content, WebDriver browser) {

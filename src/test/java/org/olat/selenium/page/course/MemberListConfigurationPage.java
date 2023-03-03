@@ -54,13 +54,15 @@ public class MemberListConfigurationPage {
 	
 	public MemberListConfigurationPage setParticipants(Boolean visible) {
 		return setMembers(visible, "participants");
+
 	}
 
 	private MemberListConfigurationPage setMembers(Boolean visible, String type) {
 		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_cmembers_settings')]//input[@type='checkbox'][@name='" + type + "']");
 		WebElement checkboxEl = browser.findElement(checkboxBy);
-		OOGraphene.check(checkboxEl, visible);
-		OOGraphene.waitBusy(browser);
+		if(OOGraphene.check(checkboxEl, visible)) {
+			OOGraphene.waitBusy(browser);
+		}
 		return this;
 	}
 	

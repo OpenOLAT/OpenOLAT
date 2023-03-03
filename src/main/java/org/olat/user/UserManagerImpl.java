@@ -495,8 +495,14 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	@Override
 	public String getUserDisplayName(Identity identity) {
 		if (userDisplayNameCreator == null || identity == null) return "";
-		String fullName = getUserDisplayName(identity.getUser());
-		updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		String fullName;
+		try {
+			fullName = getUserDisplayName(identity.getUser());
+			updateUsernameCache(identity.getKey(), identity.getName(), fullName);
+		} catch (Exception e) {
+			log.error("", e);
+			fullName = getUserDisplayName(identity.getKey());
+		}
 		return fullName;
 	}
 
