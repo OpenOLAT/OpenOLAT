@@ -72,10 +72,9 @@ public class ConfirmResetTaskController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String allower = userManager.getUserDisplayName(task.getAllowResetIdentity());
-			String message = translate("participant.confirm.reset.task.text", new String[] { allower, task.getTaskName() });
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			String allower = userManager.getUserDisplayName(task.getAllowResetIdentity().getKey());
+			String message = translate("participant.confirm.reset.task.text", allower, task.getTaskName());
 			layoutCont.contextPut("msg", message);
 		}
 		
