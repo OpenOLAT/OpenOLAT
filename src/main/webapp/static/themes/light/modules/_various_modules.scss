@@ -393,7 +393,7 @@ The "important!" avoids hiding the image by bootstrap.
 .o_portrait_dummy,
 .o_portrait_dummy_female_big,
 .o_portrait_dummy_male_big,
-.o_portrait_anonymous 			{width: 100px; height: 100px;}
+.o_portrait_anonymous 			{width: $o-portrait-size; height: $o-portrait-size;}
 .o_portrait_dummy				{background-image: url('#{$o-images-path}portrait/dummy.png') !important;}
 .o_portrait_dummy_female_big	{background-image: url('#{$o-images-path}portrait/dummy_female_big.png') !important;}
 .o_portrait_dummy_male_big		{background-image: url('#{$o-images-path}portrait/dummy_male_big.png') !important;}
@@ -403,12 +403,63 @@ The "important!" avoids hiding the image by bootstrap.
 .o_portrait_dummy_small,
 .o_portrait_dummy_female_small,
 .o_portrait_dummy_male_small,
-.o_portrait_anonymous_small 	{width: 30px; height: 30px;}
+.o_portrait_anonymous_small 	{width: $o-portrait-small-size; height: $o-portrait-small-size;}
 .o_portrait_dummy_small			{background-image: url('#{$o-images-path}portrait/dummy_small.png') !important;}
 .o_portrait_dummy_female_small	{background-image: url('#{$o-images-path}portrait/dummy_female_small.png') !important;}
 .o_portrait_dummy_male_small	{background-image: url('#{$o-images-path}portrait/dummy_male_small.png') !important;}
 .o_portrait_anonymous_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
 .o_portrait_openolat_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
+
+
+/* User portrait component */
+@mixin o-users_portrait_size($size){
+	.o_portrait_user {
+		&:not(:first-child) {
+			margin-left: -$o-users-portrait-overlap * $size;
+		}
+		.o_portrait {
+			img {
+				width: $size;
+				height: $size;
+			}
+		}
+	}
+}
+
+.o_users_portraits {
+	display: flex;
+	align-items: center;
+	ul {
+		margin-bottom: 0;
+		display: flex;
+		.o_portrait_user {
+			&:not(:first-child) {
+				margin-left: -60px;
+			}
+			.o_portrait {
+				img {
+					border: $o-users-portrait-img-border	;
+					box-shadow: $o-users-portrait-img-box-shadow;
+				}
+			}
+		}
+	}
+	&.o_users_portraits_xsmall {
+		@include o-users_portrait_size(math.div($o-portrait-small-size, 2));
+	}
+	&.o_users_portraits_small {
+		@include o-users_portrait_size($o-portrait-small-size);
+	}
+	&.o_users_portraits_medium {
+		@include o-users_portrait_size(math.div($o-portrait-size, 2));
+	}
+	&.o_users_portraits_large {
+		@include o-users_portrait_size($o-portrait-size);
+	}
+	.o_portrait_user_not_visible {
+		margin-left: 5px;
+	}
+}
 
 /* Date component, used in info course element, blog etc */
 .o_datecomp {

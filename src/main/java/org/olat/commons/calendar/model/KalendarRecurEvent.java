@@ -82,6 +82,7 @@ public class KalendarRecurEvent extends KalendarEvent {
 		setLiveStreamUrlTemplateKey(event.getLiveStreamUrlTemplateKey());
 		setLiveStreamUrl(event.getLiveStreamUrl());
 		setSourceNodeId(event.getSourceNodeId());
+		setExternalId(event.getExternalId());
 		setSubject(event.getSubject());
 	}
 }

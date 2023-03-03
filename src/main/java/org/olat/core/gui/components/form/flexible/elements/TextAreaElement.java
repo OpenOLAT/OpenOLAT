@@ -21,6 +21,9 @@ package org.olat.core.gui.components.form.flexible.elements;
 
 import java.util.List;
 
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+
 /**
  * 
  * Initial date: 13 déc. 2016<br>
@@ -41,6 +44,8 @@ public interface TextAreaElement extends TextElement {
 	
 	public void setFixedFontWidth(boolean fixedFontWidth);
 	
+	public void setAutosave(boolean autosave);
+	
 	public boolean isStripedBackgroundEnabled();
 	
 	public boolean isLineNumbersEnabled();
@@ -54,4 +59,28 @@ public interface TextAreaElement extends TextElement {
 	public List<Integer> getErrors();
 	
 	public String getErrorsAsString();
+	
+	/**
+	 * This event is fired without refresh of the GUI!
+	 * 
+	 * Initial date: 21 Dec 2022<br>
+	 * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+	 *
+	 */
+	public static class TextAreaAutosaveEvent extends FormEvent {
+
+		private static final long serialVersionUID = 3323978400930044102L;
+
+		private final String text;
+		
+		public TextAreaAutosaveEvent(FormItem source, String text) {
+			super("text-area-autosave", source, ONCHANGE);
+			this.text = text;
+		}
+		
+		public String getText() {
+			return text;
+		}
+		
+	}
 }

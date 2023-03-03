@@ -42,6 +42,7 @@ public enum OrganisationRoles {
 	poolmanager,
 	curriculummanager,
 	qualitymanager,
+	projectmanager,
 	linemanager,
 	principal,
 	author,
@@ -106,6 +107,7 @@ public enum OrganisationRoles {
 				groupmanager,
 				poolmanager,
 				curriculummanager,
+				projectmanager,
 				qualitymanager,
 				linemanager,
 				principal,
@@ -140,7 +142,7 @@ public enum OrganisationRoles {
 				|| role == OrganisationRoles.usermanager || role == OrganisationRoles.rolesmanager
 				|| role == OrganisationRoles.groupmanager || role == OrganisationRoles.learnresourcemanager
 				|| role == OrganisationRoles.poolmanager || role == OrganisationRoles.curriculummanager
-				|| role == OrganisationRoles.lecturemanager || role == OrganisationRoles.qualitymanager
+				|| role == OrganisationRoles.lecturemanager || role == projectmanager || role == OrganisationRoles.qualitymanager
 				|| role == OrganisationRoles.linemanager || role == OrganisationRoles.principal
 				|| role == OrganisationRoles.administrator || role == OrganisationRoles.sysadmin;
 	}

@@ -1,0 +1,27 @@
+<div class="o_proj_card o_proj_card_link o_proj_note_card" onClick="$f.ffXHREvent("select","$row.key")";" role="link">
+	<div class="o_proj_card_meta o_proj_note_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_proj_note_title o_proj_card_title">$r.render("$row.getSelectLinkName()")</h4>
+			</div>
+			#if($row.getToolsLinkName())
+				$r.render($row.getToolsLinkName())
+			#end
+		</div>
+		<div class="o_proj_note_members o_proj_card_members">
+			#if($row.getUserPortraitsName())
+				$r.render($row.getUserPortraitsName())
+			#end
+		</div>
+		<div class="o_proj_note_text">
+			#if($row.text)
+				$row.text
+			#end
+		</div>
+		<div class="o_proj_note_modified o_proj_card_modified">
+			<div class="o_nowrap">
+				$row.modified
+			</div>
+		</div>
+	</div>
+</div>

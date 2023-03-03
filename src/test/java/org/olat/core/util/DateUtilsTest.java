@@ -149,7 +149,97 @@ public class DateUtilsTest {
 				.doesNotContain(
 					end
 				);
-
+	}
+	
+	@Test
+	public void shouldCheckIfIsOverlapping() {
+		// Starts inside, ends inside
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends inside
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime()))
+		.isTrue();
+		// Starts inside, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 6, 1, 2, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends earlier
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 4, 1, 2, 0, 0).getTime()))
+		.isFalse();
+		// Starts later, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime(),
+				new GregorianCalendar(2020, 6, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 6, 1, 2, 0, 0).getTime()))
+		.isFalse();
+		
+		// Switch the two ranges
+		
+		// Starts inside, ends inside
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends inside
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isTrue();
+		// Starts inside, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 5, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 6, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isTrue();
+		// Starts earlier, ends earlier
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 4, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 4, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isFalse();
+		// Starts later, ends later
+		assertThat(DateUtils.isOverlapping(
+				new GregorianCalendar(2020, 6, 1, 1, 0, 0).getTime(),
+				new GregorianCalendar(2020, 6, 1, 2, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 0, 0, 0).getTime(),
+				new GregorianCalendar(2020, 5, 1, 24, 0, 0).getTime()))
+		.isFalse();
 	}
 
 }

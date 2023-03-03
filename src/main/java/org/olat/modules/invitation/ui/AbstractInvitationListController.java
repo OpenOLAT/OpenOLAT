@@ -78,6 +78,8 @@ import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.invitation.ui.InvitationListTableModel.InvitationCols;
 import org.olat.modules.invitation.ui.component.InvitationRolesCellRenderer;
 import org.olat.modules.invitation.ui.component.InvitationStatusCellRenderer;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjectMailing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryMailing;
 import org.olat.repository.RepositoryMailing.RepositoryEntryMailTemplate;
@@ -221,7 +223,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 	
 	protected abstract void loadModel();
 	
-	protected InvitationRow forgeRow(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup) {
+	protected InvitationRow forgeRow(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup, ProjProject projProject) {
 		FormLink urlLink = uifactory.addFormLink("url_" + (++counter), "url", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 		urlLink.setIconLeftCSS("o_icon o_icon_link o_icon-fw");
 		
@@ -231,7 +233,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
 		}
 		
-		InvitationRow row = new InvitationRow(invitation, entry, businessGroup, urlLink, toolsLink);
+		InvitationRow row = new InvitationRow(invitation, entry, businessGroup, projProject, urlLink, toolsLink);
 		urlLink.setUserObject(row);
 		if(toolsLink != null) {
 			toolsLink.setUserObject(row);
@@ -344,7 +346,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		if(status == InvitationStatusEnum.active) {
 			MailerResult results = new MailerResult();
 			for(InvitationRow invitationRow:invitationRows) {
-				MailerResult result = sendEmail(invitationRow.getInvitation(), invitationRow.getRepositoryEntry(), invitationRow.getBusinessGroup());
+				MailerResult result = sendEmail(invitationRow.getInvitation(), invitationRow.getRepositoryEntry(), invitationRow.getBusinessGroup(), invitationRow.getProject());
 				results.append(result);
 			}
 			if(results.getReturnCode() != MailerResult.OK) {
@@ -372,7 +374,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		dbInstance.commit();
 		
 		if(status == InvitationStatusEnum.active) {
-			MailerResult result = sendEmail(invitation, row.getRepositoryEntry(), row.getBusinessGroup());	
+			MailerResult result = sendEmail(invitation, row.getRepositoryEntry(), row.getBusinessGroup(), row.getProject());
 			if(result.getReturnCode() != MailerResult.OK) {
 				MailHelper.printErrorsAndWarnings(result, getWindowControl(), false, getLocale());
 			}
@@ -381,7 +383,7 @@ abstract class AbstractInvitationListController extends FormBasicController {
 		loadModel();
 	}
 	
-	protected MailerResult sendEmail(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup) {
+	protected MailerResult sendEmail(Invitation invitation, RepositoryEntry entry, BusinessGroup businessGroup, ProjProject projProject) {
 		ContactList contactList = new ContactList("Invitation");
 		contactList.add(invitation.getMail());
 		
@@ -399,6 +401,9 @@ abstract class AbstractInvitationListController extends FormBasicController {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, businessGroup, getIdentity());
 			String businessGroupUrl = invitationService.toUrl(invitation, businessGroup);
 			mailTemplate.addToContext("groupurl", businessGroupUrl);
+		} else if(projProject != null) {
+			ores = OresHelper.clone(projProject);
+			mailTemplate = ProjectMailing.getInvitationTemplate(projProject, getIdentity());
 		}
 		
 		MailerResult result = new MailerResult();

@@ -134,6 +134,10 @@
 		margin-right: auto;
 	}
 }
+.o_flex_first_grow_base, %o_flex_first_grow_base  {
+	@extend %o_flex_first_grow;
+	align-items: baseline;
+}
 
 .o_flex_first_grow_vertical {
 	display: flex;

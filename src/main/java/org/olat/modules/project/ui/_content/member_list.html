@@ -1,0 +1,20 @@
+<div class="o_proj_member_list">
+	<div class="o_proj_header o_flex_first_grow o_block">
+		<div class="o_proj_member_list_title">
+			<h2>$r.translate("member.list.title")</h2>
+		</div>
+		<div class="o_title_cmds">
+			#if($r.visible("member.add") && $r.visible("member.dropdown"))
+				<div class="btn-group">
+					$r.render("member.add")
+					$r.render("member.dropdown")
+				</div>
+			#elseif($r.visible("member.add"))
+				<div class="btn-group">
+					$r.render("member.add")
+				</div>
+			#end
+		</div>
+	</div>
+	$r.render("table")
+</div>

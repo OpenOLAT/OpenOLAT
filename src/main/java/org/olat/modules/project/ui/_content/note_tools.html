@@ -1,0 +1,15 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("note.edit"))
+		<li>$r.render("note.edit")</li>
+	#end
+	#if($r.available("open.in.new.window"))
+		<li>$r.render("open.in.new.window")</li>
+	#end
+	#if($r.available("download"))
+		<li>$r.render("download")</li>
+	#end
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+</ul>

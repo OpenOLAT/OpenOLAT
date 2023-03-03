@@ -23,7 +23,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -56,12 +58,19 @@ import org.olat.modules.invitation.InvitationModule;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationStatusEnum;
 import org.olat.modules.invitation.InvitationTypeEnum;
-import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.InvitationImpl;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithProject;
+import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.manager.BinderDAO;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
+import org.olat.modules.project.ProjectRole;
+import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.manager.ProjProjectDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -97,6 +106,8 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;
 	@Autowired
+	private ProjProjectDAO projProjectDao;
+	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
 	@Autowired
 	private OrganisationService organisationService;
@@ -104,6 +115,8 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private ProjectService projectService;
 
 	@Override
 	public Invitation createInvitation(InvitationTypeEnum type) {
@@ -234,6 +247,11 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	}
 
 	@Override
+	public List<InvitationWithProject> findInvitationsWithProject(SearchInvitationParameters searchParams){
+		return invitationDao.findInvitationsWitProjects(searchParams);
+	}
+
+	@Override
 	public List<Invitation> findInvitations(RepositoryEntryRef entry, SearchInvitationParameters searchParams) {
 		return invitationDao.findInvitations(entry, searchParams);
 	}
@@ -241,6 +259,11 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 	@Override
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams) {
 		return invitationDao.findInvitations(businessGroup, searchParams);
+	}
+
+	@Override
+	public List<Invitation> findInvitations(ProjProjectRef project, SearchInvitationParameters searchParams) {
+		return invitationDao.findInvitations(project, searchParams);
 	}
 
 	@Override
@@ -319,6 +342,20 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 					}
 				}
 			}
+		} else if(invitation.getType() == InvitationTypeEnum.project) {
+			ProjProject project = projProjectDao.loadProject(invitation.getBaseGroup());
+			if(project == null || ProjectStatus.deleted == project.getStatus()) {
+				log.warn("Project of invitation not found: {}", invitation.getKey());
+			} else {
+				Set<ProjectRole> projectRoles = null;
+				if (memberRoles != null && !memberRoles.isEmpty()) {
+					projectRoles = memberRoles.stream().filter(ProjectRole::isValueOf).map(ProjectRole::valueOf).collect(Collectors.toSet());
+				}
+				if (projectRoles == null || projectRoles.isEmpty()) {
+					projectRoles = Set.of(ProjectRole.participant);
+				}
+				projectService.updateMember(identity, project, identity, projectRoles);
+			}
 		}
 	}
 	
@@ -368,6 +405,9 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 			case businessGroup:
 				BusinessGroup businessGroup = businessGroupDao.findBusinessGroup(invitation.getBaseGroup());
 				return toUrl(invitation, businessGroup);
+			case project:
+				ProjProject project = projProjectDao.loadProject(invitation.getBaseGroup());
+				return toUrl(invitation, project);
 			case binder:
 				Binder binder = binderDao.loadByGroup(invitation.getBaseGroup());
 				return toUrl(invitation, binder);
@@ -396,6 +436,14 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		}
 		return toUrl(invitation, entries);
 	}
+
+	@Override
+	public String toUrl(Invitation invitation, ProjProject project) {
+		if(project != null) {
+			return toUrl(invitation, "[Projects:0][Project:" + project.getKey() + "]");
+		}
+		return toUrl(invitation, List.of());
+	}
 	
 	@Override
 	public String toUrl(Invitation invitation, Binder binder) {
@@ -411,6 +459,10 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 
 	private String toUrl(Invitation invitation, List<ContextEntry> entries) {
 		String businessPath = BusinessControlFactory.getInstance().getAsString(entries);
+		return toUrl(invitation, businessPath);
+	}
+
+	private String toUrl(Invitation invitation, String businessPath) {
 		String restUri = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 		restUri += "?invitation=" + invitation.getToken();
 		return restUri;

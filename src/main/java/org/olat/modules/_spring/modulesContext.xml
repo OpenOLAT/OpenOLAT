@@ -18,6 +18,7 @@
 	<import resource="classpath:/org/olat/modules/grading/_spring/gradingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/lecture/_spring/lectureContext.xml"/>
 	<import resource="classpath:/org/olat/modules/library/_spring/libraryContext.xml"/>
+	<import resource="classpath:/org/olat/modules/project/_spring/projectContext.xml"/>
 	<import resource="classpath:/org/olat/modules/quality/_spring/qualityContext.xml"/>
 	<import resource="classpath:/org/olat/modules/webFeed/_spring/webFeedContext.xml"/>
 	<import resource="classpath:/org/olat/modules/wiki/_spring/wikiContext.xml"/>

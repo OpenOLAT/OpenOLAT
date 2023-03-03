@@ -21,6 +21,7 @@ package org.olat.course.member.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailTemplate;
@@ -29,6 +30,9 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
 import org.olat.modules.invitation.InvitationAdditionalInfos;
 import org.olat.modules.invitation.model.InvitationAdditionalInfosImpl;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjectRole;
+import org.olat.modules.project.ui.wizard.ProjectRolesContext;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -37,11 +41,14 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InvitationContext {
+public class InvitationContext implements ProjectRolesContext {
 	
+	private final Identity doer;
 	private final RepositoryEntry repoEntry;
 	private final BusinessGroup businessGroup;
+	private final ProjProject project;
 	private MemberPermissionChangeEvent memberPermissions;
+	private Set<ProjectRole> projectRoles;
 	
 	private final boolean overrideManaged;
 	
@@ -53,20 +60,30 @@ public class InvitationContext {
 
 	private MailerResult result;
 	
-	private InvitationContext(RepositoryEntry repoEntry, BusinessGroup businessGroup, boolean overrideManaged) {
+	private InvitationContext(Identity doer, RepositoryEntry repoEntry, BusinessGroup businessGroup, ProjProject project, boolean overrideManaged) {
+		this.doer = doer;
 		this.repoEntry = repoEntry;
 		this.businessGroup = businessGroup;
+		this.project = project;
 		this.overrideManaged = overrideManaged;
 	}
 	
 	public static InvitationContext valueOf(BusinessGroup businessGroup) {
-		return new InvitationContext(null, businessGroup, false);
+		return new InvitationContext(null, null, businessGroup, null, false);
+	}
+	
+	public static InvitationContext valueOf(Identity doer, ProjProject project) {
+		return new InvitationContext(doer, null, null, project, false);
 	}
 	
 	public static InvitationContext valueOf(RepositoryEntry repoEntry, boolean overrideManaged) {
-		return new InvitationContext(repoEntry, null, overrideManaged);
+		return new InvitationContext(null, repoEntry, null, null, overrideManaged);
 	}
 	
+	public Identity getDoer() {
+		return doer;
+	}
+
 	public RepositoryEntry getRepoEntry() {
 		return repoEntry;
 	}
@@ -75,6 +92,10 @@ public class InvitationContext {
 		return businessGroup;
 	}
 	
+	public ProjProject getProject() {
+		return project;
+	}
+
 	public List<TransientInvitation> getInvitations() {
 		return new ArrayList<>(invitations);
 	}
@@ -123,6 +144,16 @@ public class InvitationContext {
 		this.memberPermissions = memberPermissions;
 	}
 	
+	@Override
+	public Set<ProjectRole> getProjectRoles() {
+		return projectRoles;
+	}
+
+	@Override
+	public void setProjectRoles(Set<ProjectRole> projectRoles) {
+		this.projectRoles = projectRoles;
+	}
+
 	public boolean hasInviteeOnly() {
 		boolean inviteeOnly = false;
 		for(TransientInvitation invitation:invitations) {

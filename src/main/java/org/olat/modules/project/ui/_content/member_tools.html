@@ -1,0 +1,9 @@
+<ul class="o_dropdown list-unstyled">
+	<li>$r.render("member.home")</li>
+	<li>$r.render("contact")</li>
+	#if($r.available("member,edit") || $r.available("member.remove"))
+		<li class="divider"></li>
+		<li>$r.render("member.edit")</li>
+		<li>$r.render("member.remove")</li>
+	#end
+</ul>

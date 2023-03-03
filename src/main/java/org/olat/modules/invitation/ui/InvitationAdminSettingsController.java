@@ -53,6 +53,7 @@ public class InvitationAdminSettingsController extends FormBasicController {
 	private MultipleSelectionElement invitationCourseEl;
 	private MultipleSelectionElement invitationBusinessGroupEl;
 	private MultipleSelectionElement invitationPortfolioEl;
+	private MultipleSelectionElement invitationProjectEl;
 	private MultipleSelectionElement rolesCourseEl;
 	private MultipleSelectionElement rolesBusinessGroupEl;
 	private SingleSelection courseOwnerPermissionEl;
@@ -75,6 +76,7 @@ public class InvitationAdminSettingsController extends FormBasicController {
 		initCourseForm(formLayout);
 		initBusinessGroupForm(formLayout);
 		initPortfolioForm(formLayout);
+		initProjectForm(formLayout);
 	}
 	
 	private void initCourseForm(FormItemContainer formLayout) {
@@ -170,6 +172,17 @@ public class InvitationAdminSettingsController extends FormBasicController {
 		invitationPortfolioEl.addActionListener(FormEvent.ONCHANGE);
 	}
 	
+	private void initProjectForm(FormItemContainer formLayout) {
+		FormLayoutContainer projectCont = FormLayoutContainer.createDefaultFormLayout("projectCont", getTranslator());
+		formLayout.add(projectCont);
+		projectCont.setFormTitle(translate("admin.project.title"));
+		
+		invitationProjectEl = uifactory.addCheckboxesHorizontal("invitee.project.login", "invitee.project.login", projectCont,
+				onKeyValues.keys(), onKeyValues.values());
+		invitationProjectEl.select(keys[0], invitationModule.isProjectInvitationEnabled());
+		invitationProjectEl.addActionListener(FormEvent.ONCHANGE);
+	}
+	
 	private void updateUI() {
 		boolean courseInvitationEnabled = invitationCourseEl.isAtLeastSelected(1);
 		rolesCourseEl.setVisible(courseInvitationEnabled);
@@ -190,6 +203,8 @@ public class InvitationAdminSettingsController extends FormBasicController {
 			updateUI();
 		} else if(invitationPortfolioEl == source) {
 			invitationModule.setPortfolioInvitationEnabled(invitationPortfolioEl.isAtLeastSelected(1));
+		} else if(invitationProjectEl == source) {
+			invitationModule.setProjectInvitationEnabled(invitationProjectEl.isAtLeastSelected(1));
 		} else if(rolesCourseEl == source) {
 			invitationModule.setCourseRolesConfiguration(rolesCourseEl.getSelectedKeys());
 		} else if(rolesBusinessGroupEl == source) {

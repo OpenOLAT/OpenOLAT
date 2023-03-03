@@ -39,6 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithProject;
 import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.invitation.ui.InvitationListTableModel.InvitationCols;
@@ -86,6 +87,9 @@ public class IdentityInvitationListController extends AbstractInvitationListCont
 		} else if(invitationType == InvitationTypeEnum.businessGroup) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InvitationCols.businessGroupKey));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InvitationCols.businessGroupName, "selectBusinessGroup"));
+		} else if(invitationType == InvitationTypeEnum.project) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, InvitationCols.projectKey));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(InvitationCols.projectTitle, "selectProject"));
 		}
 		return null;
 	}
@@ -108,12 +112,17 @@ public class IdentityInvitationListController extends AbstractInvitationListCont
 			List<InvitationWithRepositoryEntry> invitationWithEntries = invitationService.findInvitationsWithEntries(params, false);
 			rows = invitationWithEntries.stream()
 					.filter(invitation -> invitation.getEntry() != null && invitation.getEntry().getEntryStatus() != RepositoryEntryStatusEnum.trash)
-					.map(invitation -> forgeRow(invitation.getInvitation(), invitation.getEntry(), null))
+					.map(invitation -> forgeRow(invitation.getInvitation(), invitation.getEntry(), null, null))
 					.collect(Collectors.toList());
 		} else if(invitationType == InvitationTypeEnum.businessGroup) {
 			List<InvitationWithBusinessGroup> invitationWithGroups = invitationService.findInvitationsWithBusinessGroups(params);
 			rows = invitationWithGroups.stream()
-					.map(invitation -> forgeRow(invitation.getInvitation(), null, invitation.getBusinessGroup()))
+					.map(invitation -> forgeRow(invitation.getInvitation(), null, invitation.getBusinessGroup(), null))
+					.collect(Collectors.toList());
+		} else if(invitationType == InvitationTypeEnum.project) {
+			List<InvitationWithProject> invitationWithGroups = invitationService.findInvitationsWithProject(params);
+			rows = invitationWithGroups.stream()
+					.map(invitation -> forgeRow(invitation.getInvitation(), null, null, invitation.getProject()))
 					.collect(Collectors.toList());
 		} else {
 			rows = new ArrayList<>();
@@ -142,6 +151,9 @@ public class IdentityInvitationListController extends AbstractInvitationListCont
 				} else if("selectBusinessGroup".equals(se.getCommand())) {
 					InvitationRow row = tableModel.getObject(se.getIndex());
 					launchBusinessGroup( ureq, row.getBusinessGroupKey());
+				} else if("selectProject".equals(se.getCommand())) {
+					InvitationRow row = tableModel.getObject(se.getIndex());
+					launchProject( ureq, row.getProjectKey());
 				}
 			}
 		}
@@ -154,5 +166,9 @@ public class IdentityInvitationListController extends AbstractInvitationListCont
 	
 	private void launchBusinessGroup(UserRequest ureq, Long businessGroupKey) {
 		NewControllerFactory.getInstance().launch("[BusinessGroup:" + businessGroupKey + "]", ureq, getWindowControl());
+	}
+	
+	private void launchProject(UserRequest ureq, Long projectKey) {
+		NewControllerFactory.getInstance().launch("[Projects:0][Project:" + projectKey + "]", ureq, getWindowControl());
 	}
 }

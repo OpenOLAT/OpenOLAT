@@ -1,0 +1,42 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h4 class="panel-title o_proj_project_title">
+			<i class="o_icon o_icon-lg o_icon_proj_project"> </i> $row.title
+		</h4>
+		#if($row.externalRef)
+			<small class="text-muted">$row.externalRef</small>
+		#end
+	</div>
+	<div class="panel-body">
+		
+		#if($r.isNotNull($row.getUserPortraitsName()))
+			<div class="o_proj_project_members">
+				$r.render($row.getUserPortraitsName())
+			</div>
+		#end
+		
+		<div class="o_proj_project_owners">
+			#if($row.ownersNames)
+				$r.translate("project.of", $row.ownersNames)
+			#end
+		</div>
+		<div class="o_proj_project_modified">
+			#if($row.modified)
+				$row.modified
+			#end
+		</div>
+		
+		<div class="o_proj_project_teaser">
+			#if($row.teaser)
+				$row.teaser
+			#end
+		</div>
+		
+		#if($r.isNotNull($row.getSelectLinkName()))
+			<div class="o_button_group o_button_group_right o_button_group_bottom">
+				$r.render($row.getSelectLinkName())
+			</div>
+		#end
+		
+	</div>
+</div>

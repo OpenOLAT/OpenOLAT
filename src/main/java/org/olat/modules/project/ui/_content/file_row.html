@@ -1,0 +1,26 @@
+<div class="o_proj_card o_proj_file_card">
+	<div class="o_proj_file_thumbnail">
+		<div class="o_proj_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" />
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+	</div>
+	<div class="o_proj_card_meta o_proj_file_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h4 class="o_proj_file_title o_proj_card_title">$r.render("$row.getSelectLinkName()")</h4>
+			</div>
+			#if($row.getToolsLinkName())
+				$r.render($row.getToolsLinkName())
+			#end
+		</div>
+		<div class="o_proj_file_modified o_proj_card_modified">
+			<div class="o_nowrap">
+				$row.modified
+			</div>
+		</div>
+	</div>
+</div>

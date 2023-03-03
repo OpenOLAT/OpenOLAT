@@ -53,6 +53,7 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 	private boolean originalLineBreaks = false;
 	private boolean lineNumbersEnabled = false;
 	private boolean stripedBackgroundEnabled = false;
+	private boolean autosave = false;
 	private List<Integer> errorRows;
 
 	/**
@@ -145,6 +146,15 @@ class TextAreaElementComponent extends FormBaseComponentImpl {
 		setDirty(true);
 	}
 	
+	public boolean isAutosave() {
+		return autosave;
+	}
+
+	public void setAutosave(boolean autosave) {
+		this.autosave = autosave;
+		setDirty(true);
+	}
+
 	public void setErrors(List<Integer> rows) {
 		if (rows == null || rows.isEmpty()) {
 			return;

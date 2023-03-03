@@ -27,6 +27,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
@@ -164,6 +165,28 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 			  .append("jQuery(function() {\n")
 			  .append(" jQuery('#").append(id).append("').tabOverride();})")
 			  .append(FormJSHelper.getJSEnd());
+		}
+		
+		if (teC.isAutosave()) {
+			Form form = te.getRootForm();
+			sb.append(FormJSHelper.getJSStart());
+			sb.append("jQuery(function() {\n");
+			sb.append("var periodic = jQuery.periodic({period: 60000, decay:1.0, max_period: Number.MAX_VALUE }, function() {");
+			sb.append("try {");
+			sb.append("  if(jQuery('#").append(id).append("').length > 0) {");
+			sb.append("    var text = jQuery('#").append(id).append("').val();");
+			sb.append(FormJSHelper.generateXHRFnCallVariables(form, teC.getFormDispatchId(), 4));
+			sb.append("    o_ffXHRNFEvent(formNam, dispIdField, dispId, eventIdField, eventInt, false, false, false, 'evAutosave', 'autosave', text);\n");
+			sb.append("  } else {");
+			sb.append("    periodic.cancel();");
+			sb.append("  }");
+			sb.append("} catch(e) {");
+			sb.append("  periodic.cancel();");
+			sb.append("  if(window.console) console.log(e);");
+			sb.append("}");
+			sb.append("})");
+			sb.append("});\n");
+			sb.append(FormJSHelper.getJSEnd());
 		}
 	}
 }

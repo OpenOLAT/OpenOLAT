@@ -58,7 +58,7 @@ public class QuestionPoolSite extends AbstractSiteInstance {
 		Translator trans = Util.createPackageTranslator(QuestionPoolMainEditorController.class, locale);
 		origNavElem = new DefaultNavElement(questionPoolBusinessPath, trans.translate("topnav.qpool"),
 				trans.translate("topnav.qpool.alt"), "o_site_qpool");		
-		origNavElem.setAccessKey("p".charAt(0));
+		origNavElem.setAccessKey("q".charAt(0));
 		curNavElem = new DefaultNavElement(origNavElem);
 	}
 	

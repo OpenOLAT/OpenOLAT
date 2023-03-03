@@ -248,6 +248,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.poolmanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.curriculummanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.lecturemanager, actingIdentity, updatedIdentity);
+		updateRoles(organisation, roles, currentRoles, OrganisationRoles.projectmanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.qualitymanager, actingIdentity, updatedIdentity);
 		updateRoles(organisation, roles, currentRoles, OrganisationRoles.linemanager, actingIdentity, updatedIdentity);
 

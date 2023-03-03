@@ -121,8 +121,12 @@
 	   <!-- this one is hard coded and cannot be changed -->
 	   <property name="defaultSiteSecurityCallbackBeanId" value="immunityProofSecurityCallback"/>
 	</bean>
-	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
+	<bean id="olatsites_projects" class="org.olat.modules.project.site.ProjectsSiteDef">
 	   <property name="order" value="17" />
+	   <property name="defaultSiteSecurityCallbackBeanId" value="projectCreatorOrMemberCallback"/>
+	</bean>
+	<bean id="olatsites_guidemo" class="org.olat.gui.demo.site.GUIDemoSiteDef">
+	   <property name="order" value="18" />
 	   <property name="enabled" value="${guidemo.enabled}"/>
 	   	<property name="defaultSiteSecurityCallbackBeanId" value="adminSiteSecurityCallback"/>
 	</bean>

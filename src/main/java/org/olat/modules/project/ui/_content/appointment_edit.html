@@ -1,0 +1,23 @@
+<div class="o_proj_appointment_edit">
+	$r.render("subject", "vertical", "form")
+	<div class="o_proj_all_day">
+		$r.render("all.day", "horizontal", "form") $r.translate("appointment.edit.all.day")
+	</div>
+	<div class="o_proj_two_cols">
+		$r.render("start", "horizontal", "form")
+		$r.render("end", "horizontal", "form")
+	</div>
+	#if($r.visible("recurrence.end"))
+		<div class="o_proj_two_cols">
+			$r.render("recurrence.rule", "horizontal", "form")
+			$r.render("recurrence.end", "horizontal", "form")
+		</div>
+	#else
+		$r.render("recurrence.rule", "vertical", "form")
+	#end
+	<div class="o_proj_two_cols">
+		$r.render("location", "horizontal", "form")
+		$r.render("color", "horizontal", "form")
+	</div>
+	$r.render("description", "vertical", "form")
+</div>

@@ -1,0 +1,13 @@
+<div class="o_proj_project_list">
+	<div class="o_proj_header o_flex_first_grow o_block">
+		<div class="o_proj_project_list_title">
+			<h2>$r.translate("project.list.title")</h2>
+		</div>
+		<div class="o_title_cmds">
+			#if($r.available("project.create"))
+				<div>$r.render("project.create")</div>
+			#end
+		</div>
+	</div>
+	$r.render("table")
+</div>

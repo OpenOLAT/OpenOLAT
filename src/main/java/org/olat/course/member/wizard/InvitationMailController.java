@@ -32,6 +32,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.group.manager.BusinessGroupMailing;
 import org.olat.group.manager.BusinessGroupMailing.MailType;
 import org.olat.group.ui.wizard.BGMailTemplateController;
+import org.olat.modules.project.ProjectMailing;
 import org.olat.repository.RepositoryMailing;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,10 +61,13 @@ public class InvitationMailController extends StepFormBasicController {
 			mailTemplate = RepositoryMailing.getInvitationTemplate(context.getRepoEntry(), getIdentity());
 		} else if(context.getBusinessGroup() != null) {
 			mailTemplate = BusinessGroupMailing.getDefaultTemplate(MailType.invitation, context.getBusinessGroup(), getIdentity());
+		} else if(context.getProject() != null) {
+			mailTemplate = ProjectMailing.getInvitationTemplate(context.getProject(), getIdentity());
 		}
 		
 		boolean mandatoryEmail = context.hasInviteeOnly()
-				|| businessGroupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+				|| (context.getProject() != null
+						&& businessGroupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles()));
 		mailTemplateForm = new BGMailTemplateController(ureq, wControl, mailTemplate, false, true, false, mandatoryEmail, rootForm);
 		
 		initForm(ureq);

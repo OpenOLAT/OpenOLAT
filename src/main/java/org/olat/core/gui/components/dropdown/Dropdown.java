@@ -28,6 +28,8 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.translator.Translator;
@@ -39,13 +41,14 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class Dropdown extends AbstractComponent implements ComponentCollection {
+public class Dropdown extends FormBaseComponentImpl implements ComponentCollection {
 	
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
 	public enum CaretPosition { left, right }
 	
+	private DropdownItem item;
 	private String i18nKey;
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
@@ -65,6 +68,13 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	
 	public Dropdown(String name, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
 		super(name, translator);
+		this.i18nKey = i18nKey;
+		setDomReplacementWrapperRequired(domReplacementWrapperRequired);
+	}
+	
+	public Dropdown(DropdownItem item, String i18nKey, boolean domReplacementWrapperRequired, Translator translator) {
+		super(item.getName(), translator);
+		this.item = item;
 		this.i18nKey = i18nKey;
 		setDomReplacementWrapperRequired(domReplacementWrapperRequired);
 	}
@@ -253,6 +263,11 @@ public class Dropdown extends AbstractComponent implements ComponentCollection {
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {		
 		return RENDERER;
+	}
+	
+	@Override
+	public FormItem getFormItem() {
+		return item;
 	}
 	
 	/**

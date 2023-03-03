@@ -29,9 +29,12 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.modules.invitation.model.InvitationWithBusinessGroup;
+import org.olat.modules.invitation.model.InvitationWithProject;
 import org.olat.modules.invitation.model.InvitationWithRepositoryEntry;
 import org.olat.modules.invitation.model.SearchInvitationParameters;
 import org.olat.modules.portfolio.Binder;
+import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -81,9 +84,13 @@ public interface InvitationService {
 	
 	public List<InvitationWithBusinessGroup> findInvitationsWithBusinessGroups(SearchInvitationParameters searchParams);
 
+	public List<InvitationWithProject> findInvitationsWithProject(SearchInvitationParameters searchParams);
+
 	public List<Invitation> findInvitations(RepositoryEntryRef entry, SearchInvitationParameters searchParams);
 	
 	public List<Invitation> findInvitations(BusinessGroupRef businessGroup, SearchInvitationParameters searchParams);
+	
+	public List<Invitation> findInvitations(ProjProjectRef project, SearchInvitationParameters searchParams);
 	
 	/**
 	 * Find an invitation for the same resource, same invitee and same list of roles.
@@ -135,6 +142,8 @@ public interface InvitationService {
 	public String toUrl(Invitation invitation, RepositoryEntry repositoryEntry);
 	
 	public String toUrl(Invitation invitation, BusinessGroup businessGroup);
+	
+	public String toUrl(Invitation invitation, ProjProject project);
 	
 	public String toUrl(Invitation invitation, Binder binder);
 	

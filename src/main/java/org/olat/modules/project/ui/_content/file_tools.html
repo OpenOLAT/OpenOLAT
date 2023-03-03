@@ -1,0 +1,18 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("file.edit"))
+		<li>$r.render("file.edit")</li>
+	#end
+	#if($r.available("file.view"))
+		<li>$r.render("file.view")</li>
+	#end
+	#if($r.available("edit.metadata"))
+		<li>$r.render("edit.metadata")</li>
+	#end
+	#if($r.available("download"))
+		<li>$r.render("download")</li>
+	#end
+	#if($r.available("delete"))
+		<li class="divider"></li>
+		<li>$r.render("delete")</li>
+	#end
+</ul>
