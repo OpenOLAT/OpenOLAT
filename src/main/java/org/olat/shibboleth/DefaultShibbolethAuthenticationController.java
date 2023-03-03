@@ -78,6 +78,7 @@ public class DefaultShibbolethAuthenticationController extends AuthenticationCon
 		
 		VelocityContainer loginComp = createVelocityContainer(shibbolethModule.getLoginTemplateDefault());				
 		shibLink = LinkFactory.createButton("shib.redirect", loginComp, this);	
+		shibLink.setAjaxEnabled(false);
 		shibLink.setIconRightCSS("o_icon o_icon_start");
 		shibLink.setPrimary(true);
 		

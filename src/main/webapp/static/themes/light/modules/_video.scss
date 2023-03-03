@@ -1145,9 +1145,12 @@
 	z-index: 1;
 }
 
-.o_video_comment_close {
-	display: block;
+.o_video_comment_header {
 	text-align: right;
+}
+
+.o_video_comment_close {
+	display: inline-block;
 	margin-top: 6px;
 	margin-bottom: 6px;
 	margin-right: 10px;
