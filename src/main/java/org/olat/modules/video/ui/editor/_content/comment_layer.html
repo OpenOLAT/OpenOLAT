@@ -1,7 +1,9 @@
 #if ($showComment)
 
 <div class="o_video_comment_container">
-	$r.render("close")
+	<div class="o_video_comment_header">
+		$r.render("close")
+	</div>
 	<div id="o_video_comment_box" class="o_video_comment_box o_video_colored_border ${color}">
 		<div class="o_video_comment_author_box" title="$name">
 			<div class="o_portrait">
