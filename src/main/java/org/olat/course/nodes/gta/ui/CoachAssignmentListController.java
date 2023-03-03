@@ -109,7 +109,6 @@ public class CoachAssignmentListController extends FormBasicController {
 	private static final String FILTER_PARTICIPANT = "participant";
 	private static final String FILTER_GROUP = "group";
 	private static final String FILTER_COACH = "coach";
-	private static final String FILTER_NOT_ASSIGNED = "not-assigned";
 	
 	private static final String ALL_TAB_ID = "all";
 	private static final String NOT_ASSIGNED_TAB_ID = "notAssigned";
@@ -175,7 +174,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		participantsViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		
 		initForm(ureq);
-		loadModel(this.assessedIdentities, Set.of(), false);
+		loadModel(this.assessedIdentities, Set.of());
 		loadNumberedCoachColumnHeaders();
 	}
 
@@ -208,7 +207,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		FlexiFiltersTab notAssignedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(NOT_ASSIGNED_TAB_ID, translate("filter.not.assigned"),
 					TabSelectionBehavior.clear, List.of(
-							FlexiTableFilterValue.valueOf(FILTER_NOT_ASSIGNED, List.of(FILTER_NOT_ASSIGNED))));
+							FlexiTableFilterValue.valueOf(FILTER_COACH, List.of(NOT_ASSIGNED))));
 		notAssignedTab.setFiltersExpanded(true);
 		tabs.add(notAssignedTab);
 		
@@ -229,6 +228,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		filters.add(participantFilter);
 		
 		SelectionValues coachesKV = new SelectionValues();
+		coachesKV.add(SelectionValues.entry(NOT_ASSIGNED, translate("filter.coach.not.assigned")));
 		for(CoachColumn coachColumn:coachesColumns) {
 			coachesKV.add(SelectionValues.entry(coachColumn.getCoachKey().toString(), coachColumn.getFullName()));
 		}
@@ -262,13 +262,6 @@ public class CoachAssignmentListController extends FormBasicController {
 					FILTER_GROUP, groupValues, true));
 		}
 		
-		SelectionValues notAssignedKV = new SelectionValues();
-		notAssignedKV.add(SelectionValues.entry(FILTER_NOT_ASSIGNED, FILTER_NOT_ASSIGNED));
-		FlexiTableMultiSelectionFilter notAssignedFilter = new FlexiTableMultiSelectionFilter(translate("filter.not.assigned"),
-				FILTER_NOT_ASSIGNED, participantsKV, true);
-		notAssignedFilter.setDefaultVisible(false);
-		filters.add(notAssignedFilter);
-		
 		tableEl.setFilters(true, filters, false, false);
 	}
 	
@@ -278,7 +271,12 @@ public class CoachAssignmentListController extends FormBasicController {
 		
 		SearchMembersParams params = new SearchMembersParams();
 		params.setPending(false);
-		params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach });
+		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, false)) {
+			params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach });
+		} else {
+			params.setRoles(new GroupRoles[] { GroupRoles.coach });
+		}
+		
 		List<MemberView> coachesViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, coachPropertyHandlers, getLocale());
 		Collections.sort(coachesViews, new MemberViewNamesComparator(coachPropertyHandlers, getLocale()));
 		
@@ -341,7 +339,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		}
 	}
 	
-	private void loadModel(List<Identity> participants, Set<String> filteredCoachKeys, boolean onlyNotAssigned) {
+	private void loadModel(List<Identity> participants, Set<String> filteredCoachKeys) {
 		Map<Long,MemberView> participantsMap = participantsViews.stream()
 				.collect(Collectors.toMap(MemberView::getIdentityKey, view -> view, (u, v) -> u));
 		Map<String,MemberView> coachesStringMap = coachesColumns.stream().map(CoachColumn::getMemberView)
@@ -378,15 +376,20 @@ public class CoachAssignmentListController extends FormBasicController {
 			if(assessedMember != null) {
 				enableDisable(assessedMember, coachChoices, assessmentEntry, coachesStringMap);
 			}
-			if((onlyNotAssigned && !row.isNotAssigned())
-					|| (filteredCoachKeys != null && !filteredCoachKeys.isEmpty() && !filteredCoachKeys.contains(row.getSelectedCoachKey()))) {
-				continue;
+			
+			if(acceptByCoach(row, filteredCoachKeys)) {
+				rows.add(row);
 			}
-			rows.add(row);
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private boolean acceptByCoach(IdentityAssignmentRow row, Set<String> filteredCoachKeys) {
+		if(filteredCoachKeys == null || filteredCoachKeys.isEmpty()) return true;
+		return (filteredCoachKeys.contains(NOT_ASSIGNED) && row.isNotAssigned())
+				|| filteredCoachKeys.contains(row.getSelectedCoachKey());
 	}
 	
 	private void loadNumberedCoachColumnHeaders() {
@@ -424,10 +427,16 @@ public class CoachAssignmentListController extends FormBasicController {
 	private boolean accept(MemberView assessedMember, MemberView coach) {
 		if(assessedMember == null || coach == null) return false;
 		
-		CourseMembership assessedMembership = assessedMember.getMemberShip();
-		CourseMembership coachMembership = coach.getMemberShip();
-		if(assessedMembership.isRepositoryEntryParticipant()
-				&& (coachMembership.isRepositoryEntryCoach() || coachMembership.isRepositoryEntryOwner())) {
+		final CourseMembership assessedMembership = assessedMember.getMemberShip();
+		final CourseMembership coachMembership = coach.getMemberShip();
+		
+		// Owner can be assigne to all participants
+		if(coachMembership.isRepositoryEntryOwner()) {
+			return true;
+		}
+		
+		// Course coaches with course participants
+		if(assessedMembership.isRepositoryEntryParticipant() && coachMembership.isRepositoryEntryCoach()) {
 			return true;
 		}
 		
@@ -491,12 +500,6 @@ public class CoachAssignmentListController extends FormBasicController {
 	private void loadModelWithFilters(String search) {
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		
-		boolean notAssigned = false;
-		FlexiTableFilter notAssignedFilter = FlexiTableFilter.getFilter(filters, FILTER_NOT_ASSIGNED);
-		if(notAssignedFilter != null && notAssignedFilter.isSelected()) {
-			notAssigned = !((FlexiTableExtendedFilter)notAssignedFilter).getValues().isEmpty();
-		}
-
 		Set<Long> identityKeys = Set.of();
 		FlexiTableFilter participantFilter = FlexiTableFilter.getFilter(filters, FILTER_PARTICIPANT);
 		if(participantFilter != null) {
@@ -555,7 +558,7 @@ public class CoachAssignmentListController extends FormBasicController {
 		} else {
 			filteredIdentities = assessedIdentities;
 		}
-		loadModel(filteredIdentities, coachKeys, notAssigned);
+		loadModel(filteredIdentities, coachKeys);
 	}
 	
 	private boolean accept(Identity identity, MemberView participant,
