@@ -68,6 +68,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.GTACourseNode;
@@ -75,6 +76,7 @@ import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskLight;
 import org.olat.course.nodes.gta.ui.CoachAssignmentListTableModel.CACols;
 import org.olat.course.nodes.gta.ui.component.CoachSingleSelectionCellRenderer;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupShort;
@@ -130,6 +132,7 @@ public class CoachAssignmentListController extends FormBasicController {
 	private List<CoachColumn> coachesColumns;
 	private final RepositoryEntry repoEntry;
 	private final List<Identity> assessedIdentities;
+	private final CourseEnvironment courseEnv;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final List<UserPropertyHandler> coachPropertyHandlers;
@@ -152,10 +155,11 @@ public class CoachAssignmentListController extends FormBasicController {
 	private CourseAssessmentService courseAssessmentService;
 	
 	public CoachAssignmentListController(UserRequest ureq, WindowControl wControl, List<Identity> assessedIdentities,
-			UserCourseEnvironment coachCourseEnv, GTACourseNode gtaNode) {
+			UserCourseEnvironment coachCourseEnv, CourseEnvironment courseEnv, GTACourseNode gtaNode) {
 		super(ureq, wControl, "coach_assignment", Util.createPackageTranslator(IdentityListCourseNodeController.class, ureq.getLocale()));
 		
 		this.gtaNode = gtaNode;
+		this.courseEnv = courseEnv;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentities = new ArrayList<>(assessedIdentities);
 
@@ -597,6 +601,13 @@ public class CoachAssignmentListController extends FormBasicController {
 			if(choice.isOneSelected()) {
 				String selectedCoachKey = choice.getSelectedKey();
 				AssessmentEntry assessmentEntry = row.getAssessmentEntry();
+				if(assessmentEntry == null) {
+					Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
+					UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
+							.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
+					assessmentEntry = courseAssessmentService.getAssessmentEntry(gtaNode, assessedUserCourseEnv);		
+				}
+				
 				if(NOT_ASSIGNED.equals(selectedCoachKey)) {
 					if(assessmentEntry != null && assessmentEntry.getCoach() != null) {
 						courseAssessmentService.unassignCoach(assessmentEntry, false, coachCourseEnv.getCourseEnvironment(), gtaNode);
