@@ -1811,7 +1811,8 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		if(GTAType.individual.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))
 				&& cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)
-				&& (currentStatus == TaskProcess.submit || currentStatus == TaskProcess.revision)) {
+				&& (currentStatus == TaskProcess.submit || currentStatus == TaskProcess.revision)
+				&& cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER, true)) {
 			TaskList taskList = getTaskList(taskImpl);
 			RepositoryEntry courseRepoEntry = taskList.getEntry();
 			ICourse course = CourseFactory.loadCourse(courseRepoEntry);

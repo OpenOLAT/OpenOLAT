@@ -20,6 +20,7 @@
 package org.olat.course.nodes.gta.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.commons.services.help.HelpModule;
@@ -115,6 +116,8 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private MultipleSelectionElement coachAssignmentEnabledEl;
 	private SingleSelection coachAssignmentModeEl;
 	private SingleSelection coachOrCoachAndOwnerModeEl;
+	private MultipleSelectionElement assignmentNotificationCoachEl;
+	private MultipleSelectionElement assignmentNotificationParticipantEl;
 	
 	private final GTACourseNode gtaNode;
 	private final ModuleConfiguration config;
@@ -397,11 +400,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 			coachAssignmentEnabledEl.select(onKeys[0], true);
 		}
 
-		SelectionValues assignmentChoachesAndOwnersKV = new SelectionValues();
-		assignmentChoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES, translate("coach.assignment.mode.coaches.only")));
-		assignmentChoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES_AND_OWNERS, translate("coach.assignment.mode.coaches.and.owners")));
+		SelectionValues assignmentCoachesAndOwnersKV = new SelectionValues();
+		assignmentCoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES, translate("coach.assignment.mode.coaches.only")));
+		assignmentCoachesAndOwnersKV.add(SelectionValues.entry(ASSIGNMENT_COACHES_AND_OWNERS, translate("coach.assignment.mode.coaches.and.owners")));
 		coachOrCoachAndOwnerModeEl = uifactory.addRadiosVertical("coach.assignment.mode.owners", "coach.assignment.mode.owners", coachingLayout,
-				assignmentChoachesAndOwnersKV.keys(), assignmentChoachesAndOwnersKV.values());
+				assignmentCoachesAndOwnersKV.keys(), assignmentCoachesAndOwnersKV.values());
 		coachOrCoachAndOwnerModeEl.setVisible(coachAssignment);
 		boolean withOwners = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, false);
 		if(withOwners) {
@@ -422,6 +425,28 @@ public class GTAWorkflowEditController extends FormBasicController {
 		} else {
 			coachAssignmentModeEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE_DEFAULT, true);
 		}
+		
+		SelectionValues notificationCoachKV = new SelectionValues();
+		notificationCoachKV.add(SelectionValues.entry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT, translate("coach.assignment.notification.coach.assignment")));
+		notificationCoachKV.add(SelectionValues.entry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT, translate("coach.assignment.notification.coach.unassignment")));
+		notificationCoachKV.add(SelectionValues.entry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER, translate("coach.assignment.notification.coach.neworder")));
+		assignmentNotificationCoachEl = uifactory.addCheckboxesVertical("coach.assignment.notification.coach", coachingLayout,
+				notificationCoachKV.keys(), notificationCoachKV.values(), 1);
+		assignmentNotificationCoachEl.setVisible(coachAssignment);
+		assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT,
+				config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT, true));
+		assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT,
+				config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT, true));
+		assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER,
+				config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER, true));
+		
+		SelectionValues notificationParticipantKV = new SelectionValues();
+		notificationParticipantKV.add(SelectionValues.entry(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT, translate("coach.assignment.notification.participant.assignment")));
+		assignmentNotificationParticipantEl = uifactory.addCheckboxesVertical("coach.assignment.notification.participant", coachingLayout,
+				notificationParticipantKV.keys(), notificationParticipantKV.values(), 1);
+		assignmentNotificationParticipantEl.setVisible(coachAssignment);
+		assignmentNotificationParticipantEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT,
+				config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT, true));
 	}
 	
 	private void initButtonsForm(FormItemContainer formLayout, UserRequest ureq) {
@@ -585,11 +610,23 @@ public class GTAWorkflowEditController extends FormBasicController {
 			String coachAndOwnersKey = coachOrCoachAndOwnerModeEl.getSelectedKey();
 			boolean coachAndOwners = ASSIGNMENT_COACHES_AND_OWNERS.equals(coachAndOwnersKey);
 			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS, coachAndOwners);
-
 			
+			Collection<String> coachNotifications = assignmentNotificationCoachEl.getSelectedKeys();
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT,
+					coachNotifications.contains(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT));
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT,
+					coachNotifications.contains(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT));
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER,
+					coachNotifications.contains(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER));
+			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT,
+					assignmentNotificationParticipantEl.getSelectedKeys().contains(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT));
 		} else {
 			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_MODE);
 			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_OWNERS);
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT);
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT);
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER);
+			config.remove(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT);
 		}
 	}
 
@@ -703,6 +740,16 @@ public class GTAWorkflowEditController extends FormBasicController {
 		boolean visible = coachAssignmentEnabledEl.isAtLeastSelected(1);
 		coachAssignmentModeEl.setVisible(visible);
 		coachOrCoachAndOwnerModeEl.setVisible(visible);
+		
+		boolean currentVisible = assignmentNotificationCoachEl.isVisible();
+		assignmentNotificationCoachEl.setVisible(visible);
+		assignmentNotificationParticipantEl.setVisible(visible);
+		if(!currentVisible && visible) {
+			assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_ASSIGNMENT, true);
+			assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_UNASSIGNMENT, true);
+			assignmentNotificationCoachEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_COACH_NOTIFICATION_NEW_ORDER, true);
+			assignmentNotificationParticipantEl.select(GTACourseNode.GTASK_COACH_ASSIGNMENT_PARTICIPANT_NOTIFICATION_ASSIGNMENT, true);
+		}
 	}
 	
 	@Override
