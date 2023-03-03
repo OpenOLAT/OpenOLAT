@@ -63,7 +63,7 @@ public class BookingPage {
 	 */
 	public BookingPage addGuestMethod() {
 		addMethodByLink("o_sel_ac_add_guest");
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, ".o_sel_accesscontrol_guest_form");
 		return this;
 	}
 	
