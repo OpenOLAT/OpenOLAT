@@ -106,7 +106,7 @@ public class CommentController extends FormBasicController {
 
 		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		startApplyPositionButton.setTitle(translate("form.common.setToCurrentPosition"));
+		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 
 		colorDropdown = uifactory.addDropdownSingleselect("color", "form.common.color", formLayout,
