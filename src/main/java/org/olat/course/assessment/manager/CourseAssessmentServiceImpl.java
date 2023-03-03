@@ -42,7 +42,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.MailBundle;
@@ -732,6 +734,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(language);
 		Translator translator = Util.createPackageTranslator(CourseAssessmentService.class, locale);
 		
+		String businessPath = "[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
+		String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		String link = "<a href=\"" + url + "\">" + url +"</a>";
+		
+		String extendedTitle = courseEntry.getDisplayname();
+		if(StringHelper.containsNonWhitespace(courseEntry.getExternalRef())) {
+			extendedTitle += " - " + courseEntry.getExternalRef();
+		}
+		
 		String[] args = new String[] {
 			translator.translate(actionI18nKey),				// 0
 			courseEntry.getDisplayname(),						// 1
@@ -742,7 +753,9 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			assessedIdentity.getUser().getFirstName(),			// 6
 			assessedIdentity.getUser().getLastName(),			// 7
 			coach.getUser().getFirstName(),						// 8
-			coach.getUser().getLastName()						// 9
+			coach.getUser().getLastName(),						// 9
+			link,												// 10
+			extendedTitle										// 11
 		};
 		
 		String subject = translator.translate(i18nSubjectKey, args);
@@ -750,7 +763,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		
 		MailerResult result = new MailerResult();
 		MailTemplate template = new CoachAssignmentMailTemplate(subject, body, courseEntry, courseNode);
-		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]");
+		MailContext context = new MailContextImpl(businessPath);
 		
 		MailBundle bundle = mailManager.makeMailBundle(context, recipient, template, null, null, result);
 		if(bundle != null) {
