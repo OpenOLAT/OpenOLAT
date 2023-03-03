@@ -112,6 +112,7 @@ public class SafeExamBrowserConfigurationSerializer {
 	private static void addFilterRules(String expression, boolean allow, boolean regex, Element rulesEl, PList plist) {
 		String[] expressions = expression.split("\r?\n");
 		for(String exp:expressions) {
+			exp = exp == null ? null : exp.trim();
 			if(StringHelper.containsNonWhitespace(expression)) {
 				addFilterRule(exp, allow, regex, rulesEl, plist);
 			}
@@ -194,6 +195,7 @@ public class SafeExamBrowserConfigurationSerializer {
 	private static void addFilterRules(boolean allow, String expression, boolean regex, JsonArray urlFilterRules) {
 		String[] expressions = expression.split("\r?\n");
 		for(String exp:expressions) {
+			exp = exp == null ? null : exp.trim();
 			if(StringHelper.containsNonWhitespace(expression)) {
 				urlFilterRules.add(addFilterRule(allow, exp, regex));
 			}
