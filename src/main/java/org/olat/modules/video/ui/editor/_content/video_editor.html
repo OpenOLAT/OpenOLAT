@@ -1,6 +1,7 @@
 <style>
 	#o_video_editor_video {
 		overflow: hidden;
+		margin-bottom: 10px;
 	}
 
 	#o_video_editor_detail {
@@ -11,8 +12,8 @@
 </style>
 
 <div id="o_video_editor" class="o_video_editor row clearfix">
-	<div id="o_video_editor_video" class="col-xs-12 col-sm-6">$r.render("video")</div>
-	<div id="o_video_editor_detail" class="col-xs-12 col-sm-6">$r.render("detail")</div>
+	<div id="o_video_editor_video" class="col-xs-12 col-md-6">$r.render("video")</div>
+	<div id="o_video_editor_detail" class="col-xs-12 col-md-6">$r.render("detail")</div>
 	<div id="o_video_editor_master" class="col-xs-12">$r.render("master")</div>
 </div>
 
@@ -41,7 +42,7 @@
 
 		var availableWidth = Math.round(videoEditor.width()) + parseInt(videoEditor.css('margin-left'), 10)
 			+ parseInt(videoEditor.css('margin-right'), 10);
-		var videoViewWidth = Math.floor(availableWidth / 2) - 30;
+		var videoViewWidth = videoEditor.width() >= 992 ? Math.floor(availableWidth / 2) - 30 : Math.floor(availableWidth);
 		var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
 		video.width(videoViewWidth);
 		video.height(videoViewHeight);

@@ -119,6 +119,8 @@ public class VideoController extends BasicController {
 			} else if (event instanceof MarkerResizedEvent) {
 				fireEvent(ureq, event);
 			}
+		} else if (commentLayerController == source) {
+			commentLayerController.hideComment();
 		}
 	}
 
