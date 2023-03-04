@@ -20,6 +20,7 @@
 package org.olat.selenium.page.graphene;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Calendar;
@@ -32,7 +33,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -79,9 +79,9 @@ public class OOGraphene {
 		return wait(browser, timeout);
 	}
 	
-	public static FluentWait<WebDriver> wait(WebDriver browser, Duration timeout) {
+	public static FluentWait<WebDriver> wait(WebDriver browser, Duration timeoutDuration) {
 		return new WebDriverWait(browser, driverTimeout)
-				.withTimeout(timeout).pollingEvery(poolingSlow);	
+				.withTimeout(timeoutDuration).pollingEvery(poolingSlow);	
 	}
 	
 	/**
@@ -297,9 +297,9 @@ public class OOGraphene {
 	 * @param timeoutInSeconds
 	 * @param browser
 	 */
-	public static void waitElementPresence(By element, Duration timeout, Duration pollingDuration, WebDriver browser) {
+	public static void waitElementPresence(By element, Duration timeoutDuration, Duration pollingDuration, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
-			.withTimeout(timeout).pollingEvery(pollingDuration)
+			.withTimeout(timeoutDuration).pollingEvery(pollingDuration)
 			.until(ExpectedConditions.presenceOfElementLocated(element));
 	}
 	
@@ -616,14 +616,14 @@ public class OOGraphene {
 	 */
 	public static final void date(Date date, String seleniumCssClass, WebDriver browser) {
 		Locale locale = getLocale(browser);
-		String dateText = Formatter.getInstance(locale).formatDate(date);
+		String dateText = formatDate(date, locale);
 		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
 		browser.findElement(dateBy).sendKeys(dateText);
 	}
 	
 	public static final void datetime(Date date, String seleniumCssClass, WebDriver browser) {
 		Locale locale = getLocale(browser);
-		String dateText = Formatter.getInstance(locale).formatDate(date);
+		String dateText = formatDate(date, locale);
 		By dateBy = By.cssSelector("div." + seleniumCssClass + " input.o_date_day");
 		browser.findElement(dateBy).sendKeys(dateText);
 		
@@ -644,6 +644,17 @@ public class OOGraphene {
 		
 		By datePickerBy = By.id("ui-datepicker-div");
 		waitElementDisappears(datePickerBy, 5, browser);
+	}
+	
+	public static String formatDate(Date date, Locale locale) {
+		DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+		df.setLenient(false);
+		if (df instanceof SimpleDateFormat sdf) {
+			// by default year has only two digits, however most people prefer a four digits year, even in short format
+			String pattern = sdf.toPattern().replaceAll("y+","yyyy");
+			sdf.applyPattern(pattern); 
+		}
+		return df.format(date);
 	}
 	
 	/**

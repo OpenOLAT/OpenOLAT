@@ -214,6 +214,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 					new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 			editColumn.setExportable(false);
 			editColumn.setAlwaysVisible(true);
+			editColumn.setColumnCssClass("o_col_sticky_right o_col_action");
 			columnsModel.addFlexiColumnModel(editColumn);
 		}
 		

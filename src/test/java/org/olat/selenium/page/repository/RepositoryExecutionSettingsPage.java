@@ -22,7 +22,6 @@ package org.olat.selenium.page.repository;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.util.Formatter;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -48,11 +47,11 @@ public class RepositoryExecutionSettingsPage {
 		OOGraphene.waitBusy(browser);
 		
 		By validFromBy = By.cssSelector(".o_sel_repo_lifecycle_validfrom .o_date_picker input[type='text']");
-		String validFromStr = Formatter.getInstance(locale).formatDate(validFrom);
+		String validFromStr = OOGraphene.formatDate(validFrom, locale);
 		browser.findElement(validFromBy).sendKeys(validFromStr);
 		
 		By validToBy = By.cssSelector(".o_sel_repo_lifecycle_validto .o_date_picker input[type='text']");
-		String validToStr = Formatter.getInstance(locale).formatDate(validTo);
+		String validToStr = OOGraphene.formatDate(validTo, locale);
 		browser.findElement(validToBy).sendKeys(validToStr);
 		
 		return this;
