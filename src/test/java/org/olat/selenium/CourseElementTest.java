@@ -1022,6 +1022,7 @@ public class CourseElementTest extends Deployments {
 			.assertOnNotParticipant(participant2.getFirstName());
 	}
 	
+	
 	/**
 	 * An author create a course with a course element
 	 * to show the member list. It add coaches and
@@ -1109,9 +1110,11 @@ public class CourseElementTest extends Deployments {
 			.selectOverview()
 			.setDisplay(DisplayType.peekview);
 		
-		//go check that we see only the coaches results
-		courseRuntime = courseEditor
-			.autoPublish();		
+		 courseEditor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		 courseRuntime = courseEditor
+			.clickToolbarBack();
 		MenuTreePageFragment menuTree = courseRuntime
 			.tree();
 

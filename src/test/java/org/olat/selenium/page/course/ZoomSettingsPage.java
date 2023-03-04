@@ -42,7 +42,6 @@ public class ZoomSettingsPage {
 		By enableBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration .o_sel_zoom_admin_enable input[name='zoom.module.enabled']");
 		OOGraphene.waitElement(enableBy, browser);
 		OOGraphene.check(browser.findElement(enableBy), Boolean.TRUE);
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_zoom_admin_configuration .o_sel_zoom_admin_enabled_for"), browser);
 		return this;
 	}
@@ -52,7 +51,7 @@ public class ZoomSettingsPage {
 		OOGraphene.waitElement(addProfileBy, browser);
 		OOGraphene.click(addProfileBy, browser);
 		
-		// Modale
+		// Modal
 		OOGraphene.waitModalDialog(browser);
 		
 		By nameBy = By.cssSelector("fieldset.o_sel_zoom_edit_profile .o_sel_zoom_profile_name input[type='text']");
