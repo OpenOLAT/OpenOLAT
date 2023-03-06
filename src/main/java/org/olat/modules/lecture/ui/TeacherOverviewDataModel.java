@@ -77,7 +77,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 				Date end = row.getLectureBlock().getEndDate();
 				Date start = row.getLectureBlock().getStartDate();
 				Date now = new Date();
-				return end.before(new Date()) || (row.isIamTeacher() && start.compareTo(now) <= 0);
+				return end.before(now) || (row.isIamTeacher() && start.compareTo(now) <= 0);
 			}
 			case assessmentMode: return Boolean.valueOf(row.isAssessmentMode());
 			case tools: return row.getToolsLink();
