@@ -71,15 +71,20 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		if (reSecurity.isEntryAdmin()) {
 			toolsDropdown.addComponent(new Spacer("video-editor"));
 			
-			changeVideoLink = LinkFactory.createToolLink("changeVideo", translate("tab.video.exchange"), this);
-			changeVideoLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-			toolsDropdown.addComponent(changeVideoLink);
-
 			editVideoLink = LinkFactory.createToolLink("editVideo", translate("tab.video.editor"), this);
 			editVideoLink.setUrl(BusinessControlFactory.getInstance()
 					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[VideoEditor:0]"));
 			editVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			toolsDropdown.addComponent(editVideoLink);
+		}
+	}
+
+	@Override
+	protected void initToolsMenuReplaceItem(Dropdown toolsDropdown) {
+		if (reSecurity.isEntryAdmin()) {
+			changeVideoLink = LinkFactory.createToolLink("changeVideo", translate("tab.video.exchange"), this);
+			changeVideoLink.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
+			toolsDropdown.addComponent(changeVideoLink);
 		}
 	}
 
