@@ -20,7 +20,6 @@
 package org.olat.modules.project.manager;
 
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -93,9 +92,6 @@ import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import net.fortuna.ical4j.model.Recur;
-import net.fortuna.ical4j.model.property.RRule;
 
 /**
  * 
@@ -884,14 +880,15 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public ProjAppointment createAppointment(Identity doer, ProjProject project) {
-		return createAppointment(doer, true, project);
-	}
-
-	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project) {
-		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
 		// Add some time to start after the creation of the activity (below)
-		Date now = DateUtils.addMinutes(DateUtils.truncateSeconds(new Date()), 1);
-		ProjAppointment appointment = appointmentDao.create(artefact, now, DateUtils.addHours(now, 1));
+		Date startDate = DateUtils.addMinutes(new Date(), 1);
+		Date endDate = DateUtils.addHours(startDate, 1);
+		return createAppointment(doer, true, project, startDate, endDate);
+	}
+	
+	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project, Date startDate, Date ednDate) {
+		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
+		ProjAppointment appointment = appointmentDao.create(artefact, DateUtils.truncateSeconds(startDate), DateUtils.truncateSeconds(ednDate));
 		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
 		if (createActivity) {
 			String after = ProjectXStream.toXml(appointment);
@@ -900,6 +897,7 @@ public class ProjectServiceImpl implements ProjectService {
 		return appointment;
 	}
 	
+	
 	@Override
 	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
 			String subject, String description, String location, String color, boolean allDay, String recurrenceRule) {
@@ -907,9 +905,35 @@ public class ProjectServiceImpl implements ProjectService {
 		if (reloadedAppointment == null) {
 			return;
 		}
+		
+		updateOccurenceIds(doer, reloadedAppointment, startDate, allDay);
+		
 		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(), startDate,
 				endDate, subject, description, location, color, allDay, recurrenceRule,
 				reloadedAppointment.getRecurrenceExclusion());
+	}
+	
+	private void updateOccurenceIds(Identity doer, ProjAppointment reloadedAppointment, Date startDate, boolean allDay) {
+		if (StringHelper.containsNonWhitespace(reloadedAppointment.getRecurrenceRule())) {
+			int beginDiff = (int)(startDate.getTime() - reloadedAppointment.getStartDate().getTime());
+			if (beginDiff != 0) {
+				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+				searchParams.setEventIds(List.of(reloadedAppointment.getEventId()));
+				searchParams.setRecurrenceIdAvailable(Boolean.TRUE);
+				List<ProjAppointment> occurenceAppointments = appointmentDao.loadAppointments(searchParams);
+				for (ProjAppointment occurenceAppointment : occurenceAppointments) {
+					String updateOccurenceId = calendarHelper.getUpdatedOccurenceId(occurenceAppointment.getRecurrenceId(), allDay, beginDiff);
+					if (StringHelper.containsNonWhitespace(updateOccurenceId)) {
+						updateReloadedAppointment(doer, true, occurenceAppointment, updateOccurenceId,
+								occurenceAppointment.getStartDate(), occurenceAppointment.getEndDate(),
+								occurenceAppointment.getSubject(), occurenceAppointment.getDescription(),
+								occurenceAppointment.getLocation(), occurenceAppointment.getColor(),
+								occurenceAppointment.isAllDay(), occurenceAppointment.getRecurrenceRule(),
+								occurenceAppointment.getRecurrenceExclusion());
+					}
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -923,6 +947,30 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	@Override
+	public ProjAppointment createAppointmentOcurrence(Identity doer, String externalId, String recurrenceId,
+			Date startDate, Date endDate) {
+		ProjAppointment reloadedAppointment = getAppointment(externalId);
+		if (reloadedAppointment == null) {
+			return null;
+		}
+		
+		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
+		List<Identity> currentMembers = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+		updateMembers(doer, clonedAppointment.getArtefact(), currentMembers);
+		
+		clonedAppointment.setEventId(reloadedAppointment.getEventId());
+		clonedAppointment = updateReloadedAppointment(doer, false, clonedAppointment, recurrenceId, startDate, endDate,
+				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
+				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(), null,
+				null);
+		
+		String after = ProjectXStream.toXml(clonedAppointment);
+		activityDao.create(Action.appointmentCreate, null, after, null, doer, clonedAppointment.getArtefact());
+		
+		return clonedAppointment;
+	}
+	
+	@Override
 	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier,
 			String recurrenceId, Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate) {
 		ProjAppointment reloadedAppointment = getAppointment(identifier);
@@ -930,7 +978,7 @@ public class ProjectServiceImpl implements ProjectService {
 			return null;
 		}
 		
-		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject());
+		ProjAppointment clonedAppointment = createAppointment(doer, false, reloadedAppointment.getArtefact().getProject(), startDate, endDate);
 		List<Identity> currentMembers = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
 		updateMembers(doer, clonedAppointment.getArtefact(), currentMembers);
 		
@@ -938,7 +986,7 @@ public class ProjectServiceImpl implements ProjectService {
 		clonedAppointment = updateReloadedAppointment(doer, false, clonedAppointment, recurrenceId,
 				new Date(startDate.getTime()), new Date(endDate.getTime()), reloadedAppointment.getSubject(),
 				reloadedAppointment.getDescription(), reloadedAppointment.getLocation(), reloadedAppointment.getColor(),
-				reloadedAppointment.isAllDay(), null, reloadedAppointment.getRecurrenceExclusion());
+				reloadedAppointment.isAllDay(), null, null);
 		
 		clonedAppointment = moveReloadedAppointment(doer, false, clonedAppointment, days, minutes, moveStartDate);
 		
@@ -1081,25 +1129,12 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	private void addAppointmentFutureExclusion(Identity doer, ProjAppointment reloadedAppointment, Date exclusionDate) {
-		String recurrenceRule = getExclusionRecurrenceRule(reloadedAppointment.getRecurrenceRule(), exclusionDate);
+		String recurrenceRule = calendarHelper.getExclusionRecurrenceRule(reloadedAppointment.getRecurrenceRule(), exclusionDate);
 		updateReloadedAppointment(doer, true, reloadedAppointment, reloadedAppointment.getRecurrenceId(),
 				reloadedAppointment.getStartDate(), reloadedAppointment.getEndDate(),
 				reloadedAppointment.getSubject(), reloadedAppointment.getDescription(),
 				reloadedAppointment.getLocation(), reloadedAppointment.getColor(), reloadedAppointment.isAllDay(),
 				recurrenceRule, reloadedAppointment.getRecurrenceExclusion());
-	}
-	
-	@SuppressWarnings("deprecation")
-	private String getExclusionRecurrenceRule(String recurrenceRule, Date exclusionDate) {
-		try {
-			Recur recur = new Recur(recurrenceRule);
-			recur.setUntil(CalendarUtils.createDate(exclusionDate));
-			RRule rrule = new RRule(recur);
-			return rrule.getValue();
-		} catch (ParseException e) {
-			log.debug("", e);
-		}
-		return null;
 	}
 	
 	@Override

@@ -80,7 +80,8 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private CloseableCalloutWindowController calloutCtr;
 	private ProjAppointmentEditController appointmentEditCtrl;
 	private ProjAppointmentPreviewController appointmentPreviewCtrl;
-	private ConfirmUpdateController appointmentChangeAllCtr;
+	private ConfirmUpdateController appointmentEditAllCtr;
+	private ConfirmUpdateController appointmentMoveAllCtr;
 	private ProjAppointmentDeleteConfirmationController deleteConfirmationCtrl;
 	
 	private final ProjProject project;
@@ -194,7 +195,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				calloutCtr.deactivate();
 				cleanUp();
 				
-				doEditAppointment(ureq, aeEvant.getAppointment());
+				doEditAppointment(ureq, aeEvant.getKalendarEvent());
 			} else if (event instanceof DeleteAppointmentEvent daEvent) {
 				calloutCtr.deactivate();
 				cleanUp();
@@ -204,11 +205,22 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				calloutCtr.deactivate();
 				cleanUp();
 			}
-		} else if (source == appointmentChangeAllCtr) {
-			if (event instanceof CalendarGUIUpdateEvent) {
-				doMoveRecurringAppointment((CalendarGUIUpdateEvent) event, appointmentChangeAllCtr.getKalendarEvent(),
-						appointmentChangeAllCtr.getDayDelta(), appointmentChangeAllCtr.getMinuteDelta(),
-						appointmentChangeAllCtr.getChangeBegin());
+		} else if (source == appointmentEditAllCtr) {
+			if (event instanceof CalendarGUIUpdateEvent calEvent) {
+				KalendarRecurEvent kalendarEvent = appointmentEditAllCtr.getKalendarEvent();
+				org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent.Cascade cascade = calEvent.getCascade();
+				cmc.deactivate();
+				cleanUp();
+				doEditRecurringAppointment(ureq, kalendarEvent, cascade);
+			} else {
+				cmc.deactivate();
+				cleanUp();
+			}
+		} else if (source == appointmentMoveAllCtr) {
+			if (event instanceof CalendarGUIUpdateEvent calEvent) {
+				doMoveRecurringAppointment(appointmentMoveAllCtr.getKalendarEvent(), calEvent.getCascade(),
+						appointmentMoveAllCtr.getDayDelta(), appointmentMoveAllCtr.getMinuteDelta(),
+						appointmentMoveAllCtr.getChangeBegin());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -230,13 +242,15 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private void cleanUp() {
-		removeAsListenerAndDispose(appointmentChangeAllCtr);
+		removeAsListenerAndDispose(appointmentEditAllCtr);
+		removeAsListenerAndDispose(appointmentMoveAllCtr);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(appointmentPreviewCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
 		removeAsListenerAndDispose(calloutCtr);
 		removeAsListenerAndDispose(cmc);
-		appointmentChangeAllCtr = null;
+		appointmentEditAllCtr = null;
+		appointmentMoveAllCtr = null;
 		deleteConfirmationCtrl = null;
 		appointmentPreviewCtrl = null;
 		appointmentEditCtrl = null;
@@ -292,26 +306,59 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		cmc.activate();
 	}
 	
-	private void doEditAppointment(UserRequest ureq, ProjAppointmentRef appointment) {
+	private void doEditAppointment(UserRequest ureq, KalendarEvent kalendarEvent) {
+		if (kalendarEvent instanceof KalendarRecurEvent recurEvent
+				&& !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
+			appointmentEditAllCtr = new ConfirmUpdateController(ureq, getWindowControl(), recurEvent);
+			listenTo(appointmentEditAllCtr);
+
+			String title = translate("appointment.edit");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					appointmentEditAllCtr.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			doEditAppointment(ureq, kalendarEvent.getExternalId());
+		}
+	}
+	
+	private void doEditRecurringAppointment(UserRequest ureq, KalendarRecurEvent kalendarRecurEvent,
+		org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent.Cascade cascade) {
+		switch(cascade) {
+			case all: {
+				doEditAppointment(ureq, kalendarRecurEvent.getExternalId());
+				break;
+			}
+			case once: {
+				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
+				ProjAppointment appointment = projectService.createAppointmentOcurrence(getIdentity(), kalendarRecurEvent.getExternalId(),
+						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd());
+				doEditAppointment(ureq, appointment.getIdentifier());
+				break;
+			}
+		}
+	}
+	
+	private void doEditAppointment(UserRequest ureq, String externalId) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
-		searchParams.setAppointments(List.of(appointment));
+		searchParams.setIdentifiers(List.of(externalId));
 		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
 		if (appointmentInfos.isEmpty()) {
 			return;
 		}
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(),
-				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), false, false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointmentInfo.getAppointment(),
+				appointmentInfo.getMembers(), false, false);
 		listenTo(appointmentEditCtrl);
-		
+
 		String title = translate("appointment.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(),
+				true, title, true);
 		listenTo(cmc);
 		cmc.activate();
-		
 	}
 	
 	private void doOpenAppointmentCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
@@ -343,13 +390,13 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			Boolean allDay, boolean changeStartDate) {
 		if (kalendarEvent instanceof KalendarRecurEvent recurEvent
 				&& !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
-			appointmentChangeAllCtr = new ConfirmUpdateController(ureq, getWindowControl(), recurEvent, days, minutes,
+			appointmentMoveAllCtr = new ConfirmUpdateController(ureq, getWindowControl(), recurEvent, days, minutes,
 					allDay, changeStartDate);
-			listenTo(appointmentChangeAllCtr);
+			listenTo(appointmentMoveAllCtr);
 
 			String title = translate("cal.edit.update");
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),
-					appointmentChangeAllCtr.getInitialComponent(), true, title);
+					appointmentMoveAllCtr.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		} else if (kalendarEvent != null) {
@@ -360,20 +407,19 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		}
 	}
 	
-	private void doMoveRecurringAppointment(CalendarGUIUpdateEvent calEvent, KalendarEvent kalendarEvent, Long days,
-			Long minutes, boolean moveStartDate) {
-		switch(calEvent.getCascade()) {
+	private void doMoveRecurringAppointment(KalendarRecurEvent kalendarRecurEvent,
+			org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent.Cascade cascade, Long days, Long minutes,
+			boolean moveStartDate) {
+		switch(cascade) {
 			case all: {
-				projectService.moveAppointment(getIdentity(), kalendarEvent.getExternalId(), days, minutes, moveStartDate);
+				projectService.moveAppointment(getIdentity(), kalendarRecurEvent.getExternalId(), days, minutes, moveStartDate);
 				break;
 			}
 			case once: {
-				if (kalendarEvent instanceof KalendarRecurEvent recurEvent) {
-					KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(recurEvent);
-					projectService.createMovedAppointmentOcurrence(getIdentity(), kalendarEvent.getExternalId(),
-							occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd(), days,
-							minutes, moveStartDate);
-				}
+				KalendarEvent occurenceEvent = calendarManager.createKalendarEventRecurringOccurence(kalendarRecurEvent);
+				projectService.createMovedAppointmentOcurrence(getIdentity(), kalendarRecurEvent.getExternalId(),
+						occurenceEvent.getRecurrenceID(), occurenceEvent.getBegin(), occurenceEvent.getEnd(), days,
+						minutes, moveStartDate);
 				break;
 			}
 		}

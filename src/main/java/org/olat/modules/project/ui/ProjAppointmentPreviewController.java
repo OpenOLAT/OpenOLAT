@@ -130,7 +130,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editLink) {
-			fireEvent(ureq, new EditAppointmentEvent(appointment));
+			fireEvent(ureq, new EditAppointmentEvent(appointment, kalendarEvent));
 		} else if (source == deleteLink) {
 			fireEvent(ureq, new DeleteAppointmentEvent(appointment, kalendarEvent));
 		}

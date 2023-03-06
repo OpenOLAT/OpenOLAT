@@ -19,19 +19,28 @@
  */
 package org.olat.modules.project.manager;
 
+import java.text.ParseException;
 import java.util.Collection;
+import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import net.fortuna.ical4j.model.Recur;
+import net.fortuna.ical4j.model.property.RRule;
+import net.fortuna.ical4j.model.property.RecurrenceId;
 
 /**
  * 
@@ -41,6 +50,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ProjCalendarHelper {
+
+	private static final Logger log = Tracing.createLoggerFor(ProjCalendarHelper.class);
 	
 	private static final String APPOINTMENT_EXTERNAL_SOURCE = "project-appointment";
 
@@ -126,6 +137,48 @@ public class ProjCalendarHelper {
 		cal.getEvents().stream()
 				.filter(event -> appointment.getIdentifier().equals(event.getExternalId()))
 				.forEach(event -> calendarManager.removeEventFrom(cal, event));
+	}
+	
+	@SuppressWarnings("deprecation")
+	public String getExclusionRecurrenceRule(String recurrenceRule, Date exclusionDate) {
+		try {
+			Recur recur = new Recur(recurrenceRule);
+			recur.setUntil(CalendarUtils.createDate(exclusionDate));
+			RRule rrule = new RRule(recur);
+			return rrule.getValue();
+		} catch (ParseException e) {
+			log.debug("", e);
+		}
+		return null;
+	}
+	
+	public String getUpdatedOccurenceId(String appointmentRecurrendeId, boolean allDay, int beginDiff) {
+		try {
+			RecurrenceId currentReccurenceId = new RecurrenceId(appointmentRecurrendeId);
+			Date currentRecurrenceDate = currentReccurenceId.getDate();
+			java.util.Calendar calc = java.util.Calendar.getInstance();
+			calc.clear();
+			calc.setTime(currentRecurrenceDate);
+			if (beginDiff > 0) {
+				calc.add(java.util.Calendar.MILLISECOND, beginDiff);
+			}
+			
+			Date newRecurrenceDate = calc.getTime();
+			
+			RecurrenceId newRecurrenceId;
+			if(allDay) {
+				newRecurrenceId = new RecurrenceId((CalendarUtils.createDate(newRecurrenceDate)));
+			} else {
+				newRecurrenceId = new RecurrenceId(CalendarUtils.formatRecurrenceDate(newRecurrenceDate, false));
+			}
+			
+			return newRecurrenceId.getValue();
+			
+		} catch (ParseException e) {
+			log.error("", e);
+		}
+		
+		return null;
 	}
 
 }

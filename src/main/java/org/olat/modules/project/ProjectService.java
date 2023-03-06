@@ -153,6 +153,9 @@ public interface ProjectService {
 	
 	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate);
 
+	public ProjAppointment createAppointmentOcurrence(Identity appointment, String externalId, String recurrenceId,
+			Date startDate, Date endDate);
+	
 	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
 			Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate);
 	
