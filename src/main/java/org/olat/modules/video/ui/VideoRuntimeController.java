@@ -73,7 +73,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			
 			editVideoLink = LinkFactory.createToolLink("editVideo", translate("tab.video.editor"), this);
 			editVideoLink.setUrl(BusinessControlFactory.getInstance()
-					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[VideoEditor:0]"));
+					.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Editor:0]"));
 			editVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 			toolsDropdown.addComponent(editVideoLink);
 		}
@@ -93,8 +93,9 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 		entries = removeRepositoryEntry(entries);
 		if (entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-			if ("VideoEditor".equalsIgnoreCase(type)) {
+			if ("Editor".equalsIgnoreCase(type)) {
 				doEditVideo(ureq);
+				return;
 			}
 		}
 		super.activate(ureq, entries, state);
@@ -129,7 +130,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 				VideoDisplayController videoDisplayCtr = (VideoDisplayController)getRuntimeController();
 				videoDisplayCtr.reloadVideo(ureq);
 			}
-		} else if (videoEditorController == source) {
+		} else if (source instanceof VideoEditorController) {
 			if (event instanceof EditQuestionEvent editQuestionEvent) {
 				if (editQuestionController != null) {
 					removeAsListenerAndDispose(editQuestionController);
@@ -160,20 +161,19 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	private void doEditVideo(UserRequest ureq) {
-		WindowControl windowControl = getSubWindowControl("VideoEditor");
+		WindowControl windowControl = getSubWindowControl("Editor");
 		videoEditorController = new VideoEditorController(ureq, addToHistory(ureq, windowControl), repositoryEntry);
 		listenTo(videoEditorController);
 		pushController(ureq, translate("tab.video.editor.breadcrumb"), videoEditorController);
 		currentToolCtr = videoEditorController;
 		setActiveTool(editVideoLink);
-		toolbarPanel.addCssClass("o_edit_mode");
 		toolbarPanel.setToolbarEnabled(false);
 	}
 
 	@Override
 	protected <T extends Controller> T pushController(UserRequest ureq, String name, T controller) {
 		toolbarPanel.removeCssClass("o_edit_mode");
-		toolbarPanel.setToolbarEnabled(true);
+		toolbarPanel.setToolbarEnabled(!(controller instanceof VideoEditorController));
 		return super.pushController(ureq, name, controller);
 	}
 

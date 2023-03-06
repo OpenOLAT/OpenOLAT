@@ -40,7 +40,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
@@ -55,6 +54,7 @@ import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
+import org.olat.modules.video.ui.editor.VideoEditorController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -227,7 +227,7 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
-		return EditionSupport.no;
+		return EditionSupport.yes;
 	}
 	
 	@Override
@@ -244,7 +244,7 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar) {
-		throw new AssertException("a web document is not editable!!! res-id:"+re.getResourceableId());
+		return new VideoEditorController(ureq, wControl, re);
 	}
 	
 	@Override
