@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,15 +42,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjFileMetadataController extends FormBasicController {
 	
+	private ProjActivityLogController activityLogCtrl;
+
 	private final VFSMetadata vfsMetadata;
+	private final ProjArtefact artefact;
 	private final Formatter formatter;
 	
 	@Autowired
 	private UserManager userManager;
-	
+
 	public ProjFileMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjFile file) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		vfsMetadata = file.getVfsMetadata();
+		artefact = file.getArtefact();
 		formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
@@ -82,6 +87,11 @@ public class ProjFileMetadataController extends FormBasicController {
 				? userManager.getUserDisplayName(vfsMetadata.getLockedBy())
 				: translate("file.locked.not");
 		uifactory.addStaticTextElement("file.locked.by", lockedBy, formLayout);
+		
+		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);
+		listenTo(activityLogCtrl);
+		activityLogCtrl.getInitialFormItem().setElementCssClass("o_proj_activity_log_item");
+		formLayout.add(activityLogCtrl.getInitialFormItem());
 	}
 
 	@Override

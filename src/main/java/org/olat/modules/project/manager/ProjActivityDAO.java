@@ -149,6 +149,10 @@ public class ProjActivityDAO {
 		sb.append("select activity");
 		sb.append("  from projactivity activity");
 		sb.append("       left join fetch activity.artefact artefact");
+		if (searchParams.isFetchDoer()) {
+			sb.append(" inner join fetch activity.doer doer");
+			sb.append(" inner join fetch doer.user user");
+		}
 		appendQuery(searchParams, sb);
 		if (maxResults > 0) {
 			sb.orderBy().append("activity.creationDate desc");
@@ -192,8 +196,8 @@ public class ProjActivityDAO {
 		if (searchParams.getTargets() != null && !searchParams.getTargets().isEmpty()) {
 			sb.and().append("activity.actionTarget in :targets");
 		}
-		if (searchParams.getDoerKey() != null) {
-			sb.and().append("activity.doer.key = :doerKey");
+		if (searchParams.getDoerKeys() != null && !searchParams.getDoerKeys().isEmpty()) {
+			sb.and().append("activity.doer.key in :doerKeys");
 		}
 		if (searchParams.getProjectKeys() != null && !searchParams.getProjectKeys().isEmpty()) {
 			sb.and().append("activity.project.key in :projectKeys");
@@ -232,8 +236,8 @@ public class ProjActivityDAO {
 		if (searchParams.getTargets() != null && !searchParams.getTargets().isEmpty()) {
 			query.setParameter("targets", searchParams.getTargets());
 		}
-		if (searchParams.getDoerKey() != null) {
-			query.setParameter("doerKey", searchParams.getDoerKey());
+		if (searchParams.getDoerKeys() != null && !searchParams.getDoerKeys().isEmpty()) {
+			query.setParameter("doerKeys", searchParams.getDoerKeys());
 		}
 		if (searchParams.getProjectKeys() != null && !searchParams.getProjectKeys().isEmpty()) {
 			query.setParameter("projectKeys", searchParams.getProjectKeys());

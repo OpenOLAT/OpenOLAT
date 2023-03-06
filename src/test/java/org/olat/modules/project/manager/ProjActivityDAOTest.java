@@ -201,7 +201,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void shouldLoad_filter_doer() {
+	public void shouldLoad_filter_doers() {
 		Identity doer1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity doer2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project1 = createProject(doer1);
@@ -277,6 +277,21 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		List<ProjActivity> activities = sut.loadActivities(searchParams, 0, -1);
 		
 		assertThat(activities).containsExactlyInAnyOrder(activity2, activity3, activity6, activity7, activity8);
+	}
+	
+	@Test
+	public void shouldLoad_fetch_doer() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = createProject(doer);
+		sut.create(Action.projectCreate, null, null, doer, project);
+		dbInstance.commitAndCloseSession();
+		
+		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
+		searchParams.setDoer(doer);
+		searchParams.setFetchDoer(true);
+		sut.loadActivities(searchParams, 0, -1);
+		
+		// Just a syntax check
 	}
 	
 	@Test

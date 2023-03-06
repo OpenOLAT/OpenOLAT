@@ -196,6 +196,26 @@
 		
 	}
 }
+.o_proj_references {
+	margin-bottom: 15px;
+}
+.o_proj_metadata {
+	display: grid;
+	grid-template-columns: 50% 50%;
+	@media (max-width: $screen-xs-max) {
+		grid-template-columns: 100%;
+	}
+	.o_proj_activity_log_item {
+		grid-column: span 2;
+		@media (max-width: $screen-xs-max) {
+			grid-column: span 1;
+		}
+	}
+}
+.o_proj_reference_selection_results {
+	height: 400px;
+	overflow-y: auto;
+}
 
 .o_proj_note {
 	.o_proj_note_header {

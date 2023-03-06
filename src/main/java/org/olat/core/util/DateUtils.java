@@ -113,6 +113,14 @@ public class DateUtils {
 		return calendar.getTime();
 	}
 	
+	public static Date truncateSeconds(Date date) {
+		Calendar calendar = new GregorianCalendar();
+		calendar.setTime(date);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		return calendar.getTime();
+	}
+	
 	/**
 	 * Keeps the day of the date but copies the date from the from date.
 	 *

@@ -37,10 +37,11 @@ public class ProjActivitySearchParams {
 	
 	private Collection<Action> actions;
 	private Collection<ActionTarget> targets;
-	private Long doerKey;
+	private Collection<Long> doerKeys;
 	private Collection<Long> projectKeys;
 	private Collection<Long> artefactKeys;
 	private List<ProjDateRange> createdDateRanges;
+	private boolean fetchDoer;
 
 	public Collection<Action> getActions() {
 		return actions;
@@ -57,15 +58,23 @@ public class ProjActivitySearchParams {
 	public void setTargets(Collection<ActionTarget> targets) {
 		this.targets = targets;
 	}
+	
+	public Collection<Long> getDoerKeys() {
+		return doerKeys;
+	}
 
-	public Long getDoerKey() {
-		return doerKey;
+	public void setDoerKeys(Collection<Long> doerKeys) {
+		this.doerKeys = doerKeys;
+	}
+
+	public void setDoers(Collection<? extends IdentityRef> doers) {
+		this.doerKeys = doers.stream().map(IdentityRef::getKey).toList();
 	}
 	
 	public void setDoer(IdentityRef doer) {
-		this.doerKey = doer.getKey();
+		this.doerKeys = List.of(doer.getKey());
 	}
-	
+
 	public Collection<Long> getProjectKeys() {
 		return projectKeys;
 	}
@@ -92,6 +101,14 @@ public class ProjActivitySearchParams {
 
 	public void setCreatedDateRanges(List<ProjDateRange> createdDateRanges) {
 		this.createdDateRanges = createdDateRanges;
+	}
+
+	public boolean isFetchDoer() {
+		return fetchDoer;
+	}
+
+	public void setFetchDoer(boolean fetchDoer) {
+		this.fetchDoer = fetchDoer;
 	}
 
 }

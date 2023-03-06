@@ -890,7 +890,7 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project) {
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
 		// Add some time to start after the creation of the activity (below)
-		Date now = DateUtils.addMinutes(new Date(), 1);
+		Date now = DateUtils.addMinutes(DateUtils.truncateSeconds(new Date()), 1);
 		ProjAppointment appointment = appointmentDao.create(artefact, now, DateUtils.addHours(now, 1));
 		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
 		if (createActivity) {
@@ -959,12 +959,14 @@ public class ProjectServiceImpl implements ProjectService {
 			reloadedAppointment.setRecurrenceId(recurrenceId);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedAppointment.getStartDate(), startDate)) {
-			reloadedAppointment.setStartDate(startDate);
+		Date cleanedStartDate = DateUtils.truncateSeconds(startDate);
+		if (!Objects.equals(reloadedAppointment.getStartDate(), cleanedStartDate)) {
+			reloadedAppointment.setStartDate(cleanedStartDate);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedAppointment.getEndDate(), endDate)) {
-			reloadedAppointment.setEndDate(endDate);
+		Date cleanedEndDate = DateUtils.truncateSeconds(endDate);
+		if (!Objects.equals(reloadedAppointment.getEndDate(), cleanedEndDate)) {
+			reloadedAppointment.setEndDate(cleanedEndDate);
 			contentChanged = true;
 		}
 		String subjectCleaned = StringHelper.containsNonWhitespace(subject)? subject: null;
@@ -1060,6 +1062,8 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		if (single) {
 			addAppointmentSingleExclusion(doer, true, reloadedAppointment, exclusionDate);
+			String before = ProjectXStream.toXml(exclusionDate);
+			activityDao.create(Action.appointmentOccurrenceDelete, before, null, null, doer, reloadedAppointment.getArtefact());
 		} else {
 			addAppointmentFutureExclusion(doer, reloadedAppointment, exclusionDate);
 		}

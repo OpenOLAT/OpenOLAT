@@ -123,6 +123,7 @@ public interface ProjActivity extends CreateInfo {
 		appointmentRolesUpdate(ActionTarget.appointment),
 		appointmentReferenceAdd(ActionTarget.appointment),
 		appointmentReferenceRemove(ActionTarget.appointment),
+		appointmentOccurrenceDelete(ActionTarget.appointment),
 		appointmentStatusDelete(ActionTarget.appointment);
 		
 		private final ActionTarget target;

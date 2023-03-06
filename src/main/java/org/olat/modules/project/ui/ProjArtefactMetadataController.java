@@ -38,6 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjArtefactMetadataController extends FormBasicController {
 	
+	private ProjActivityLogController activityLogCtrl;
+	
 	private final ProjArtefact artefact;
 	private final Formatter formatter;
 	
@@ -65,6 +67,11 @@ public class ProjArtefactMetadataController extends FormBasicController {
 				formatter.formatDate(artefact.getContentModifiedDate()),
 				userManager.getUserDisplayName(artefact.getContentModifiedBy()));
 		uifactory.addStaticTextElement("last.modified", modifiedDateBy, formLayout);
+		
+		activityLogCtrl = new ProjActivityLogController(ureq, getWindowControl(), mainForm, artefact);
+		listenTo(activityLogCtrl);
+		activityLogCtrl.getInitialFormItem().setElementCssClass("o_proj_activity_log_item");
+		formLayout.add(activityLogCtrl.getInitialFormItem());
 	}
 
 	@Override

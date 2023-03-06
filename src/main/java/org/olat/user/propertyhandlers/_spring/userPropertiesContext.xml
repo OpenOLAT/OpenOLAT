@@ -2004,6 +2004,31 @@
 					</bean>
 				</entry>
 				
+				<entry key="org.olat.modules.project.ui.ProjActivityLogTableModel">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Activity log in a project" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</list>
+						</property>
+						<property name="adminViewOnlyProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+							</set>
+						</property>
+						<property name="mandatoryProperties">
+							<set>
+								<ref bean="userPropertyUserNickName" />
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+							</set>
+						</property>
+					</bean>
+				</entry>
+				
 				<entry key="org.olat.course.noderight.ui.NodeRightsController">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
 						<property name="description" value="Properties used in the configuration of user rights in course elements" />
