@@ -551,11 +551,11 @@ class VarForm extends FormBasicController {
 				try {
 					int score = Integer.parseInt(maxScoreEl.getValue());
 					if (score < 0 || score > 100) {
-						maxScoreEl.setErrorKey("max.score.validation", null);
+						maxScoreEl.setErrorKey("max.score.validation");
 						allOk &= false;
 					}
 				} catch (NumberFormatException e) {
-					maxScoreEl.setErrorKey("max.score.validation", null);
+					maxScoreEl.setErrorKey("max.score.validation");
 					allOk &= false;
 				}
 			}
@@ -567,11 +567,11 @@ class VarForm extends FormBasicController {
 				try {
 					Integer.parseInt(cutValueEl.getValue());
 				} catch (NumberFormatException e) {
-					cutValueEl.setErrorKey("cutvalue.validation", null);
+					cutValueEl.setErrorKey("cutvalue.validation");
 					allOk &= false;
 				}
 			} else {
-				cutValueEl.setErrorKey("cutvalue.validation", null);
+				cutValueEl.setErrorKey("cutvalue.validation");
 				allOk &= false;
 			}
 		}

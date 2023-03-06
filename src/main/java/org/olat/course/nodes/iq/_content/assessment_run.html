@@ -52,7 +52,7 @@
 	</div>
 #end
 
-#if (($attemptsConfig && $attemptsConfig > 0 && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
+#if (($attemptsConfig && $attemptsConfig > 0 && $r.isNotNull($attempts) && ($attemptsConfig <= $attempts)) || $blockAfterSuccess)
 	<div class="o_note">$r.translate("attempts.nomoreattempts")</div>		
 	$r.render("disclaimer")
 #elseif($blockDate)

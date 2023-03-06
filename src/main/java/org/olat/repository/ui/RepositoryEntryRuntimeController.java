@@ -557,6 +557,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(toolsDropdown.size() > 0) {
 				toolsDropdown.addComponent(new Spacer("copy-download"));
 			}
+			initToolsMenuReplaceItem(toolsDropdown);
 			if (canCopy) {
 				copyLink = LinkFactory.createToolLink("copy", translate("details.copy"), this, "o_icon o_icon-fw o_icon_copy");
 				copyLink.setElementCssClass("o_sel_repo_copy");
@@ -569,7 +570,14 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			}
 		}
 	}
-	
+
+	/**
+	 * Specialized controllers can override this to add a menu item with 'replace' semantics.
+	 */
+	protected void initToolsMenuReplaceItem(Dropdown toolsDropdown) {
+		// default implementation does nothing
+	}
+
 	protected void initToolsMenuDelete(Dropdown toolsDropdown) {
 		boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.delete);
 		if(reSecurity.isEntryAdmin() && !deleteManaged) {
