@@ -303,7 +303,9 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	@Override
 	public List<BGArea> findBGAreasInContext(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area where area.resource.key=:resourceKey");
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area")
+		  .append(" inner join fetch area.resource areaRes")
+		  .append(" where areaRes.key=:resourceKey");
 		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
 				.setParameter("resourceKey", resource.getKey())
 				.getResultList();
