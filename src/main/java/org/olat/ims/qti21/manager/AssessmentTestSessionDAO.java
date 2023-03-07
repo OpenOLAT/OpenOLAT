@@ -888,8 +888,8 @@ public class AssessmentTestSessionDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select testSession from qtiassessmenttestsession testSession ")
 		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
-		  .append(" left join assessmentEntry.identity as ident")
-		  .append(" left join ident.user as usr");
+		  .append(" left join fetch assessmentEntry.identity as ident")
+		  .append(" left join fetch ident.user as usr");
 		
 		decorateTestSessionPermission(sb, searchParams);
 		//need to be anonymized

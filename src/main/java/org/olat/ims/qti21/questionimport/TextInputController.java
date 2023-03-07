@@ -91,11 +91,11 @@ public class TextInputController extends StepFormBasicController {
 				converter.parse(inputElement.getValue());
 				List<AssessmentItemAndMetadata> items = converter.getItems();
 				if(items == null || items.isEmpty()) {
-					inputElement.setErrorKey("form.mandatory.hover", null);
+					inputElement.setErrorKey("form.mandatory.hover");
 					allOk &= false;
 				}
 			} catch (Exception e) {
-				inputElement.setErrorKey("error.at.line", new String[] { Integer.toString(converter.getCurrentLine()) });
+				inputElement.setErrorKey("error.at.line", Integer.toString(converter.getCurrentLine()));
 				allOk &= false;
 			}
 		}
