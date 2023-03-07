@@ -93,6 +93,8 @@ class EvaluationFormSurveyDAO {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select survey from evaluationformsurvey as survey");
+		sb.append(" left join fetch survey.formEntry as re");
+		sb.append(" left join fetch re.olatResource as reOres");
 		sb.append(" where survey.resName=:resName");
 		sb.append("   and survey.resId=:resId");
 		if (StringHelper.containsNonWhitespace(subIdent)) {

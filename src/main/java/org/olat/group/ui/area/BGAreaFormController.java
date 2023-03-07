@@ -103,14 +103,11 @@ public class BGAreaFormController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		// check name first
 		if (!StringHelper.containsNonWhitespace(this.name.getValue())) {
-			name.setErrorKey("form.legende.mandatory", new String[] {});
+			name.setErrorKey("form.legende.mandatory");
 			return false;
 		}
 		if (bulkMode) {
@@ -129,11 +126,11 @@ public class BGAreaFormController extends FormBasicController {
 			}
 			if (validNames.size() == 0 && wrongNames.size() == 0) {
 				// no valid name and no invalid names, this is no names
-				name.setErrorKey("area.form.error.illegalName", new String[] {});
+				name.setErrorKey("area.form.error.illegalName");
 				return false;
 			} else if (wrongNames.size() == 1) {
 				// one invalid name
-				name.setErrorKey("area.form.error.illegalName", new String[] {});
+				name.setErrorKey("area.form.error.illegalName");
 				return false;
 			} else if (wrongNames.size() > 1) {
 				// two or more invalid names
@@ -143,7 +140,7 @@ public class BGAreaFormController extends FormBasicController {
 			}
 		} else {
 			if (!name.getValue().matches(BGArea.VALID_AREANAME_REGEXP)) {
-				name.setErrorKey("area.form.error.illegalName", new String[] {});
+				name.setErrorKey("area.form.error.illegalName");
 				return false;
 			}
 		}
@@ -151,7 +148,7 @@ public class BGAreaFormController extends FormBasicController {
 		// done with name checks, now check description
 		if (description.getValue().length() > 4000) {
 			// description has maximum length
-			description.setErrorKey("input.toolong", new String[] {"4000"});
+			description.setErrorKey("input.toolong", "4000");
 			return false;
 		}
 		// ok, all checks passed
@@ -163,17 +160,11 @@ public class BGAreaFormController extends FormBasicController {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formNOK(UserRequest ureq) {
 		fireEvent(ureq, Event.FAILED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
