@@ -300,7 +300,7 @@ public class FormConfigController extends FormBasicController {
 		if (survey != null && formEntry != null) {
 			boolean isFormUpdateable = formManager.isFormUpdateable(survey);
 			if (!isFormUpdateable && !formEntry.getKey().equals(survey.getFormEntry().getKey())) {
-				evaluationFormLink.setErrorKey("error.repo.entry.not.replaceable", null);
+				evaluationFormLink.setErrorKey("error.repo.entry.not.replaceable");
 				allOk &= false;
 			}
 		}
