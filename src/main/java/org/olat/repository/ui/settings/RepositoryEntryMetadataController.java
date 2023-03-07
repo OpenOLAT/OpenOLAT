@@ -280,6 +280,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			licenseEl.setEnabled(!readOnly);
 			
 			licensorEl = uifactory.addTextElement("cif.licensor", 1000, license.getLicensor(), formLayout);
+			licensorEl.setElementCssClass("o_sel_repo_licensor");
 			licensorEl.setEnabled(!readOnly);
 
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
@@ -292,7 +293,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			if(!elementsLicenses.isEmpty()) {
 				StringBuilder sb = new StringBuilder();
 				buildLicensesList(sb, elementsLicenses);
-				String licensesText = translate("cif.license.elements.content", new String[] { sb.toString(), typeDisplay });
+				String licensesText = translate("cif.license.elements.content", sb.toString(), typeDisplay);
 				uifactory.addStaticTextElement("cif.license.elements", "cif.license.elements", licensesText, formLayout);
 			}
 		}
@@ -338,7 +339,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		if (licenseEl != null) {
 			licenseEl.clearError();
 			if (LicenseUIFactory.validateLicenseTypeMandatoryButNonSelected(licenseEl)) {
-				licenseEl.setErrorKey("form.legende.mandatory", null);
+				licenseEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

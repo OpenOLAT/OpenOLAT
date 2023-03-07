@@ -1,63 +1,13 @@
-<style>
-	.o_video_segments_header_grid {
-		display: grid;
-		grid-template-columns: 130px 213px 37px 10px 210px 30px;
-		grid-template-rows: auto;
-		grid-template-areas:
-		"previous-segment segments next-segment space add-segment commands"
-	;
-	}
-
-	.o_video_segments_header_prev {
-		grid-area: previous-segment;
-		justify-self: right;
-	}
-
-	.o_video_segments_header_prev a {
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-		border-right-width: 0;
-	}
-
-	.o_video_segments_header_segments {
-		grid-area: segments;
-		justify-self: stretch;
-	}
-
-	.o_video_segments_header_next {
-		grid-area: next-segment;
-		justify-self: stretch;
-	}
-
-	.o_video_segments_header_next a {
-		border-top-left-radius: 0;
-		border-bottom-left-radius: 0;
-		border-left-width: 0;
-	}
-
-	.o_video_segments_header_add_segment {
-		grid-area: add-segment;
-		justify-self: stretch;
-		text-align: right;
-		margin-right: 5px;
-	}
-
-	.o_video_segments_header_commands {
-		grid-area: commands;
-		justify-self: stretch;
-	}
-</style>
-
 <div class="form-group row clearfix">
-	<div class="o_video_segments_header_grid">
+	<div class="o_video_common_form_header">
 
 		#if ($hasSegments)
-		<div class="o_video_segments_header_prev">$r.render("previousSegment")</div>
-		<div class="o_video_segments_header_segments">$r.render("segments")</div>
-		<div class="o_video_segments_header_next">$r.render("nextSegment")</div>
+		<div class="o_video_common_form_header_prev">$r.render("previousSegment")</div>
+		<div class="o_video_common_form_header_items">$r.render("segments")</div>
+		<div class="o_video_common_form_header_next">$r.render("nextSegment")</div>
 		#end
 
-		<div class="o_video_segments_header_add_segment">$r.render("addSegment")</div>
-		<div class="o_video_segments_header_commands">$r.render("commands")</div>
+		<div class="o_video_common_form_header_add_item">$r.render("addSegment")</div>
+		<div class="o_video_common_form_header_commands">$r.render("commands")</div>
 	</div>
 </div>

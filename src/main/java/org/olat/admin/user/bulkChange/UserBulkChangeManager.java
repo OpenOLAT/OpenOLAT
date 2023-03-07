@@ -329,25 +329,27 @@ public class UserBulkChangeManager implements InitializingBean {
 
 		String gender = "";
 		UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(UserConstants.GENDER);
-		if(handler instanceof GenderPropertyHandler) {
-			String internalGender = ((GenderPropertyHandler)handler).getInternalValue(identity.getUser());
+		if(handler instanceof GenderPropertyHandler ganderPropertyHandler) {
+			String internalGender = ganderPropertyHandler.getInternalValue(identity.getUser());
 			if(StringHelper.containsNonWhitespace(internalGender)) {
 				Translator userPropTrans = userManager.getUserPropertiesConfig().getTranslator(translator);
 				gender = userPropTrans.translate("form.name.gender.salutation." + internalGender.toLowerCase());
 			}
 		}
 		
-		String email = identity.getUser().getProperty(UserConstants.EMAIL, null);
-			email = StringHelper.containsNonWhitespace(email)? email: "-";
-
+		User user = identity.getUser();
+		String email = user.getProperty(UserConstants.EMAIL, null);
+		email = StringHelper.containsNonWhitespace(email)? email: "-";
+		String username = StringHelper.containsNonWhitespace(user.getNickName()) ? user.getNickName() : identity.getName();
+		
 		String[] args = new String[] {
-				identity.getName(),//0: changed users username
-				email,// 1: changed users email address
-				userManager.getUserDisplayName(identity.getUser()),// 2: Name (first and last name) of user who changed the password
-				WebappHelper.getMailConfig("mailSupport"), //3: configured support email address
-				identity.getUser().getProperty(UserConstants.LASTNAME, null), //4 last name
-				getServerURI(), //5 url system
-				gender //6 Mr. Mrs.
+				username,														//0: changed users username
+				email,															//1: changed users email address
+				userManager.getUserDisplayName(identity.getUser()),				//2: Name (first and last name) of user who changed the password
+				WebappHelper.getMailConfig("mailSupport"),						//3: configured support email address
+				identity.getUser().getProperty(UserConstants.LASTNAME, null),	//4: last name
+				getServerURI(),													//5: url system
+				gender															//6: Mr. Mrs.
 		};
 		
 		MailBundle bundle = new MailBundle();

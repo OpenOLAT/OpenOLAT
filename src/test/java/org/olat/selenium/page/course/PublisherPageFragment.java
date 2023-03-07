@@ -168,7 +168,7 @@ public class PublisherPageFragment {
 	private void selectCatalogNode(String name) {
 		By nodeBy = By.xpath("//span[contains(@class,'o_tree_link')]/a[span[text()[contains(.,'" + name + "')]]]");
 		OOGraphene.waitElement(nodeBy, browser);
-		browser.findElement(nodeBy).click();
+		OOGraphene.click(nodeBy, browser);
 		By nodeActiveBy = By.xpath("//span[contains(@class,'o_tree_link') and contains(@class,'active')]/a[span[text()[contains(.,'" + name + "')]]]");
 		OOGraphene.waitElement(nodeActiveBy, browser);
 	}

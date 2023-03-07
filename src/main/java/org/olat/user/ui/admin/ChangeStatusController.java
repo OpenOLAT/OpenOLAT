@@ -102,7 +102,7 @@ public class ChangeStatusController extends FormBasicController {
 		
 		statusEl.clearError();
 		if(!statusEl.isOneSelected()) {
-			statusEl.setErrorKey("form.legende.mandatory", null);
+			statusEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -120,10 +120,12 @@ public class ChangeStatusController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		boolean sendLoginDeniedEmail = sendLoginDeniedEmailEl.isVisible() && sendLoginDeniedEmailEl.isAtLeastSelected(1);
+		
 		for(Identity editedIdentity:editedIdentities) {
 			Integer oldStatus = editedIdentity.getStatus();
 			Integer newStatus = getStatus();
-			if(!oldStatus.equals(newStatus) && Identity.STATUS_LOGIN_DENIED.equals(newStatus)) {
+			if(!oldStatus.equals(newStatus) && Identity.STATUS_LOGIN_DENIED.equals(newStatus) && sendLoginDeniedEmail) {
 				userBulkChangeManager.sendLoginDeniedEmail(editedIdentity);
 			}
 			securityManager.saveIdentityStatus(editedIdentity, newStatus, getIdentity());

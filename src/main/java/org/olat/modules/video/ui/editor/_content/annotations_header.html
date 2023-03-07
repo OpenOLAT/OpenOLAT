@@ -1,9 +1,12 @@
 <div class="form-group row clearfix">
-	<div class="col-xs-3"></div>
-	<div class="col-xs-4">
+	<div class="o_video_common_form_header">
 		#if ($hasAnnotations)
-		$r.render("annotations")
+		<div class="o_video_common_form_header_prev">$r.render("previousAnnotation")</div>
+		<div class="o_video_common_form_header_items">$r.render("annotations")</div>
+		<div class="o_video_common_form_header_next">$r.render("nextAnnotation")</div>
 		#end
+
+		<div class="o_video_common_form_header_add_item">$r.render("addAnnotation")</div>
+		<div class="o_video_common_form_header_commands">$r.render("commands")</div>
 	</div>
-	<div class="col-xs-5 text-right">$r.render("addAnnotation") $r.render("commands")</div>
 </div>

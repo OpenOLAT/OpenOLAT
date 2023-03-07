@@ -137,6 +137,7 @@ public class AnnotationsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		annotationsHeaderController.setCurrentTimeCode(currentTimeCode);
+		annotationController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showAnnotation(String annotationId) {

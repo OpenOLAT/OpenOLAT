@@ -97,7 +97,7 @@ public class SelectPointInteractionArchive extends DefaultInteractionArchive {
 				if(foundPoints != null) {
 					dataRow.addCell(col++, foundPoints.toQtiString(), workbook.getStyles().getCorrectStyle());
 				} else {
-					freeSlots.add(new Integer(col));
+					freeSlots.add(Integer.valueOf(col));
 					dataRow.addCell(col++, "", null);
 				}
 			}
