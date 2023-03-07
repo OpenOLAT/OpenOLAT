@@ -137,6 +137,7 @@ public class AssessmentRenderFunctions {
     // or not(@templateIdentifier)
     // or (qw:value-contains(qw:get-template-value(@templateIdentifier), @identifier) and not(@showHide='hide'))])"/>
 	public static boolean isVisible(Choice choice, ItemSessionState iSessionState) {
+		if(choice == null) return false;
 		if(choice.getTemplateIdentifier() == null) return true;
 		
 		Value templateValue = iSessionState.getTemplateValue(choice.getTemplateIdentifier());
