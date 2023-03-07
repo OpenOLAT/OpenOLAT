@@ -1,89 +1,21 @@
-<style>
-	.o_video_apply_position_timestamp input {
-		width: 80px;
-		border-top-right-radius: 0;
-		border-bottom-right-radius: 0;
-	}
-
-	.o_video_grid_container {
-		margin-top: 5px;
-		display: grid;
-		grid-template-columns: 130px 120px 10px 120px 130px 120px;
-		grid-template-rows: auto;
-		row-gap: 10px;
-		grid-template-areas:
-		"se-label start   pad0 pad0 pad0 pad0"
-		"pad1     e-start pad2 pad2 pad3 pad3"
-		"co-label co      pad4 pad4 pad4 pad4"
-		"t-label  t       t    t    t    t"
-		"pad5     b       b    b    b    b"
-	;
-	}
-
-	.o_video_grid_item_se_label {
-		grid-area: se-label;
-		justify-self: right;
-		margin-right: 10px;
-	}
-
-	.o_video_grid_item_start {
-		grid-area: start;
-		justify-self: left;
-	}
-
-	.o_video_grid_item_error_start {
-		grid-area: e-start;
-		justify-self: left;
-	}
-
-	.o_video_grid_item_color_label {
-		grid-area: co-label;
-		justify-self: right;
-		margin-right: 10px;
-	}
-
-	.o_video_grid_item_color_dropdown {
-		grid-area: co;
-		justify-self: stretch;
-	}
-
-	.o_video_grid_item_text_label {
-		grid-area: t-label;
-		justify-self: right;
-		margin-right: 10px;
-		padding-top: 21px;
-	}
-
-	.o_video_grid_item_text {
-		grid-area: t;
-		justify-self: stretch;
-	}
-
-	.o_video_grid_item_buttons {
-		grid-area: b;
-		justify-self: left;
-		padding-top: 10px;
-	}
-</style>
-
 <div class="form-group row clearfix">
-	<div class="o_video_grid_container">
-		<div class="o_video_grid_item_se_label">$r.render("start", "label")</div>
-		<div class="o_video_grid_item_start btn-group">
+	<div class="o_video_comment_details">
+		<div class="o_video_comment_se_label">$r.render("start", "label")</div>
+		<div class="o_video_comment_start btn-group">
 			<div class="btn-group o_video_apply_position_timestamp" style="display: inline-block;">$r.render("start")</div>
 			<div class="btn-group o_video_apply_position_button" style="display: inline-block;">$r.render("startApplyPosition")</div>
 		</div>
 
 		#if ($f.hasError("start"))
-		<div class="o_video_grid_item_error_start">$r.render("start", "error")</div>
+		<div class="o_video_comment_error_start">$r.render("start", "error")</div>
 		#end
 
-		<div class="o_video_grid_item_color_label">$r.render("color", "label")</div>
-		<div class="o_video_grid_item_color_dropdown">$r.render("color")</div>
+		<div class="o_video_comment_color_label">$r.render("color", "label")</div>
+		<div class="o_video_comment_color_dropdown">$r.render("color")</div>
 
-		<div class="o_video_grid_item_text_label">$r.render("text", "label")</div>
-		<div class="o_video_grid_item_text">$r.render("text")</div>
+		<div class="o_video_comment_text_label">$r.render("text", "label")</div>
+		<div class="o_video_comment_text">$r.render("text")</div>
 
-		<div class="o_video_grid_item_buttons">$r.render("save") $r.render("cancel")</div>
+		<div class="o_video_comment_buttons">$r.render("save") $r.render("cancel")</div>
 	</div>
 </div>

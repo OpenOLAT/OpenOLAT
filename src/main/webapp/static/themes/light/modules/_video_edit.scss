@@ -1,5 +1,5 @@
 //
-// Segments
+// Segments form
 //
 
 .o_video_segments_header {
@@ -43,6 +43,10 @@
 	justify-self: stretch;
 	text-align: right;
 	margin-right: 5px;
+
+	a {
+		width: 100%;
+	}
 }
 
 .o_video_segments_header_commands {
@@ -147,6 +151,7 @@
 
 .form-horizontal .o_video_segment_details .control-label {
 	padding-top: 7px;
+	white-space: nowrap;
 }
 
 @media (min-width: $screen-md-min) and (max-width: 1280px), (max-width: 670px) {
@@ -183,3 +188,180 @@
 		margin-top: 0;
 	}
 }
+
+@media (max-width: 400px) {
+	.o_video_segments_header {
+		grid-template-columns: 109px 209px 37px;
+	}
+
+	.o_video_segment_details {
+		grid-template-columns: 109px 118px 10px 118px;
+	}
+}
+
+
+//
+// Comments form
+//
+.o_video_comments_header {
+	display: grid;
+	grid-template-columns: 130px 213px 37px 10px 210px 30px;
+	grid-template-rows: auto;
+	grid-template-areas:
+		"previous-item items next-item space add-item commands"
+	;
+}
+
+.o_video_comments_header_prev {
+	grid-area: previous-item;
+	justify-self: right;
+}
+
+.o_video_comments_header_prev a {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	border-right-width: 0;
+}
+
+.o_video_comments_header_items {
+	grid-area: items;
+	justify-self: stretch;
+}
+
+.o_video_comments_header_items #o_cocomments_SELBOX select {
+	border-radius: 0;
+}
+
+.o_video_comments_header_next {
+	grid-area: next-item;
+	justify-self: stretch;
+}
+
+.o_video_comments_header_next a {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left-width: 0;
+}
+
+.o_video_comments_header_add_item {
+	grid-area: add-item;
+	justify-self: stretch;
+	text-align: right;
+	margin-right: 5px;
+
+	a {
+		width: 100%;
+	}
+}
+
+.o_video_comments_header_commands {
+	grid-area: commands;
+	justify-self: stretch;
+}
+
+.o_video_comment_details {
+	display: grid;
+	grid-template-columns: 130px 120px 10px 120px 130px 120px;
+	grid-template-rows: auto;
+	grid-template-areas:
+		"se-label start   pad0 pad0 pad0 pad0"
+		"pad1     e-start pad2 pad2 pad3 pad3"
+		"co-label co      pad4 pad4 pad4 pad4"
+		"t-label  t       t    t    t    t"
+		"pad5     b       b    b    b    b"
+;
+}
+
+.o_video_comment_se_label {
+	grid-area: se-label;
+	justify-self: right;
+	margin-right: 10px;
+}
+
+.o_video_comment_start {
+	grid-area: start;
+	justify-self: left;
+}
+
+.o_video_comment_error_start {
+	grid-area: e-start;
+	justify-self: left;
+}
+
+.o_video_comment_color_label {
+	grid-area: co-label;
+	justify-self: right;
+	margin-right: 10px;
+	margin-top: 10px;
+}
+
+.o_video_comment_color_dropdown {
+	grid-area: co;
+	justify-self: stretch;
+	margin-top: 10px;
+}
+
+.o_video_comment_text_label {
+	grid-area: t-label;
+	justify-self: right;
+	margin-right: 10px;
+	margin-top: 10px;
+	padding-top: 21px;
+}
+
+.o_video_comment_text {
+	grid-area: t;
+	justify-self: stretch;
+	margin-top: 10px;
+}
+
+.o_video_comment_buttons {
+	grid-area: b;
+	justify-self: left;
+	padding-top: 10px;
+}
+
+.form-horizontal .o_video_comment_details .control-label {
+	padding-top: 7px;
+}
+
+@media (min-width: $screen-md-min) and (max-width: 1280px), (max-width: 670px) {
+	.o_video_comments_header {
+		grid-template-columns: 130px 213px 37px;
+		grid-template-areas:
+			"previous-item items    next-item"
+			"pad1          add-item commands"
+	;
+	}
+
+	.o_video_comments_header_prev, .o_video_comments_header_items, .o_video_comments_header_next {
+		margin-bottom: 5px;
+	}
+
+	.o_video_comment_details {
+		grid-template-columns: 130px 120px 10px 120px;
+		grid-template-areas:
+		"se-label start   pad0 pad0"
+		"pad1     e-start pad2 pad2"
+		"co-label co      pad4 pad4"
+		"t-label  t       t    t   "
+		"pad5     b       b    b   "
+	;
+	}
+
+	.o_video_comment_color_label, .o_video_comment_color_dropdown {
+		margin-top: 5px;
+	}
+}
+
+@media (max-width: 400px) {
+	.o_video_comments_header {
+		grid-template-columns: 109px 209px 37px;
+	}
+
+	.o_video_comment_details {
+		grid-template-columns: 109px 118px 10px 118px;
+	}
+}
+
+
