@@ -57,10 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class AnnotationController extends FormBasicController {
+	private final static long MIN_DURATION = 1;
 
 	private VideoMarker annotation;
 	private TextElement startEl;
+	private FormLink startApplyPositionButton;
 	private TextElement endEl;
+	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private RichTextElement textEl;
 	private SingleSelection colorDropdown;
@@ -73,6 +76,7 @@ public class AnnotationController extends FormBasicController {
 	@Autowired
 	private VideoModule videoModule;
 	private final long videoDurationInSeconds;
+	private String currentTimeCode;
 
 
 	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation,
@@ -109,9 +113,19 @@ public class AnnotationController extends FormBasicController {
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
 
+		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+
 		endEl = uifactory.addTextElement("end", "form.annotation.startEnd", 8,
 				"00:00:00", formLayout);
 		endEl.setMandatory(true);
+
+		endApplyPositionButton = uifactory.addFormLink("endApplyPosition", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 
 		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 2,
 				"00", formLayout);
@@ -188,7 +202,11 @@ public class AnnotationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (fontSize == source) {
+		if (startApplyPositionButton == source) {
+			doApplyStartPosition();
+		} else if (endApplyPositionButton == source) {
+			doApplyEndPosition();
+		} else if (fontSize == source) {
 			fontSizeEl.setValue(Integer.toString((int)fontSize.getValue()));
 		} else if (fontSizeEl == source) {
 			try {
@@ -207,6 +225,40 @@ public class AnnotationController extends FormBasicController {
 			System.err.println("edit position");
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doApplyStartPosition() {
+		if (currentTimeCode == null) {
+			return;
+		}
+
+		try {
+			long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
+			long endTimeInSeconds = timeFormat.parse(endEl.getValue()).getTime() / 1000;
+			long newStartTimeInSeconds = Long.min(endTimeInSeconds - MIN_DURATION, startTimeInSeconds);
+			startEl.setValue(timeFormat.format(new Date(newStartTimeInSeconds * 1000)));
+			long duration = endTimeInSeconds - newStartTimeInSeconds;
+			durationEl.setValue(Long.toString(duration));
+		} catch (ParseException e) {
+			//
+		}
+	}
+
+	private void doApplyEndPosition() {
+		if (currentTimeCode == null) {
+			return;
+		}
+
+		try {
+			long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
+			long startTimeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
+			long newEndTimeInSeconds = Long.max(startTimeInSeconds + MIN_DURATION, endTimeInSeconds);
+			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
+			long duration = newEndTimeInSeconds - startTimeInSeconds;
+			durationEl.setValue(Long.toString(duration));
+		} catch (ParseException e) {
+			//
+		}
 	}
 
 	@Override
@@ -277,5 +329,9 @@ public class AnnotationController extends FormBasicController {
 		} catch (ParseException e) {
 			logError("", e);
 		}
+	}
+
+	public void setCurrentTimeCode(String currentTimeCode) {
+		this.currentTimeCode = currentTimeCode;
 	}
 }

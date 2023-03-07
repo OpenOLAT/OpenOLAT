@@ -1,13 +1,13 @@
 <div class="form-group row clearfix">
-	<div class="o_video_segments_header">
+	<div class="o_video_common_form_header">
 
 		#if ($hasSegments)
-		<div class="o_video_segments_header_prev">$r.render("previousSegment")</div>
-		<div class="o_video_segments_header_segments">$r.render("segments")</div>
-		<div class="o_video_segments_header_next">$r.render("nextSegment")</div>
+		<div class="o_video_common_form_header_prev">$r.render("previousSegment")</div>
+		<div class="o_video_common_form_header_items">$r.render("segments")</div>
+		<div class="o_video_common_form_header_next">$r.render("nextSegment")</div>
 		#end
 
-		<div class="o_video_segments_header_add_segment">$r.render("addSegment")</div>
-		<div class="o_video_segments_header_commands">$r.render("commands")</div>
+		<div class="o_video_common_form_header_add_item">$r.render("addSegment")</div>
+		<div class="o_video_common_form_header_commands">$r.render("commands")</div>
 	</div>
 </div>

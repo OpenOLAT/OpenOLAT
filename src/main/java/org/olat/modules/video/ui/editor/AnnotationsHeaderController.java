@@ -19,7 +19,10 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
@@ -54,8 +57,10 @@ public class AnnotationsHeaderController extends FormBasicController {
 	public final static Event ANNOTATION_ADDED_EVENT = new Event("annotation.added");
 	public final static Event ANNOTATION_DELETED_EVENT = new Event("annotation.deleted");
 	private final RepositoryEntry repositoryEntry;
+	private FormLink previousAnnotationButton;
 	private SingleSelection annotationsDropdown;
 	private SelectionValues annotationsKV = new SelectionValues();
+	private FormLink nextAnnotationButton;
 	private FormLink addAnnotationButton;
 	@Autowired
 	private VideoManager videoManager;
@@ -67,10 +72,14 @@ public class AnnotationsHeaderController extends FormBasicController {
 	private FormLink commandsButton;
 	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
+	private final SimpleDateFormat timeFormat;
 
 	protected AnnotationsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "annotations_header");
 		this.repositoryEntry = repositoryEntry;
+
+		timeFormat = new SimpleDateFormat("HH:mm:ss");
+		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		initForm(ureq);
 	}
@@ -84,9 +93,17 @@ public class AnnotationsHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		previousAnnotationButton = uifactory.addFormLink("previousAnnotation", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		previousAnnotationButton.setIconRightCSS("o_icon o_icon_back");
+
 		annotationsDropdown = uifactory.addDropdownSingleselect("annotations", "form.annotation.title",
 				formLayout, annotationsKV.keys(), annotationsKV.values());
 		annotationsDropdown.addActionListener(FormEvent.ONCHANGE);
+
+		nextAnnotationButton = uifactory.addFormLink("nextAnnotation", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		nextAnnotationButton.setIconRightCSS("o_icon o_icon_start");
 
 		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.annotation.add",
 				"form.annotation.add", formLayout, Link.BUTTON);
@@ -111,7 +128,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 				.getMarkers()
 				.stream()
 				.sorted(new VideoMarkerRowComparator())
-				.forEach(a -> annotationsKV.add(SelectionValues.entry(a.getId(), a.getText())));
+				.forEach(a -> annotationsKV.add(SelectionValues.entry(a.getId(), timeFormat.format(a.getBegin()) + " - " + a.getText())));
 		flc.contextPut("hasAnnotations", !annotationsKV.isEmpty());
 		annotationsDropdown.setKeysAndValues(annotationsKV.keys(), annotationsKV.values(), null);
 		annotationsDropdown.setEscapeHtml(false);
@@ -125,6 +142,21 @@ public class AnnotationsHeaderController extends FormBasicController {
 		if (annotationId != null) {
 			annotationsDropdown.select(annotationId, true);
 		}
+
+		int selectedIndex = -1;
+		for (int i = 0; i < annotationsKV.size(); i++) {
+			if (annotationsKV.keys()[i].equals(annotationId)) {
+				selectedIndex = i;
+				break;
+			}
+		}
+
+		if (selectedIndex != -1) {
+			previousAnnotationButton.setEnabled(selectedIndex > 0);
+			nextAnnotationButton.setEnabled(selectedIndex < (annotationsKV.size() - 1));
+		}
+
+		commandsButton.setEnabled(!annotationsKV.isEmpty());
 	}
 
 	@Override
@@ -136,15 +168,59 @@ public class AnnotationsHeaderController extends FormBasicController {
 		} else if (annotationsDropdown == source) {
 			if (annotationsDropdown.isOneSelected()) {
 				annotationId = annotationsDropdown.getSelectedKey();
-				VideoMarker annotation = annotations.getMarkerById(annotationId);
-				if (annotation != null) {
-					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
-							annotation.getDuration()));
-				}
+				handleAnnotationSelected(ureq);
 			}
+		} else if (nextAnnotationButton == source) {
+			doNextAnnotation(ureq);
+		} else if (previousAnnotationButton == source) {
+			doPreviousAnnotation(ureq);
 		}
 
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void handleAnnotationSelected(UserRequest ureq) {
+		getOptionalAnnotation()
+				.ifPresent(a -> fireEvent(ureq, new AnnotationSelectedEvent(a.getId(), a.getBegin().getTime(), a.getDuration())));
+	}
+
+	private Optional<VideoMarker> getOptionalAnnotation() {
+		if (annotationId == null) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(annotations.getMarkerById(annotationId));
+	}
+
+	private void doPreviousAnnotation(UserRequest ureq) {
+		String[] keys = annotationsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (annotationId != null && annotationId.equals(key)) {
+				int newIndex = i - 1;
+				if (newIndex >= 0) {
+					annotationId = keys[newIndex];
+					setValues();
+					handleAnnotationSelected(ureq);
+				}
+				break;
+			}
+		}
+	}
+
+	private void doNextAnnotation(UserRequest ureq) {
+		String[] keys = annotationsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (annotationId != null && annotationId.equals(key)) {
+				int newIndex = i + 1;
+				if (newIndex < keys.length) {
+					annotationId = keys[newIndex];
+					setValues();
+					handleAnnotationSelected(ureq);
+				}
+				break;
+			}
+		}
 	}
 
 	private void doAddAnnotation(UserRequest ureq) {
