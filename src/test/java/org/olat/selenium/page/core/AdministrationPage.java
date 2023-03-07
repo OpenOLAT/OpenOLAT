@@ -270,6 +270,6 @@ public class AdministrationPage {
 		browser.findElement(menuItemLinkBy).click();
 		
 		By activeMenuItemLinkBy = By.xpath("//li[contains(@class,'" + liClass + "')][contains(@class,'active')]//span[contains(@class,'o_tree_level_label_leaf')]/a[span[@class='o_tree_item']]");
-		OOGraphene.waitElement(activeMenuItemLinkBy, browser);
+		OOGraphene.waitElementPresence(activeMenuItemLinkBy, 5, browser);// Element possibly not on screen
 	}
 }

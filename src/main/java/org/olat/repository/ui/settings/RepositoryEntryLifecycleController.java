@@ -261,7 +261,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			publicDatesEl.clearError();
 			if(publicDatesEl.isEnabled() && publicDatesEl.isVisible()) {
 				if(!publicDatesEl.isOneSelected()) {
-					publicDatesEl.setErrorKey("form.legende.mandatory", null);
+					publicDatesEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}	
 			}
@@ -278,7 +278,7 @@ public class RepositoryEntryLifecycleController extends FormBasicController {
 			String val = el.getValue();
 			el.clearError();
 			if(val != null && val.length() > maxLength) {
-				el.setErrorKey("input.toolong", new String[]{ Integer.toString(maxLength) });
+				el.setErrorKey("input.toolong", Integer.toString(maxLength));
 				ok = false;
 			} else {
 				ok = true;

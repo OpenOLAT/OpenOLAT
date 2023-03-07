@@ -48,6 +48,8 @@ public class RepositoryMetadataPage {
 		By licenseBy = By.cssSelector("div.o_sel_repo_license select");
 		WebElement licenseEl = browser.findElement(licenseBy);
 		new Select(licenseEl).selectByIndex(1);
+		By licensorBy = By.cssSelector("div.o_sel_repo_licensor input[type='text']");
+		OOGraphene.waitElement(licensorBy, browser);
 		return this;
 	}
 	
