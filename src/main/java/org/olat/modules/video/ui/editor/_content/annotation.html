@@ -40,7 +40,10 @@
 		<div class="o_video_annotation_color_dropdown">$r.render("color")</div>
 
 		<div class="o_video_annotation_position_size_label">$r.render("positionSize", "label")</div>
-		<div class="o_video_annotation_position_size" style="display: inline-block;">$r.render("positionSize")</div>
+		<div class="o_video_annotation_position_size">
+			<div style="display: inline-block">$r.render("positionSize")</div>
+			<div style="display: inline-block">$r.render("editPositionSize")</div>
+		</div>
 
 		<div class="o_video_annotation_buttons">$r.render("save") $r.render("cancel")</div>
 	</div>

@@ -234,6 +234,106 @@
 }
 
 //
+// Edit position and size dialog on annotations form
+//
+
+.o_edit_position_size {
+	display: grid;
+	grid-template-columns: auto 120px;
+	grid-template-rows: auto;
+	grid-template-areas:
+			"top-label    top"
+			"pad1         e-top"
+			"left-label   left"
+			"pad2         e-left"
+			"width-label  width"
+			"pad3         e-width"
+			"height-label height"
+			"pad4         e-height"
+			"b            b"
+;
+	row-gap: 10px;
+}
+
+.o_edit_position_size input {
+	width: 110px;
+}
+
+.o_edit_position_size_top_label {
+	grid-area: top-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_top {
+	grid-area: top;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_top_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_left_label {
+	grid-area: left-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_left {
+	grid-area: left;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_left_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_width_label {
+	grid-area: width-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_width {
+	grid-area: width;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_width_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_height_label {
+	grid-area: height-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_height {
+	grid-area: height;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_height_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_input_wrapper {
+	display: inline-block;
+}
+
+.o_edit_position_size_buttons {
+	grid-area: b;
+	justify-self: left;
+	margin-top: 10px;
+}
+
+//
 // Segments form
 //
 

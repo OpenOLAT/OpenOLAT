@@ -41,6 +41,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -77,7 +78,9 @@ public class AnnotationController extends FormBasicController {
 	private VideoModule videoModule;
 	private final long videoDurationInSeconds;
 	private String currentTimeCode;
-
+	private CloseableCalloutWindowController ccwc;
+	private EditPositionSizeController editPositionSizeController;
+	private double top, left, width, height;
 
 	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation,
 								long videoDurationInSeconds) {
@@ -96,6 +99,13 @@ public class AnnotationController extends FormBasicController {
 
 		initForm(ureq);
 		setValues();
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(editPositionSizeController);
+		editPositionSizeController = null;
+		ccwc = null;
 	}
 
 	public void setAnnotation(VideoMarker annotation) {
@@ -158,7 +168,7 @@ public class AnnotationController extends FormBasicController {
 				translate("form.annotation.positionSize.value", "", "", "", ""), formLayout);
 		positionSizeEditLink = uifactory.addFormLink("editPositionSize", "", null, formLayout,
 				Link.LINK_CUSTOM_CSS | Link.NONTRANSLATED);
-		positionSizeEditLink.setIconLeftCSS("o_icon o_iqtest_icon");
+		positionSizeEditLink.setIconLeftCSS("o_icon o_icon_edit");
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -182,11 +192,12 @@ public class AnnotationController extends FormBasicController {
 			colorDropdown.select(colorsKV.keys()[0], true);
 			colorDropdown.getComponent().setDirty(true);
 		}
+		top = annotation.getTop();
+		left = annotation.getLeft();
+		width = annotation.getWidth();
+		height = annotation.getHeight();
 		positionSizeEl.setValue(translate("form.annotation.positionSize.value",
-				formatDouble(annotation.getTop()),
-				formatDouble(annotation.getLeft()),
-				formatDouble(annotation.getWidth()),
-				formatDouble(annotation.getHeight())));
+				formatDouble(top), formatDouble(left), formatDouble(width),	formatDouble(height)));
 	}
 
 	private String formatDouble(Double value) {
@@ -198,6 +209,24 @@ public class AnnotationController extends FormBasicController {
 			stringValue = stringValue.substring(0, stringValue.length() - 3);
 		}
 		return stringValue;
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (ccwc == source) {
+			cleanUp();
+		} else if (editPositionSizeController == source) {
+			if (event == Event.DONE_EVENT) {
+				top = editPositionSizeController.getTop();
+				left = editPositionSizeController.getLeft();
+				width = editPositionSizeController.getWidth();
+				height = editPositionSizeController.getHeight();
+				positionSizeEl.setValue(translate("form.annotation.positionSize.value",
+						formatDouble(top), formatDouble(left), formatDouble(width),	formatDouble(height)));
+			}
+			ccwc.deactivate();
+			cleanUp();
+		}
 	}
 
 	@Override
@@ -222,9 +251,26 @@ public class AnnotationController extends FormBasicController {
 				//
 			}
 		} else if (positionSizeEditLink == source) {
-			System.err.println("edit position");
+			doEditPositionSize(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doEditPositionSize(UserRequest ureq) {
+		if (annotation == null) {
+			return;
+		}
+
+		editPositionSizeController = new EditPositionSizeController(ureq, getWindowControl());
+		editPositionSizeController.setTop(top);
+		editPositionSizeController.setLeft(left);
+		editPositionSizeController.setWidth(width);
+		editPositionSizeController.setHeight(height);
+		listenTo(editPositionSizeController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), editPositionSizeController.getInitialComponent(),
+				positionSizeEditLink.getFormDispatchId(), "", true, "");
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	private void doApplyStartPosition() {
@@ -325,6 +371,10 @@ public class AnnotationController extends FormBasicController {
 			annotation.setDuration(Long.parseLong(durationEl.getValue()));
 			annotation.setStyle(colorDropdown.getSelectedKey());
 			annotation.setText(textEl.getValue());
+			annotation.setLeft(left);
+			annotation.setTop(top);
+			annotation.setWidth(width);
+			annotation.setHeight(height);
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
 			logError("", e);
