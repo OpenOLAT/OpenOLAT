@@ -69,7 +69,7 @@ public class DetailsController extends BasicController {
 		listenTo(commentsController);
 		tabbedPane.addTab(translate("video.editor.panes.comments"), commentsController);
 
-		questionsController = new QuestionsController(ureq, wControl, repositoryEntry);
+		questionsController = new QuestionsController(ureq, wControl, repositoryEntry, durationInSeconds);
 		listenTo(questionsController);
 		tabbedPane.addTab(translate("video.editor.panes.quiz"), questionsController);
 
