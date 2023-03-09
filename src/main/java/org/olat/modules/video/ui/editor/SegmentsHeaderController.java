@@ -382,7 +382,7 @@ public class SegmentsHeaderController extends FormBasicController {
 	public void setSegmentId(String segmentId) {
 		this.segmentId = segmentId;
 		if (segmentId != null) {
-			segmentsDropdown.select(segmentId, true);
+			setValues();
 		}
 	}
 	public String getSegmentId() {

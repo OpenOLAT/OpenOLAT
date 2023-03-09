@@ -142,6 +142,7 @@ public class VideoManagerImpl implements VideoManager {
 	private static final String DIRNAME_MASTER = "master";
 	private static final String DIRNAME_QUESTIONS = "qti21";
 	private static final String DIRNAME_THUMBNAILS = "thumbnails";
+	private static final String DIRNAME_COMMENT_MEDIA = "commentmedia";
 	
 	public static final String TRACK = "track_";
 
@@ -620,6 +621,12 @@ public class VideoManagerImpl implements VideoManager {
 	public VFSContainer getThumbnailsContainer(OLATResource videoResource) {
 		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_THUMBNAILS);
+	}
+
+	@Override
+	public VFSContainer getCommentMediaContainer(OLATResource videoResource) {
+		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_COMMENT_MEDIA);
 	}
 
 	@Override

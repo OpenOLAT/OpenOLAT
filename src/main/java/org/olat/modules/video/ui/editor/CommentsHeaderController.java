@@ -337,7 +337,7 @@ public class CommentsHeaderController extends FormBasicController {
 	public void setCommentId(String commentId) {
 		this.commentId = commentId;
 		if (commentId != null) {
-			commentsDropdown.select(commentId, true);
+			setValues();
 		}
 	}
 

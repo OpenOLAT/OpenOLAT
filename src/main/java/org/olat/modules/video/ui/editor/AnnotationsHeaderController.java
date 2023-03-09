@@ -301,7 +301,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 	public void setAnnotationId(String annotationId) {
 		this.annotationId = annotationId;
 		if (annotationId != null) {
-			annotationsDropdown.select(annotationId, true);
+			setValues();
 		}
 	}
 

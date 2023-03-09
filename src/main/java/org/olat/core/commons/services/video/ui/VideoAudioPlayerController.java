@@ -35,9 +35,13 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.video.VideoFormat;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.http.client.utils.URIBuilder;
 
 /**
  * 
@@ -46,13 +50,20 @@ import java.util.List;
  *
  */
 public class VideoAudioPlayerController extends BasicController {
-	private VelocityContainer videoAudioPlayerVC;
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
+		this(ureq, wControl, configs.getVfsLeaf(), null, false, true);
+	}
+
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsVideo,
+									  String streamingVideoUrl, boolean minimalControls, boolean autoplay) {
 		super(ureq, wControl);
-		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
+		VelocityContainer videoAudioPlayerVC = createVelocityContainer("video_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
-		
+
+		videoAudioPlayerVC.contextPut("minimalControls", minimalControls);
+		videoAudioPlayerVC.contextPut("autoplay", autoplay);
+
 		// 1) Load mediaelementjs player and plugins
 		List<String> cssPath = new ArrayList<>();
 		cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/features/speed/speed.css"));
@@ -67,33 +78,57 @@ public class VideoAudioPlayerController extends BasicController {
 			cssPath.add(StaticMediaDispatcher.getStaticURI("movie/mediaelementjs/mediaelementplayer.min.css"));
 			jsCodePath.add("movie/mediaelementjs/mediaelement-and-player.min.js");
 			jsCodePath.add("movie/mediaelementjs/features/speed/speed.min.js");
-		}		
+		}
+		jsCodePath.add("movie/mediaelementjs/renderers/vimeo.js");
+
 		JSAndCSSComponent mediaelementjs = new JSAndCSSComponent("mediaelementjs",
 				jsCodePath.toArray(new String[jsCodePath.size()]),
 				cssPath.toArray(new String[cssPath.size()]));
 		videoAudioPlayerVC.put("mediaelementjs", mediaelementjs);		
 
-		// 2) Create mapper and URL for video delivery
-		VFSLeaf vfsVideo = configs.getVfsLeaf();
-		VFSMetadata metaData = vfsVideo.getMetaInfo();
-		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));
-		VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);
-		boolean useMaster = metaData != null && metaData.isInTranscoding();
-		videoMapper.setUseMaster(useMaster);
-		String url = registerCacheableMapper(ureq, mapperId, videoMapper);
-		videoAudioPlayerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
+		if (vfsVideo != null) {
+			VFSMetadata metaData = vfsVideo.getMetaInfo();
+			String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));
+			VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);
+			boolean useMaster = metaData != null && metaData.isInTranscoding();
+			videoMapper.setUseMaster(useMaster);
+			String url = registerCacheableMapper(ureq, mapperId, videoMapper);
+			videoAudioPlayerVC.contextPut("videoUrl", url + "/" + vfsVideo.getName());
 
-		// *) Add some metadata
-		if (metaData != null) {
-			videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());			
-		}		
-		videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsVideo.getName()));			
-		
+			if (metaData != null) {
+				videoAudioPlayerVC.contextPut("videoTitle", metaData.getTitle());
+			}
+			videoAudioPlayerVC.contextPut("contentType", WebappHelper.getMimeType(vfsVideo.getName()));
+		}
+
+		if (streamingVideoUrl != null) {
+			VideoFormat videoFormat = VideoFormat.valueOfUrl(streamingVideoUrl);
+			if (videoFormat != null) {
+				videoAudioPlayerVC.contextPut("videoUrl", adjustStreamingVideoUrl(streamingVideoUrl, videoFormat));
+				videoAudioPlayerVC.contextPut("contentType", videoFormat.mimeType());
+			}
+		}
+
 		putInitialPanel(videoAudioPlayerVC);
 	}
 
-	
-	
+	private String adjustStreamingVideoUrl(String streamingVideoUrl, VideoFormat videoFormat) {
+		if (VideoFormat.vimeo.equals(videoFormat)) {
+			URIBuilder uriBuilder;
+			try {
+				uriBuilder = new URIBuilder(streamingVideoUrl);
+				uriBuilder.setParameter("controls", "0");
+				if (uriBuilder.getPathSegments().size() == 2) {
+					uriBuilder.setPath(uriBuilder.getPathSegments().get(0));
+				}
+				return uriBuilder.build().toString();
+			} catch (URISyntaxException e) {
+				logError("", e);
+			}
+		}
+		return streamingVideoUrl;
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// no events to dispatch

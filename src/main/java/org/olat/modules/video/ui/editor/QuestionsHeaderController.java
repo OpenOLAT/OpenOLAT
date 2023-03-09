@@ -308,7 +308,7 @@ public class QuestionsHeaderController extends FormBasicController {
 	public void setQuestionId(String questionId) {
 		this.questionId = questionId;
 		if (questionId != null) {
-			questionsDropdown.select(questionId, true);
+			setValues();
 		}
 	}
 
