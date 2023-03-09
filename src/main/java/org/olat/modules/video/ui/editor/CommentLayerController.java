@@ -128,9 +128,14 @@ public class CommentLayerController extends BasicController {
 				VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
 				VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(c.getFileName());
 				if (vfsVideo != null) {
-					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), vfsVideo);
+					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
+							getWindowControl(), vfsVideo, null, true, false);
 					mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 				}
+			} else if (StringHelper.containsNonWhitespace(c.getUrl())) {
+				VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
+						getWindowControl(), null, c.getUrl(), true, false);
+				mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 			}
 		});
 	}

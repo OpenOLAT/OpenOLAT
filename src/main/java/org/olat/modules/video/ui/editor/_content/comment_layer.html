@@ -1,5 +1,17 @@
-#if ($showComment)
+<style>
+.o_video_comment_player .mejs__overlay-button {
+	transform: scale(0.4);
+}
 
+@media all and (display-mode: fullscreen) {
+	.o_video_comment_player .mejs__overlay-button {
+		transform: inherit;
+	}
+}
+
+</style>
+
+#if ($showComment)
 <div class="o_video_comment_container">
 	<div class="o_video_comment_header">
 		$r.render("close")
@@ -24,7 +36,7 @@
 		</div>
 		#end
 		#if ($r.available("video"))
-		<div>
+		<div class="o_video_comment_player">
 			$r.render("video")
 		</div>
 		#end

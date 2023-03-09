@@ -7,7 +7,7 @@
 		#else
 			#set($elem = "video")
 		#end
-		<${elem} id="$r.getId("o_vid")" controls autoplay preload="none" oncontextmenu="return false;" class="o_video">			
+		<${elem} id="$r.getId("o_vid")" controls #if($autoplay) autoplay #end preload="none" oncontextmenu="return false;" class="o_video">
 	    	<source type="$contentType" src="$videoUrl" title="$!videoTitle"/>
 		</${elem}>
 		<script>
@@ -27,8 +27,9 @@
 		        path: '$r.staticLink("movie/mediaelementjs/flv/flv.min.js")',
 		        withCredentials: true
 		    },
-			## Enabled features - should be same order as in player.js. 
-		#if($elem == "audio")
+		#if ($minimalControls)
+			features: ['current', 'progress'],
+		#elseif($elem == "audio")
 			features: ['playpause','current','volume','progress','duration'],
 		#else
 			features: ['playpause','current','volume','progress','duration','speed','fullscreen'],
