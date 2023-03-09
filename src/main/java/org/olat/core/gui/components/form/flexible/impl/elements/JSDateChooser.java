@@ -290,7 +290,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 				
 				newDate.setTime(d);
 				newDate.set(Calendar.HOUR_OF_DAY, oldDate.get(Calendar.HOUR_OF_DAY));
-				newDate.set(Calendar.MINUTE, oldDate.get(Calendar.HOUR_OF_DAY));
+				newDate.set(Calendar.MINUTE, oldDate.get(Calendar.MINUTE));
 				d = newDate.getTime();
 			}
 		} catch (ParseException e) {
