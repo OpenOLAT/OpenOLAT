@@ -21,6 +21,7 @@ package org.olat.modules.video.model;
 
 import java.util.Date;
 
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoComment;
 
@@ -108,12 +109,12 @@ public class VideoCommentImpl implements VideoComment {
 	}
 
 	@Override
-	public String getDisplayText() {
+	public String getDisplayText(Translator translator) {
 		if (StringHelper.containsNonWhitespace(text)) {
 			return text;
 		}
 		if (StringHelper.containsNonWhitespace(fileName)) {
-			return fileName;
+			return translator.translate("video.comment");
 		}
 		if (StringHelper.containsNonWhitespace(url)) {
 			return url;

@@ -21,6 +21,8 @@ package org.olat.modules.video;
 
 import java.util.Date;
 
+import org.olat.core.gui.translator.Translator;
+
 /**
  * Initial date: 2023-02-28<br>
  *
@@ -40,5 +42,5 @@ public interface VideoComment {
 	void setFileName(String fileName);
 	String getUrl();
 	void setUrl(String url);
-	String getDisplayText();
+	String getDisplayText(Translator translator);
 }

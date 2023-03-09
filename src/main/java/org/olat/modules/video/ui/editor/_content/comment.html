@@ -1,3 +1,19 @@
+<style>
+	.o_video_comment_video_label {
+		grid-area: t-label;
+		justify-self: right;
+		margin-top: 10px;
+		margin-right: 10px;
+	}
+
+	.o_video_comment_video {
+		grid-area: t;
+		justify-self: stretch;
+		margin-top: 10px;
+		padding-top: 7px;
+	}
+</style>
+
 <div class="form-group clearfix">
 	<div class="o_video_comment_details">
 		<div class="o_video_comment_se_label">$r.render("start", "label")</div>
@@ -13,8 +29,15 @@
 		<div class="o_video_comment_color_label">$r.render("color", "label")</div>
 		<div class="o_video_comment_color_dropdown">$r.render("color")</div>
 
+		#if ($showText)
 		<div class="o_video_comment_text_label">$r.render("text", "label")</div>
 		<div class="o_video_comment_text">$r.render("text")</div>
+		#end
+
+		#if ($showVideo)
+		<div class="o_video_comment_video_label">$r.render("video", "label")</div>
+		<div class="o_video_comment_video">$r.render("video")</div>
+		#end
 
 		<div class="o_video_comment_buttons">$r.render("save") $r.render("cancel")</div>
 	</div>
