@@ -140,15 +140,18 @@ public class CommentController extends FormBasicController {
 		if (StringHelper.containsNonWhitespace(comment.getText())) {
 			textEl.setValue(comment.getText());
 			flc.contextPut("showText", true);
+		} else {
+			textEl.setValue("");
 		}
 
 		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
 			videoLink.setI18nKey(comment.getFileName());
 			flc.contextPut("showVideo", true);
-		}
-
-		if (StringHelper.containsNonWhitespace(comment.getUrl())) {
+		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
+			videoLink.setI18nKey(comment.getUrl());
 			flc.contextPut("showVideo", true);
+		} else {
+			videoLink.setI18nKey("");
 		}
 
 		if (comment.getColor() != null) {

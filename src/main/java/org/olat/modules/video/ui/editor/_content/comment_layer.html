@@ -23,6 +23,11 @@
 			$r.xssScan($text)
 		</div>
 		#end
+		#if ($r.available("video"))
+		<div>
+			$r.render("video")
+		</div>
+		#end
 	</div>
 </div>
 

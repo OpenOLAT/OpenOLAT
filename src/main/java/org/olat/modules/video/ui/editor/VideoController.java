@@ -187,7 +187,7 @@ public class VideoController extends BasicController {
 			case COMMENT -> {
 				videoDisplayController.clearSegments();
 				videoDisplayController.clearMarkerLayer();
-				commentLayerController.setComment(selectedTimelineEvent.getId());
+				commentLayerController.setComment(ureq, selectedTimelineEvent.getId());
 			}
 			default -> {}
 		}

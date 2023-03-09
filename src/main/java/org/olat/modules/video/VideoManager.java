@@ -214,6 +214,14 @@ public interface VideoManager {
 	VFSContainer getThumbnailsContainer(OLATResource videoResource);
 
 	/**
+	 * Get the container that contains media files from video comments.
+	 *
+	 * @param videoResource The video resource
+	 * @return VFSContainer
+	 */
+	VFSContainer getCommentMediaContainer(OLATResource videoResource);
+
+	/**
 	 * Get the container where all the transcoded videos are stored
 	 * @param videoResource
 	 * @return VFSContainer

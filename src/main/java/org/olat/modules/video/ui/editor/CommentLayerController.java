@@ -21,6 +21,7 @@ package org.olat.modules.video.ui.editor;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -33,6 +34,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.repository.RepositoryEntry;
@@ -93,7 +96,7 @@ public class CommentLayerController extends BasicController {
 		comments = videoManager.loadComments(repositoryEntry.getOlatResource());
 	}
 
-	public void setComment(String commentId) {
+	public void setComment(UserRequest ureq, String commentId) {
 		if (comments == null) {
 			return;
 		}
@@ -119,6 +122,15 @@ public class CommentLayerController extends BasicController {
 				mainVC.contextPut("text", c.getText());
 			} else {
 				mainVC.contextRemove("text");
+			}
+			mainVC.remove("video");
+			if (StringHelper.containsNonWhitespace(c.getFileName())) {
+				VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
+				VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(c.getFileName());
+				if (vfsVideo != null) {
+					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), vfsVideo);
+					mainVC.put("video", videoAudioPlayerController.getInitialComponent());
+				}
 			}
 		});
 	}

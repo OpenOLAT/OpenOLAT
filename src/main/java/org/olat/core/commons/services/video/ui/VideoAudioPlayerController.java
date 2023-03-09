@@ -49,6 +49,10 @@ public class VideoAudioPlayerController extends BasicController {
 	private VelocityContainer videoAudioPlayerVC;
 
 	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, DocEditorConfigs configs, Access access) {
+		this(ureq, wControl, configs.getVfsLeaf());
+	}
+
+	public VideoAudioPlayerController(UserRequest ureq, WindowControl wControl, VFSLeaf vfsVideo) {
 		super(ureq, wControl);
 		videoAudioPlayerVC = createVelocityContainer("video_audio_player");
 		videoAudioPlayerVC.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
@@ -74,7 +78,6 @@ public class VideoAudioPlayerController extends BasicController {
 		videoAudioPlayerVC.put("mediaelementjs", mediaelementjs);		
 
 		// 2) Create mapper and URL for video delivery
-		VFSLeaf vfsVideo = configs.getVfsLeaf();
 		VFSMetadata metaData = vfsVideo.getMetaInfo();
 		String mapperId = Long.toString(CodeHelper.getUniqueIDFromString(vfsVideo.getRelPath()));
 		VFSMediaMapper videoMapper = new VFSMediaMapper(vfsVideo);
