@@ -4,8 +4,8 @@
 		<div class="o_video_annotation_se_label">$r.render("start", "label")</div>
 
 		<div class="o_video_annotation_start btn-group">
-			<div class="btn-group o_video_apply_position_timestamp" style="display: inline-block;">$r.render("start")</div>
-			<div class="btn-group o_video_apply_position_button" style="display: inline-block;">$r.render("startApplyPosition")</div>
+			<div class="btn-group o_video_apply_position_timestamp">$r.render("start")</div>
+			<div class="btn-group o_video_apply_position_button">$r.render("startApplyPosition")</div>
 		</div>
 
 		#if ($f.hasError("start"))
@@ -15,8 +15,8 @@
 		<div class="o_video_annotation_dash" style="display: inline-block; text-align: center; line-height: 32px;">-</div>
 
 		<div class="o_video_annotation_end btn-group">
-			<div class="btn-group o_video_apply_position_timestamp" style="display: inline-block;">$r.render("end")</div>
-			<div class="btn-group o_video_apply_position_button" style="display: inline-block;">$r.render("endApplyPosition")</div>
+			<div class="btn-group o_video_apply_position_timestamp">$r.render("end")</div>
+			<div class="btn-group o_video_apply_position_button">$r.render("endApplyPosition")</div>
 		</div>
 
 		#if ($f.hasError("end"))
@@ -40,7 +40,10 @@
 		<div class="o_video_annotation_color_dropdown">$r.render("color")</div>
 
 		<div class="o_video_annotation_position_size_label">$r.render("positionSize", "label")</div>
-		<div class="o_video_annotation_position_size" style="display: inline-block;">$r.render("positionSize")</div>
+		<div class="o_video_annotation_position_size">
+			<div style="display: inline-block">$r.render("positionSize")</div>
+			<div style="display: inline-block">$r.render("editPositionSize")</div>
+		</div>
 
 		<div class="o_video_annotation_buttons">$r.render("save") $r.render("cancel")</div>
 	</div>

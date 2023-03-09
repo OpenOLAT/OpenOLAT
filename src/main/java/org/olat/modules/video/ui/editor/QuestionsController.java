@@ -54,7 +54,8 @@ public class QuestionsController extends BasicController {
 	@Autowired
 	private VideoManager videoManager;
 
-	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+								  long videoDurationInSeconds) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("questions");
@@ -67,7 +68,7 @@ public class QuestionsController extends BasicController {
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 
-		questionController = new QuestionController(ureq, wControl, repositoryEntry, question);
+		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, videoDurationInSeconds);
 		listenTo(questionController);
 		if (question != null) {
 			mainVC.put("question", questionController.getInitialComponent());
@@ -139,6 +140,7 @@ public class QuestionsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		questionsHeaderController.setCurrentTimeCode(currentTimeCode);
+		questionController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showQuestion(String questionId) {

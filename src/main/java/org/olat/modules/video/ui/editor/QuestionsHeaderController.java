@@ -19,8 +19,10 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -54,7 +56,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class QuestionsHeaderController extends FormBasicController {
 	public final static Event QUESTION_DELETED_EVENT = new Event("question.deleted");
 	public final static Event QUESTION_ADDED_EVENT = new Event("question.added");
+	private FormLink previousQuestionButton;
 	private SingleSelection questionsDropdown;
+	private FormLink nextQuestionButton;
 	private FormLink addQuestionButton;
 	private NewQuestionItemCalloutController newQuestionCtrl;
 	private CloseableCalloutWindowController ccwc;
@@ -67,10 +71,14 @@ public class QuestionsHeaderController extends FormBasicController {
 	private String currentTimeCode;
 	private FormLink commandsButton;
 	private HeaderCommandsController commandsController;
+	private final SimpleDateFormat timeFormat;
 
 	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "questions_header");
 		this.repositoryEntry = repositoryEntry;
+
+		timeFormat = new SimpleDateFormat("HH:mm:ss");
+		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
 		initForm(ureq);
 	}
@@ -86,10 +94,18 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		previousQuestionButton = uifactory.addFormLink("previousQuestion", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		previousQuestionButton.setIconRightCSS("o_icon o_icon_back");
+
 		questionsDropdown = uifactory.addDropdownSingleselect("questions", "form.question.title",
 				formLayout, questionsKV.keys(), questionsKV.values());
 		questionsDropdown.addActionListener(FormEvent.ONCHANGE);
 		questionsDropdown.setEscapeHtml(false);
+
+		nextQuestionButton = uifactory.addFormLink("nextQuestion", "", "",
+				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
+		nextQuestionButton.setIconRightCSS("o_icon o_icon_start");
 
 		addQuestionButton = uifactory.addFormLink("addQuestion", "form.question.add",
 				"form.question.add", formLayout, Link.BUTTON);
@@ -114,7 +130,7 @@ public class QuestionsHeaderController extends FormBasicController {
 				.getQuestions()
 				.stream()
 				.sorted(new VideoQuestionRowComparator())
-				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), q.getTitle())));
+				.forEach((q) -> questionsKV.add(SelectionValues.entry(q.getId(), timeFormat.format(q.getBegin()) + " - " + q.getTitle())));
 		flc.contextPut("hasQuestions", !questionsKV.isEmpty());
 		questionsDropdown.setKeysAndValues(questionsKV.keys(), questionsKV.values(), null);
 
@@ -127,6 +143,21 @@ public class QuestionsHeaderController extends FormBasicController {
 		if (questionId != null) {
 			questionsDropdown.select(questionId, true);
 		}
+
+		int selectedIndex = -1;
+		for (int i = 0; i < questionsKV.size(); i++) {
+			if (questionsKV.keys()[i].equals(questionId)) {
+				selectedIndex = i;
+				break;
+			}
+		}
+
+		if (selectedIndex != -1) {
+			previousQuestionButton.setEnabled(selectedIndex > 0);
+			nextQuestionButton.setEnabled(selectedIndex < (questionsKV.size() - 1));
+		}
+
+		commandsButton.setEnabled(!questionsKV.isEmpty());
 	}
 
 	@Override
@@ -138,12 +169,52 @@ public class QuestionsHeaderController extends FormBasicController {
 		} else if (questionsDropdown == source) {
 			if (questionsDropdown.isOneSelected()) {
 				questionId = questionsDropdown.getSelectedKey();
-				getOptionalQuestion()
-						.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getBegin().getTime())));
+				handleQuestionSelected(ureq);
 			}
+		} else if (nextQuestionButton == source) {
+			doNextQuestion(ureq);
+		} else if (previousQuestionButton == source) {
+			doPreviousQuestion(ureq);
 		}
 
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void handleQuestionSelected(UserRequest ureq) {
+		getOptionalQuestion()
+				.ifPresent(q -> fireEvent(ureq, new QuestionSelectedEvent(q.getId(), q.getBegin().getTime())));
+	}
+
+	private void doPreviousQuestion(UserRequest ureq) {
+		String[] keys = questionsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (questionId != null && questionId.equals(key)) {
+				int newIndex = i - 1;
+				if (newIndex >= 0) {
+					questionId = keys[newIndex];
+					setValues();
+					handleQuestionSelected(ureq);
+				}
+				break;
+			}
+		}
+	}
+
+	private void doNextQuestion(UserRequest ureq) {
+		String[] keys = questionsDropdown.getKeys();
+		for (int i = 0; i < keys.length; i++) {
+			String key = keys[i];
+			if (questionId != null && questionId.equals(key)) {
+				int newIndex = i + 1;
+				if (newIndex < keys.length) {
+					questionId = keys[newIndex];
+					setValues();
+					handleQuestionSelected(ureq);
+				}
+				break;
+			}
+		}
 	}
 
 	private void doAddQuestion(UserRequest ureq) {

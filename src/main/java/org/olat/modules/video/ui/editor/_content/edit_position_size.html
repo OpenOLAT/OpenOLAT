@@ -1,0 +1,35 @@
+<div class="o_form form-horizontal">
+	<div class="form-group clearfix">
+		<div class="o_edit_position_size">
+			<div class="o_edit_position_size_top_label">$r.render("top", "label")</div>
+			<div class="o_edit_position_size_top"><div class="o_edit_position_input_wrapper">$r.render("top")</div> %</div>
+
+			#if ($f.hasError("top"))
+			<div class="o_edit_position_size_top_error">$r.render("top", "error")</div>
+			#end
+
+			<div class="o_edit_position_size_left_label">$r.render("left", "label")</div>
+			<div class="o_edit_position_size_left"><div class="o_edit_position_input_wrapper">$r.render("left")</div> %</div>
+
+			#if ($f.hasError("left"))
+			<div class="o_edit_position_size_left_error">$r.render("left", "error")</div>
+			#end
+
+			<div class="o_edit_position_size_width_label">$r.render("width", "label")</div>
+			<div class="o_edit_position_size_width"><div class="o_edit_position_input_wrapper">$r.render("width")</div> %</div>
+
+			#if ($f.hasError("width"))
+			<div class="o_edit_position_size_width_error">$r.render("width", "error")</div>
+			#end
+
+			<div class="o_edit_position_size_height_label">$r.render("height", "label")</div>
+			<div class="o_edit_position_size_height"><div class="o_edit_position_input_wrapper">$r.render("height")</div> %</div>
+
+			#if ($f.hasError("height"))
+			<div class="o_edit_position_size_height_error">$r.render("height", "error")</div>
+			#end
+
+			<div class="o_edit_position_size_buttons">$r.render("ok") $r.render("cancel")</div>
+		</div>
+	</div>
+</div>

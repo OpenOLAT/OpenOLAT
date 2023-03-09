@@ -1,9 +1,12 @@
-<div class="form-group row clearfix">
-	<div class="col-xs-3"></div>
-	<div class="col-xs-4">
+<div class="form-group clearfix">
+	<div class="o_video_common_form_header">
 		#if ($hasQuestions)
-		$r.render("questions")
+		<div class="o_video_common_form_header_prev">$r.render("previousQuestion")</div>
+		<div class="o_video_common_form_header_items">$r.render("questions")</div>
+		<div class="o_video_common_form_header_next">$r.render("nextQuestion")</div>
 		#end
+
+		<div class="o_video_common_form_header_add_item">$r.render("addQuestion")</div>
+		<div class="o_video_common_form_header_commands">$r.render("commands")</div>
 	</div>
-	<div class="col-xs-5 text-right">$r.render("addQuestion") $r.render("commands")</div>
 </div>

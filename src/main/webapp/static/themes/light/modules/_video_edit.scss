@@ -73,6 +73,20 @@
 	}
 }
 
+.o_video_apply_position_timestamp {
+	display: inline-block;
+
+	input {
+		width: 80px;
+		border-top-right-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+}
+
+.o_video_apply_position_button {
+	display: inline-block;
+}
+
 //
 // Annotations form
 //
@@ -193,13 +207,14 @@
 	.o_video_annotation_details {
 		grid-template-columns: 130px 120px 10px 120px;
 		grid-template-areas:
-		"se-label       start    dash end"
-		"pad1           e-start  pad2 e-end"
-		"duration-label duration pad3 pad3"
-		"t-label        t        t    t"
-		"co-label       co       co   co"
-        "pos-label      pos      pos  pos"
-		"pad5           b        b    b"
+		"se-label       start      dash end"
+		"pad1           e-start    pad2 e-end"
+		"duration-label duration   pad3 pad3"
+		"pad4           e-duration pad5 pad5"
+		"t-label        t          t    t"
+		"co-label       co         co   co"
+        "pos-label      pos        pos  pos"
+		"pad6           b          b    b"
 	;
 	}
 
@@ -219,14 +234,108 @@
 }
 
 //
-// Segments form
+// Edit position and size dialog on annotations form
 //
 
-.o_video_apply_position_timestamp input {
-	width: 80px;
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
+.o_edit_position_size {
+	display: grid;
+	grid-template-columns: auto 120px;
+	grid-template-rows: auto;
+	grid-template-areas:
+			"top-label    top"
+			"pad1         e-top"
+			"left-label   left"
+			"pad2         e-left"
+			"width-label  width"
+			"pad3         e-width"
+			"height-label height"
+			"pad4         e-height"
+			"b            b"
+;
+	row-gap: 10px;
 }
+
+.o_edit_position_size input {
+	width: 110px;
+}
+
+.o_edit_position_size_top_label {
+	grid-area: top-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_top {
+	grid-area: top;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_top_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_left_label {
+	grid-area: left-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_left {
+	grid-area: left;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_left_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_width_label {
+	grid-area: width-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_width {
+	grid-area: width;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_width_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_size_height_label {
+	grid-area: height-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_edit_position_size_height {
+	grid-area: height;
+	justify-self: stretch;
+	white-space: nowrap;
+}
+
+.o_edit_position_size_height_error {
+	grid-area: e-top;
+}
+
+.o_edit_position_input_wrapper {
+	display: inline-block;
+}
+
+.o_edit_position_size_buttons {
+	grid-area: b;
+	justify-self: left;
+	margin-top: 10px;
+}
+
+//
+// Segments form
+//
 
 .o_video_segment_details {
 	display: grid;
@@ -251,6 +360,7 @@
 	grid-area: start;
 	justify-self: left;
 }
+
 .o_video_segment_error_start {
 	grid-area: e-start;
 	justify-self: left;
@@ -465,4 +575,122 @@
 	}
 }
 
+//
+// Questions form
+//
 
+.o_video_question_details {
+	display: grid;
+	grid-template-columns: 130px 120px 10px 120px 130px 120px;
+	grid-template-rows: auto;
+	grid-template-areas:
+		"st-label st      pad0 pad0 tl-label tl"
+		"pad1     e-st    pad2 pad2 pad2     e-tl"
+		"co-label co      co   co   pad3     pad3"
+		"op-label op      op   op   pad4     pad4"
+		"qt       qt      qt   qt   qt       qt"
+		"pad5     b       b    b    b        b"
+;
+}
+
+.o_video_question_start_label {
+	grid-area: st-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_video_question_start {
+	grid-area: st;
+	justify-self: left;
+}
+
+.o_video_question_start_error {
+	grid-area: e-st;
+	justify-self: left;
+}
+
+.o_video_question_time_limit_label {
+	grid-area: tl-label;
+	justify-self: right;
+	margin-right: 5px;
+}
+
+.o_video_question_time_limit {
+	grid-area: tl;
+	justify-self: left;
+}
+
+.o_video_question_time_limit_error, .o_video_question_time_limit_example {
+	grid-area: e-tl;
+	justify-self: left;
+}
+
+.o_video_question_color_label {
+	grid-area: co-label;
+	justify-self: right;
+	margin-right: 5px;
+	margin-top: 10px;
+}
+
+.o_video_question_color_dropdown {
+	grid-area: co;
+	justify-self: stretch;
+	margin-top: 10px;
+}
+
+.o_video_question_options_label {
+	grid-area: op-label;
+	justify-self: right;
+	margin-right: 5px;
+	margin-top: 10px;
+}
+
+.o_video_question_options {
+	grid-area: op;
+	justify-self: left;
+	margin-top: 10px;
+}
+
+.o_video_question_table {
+	grid-area: qt;
+	justify-self: stretch;
+}
+
+.o_video_question_buttons {
+	grid-area: b;
+	justify-self: left;
+	margin-top: 20px;
+}
+
+.form-horizontal .o_video_question_details .control-label {
+	padding-top: 7px;
+}
+
+@media (min-width: $screen-md-min) and (max-width: 1280px), (max-width: 670px) {
+	.o_video_question_details {
+		grid-template-columns: 130px 120px 10px 120px;
+		grid-template-areas:
+		"st-label st      pad0 pad0"
+		"pad1     e-st    pad2 pad2"
+		"tl-label tl      pad3 pad3"
+		"pad4     e-tl    pad5 pad5"
+		"co-label co      co   co"
+		"op-label op      op   op"
+		"qt       qt      qt   qt"
+		"pad6     b       b    b"
+	;
+	}
+
+	.o_video_question_time_limit_label, .o_video_question_time_limit,
+	.o_video_question_color_label, .o_video_question_color_dropdown,
+	.o_video_question_options_label, .o_video_question_options
+	{
+		margin-top: 5px;
+	}
+}
+
+@media (max-width: 400px) {
+	.o_video_question_details {
+		grid-template-columns: 109px 118px 10px 118px;
+	}
+}
