@@ -32,6 +32,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.translator.Translator;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
@@ -59,15 +60,17 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 	private final List<VideoTaskSession> taskSessions;
 	private final VideoManager videoManager;
 	private final VideoAssessmentService videoAssessmentService;
+	private final Translator translator;
 
 	private VideoSegments videoSegments;
 	private List<TimelineRow> rows = new ArrayList<>();
 	private List<FlexiTableFilter> filters;
 	private List<TimelineRow> filteredRows = new ArrayList<>();
 
-	public TimelineDataSource(OLATResource olatResource, List<VideoTaskSession> taskSessions) {
+	public TimelineDataSource(OLATResource olatResource, List<VideoTaskSession> taskSessions, Translator translator) {
 		this.olatResource = olatResource;
 		this.taskSessions = taskSessions == null ? List.of() : taskSessions;
+		this.translator = translator;
 		videoManager = CoreSpringFactory.getImpl(VideoManager.class);
 		videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
 		loadRows();
@@ -94,7 +97,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		VideoComments comments = videoManager.loadComments(olatResource);
 		for (VideoComment comment : comments.getComments()) {
 			rows.add(new TimelineRow(comment.getId(), comment.getStart().getTime(), 1000,
-					TimelineEventType.COMMENT, comment.getDisplayText(), comment.getColor()));
+					TimelineEventType.COMMENT, comment.getDisplayText(translator), comment.getColor()));
 		}
 
 		VideoMarkers videoMarkers = videoManager.loadMarkers(olatResource);
@@ -119,7 +122,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				String color = sel.isCorrect() ? "o_selection_correct" : "o_selection_incorrect";
 				VideoSegmentCategory category = videoSegments.getCategory(sel.getCategoryId()).orElse(null);
 				String categoryTitle = category == null ? null : category.getLabelAndTitle();
-				TimelineRow row = new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000l, type, categoryTitle, color);
+				TimelineRow row = new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000L, type, categoryTitle, color);
 				if(category != null) {
 					row.setCategoryId(category.getId());
 					row.setColor(row.getColor() + " " + category.getColor());

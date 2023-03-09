@@ -64,6 +64,7 @@ public class CommentController extends FormBasicController {
 	private SingleSelection colorDropdown;
 	private final SelectionValues colorsKV;
 	private RichTextElement textEl;
+	private FormLink videoLink;
 
 	private final SimpleDateFormat timeFormat;
 	@Autowired
@@ -119,6 +120,9 @@ public class CommentController extends FormBasicController {
 		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		textEl.setMandatory(true);
 
+		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
+				Link.LINK | Link.NONTRANSLATED);
+
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
@@ -129,7 +133,24 @@ public class CommentController extends FormBasicController {
 		}
 
 		startEl.setValue(timeFormat.format(comment.getStart()));
-		textEl.setValue(comment.getText());
+
+		flc.contextPut("showText", false);
+		flc.contextPut("showVideo", false);
+
+		if (StringHelper.containsNonWhitespace(comment.getText())) {
+			textEl.setValue(comment.getText());
+			flc.contextPut("showText", true);
+		}
+
+		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
+			videoLink.setI18nKey(comment.getFileName());
+			flc.contextPut("showVideo", true);
+		}
+
+		if (StringHelper.containsNonWhitespace(comment.getUrl())) {
+			flc.contextPut("showVideo", true);
+		}
+
 		if (comment.getColor() != null) {
 			colorDropdown.select(comment.getColor(), true);
 			colorDropdown.getComponent().setDirty(true);

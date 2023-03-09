@@ -131,7 +131,7 @@ public class CommentsHeaderController extends FormBasicController {
 		comments.getComments()
 				.stream()
 				.sorted(new CommentComparator())
-				.forEach(c -> commentsKV.add(SelectionValues.entry(c.getId(), timeFormat.format(c.getStart()) + " - " + c.getDisplayText())));
+				.forEach(c -> commentsKV.add(SelectionValues.entry(c.getId(), timeFormat.format(c.getStart()) + " - " + c.getDisplayText(getTranslator()))));
 		flc.contextPut("hasComments", !commentsKV.isEmpty());
 		commentsDropdown.setKeysAndValues(commentsKV.keys(), commentsKV.values(), null);
 
@@ -260,6 +260,8 @@ public class CommentsHeaderController extends FormBasicController {
 		} else if (addCommentController == source) {
 			if (AddCommentCalloutController.TEXT_EVENT == event) {
 				doAddText(ureq);
+			} else if (AddCommentCalloutController.IMPORT_FILE_EVENT == event) {
+				doImportFile(ureq);
 			}
 			ccwc.deactivate();
 			cleanUp();
@@ -274,6 +276,10 @@ public class CommentsHeaderController extends FormBasicController {
 		comments.getComments().add(newComment);
 		setValues();
 		fireEvent(ureq, COMMENT_ADDED_EVENT);
+	}
+
+	private void doImportFile(UserRequest ureq) {
+
 	}
 
 	private VideoCommentImpl createBaseComment() {

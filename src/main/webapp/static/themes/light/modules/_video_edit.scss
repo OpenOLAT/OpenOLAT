@@ -2,6 +2,9 @@
 // Common form header
 //
 
+$label_right_margin: 10px;
+$label_right_margin_dialog: 5px;
+
 .o_video_common_form_header {
 	display: grid;
 	grid-template-columns: 130px 213px 37px 10px 210px 30px;
@@ -112,7 +115,7 @@
 .o_video_annotation_se_label {
 	grid-area: se-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_annotation_start {
@@ -142,7 +145,7 @@
 .o_video_annotation_duration_label {
 	grid-area: duration-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_annotation_duration {
@@ -158,7 +161,7 @@
 .o_video_annotation_text_label {
 	grid-area: t-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 	padding-top: 21px;
 }
 
@@ -170,7 +173,7 @@
 .o_video_annotation_color_label {
 	grid-area: co-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 
@@ -189,7 +192,7 @@
 .o_video_annotation_position_size_label {
 	grid-area: pos-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 
@@ -262,7 +265,7 @@
 .o_edit_position_size_top_label {
 	grid-area: top-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin_dialog;
 }
 
 .o_edit_position_size_top {
@@ -278,7 +281,7 @@
 .o_edit_position_size_left_label {
 	grid-area: left-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin_dialog;
 }
 
 .o_edit_position_size_left {
@@ -294,7 +297,7 @@
 .o_edit_position_size_width_label {
 	grid-area: width-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin_dialog;
 }
 
 .o_edit_position_size_width {
@@ -310,7 +313,7 @@
 .o_edit_position_size_height_label {
 	grid-area: height-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin_dialog;
 }
 
 .o_edit_position_size_height {
@@ -353,7 +356,7 @@
 .o_video_segment_se_label {
 	grid-area: se-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_segment_start {
@@ -389,7 +392,7 @@
 .o_video_segment_duration_label {
 	grid-area: duration-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_segment_duration {
@@ -405,7 +408,7 @@
 .o_video_segment_category_label {
 	grid-area: ca-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 
@@ -502,7 +505,7 @@
 .o_video_comment_se_label {
 	grid-area: se-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_comment_start {
@@ -518,7 +521,7 @@
 .o_video_comment_color_label {
 	grid-area: co-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 
@@ -531,7 +534,7 @@
 .o_video_comment_text_label {
 	grid-area: t-label;
 	justify-self: right;
-	margin-right: 10px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 	padding-top: 21px;
 }
@@ -596,7 +599,7 @@
 .o_video_question_start_label {
 	grid-area: st-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_question_start {
@@ -612,7 +615,7 @@
 .o_video_question_time_limit_label {
 	grid-area: tl-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 }
 
 .o_video_question_time_limit {
@@ -628,7 +631,7 @@
 .o_video_question_color_label {
 	grid-area: co-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 
@@ -641,7 +644,7 @@
 .o_video_question_options_label {
 	grid-area: op-label;
 	justify-self: right;
-	margin-right: 5px;
+	margin-right: $label_right_margin;
 	margin-top: 10px;
 }
 

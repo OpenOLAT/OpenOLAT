@@ -321,7 +321,7 @@ public class ListRenderer {
 		
 			if (isContainer) { // for directories... normal module URIs
 				// needs encoding, not done in buildHrefAndOnclick!
-				String pathAndNameEncoded = ubu.encodeUrl(pathAndName);
+				String pathAndNameEncoded = URLBuilder.encodeUrl(pathAndName);
 				ubu.buildHrefAndOnclick(sb, pathAndNameEncoded, iframePostEnabled, false, true);
 			} else { // for files, add PARAM_SERV command
 				sb.append(" href=\"");
@@ -405,6 +405,7 @@ public class ListRenderer {
 				  .append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({\n")
 				  .append("    html: true,\n")
 				  .append("    container: 'body',\n")
+				  .append("    sanitize: false,\n")
 				  .append("    title: function(){ return jQuery('#o_sel_doc_tooltip_").append(pos).append("').html(); }\n")
 				  .append("  });\n")
 				  .append("  jQuery('#o_sel_doc_").append(pos).append("').on('click', function(){\n")

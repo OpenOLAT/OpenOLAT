@@ -120,7 +120,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		super(ureq, wControl, "master");
 		flc.contextPut("videoElementId", videoElementId);
 		thumbnailsContainer = videoManager.getThumbnailsContainer(repositoryEntry.getOlatResource());
-		timelineDataSource = new TimelineDataSource(repositoryEntry.getOlatResource(), sessions);
+		timelineDataSource = new TimelineDataSource(repositoryEntry.getOlatResource(), sessions, getTranslator());
 		videoFile = videoManager.getMasterVideoFile(repositoryEntry.getOlatResource());
 		showVideoTrack = videoFile != null;
 		showCategoryFilter = sessions != null && !sessions.isEmpty();
