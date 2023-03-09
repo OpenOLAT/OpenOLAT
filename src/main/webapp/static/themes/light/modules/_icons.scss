@@ -317,7 +317,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_read:before { content: $fa-var-circle-o; }
 .o_icon_readonly:before { content: $fa-var-edit; color:red;}
 .o_icon_readwrite:before { content: $fa-var-edit; }
-.o_icon_recalculate:before { content: $fa-var-refresh; }
+.o_icon_recalculate:before { content: $fa-var-calculator; }
 .o_icon_recycle:before { content: $fa-var-recycle; }
 .o_icon_rectangle:before { content: $fa-var-square-o; }
 .o_icon_redo:before { content: $fa-var-repeat; }
@@ -326,6 +326,7 @@ $fa-css-prefix: "o_icon" !default;
 .btn-danger .o_icon_reject:before { color: $btn-danger-color; }
 .o_icon_rejected:before { content: $fa-var-thumbs-down;}
 .o_icon_reload:before { content: $fa-var-undo; }
+.o_icon_reset:before { content: $fa-var-undo; }
 .o_icon_reminder:before { content: $fa-var-bell-o; }
 .o_icon_remove:before { content: $fa-var-times; }
 .o_icon_remove_filters:before { content: $fa-var-times-circle; }
