@@ -36,6 +36,7 @@ import org.jboss.shrinkwrap.api.Filter;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.springframework.util.PropertyPlaceholderHelper;
 
@@ -47,7 +48,8 @@ public class ArquillianDeployments {
 	public static final String WEBINF    = "src/main/webapp/WEB-INF";
 	public static final String WEBINF_TOMCAT = "src/main/webapp-tomcat/WEB-INF";
 	public static final String TEST_RSRC = "src/test/resources";
-	public static final String LIB_DIR   = "target/openolat-lms-17.2-SNAPSHOT/WEB-INF/lib";
+	public static final String OPENOLAT_VERSION = "17.2-SNAPSHOT";
+	public static final String LIB_DIR   = "target/openolat-lms-" + OPENOLAT_VERSION + "/WEB-INF/lib";
 
 	public static WebArchive createDeployment() {
 		Map<String,String> overrideProperties = new HashMap<>();
@@ -61,11 +63,15 @@ public class ArquillianDeployments {
 	public static WebArchive createDeployment(String name, Map<String,String> overrideProperties) {
 		WebArchive archive = ShrinkWrap.create(WebArchive.class, name);
 
-		addClasses(archive);
 		addLibraries(archive);
 		addWebInfResources(archive);
-		addResourceRecursive(new File(MAIN_JAVA), null, new JavaResourcesFilter(), archive);
-		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), archive);
+		
+		JavaArchive mainJar = ShrinkWrap.create(JavaArchive.class, "openolat-lms-" + OPENOLAT_VERSION + ".jar");
+		addClasses(mainJar);
+		addResourceRecursive(new File(MAIN_JAVA), null, new JavaResourcesFilter(), mainJar);
+		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), mainJar);
+		archive.addAsLibraries(mainJar);
+		
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
 		addOlatLocalProperties(archive, overrideProperties);
 		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
@@ -115,7 +121,7 @@ public class ArquillianDeployments {
 		return archive.addAsLibraries(libs);
 	}
 	
-	public static WebArchive addClasses(WebArchive archive) {
+	public static JavaArchive addClasses(JavaArchive archive) {
 		return archive
 				.addPackages(true, new FilterUnusedPackage(), "org.olat", "de.bps", "de.tuchemnitz.wizard");
 	}
@@ -148,7 +154,7 @@ public class ArquillianDeployments {
 	}
 	
 	
-	public static WebArchive addResourceRecursive(File root, String startPath, FileFilter filter, WebArchive archive) {
+	public static JavaArchive addResourceRecursive(File root, String startPath, FileFilter filter, JavaArchive archive) {
 		File startDir = startPath == null ? root : new File(root, startPath);
 		if(startPath == null) {
 			startPath = "/";
