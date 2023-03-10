@@ -109,7 +109,7 @@ public class BigBlueButtonCollaborationSettingsController extends FormBasicContr
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!meetingsAccessEl.isOneSelected()) {
-			meetingsAccessEl.setErrorKey("", null);
+			meetingsAccessEl.setErrorKey("");
 			allOk &= false;
 		}
 		

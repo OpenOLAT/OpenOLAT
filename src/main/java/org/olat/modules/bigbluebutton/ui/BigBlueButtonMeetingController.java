@@ -536,7 +536,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 			acknowledgeRecordingEl.clearError();
 			if(acknowledgeRecordingEl.isVisible()
 					&& acknowledgeRecordingEl.isEnabled() && !acknowledgeRecordingEl.isAtLeastSelected(1)) {
-				acknowledgeRecordingEl.setErrorKey("form.legende.mandatory", null);
+				acknowledgeRecordingEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -553,8 +553,7 @@ public class BigBlueButtonMeetingController extends FormBasicController implemen
 		} else if(uploadButton == source) {
 			doUploadSlides(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("delete".equals(se.getCommand())) {
 					doConfirmDeleteRecording(ureq, recordingTableModel.getObject(se.getIndex()).getRecording());
 				} else if("open-recording".equals(se.getCommand())) {

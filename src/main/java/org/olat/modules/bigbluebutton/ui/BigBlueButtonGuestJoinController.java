@@ -333,20 +333,20 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		if(usess != null && usess.isAuthenticated() && usess.getRoles() != null && !usess.getRoles().isGuestOnly()) {
 			// name is not mandatory if logged in
 		} else if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(nameEl.getValue().length() > 64) {
-			nameEl.setErrorKey("form.error.toolong", new String[] { "64" });
+			nameEl.setErrorKey("form.error.toolong", "64");
 			allOk &= false;
 		}
 		
 		passwordEl.clearError();
 		if(passwordEl.isVisible()) {
 			if(!StringHelper.containsNonWhitespace(passwordEl.getValue())) {
-				passwordEl.setErrorKey("form.legende.mandatory", null);
+				passwordEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!passwordEl.getValue().equals(meeting.getPassword())) {
-				passwordEl.setErrorKey("error.password", null);
+				passwordEl.setErrorKey("error.password");
 				allOk &= false;
 			}
 		}
@@ -354,13 +354,13 @@ public class BigBlueButtonGuestJoinController extends FormBasicController implem
 		acknowledgeRecordingEl.clearError();
 		if(acknowledgeRecordingEl.isVisible()
 				&& acknowledgeRecordingEl.isEnabled() && !acknowledgeRecordingEl.isAtLeastSelected(1)) {
-			acknowledgeRecordingEl.setErrorKey("form.legende.mandatory", null);
+			acknowledgeRecordingEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		if(!joinButton.isEnabled()) {
 			if(!nameEl.hasError()) {// don't overwrite the validation error of name
-				nameEl.setErrorKey("meeting.create.intro", null);
+				nameEl.setErrorKey("meeting.create.intro");
 			}
 			allOk &= false;
 		}

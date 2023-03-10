@@ -176,10 +176,10 @@ public class BigBlueButtonUIHelper {
 		if(passwordEnableEl.isAtLeastSelected(1)) {
 			String val = passwordEl.getValue();
 			if(!StringHelper.containsNonWhitespace(val)) {
-				passwordEl.setErrorKey("form.legende.mandatory", null);
+				passwordEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(val.length() > 64) {
-				passwordEl.setErrorKey("form.error.toolong", new String[] { "64" });
+				passwordEl.setErrorKey("form.error.toolong", "64");
 				allOk &= false;
 			}
 		}
@@ -195,17 +195,17 @@ public class BigBlueButtonUIHelper {
 			String identifier = externalLinkEl.getValue();
 			if (StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
 				if(identifier.length() > 64) {
-					externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
+					externalLinkEl.setErrorKey("form.error.toolong", "64");
 					allOk &= false;
 				} else if(getBigBlueButtonManager().isIdentifierInUse(identifier, meeting)) {
-					externalLinkEl.setErrorKey("error.identifier.in.use", null);
+					externalLinkEl.setErrorKey("error.identifier.in.use");
 					allOk &= false;
 				} else {
 					try {
 						URI uri = new URI(BigBlueButtonDispatcher.getMeetingUrl(identifier));
 						uri.normalize();
 					} catch(Exception e) {
-						externalLinkEl.setErrorKey("error.identifier.url.not.valid", new String[] { e.getMessage() });
+						externalLinkEl.setErrorKey("error.identifier.url.not.valid", e.getMessage());
 						allOk &= false;
 					}
 				}
@@ -223,10 +223,10 @@ public class BigBlueButtonUIHelper {
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue())) {
 			if(!StringHelper.isLong(el.getValue())) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			} else if(Long.parseLong(el.getValue()) > maxValue) {
-				el.setErrorKey("error.too.long.time", new String[] { Long.toString(maxValue) });
+				el.setErrorKey("error.too.long.time", Long.toString(maxValue));
 				allOk &= false;
 			}
 		}
@@ -286,7 +286,7 @@ public class BigBlueButtonUIHelper {
 		long followupTime = getLongOrZero(followupTimeEl);
 		boolean slotFree = validateSlot(meeting, template, start, end, leadTime, followupTime);
 		if(!slotFree) {
-			startDateEl.setErrorKey("server.overloaded", null);
+			startDateEl.setErrorKey("server.overloaded");
 			allOk &= false;
 		}
 		
@@ -308,7 +308,7 @@ public class BigBlueButtonUIHelper {
 		boolean slotFree = getBigBlueButtonManager().isSlotAvailable(meeting, template,
 				new Date(), 0, endDate, 0);
 		if(!slotFree) {
-			templateEl.setErrorKey("server.overloaded", null);
+			templateEl.setErrorKey("server.overloaded");
 			allOk &= false;
 		}
 		

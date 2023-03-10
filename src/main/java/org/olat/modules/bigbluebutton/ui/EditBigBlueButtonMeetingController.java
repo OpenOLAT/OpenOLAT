@@ -598,6 +598,9 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		} else if (nameEl.getValue().contains("&")) {
 			nameEl.setErrorKey("form.invalidchar.noamp");
 			allOk &= false;
+		} else if (nameEl.getValue().length() < 2) {
+			nameEl.setErrorKey("error.too.short");
+			allOk &= false;
 		}
 		
 		allOk &= validateSingleSelection(joinPolicyEl);
