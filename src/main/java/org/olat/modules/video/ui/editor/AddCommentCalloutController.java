@@ -61,7 +61,7 @@ public class AddCommentCalloutController extends BasicController {
 
 		importFileLink = LinkFactory.createLink("comment.add.import.file", "importFile", getTranslator(), mainVC, this, Link.LINK);
 		importFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
-		//mainVC.put("importFile", importFileLink);
+		mainVC.put("importFile", importFileLink);
 
 		importUrlLink = LinkFactory.createLink("comment.add.import.url", "importUrl", getTranslator(), mainVC, this, Link.LINK);
 		importUrlLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");

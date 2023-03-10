@@ -241,6 +241,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				videoComments.getComments().stream().filter(c -> row.getId().equals(c.getId())).findFirst()
 						.ifPresent(c -> videoComments.getComments().remove(c));
 				videoManager.saveComments(videoComments, olatResource);
+				videoManager.deleteUnusedCommentFiles(videoComments, olatResource);
 			}
 			default -> {
 				//

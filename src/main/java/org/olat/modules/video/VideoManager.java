@@ -367,7 +367,9 @@ public interface VideoManager {
 	VideoComments loadComments(OLATResource olatResource);
 
 	void saveComments(VideoComments comments, OLATResource olatResource);
-	
+
+	void deleteUnusedCommentFiles(VideoComments comments, OLATResource olatResource);
+
 	public VideoQuestions loadQuestions(OLATResource videoResource);
 
 	public void saveQuestions(VideoQuestions questions, OLATResource videoResource);
