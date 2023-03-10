@@ -219,12 +219,12 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		recordingsHandlerEl.clearError();
 		if(moduleEnabled.isAtLeastSelected(1)) {
 			if(serversTableModel.getRowCount() == 0) {
-				serversTableEl.setErrorKey("form.legende.mandatory", null);
+				serversTableEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			if(!recordingsHandlerEl.isOneSelected()) {
-				recordingsHandlerEl.setErrorKey("form.legende.mandatory", null);
+				recordingsHandlerEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -234,11 +234,11 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			try {
 				int meetingDeletionDays = Integer.parseInt(meetingDeletionDaysEl.getValue());
 				if (meetingDeletionDays < 0) {
-					meetingDeletionCont.setErrorKey("form.error.positive.integer", null);
+					meetingDeletionCont.setErrorKey("form.error.positive.integer");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				meetingDeletionCont.setErrorKey("form.error.positive.integer", null);
+				meetingDeletionCont.setErrorKey("form.error.positive.integer");
 				allOk &= false;
 			}
 		}
@@ -248,11 +248,11 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 			try {
 				Integer.parseInt(slidesUploadLimitEl.getValue());
 			} catch (NumberFormatException e) {
-				slidesUploadLimitEl.setErrorKey("form.error.nointeger", null);
+				slidesUploadLimitEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		} else {
-			slidesUploadLimitEl.setErrorKey("form.legende.mandatory", null);
+			slidesUploadLimitEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -342,7 +342,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		editServerCtlr = new EditBigBlueButtonServerController(ureq, getWindowControl(), server);
 		listenTo(editServerCtlr);
 		
-		String title = translate("edit.server", new String[] { server.getUrl() });
+		String title = translate("edit.server", server.getUrl());
 		cmc = new CloseableModalController(getWindowControl(), "close", editServerCtlr.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -354,7 +354,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		confirmDeleteServerCtrl = new ConfirmDeleteServerController(ureq, getWindowControl(), server);
 		listenTo(confirmDeleteServerCtrl);
 		
-		String title = translate("confirm.delete.server.title", new String[] { server.getUrl() });
+		String title = translate("confirm.delete.server.title", server.getUrl());
 		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteServerCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);

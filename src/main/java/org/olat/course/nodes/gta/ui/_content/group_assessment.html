@@ -25,12 +25,10 @@ jQuery(function() {
 	jQuery('#collapse_identity_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 		$r.javaScriptCommand("panel","identityOpen","false");
-		console.log('open');
 	})
 	jQuery('#collapse_identity_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_identity_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		$r.javaScriptCommand("panel","identityOpen","true");
-		console.log('close');
 	})
 });
 </script>

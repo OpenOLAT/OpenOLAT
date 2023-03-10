@@ -317,16 +317,16 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		
 		nameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(nameEl.getValue().length() > 128) {
-			nameEl.setErrorKey("form.error.toolong", new String[] { "128" });
+			nameEl.setErrorKey("form.error.toolong", "128");
 			allOk &= false;
 		}
 		
 		descriptionEl.clearError();
 		if(!StringHelper.containsNonWhitespace(descriptionEl.getValue()) && descriptionEl.getValue().length() > 2000) {
-			descriptionEl.setErrorKey("form.error.toolong", new String[] { "2000" });
+			descriptionEl.setErrorKey("form.error.toolong", "2000");
 			allOk &= false;
 		}
 
@@ -342,12 +342,12 @@ public class EditBigBlueButtonTemplateController extends FormBasicController {
 		
 		el.clearError();
 		if(mandatory && !StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(StringHelper.containsNonWhitespace(el.getValue())
 				&& (!StringHelper.isLong(el.getValue())
 						|| Long.parseLong(el.getValue()) < 1)) {
-			el.setErrorKey("form.error.nointeger", null);
+			el.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		

@@ -125,7 +125,7 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 			
 			if((server == null || server.getKey() == null)
 					&& bigBlueButtonManager.hasServer(urlEl.getValue())) {
-				urlEl.setErrorKey("error.server.exists", null);
+				urlEl.setErrorKey("error.server.exists");
 				allOk &= false;
 			}
 		}
@@ -137,7 +137,6 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 		boolean allOk = true;
 		
 		allOk &= validateUrl(urlEl, true);
-		//allOk &= validateUrl(recordingUrlEl, false);
 		
 		capacityFactorEl.clearError();
 		if(StringHelper.containsNonWhitespace(capacityFactorEl.getValue())) {
@@ -145,22 +144,22 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 				String factor = capacityFactorEl.getValue();
 				double capacityFactory = Double.parseDouble(factor);
 				if(capacityFactory < 1.0 || capacityFactory > 100.0) {
-					capacityFactorEl.setErrorKey("error.capacity.factory", null);
+					capacityFactorEl.setErrorKey("error.capacity.factory");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				capacityFactorEl.setErrorKey("error.capacity.factory", null);
+				capacityFactorEl.setErrorKey("error.capacity.factory");
 				allOk &= false;
 			}
 		} else {
-			capacityFactorEl.setErrorKey("form.legende.mandatory", null);
+			capacityFactorEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		String password = sharedSecretEl.getValue();
 		sharedSecretEl.clearError();
 		if(!StringHelper.containsNonWhitespace(password)) {
-			sharedSecretEl.setErrorKey("form.legende.mandatory", null);
+			sharedSecretEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -177,11 +176,11 @@ public class EditBigBlueButtonServerController extends FormBasicController {
 				URI uri = new URI(url);
 				uri.getHost();
 			} catch(Exception e) {
-				el.setErrorKey("error.url.invalid", null);
+				el.setErrorKey("error.url.invalid");
 				allOk &= false;
 			}
 		} else if(mandatory) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
