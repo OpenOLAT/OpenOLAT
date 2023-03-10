@@ -36,6 +36,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -81,6 +83,7 @@ import org.olat.core.util.vfs.VFSStatus;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ResourceEvaluation;
+import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
@@ -1261,6 +1264,23 @@ public class VideoManagerImpl implements VideoManager {
 				VideoXStream.toXml(out, comments);
 			} catch (IOException e) {
 				log.error("", e);
+			}
+		}
+	}
+
+	@Override
+	public void deleteUnusedCommentFiles(VideoComments comments, OLATResource olatResource) {
+		VFSContainer commentsMediaContainer = getCommentMediaContainer(olatResource);
+		Set<String> foundFileNames = commentsMediaContainer.getItems().stream().map(VFSItem::getName)
+						.collect(Collectors.toSet());
+		Set<String> referencedFileNames = comments.getComments().stream().map(VideoComment::getFileName)
+				.filter(Objects::nonNull).collect(Collectors.toSet());
+		for (String foundFileName : foundFileNames) {
+			if (!referencedFileNames.contains(foundFileName)) {
+				VFSItem itemToDelete = commentsMediaContainer.resolve(foundFileName);
+				if (itemToDelete != null && itemToDelete.exists()) {
+					itemToDelete.delete();
+				}
 			}
 		}
 	}

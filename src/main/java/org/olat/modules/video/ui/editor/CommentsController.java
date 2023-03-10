@@ -65,7 +65,8 @@ public class CommentsController extends BasicController {
 		comments.getComments().sort(new CommentComparator());
 		comment = comments.getComments().stream().min(new CommentComparator()).orElse(null);
 
-		commentsHeaderController = new CommentsHeaderController(ureq, wControl, videoDurationInSeconds);
+		commentsHeaderController = new CommentsHeaderController(ureq, wControl, repositoryEntry,
+				videoDurationInSeconds);
 		commentsHeaderController.setComments(comments);
 		listenTo(commentsHeaderController);
 		mainVC.put("header", commentsHeaderController.getInitialComponent());
@@ -120,6 +121,9 @@ public class CommentsController extends BasicController {
 				showComment(newCommentId);
 				commentController.setComment(comment);
 				videoManager.saveComments(comments, repositoryEntry.getOlatResource());
+				if (event == CommentsHeaderController.COMMENT_DELETED_EVENT) {
+					videoManager.deleteUnusedCommentFiles(comments, repositoryEntry.getOlatResource());
+				}
 				reloadComments(ureq);
 				if (comment != null) {
 					fireEvent(ureq, new CommentSelectedEvent(comment.getId(), comment.getStart().getTime()));
