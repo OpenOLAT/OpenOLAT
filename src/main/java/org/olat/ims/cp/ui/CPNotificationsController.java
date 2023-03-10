@@ -158,19 +158,19 @@ public class CPNotificationsController extends FormBasicController {
 		
 		subjectEl.clearError();
 		if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
-			subjectEl.setErrorKey("form.legende.mandatory", null);
+			subjectEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		bodyEl.clearError();
 		if(!StringHelper.containsNonWhitespace(bodyEl.getValue())) {
-			bodyEl.setErrorKey("form.legende.mandatory", null);
+			bodyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		recipientsEl.clearError();
 		if(!recipientsEl.isAtLeastSelected(1) && !copyFromEl.isAtLeastSelected(1)) {
-			recipientsEl.setErrorKey("form.legende.mandatory", null);
+			recipientsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

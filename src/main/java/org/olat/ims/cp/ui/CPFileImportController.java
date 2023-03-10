@@ -94,7 +94,7 @@ public class CPFileImportController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		String fileName = file.getUploadFileName();
 		if (fileName == null) {
-			file.setErrorKey("NoFileChosen", null);
+			file.setErrorKey("NoFileChosen");
 			return false;
 		}
 		if (file.getUploadSize() / 1024 > file.getMaxUploadSizeKB()) {

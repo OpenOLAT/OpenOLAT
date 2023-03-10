@@ -31,8 +31,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
 import org.dom4j.tree.DefaultDocument;
@@ -47,7 +45,6 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -316,25 +313,16 @@ public class CPManagerImpl implements CPManager {
 	 */
 	private boolean copyTemplCP(OLATResourceable ores) {
 		File root = FileResourceManager.getInstance().getFileResourceRoot(ores);
-
-		String packageName = ContentPackage.class.getCanonicalName();
-		String path = packageName.replace('.', '/');
-		path = path.replace("/ContentPackage", "/_resources/imscp.zip");
-
-		path = VFSManager.sanitizePath(path);
-		URL url = this.getClass().getResource(path);
-		try {
-			File f = new File(url.toURI());
-			if (f.exists() && root.exists()) {
-				FileUtils.copyFileToDir(f, root, "copy imscp template");
-			} else {
-				log.error("cp template was not copied. Source:  {} Target: {}", url, root.getAbsolutePath());
+		try(InputStream in = CPManagerImpl.class.getResourceAsStream("_resources/imscp.zip")) {
+			if (root.exists()) {
+				File target = new File(root, "imscp.zip");
+				FileUtils.copyToFile(in, target, "copy imscp template");
+				return true;
 			}
-		} catch (URISyntaxException e) {
-			log.error("Bad url syntax when copying cp template. url: {} Ores: {}", url, ores.getResourceableId());
-			return false;
+			log.error("cp template was not copied. Target: {}", root.getAbsolutePath());
+		} catch (Exception e) {
+			log.error("Bad url syntax when copying cp template. Ores: {}", ores.getResourceableId(), e);
 		}
-
-		return true;
+		return false;
 	}
 }
