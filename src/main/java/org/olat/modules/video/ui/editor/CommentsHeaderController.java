@@ -78,6 +78,7 @@ public class CommentsHeaderController extends FormBasicController {
 	private VideoModule videoModule;
 	private final long videoDurationInSeconds;
 	private ImportFileController importFileController;
+	private ImportUrlController importUrlController;
 
 	public CommentsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 									long videoDurationInSeconds) {
@@ -97,9 +98,11 @@ public class CommentsHeaderController extends FormBasicController {
 		removeAsListenerAndDispose(commandsController);
 		removeAsListenerAndDispose(addCommentController);
 		removeAsListenerAndDispose(importFileController);
+		removeAsListenerAndDispose(importUrlController);
 		commandsController = null;
 		addCommentController = null;
 		importFileController = null;
+		importUrlController = null;
 		ccwc = null;
 		cmc = null;
 	}
@@ -276,12 +279,20 @@ public class CommentsHeaderController extends FormBasicController {
 				doAddText(ureq);
 			} else if (AddCommentCalloutController.IMPORT_FILE_EVENT == event) {
 				doAddFileComment(ureq);
+			} else if (AddCommentCalloutController.IMPORT_URL_EVENT == event) {
+				doAddUrlComment(ureq);
 			}
 		} else if (cmc == source) {
 			cleanUp();
 		} else if (importFileController == source) {
 			if (event == Event.DONE_EVENT) {
 				doAddFile(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (importUrlController == source) {
+			if (event == Event.DONE_EVENT) {
+				doAddUrl(ureq);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -308,6 +319,16 @@ public class CommentsHeaderController extends FormBasicController {
 		fireEvent(ureq, COMMENT_ADDED_EVENT);
 	}
 
+	private void doAddUrl(UserRequest ureq) {
+		VideoCommentImpl newComment = createBaseComment();
+		newComment.setUrl(importUrlController.getUrl());
+
+		commentId = newComment.getId();
+		comments.getComments().add(newComment);
+		setValues();
+		fireEvent(ureq, COMMENT_ADDED_EVENT);
+	}
+
 	private void doAddFileComment(UserRequest ureq) {
 		if (guardModalController(importFileController)) {
 			return;
@@ -318,6 +339,20 @@ public class CommentsHeaderController extends FormBasicController {
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importFileController.getInitialComponent(), true, translate("comment.add.import.file"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doAddUrlComment(UserRequest ureq) {
+		if (guardModalController(importUrlController)) {
+			return;
+		}
+
+		importUrlController = new ImportUrlController(ureq, getWindowControl());
+		listenTo(importUrlController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				importUrlController.getInitialComponent(), true, translate("comment.add.import.url"));
 		listenTo(cmc);
 		cmc.activate();
 	}
