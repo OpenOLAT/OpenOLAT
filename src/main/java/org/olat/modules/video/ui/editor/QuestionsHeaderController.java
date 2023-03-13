@@ -19,8 +19,11 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.Serial;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
@@ -38,6 +41,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.ims.qti21.QTI21Constants;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.QItemType;
+import org.olat.modules.qpool.ui.SelectItemController;
+import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
@@ -72,6 +83,10 @@ public class QuestionsHeaderController extends FormBasicController {
 	private FormLink commandsButton;
 	private HeaderCommandsController commandsController;
 	private final SimpleDateFormat timeFormat;
+	private SelectItemController selectItemController;
+	@Autowired
+	private QPoolService questionPoolService;
+	private CloseableModalController cmc;
 
 	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "questions_header");
@@ -85,11 +100,15 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(ccwc);
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(newQuestionCtrl);
 		removeAsListenerAndDispose(commandsController);
+		removeAsListenerAndDispose(selectItemController);
 		ccwc = null;
+		cmc = null;
 		newQuestionCtrl = null;
 		commandsController = null;
+		selectItemController = null;
 	}
 
 	@Override
@@ -229,7 +248,7 @@ public class QuestionsHeaderController extends FormBasicController {
 	}
 
 	private void doCommands(UserRequest ureq) {
-		commandsController = new HeaderCommandsController(ureq, getWindowControl());
+		commandsController = new HeaderCommandsController(ureq, getWindowControl(), true);
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -253,11 +272,23 @@ public class QuestionsHeaderController extends FormBasicController {
 		} else if (ccwc == source) {
 			cleanUp();
 		} else if (commandsController == source) {
-			if (HeaderCommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
-				doDeleteQuestion(ureq);
-			}
 			ccwc.deactivate();
 			cleanUp();
+			if (HeaderCommandsController.DELETE_EVENT.getCommand().equals(event.getCommand())) {
+				doDeleteQuestion(ureq);
+			} else if (HeaderCommandsController.IMPORT_EVENT == event) {
+				doImport(ureq);
+			}
+		} else if (cmc == source) {
+			cleanUp();
+		} else if (selectItemController == source) {
+			cmc.deactivate();
+			cleanUp();
+			if (event instanceof QItemViewEvent qItemViewEvent) {
+				if ("select-item".equals(event.getCommand())) {
+					fireEvent(ureq, new QuestionsImportedEvent(qItemViewEvent.getItemList()));
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -284,6 +315,31 @@ public class QuestionsHeaderController extends FormBasicController {
 		}
 		setValues();
 		fireEvent(ureq, QUESTION_DELETED_EVENT);
+	}
+
+	private void doImport(UserRequest ureq) {
+		if (selectItemController != null) {
+			return;
+		}
+
+		List<QItemType> itemTypes = questionPoolService.getAllItemTypes();
+		List<QItemType> excludedItemTypes = new ArrayList<>();
+		for(QItemType t:itemTypes) {
+			if(t.getType().equalsIgnoreCase(QuestionType.DRAWING.name())
+					|| t.getType().equalsIgnoreCase(QuestionType.ESSAY.name())
+					|| t.getType().equalsIgnoreCase(QuestionType.UPLOAD.name())) {
+				excludedItemTypes.add(t);
+			}
+		}
+
+		selectItemController = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT,
+				excludedItemTypes);
+		listenTo(selectItemController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				selectItemController.getInitialComponent(), true, translate("form.common.import"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private Optional<VideoQuestion> getOptionalQuestion() {
@@ -319,5 +375,21 @@ public class QuestionsHeaderController extends FormBasicController {
 	public void handleDeleted(String questionId) {
 		questions.getQuestions().removeIf(q -> q.getId().equals(questionId));
 		setQuestions(questions);
+	}
+
+	public static class QuestionsImportedEvent extends Event {
+		@Serial
+		private static final long serialVersionUID = 1257611132460737138L;
+		private static final String COMMAND = "question.selected";
+		private final List<QuestionItemView> itemList;
+
+		public QuestionsImportedEvent(List<QuestionItemView> itemList) {
+			super(COMMAND);
+			this.itemList = itemList;
+		}
+
+		public List<QuestionItemView> getItemList() {
+			return itemList;
+		}
 	}
 }

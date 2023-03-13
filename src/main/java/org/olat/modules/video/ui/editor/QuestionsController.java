@@ -19,6 +19,12 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -30,13 +36,23 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
+import org.olat.modules.qpool.QuestionItemFull;
+import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
+import org.olat.modules.video.model.VideoQuestionImpl;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 
 /**
  * Initial date: 2023-01-18<br>
@@ -53,6 +69,13 @@ public class QuestionsController extends BasicController {
 	private VideoQuestion question;
 	@Autowired
 	private VideoManager videoManager;
+	private String currentTimeCode;
+	@Autowired
+	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
+	@Autowired
+	private QTI21Service qtiService;
+	@Autowired
+	private VideoModule videoModule;
 
 	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								  long videoDurationInSeconds) {
@@ -128,17 +151,101 @@ public class QuestionsController extends BasicController {
 						fireEvent(ureq, new EditQuestionEvent(question.getId(), repositoryEntry));
 					}
 				}
+			} else if (event instanceof QuestionsHeaderController.QuestionsImportedEvent questionsImportedEvent) {
+				importQuestions(ureq, questionsImportedEvent.getItemList());
 			}
 		}
 
 		super.event(ureq, source, event);
 	}
 
+	private void importQuestions(UserRequest ureq, List<QuestionItemView> items) {
+		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
+		long currentTime = getCurrentTime();
+
+		VideoQuestion firstQuestion = null;
+		for (QuestionItemView item : items) {
+			VideoQuestion importedQuestion = doCopyQItem(item, assessmentDir, currentTime);
+			if (firstQuestion == null && importedQuestion != null) {
+				firstQuestion = importedQuestion;
+			}
+			currentTime += 10L;
+		}
+
+		questionsHeaderController.setQuestions(questions);
+		reloadQuestions(ureq);
+		if (firstQuestion != null) {
+			String questionId = firstQuestion.getId();
+			showQuestion(questionId);
+			questionController.setQuestion(question);
+			fireEvent(ureq, new EditQuestionEvent(questionId, repositoryEntry));
+		}
+	}
+
+	private VideoQuestion doCopyQItem(QuestionItemView item, File assessmentDir, long begin) {
+		try {
+			QuestionItemFull qItem = qti21QPoolServiceProvider.getFullQuestionItem(item);
+
+			String itemDir = buildItemDirectory(qItem);
+			VideoQuestionImpl question = new VideoQuestionImpl();
+			question.setId(itemDir);
+			question.setBegin(new Date());
+			question.setQuestionRootPath(itemDir);
+			question.setQuestionFilename(qItem.getRootFilename());
+			question.setBegin(new Date(begin));
+			question.setTimeLimit(-1);
+			question.setStyle(videoModule.getMarkerStyles().get(0));
+
+			File itemDirectory = new File(assessmentDir, itemDir);
+			itemDirectory.mkdir();
+			AssessmentItem assessmentItem = qti21QPoolServiceProvider.exportToQTIEditor(qItem, getLocale(), itemDirectory);
+			File itemFile = new File(itemDirectory, qItem.getRootFilename());
+			qtiService.persistAssessmentObject(itemFile, assessmentItem);
+
+			question.setTitle(assessmentItem.getTitle());
+			question.setAssessmentItemIdentifier(assessmentItem.getIdentifier());
+			question.setType(QTI21QuestionType.getTypeRelax(assessmentItem).name());
+			Double maxScore = QtiNodesExtractor.extractMaxScore(assessmentItem);
+			question.setMaxScore(maxScore);
+			questions.getQuestions().add(question);
+			videoManager.saveQuestions(questions, repositoryEntry.getOlatResource());
+			return question;
+		} catch (IOException e) {
+			logError("", e);
+			return null;
+		}
+	}
+
+	private String buildItemDirectory(QuestionItemFull qItem) {
+		StringBuilder sb = new StringBuilder(48);
+		if (qItem.getType() != null && StringHelper.containsNonWhitespace(qItem.getType().getType())) {
+			sb.append(qItem.getType().getType());
+		}  else {
+			sb.append(QTI21QuestionType.unkown.name());
+		}
+
+		if (StringHelper.containsNonWhitespace(qItem.getIdentifier())) {
+			sb.append(qItem.getIdentifier().replace("-", ""));
+		} else {
+			sb.append(UUID.randomUUID().toString().replace("-", ""));
+		}
+		return sb.toString();
+	}
+
 	private void reloadQuestions(UserRequest ureq) {
 		fireEvent(ureq, RELOAD_QUESTIONS_EVENT);
 	}
 
+	private long getCurrentTime() {
+		long time = 0;
+		if (currentTimeCode != null) {
+			time = Math.round(Double.parseDouble(currentTimeCode)) * 1000L;
+		}
+		return time;
+	}
+
 	public void setCurrentTimeCode(String currentTimeCode) {
+		this.currentTimeCode = currentTimeCode;
 		questionsHeaderController.setCurrentTimeCode(currentTimeCode);
 		questionController.setCurrentTimeCode(currentTimeCode);
 	}
