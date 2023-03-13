@@ -5,8 +5,8 @@
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<!-- JMS Stuff for ActiveMQ -->
-	<bean id="searchConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${search.broker.url}" />
+	<bean id="searchConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true" depends-on="EmbeddedActiveMQ">
+		<constructor-arg value="${search.broker.url}" />
 	</bean>
 
 	<bean id="searchQueue" class="org.apache.activemq.artemis.jms.client.ActiveMQQueue" lazy-init="true">
@@ -14,8 +14,8 @@
 	</bean>
 	
 	
-	<bean id="indexConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true">
-		<property name="brokerURL" value="${index.broker.url}" />
+	<bean id="indexConnectionFactory" class="org.apache.activemq.artemis.jms.client.ActiveMQJMSConnectionFactory" lazy-init="true" depends-on="EmbeddedActiveMQ">
+		<constructor-arg value="${index.broker.url}" />
 	</bean>
 
 	<bean id="indexQueue" class="org.apache.activemq.artemis.jms.client.ActiveMQQueue" lazy-init="true">
