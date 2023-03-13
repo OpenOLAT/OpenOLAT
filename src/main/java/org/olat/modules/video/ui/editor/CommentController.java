@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -44,7 +45,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
@@ -286,10 +289,18 @@ public class CommentController extends FormBasicController {
 
 		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
 			VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
-			VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(comment.getFileName());
-			if (vfsVideo != null) {
+			VFSItem item = masterContainer.resolve(comment.getFileName());
+			if (item instanceof VFSLeaf vfsLeaf) {
+				boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+						item.getMetaInfo().isInTranscoding();
+				if (inTranscoding) {
+					item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + comment.getFileName());
+					if (item instanceof VFSLeaf) {
+						vfsLeaf = (VFSLeaf) item;
+					}
+				}
 				videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(),
-						vfsVideo, null, true, false);
+						vfsLeaf, null, true, false);
 				listenTo(videoAudioPlayerController);
 
 				cmc = new CloseableModalController(getWindowControl(), translate("close"),

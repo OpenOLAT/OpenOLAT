@@ -21,6 +21,7 @@ package org.olat.modules.video.ui.editor;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -34,7 +35,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
@@ -126,10 +129,18 @@ public class CommentLayerController extends BasicController {
 			mainVC.remove("video");
 			if (StringHelper.containsNonWhitespace(c.getFileName())) {
 				VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
-				VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(c.getFileName());
-				if (vfsVideo != null) {
+				VFSItem item = masterContainer.resolve(c.getFileName());
+				if (item instanceof VFSLeaf vfsLeaf) {
+					boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+							item.getMetaInfo().isInTranscoding();
+					if (inTranscoding) {
+						item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + c.getFileName());
+						if (item instanceof VFSLeaf) {
+							vfsLeaf = (VFSLeaf) item;
+						}
+					}
 					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-							getWindowControl(), vfsVideo, null, true, false);
+							getWindowControl(), vfsLeaf, null, true, false);
 					listenTo(videoAudioPlayerController);
 					mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 				}
