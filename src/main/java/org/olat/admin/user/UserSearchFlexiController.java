@@ -366,15 +366,15 @@ public class UserSearchFlexiController extends FormBasicController {
 
 		if (!filled || onlyStar) {
 			// set the error message
-			lastFormElement.setErrorKey("error.search.form.notempty", null);
+			lastFormElement.setErrorKey("error.search.form.notempty");
 			return false;
 		}
 		if (fullString.contains("**") ) {
-			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates", null);
+			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates");
 			return false;
 		}		
 		if (fullString.length() < 4) {
-			lastFormElement.setErrorKey("error.search.form.to.short", null);
+			lastFormElement.setErrorKey("error.search.form.to.short");
 			return false;
 		}
 		return true;

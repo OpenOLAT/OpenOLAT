@@ -28,6 +28,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.FlushModeType;
+import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
+
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
@@ -46,16 +50,11 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesConfig;
 import org.olat.user.propertyhandlers.GenericSelectionPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.FlushModeType;
-import jakarta.persistence.TemporalType;
-import jakarta.persistence.TypedQuery;
 
 /**
  * 
@@ -69,7 +68,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	@Autowired
 	private DB dbInstance;
 	@Autowired
-	private UserManager userManager;
+	private UserPropertiesConfig userPropertiesConfig;
 	@Autowired
 	private OrganisationOrderedTreeCache organisationTree;
 	
@@ -540,8 +539,8 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			// add other fields
 			for (Map.Entry<String, String> entry : otherProperties.entrySet()) {
 				String key = entry.getKey();
-				UserPropertyHandler handler = userManager.getUserPropertiesConfig().getPropertyHandler(key);
-				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(key);
+				if(handler instanceof GenericSelectionPropertyHandler selectPropertyHandler && selectPropertyHandler.isMultiSelect()) {
 					List<String> valueList = splitMultipleValues(entry.getValue());
 					if(!valueList.isEmpty()) {
 						needsUserPropertiesJoin = checkIntersectionInUserProperties(sb, needsUserPropertiesJoin, params.isUserPropertiesAsIntersectionSearch());
@@ -660,12 +659,11 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 
 		//	 add user properties attributes
 		if (params.getUserProperties() != null && !params.getUserProperties().isEmpty()) {
-			UserPropertiesConfig userPropertiesConfig = userManager.getUserPropertiesConfig();
 			for (Map.Entry<String, String> entry : params.getUserProperties().entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();
 				UserPropertyHandler handler = userPropertiesConfig.getPropertyHandler(key);
-				if(handler instanceof GenericSelectionPropertyHandler && ((GenericSelectionPropertyHandler)handler).isMultiSelect()) {
+				if(handler instanceof GenericSelectionPropertyHandler selectPropertyHandler && selectPropertyHandler.isMultiSelect()) {
 					List<String> valueList = splitMultipleValues(value);
 					for(int i=valueList.size(); i-->0; ) {
 						String val = valueList.get(i) + GenericSelectionPropertyHandler.KEY_DELIMITER;
