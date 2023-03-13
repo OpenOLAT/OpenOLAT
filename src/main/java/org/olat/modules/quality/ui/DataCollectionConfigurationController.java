@@ -280,7 +280,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 				break;
 			case IDENTIY: 
 				String userName = topicIdentity != null
-					? userManager.getUserDisplayName(topicIdentity)
+					? userManager.getUserDisplayName(topicIdentity.getKey())
 					: translate("data.collection.topic.identity.none");
 				topicIdentityNameEl.setValue(userName);
 				topicIdentityNameEl.setVisible(true);
