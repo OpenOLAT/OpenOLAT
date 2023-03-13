@@ -466,6 +466,15 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	public void stop() {
 		log.info("ClusterEventBus: Set stop flag for ClusterInfoEvent-Thread.");
 		isClusterInfoEventThreadRunning = false;
+		
+		if(consumer != null) {
+			try {
+				consumer.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
+		
 		try {
 			jmsExecutor.shutdownNow();
 

@@ -74,6 +74,7 @@ public class JmsSearchProvider implements MessageListener {
 	private ConnectionFactory connectionFactory;
 	private Connection connection;
 	private Queue searchQueue;
+	private MessageConsumer consumer;
 	private Session session;
 	private LinkedList<Session> sessions = new LinkedList<>();
 	private long receiveTimeout = 60000;
@@ -130,6 +131,14 @@ public class JmsSearchProvider implements MessageListener {
 	public void stop() {
 		if (searchService == null) throw new AssertException("searchService in ClusteredSearchProvider is null, please check the search configuration!");
 		searchService.stop();
+		if(consumer != null) {
+			try {
+				consumer.close();
+			} catch (JMSException e) {
+				log.warn("Exception in stop consumer ClusteredSearchProvider, ",e);
+			}
+		}
+		
 		try {
 			session.close();
 			connection.stop();
@@ -152,7 +161,7 @@ public class JmsSearchProvider implements MessageListener {
 	public void springInit() throws JMSException {
 		connection = connectionFactory.createConnection();
 		session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		MessageConsumer consumer = session.createConsumer(searchQueue);
+		consumer = session.createConsumer(searchQueue);
 		consumer.setMessageListener(this);
 		connection.start();
 		log.info("ClusteredSearchProvider JMS started");

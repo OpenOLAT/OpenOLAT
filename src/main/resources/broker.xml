@@ -26,7 +26,7 @@
 				<redelivery-delay>0</redelivery-delay>
 				<max-size-bytes>10Mb</max-size-bytes>
 				<message-counter-history-day-limit>10</message-counter-history-day-limit>
-				<address-full-policy>BLOCK</address-full-policy>
+				<address-full-policy>PAGE</address-full-policy>
 			</address-setting>
 		</address-settings>
 	</core>

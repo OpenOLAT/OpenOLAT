@@ -618,8 +618,8 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	@Override
 	public Statistics getStatistics() {
-		if(emf instanceof SessionFactoryImplementor) {
-			return ((SessionFactoryImplementor)emf).getStatistics();
+		if(emf instanceof SessionFactoryImplementor sfi) {
+			return sfi.getStatistics();
 		}
  		return null;
    }
@@ -638,9 +638,6 @@ public class DBImpl implements DB, Destroyable {
 		return cm;
 	}
 
-	/**
-	 * @see org.olat.core.commons.persistence.DB#intermediateCommit()
-	 */
 	@Override
 	public void intermediateCommit() {
 		commit();
@@ -657,6 +654,15 @@ public class DBImpl implements DB, Destroyable {
 				DriverManager.deregisterDriver(registeredDrivers.nextElement());
 			} catch (SQLException e) {
 				log.error("Could not unregister database driver.", e);
+			}
+		}
+		
+		EmbeddedCacheManager cacheManager = getCacheContainer();
+		if(cacheManager != null) {
+			try {
+				cacheManager.stop();
+			} catch (Exception e) {
+				log.error("");
 			}
 		}
 	}
