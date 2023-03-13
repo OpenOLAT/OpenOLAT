@@ -62,22 +62,23 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>17</targetJdk>
-		<org.springframework.version>6.0.4</org.springframework.version>
+		<org.springframework.version>6.0.6</org.springframework.version>
 		<org.hibernate.version>6.1.7.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
+		<org.glassfish.jaxb.runtime>4.0.2</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.0</apache.cxf>
 		<apache.pdfbox>2.0.27</apache.pdfbox>
 		<apache.poi>5.2.3</apache.poi>
-		<apache.log4j>2.19.0</apache.log4j>
+		<apache.log4j>2.20.0</apache.log4j>
 		<org.slf4j>2.0.6</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.3.3.Final</io.undertow>
+		<io.undertow>2.3.4.Final</io.undertow>
 		<jackson.version>2.14.2</jackson.version>
-		<swagger.ui.version>4.15.5</swagger.ui.version>
+		<swagger.ui.version>4.17.1</swagger.ui.version>
 		<com.mysql.version>8.0.32</com.mysql.version>
-		<org.postgresql.version>42.5.3</org.postgresql.version>
-		<org.infinispan.version>14.0.6.Final</org.infinispan.version>
+		<org.postgresql.version>42.5.4</org.postgresql.version>
+		<org.infinispan.version>14.0.7.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.8.1</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
@@ -557,7 +558,7 @@
 				<dependency>
 				    <groupId>org.glassfish.jaxb</groupId>
 				    <artifactId>jaxb-runtime</artifactId>
-				    <version>4.0.1</version>
+				    <version>${org.glassfish.jaxb.runtime}</version>
 				</dependency>
 			</dependencies>
 			
@@ -570,6 +571,11 @@
 							<webResources>
 								<resource>
 									<directory>src/main/webapp-tomcat</directory>
+									<filtering>false</filtering>
+								</resource>
+								<resource>
+									<directory>src/main/resources/org/infinispan/hibernate/cache/commons/builder/</directory>
+									<targetPath>WEB-INF/classes/org/infinispan/hibernate/cache/commons/builder/</targetPath>
 									<filtering>false</filtering>
 								</resource>
 							</webResources>
@@ -1801,7 +1807,7 @@
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
 			<artifactId>ical4j</artifactId>
-			<version>3.2.9</version>
+			<version>3.2.10</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2109,7 +2115,7 @@
 		<dependency>
 		    <groupId>org.glassfish.jaxb</groupId>
 		    <artifactId>jaxb-runtime</artifactId>
-		    <version>4.0.1</version>
+		    <version>${org.glassfish.jaxb.runtime}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -2266,7 +2272,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20220924</version>
+			<version>20230227</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2325,7 +2331,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.4</version>
+			<version>1.13.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.sun.mail</groupId>

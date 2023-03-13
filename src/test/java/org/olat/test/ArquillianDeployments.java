@@ -73,6 +73,8 @@ public class ArquillianDeployments {
 		addResourceRecursive(new File(MAIN_RSRC), null, new AllFileFilter(), mainJar);
 		archive.addAsLibraries(mainJar);
 		
+		addHibernateInfinispanConfiguration(archive);
+		
 		addWebResourceRecursive(new File(WEBAPP), "static", new StaticFileFilter(), archive);
 		addOlatLocalProperties(archive, overrideProperties);
 		archive.setWebXML(new File(WEBINF_TOMCAT, "web.xml"));
@@ -120,6 +122,12 @@ public class ArquillianDeployments {
 		File libDir = new File(LIB_DIR);
 		File[] libs = libDir.listFiles(new LibrariesFilter());
 		return archive.addAsLibraries(libs);
+	}
+	
+	public static WebArchive addHibernateInfinispanConfiguration(WebArchive archive) {
+		File resourceFile = new File(MAIN_RSRC);
+		return archive.addAsResource(new File(resourceFile, "org/infinispan/hibernate/cache/commons/builder/infinispan-configs.xml"), "org/infinispan/hibernate/cache/commons/builder/infinispan-configs.xml")
+				.addAsResource(new File(resourceFile, "org/infinispan/hibernate/cache/commons/builder/infinispan-configs-local.xml"), "org/infinispan/hibernate/cache/commons/builder/infinispan-configs-local.xml");
 	}
 	
 	public static JavaArchive addClasses(JavaArchive archive) {

@@ -101,11 +101,11 @@ public class CatalogEntryPositionDialogController extends FormBasicController {
 			position = Integer.parseInt(positionTextElement.getValue());
 			
 			if (position < smallest || position > biggest) {
-				positionTextElement.setErrorKey("catalog.popup.position.error.number", new String[]{String.valueOf(smallest), String.valueOf(biggest)});
+				positionTextElement.setErrorKey("catalog.popup.position.error.number", String.valueOf(smallest), String.valueOf(biggest));
 				allOk&=false;
 			} 
 		} catch (Exception e) {
-			positionTextElement.setErrorKey("catalog.popup.position.error.number.format", null);
+			positionTextElement.setErrorKey("catalog.popup.position.error.number.format");
 			allOk&=false;
 		}
 	

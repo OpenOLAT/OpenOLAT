@@ -1927,6 +1927,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	    				ItemSessionController itemSessionController = (ItemSessionController)itemProcessingContext;
 	    				itemSessionController.unsuspendItemSession(requestTimestamp);
 	    			}
+	    		} else {
+	    			TestPart currentTestPart = controller.getCurrentTestPart();
+	            	if(currentTestPart != null
+	            			&& currentTestPart.getNavigationMode() == NavigationMode.NONLINEAR
+	            			&& controller.hasFollowingNonLinearItem()) {
+	            		//go to the first assessment item
+	            		controller.selectFollowingItemNonLinear(ureq.getRequestTimestamp());
+	            	}
 	    		}
         }
         

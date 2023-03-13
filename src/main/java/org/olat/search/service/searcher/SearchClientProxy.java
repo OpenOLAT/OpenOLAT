@@ -271,11 +271,9 @@ public class SearchClientProxy implements SearchClient {
 	private Message doSearchRequest(Session session, Message message) throws JMSException {
 		Destination replyQueue = acquireTempQueue(session);
 		if(log.isDebugEnabled()){
-			log.debug("doSearchRequest replyQueue=" + replyQueue);
+			log.debug("doSearchRequest replyQueue={}", replyQueue);
 		}
-		try{
-			MessageConsumer responseConsumer = session.createConsumer(replyQueue);
-			
+		try(MessageConsumer responseConsumer = session.createConsumer(replyQueue)){
 			message.setJMSReplyTo(replyQueue);
 			String correlationId = createRandomString();
 			message.setJMSCorrelationID(correlationId);
@@ -284,7 +282,7 @@ public class SearchClientProxy implements SearchClient {
 			producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 			producer.setTimeToLive(timeToLive_);
 			if (log.isDebugEnabled()) {
-				log.debug("Sending search request message with correlationId="+correlationId);
+				log.debug("Sending search request message with correlationId={}", correlationId);
 			}
 			producer.send(message);
 			producer.close();
@@ -299,7 +297,7 @@ public class SearchClientProxy implements SearchClient {
 					break;
 				}
 				if (log.isDebugEnabled()) {
-					log.debug("doSearchRequest: call receive with timeout=" + diff);
+					log.debug("doSearchRequest: call receive with timeout={}", diff);
 				}
 				returnedMessage = responseConsumer.receive(diff);
 				if (returnedMessage==null) {
@@ -315,9 +313,8 @@ public class SearchClientProxy implements SearchClient {
 					break;
 				}
 			}
-			responseConsumer.close();
 			if (log.isDebugEnabled()) {
-				log.debug("doSearchRequest: returnedMessage=" + returnedMessage);
+				log.debug("doSearchRequest: returnedMessage={}", returnedMessage);
 			}
 			return returnedMessage;
 		} finally {

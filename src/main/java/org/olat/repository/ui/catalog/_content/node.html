@@ -1,10 +1,10 @@
 <div id="$r.getCId()">
 	<div class="o_catalog container-fluid">
-		#if ($isGuest)
+	#if ($isGuest)
 		<div class="o_warning">${r.translate("filtered.first")}${r.render("cat.login")}${r.translate("filtered.second")}</div>
-		#end
+	#end
 		
-		#if (!$isOrdering)
+	#if (!$isOrdering)
 		<div class="o_level o_level_${catalogLevel} row">
 			<div class="o_visual" aria-hidden="true">
 				#if($catThumbnail)
@@ -70,8 +70,8 @@
 				</div>
 			#end
 		#end
-		</div>	## END o_catalog
 	#end
+	</div>	## END o_catalog
 	## Render node list component
 	#if($isOrdering)
 		<div class="o_hint">$r.translate("catalog.order.info")</div>
@@ -97,7 +97,7 @@
 		<div class="o_extlink clearfix o_block_large_bottom">
 			<h4>$r.translate("cat.externalLink")</h4>
 			#if($extLink)
-				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$extLink" onclick="this.select()"/>
+				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$extLink" onclick="this.select()">
 					<script>
 					/* <![CDATA[ */
 						jQuery(function() {
@@ -108,7 +108,7 @@
 				</div>
 			#end
 			#if($guestExtLink)
-				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_guestextlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$guestExtLink" onclick="this.select()"/>
+				<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_guestextlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$guestExtLink" onclick="this.select()">
 					<script>
 					/* <![CDATA[ */
 						jQuery(function() {
