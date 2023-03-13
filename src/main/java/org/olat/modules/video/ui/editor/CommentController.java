@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,13 +40,18 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoSettingsController;
+import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,6 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CommentController extends FormBasicController {
 	private final long videoDurationInSeconds;
 	private final VideoComments comments;
+	private final RepositoryEntry repositoryEntry;
 	private VideoComment comment;
 	private TextElement startEl;
 	private FormLink startApplyPositionButton;
@@ -69,10 +76,15 @@ public class CommentController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	@Autowired
 	private VideoModule videoModule;
+	private CloseableModalController cmc;
+	VideoAudioPlayerController videoAudioPlayerController;
+	@Autowired
+	private VideoManager videoManager;
 
-	public CommentController(UserRequest ureq, WindowControl wControl, VideoComment comment, VideoComments comments,
-							 long videoDurationInSeconds) {
+	public CommentController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+							 VideoComment comment, VideoComments comments, long videoDurationInSeconds) {
 		super(ureq, wControl, "comment");
+		this.repositoryEntry = repositoryEntry;
 		this.comment = comment;
 		this.comments = comments;
 		this.videoDurationInSeconds = videoDurationInSeconds;
@@ -88,6 +100,13 @@ public class CommentController extends FormBasicController {
 
 		initForm(ureq);
 		setValues();
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(videoAudioPlayerController);
+		cmc = null;
+		videoAudioPlayerController = null;
 	}
 
 	public void setComment(VideoComment comment) {
@@ -168,6 +187,8 @@ public class CommentController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (startApplyPositionButton == source) {
 			doApplyStartPosition();
+		} else if (videoLink == source) {
+			doShowVideo(ureq);
 		}
 	}
 
@@ -244,6 +265,49 @@ public class CommentController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {
 			logError("", e);
+		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (videoAudioPlayerController == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void doShowVideo(UserRequest ureq) {
+		if (comment == null) {
+			return;
+		}
+
+		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
+			VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
+			VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(comment.getFileName());
+			if (vfsVideo != null) {
+				videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(),
+						vfsVideo, null, true, false);
+				listenTo(videoAudioPlayerController);
+
+				cmc = new CloseableModalController(getWindowControl(), translate("close"),
+						videoAudioPlayerController.getInitialComponent(), true,
+						translate("form.common.video"));
+				listenTo(cmc);
+				cmc.activate();
+			}
+		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
+			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
+					getWindowControl(), null, comment.getUrl(), true, false);
+			listenTo(videoAudioPlayerController);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					videoAudioPlayerController.getInitialComponent(), true,
+					translate("form.common.video"));
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 
