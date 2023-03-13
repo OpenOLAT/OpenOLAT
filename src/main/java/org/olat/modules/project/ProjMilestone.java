@@ -19,30 +19,45 @@
  */
 package org.olat.modules.project;
 
-import java.util.List;
+import java.util.Date;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 9 Feb 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public interface ProjMilestone extends ProjMilestoneRef, ModifiedInfo, CreateInfo {
 	
-	public List<ProjFile> getFiles();
+	public static final String TYPE = "ProjectMilestone";
 	
-	public ProjFile getFile(ProjArtefactRef artefact);
+	public String getIdentifier();
 	
-	public List<ProjNote> getNotes();
+	public void setIdentifier(String identifier);
+	
+	public ProjMilestoneStatus getStatus();
+	
+	public void setStatus(ProjMilestoneStatus status);
+	
+	public Date getDueDate();
 
-	public ProjNote getNote(ProjArtefactRef artefact);
+	void setDueDate(Date dueDate);
 	
-	public List<ProjAppointment> getAppointments();
+	public String getSubject();
 
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
+	void setSubject(String subject);
 	
-	public List<ProjMilestone> getMilestones();
+	public String getDescription();
 
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
+	void setDescription(String description);
 	
+	public String getColor();
+
+	void setColor(String color);
+	
+	public ProjArtefact getArtefact();
+
 }

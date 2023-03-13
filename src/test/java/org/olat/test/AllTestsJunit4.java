@@ -344,6 +344,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.project.manager.ProjArtefactToArtefactDAOTest.class,
 	org.olat.modules.project.manager.ProjFileDAOTest.class,
 	org.olat.modules.project.manager.ProjMemberQueriesTest.class,
+	org.olat.modules.project.manager.ProjMilestoneDAOTest.class,
 	org.olat.modules.project.manager.ProjNoteDAOTest.class,
 	org.olat.modules.project.manager.ProjProjectDAOTest.class,
 	org.olat.modules.project.manager.ProjProjectToOrganisationDAOTest.class,

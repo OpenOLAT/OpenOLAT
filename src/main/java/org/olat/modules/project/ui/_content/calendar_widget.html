@@ -6,12 +6,36 @@
 			</h3>
 		</div>
 		<div class="o_proj_widget_cmds">
-			#if($r.available("appointment.create") && $r.visible("appointment.create"))
+			#if($r.available("create.dropdown") && $r.visible("create.dropdown"))
+				$r.render("create.dropdown")
+			#elseif($r.available("appointment.create") && $r.visible("appointment.create"))
 				$r.render("appointment.create")
+			#elseif($r.available("milestone.create") && $r.visible("milestone.create"))
+				$r.render("milestone.create")
 			#end
 		</div>
 	</div>
 	<div class="panel-body">
+		#if($milestone && $r.isNotEmpty($milestone.getSubject()))
+			<div class="o_proj_milestones">
+				<div class="o_proj_full_row">
+					<h4>
+						$r.translate("calendar.widget.next.milestone")
+					</h4>
+				</div>
+				<div class="o_proj_card">
+					<div class="o_proj_card_meta o_flex_first_grow">
+						<div>
+							<i class="o_icon o_icon-lg $milestoneStatusIconCss"> </i> $milestone.getSubject()
+						</div>
+						<div>
+							$r.formatDate($milestone.getDueDate())
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		#end
 		<div class="o_proj_appointments">
 			<div class="o_proj_full_row">
 				<h4>

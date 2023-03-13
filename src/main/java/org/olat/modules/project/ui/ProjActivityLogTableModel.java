@@ -19,15 +19,21 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.ExportableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 
 /**
@@ -38,17 +44,19 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
  *
  */
 public class ProjActivityLogTableModel extends DefaultFlexiTableDataModel<ProjActivityLogRow>
-	implements SortableFlexiTableDataModel<ProjActivityLogRow> {
+	implements SortableFlexiTableDataModel<ProjActivityLogRow>, ExportableFlexiTableDataModel {
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final String USAGE_IDENTIFIER = ProjActivityLogTableModel.class.getCanonicalName();
 	private static final ActivityLogCols[] COLS = ActivityLogCols.values();
 	
+	private final Translator translator;
 	private final Locale locale;
 	
-	public ProjActivityLogTableModel(FlexiTableColumnModel columnModel, Locale locale) {
+	public ProjActivityLogTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
-		this.locale = locale;
+		this.translator = translator;
+		this.locale = translator.getLocale();
 	}
 	
 	@Override
@@ -57,6 +65,20 @@ public class ProjActivityLogTableModel extends DefaultFlexiTableDataModel<ProjAc
 			List<ProjActivityLogRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
+	}
+	
+	@Override
+	public MediaResource export(FlexiTableComponent ftC) {
+		FlexiTableColumnModel columnModel = getTableColumnModel();
+		int numOfColumns = columnModel.getColumnCount();
+		List<FlexiColumnModel> columns = new ArrayList<>();
+		for(int i=0; i<numOfColumns; i++) {
+			FlexiColumnModel column = columnModel.getColumnModel(i);
+			if(column.isExportable()) {
+				columns.add(column);
+			}
+		}
+		return new ProjActivityLogExport().export(ftC, columns, translator);
 	}
 	
 	@Override

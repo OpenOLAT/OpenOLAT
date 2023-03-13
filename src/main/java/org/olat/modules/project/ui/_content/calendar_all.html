@@ -9,6 +9,9 @@
 			#if($r.available("appointment.create") && $r.visible("appointment.create"))
 				$r.render("appointment.create")
 			#end
+			#if($r.available("milestone.create") && $r.visible("milestone.create"))
+				$r.render("milestone.create")
+			#end
 		</div>
 	</div>
 	<div class="o_cal">

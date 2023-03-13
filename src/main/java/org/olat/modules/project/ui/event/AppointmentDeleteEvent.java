@@ -17,32 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.project.ui.event;
 
-import java.util.List;
+import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.project.ProjAppointmentRef;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 20 Feb 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public class AppointmentDeleteEvent extends Event {
 	
-	public List<ProjFile> getFiles();
+	private static final long serialVersionUID = 3724273762113043498L;
 	
-	public ProjFile getFile(ProjArtefactRef artefact);
+	private final ProjAppointmentRef appointment;
+	private final KalendarEvent kalendarEvent;
 	
-	public List<ProjNote> getNotes();
+	public AppointmentDeleteEvent(ProjAppointmentRef appointment, KalendarEvent kalendarEvent) {
+		super("appointment-delete");
+		this.appointment = appointment;
+		this.kalendarEvent = kalendarEvent;
+	}
 
-	public ProjNote getNote(ProjArtefactRef artefact);
-	
-	public List<ProjAppointment> getAppointments();
+	public ProjAppointmentRef getAppointment() {
+		return appointment;
+	}
 
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
+	public KalendarEvent getKalendarEvent() {
+		return kalendarEvent;
+	}
 
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

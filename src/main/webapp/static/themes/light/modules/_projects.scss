@@ -237,6 +237,7 @@
 		}
 	}
 }
+.o_proj_milestone_edit,
 .o_proj_appointment_edit {
 	.o_proj_two_cols {
 		@media (min-width: $screen-sm-max) {
@@ -255,7 +256,7 @@
 			margin-bottom: 0;
 		}
 	}
-	.o_proj_appointment_color.dropdown-menu {
+	.o_proj_color.dropdown-menu {
 		min-width: 46px;
 		li {
 			height: 32px;
@@ -266,6 +267,10 @@
 		.o_cal_color_element {
 			margin: 0px 12px;
 		}
+	}
+	.o_proj_status_color {
+		display: flex;
+		gap: 10px;
 	}
 }
 .o_proj_timeline {
@@ -371,7 +376,10 @@
 /* Helpers */
 .o_proj_title {
 	@extend %o_flex_first_grow_base;
-	align-items: start;
+	align-items: center;
+	&.o_proj_title_top {
+		align-items: start;
+	}
 	h2 {
 		margin: 0;
 		display: inline;

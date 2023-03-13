@@ -157,7 +157,7 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 					} else {
 						sb.append("<li class='disabled'>");
 					}
-					renderer.render(component, sb, args);
+					renderer.render(component, sb, null);
 					sb.append("</li>");
 				} else {
 					component.setDirty(false);

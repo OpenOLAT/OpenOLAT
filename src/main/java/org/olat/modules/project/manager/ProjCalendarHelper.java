@@ -33,6 +33,7 @@ import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,7 @@ public class ProjCalendarHelper {
 	private static final Logger log = Tracing.createLoggerFor(ProjCalendarHelper.class);
 	
 	private static final String APPOINTMENT_EXTERNAL_SOURCE = "project-appointment";
+	private static final String MILESTONE_EXTERNAL_SOURCE = "project-milestone";
 
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 	
@@ -102,8 +104,6 @@ public class ProjCalendarHelper {
 	
 	private KalendarEvent createEvent(ProjAppointment appointment) {
 		KalendarEvent event = toEvent(appointment);
-		event.setExternalId(appointment.getIdentifier());
-		event.setExternalSource(APPOINTMENT_EXTERNAL_SOURCE);
 		addKalendarEventLinks(appointment, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 		return event;
@@ -122,7 +122,7 @@ public class ProjCalendarHelper {
 		ProjProject project = appointment.getArtefact().getProject();
 		String id = project.getKey().toString();
 		String displayName = project.getTitle();
-		String businessPath = ProjectBCFactory.getProjectUrl(project);
+		String businessPath = ProjectBCFactory.getAppointmentUrl(appointment);
 		KalendarEventLink link = new KalendarEventLink("project", id, displayName, businessPath, "o_icon_proj_project");
 		event.getKalendarEventLinks().clear();
 		event.getKalendarEventLinks().add(link);
@@ -179,6 +179,79 @@ public class ProjCalendarHelper {
 		}
 		
 		return null;
+	}
+	
+	public KalendarEvent toEvent(ProjMilestone milestone) {
+		KalendarEvent event = new KalendarEvent(milestone.getIdentifier(), null, milestone.getSubject(),
+				milestone.getDueDate(), milestone.getDueDate());
+		toEvent(milestone, event);
+		return event;
+	}
+
+	private void toEvent(ProjMilestone milestone, KalendarEvent event) {
+		event.setExternalId(milestone.getIdentifier());
+		event.setExternalSource(MILESTONE_EXTERNAL_SOURCE);
+		event.setDescription(milestone.getDescription());
+		event.setColor(milestone.getColor());
+		event.setAllDayEvent(true);
+	}
+
+	public void createOrUpdateEvent(ProjMilestone milestone, Collection<Identity> set) {
+		if (milestone.getDueDate() == null) {
+			return;
+		}
+		
+		set.forEach(identity -> createOrUpdateEvent(milestone, identity));
+	}
+
+	private void createOrUpdateEvent(ProjMilestone milestone, Identity identity) {
+		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+		for (KalendarEvent event : cal.getEvents()) {
+			if (milestone.getIdentifier().equals(event.getExternalId())) {
+				updateEvent(milestone, event);
+				calendarManager.updateEventFrom(cal, event);
+				return;
+			}
+		}
+		
+		KalendarEvent newEvent = createEvent(milestone);
+		calendarManager.addEventTo(cal, newEvent);
+	}
+	
+	private KalendarEvent createEvent(ProjMilestone milestone) {
+		KalendarEvent event = toEvent(milestone);
+		addKalendarEventLinks(milestone, event);
+		event.setManagedFlags(CAL_MANAGED_FLAGS);
+		return event;
+	}
+	
+	private void updateEvent(ProjMilestone milestone, KalendarEvent event) {
+		toEvent(milestone, event);
+		event.setSubject(milestone.getSubject());
+		event.setBegin(milestone.getDueDate());
+		addKalendarEventLinks(milestone, event);
+		event.setManagedFlags(CAL_MANAGED_FLAGS);
+	}
+	
+	private void addKalendarEventLinks(ProjMilestone milestone, KalendarEvent event) {
+		ProjProject project = milestone.getArtefact().getProject();
+		String id = project.getKey().toString();
+		String displayName = project.getTitle();
+		String businessPath = ProjectBCFactory.getMilestoneUrl(milestone);
+		KalendarEventLink link = new KalendarEventLink("project", id, displayName, businessPath, "o_icon_proj_project");
+		event.getKalendarEventLinks().clear();
+		event.getKalendarEventLinks().add(link);
+	}
+	
+	public void deleteEvent(ProjMilestone milestone, Collection<Identity> identities) {
+		identities.forEach(identity -> deleteEvent(milestone, identity));
+	}
+	
+	public void deleteEvent(ProjMilestone milestone, Identity identity) {
+		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
+		cal.getEvents().stream()
+				.filter(event -> milestone.getIdentifier().equals(event.getExternalId()))
+				.forEach(event -> calendarManager.removeEventFrom(cal, event));
 	}
 
 }

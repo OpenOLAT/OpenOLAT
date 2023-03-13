@@ -65,4 +65,12 @@ public interface ProjProjectSecurityCallback {
 
 	boolean canDeleteAppointment(ProjAppointment appointment, boolean participant);
 
+	boolean canCreateMilestones();
+	
+	boolean canEditMilestones();
+
+	boolean canEditMilestone(ProjMilestone milestone);
+
+	boolean canDeleteMilestone(ProjMilestone milestone);
+
 }

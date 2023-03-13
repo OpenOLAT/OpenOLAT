@@ -119,7 +119,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		startEl.setMandatory(true);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
-		startEl.setMandatory(true);
+		endEl.setMandatory(true);
 		
 		SelectionValues recurrenceSV = new SelectionValues();
 		recurrenceSV.add(entry(RECURRENCE_NONE, translate("cal.form.recurrence.none")));
@@ -148,7 +148,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, appointment.getLocation(), formLayout);
 		
 		colorEl = uifactory.addDropdownMenu("color", "", "cal.form.event.color", formLayout, getTranslator());
-		colorEl.setElementCssClass("o_proj_appointment_color");
+		colorEl.setElementCssClass("o_proj_color");
 		colorEl.setOrientation(DropdownOrientation.normal);
 		colorEl.addActionListener(FormEvent.ONCHANGE);
 		for (String color : CalendarColorChooserController.colors) {

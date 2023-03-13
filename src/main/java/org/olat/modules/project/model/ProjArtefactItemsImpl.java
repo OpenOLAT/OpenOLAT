@@ -28,6 +28,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
 
 /**
@@ -44,6 +45,8 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	private Map<Long, ProjNote> artefactKeyToNote;
 	private List<ProjAppointment> appointments;
 	private Map<Long, ProjAppointment> artefactKeyToAppointment;
+	private List<ProjMilestone> milestones;
+	private Map<Long, ProjMilestone> artefactKeyToMilestone;
 	
 	@Override
 	public List<ProjFile> getFiles() {
@@ -100,6 +103,25 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 			}
 		}
 		return artefactKeyToAppointment != null? artefactKeyToAppointment.get(artefact.getKey()): null;
+	}
+	
+	@Override
+	public List<ProjMilestone> getMilestones() {
+		return milestones;
+	}
+	
+	public void setMilestones(List<ProjMilestone> milestones) {
+		this.milestones = milestones;
+	}
+	
+	@Override
+	public ProjMilestone getMilestone(ProjArtefactRef artefact) {
+		if (artefactKeyToMilestone == null) {
+			if (milestones != null) {
+				artefactKeyToMilestone = milestones.stream().collect(Collectors.toMap(milestone -> milestone.getArtefact().getKey(), Function.identity()));
+			}
+		}
+		return artefactKeyToMilestone != null? artefactKeyToMilestone.get(artefact.getKey()): null;
 	}
 
 }

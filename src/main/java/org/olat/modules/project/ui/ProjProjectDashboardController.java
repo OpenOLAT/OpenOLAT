@@ -487,6 +487,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenCalendar(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createAppointmentCe(artefacts.getAppointments().get(0)));
 			calendarAllCtrl.activate(ureq, contextEntries, null);
+		} else if (artefacts.getMilestones() != null && !artefacts.getMilestones().isEmpty()) {
+			doOpenCalendar(ureq);
+			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createMilestoneCe(artefacts.getMilestones().get(0)));
+			calendarAllCtrl.activate(ureq, contextEntries, null);
 		}
 	}
 	

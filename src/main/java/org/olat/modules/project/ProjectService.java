@@ -153,7 +153,7 @@ public interface ProjectService {
 	
 	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate);
 
-	public ProjAppointment createAppointmentOcurrence(Identity appointment, String externalId, String recurrenceId,
+	public ProjAppointment createAppointmentOcurrence(Identity appointment, String identifier, String recurrenceId,
 			Date startDate, Date endDate);
 	
 	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
@@ -173,7 +173,31 @@ public interface ProjectService {
 	
 	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams);
 	
-	public Kalendar toKalendar(List<ProjAppointment> appointments);
+	public Kalendar getAppointmentsKalendar(List<ProjAppointment> appointments);
+	
+	
+	/*
+	 * Milestones
+	 */
+	
+	public ProjMilestone createMilestone(Identity doer, ProjProject project);
+
+	public void updateMilestone(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status, Date dueDate,
+			String subject, String description, String color);
+
+	public void updateMilestoneStatus(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status);
+
+	public void moveMilestone(Identity doer, String identifier, Long days);
+
+	public void deleteMilestoneSoftly(Identity doer, ProjMilestoneRef milestone);
+
+	public void deleteMilestonePermanent(ProjMilestoneRef milestone);
+	
+	public ProjMilestone getMilestone(ProjMilestoneRef milestone);
+	
+	public List<ProjMilestone> getMilestones(ProjMilestoneSearchParams searchParams);
+	
+	public Kalendar getMilestonesKalendar(List<ProjMilestone> milestones);
 	
 	
 	/*

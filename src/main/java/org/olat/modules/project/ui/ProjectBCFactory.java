@@ -29,6 +29,8 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjFileRef;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjProject;
@@ -50,6 +52,7 @@ public class ProjectBCFactory {
 	public static final String TYPE_NOTE = "Note";
 	public static final String TYPE_CALENDAR = "Calendar";
 	public static final String TYPE_APPOINTMENT = "Appointment";
+	public static final String TYPE_MILESTONE = "Milestone";
 	
 	private static List<ContextEntry> createProjectsCes() {
 		List<ContextEntry> ces = new ArrayList<>();
@@ -111,6 +114,16 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_APPOINTMENT, appointmentRef.getKey()));
 	}
 	
+	private static List<ContextEntry> createMilestoneCes(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
+		List<ContextEntry> ces = createCalendarCes(projectRef);
+		ces.add(createMilestoneCe(milestoneRef));
+		return ces;
+	}
+	
+	public static ContextEntry createMilestoneCe(ProjMilestoneRef milestoneRef) {
+		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_MILESTONE, milestoneRef.getKey()));
+	}
+	
 	public static String getProjectUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createProjectCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
@@ -158,11 +171,21 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
+	public static String getMilestoneUrl(ProjMilestone milestone) {
+		return getMilestoneUrl(milestone.getArtefact().getProject(), milestone);
+	}
+	
+	public static String getMilestoneUrl(ProjProjectRef projectRef, ProjMilestoneRef milestoneRef) {
+		List<ContextEntry> ces = createMilestoneCes(projectRef, milestoneRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
 	public static String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
 		switch (artefactType) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
 		case ProjNote.TYPE: return getNoteUrl(project, () -> key);
 		case ProjAppointment.TYPE: return getAppointmentUrl(project, () -> key);
+		case ProjMilestone.TYPE: return getMilestoneUrl(project, () -> key);
 		default: return getProjectUrl(project);
 		}
 	}

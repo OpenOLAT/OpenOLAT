@@ -29,6 +29,8 @@ import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -42,6 +44,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.DateUtils;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentSearchParams;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
@@ -58,11 +62,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ProjCalendarWidgetController extends FormBasicController {
 	
 	private FormLink titleLink;
-	private FormLink createLink;
+	private FormLink appointmentCreateLink;
+	private FormLink milestoneCreateLink;
 	private FormLink showAllLink;
 	
 	private CloseableModalController cmc;
 	private ProjAppointmentEditController appointmentEditCtrl;
+	private ProjMilestoneEditController milestoneEditCtrl;
 	
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
@@ -91,11 +97,37 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		String url = ProjectBCFactory.getCalendarUrl(project);
 		titleLink.setUrl(url);
 		
-		createLink = uifactory.addFormLink("appointment.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
-		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setElementCssClass("o_link_plain");
-		createLink.setTitle(translate("appointment.create"));
-		createLink.setVisible(secCallback.canCreateAppointments());
+		if (secCallback.canCreateAppointments() && secCallback.canCreateMilestones()) {
+			DropdownItem createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
+			createDropdown.setCarretIconCSS("o_icon o_icon_lg o_icon_add");
+			createDropdown.setOrientation(DropdownOrientation.right);
+			createDropdown.setButton(false);
+			createDropdown.setElementCssClass("o_link_plain");
+			createDropdown.setEmbbeded(true);
+			
+			appointmentCreateLink = uifactory.addFormLink("appointment.create", "appointment.create", null, formLayout, Link.LINK);
+			appointmentCreateLink.setIconLeftCSS("o_icon o_icon_fw o_icon_add");
+			appointmentCreateLink.setVisible(secCallback.canCreateAppointments());
+			createDropdown.addElement(appointmentCreateLink);
+			
+			milestoneCreateLink = uifactory.addFormLink("milestone.create", "milestone.create", null, formLayout, Link.LINK);
+			milestoneCreateLink.setIconLeftCSS("o_icon o_icon_fw o_icon_add");
+			milestoneCreateLink.setVisible(secCallback.canCreateAppointments());
+			createDropdown.addElement(milestoneCreateLink);
+			
+		} else if (secCallback.canCreateAppointments()) {
+			appointmentCreateLink = uifactory.addFormLink("appointment.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+			appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
+			appointmentCreateLink.setElementCssClass("o_link_plain");
+			appointmentCreateLink.setTitle(translate("appointment.create"));
+			appointmentCreateLink.setVisible(secCallback.canCreateAppointments());
+		} else if (secCallback.canCreateMilestones()) {
+			milestoneCreateLink = uifactory.addFormLink("milestone.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+			milestoneCreateLink.setIconLeftCSS("o_icon o_icon_add");
+			milestoneCreateLink.setElementCssClass("o_link_plain");
+			milestoneCreateLink.setTitle(translate("milestone.create"));
+			milestoneCreateLink.setVisible(secCallback.canCreateMilestones());
+		}
 		
 		showAllLink = uifactory.addFormLink("calendar.show.all", formLayout);
 	}
@@ -105,11 +137,23 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
-		searchParams.setProject(project);
-		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjAppointment> appointments = projectService.getAppointments(searchParams);
-		Kalendar kalendar = projectService.toKalendar(appointments);
+		ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
+		milestoneSearchParams.setProject(project);
+		milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+		if (!milestones.isEmpty()) {
+			milestones.sort((m1, m2) -> m1.getDueDate().compareTo(m2.getDueDate()));
+			ProjMilestone milestone = milestones.get(0);
+			flc.contextPut("milestone", milestone);
+			flc.contextPut("milestoneStatusIconCss", ProjectUIFactory.getMilestoneStatusIconCss(milestone.getStatus()));
+		}
+		
+		
+		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
+		appointmentSearchParams.setProject(project);
+		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjAppointment> appointments = projectService.getAppointments(appointmentSearchParams);
+		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,
 				DateUtils.setTime(new Date(), 0, 0, 0), DateUtils.addDays(new Date(), 8), true);
 		appointmentEvents.sort(Comparator.comparing(KalendarEvent::getBegin)
@@ -146,6 +190,15 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (milestoneEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				reload();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if (event == Event.CANCELLED_EVENT && milestoneEditCtrl.isFirstEdit()) {
+				projectService.deleteMilestonePermanent(milestoneEditCtrl.getMilestone());
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(cmc == source) {
 			reload();
 			cleanUp();
@@ -155,8 +208,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(appointmentEditCtrl);
+		removeAsListenerAndDispose(milestoneEditCtrl);
 		removeAsListenerAndDispose(cmc);
 		appointmentEditCtrl = null;
+		milestoneEditCtrl = null;
 		cmc = null;
 	}
 	
@@ -164,8 +219,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == titleLink || source == showAllLink) {
 			fireEvent(ureq, ProjProjectDashboardController.SHOW_ALL);
-		} else if (source == createLink) {
+		} else if (source == appointmentCreateLink) {
 			doCreateAppointment(ureq);
+		} else if (source == milestoneCreateLink) {
+			doCreateMilestone(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -184,6 +241,19 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		
 		String title = translate("appointment.edit");
 		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCreateMilestone(UserRequest ureq) {
+		if (guardModalController(milestoneEditCtrl)) return;
+		
+		ProjMilestone milestone = projectService.createMilestone(getIdentity(), project);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestone, true);
+		listenTo(milestoneEditCtrl);
+		
+		String title = translate("milestone.edit");
+		cmc = new CloseableModalController(getWindowControl(), "close", milestoneEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

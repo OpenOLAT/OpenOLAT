@@ -87,6 +87,19 @@ create table o_proj_appointment (
    fk_artefact  number(20) not null,
    primary key (id)
 );
+create table o_proj_milestone (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_identifier varchar(64) not null,
+   p_status varchar(32),
+   p_due_date date,
+   p_subject varchar(256),
+   p_description CLOB,
+   p_color varchar(50),
+   fk_artefact  number(20) not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -146,6 +159,10 @@ create index idx_note_artefact_idx on o_proj_file (fk_artefact);
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
+
+alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_milestone_artefact_idx on o_proj_file (fk_artefact);
+create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);

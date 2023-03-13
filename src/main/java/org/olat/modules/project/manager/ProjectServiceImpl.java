@@ -35,7 +35,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
@@ -47,7 +46,6 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -73,6 +71,10 @@ import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjMemberInfo;
 import org.olat.modules.project.ProjMemberInfoSearchParameters;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneRef;
+import org.olat.modules.project.ProjMilestoneSearchParams;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteInfo;
 import org.olat.modules.project.ProjNoteRef;
@@ -102,8 +104,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProjectServiceImpl implements ProjectService {
 
-	private static final Logger log = Tracing.createLoggerFor(ProjectServiceImpl.class);
-	
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
 	@Autowired
@@ -128,6 +128,8 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjNoteDAO noteDao;
 	@Autowired
 	private ProjAppointmentDAO appointmentDao;
+	@Autowired
+	private ProjMilestoneDAO milestoneDao;
 	@Autowired
 	private ProjCalendarHelper calendarHelper;
 	@Autowired
@@ -548,6 +550,14 @@ public class ProjectServiceImpl implements ProjectService {
 			artefacts.setAppointments(appointments);
 		}
 		
+		List<ProjArtefact> milestoneArtefacts = typeToArtefacts.get(ProjMilestone.TYPE);
+		if (milestoneArtefacts != null) {
+			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+			searchParams.setArtefacts(milestoneArtefacts);
+			List<ProjMilestone> milestones = milestoneDao.loadMilestones(searchParams);
+			artefacts.setMilestones(milestones);
+		}
+		
 		return artefacts;
 	}
 	
@@ -886,9 +896,9 @@ public class ProjectServiceImpl implements ProjectService {
 		return createAppointment(doer, true, project, startDate, endDate);
 	}
 	
-	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project, Date startDate, Date ednDate) {
+	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project, Date startDate, Date endDate) {
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
-		ProjAppointment appointment = appointmentDao.create(artefact, DateUtils.truncateSeconds(startDate), DateUtils.truncateSeconds(ednDate));
+		ProjAppointment appointment = appointmentDao.create(artefact, DateUtils.truncateSeconds(startDate), DateUtils.truncateSeconds(endDate));
 		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
 		if (createActivity) {
 			String after = ProjectXStream.toXml(appointment);
@@ -901,7 +911,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
 			String subject, String description, String location, String color, boolean allDay, String recurrenceRule) {
-		ProjAppointment reloadedAppointment = getAppointment(appointment);
+		ProjAppointment reloadedAppointment = getAppointment(appointment, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
@@ -938,7 +948,7 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public void moveAppointment(Identity doer, String identifier, Long days, Long minutes, boolean moveStartDate) {
-		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
@@ -947,9 +957,9 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	@Override
-	public ProjAppointment createAppointmentOcurrence(Identity doer, String externalId, String recurrenceId,
+	public ProjAppointment createAppointmentOcurrence(Identity doer, String identifier, String recurrenceId,
 			Date startDate, Date endDate) {
-		ProjAppointment reloadedAppointment = getAppointment(externalId);
+		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return null;
 		}
@@ -973,7 +983,7 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public ProjAppointment createMovedAppointmentOcurrence(Identity doer, String identifier,
 			String recurrenceId, Date startDate, Date endDate, Long days, Long minutes, boolean moveStartDate) {
-		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return null;
 		}
@@ -1100,7 +1110,7 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public void addAppointmentExclusion(Identity doer, String identifier, Date exclusionDate, boolean single) {
-		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
@@ -1139,7 +1149,7 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate) {
-		ProjAppointment reloadedAppointment = getAppointment(identifier);
+		ProjAppointment reloadedAppointment = getAppointment(identifier, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
@@ -1154,26 +1164,26 @@ public class ProjectServiceImpl implements ProjectService {
 				ProjAppointment rootAppointment = appointments.get(0);
 				addAppointmentSingleExclusion(doer, false, rootAppointment, occurenceDate);
 			}
-			deleteReloadedAppointment(doer, reloadedAppointment);
+			deleteReloadedAppointmentSoftly(doer, reloadedAppointment);
 		} else {
 			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 			searchParams.setProject(reloadedAppointment.getArtefact().getProject());
 			searchParams.setEventIds(List.of(reloadedAppointment.getEventId()));
 			List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
-			appointments.forEach(appointment -> deleteReloadedAppointment(doer, appointment));
+			appointments.forEach(appointment -> deleteReloadedAppointmentSoftly(doer, appointment));
 		}
 	}
 
 	@Override
 	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment) {
-		ProjAppointment reloadedAppointment = getAppointment(appointment);
+		ProjAppointment reloadedAppointment = getAppointment(appointment, true);
 		if (reloadedAppointment == null) {
 			return;
 		}
-		deleteReloadedAppointment(doer, reloadedAppointment);
+		deleteReloadedAppointmentSoftly(doer, reloadedAppointment);
 	}
 
-	private void deleteReloadedAppointment(Identity doer, ProjAppointment reloadedAppointment) {
+	private void deleteReloadedAppointmentSoftly(Identity doer, ProjAppointment reloadedAppointment) {
 		String before = ProjectXStream.toXml(reloadedAppointment);
 		
 		deleteArtefactSoftly(reloadedAppointment.getArtefact());
@@ -1200,15 +1210,25 @@ public class ProjectServiceImpl implements ProjectService {
 
 	@Override
 	public ProjAppointment getAppointment(ProjAppointmentRef appointment) {
+		return getAppointment(appointment, false);
+	}
+	
+	public ProjAppointment getAppointment(ProjAppointmentRef appointment, boolean active) {
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setAppointments(List.of(appointment));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
 		List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
 		return appointments != null && !appointments.isEmpty()? appointments.get(0): null;
 	}
 
-	private ProjAppointment getAppointment(String identifier) {
+	private ProjAppointment getAppointment(String identifier, boolean active) {
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setIdentifiers(List.of(identifier));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
 		List<ProjAppointment> appointments = appointmentDao.loadAppointments(searchParams);
 		return appointments != null && !appointments.isEmpty()? appointments.get(0): null;
 	}
@@ -1242,10 +1262,187 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	@Override
-	public Kalendar toKalendar(List<ProjAppointment> appointments) {
+	public Kalendar getAppointmentsKalendar(List<ProjAppointment> appointments) {
 		// Should the key contain the project key?
-		Kalendar calendar = new Kalendar(UUID.randomUUID().toString(), "Project");
+		Kalendar calendar = new Kalendar(UUID.randomUUID().toString(), "Appointments");
 		appointments.stream()
+				.map(calendarHelper::toEvent)
+				.forEach(event -> calendar.addEvent(event));
+		
+		return calendar;
+	}
+	
+	
+	/*
+	 * Milestones
+	 */
+	
+	@Override
+	public ProjMilestone createMilestone(Identity doer, ProjProject project) {
+		Date dueDate = DateUtils.setTime(new Date(), 23, 59, 0);
+		return createMilestone(doer, true, project, dueDate);
+	}
+	
+	private ProjMilestone createMilestone(Identity doer, boolean createActivity, ProjProject project, Date dueDate) {
+		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, doer);
+		ProjMilestone milestone = milestoneDao.create(artefact, DateUtils.truncateSeconds(dueDate));
+		calendarHelper.createOrUpdateEvent(milestone, List.of(doer));
+		if (createActivity) {
+			String after = ProjectXStream.toXml(milestone);
+			activityDao.create(Action.milestoneCreate, null, after, null, doer, artefact);
+		}
+		return milestone;
+	}
+	
+	
+	@Override
+	public void updateMilestone(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status, Date dueDate,
+			String subject, String description, String color) {
+		ProjMilestone reloadedMilestone = getMilestone(milestone, true);
+		if (reloadedMilestone == null) {
+			return;
+		}
+		
+		updateReloadedMilestone(doer, reloadedMilestone, status, dueDate, subject, description, color);
+	}
+	
+	@Override
+	public void updateMilestoneStatus(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status) {
+		ProjMilestone reloadedMilestone = getMilestone(milestone, true);
+		if (reloadedMilestone == null) {
+			return;
+		}
+		
+		updateReloadedMilestone(doer, reloadedMilestone, status, reloadedMilestone.getDueDate(),
+				reloadedMilestone.getSubject(), reloadedMilestone.getDescription(), reloadedMilestone.getColor());
+	}
+	
+	@Override
+	public void moveMilestone(Identity doer, String identifier, Long days) {
+		ProjMilestone reloadedMilestone = getMilestone(identifier, true);
+		if (reloadedMilestone == null) {
+			return;
+		}
+		
+		Date dueDate = move(reloadedMilestone.getDueDate(), days, Long.valueOf(0));
+		
+		updateReloadedMilestone(doer, reloadedMilestone, reloadedMilestone.getStatus(), dueDate,
+				reloadedMilestone.getSubject(), reloadedMilestone.getDescription(), reloadedMilestone.getColor());
+	}
+	
+	private ProjMilestone updateReloadedMilestone(Identity doer, ProjMilestone reloadedMilestone,
+			ProjMilestoneStatus status, Date dueDate, String subject, String description, String color) {
+		String before = ProjectXStream.toXml(reloadedMilestone);
+		
+		boolean contentChanged = false;
+		if (reloadedMilestone.getStatus() != status) {
+			reloadedMilestone.setStatus(status);
+			contentChanged = true;
+		}
+		Date cleanedDueDate = DateUtils.truncateSeconds(dueDate);
+		if (!Objects.equals(reloadedMilestone.getDueDate(), cleanedDueDate)) {
+			reloadedMilestone.setDueDate(cleanedDueDate);
+			contentChanged = true;
+		}
+		String subjectCleaned = StringHelper.containsNonWhitespace(subject)? subject: null;
+		if (!Objects.equals(reloadedMilestone.getSubject(), subjectCleaned)) {
+			reloadedMilestone.setSubject(subjectCleaned);
+			contentChanged = true;
+		}
+		String descriptionCleaned = StringHelper.containsNonWhitespace(description)? description: null;
+		if (!Objects.equals(reloadedMilestone.getDescription(), descriptionCleaned)) {
+			reloadedMilestone.setDescription(descriptionCleaned);
+			contentChanged = true;
+		}
+		String colorCleaned = StringHelper.containsNonWhitespace(color)? color: null;
+		if (!Objects.equals(reloadedMilestone.getColor(), colorCleaned)) {
+			reloadedMilestone.setColor(colorCleaned);
+			contentChanged = true;
+		}
+		
+		if (contentChanged) {
+			reloadedMilestone = milestoneDao.save(reloadedMilestone);
+			updateContentModified(reloadedMilestone.getArtefact(), doer);
+			
+			List<Identity> members = groupDao.getMembers(reloadedMilestone.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+			calendarHelper.createOrUpdateEvent(reloadedMilestone, members);
+			
+			String after = ProjectXStream.toXml(reloadedMilestone);
+			activityDao.create(Action.milestoneContentUpdate, before, after, null, doer, reloadedMilestone.getArtefact());
+		}
+		
+		return reloadedMilestone;
+	}
+	
+	@Override
+	public void deleteMilestoneSoftly(Identity doer, ProjMilestoneRef milestone) {
+		ProjMilestone reloadedMilestone = getMilestone(milestone, true);
+		if (reloadedMilestone == null) {
+			return;
+		}
+		
+		deleteReloadedMilestone(doer, reloadedMilestone);
+	}
+
+	private void deleteReloadedMilestone(Identity doer, ProjMilestone reloadedMilestone) {
+		String before = ProjectXStream.toXml(reloadedMilestone);
+		
+		deleteArtefactSoftly(reloadedMilestone.getArtefact());
+		
+		ProjMilestone deletedMilestone = getMilestone(reloadedMilestone);
+		String after = ProjectXStream.toXml(deletedMilestone);
+		activityDao.create(Action.milestoneStatusDelete, before, after, null, doer, deletedMilestone.getArtefact());
+		
+		List<Identity> members = groupDao.getMembers(deletedMilestone.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+		calendarHelper.deleteEvent(deletedMilestone, members);
+	}
+
+	@Override
+	public void deleteMilestonePermanent(ProjMilestoneRef milestone) {
+		ProjMilestone reloadedMilestone = getMilestone(milestone);
+		if (reloadedMilestone == null) {
+			return;
+		}
+		
+		ProjArtefact artefact = reloadedMilestone.getArtefact();
+		milestoneDao.delete(milestone);
+		deleteArtefactPermanent(artefact);
+	}
+
+	@Override
+	public ProjMilestone getMilestone(ProjMilestoneRef milestone) {
+		return getMilestone(milestone, false);
+	}
+	
+	private ProjMilestone getMilestone(ProjMilestoneRef milestone, boolean active) {
+		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+		searchParams.setMilestones(List.of(milestone));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
+		List<ProjMilestone> milestones = milestoneDao.loadMilestones(searchParams);
+		return milestones != null && !milestones.isEmpty()? milestones.get(0): null;
+	}
+	
+	private ProjMilestone getMilestone(String identifier, boolean active) {
+		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+		searchParams.setIdentifiers(List.of(identifier));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
+		List<ProjMilestone> milestones = milestoneDao.loadMilestones(searchParams);
+		return milestones != null && !milestones.isEmpty()? milestones.get(0): null;
+	}
+	
+	@Override
+	public List<ProjMilestone> getMilestones(ProjMilestoneSearchParams searchParams) {
+		return milestoneDao.loadMilestones(searchParams);
+	}
+	
+	@Override
+	public Kalendar getMilestonesKalendar(List<ProjMilestone> milestones) {
+		Kalendar calendar = new Kalendar(UUID.randomUUID().toString(), "Milestone");
+		milestones.stream()
 				.map(calendarHelper::toEvent)
 				.forEach(event -> calendar.addEvent(event));
 		

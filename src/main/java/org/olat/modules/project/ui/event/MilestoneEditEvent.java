@@ -19,35 +19,29 @@
  */
 package org.olat.modules.project.ui.event;
 
-import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.control.Event;
-import org.olat.modules.project.ProjAppointmentRef;
+import org.olat.modules.project.ProjMilestoneRef;
 
 /**
  * 
- * Initial date: 20 Feb 2023<br>
+ * Initial date: 9 Mar 2023<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DeleteAppointmentEvent extends Event {
+public class MilestoneEditEvent extends Event {
+
+	private static final long serialVersionUID = -9084627730765996514L;
 	
-	private static final long serialVersionUID = 3724273762113043498L;
-	
-	private final ProjAppointmentRef appointment;
-	private final KalendarEvent kalendarEvent;
-	
-	public DeleteAppointmentEvent(ProjAppointmentRef appointment, KalendarEvent kalendarEvent) {
-		super("appointment-delete");
-		this.appointment = appointment;
-		this.kalendarEvent = kalendarEvent;
+	private final ProjMilestoneRef milestone;
+
+	public MilestoneEditEvent(ProjMilestoneRef milestone) {
+		super("milestone-edit");
+		this.milestone = milestone;
 	}
 
-	public ProjAppointmentRef getAppointment() {
-		return appointment;
-	}
-
-	public KalendarEvent getKalendarEvent() {
-		return kalendarEvent;
+	public ProjMilestoneRef getMilestone() {
+		return milestone;
 	}
 
 }

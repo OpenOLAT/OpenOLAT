@@ -17,32 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.project.ui.event;
 
-import java.util.List;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.project.ProjMilestoneRef;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 9 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public class MilestoneDeleteEvent extends Event {
 	
-	public List<ProjFile> getFiles();
+	private static final long serialVersionUID = 3339555237388141704L;
 	
-	public ProjFile getFile(ProjArtefactRef artefact);
+	private final ProjMilestoneRef milestone;
 	
-	public List<ProjNote> getNotes();
+	public MilestoneDeleteEvent(ProjMilestoneRef milestone) {
+		super("milestone-delete");
+		this.milestone = milestone;
+	}
 
-	public ProjNote getNote(ProjArtefactRef artefact);
-	
-	public List<ProjAppointment> getAppointments();
+	public ProjMilestoneRef getMilestone() {
+		return milestone;
+	}
 
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
-
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

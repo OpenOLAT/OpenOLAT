@@ -79,7 +79,10 @@ public interface ProjActivity extends CreateInfo {
 			Action.noteStatusDelete,
 			Action.appointmentCreate,
 			Action.appointmentContentUpdate,
-			Action.appointmentStatusDelete);
+			Action.appointmentStatusDelete,
+			Action.milestoneCreate,
+			Action.milestoneContentUpdate,
+			Action.milestoneStatusDelete);
 	
 	
 	public enum Action {
@@ -124,7 +127,10 @@ public interface ProjActivity extends CreateInfo {
 		appointmentReferenceAdd(ActionTarget.appointment),
 		appointmentReferenceRemove(ActionTarget.appointment),
 		appointmentOccurrenceDelete(ActionTarget.appointment),
-		appointmentStatusDelete(ActionTarget.appointment);
+		appointmentStatusDelete(ActionTarget.appointment),
+		milestoneCreate(ActionTarget.milestone),
+		milestoneContentUpdate(ActionTarget.milestone),
+		milestoneStatusDelete(ActionTarget.milestone);
 		
 		private final ActionTarget target;
 		
@@ -210,7 +216,8 @@ public interface ProjActivity extends CreateInfo {
 		project,
 		file,
 		note,
-		appointment;
+		appointment,
+		milestone;
 		
 		private static final Set<String> NAMES = Arrays.stream(values()).map(ActionTarget::name).collect(Collectors.toSet());
 		

@@ -934,6 +934,9 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 .o_icon_proj_note:before { content: $fa-var-sticky-note-o; }
 .o_icon_proj_appointment:before { content: $fa-var-calendar; }
 .o_icon_proj_recurrence:before { content: $fa-var-refresh; }
+.o_icon_proj_milestone:before { content: $fa-var-calendar; }
+.o_icon_proj_milestone_status_open:before { content: $fa-var-circle-o; }
+.o_icon_proj_milestone_status_achieved:before { content: $fa-var-check-circle; color: $brand-success }
 .o_icon_proj_reference:before { content: $fa-var-link; }
 .o_icon_proj_project:before { content: $fa-var-leaf; }
 .o_icon_proj_project_status_active:before { content: $fa-var-check;}

@@ -56,13 +56,20 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjAppointmentSearchParams;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneRef;
+import org.olat.modules.project.ProjMilestoneSearchParams;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjAppointmentDeleteConfirmationController.Cascade;
-import org.olat.modules.project.ui.event.DeleteAppointmentEvent;
-import org.olat.modules.project.ui.event.EditAppointmentEvent;
+import org.olat.modules.project.ui.event.AppointmentDeleteEvent;
+import org.olat.modules.project.ui.event.AppointmentEditEvent;
+import org.olat.modules.project.ui.event.MilestoneDeleteEvent;
+import org.olat.modules.project.ui.event.MilestoneEditEvent;
+import org.olat.modules.project.ui.event.MilestoneStatusEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,7 +80,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjCalendarAllController extends FormBasicController implements Activateable2 {
 	
-	private FormLink appintmentCreateLink;
+	private FormLink appointmentCreateLink;
+	private FormLink milestoneCreateLink;
 	private FullCalendarElement calendarEl;
 	
 	private CloseableModalController cmc;
@@ -82,12 +90,16 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private ProjAppointmentPreviewController appointmentPreviewCtrl;
 	private ConfirmUpdateController appointmentEditAllCtr;
 	private ConfirmUpdateController appointmentMoveAllCtr;
-	private ProjAppointmentDeleteConfirmationController deleteConfirmationCtrl;
+	private ProjAppointmentDeleteConfirmationController appointmentDeleteConfirmationCtrl;
+	private ProjMilestoneEditController milestoneEditCtrl;
+	private ProjMilestonePreviewController milestonePreviewCtrl;
+	private ProjConfirmationController milestoneDeleteConfirmationCtrl;
 	
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private String appointmentReadWriteKalendarId;
 	private String appointmentReadOnlyKalendarId;
+	private String milestoneKalendarId;
 	
 	@Autowired
 	private ProjectService projectService;
@@ -107,15 +119,20 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		appintmentCreateLink = uifactory.addFormLink("appointment.create", formLayout, Link.BUTTON);
-		appintmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
-		appintmentCreateLink.setVisible(secCallback.canCreateAppointments());
+		appointmentCreateLink = uifactory.addFormLink("appointment.create", formLayout, Link.BUTTON);
+		appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
+		appointmentCreateLink.setVisible(secCallback.canCreateAppointments());
+		
+		milestoneCreateLink = uifactory.addFormLink("milestone.create", formLayout, Link.BUTTON);
+		milestoneCreateLink.setIconLeftCSS("o_icon o_icon_add");
+		milestoneCreateLink.setVisible(secCallback.canCreateMilestones());
 		
 		calendarEl = new FullCalendarElement(ureq, "calendar", List.of(), getTranslator());
 		formLayout.add("calendar", calendarEl);
 	}
 
 	private void loadModel() {
+		// Appointments
 		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
 		appointmentSearchParams.setProject(project);
 		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
@@ -132,7 +149,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 		}
 		
-		Kalendar appointmentReadWriteKalendar = projectService.toKalendar(appointmentReadWrite);
+		Kalendar appointmentReadWriteKalendar = projectService.getAppointmentsKalendar(appointmentReadWrite);
 		appointmentReadWriteKalendarId = appointmentReadWriteKalendar.getCalendarID();
 		KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
 				translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
@@ -140,7 +157,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
 		appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
 		
-		Kalendar appointmentReadOnlyKalendar = projectService.toKalendar(appointmentReadOnly);
+		Kalendar appointmentReadOnlyKalendar = projectService.getAppointmentsKalendar(appointmentReadOnly);
 		appointmentReadOnlyKalendarId = appointmentReadOnlyKalendar.getCalendarID();
 		KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
 				translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
@@ -148,7 +165,24 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
 		appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
 		
-		calendarEl.setCalendars(List.of(appointmentReadWriteWrapper, appointmentReadOnlyWrapper));
+		// Milestones
+		ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
+		milestoneSearchParams.setProject(project);
+		milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+		
+		Kalendar milestoneKalendar = projectService.getMilestonesKalendar(milestones);
+		milestoneKalendarId = milestoneKalendar.getCalendarID();
+		KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
+				translate("milestone.calendar.name"), "project.milestones." + project.getKey());
+		milestoneWrapper.setPrivateEventsVisible(true);
+		milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
+		int milestonesAccess = secCallback.canEditMilestones()
+				? KalendarRenderWrapper.ACCESS_READ_WRITE
+						: KalendarRenderWrapper.ACCESS_READ_ONLY;
+		milestoneWrapper.setAccess(milestonesAccess);
+		
+		calendarEl.setCalendars(List.of(appointmentReadWriteWrapper, appointmentReadOnlyWrapper, milestoneWrapper));
 	}
 	
 	@Override
@@ -176,6 +210,17 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 						return;
 					}
 				}
+			} else if (ProjectBCFactory.TYPE_MILESTONE.equals(type)) {
+				Long key = entry.getOLATResourceable().getResourceableId();
+				KalendarRenderWrapper calendar = calendarEl.getCalendar(milestoneKalendarId);
+				if (calendar != null) {
+					String calendarId = key.toString();
+					Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
+					if (event.isPresent()) {
+						calendarEl.setFocusDate(event.get().getBegin());
+						return;
+					}
+				}
 			}
 		} 
 	}
@@ -191,16 +236,16 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == appointmentPreviewCtrl) {
-			if (event instanceof EditAppointmentEvent aeEvant) {
+			if (event instanceof AppointmentEditEvent aEvent) {
 				calloutCtr.deactivate();
 				cleanUp();
 				
-				doEditAppointment(ureq, aeEvant.getKalendarEvent());
-			} else if (event instanceof DeleteAppointmentEvent daEvent) {
+				doEditAppointment(ureq, aEvent.getKalendarEvent());
+			} else if (event instanceof AppointmentDeleteEvent aEvent) {
 				calloutCtr.deactivate();
 				cleanUp();
 				
-				doConfirmDeleteAppointment(ureq, daEvent.getAppointment(), daEvent.getKalendarEvent());
+				doConfirmDeleteAppointment(ureq, aEvent.getAppointment(), aEvent.getKalendarEvent());
 			} else if (event == Event.DONE_EVENT) {
 				calloutCtr.deactivate();
 				cleanUp();
@@ -224,11 +269,47 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (deleteConfirmationCtrl == source) {
+		} else if (appointmentDeleteConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				Object userObject = deleteConfirmationCtrl.getUserObject();
+				Object userObject = appointmentDeleteConfirmationCtrl.getUserObject();
 				if (userObject instanceof KalendarEvent kalendarEvent)
-				doDeleteAppointment(kalendarEvent, deleteConfirmationCtrl.getCascade());
+				doDeleteAppointment(kalendarEvent, appointmentDeleteConfirmationCtrl.getCascade());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (milestoneEditCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				loadModel();
+			} else if (event == Event.CANCELLED_EVENT && milestoneEditCtrl.isFirstEdit()) {
+				projectService.deleteMilestonePermanent(milestoneEditCtrl.getMilestone());
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == milestonePreviewCtrl) {
+			if (event instanceof MilestoneEditEvent mEvent) {
+				calloutCtr.deactivate();
+				cleanUp();
+				
+				doEditMilestone(ureq, mEvent.getMilestone());
+			} else if (event instanceof MilestoneStatusEvent mEvent) {
+				calloutCtr.deactivate();
+				cleanUp();
+				
+				doAcomplishMilestone(mEvent.getMilestone());
+			} else if (event instanceof MilestoneDeleteEvent eEvent) {
+				calloutCtr.deactivate();
+				cleanUp();
+				
+				doConfirmDeleteMilestone(ureq, eEvent.getMilestone());
+			} else if (event == Event.DONE_EVENT) {
+				calloutCtr.deactivate();
+				cleanUp();
+			}
+		} else if (milestoneDeleteConfirmationCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				Object userObject = milestoneDeleteConfirmationCtrl.getUserObject();
+				if (userObject instanceof ProjMilestoneRef milestone)
+				doDeleteMilestone(milestone);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -242,40 +323,44 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(appointmentDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(appointmentPreviewCtrl);
 		removeAsListenerAndDispose(appointmentEditAllCtr);
 		removeAsListenerAndDispose(appointmentMoveAllCtr);
-		removeAsListenerAndDispose(deleteConfirmationCtrl);
-		removeAsListenerAndDispose(appointmentPreviewCtrl);
 		removeAsListenerAndDispose(appointmentEditCtrl);
+		removeAsListenerAndDispose(milestoneDeleteConfirmationCtrl);
+		removeAsListenerAndDispose(milestonePreviewCtrl);
+		removeAsListenerAndDispose(milestoneEditCtrl);
 		removeAsListenerAndDispose(calloutCtr);
 		removeAsListenerAndDispose(cmc);
+		appointmentDeleteConfirmationCtrl = null;
+		appointmentPreviewCtrl = null;
 		appointmentEditAllCtr = null;
 		appointmentMoveAllCtr = null;
-		deleteConfirmationCtrl = null;
-		appointmentPreviewCtrl = null;
 		appointmentEditCtrl = null;
+		milestoneDeleteConfirmationCtrl = null;
+		milestonePreviewCtrl = null;
+		milestoneEditCtrl = null;
 		calloutCtr = null;
 		cmc = null;
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == appintmentCreateLink) {
+		if (source == appointmentCreateLink) {
 			doCreateAppointment(ureq);
+		} else if (source == milestoneCreateLink) {
+			doCreateMilestone(ureq);
 		} else if (source == calendarEl) {
 			if (event instanceof CalendarGUISelectEvent) {
 				CalendarGUISelectEvent selectEvent = (CalendarGUISelectEvent)event;
 				if (selectEvent.getKalendarEvent() != null) {
-					if (appointmentReadWriteKalendarId.equals(selectEvent.getKalendarRenderWrapper().getKalendar().getCalendarID())) {
-						doOpenAppointmentCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getTargetDomId());
-					}
+					doOpenPreviewCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getTargetDomId());
 				}
 			} else if (event instanceof CalendarGUIMoveEvent) {
 				CalendarGUIMoveEvent moveEvent = (CalendarGUIMoveEvent)event;
-				if (appointmentReadWriteKalendarId.equals(moveEvent.getKalendarRenderWrapper().getKalendar().getCalendarID())) {
-					doMoveAppointment(ureq, moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
+				doMove(ureq, moveEvent.getKalendarEvent(), moveEvent.getDayDelta(),
 							moveEvent.getMinuteDelta(), moveEvent.getAllDay(), true);
-				}
 			} else if (event instanceof CalendarGUIResizeEvent) {
 				CalendarGUIResizeEvent resizeEvent = (CalendarGUIResizeEvent)event;
 				if (appointmentReadWriteKalendarId.equals(resizeEvent.getKalendarRenderWrapper().getKalendar().getCalendarID())) {
@@ -292,6 +377,66 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+	
+	private void doOpenPreviewCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
+		if (kalendarEvent.getCalendar() != null) {
+			if (appointmentReadWriteKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
+				doOpenPreviewAppointmentCallout(ureq, kalendarEvent, targetDomId);
+			} else if (milestoneKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
+				doOpenPreviewMilestoneCallout(ureq, kalendarEvent, targetDomId);
+			}
+		}
+	}
+	
+	private void doOpenPreviewAppointmentCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
+		if (calloutCtr != null && appointmentEditCtrl != null) return;
+		
+		removeAsListenerAndDispose(calloutCtr);
+		removeAsListenerAndDispose(appointmentEditCtrl);
+		
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
+		if (appointmentInfos.isEmpty()) {
+			return;
+		}
+		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
+		
+		appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
+				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), kalendarEvent);
+		listenTo(appointmentPreviewCtrl);
+		
+		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				appointmentPreviewCtrl.getInitialComponent(), targetDomId, null, true, "");
+		listenTo(calloutCtr);
+		calloutCtr.activate();
+	}
+	
+	private void doOpenPreviewMilestoneCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
+		if (calloutCtr != null && milestoneEditCtrl != null) return;
+		
+		removeAsListenerAndDispose(calloutCtr);
+		removeAsListenerAndDispose(milestoneEditCtrl);
+		
+		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
+		if (milestones.isEmpty()) {
+			return;
+		}
+		ProjMilestone milestone = milestones.get(0);
+		
+		milestonePreviewCtrl = new ProjMilestonePreviewController(ureq, getWindowControl(), secCallback,
+				milestone);
+		listenTo(milestonePreviewCtrl);
+		
+		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				milestonePreviewCtrl.getInitialComponent(), targetDomId, null, true, "");
+		listenTo(calloutCtr);
+		calloutCtr.activate();
+	}
 
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentEditCtrl)) return;
@@ -302,6 +447,19 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		String title = translate("appointment.edit");
 		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCreateMilestone(UserRequest ureq) {
+		if (guardModalController(milestoneEditCtrl)) return;
+		
+		ProjMilestone milestone = projectService.createMilestone(getIdentity(), project);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestone, true);
+		listenTo(milestoneEditCtrl);
+		
+		String title = translate("milestone.edit");
+		cmc = new CloseableModalController(getWindowControl(), "close", milestoneEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -344,6 +502,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setIdentifiers(List.of(externalId));
+		searchParams.setStatus(List.of(ProjectStatus.active));
 		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
 		if (appointmentInfos.isEmpty()) {
 			return;
@@ -361,29 +520,15 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		cmc.activate();
 	}
 	
-	private void doOpenAppointmentCallout(UserRequest ureq, KalendarEvent kalendarEvent, String targetDomId) {
-		if(calloutCtr != null && appointmentEditCtrl != null) return;
-		
-		removeAsListenerAndDispose(calloutCtr);
-		removeAsListenerAndDispose(appointmentEditCtrl);
-		
-		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
-		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
-		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
-		if (appointmentInfos.isEmpty()) {
-			return;
+	private void doMove(UserRequest ureq, KalendarEvent kalendarEvent, Long days, Long minutes, Boolean allDay,
+			boolean changeStartDate) {
+		if (kalendarEvent.getCalendar() != null) {
+			if (appointmentReadWriteKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
+				doMoveAppointment(ureq, kalendarEvent, days, minutes, allDay, changeStartDate);
+			} else if (milestoneKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
+				doMoveMilestone(kalendarEvent, days);
+			}
 		}
-		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
-		
-		// Start and end date from the calendar event because of recurring events.
-		appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
-				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), kalendarEvent);
-		listenTo(appointmentPreviewCtrl);
-		
-		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				appointmentPreviewCtrl.getInitialComponent(), targetDomId, null, true, "");
-		listenTo(calloutCtr);
-		calloutCtr.activate();
 	}
 	
 	private void doMoveAppointment(UserRequest ureq, KalendarEvent kalendarEvent, Long days, Long minutes,
@@ -426,21 +571,51 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		loadModel();
 	}
 	
+	private void doEditMilestone(UserRequest ureq, ProjMilestoneRef milestone) {
+		if(guardModalController(milestoneEditCtrl)) return;
+		
+		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+		searchParams.setMilestones(List.of(milestone));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
+		if (milestones.isEmpty()) {
+			return;
+		}
+		
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestones.get(0), false);
+		listenTo(milestoneEditCtrl);
+
+		String title = translate("milestone.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				milestoneEditCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doAcomplishMilestone(ProjMilestoneRef milestone) {
+		projectService.updateMilestoneStatus(getIdentity(), milestone, ProjMilestoneStatus.achieved);
+	}
+	
+	private void doMoveMilestone(KalendarEvent kalendarEvent, Long days) {
+		projectService.moveMilestone(getIdentity(), kalendarEvent.getExternalId(), days);
+		loadModel();
+	}
+	
 	private void doConfirmDeleteAppointment(UserRequest ureq, ProjAppointmentRef appointmentRef, KalendarEvent kalendarEvent) {
-		if (guardModalController(deleteConfirmationCtrl)) return;
+		if (guardModalController(appointmentDeleteConfirmationCtrl)) return;
 		
 		ProjAppointment appointment = projectService.getAppointment(appointmentRef);
 		if (appointment == null || ProjectStatus.deleted == appointment.getArtefact().getStatus()) {
 			return;
 		}
 		
-		String message = translate("appointment.delete.confirmation.message", appointment.getSubject());
+		String message = translate("appointment.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), appointment));
 		boolean recurring = StringHelper.containsNonWhitespace(appointment.getRecurrenceRule());
-		deleteConfirmationCtrl = new ProjAppointmentDeleteConfirmationController(ureq, getWindowControl(), message, recurring);
-		deleteConfirmationCtrl.setUserObject(kalendarEvent);
-		listenTo(deleteConfirmationCtrl);
+		appointmentDeleteConfirmationCtrl = new ProjAppointmentDeleteConfirmationController(ureq, getWindowControl(), message, recurring);
+		appointmentDeleteConfirmationCtrl.setUserObject(kalendarEvent);
+		listenTo(appointmentDeleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), "close", appointmentDeleteConfirmationCtrl.getInitialComponent(),
 				true, translate("appointment.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -462,5 +637,30 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		}
 		loadModel();
 	}
-
+	
+	private void doConfirmDeleteMilestone(UserRequest ureq, ProjMilestoneRef milestoneRef) {
+		if (guardModalController(milestoneDeleteConfirmationCtrl)) return;
+		
+		ProjMilestone milestone = projectService.getMilestone(milestoneRef);
+		if (milestone == null || ProjectStatus.deleted == milestone.getArtefact().getStatus()) {
+			return;
+		}
+		
+		String message = translate("milestone.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
+		milestoneDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"milestone.delete.confirmation.confirm", "milestone.delete.confirmation.button");
+		milestoneDeleteConfirmationCtrl.setUserObject(milestone);
+		listenTo(milestoneDeleteConfirmationCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", milestoneDeleteConfirmationCtrl.getInitialComponent(),
+				true, translate("milestone.delete"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doDeleteMilestone(ProjMilestoneRef milestone) {
+		projectService.deleteMilestoneSoftly(getIdentity(), milestone);
+		loadModel();
+	}
+	
 }

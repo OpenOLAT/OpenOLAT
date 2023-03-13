@@ -70,6 +70,7 @@ import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
@@ -152,7 +153,7 @@ public class ProjActivityLogController extends FormBasicController {
 					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex));
 		}
 
-		dataModel = new ProjActivityLogTableModel(columnsModel, getLocale());
+		dataModel = new ProjActivityLogTableModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(),
 				formLayout);
 		tableEl.setSearchEnabled(true);
@@ -292,6 +293,7 @@ public class ProjActivityLogController extends FormBasicController {
 				case ProjFile.TYPE -> getActivityFilterFileValues();
 				case ProjNote.TYPE -> getActivityFilterNoteValues();
 				case ProjAppointment.TYPE -> getActivityFilterAppointmentValues();
+				case ProjMilestone.TYPE -> getActivityFilterMilestoneValues();
 				default -> new SelectionValues();
 			};
 	}
@@ -305,6 +307,7 @@ public class ProjActivityLogController extends FormBasicController {
 		case file: addActivityFileRows(rows, activity, artefactReferenceItems);
 		case note: addActivityNoteRows(rows, activity, artefactReferenceItems);
 		case appointment: addActivityAppointmentRows(rows, activity, artefactReferenceItems);
+		case milestone: addActivityMilestoneRows(rows, activity);
 		default: //
 		}
 	}
@@ -426,10 +429,9 @@ public class ProjActivityLogController extends FormBasicController {
 	private SelectionValues getActivityFilterAppointmentValues() {
 		SelectionValues filterSV = new SelectionValues();
 		addActivityFilterValue(filterSV, "activity.log.message.create");
-		addActivityFilterValue(filterSV, "activity.log.message.read");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.start.date");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.end.date");
-		addActivityFilterValue(filterSV, "activity.log.message.edit.subject");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.subject.appointment");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.description");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.location");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.color");
@@ -474,15 +476,19 @@ public class ProjActivityLogController extends FormBasicController {
 				Date beforeStartDate = new Date(before.getStartDate().getTime());
 				Date afterStartDate = new Date(after.getStartDate().getTime());
 				if (!Objects.equals(beforeStartDate, afterStartDate)) {
-					addRow(rows, activity, "activity.log.message.edit.start.date", formatter.formatDateAndTime(beforeStartDate), formatter.formatDateAndTime(afterStartDate));
+					addRow(rows, activity, "activity.log.message.edit.start.date",
+							formatter.formatDateAndTime(beforeStartDate),
+							formatter.formatDateAndTime(afterStartDate));
 				}
 				Date beforeEndDate = new Date(before.getEndDate().getTime());
 				Date afterEndDate = new Date(after.getEndDate().getTime());
 				if (!Objects.equals(beforeEndDate, after.getEndDate())) {
-					addRow(rows, activity, "activity.log.message.edit.end.date", formatter.formatDateAndTime(beforeEndDate), formatter.formatDateAndTime(afterEndDate));
+					addRow(rows, activity, "activity.log.message.edit.end.date",
+							formatter.formatDateAndTime(beforeEndDate),
+							formatter.formatDateAndTime(afterEndDate));
 				}
 				if (!Objects.equals(before.getSubject(), after.getSubject())) {
-					addRow(rows, activity, "activity.log.message.edit.subject", before.getSubject(), after.getSubject());
+					addRow(rows, activity, "activity.log.message.edit.subject.appointment", before.getSubject(), after.getSubject());
 				}
 				if (!Objects.equals(before.getDescription(), after.getDescription())) {
 					addRow(rows, activity, "activity.log.message.edit.description", before.getDescription(), after.getDescription());
@@ -494,19 +500,73 @@ public class ProjActivityLogController extends FormBasicController {
 					addRow(rows, activity, "activity.log.message.edit.color", before.getColor(), after.getColor());
 				}
 				if (before.isAllDay() != after.isAllDay()) {
-					addRow(rows, activity, "activity.log.message.edit.all.day", Boolean.valueOf(before.isAllDay()).toString(), Boolean.valueOf(after.isAllDay()).toString());
+					addRow(rows, activity, "activity.log.message.edit.all.day",
+							Boolean.valueOf(before.isAllDay()).toString(),
+							Boolean.valueOf(after.isAllDay()).toString());
 				}
 				
 				String beforeRecurrence = CalendarUtils.getRecurrence(before.getRecurrenceRule());
 				String afterRecurrence = CalendarUtils.getRecurrence(after.getRecurrenceRule());
 				if (!Objects.equals(beforeRecurrence, afterRecurrence)) {
-					addRow(rows, activity, "activity.log.message.edit.recurrence.rule", getTranslatedRecurrenceRule(beforeRecurrence), getTranslatedRecurrenceRule(afterRecurrence));
+					addRow(rows, activity, "activity.log.message.edit.recurrence.rule",
+							getTranslatedRecurrenceRule(beforeRecurrence),
+							getTranslatedRecurrenceRule(afterRecurrence));
 				}
 				
 				Date beforeRecurrenceEnd = calendarManager.getRecurrenceEndDate(before.getRecurrenceRule());
 				Date afterRecurrenceEnd = calendarManager.getRecurrenceEndDate(after.getRecurrenceRule());
 				if (!Objects.equals(beforeRecurrenceEnd, afterRecurrenceEnd)) {
-					addRow(rows, activity, "activity.log.message.edit.recurrence.end", formatter.formatDate(beforeRecurrenceEnd), formatter.formatDate(afterRecurrenceEnd));
+					addRow(rows, activity, "activity.log.message.edit.recurrence.end",
+							formatter.formatDate(beforeRecurrenceEnd),
+							formatter.formatDate(afterRecurrenceEnd));
+				}
+			}
+			break;
+		}
+		default: //
+		}
+	}
+
+	private SelectionValues getActivityFilterMilestoneValues() {
+		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.create");
+		addActivityFilterValue(filterSV, "activity.log.message.delete");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.due.date");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.subject.milestone");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.description");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.status");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.color");
+		return filterSV;
+	}
+	
+	private void addActivityMilestoneRows(List<ProjActivityLogRow> rows, ProjActivity activity) {
+		switch (activity.getAction()) {
+		case milestoneCreate: addRow(rows, activity, "activity.log.message.create"); break;
+		case milestoneStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
+		case milestoneContentUpdate: {
+			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
+				ProjMilestone before = ProjectXStream.fromXml(activity.getBefore(), ProjMilestone.class);
+				ProjMilestone after = ProjectXStream.fromXml(activity.getAfter(), ProjMilestone.class);
+				Date beforeDueDate = new Date(before.getDueDate().getTime());
+				Date afterDueDate = new Date(after.getDueDate().getTime());
+				if (!Objects.equals(beforeDueDate, after.getDueDate())) {
+					addRow(rows, activity, "activity.log.message.edit.due.date",
+							formatter.formatDateAndTime(beforeDueDate),
+							formatter.formatDateAndTime(afterDueDate));
+				}
+				if (!Objects.equals(before.getSubject(), after.getSubject())) {
+					addRow(rows, activity, "activity.log.message.edit.subject.milestone", before.getSubject(), after.getSubject());
+				}
+				if (!Objects.equals(before.getDescription(), after.getDescription())) {
+					addRow(rows, activity, "activity.log.message.edit.description", before.getDescription(), after.getDescription());
+				}
+				if(before.getStatus() != after.getStatus()) {
+					addRow(rows, activity, "activity.log.message.status",
+							ProjectUIFactory.getDisplayName(getTranslator(), before.getStatus()),
+							ProjectUIFactory.getDisplayName(getTranslator(), after.getStatus()));
+				}
+				if (!Objects.equals(before.getColor(), after.getColor())) {
+					addRow(rows, activity, "activity.log.message.edit.color", before.getColor(), after.getColor());
 				}
 			}
 			break;

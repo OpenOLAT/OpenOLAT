@@ -41,8 +41,8 @@ import org.olat.core.util.Util;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.model.ProjFormattedDateRange;
-import org.olat.modules.project.ui.event.DeleteAppointmentEvent;
-import org.olat.modules.project.ui.event.EditAppointmentEvent;
+import org.olat.modules.project.ui.event.AppointmentDeleteEvent;
+import org.olat.modules.project.ui.event.AppointmentEditEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -130,9 +130,9 @@ public class ProjAppointmentPreviewController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == editLink) {
-			fireEvent(ureq, new EditAppointmentEvent(appointment, kalendarEvent));
+			fireEvent(ureq, new AppointmentEditEvent(appointment, kalendarEvent));
 		} else if (source == deleteLink) {
-			fireEvent(ureq, new DeleteAppointmentEvent(appointment, kalendarEvent));
+			fireEvent(ureq, new AppointmentDeleteEvent(appointment, kalendarEvent));
 		}
 
 	}

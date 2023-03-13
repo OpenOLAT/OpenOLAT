@@ -17,32 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.project.ui.event;
 
-import java.util.List;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.project.ProjMilestoneRef;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 9 Mar 2023<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
-	
-	public List<ProjFile> getFiles();
-	
-	public ProjFile getFile(ProjArtefactRef artefact);
-	
-	public List<ProjNote> getNotes();
+public class MilestoneStatusEvent extends Event {
 
-	public ProjNote getNote(ProjArtefactRef artefact);
+	private static final long serialVersionUID = -3303672602528007302L;
 	
-	public List<ProjAppointment> getAppointments();
+	private final ProjMilestoneRef milestone;
 
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
+	public MilestoneStatusEvent(ProjMilestoneRef milestone) {
+		super("milestone-status");
+		this.milestone = milestone;
+	}
 
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
+	public ProjMilestoneRef getMilestone() {
+		return milestone;
+	}
 	
 }

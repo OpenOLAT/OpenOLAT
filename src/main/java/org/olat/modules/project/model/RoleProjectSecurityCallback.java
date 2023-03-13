@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectRole;
@@ -154,6 +155,30 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
 				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	}
+	
+	@Override
+	public boolean canCreateMilestones() {
+		return !projectReadOnly && hasRole(OWN_OBJECTS);
+	}
+
+	@Override
+	public boolean canEditMilestones() {
+		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+	}
+
+	@Override
+	public boolean canEditMilestone(ProjMilestone milestone) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != milestone.getArtefact().getStatus() 
+				&& hasRole(OTHER_OBJECTS);
+	}
+
+	@Override
+	public boolean canDeleteMilestone(ProjMilestone milestone) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != milestone.getArtefact().getStatus() 
+				&& hasRole(OTHER_OBJECTS);
 	}
 
 	private boolean hasRole(Collection<ProjectRole> targetRoles) {

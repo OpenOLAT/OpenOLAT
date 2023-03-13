@@ -1,0 +1,33 @@
+<div class="o_proj_milestone_preview">
+	<h3>
+		#if($achieved)
+			<i class="o_icon o_icon_proj_milestone_status_achieved"> </i>
+		#end
+		$r.escapeHtml($subject)
+	</h3>
+	
+	<div class="o_proj_milestone_date">
+		<i class="o_icon o_icon-fw o_icon_calendar"> </i>
+		$date
+	</div>
+	#if($r.isNotEmpty($description))
+		<div class="o_proj_milestone_description o_block_small_top">
+			$r.xssScan($description)
+		</div>
+	#end
+	#if($r.available("milestone.mark.done"))
+		<div class="o_button_group o_button_group_left o_proj_milestone_mark_done">
+			$r.render("milestone.mark.done")
+		</div>
+	#end
+	#if($r.available("edit") || $r.available("delete"))
+		<div class="o_button_group o_button_group_left">
+			#if($r.available("edit"))
+				$r.render("edit")
+			#end
+			#if($r.available("delete"))
+				$r.render("delete")
+			#end
+		</div>
+	#end
+</div>

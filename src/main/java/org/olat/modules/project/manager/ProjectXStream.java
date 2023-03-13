@@ -27,10 +27,12 @@ import java.util.List;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjAppointmentImpl;
 import org.olat.modules.project.model.ProjArtefactImpl;
 import org.olat.modules.project.model.ProjFileImpl;
+import org.olat.modules.project.model.ProjMilestoneImpl;
 import org.olat.modules.project.model.ProjNoteImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
 
@@ -55,6 +57,8 @@ public class ProjectXStream {
 				ProjFileImpl.class,
 				ProjNoteImpl.class,
 				ProjAppointmentImpl.class,
+				ProjMilestoneImpl.class,
+				ProjMilestoneStatus.class,
 				IdentityImpl.class,
 				VFSMetadataImpl.class
 		};
@@ -69,6 +73,7 @@ public class ProjectXStream {
 		xstream.alias("File", ProjFileImpl.class);
 		xstream.alias("Note", ProjNoteImpl.class);
 		xstream.alias("Appointment", ProjAppointmentImpl.class);
+		xstream.alias("Milestone", ProjMilestoneImpl.class);
 		
 		xstream.alias("Identity", IdentityImpl.class);
 		xstream.omitField(IdentityImpl.class, "version");

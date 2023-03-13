@@ -87,6 +87,19 @@ create table o_proj_appointment (
    fk_artefact bigint not null,
    primary key (id)
 );
+create table o_proj_milestone (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_identifier varchar(64) not null,
+   p_status varchar(32),
+   p_due_date datetime,
+   p_subject varchar(256),
+   p_description longtext,
+   p_color varchar(50),
+   fk_artefact bigint not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -111,6 +124,7 @@ alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
 alter table o_proj_file ENGINE = InnoDB;
 alter table o_proj_note ENGINE = InnoDB;
 alter table o_proj_appointment ENGINE = InnoDB;
+alter table o_proj_milestone ENGINE = InnoDB;
 alter table o_proj_activity ENGINE = InnoDB;
 
 alter table o_proj_project add constraint project_creator_idx foreign key (fk_creator) references o_bs_identity(id);
@@ -134,6 +148,8 @@ alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadat
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
+alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity (id);
 alter table o_proj_activity add constraint activity_project_idx foreign key (fk_project) references o_proj_project (id);

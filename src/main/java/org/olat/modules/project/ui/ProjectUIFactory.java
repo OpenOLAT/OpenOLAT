@@ -39,6 +39,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectStatus;
@@ -54,6 +56,7 @@ import org.olat.user.UserManager;
 public class ProjectUIFactory {
 	
 	public static final String COLOR_APPOINTMENT = KalendarRenderWrapper.CALENDAR_COLOR_BLUE;
+	public static final String COLOR_MILESTONE = KalendarRenderWrapper.CALENDAR_COLOR_ORANGE;
 	
 	public static String getStatusIconCss(ProjectStatus status) {
 		if (status != null) {
@@ -101,6 +104,12 @@ public class ProjectUIFactory {
 	public static String getDisplayName(Translator translator, ProjAppointment appointment) {
 		return StringHelper.containsNonWhitespace(appointment.getSubject())
 				? appointment.getSubject()
+				: getNoTitle(translator);
+	}
+	
+	public static String getDisplayName(Translator translator, ProjMilestone milestone) {
+		return StringHelper.containsNonWhitespace(milestone.getSubject())
+				? milestone.getSubject()
 				: getNoTitle(translator);
 	}
 	
@@ -163,6 +172,22 @@ public class ProjectUIFactory {
 		
 		return membersEl;
 	}
+	
+	public static String getDisplayName(Translator translator, ProjMilestoneStatus status) {
+		return switch (status) {
+		case open -> translator.translate("milestone.status.open");
+		case achieved -> translator.translate("milestone.status.achieved");
+		default -> null;
+		};
+	}
+	
+	public static String getMilestoneStatusIconCss(ProjMilestoneStatus status) {
+		return switch (status) {
+		case open -> "o_icon_proj_milestone_status_open";
+		case achieved -> "o_icon_proj_milestone_status_achieved";
+		default -> null;
+		};
+	}
 
 	public static String getActionIconCss(Action action) {
 		switch (action.getTarget()) {
@@ -170,6 +195,7 @@ public class ProjectUIFactory {
 		case file: return "o_icon_proj_file";
 		case note: return "o_icon_proj_note";
 		case appointment: return "o_icon_proj_appointment";
+		case milestone: return "o_icon_proj_milestone";
 		default: return null;
 		}
 	}
