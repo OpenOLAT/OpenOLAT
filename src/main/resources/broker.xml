@@ -11,7 +11,7 @@
 		<security-enabled>false</security-enabled>
 		<persistence-enabled>false</persistence-enabled>
 		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
-		<graceful-shutdown-timeout>0</graceful-shutdown-timeout>
+		<graceful-shutdown-timeout>10</graceful-shutdown-timeout>
 		<message-expiry-scan-period>-1</message-expiry-scan-period>
 		
 		<acceptors>
