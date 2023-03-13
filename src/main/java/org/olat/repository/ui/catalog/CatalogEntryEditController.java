@@ -205,7 +205,7 @@ public class CatalogEntryEditController extends FormBasicController {
 		
 		styleEl.clearError();
 		if(!styleEl.isOneSelected()) {
-			styleEl.setErrorKey("form.legende.mandatory", null);
+			styleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -216,11 +216,11 @@ public class CatalogEntryEditController extends FormBasicController {
 		textElement.clearError();
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			if(textElement.getValue().length() > lenght) {
-				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght)});
+				textElement.setErrorKey("input.toolong", String.valueOf(lenght));
 				return false;
 			}
 		} else {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			return false;
 		}
 		
