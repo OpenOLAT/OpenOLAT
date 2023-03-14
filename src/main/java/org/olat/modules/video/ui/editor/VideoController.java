@@ -69,12 +69,12 @@ public class VideoController extends BasicController {
 		videoDisplayController = new VideoDisplayController(ureq, wControl, repositoryEntry, null,
 				null, displayOptions);
 		listenTo(videoDisplayController);
+		videoElementId = videoDisplayController.getVideoElementId();
 
-		commentLayerController = new CommentLayerController(ureq, wControl, repositoryEntry);
+		commentLayerController = new CommentLayerController(ureq, wControl, repositoryEntry, videoElementId);
 		listenTo(commentLayerController);
 		videoDisplayController.addLayer(commentLayerController);
 
-		videoElementId = videoDisplayController.getVideoElementId();
 		durationInSeconds = VideoHelper.durationInSeconds(repositoryEntry, videoDisplayController);
 		videoDisplayController.setTimeUpdateListener(true);
 		mainVC.put("video", videoDisplayController.getInitialComponent());

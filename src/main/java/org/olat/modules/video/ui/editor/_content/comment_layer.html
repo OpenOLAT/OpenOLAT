@@ -47,4 +47,18 @@
 $r.mathJax("o_video_comment_box")
 #end
 
+<script>
+	jQuery(function() {
+		const playerId = '#o_so_vid${videoElementId}';
+		const player = jQuery(playerId).data('player');
+
+		const playListener = () => {
+			player.media.removeEventListener(playListener);
+			jQuery('.o_video_comment_container').hide();
+		};
+
+		player.media.addEventListener('play', playListener);
+	});
+</script>
+
 #end

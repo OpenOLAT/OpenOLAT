@@ -50,6 +50,7 @@ public class VideoDisplayOptions {
 	private boolean responseAtEnd;
 	private boolean progressFullWidth;
 	private boolean startFullScreen;
+	private boolean showOverlayComments;
 	
 	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean useContainerForCommentsAndRatings, boolean showTitle, boolean showDescription,
 			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
@@ -285,5 +286,13 @@ public class VideoDisplayOptions {
 
 	public void setStartFullScreen(boolean startFullScreen) {
 		this.startFullScreen = startFullScreen;
+	}
+
+	public boolean isShowOverlayComments() {
+		return showOverlayComments;
+	}
+
+	public void setShowOverlayComments(boolean showOverlayComments) {
+		this.showOverlayComments = showOverlayComments;
 	}
 }
