@@ -51,6 +51,9 @@ import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
+import org.olat.modules.video.ui.component.ContinueCommand;
+import org.olat.modules.video.ui.component.PauseCommand;
+import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -83,6 +86,7 @@ public class VideoRunController extends BasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	private CommentLayerController commentLayerController;
 
 	public VideoRunController(ModuleConfiguration config, WindowControl wControl, UserRequest ureq,
 			UserCourseEnvironment userCourseEnv, VideoCourseNode videoNode) {
@@ -117,11 +121,37 @@ public class VideoRunController extends BasicController {
 					doUpdateAssessmentStatus(ureq, videoEvent.getProgress(), true);
 				} else if (videoEvent.getCommand().equals(VideoEvent.PROGRESS)) {
 					doUpdateAssessmentStatus(ureq, videoEvent.getProgress(), false);
+				} else if (videoEvent.getCommand().equals(VideoEvent.PLAY)) {
+					if (commentLayerController != null) {
+						commentLayerController.hideComment();
+					}
 				}
+			} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
+				if (commentLayerController != null) {
+					commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
+					if (commentLayerController.isCommentVisible()) {
+						doPause();
+					}
+				}
+			}
+		} else if (source == commentLayerController) {
+			if (event == Event.DONE_EVENT) {
+				commentLayerController.hideComment();
+				doContinue();
 			}
 		}
 	}
-	
+
+	private void doContinue() {
+		ContinueCommand cmd = new ContinueCommand(videoDispCtr.getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+	}
+
+	private void doPause() {
+		PauseCommand cmd = new PauseCommand(videoDispCtr.getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+	}
+
 	private void doUpdateAssessmentStatus(UserRequest ureq, double progress, boolean forceSave) {
 		if (!userCourseEnv.isCourseReadOnly() && userCourseEnv.isParticipant()) {
 			log.debug("Update assessment entry: ident={}, progress={}, forceSave={}",
@@ -225,7 +255,16 @@ public class VideoRunController extends BasicController {
 			videoDispCtr.addLayer(segmentsCtrl);
 		}
 		listenTo(videoDispCtr);
-		
+
+		if (displayOptions.isShowOverlayComments()) {
+			commentLayerController = new CommentLayerController(ureq, getWindowControl(), videoEntry,
+					videoDispCtr.getVideoElementId());
+			commentLayerController.loadComments();
+			listenTo(commentLayerController);
+			videoDispCtr.addLayer(commentLayerController);
+			videoDispCtr.addMarkers(commentLayerController.getCommentsAsMarkers());
+		}
+
 		myContent.put("videoDisplay", videoDispCtr.getInitialComponent());
 		main.setContent(myContent);
 		

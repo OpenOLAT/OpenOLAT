@@ -211,14 +211,9 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		return busInfos.getListenerCountFor(ores);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.util.event.AbstractOLATSystemBus#fireEventToListenersOf(org.olat.core.util.event.MultiUserEvent,
-	 *      org.olat.core.id.OLATResourceable)
-	 */
 	@Override
 	public void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores) {
-		fireEventToListenersOf(event, ores, true);
+		fireEventToListenersOf(event, OresHelper.clone(ores), true);
 	}
 	
 	private void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores, boolean strict) {

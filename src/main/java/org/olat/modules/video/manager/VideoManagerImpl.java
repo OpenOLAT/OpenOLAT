@@ -61,6 +61,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.commons.services.video.JCodecHelper;
 import org.olat.core.commons.services.video.MovieService;
@@ -1275,8 +1276,11 @@ public class VideoManagerImpl implements VideoManager {
 						.collect(Collectors.toSet());
 		Set<String> referencedFileNames = comments.getComments().stream().map(VideoComment::getFileName)
 				.filter(Objects::nonNull).collect(Collectors.toSet());
+		Set<String> referencedMasterFileNames = comments.getComments().stream().map(VideoComment::getFileName)
+				.filter(Objects::nonNull).map(fn -> VFSTranscodingService.masterFilePrefix + fn)
+				.collect(Collectors.toSet());
 		for (String foundFileName : foundFileNames) {
-			if (!referencedFileNames.contains(foundFileName)) {
+			if (!referencedFileNames.contains(foundFileName) && !referencedMasterFileNames.contains(foundFileName)) {
 				VFSItem itemToDelete = commentsMediaContainer.resolve(foundFileName);
 				if (itemToDelete != null && itemToDelete.exists()) {
 					itemToDelete.delete();

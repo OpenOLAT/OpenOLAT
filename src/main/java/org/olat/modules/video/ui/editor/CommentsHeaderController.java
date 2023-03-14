@@ -42,8 +42,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.course.nodes.gta.ui.AVDoneEvent;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.model.VideoCommentImpl;
 import org.olat.repository.RepositoryEntry;
@@ -79,7 +81,9 @@ public class CommentsHeaderController extends FormBasicController {
 	private final long videoDurationInSeconds;
 	private ImportFileController importFileController;
 	private ImportUrlController importUrlController;
-
+	private RecordCommentController recordCommentController;
+	@Autowired
+	private VideoManager videoManager;
 	public CommentsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 									long videoDurationInSeconds) {
 		super(ureq, wControl, "comments_header");
@@ -99,10 +103,12 @@ public class CommentsHeaderController extends FormBasicController {
 		removeAsListenerAndDispose(addCommentController);
 		removeAsListenerAndDispose(importFileController);
 		removeAsListenerAndDispose(importUrlController);
+		removeAsListenerAndDispose(recordCommentController);
 		commandsController = null;
 		addCommentController = null;
 		importFileController = null;
 		importUrlController = null;
+		recordCommentController = null;
 		ccwc = null;
 		cmc = null;
 	}
@@ -281,18 +287,26 @@ public class CommentsHeaderController extends FormBasicController {
 				doAddFileComment(ureq);
 			} else if (AddCommentCalloutController.IMPORT_URL_EVENT == event) {
 				doAddUrlComment(ureq);
+			} else if (AddCommentCalloutController.RECORD_VIDEO_EVENT == event) {
+				doRecordComment(ureq);
 			}
 		} else if (cmc == source) {
 			cleanUp();
 		} else if (importFileController == source) {
 			if (event == Event.DONE_EVENT) {
-				doAddFile(ureq);
+				doAddFile(ureq, importFileController.getFileName());
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (importUrlController == source) {
 			if (event == Event.DONE_EVENT) {
 				doAddUrl(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (recordCommentController == source) {
+			if (event instanceof AVDoneEvent avDoneEvent) {
+				doAddFile(ureq, avDoneEvent.getRecording().getName());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -309,9 +323,9 @@ public class CommentsHeaderController extends FormBasicController {
 		fireEvent(ureq, COMMENT_ADDED_EVENT);
 	}
 
-	private void doAddFile(UserRequest ureq) {
+	private void doAddFile(UserRequest ureq, String fileName) {
 		VideoCommentImpl newComment = createBaseComment();
-		newComment.setFileName(importFileController.getFileName());
+		newComment.setFileName(fileName);
 
 		commentId = newComment.getId();
 		comments.getComments().add(newComment);
@@ -353,6 +367,22 @@ public class CommentsHeaderController extends FormBasicController {
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				importUrlController.getInitialComponent(), true, translate("comment.add.import.url"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doRecordComment(UserRequest ureq) {
+		if (guardModalController(recordCommentController)) {
+			return;
+		}
+
+		recordCommentController = new RecordCommentController(ureq, getWindowControl(),
+				videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource()));
+		listenTo(recordCommentController);
+
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				recordCommentController.getInitialComponent(), true,
+				translate("comment.add.record.video"));
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -69,7 +69,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -3808867902051897291L;
-	private static final int CURRENT_VERSION = 4;
+	private static final int CURRENT_VERSION = 5;
 	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
@@ -117,12 +117,14 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		boolean showAnnotations = config.getBooleanSafe(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
 		boolean showQuestions = config.getBooleanSafe(VideoEditController.CONFIG_KEY_QUESTIONS, true);
 		boolean showSegments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_SEGMENTS, false);
+		boolean showOverlayComments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, courseCommentsRatings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
 		displayOptions.setShowSegments(showSegments);
+		displayOptions.setShowOverlayComments(showOverlayComments);
 		if(displayOptions.isShowSegments()) {
 			// Segments use the full width of the video
 			displayOptions.setProgressFullWidth(true);
@@ -202,6 +204,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_QUESTIONS, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS, false);
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false);
 		} else if (version == 1) {
 			// Set defaults as it was in version 1 for newly added options
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_TITLE, true);
@@ -227,6 +230,9 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_QUESTIONS, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_ANNOTATIONS, true);
 			config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS, false);
+		}
+		if (version < 5) {
+			config.setBooleanEntry(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false);
 		}
 		
 		config.setConfigurationVersion(CURRENT_VERSION);

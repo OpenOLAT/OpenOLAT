@@ -4,15 +4,17 @@
 	
 		<journal-type>NIO</journal-type>
 		<journal-min-files>2</journal-min-files>
-		<journal-pool-files>5</journal-pool-files>
+		<journal-pool-files>25</journal-pool-files>
 		<journal-file-size>25Mb</journal-file-size>
 		
 		<!-- //TODO jee add security -->
 		<security-enabled>false</security-enabled>
-		<persistence-enabled>false</persistence-enabled>
+		<persistence-enabled>true</persistence-enabled>
 		<graceful-shutdown-enabled>true</graceful-shutdown-enabled>
 		<graceful-shutdown-timeout>10</graceful-shutdown-timeout>
 		<message-expiry-scan-period>-1</message-expiry-scan-period>
+		
+		<!-- Directories for paging and others are defined on startup -->
 		
 		<acceptors>
 			<acceptor name="in-vm">vm://0</acceptor>

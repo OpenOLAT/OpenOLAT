@@ -50,9 +50,9 @@
 	</bean>
 	
 	<bean id="searchSpringExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-		<property name="corePoolSize" value="2" />
+		<property name="corePoolSize" value="1" />
 		<property name="maxPoolSize" value="3" />
-		<property name="queueCapacity" value="100" />
+		<property name="queueCapacity" value="500" />
 	</bean>
 
 	<bean id="org.olat.search.service.disabled" class="org.olat.search.service.SearchServiceDisabled"

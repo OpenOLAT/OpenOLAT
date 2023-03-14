@@ -97,6 +97,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_KEY_QUESTIONS = "questions";
 	public static final String CONFIG_KEY_ANNOTATIONS = "annotations";
 	public static final String CONFIG_KEY_SEGMENTS = "segments";
+	public static final String CONFIG_KEY_OVERLAY_COMMENTS = "overlayComments";
 	
 	public static final String CONFIG_KEY_DESCRIPTION_CUSTOMTEXT = "descriptionText";
 
@@ -379,6 +380,8 @@ class VideoOptionsForm extends FormBasicController {
 				selectedElements.contains(VideoEditController.CONFIG_KEY_QUESTIONS));
 		config.setBooleanEntry(VideoEditController.CONFIG_KEY_SEGMENTS,
 				selectedElements.contains(VideoEditController.CONFIG_KEY_SEGMENTS));
+		config.setBooleanEntry(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS,
+				selectedElements.contains(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS));
 
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
@@ -398,11 +401,13 @@ class VideoOptionsForm extends FormBasicController {
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_SEGMENTS, translate("video.config.elements.segments")));
+		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, translate("video.config.elements.comments")));
 		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
 				elementsValues.keys(), elementsValues.values(), 1);
 		videoElements.select(VideoEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_ANNOTATIONS, true));
 		videoElements.select(VideoEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_QUESTIONS, true));
 		videoElements.select(VideoEditController.CONFIG_KEY_SEGMENTS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_SEGMENTS, false));
+		videoElements.select(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false));
 	}
 	
 	private void initOptionsForm(FormItemContainer formLayout) {

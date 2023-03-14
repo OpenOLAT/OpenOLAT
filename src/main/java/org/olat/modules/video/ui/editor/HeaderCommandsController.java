@@ -35,12 +35,26 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class HeaderCommandsController extends BasicController {
 	public static final Event DELETE_EVENT = new Event("header.commands.delete");
+	public static final Event IMPORT_EVENT = new Event("header.commands.import");
+	private Link importLink;
 	private final Link deleteLink;
 
 	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl) {
+		this(ureq, wControl, false);
+	}
+
+	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("header_commands");
+
+		if (withImport) {
+			importLink = LinkFactory.createLink("form.common.import", "import", getTranslator(), mainVC, this,
+					Link.LINK);
+			importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+			mainVC.put("import", importLink);
+		}
+
 		deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
 				Link.LINK);
 		deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
@@ -54,6 +68,8 @@ public class HeaderCommandsController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (deleteLink == source) {
 			fireEvent(ureq, DELETE_EVENT);
+		} else if (importLink == source) {
+			fireEvent(ureq, IMPORT_EVENT);
 		}
 	}
 }

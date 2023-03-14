@@ -57,7 +57,7 @@ public class AddCommentCalloutController extends BasicController {
 
 		recordVideoLink = LinkFactory.createLink("comment.add.record.video", "record", getTranslator(), mainVC, this, Link.LINK);
 		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
-		//mainVC.put("record", recordVideoLink);
+		mainVC.put("record", recordVideoLink);
 
 		importFileLink = LinkFactory.createLink("comment.add.import.file", "importFile", getTranslator(), mainVC, this, Link.LINK);
 		importFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");

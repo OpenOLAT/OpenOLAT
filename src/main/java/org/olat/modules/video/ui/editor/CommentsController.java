@@ -71,7 +71,8 @@ public class CommentsController extends BasicController {
 		listenTo(commentsHeaderController);
 		mainVC.put("header", commentsHeaderController.getInitialComponent());
 
-		commentController = new CommentController(ureq, wControl, comment, comments, videoDurationInSeconds);
+		commentController = new CommentController(ureq, wControl, repositoryEntry, comment, comments,
+				videoDurationInSeconds);
 		listenTo(commentController);
 		if (comment != null) {
 			mainVC.put("comment", commentController.getInitialComponent());

@@ -73,6 +73,7 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	public static final String CONFIG_KEY_QUESTIONS = "questions";
 	public static final String CONFIG_KEY_ANNOTATIONS = "annotations";
 	public static final String CONFIG_KEY_SEGMENTS = "segments";
+	public static final String CONFIG_KEY_OVERLAY_COMMENTS = "overlayComments";
 	
 	public static final String CONFIG_KEY_CATEGORIES = "segmentCategories";
 	public static final String CONFIG_KEY_SORT_CATEGORIES = "sortCategories";

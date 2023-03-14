@@ -19,8 +19,11 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.util.List;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -34,10 +37,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserAvatarMapper;
@@ -65,7 +72,8 @@ public class CommentLayerController extends BasicController {
 	private DisplayPortraitManager portraitManager;
 
 
-	public CommentLayerController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
+	public CommentLayerController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
+								  String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 
@@ -76,6 +84,7 @@ public class CommentLayerController extends BasicController {
 		mainVC.put("close", closeLink);
 
 		mainVC.contextPut("showComment", false);
+		mainVC.contextPut("videoElementId", videoElementId);
 
 		putInitialPanel(mainVC);
 
@@ -94,6 +103,15 @@ public class CommentLayerController extends BasicController {
 
 	public void loadComments() {
 		comments = videoManager.loadComments(repositoryEntry.getOlatResource());
+	}
+
+	public List<VideoDisplayController.Marker> getCommentsAsMarkers() {
+		return comments.getComments().stream().map(this::commentToMarker).toList();
+	}
+
+	private VideoDisplayController.Marker commentToMarker(VideoComment videoComment) {
+		return new VideoDisplayController.Marker(videoComment.getId(), videoComment.getColor(),
+				videoComment.getStart().getTime() / 1000, "start", true, videoComment);
 	}
 
 	public void setComment(UserRequest ureq, String commentId) {
@@ -126,15 +144,25 @@ public class CommentLayerController extends BasicController {
 			mainVC.remove("video");
 			if (StringHelper.containsNonWhitespace(c.getFileName())) {
 				VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
-				VFSLeaf vfsVideo = (VFSLeaf) masterContainer.resolve(c.getFileName());
-				if (vfsVideo != null) {
+				VFSItem item = masterContainer.resolve(c.getFileName());
+				if (item instanceof VFSLeaf vfsLeaf) {
+					boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+							item.getMetaInfo().isInTranscoding();
+					if (inTranscoding) {
+						item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + c.getFileName());
+						if (item instanceof VFSLeaf) {
+							vfsLeaf = (VFSLeaf) item;
+						}
+					}
 					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-							getWindowControl(), vfsVideo, null, true, false);
+							getWindowControl(), vfsLeaf, null, true, false);
+					listenTo(videoAudioPlayerController);
 					mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 				}
 			} else if (StringHelper.containsNonWhitespace(c.getUrl())) {
 				VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
 						getWindowControl(), null, c.getUrl(), true, false);
+				listenTo(videoAudioPlayerController);
 				mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 			}
 		});
@@ -142,5 +170,12 @@ public class CommentLayerController extends BasicController {
 
 	public void hideComment() {
 		mainVC.contextPut("showComment", false);
+	}
+
+	public boolean isCommentVisible() {
+		if (mainVC.contextGet("showComment") instanceof Boolean showComment) {
+			return showComment;
+		}
+		return false;
 	}
 }

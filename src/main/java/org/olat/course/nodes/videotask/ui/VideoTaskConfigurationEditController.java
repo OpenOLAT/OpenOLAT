@@ -48,6 +48,7 @@ import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.repository.RepositoryEntry;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -114,6 +115,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 	private void initFeatures(FormItemContainer formLayout) {
 		SelectionValues elementsValues = new SelectionValues();
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_SEGMENTS, translate("video.config.elements.segments")));
+		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, translate("video.config.elements.comments")));
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
@@ -122,6 +124,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
 		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true);
 
 		SelectionValues categoriesValues = getCategoriesSelectionValues();
 		categoriesEl = uifactory.addCheckboxesVertical("video.config.categories", "video.config.categories", formLayout,
@@ -365,6 +368,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, selectedElements.contains(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS));
 		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_QUESTIONS, selectedElements.contains(VideoTaskEditController.CONFIG_KEY_QUESTIONS));
 		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
+		config.setBooleanEntry(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, selectedElements.contains(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS));
 
 		if(enableAttemptsEl.isOneSelected() && ATTEMPTS_ENABLED.equals(enableAttemptsEl.getSelectedKey())) {
 			int attempts = Integer.parseInt(attemptsEl.getValue());

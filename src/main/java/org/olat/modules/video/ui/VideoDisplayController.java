@@ -19,6 +19,7 @@
  */
 package org.olat.modules.video.ui;
 
+import java.io.Serial;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,6 +107,7 @@ public class VideoDisplayController extends BasicController {
 
 	private static final String GUIPREF_KEY_PREFERRED_RESOLUTION = "preferredResolution";
 	private static final int EXPIRATION_TIME = 60 * 60;// one hour
+	private static final int MAX_NB_LAYERS = 3;
 	
 	private VideoAssessmentItemController questionCtrl;
 	private UserCommentsAndRatingsController commentsAndRatingCtr;
@@ -117,7 +119,7 @@ public class VideoDisplayController extends BasicController {
 	private final VelocityContainer markerVC;
 	private final Panel markerPanel = new Panel("markerpanes");
 	private final Panel segmentsPanel = new Panel("segmentsPanel");
-	private final Panel layersPanel = new Panel("layersPanel");
+	private final List<Panel> layerPanels;
 	
 	// User preferred resolution, stored in GUI prefs
 	private Integer userPreferredResolution;
@@ -163,9 +165,16 @@ public class VideoDisplayController extends BasicController {
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
 		mainVC.put("markers", markerPanel);
-		// Layer is per default invisible
-		layersPanel.setVisible(false);
-		mainVC.put("layers", layersPanel);
+		// Layers are per default invisible
+		layerPanels = new ArrayList<>();
+		for (int layerId = 1; layerId <= MAX_NB_LAYERS; layerId++) {
+			String layerPanelName = "layerPanel_" + layerId;
+			Panel panel = new Panel(layerPanelName);
+			panel.setVisible(false);
+			layerPanels.add(panel);
+			mainVC.put(layerPanelName, panel);
+		}
+		mainVC.contextPut("layerPanelNames", layerPanels.stream().map(Component::getComponentName).toList());
 		markerVC = createVelocityContainer("video_markers");
 		markerVC.getContext().put("videoElementId", getVideoElementId());
 		
@@ -543,6 +552,16 @@ public class VideoDisplayController extends BasicController {
 		return vcMarkers;
 	}
 
+	public void addMarkers(List<Marker> markers) {
+		for (Marker marker : markers) {
+			if (!this.markers.contains(marker)) {
+				this.markers.add(marker);
+			}
+		}
+		Collections.sort(this.markers);
+		mainVC.getContext().put("markers", markers); // make it without dirty=true
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == mainVC){
@@ -642,6 +661,7 @@ public class VideoDisplayController extends BasicController {
 			case "marker":
 				String markerId = ureq.getParameter("markerId");
 				loadMarker(ureq, currentTime, markerId);
+				fireEvent(ureq, new MarkerReachedEvent(markerId));
 				break;
 			default: // do nothing
 		}
@@ -795,9 +815,11 @@ public class VideoDisplayController extends BasicController {
 	}
 	
 	public void addLayer(Controller controller) {
-		listenTo(controller);
-		layersPanel.setContent(controller.getInitialComponent());
-		layersPanel.setVisible(true);
+		layerPanels.stream().filter(p -> !p.isVisible()).findFirst().ifPresent(p -> {
+			listenTo(controller);
+			p.setContent(controller.getInitialComponent());
+			p.setVisible(true);
+		});
 	}
 
 	public void setSegments(UserRequest ureq) {
@@ -1059,6 +1081,24 @@ public class VideoDisplayController extends BasicController {
 				return id != null && id.equals(m.id);
 			}
 			return false;
+		}
+	}
+
+	public class MarkerReachedEvent extends Event {
+		@Serial
+		private static final long serialVersionUID = 45609277472657314L;
+
+		public static final String MARKER_REACHED_EVENT = "marker-reached";
+
+		private final String markerId;
+
+		public MarkerReachedEvent(String markerId) {
+			super(MARKER_REACHED_EVENT);
+			this.markerId = markerId;
+		}
+
+		public String getMarkerId() {
+			return markerId;
 		}
 	}
 }

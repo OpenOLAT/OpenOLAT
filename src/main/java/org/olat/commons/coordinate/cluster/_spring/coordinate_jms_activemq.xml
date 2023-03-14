@@ -5,10 +5,10 @@
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
   
-	<bean id="EmbeddedActiveMQ" class="org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ" init-method="start" destroy-method="stop">
-		<!--  
-		<property name="SecurityManager" ref="securityManager"/>
-		-->
+	<bean id="EmbeddedActiveMQ" class="org.olat.commons.coordinate.cluster.jms.OpenOlatEmbeddedActiveMQ" init-method="start" destroy-method="stop">
+		<property name="jmsDir" value="${jms.dir}"/>
+		<property name="persistenceEnabled" value="${jms.persistence.enabled}"/>
+		<property name="configResourcePath" value="broker-oo.xml"/>
 	</bean>
 
 	<bean id="sysbus.topic" class="org.apache.activemq.artemis.jms.client.ActiveMQTopic">

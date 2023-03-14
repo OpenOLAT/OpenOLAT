@@ -204,12 +204,14 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		boolean title = config.getBooleanSafe(VideoEditController.CONFIG_KEY_TITLE);
 		boolean showAnnotations = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, false);
 		boolean showQuestions = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false);
+		boolean showOverlayComments = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true);
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(false, false, false, false,
 				title, false, false, null, false, readOnly, forwardSeekingRestrictred);
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
 		displayOptions.setShowSegments(true);
+		displayOptions.setShowOverlayComments(showOverlayComments);
 		displayOptions.setShowDescription(false);
 		displayOptions.setResponseAtEnd(true);
 		displayOptions.setProgressFullWidth(true);
