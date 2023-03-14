@@ -19,10 +19,16 @@
  */
 package org.olat.commons.coordinate.cluster.jms;
 
+import java.util.concurrent.TimeUnit;
+
+import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.core.config.FileDeploymentManager;
 import org.apache.activemq.artemis.core.config.impl.FileConfiguration;
 import org.apache.activemq.artemis.core.config.impl.LegacyJMSConfiguration;
+import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnector;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 
 /**
  * The sole purpose of this class is to start the embedded JMS server
@@ -33,6 +39,8 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
  *
  */
 public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
+	
+	private static final Logger log = Tracing.createLoggerFor(OpenOlatEmbeddedActiveMQ.class);
 	
 	private String jmsDir;
 	private boolean persistenceEnabled;
@@ -65,7 +73,6 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 			FileDeploymentManager deploymentManager = new FileDeploymentManager(configResourcePath);
 			FileConfiguration config = new FileConfiguration();
 			
-			
 			LegacyJMSConfiguration legacyJMSConfiguration = new LegacyJMSConfiguration(config);
 			deploymentManager.addDeployable(config).addDeployable(legacyJMSConfiguration);
 			deploymentManager.readConfiguration();
@@ -82,5 +89,17 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 			configuration = config;
 		}
 		super.initStart();
+	}
+
+	@Override
+	public EmbeddedActiveMQ stop() throws Exception {
+		super.stop();
+		try {// Hardcore shutdown for our server administrators
+			InVMConnector.resetThreadPool();
+			ActiveMQClient.clearThreadPools(1, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return this;
 	}
 }

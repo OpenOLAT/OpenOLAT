@@ -180,26 +180,15 @@ public class LTI13EventProcessor implements GenericEventListener, MessageListene
 	}
 	
 	private void sendMessage(IdentityRef identity, LTI13SharedToolService service, String operation) {
-		QueueSender sender;
-		QueueSession session = null;
-		try  {
-			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+		try(QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+				QueueSender sender = session.createSender(getJmsQueue());)  {
 			MapMessage message = session.createMapMessage();
 			message.setLong("identity", identity.getKey().longValue());
 			message.setLong("service", service.getKey().longValue());
 			message.setString("operation", operation);
-			sender = session.createSender(getJmsQueue());
 			sender.send( message );
 		} catch (JMSException e) {
 			log.error("", e);
-		} finally {
-			if(session != null) {
-				try {
-					session.close();
-				} catch (JMSException e) {
-					//last hope
-				}
-			}
 		}
 	}
 	
