@@ -221,7 +221,7 @@ public class CommentController extends FormBasicController {
 		} else {
 			try {
 				long timeInSeconds = timeFormat.parse(timeEl.getValue()).getTime() / 1000;
-				if (timeInSeconds < 0 || timeInSeconds > videoDurationInSeconds) {
+				if (timeInSeconds < 0 || (videoDurationInSeconds > 0 && timeInSeconds > videoDurationInSeconds)) {
 					timeEl.setErrorKey("form.error.timeNotValid");
 					allOk = false;
 				}

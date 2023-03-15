@@ -137,7 +137,7 @@ public class AnnotationController extends FormBasicController {
 		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 
-		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 2,
+		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 10,
 				"00", formLayout);
 		durationEl.setExampleKey("form.annotation.duration.hint", null);
 		durationEl.setMandatory(true);
@@ -327,7 +327,7 @@ public class AnnotationController extends FormBasicController {
 		} else {
 			try {
 				long timeInSeconds = timeFormat.parse(timeEl.getValue()).getTime() / 1000;
-				if (timeInSeconds < 0 || timeInSeconds > videoDurationInSeconds) {
+				if (timeInSeconds < 0 || (videoDurationInSeconds > 0 && timeInSeconds > videoDurationInSeconds)) {
 					timeEl.setErrorKey("form.error.timeNotValid");
 					allOk = false;
 				}

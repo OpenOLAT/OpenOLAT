@@ -136,7 +136,7 @@ public class SegmentController extends FormBasicController {
 		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 
-		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 3,
+		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 10,
 				"", formLayout);
 		durationEl.setExampleKey("form.segment.duration.hint", null);
 		durationEl.setMandatory(true);
@@ -304,7 +304,7 @@ public class SegmentController extends FormBasicController {
 		} else {
 			try {
 				long timeInSeconds = timeFormat.parse(timeEl.getValue()).getTime() / 1000;
-				if (timeInSeconds < 0 || timeInSeconds > videoDurationInSeconds) {
+				if (timeInSeconds < 0 || (videoDurationInSeconds > 0 && timeInSeconds > videoDurationInSeconds)) {
 					timeEl.setErrorKey("form.error.timeNotValid");
 					allOk = false;
 				}

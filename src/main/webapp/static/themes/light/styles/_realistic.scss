@@ -70,6 +70,15 @@
 	}
 }
 
+/* no realtistic buttons for video task */
+.o_videotask_categories {
+	.btn-default {
+		text-shadow: none;
+		background-image: none;
+	}
+}
+
+
 /* Top navbar */
 .o_navbar.o_navbar-default {
   	@include gradient-vertical($start-color: lighten($navbar-default-bg, 10%), $end-color: $navbar-default-bg);

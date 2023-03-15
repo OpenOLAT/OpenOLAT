@@ -166,7 +166,7 @@ public class QuestionController extends FormBasicController {
 		}
 
 		startEl.setValue(timeFormat.format(question.getBegin()));
-		if (question.getTimeLimit() == -1) {
+		if (question.getTimeLimit() <= 0) {
 			timeLimitEl.setValue("");
 		} else {
 			timeLimitEl.setValue(Long.toString(question.getTimeLimit()));
@@ -229,7 +229,7 @@ public class QuestionController extends FormBasicController {
 		} else {
 			try {
 				long timeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
-				if (timeInSeconds < 0 || timeInSeconds > videoDurationInSeconds) {
+				if (timeInSeconds < 0 || (videoDurationInSeconds > 0 && timeInSeconds > videoDurationInSeconds)) {
 					startEl.setErrorKey("form.error.timeNotValid");
 					allOk = false;
 				}

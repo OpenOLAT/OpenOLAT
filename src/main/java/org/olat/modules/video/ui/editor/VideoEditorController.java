@@ -73,7 +73,8 @@ public class VideoEditorController extends BasicController {
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
 
-		masterController = new MasterController(ureq, wControl, repositoryEntry, List.of(), videoElementId);
+		masterController = new MasterController(ureq, wControl, repositoryEntry, List.of(), videoElementId,
+				videoController.getDurationInSeconds());
 		listenTo(masterController);
 		mainVC.put("master", masterController.getInitialComponent());
 
@@ -103,6 +104,7 @@ public class VideoEditorController extends BasicController {
 			if (event instanceof VideoEvent videoEvent) {
 				detailsController.setCurrentTimeCode(videoEvent.getTimeCode());
 				masterController.setCurrentTimeCode(videoEvent.getTimeCode());
+				masterController.updateVideoDuration(videoEvent.getDuration());
 			} else if (event instanceof MarkerResizedEvent markerResizedEvent) {
 				detailsController.setAnnotationSize(markerResizedEvent.getMarkerId(), markerResizedEvent.getWidth(),
 						markerResizedEvent.getHeight());

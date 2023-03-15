@@ -559,7 +559,7 @@ public class VideoDisplayController extends BasicController {
 			}
 		}
 		Collections.sort(this.markers);
-		mainVC.getContext().put("markers", markers); // make it without dirty=true
+		mainVC.getContext().put("markers", this.markers); // make it without dirty=true
 	}
 
 	@Override

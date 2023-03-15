@@ -399,9 +399,9 @@ class VideoOptionsForm extends FormBasicController {
 	private void initElementsForm(FormItemContainer formLayout) {
 		SelectionValues elementsValues = new SelectionValues();
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
-		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_SEGMENTS, translate("video.config.elements.segments")));
 		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, translate("video.config.elements.comments")));
+		elementsValues.add(SelectionValues.entry(VideoEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
 				elementsValues.keys(), elementsValues.values(), 1);
 		videoElements.select(VideoEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoEditController.CONFIG_KEY_ANNOTATIONS, true));

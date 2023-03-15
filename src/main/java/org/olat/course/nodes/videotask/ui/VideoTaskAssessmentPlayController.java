@@ -35,6 +35,7 @@ import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
+import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.editor.MasterController;
 import org.olat.modules.video.ui.editor.TimelineEventType;
 import org.olat.repository.RepositoryEntry;
@@ -88,8 +89,9 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		mainVC.put("video", videoDisplayController.getInitialComponent());
 
 		String videoElementId = videoDisplayController.getVideoElementId();
+		long durationInSeconds = VideoHelper.durationInSeconds(videoEntry, videoDisplayController);
 		timelineCtrl = new MasterController(ureq, getWindowControl(),
-				videoEntry, taskSessions, videoElementId);
+				videoEntry, taskSessions, videoElementId, durationInSeconds);
 		timelineCtrl.setVisibleChannels(List.of(TimelineEventType.CORRECT, TimelineEventType.SEGMENT, TimelineEventType.INCORRECT, TimelineEventType.VIDEO));
 		listenTo(timelineCtrl);
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());
