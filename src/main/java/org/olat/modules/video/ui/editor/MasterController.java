@@ -92,7 +92,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private final VFSContainer thumbnailsContainer;
 	private final VFSLeaf videoFile;
 	private final long videoFrameCount;
-	private final long videoDurationInMillis;
+	private long videoDurationInMillis;
 	private int fps;
 	private final Size movieSize;
 
@@ -116,7 +116,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private final boolean showCategoryFilter;
 
 	public MasterController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							List<VideoTaskSession> sessions, String videoElementId) {
+							List<VideoTaskSession> sessions, String videoElementId, long durationInSeconds) {
 		super(ureq, wControl, "master");
 		flc.contextPut("videoElementId", videoElementId);
 		thumbnailsContainer = videoManager.getThumbnailsContainer(repositoryEntry.getOlatResource());
@@ -131,6 +131,9 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		} else {
 			videoFrameCount = -1;
 			videoDurationInMillis = TimelineModel.parsedExpenditureOfWork(repositoryEntry.getExpenditureOfWork());
+		}
+		if (videoDurationInMillis <= 0) {
+			videoDurationInMillis = durationInSeconds * 1000L;
 		}
 		flc.contextPut("durationInSeconds", Double.toString((double) this.videoDurationInMillis / 1000.0));
 		flc.contextPut("currentTimeInSeconds", "0.0");

@@ -23,7 +23,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.avrecorder.AVConfiguration;
 import org.olat.core.gui.avrecorder.AVCreationController;
 import org.olat.core.gui.avrecorder.AVCreationEvent;
-import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -51,7 +50,6 @@ public class RecordCommentController extends BasicController {
 		this.targetContainer = targetContainer;
 
 		AVConfiguration config = new AVConfiguration();
-		config.setVideoQuality(AVVideoQuality.low);
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);
 
