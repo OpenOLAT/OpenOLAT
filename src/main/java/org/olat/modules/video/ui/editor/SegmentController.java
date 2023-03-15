@@ -136,7 +136,7 @@ public class SegmentController extends FormBasicController {
 		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 
-		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 3,
+		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 10,
 				"", formLayout);
 		durationEl.setExampleKey("form.segment.duration.hint", null);
 		durationEl.setMandatory(true);
