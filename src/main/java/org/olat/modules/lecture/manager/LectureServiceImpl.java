@@ -1297,6 +1297,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			Date endDate = cal.getTime();
 			List<LectureBlockImpl> blocks = lectureBlockDao.loadOpenBlocksBefore(endDate);
 			for(LectureBlockImpl block:blocks) {
+				block = (LectureBlockImpl)lectureBlockDao.loadByKey(block.getKey());
 				autoClose(block);
 				dbInstance.commitAndCloseSession();
 			}
