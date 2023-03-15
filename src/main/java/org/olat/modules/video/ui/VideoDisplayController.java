@@ -978,6 +978,28 @@ public class VideoDisplayController extends BasicController {
 		markerPanel.setContent(null);
 	}
 
+	public void hideOtherLayers(Controller commentLayerController) {
+		markerPanel.setVisible(false);
+		for (Panel layerPanel : layerPanels) {
+			if (layerPanel.getContent() != null) {
+				if (commentLayerController.getInitialComponent() != layerPanel.getContent()) {
+					layerPanel.setVisible(false);
+				}
+			}
+		}
+	}
+
+	public void showOtherLayers(Controller commentLayerController) {
+		markerPanel.setVisible(true);
+		for (Panel layerPanel : layerPanels) {
+			if (layerPanel.getContent() != null) {
+				if (commentLayerController.getInitialComponent() != layerPanel.getContent()) {
+					layerPanel.setVisible(true);
+				}
+			}
+		}
+	}
+
 	public static class VideoMarkerWrapper {
 		
 		private final VideoMarker marker;
@@ -1086,7 +1108,7 @@ public class VideoDisplayController extends BasicController {
 		}
 	}
 
-	public class MarkerReachedEvent extends Event {
+	public static class MarkerReachedEvent extends Event {
 		@Serial
 		private static final long serialVersionUID = 45609277472657314L;
 
