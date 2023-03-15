@@ -75,7 +75,7 @@
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.4.Final</io.undertow>
 		<jackson.version>2.14.2</jackson.version>
-		<swagger.ui.version>4.17.1</swagger.ui.version>
+		<swagger.ui.version>4.18.1</swagger.ui.version>
 		<com.mysql.version>8.0.32</com.mysql.version>
 		<org.postgresql.version>42.5.4</org.postgresql.version>
 		<org.infinispan.version>14.0.7.Final</org.infinispan.version>
@@ -83,7 +83,7 @@
 		<version.selenium>4.8.1</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
 		<activemq.artemis.version>2.28.0</activemq.artemis.version>
-		<jakarta.jms.api>2.0.3</jakarta.jms.api>
+		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<qtiworks.version>1.0.30</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -520,17 +520,12 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jms-client</artifactId>
+					<artifactId>artemis-jakarta-client</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jms-server</artifactId>
-					<version>${activemq.artemis.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-spring-integration</artifactId>
+					<artifactId>artemis-jakarta-server</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 				<dependency>
@@ -687,17 +682,12 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jms-client</artifactId>
+					<artifactId>artemis-jakarta-client</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-jms-server</artifactId>
-					<version>${activemq.artemis.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.activemq</groupId>
-					<artifactId>artemis-spring-integration</artifactId>
+					<artifactId>artemis-jakarta-server</artifactId>
 					<version>${activemq.artemis.version}</version>
 				</dependency>
 			</dependencies>
@@ -1682,19 +1672,13 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jms-client</artifactId>
+			<artifactId>artemis-jakarta-client</artifactId>
 			<version>${activemq.artemis.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jms-server</artifactId>
-			<version>${activemq.artemis.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-spring-integration</artifactId>
+			<artifactId>artemis-jakarta-server</artifactId>
 			<version>${activemq.artemis.version}</version>
 			<scope>test</scope>
 		</dependency>

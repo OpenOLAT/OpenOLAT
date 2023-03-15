@@ -19,8 +19,8 @@
  */
 package org.olat.commons.coordinate.cluster.jms;
 
-import javax.jms.CompletionListener;
-import javax.jms.Message;
+import jakarta.jms.CompletionListener;
+import jakarta.jms.Message;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
