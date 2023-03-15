@@ -48,13 +48,16 @@ import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.videotask.VideoTaskAssessmentConfig;
+import org.olat.course.nodes.videotask.VideoTaskLearningPathNodeHandler;
 import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
 import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.nodes.videotask.ui.VideoTaskCoachRunController;
@@ -186,6 +189,17 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		if (cev != null) {
+			AssessmentConfig assessmentConfig = new VideoTaskAssessmentConfig(new CourseEntryRef(cev), this);
+			
+			if (isFullyAssessedScoreConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			if (isFullyAssessedPassedConfigError(assessmentConfig)) {
+				addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+						TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+			}
+			
 			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
@@ -197,6 +211,24 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError(AssessmentConfig assessmentConfig) {
+		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(VideoTaskLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError(AssessmentConfig assessmentConfig) {
+		boolean hasPassed = assessmentConfig.getPassedMode() != Mode.none;
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(VideoTaskLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
 	}
 
 	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
