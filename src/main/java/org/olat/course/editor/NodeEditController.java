@@ -244,8 +244,13 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	protected ActivateableTabbableDefaultController[] getChildren() {
-		if (childTabsCntrllr instanceof ActivateableTabbableDefaultController childCtrl) {
-			return new ActivateableTabbableDefaultController[] { childCtrl };
+		if (childTabsCntrllr instanceof ActivateableTabbableDefaultController childCtrl
+				&& nodeAccessCtrl instanceof ActivateableTabbableDefaultController accessChildCtrl) {
+			return new ActivateableTabbableDefaultController[] { childCtrl, accessChildCtrl};
+		} else if (childTabsCntrllr instanceof ActivateableTabbableDefaultController childCtrl) {
+			return new ActivateableTabbableDefaultController[] { childCtrl};
+		} else if (nodeAccessCtrl instanceof ActivateableTabbableDefaultController accessChildCtrl) {
+			return new ActivateableTabbableDefaultController[] { accessChildCtrl};
 		}
 		return new ActivateableTabbableDefaultController[] {};
 	}

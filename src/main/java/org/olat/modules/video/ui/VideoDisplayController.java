@@ -661,7 +661,7 @@ public class VideoDisplayController extends BasicController {
 			case "marker":
 				String markerId = ureq.getParameter("markerId");
 				loadMarker(ureq, currentTime, markerId);
-				fireEvent(ureq, new MarkerReachedEvent(markerId));
+				fireEvent(ureq, new MarkerReachedEvent(markerId, Math.round(Double.parseDouble(currentTime))));
 				break;
 			default: // do nothing
 		}
@@ -797,11 +797,13 @@ public class VideoDisplayController extends BasicController {
 		} else {
 			List<VideoMarkerWrapper> currentMarkers = new ArrayList<>();
 			if(questionToPresent == null || displayOptions.isShowAnnotations() && videoMarkers != null) {
-				for(VideoMarker marker:videoMarkers.getMarkers()) {
-					long start = marker.toSeconds();
-					long end = start + marker.getDuration();
-					if(start <= time && time < end) {
-						currentMarkers.add(new VideoMarkerWrapper(marker));
+				if (videoMarkers != null) {
+					for(VideoMarker marker:videoMarkers.getMarkers()) {
+						long start = marker.toSeconds();
+						long end = start + marker.getDuration();
+						if(start <= time && time < end) {
+							currentMarkers.add(new VideoMarkerWrapper(marker));
+						}
 					}
 				}
 			}
@@ -1091,14 +1093,20 @@ public class VideoDisplayController extends BasicController {
 		public static final String MARKER_REACHED_EVENT = "marker-reached";
 
 		private final String markerId;
+		private final long timeInSeconds;
 
-		public MarkerReachedEvent(String markerId) {
+		public MarkerReachedEvent(String markerId, long timeInSeconds) {
 			super(MARKER_REACHED_EVENT);
 			this.markerId = markerId;
+			this.timeInSeconds = timeInSeconds;
 		}
 
 		public String getMarkerId() {
 			return markerId;
+		}
+
+		public long getTimeInSeconds() {
+			return timeInSeconds;
 		}
 	}
 }

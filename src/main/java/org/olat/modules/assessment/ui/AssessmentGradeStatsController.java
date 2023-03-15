@@ -62,7 +62,7 @@ public class AssessmentGradeStatsController extends BasicController {
 	private final VelocityContainer mainVC;
 	private GradeChart chart;
 
-	private final NavigableSet<GradeScoreRange> gradeScoreRanges;
+	private NavigableSet<GradeScoreRange> gradeScoreRanges;
 
 	@Autowired
 	private GradeService gradeService;
@@ -72,42 +72,45 @@ public class AssessmentGradeStatsController extends BasicController {
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
 		mainVC = createVelocityContainer("stats_grade");
+		putInitialPanel(mainVC);
 		
 		GradeScale gradeScale = gradeService.getGradeScale(params.getEntry(), params.getSubIdent());
-		GradeSystem gradeSystem = gradeScale.getGradeSystem();
-		gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
-		
-		mainVC.contextPut("title", translate("grade.stats.title", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem)));
-		mainVC.contextPut("gradeSystem", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
-		
-		if (GradeSystemType.numeric == gradeSystem.getType()) {
-			mainVC.contextPut("resolution", GradeUIFactory.translateResolution(getTranslator(), gradeSystem.getResolution()));
-			mainVC.contextPut("rounding", GradeUIFactory.translateRounding(getTranslator(), gradeSystem.getRounding()));
+		if (gradeScale != null) {
+			GradeSystem gradeSystem = gradeScale.getGradeSystem();
+			gradeScoreRanges = gradeService.getGradeScoreRanges(gradeScale, getLocale());
+			
+			mainVC.contextPut("title", translate("grade.stats.title", GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystem)));
+			mainVC.contextPut("gradeSystem", GradeUIFactory.translateGradeSystemName(getTranslator(), gradeSystem));
+			
+			if (GradeSystemType.numeric == gradeSystem.getType()) {
+				mainVC.contextPut("resolution", GradeUIFactory.translateResolution(getTranslator(), gradeSystem.getResolution()));
+				mainVC.contextPut("rounding", GradeUIFactory.translateRounding(getTranslator(), gradeSystem.getRounding()));
+			}
+			
+			Float min = gradeScale.getMinScore() != null? Float.valueOf(gradeScale.getMinScore().floatValue()): null;
+			Float max = gradeScale.getMaxScore() != null? Float.valueOf(gradeScale.getMaxScore().floatValue()): null;
+			String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
+			if (scoreMinMax != null) {
+				mainVC.contextPut("scoreMinMax", scoreMinMax);
+			}
+			
+			Optional<GradeScoreRange> minPassed = getMinPassed(gradeScoreRanges);
+			if (minPassed.isPresent()) {
+				GradeScoreRange minPassedRange = minPassed.get();
+				String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
+						minPassedRange.getPerformanceClassIdent(), minPassedRange.getGrade(),
+						minPassedRange.getGradeSystemIdent());
+				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), minPassedRange.getGradeSystemIdent());
+				String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), grade, gradeSystemLabel);
+				mainVC.contextPut("passedWith", passedWith);
+			}
+			
+			chart = new GradeChart("chart");
+			chart.setGradeSystem(gradeSystem);
+			mainVC.put("chart", chart);
+		} else {
+			mainVC.contextPut("error", Boolean.TRUE);
 		}
-		
-		Float min = gradeScale.getMinScore() != null? Float.valueOf(gradeScale.getMinScore().floatValue()): null;
-		Float max = gradeScale.getMaxScore() != null? Float.valueOf(gradeScale.getMaxScore().floatValue()): null;
-		String scoreMinMax = AssessmentHelper.getMinMax(getTranslator(), min, max);
-		if (scoreMinMax != null) {
-			mainVC.contextPut("scoreMinMax", scoreMinMax);
-		}
-		
-		Optional<GradeScoreRange> minPassed = getMinPassed(gradeScoreRanges);
-		if (minPassed.isPresent()) {
-			GradeScoreRange minPassedRange = minPassed.get();
-			String grade = GradeUIFactory.translatePerformanceClass(getTranslator(),
-					minPassedRange.getPerformanceClassIdent(), minPassedRange.getGrade(),
-					minPassedRange.getGradeSystemIdent());
-			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), minPassedRange.getGradeSystemIdent());
-			String passedWith = translate("grade.score.and.grade", THREE_DIGITS.format(minPassedRange.getLowerBound()), grade, gradeSystemLabel);
-			mainVC.contextPut("passedWith", passedWith);
-		}
-		
-		chart = new GradeChart("chart");
-		chart.setGradeSystem(gradeSystem);
-		mainVC.put("chart", chart);
-		
-		putInitialPanel(mainVC);
 	}
 	
 	private Optional<GradeScoreRange> getMinPassed(NavigableSet<GradeScoreRange> ranges) {
@@ -124,6 +127,8 @@ public class AssessmentGradeStatsController extends BasicController {
 	
 
 	public void reload(AssessmentStatistics statistics, Map<Integer, Long> scoreToCount) {
+		if (gradeScoreRanges == null) return;
+		
 		Double avgScore = statistics.getAverageScore();
 		if (avgScore != null) {
 			GradeScoreRange avgScoreRange = gradeService.getGradeScoreRange(gradeScoreRanges, Float.valueOf(avgScore.floatValue()));

@@ -130,7 +130,7 @@ public class VideoRunController extends BasicController {
 				if (commentLayerController != null) {
 					commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
 					if (commentLayerController.isCommentVisible()) {
-						doPause();
+						doPause(markerReachedEvent.getTimeInSeconds());
 					}
 				}
 			}
@@ -147,8 +147,8 @@ public class VideoRunController extends BasicController {
 		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
-	private void doPause() {
-		PauseCommand cmd = new PauseCommand(videoDispCtr.getVideoElementId());
+	private void doPause(long timeInSeconds) {
+		PauseCommand cmd = new PauseCommand(videoDispCtr.getVideoElementId(), timeInSeconds);
 		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
