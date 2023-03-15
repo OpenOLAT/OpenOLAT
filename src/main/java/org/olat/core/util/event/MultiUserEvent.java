@@ -51,13 +51,19 @@ public class MultiUserEvent extends Event {
 	//from the same node. Most of the time such a comparison is wrong, especially for strings
 	//here it is used as "feature".
 	protected static String VM_MARKER = "VM_MARKER";
-	protected int vm_marker; 
+	protected int vm_marker;
+	private int priority;
 	
 	/**
 	 * @param command
 	 */
 	public MultiUserEvent(String command) {
+		this(command, 4);
+	}
+	
+	public MultiUserEvent(String command, int priority) {
 		super(command);
+		this.priority = priority;
 		vm_marker = WebappHelper.getNodeId();
 	}
 	
@@ -78,6 +84,10 @@ public class MultiUserEvent extends Event {
 	 */
 	public boolean isEventOnThisNode() {
 		return vm_marker == WebappHelper.getNodeId();
+	}
+	
+	public int getPriority() {
+		return priority;
 	}
 	
 	@Override

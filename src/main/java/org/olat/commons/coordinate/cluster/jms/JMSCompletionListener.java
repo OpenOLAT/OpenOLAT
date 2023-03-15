@@ -22,6 +22,9 @@ package org.olat.commons.coordinate.cluster.jms;
 import javax.jms.CompletionListener;
 import javax.jms.Message;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
+
 /**
  * 
  * Initial date: 10 mars 2023<br>
@@ -29,6 +32,8 @@ import javax.jms.Message;
  *
  */
 public class JMSCompletionListener implements CompletionListener {
+	
+	private static final Logger log = Tracing.createLoggerFor(JMSCompletionListener.class);
 
 	@Override
 	public void onCompletion(Message message) {
@@ -37,6 +42,6 @@ public class JMSCompletionListener implements CompletionListener {
 
 	@Override
 	public void onException(Message message, Exception exception) {
-		//
+		log.error("Message completion: {}", message, exception);
 	}
 }

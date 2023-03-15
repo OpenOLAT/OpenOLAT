@@ -53,7 +53,7 @@ public class AssessmentModeNotificationEvent extends MultiUserEvent  {
 	private Map<Long,Integer> extraTimesInSeconds;
 	
 	public AssessmentModeNotificationEvent(String cmd, TransientAssessmentMode mode, Set<Long> assessedIdentityKeys, Map<Long,Integer> extraTimesInSeconds) {
-		super(cmd);
+		super(cmd, 9);
 		this.mode = mode;
 		this.assessedIdentityKeys = assessedIdentityKeys;
 		this.extraTimesInSeconds = extraTimesInSeconds;
