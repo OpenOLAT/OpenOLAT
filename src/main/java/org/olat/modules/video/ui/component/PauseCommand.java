@@ -32,7 +32,7 @@ import org.json.JSONObject;
  */
 public class PauseCommand extends JSCommand {
 
-	public PauseCommand(String videoElementId) {
+	public PauseCommand(String videoElementId, long timeInSeconds) {
 		super("");
 
 		String elementId = "o_so_vid" + videoElementId;
@@ -41,6 +41,7 @@ public class PauseCommand extends JSCommand {
 		  .append(" var player = jQuery('#").append(elementId).append("').data('player');\n")
 		  .append(" player.pause();\n")
 		  .append(" player.options.enableKeyboard=true;\n")
+		  .append(" player.setCurrentTime(").append(timeInSeconds).append(");\n")
 		  .append(" jQuery('#' + player.id + ' .mejs__overlay-play')\n")
 		  .append("   .show()\n")
 		  .append("   .css('width', '100%');\n")

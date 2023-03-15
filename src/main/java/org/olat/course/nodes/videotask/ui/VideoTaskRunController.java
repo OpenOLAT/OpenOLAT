@@ -79,7 +79,11 @@ import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
+import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
+import org.olat.modules.video.ui.component.ContinueCommand;
+import org.olat.modules.video.ui.component.PauseCommand;
+import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +115,7 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	private VideoDisplayController displayCtrl;
 	private VideoTaskDisplayController displayContainerCtrl;
 	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
+	private CommentLayerController commentLayerController;
 
 	@Autowired
 	private GradeModule gradeModule;
@@ -353,9 +358,31 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
+		} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
+			if (commentLayerController != null) {
+				commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
+				if (commentLayerController.isCommentVisible()) {
+					doPause(markerReachedEvent.getTimeInSeconds());
+				}
+			}
+		} else if (source == commentLayerController) {
+			if (event == Event.DONE_EVENT) {
+				commentLayerController.hideComment();
+				doContinue();
+			}
 		}
 	}
-	
+
+	private void doContinue() {
+		ContinueCommand cmd = new ContinueCommand(displayCtrl.getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+	}
+
+	private void doPause(long timeInSeconds) {
+		PauseCommand cmd = new PauseCommand(displayCtrl.getVideoElementId(), timeInSeconds);
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+	}
+
 	private void doStart(UserRequest ureq) {
 		removeAsListenerAndDispose(displayCtrl);
 		removeAsListenerAndDispose(displayContainerCtrl);
@@ -366,14 +393,24 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		
 		boolean readOnly = userCourseEnv.isCourseReadOnly();
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
+
+		VideoDisplayOptions videoDisplayOptions = courseNode.getVideoDisplay(readOnly, true);
+
 		displayCtrl = new VideoDisplayController(ureq, bwControl, videoEntry, courseEntry,
-				courseNode, courseNode.getVideoDisplay(readOnly, true));
+				courseNode, videoDisplayOptions);
 		listenTo(displayCtrl);
 		
 		List<String> categoriesIds = courseNode.getModuleConfiguration()
 				.getList(VideoTaskEditController.CONFIG_KEY_CATEGORIES, String.class);
-		
+
+		if (videoDisplayOptions.isShowOverlayComments()) {
+			commentLayerController = new CommentLayerController(ureq, getWindowControl(), videoEntry, displayCtrl.getVideoElementId());
+			listenTo(commentLayerController);
+			commentLayerController.loadComments();
+			displayCtrl.addLayer(commentLayerController);
+			displayCtrl.addMarkers(commentLayerController.getCommentsAsMarkers());
+		}
+
 		Integer attempt = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
 		int currentAttempt = attempt == null ? 0 : attempt.intValue();
 		displayContainerCtrl = new VideoTaskDisplayController(ureq, bwControl, displayCtrl,
