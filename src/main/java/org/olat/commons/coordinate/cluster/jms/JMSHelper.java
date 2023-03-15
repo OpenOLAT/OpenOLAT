@@ -19,6 +19,7 @@
  */
 package org.olat.commons.coordinate.cluster.jms;
 
+import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
@@ -36,7 +37,7 @@ public class JMSHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(JMSHelper.class);
 	
-	public static void close(MessageConsumer consumer, Session session) {
+	public static void close(Connection connection, MessageConsumer consumer, Session session) {
 		if(consumer != null) {
 			try {
 				consumer.close();
@@ -52,6 +53,14 @@ public class JMSHelper {
 				log.error("", e);
 			}
 		}
+		
+		if(connection != null ) {
+			try {
+				connection.stop();
+				connection.close();
+			} catch (JMSException e) {
+				log.error("", e);
+			}
+		}
 	}
-
 }

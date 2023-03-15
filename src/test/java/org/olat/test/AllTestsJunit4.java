@@ -100,7 +100,7 @@ import org.junit.runners.Suite;
 	org.olat.commons.calendar.manager.ICalFileCalendarManagerTest.class,
 	org.olat.commons.calendar.manager.CalendarUserConfigurationDAOTest.class,
 	org.olat.commons.lifecycle.LifeCycleManagerTest.class,
-	org.olat.commons.coordinate.cluster.jms.JMSTest.class,
+	org.olat.commons.coordinate.cluster.jms.ClusterEventBusTest.class,
 	org.olat.commons.coordinate.cluster.lock.LockTest.class,
 	org.olat.commons.coordinate.CoordinatorTest.class,
 	org.olat.core.commons.modules.glossary.GlossaryItemManagerTest.class,

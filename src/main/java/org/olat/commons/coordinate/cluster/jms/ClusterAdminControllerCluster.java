@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class ClusterAdminControllerCluster extends BasicController {
-	private static final OLATResourceable ORES_TEST = OresHelper.createOLATResourceableInstanceWithoutCheck(ClusterAdminControllerCluster.class.getName(), new Long(123));
+	private static final OLATResourceable ORES_TEST = OresHelper.createOLATResourceableInstanceWithoutCheck(ClusterAdminControllerCluster.class.getName(), Long.valueOf(123));
 	
 	ClusterEventBus clusBus;
 

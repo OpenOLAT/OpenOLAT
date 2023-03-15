@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -37,7 +35,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.ObjectMessage;
 import javax.jms.Session;
@@ -49,6 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.event.AbstractEventBus;
 import org.olat.core.util.event.GenericEventListener;
@@ -63,7 +61,7 @@ import org.olat.core.util.resource.OresHelper;
  * 
  * @author Felix Jost
  */
-public class ClusterEventBus extends AbstractEventBus implements MessageListener, GenericEventListener {
+public class ClusterEventBus extends AbstractEventBus implements GenericEventListener {
 	private static final Logger log = Tracing.createLoggerFor(ClusterEventBus.class);
 	//ores helper is limited to 50 character, so truncate it
 	static final OLATResourceable CLUSTER_CHANNEL = OresHelper.createOLATResourceableType(ClusterEventBus.class.getName().substring(0, 50));
@@ -97,6 +95,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private Connection connection;
 	private Session sessionConsumer;
 	private MessageConsumer consumer;
+	private Connection sessionClusterInfoConnection;
+	private Session sessionClusterInfoConsumer;
+	private MessageConsumer clusterInfoConsumer;
+	private Connection sessionAssessmentModeConnection;
+	private Session sessionAssessmentModeConsumer;
+	private MessageConsumer assessmentModeConsumer;
 	private Session sessionProducer;
 	private MessageProducer producer;
 	
@@ -106,8 +110,6 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private final SimpleProbe mrtgProbeJMSProcessingTime_ = new SimpleProbe();
 	
 	private final SimpleProbe mrtgProbeJMSEnqueueTime_ = new SimpleProbe();
-	
-	private ExecutorService jmsExecutor;
 	
 	/**
 	 * [used by spring]
@@ -119,21 +121,40 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	}
 
 	public void springInit() throws JMSException {
-		jmsExecutor = Executors.newSingleThreadExecutor();
-		
 		connection = connectionFactory.createConnection();
 		sessionConsumer = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		consumer = sessionConsumer.createConsumer(destination);
-		consumer.setMessageListener(this);
+		consumer = sessionConsumer.createConsumer(destination, "NOT(command='clusterinfo') AND NOT(command LIKE 'assessment-mode-%')");
+		consumer.setMessageListener(message -> {
+			log.debug("Standard consumer message: {}", getCommand(message));
+			processMessage(message);
+		});
+
+		sessionClusterInfoConnection = connectionFactory.createConnection();
+		sessionClusterInfoConsumer = sessionClusterInfoConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		clusterInfoConsumer = sessionClusterInfoConsumer.createConsumer(destination, "command='clusterinfo'");
+		clusterInfoConsumer.setMessageListener(message -> {
+			log.debug("Cluster consumer message: {}", getCommand(message));
+			processMessage(message);
+		});
+
+		sessionAssessmentModeConnection = connectionFactory.createConnection();
+		sessionAssessmentModeConsumer = sessionAssessmentModeConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		assessmentModeConsumer = sessionAssessmentModeConsumer.createConsumer(destination, "command LIKE 'assessment-mode-%'");
+		assessmentModeConsumer.setMessageListener(message -> {
+			log.debug("Assessment mode consumer message: {}", getCommand(message));
+			processMessage(message);
+		});
+		
 		sessionProducer = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		producer = sessionProducer.createProducer(destination);
 
 		connection.start();
+		sessionClusterInfoConnection.start();
+		sessionAssessmentModeConnection.start();
 		log.info("ClusterEventBus JMS started");
 
 		final Integer nodeId = clusterConfig.getNodeId();
-		Thread t = new Thread(new Runnable() {
-			public void run() {
+		Thread t = new Thread(() -> {
 				// send an infopacket to all olat nodes at regular intervals.
 				while(isClusterInfoEventThreadRunning) {
 					try {
@@ -146,7 +167,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 							log.error("error while sending ClusterInfoEvent", e);
 						} catch (NullPointerException nex) {
 							// ignore, could happen when shutting down
-							System.err.println("ClusterEventBus : error while sending ClusterInfoEvent, could happen in shutting down, Ex=" + e);
+							log.error("ClusterEventBus : error while sending ClusterInfoEvent, could happen in shutting down, Ex=", e);
 						}
 					}
 					try {
@@ -158,13 +179,22 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				try {
 					log.info("ClusterEventBus stopped, do no longer send ClusterInfoEvents");
 				} catch (NullPointerException nex) {
-					System.err.println("ClusterEventBus stopped, do no longer send ClusterInfoEvents");
+					log.error("ClusterEventBus stopped, do no longer send ClusterInfoEvents", nex);
 				}
-			}});
+			});
 		t.setDaemon(true); // VM can shutdown even when this thread is still running
 		t.start();
 		// register to listen for other nodes' clusterinfoevents
 		registerFor(this, null, CLUSTER_CHANNEL);
+	}
+	
+	private String getCommand(Message message) {
+		try {
+			return message.getStringProperty("command");
+		} catch (JMSException e) {
+			log.error("Cannot extract command from message: {}", message, e);
+			return "-";
+		}
 	}
 	
 	public SimpleProbe getMrtgProbeJMSDeliveryTime() {
@@ -183,9 +213,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		return mrtgProbeJMSEnqueueTime_;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(Event event) {
 		// we listen only on our own channel, the event must be a clusterInfoEvent.
 		ClusterInfoEvent cie = (ClusterInfoEvent)event;
@@ -195,7 +223,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		// check duration of send-receive ClusterInfoEvent
 		long now = System.currentTimeMillis();
 		if ((now - cie.getCreated()) > jmsMsgDelayLimit) {
-			log.warn("JMS-Performance problem: JMS-Message delay is too big, send-receive take:" + (now - cie.getCreated()) + "ms. event="+event);
+			log.warn("JMS-Performance problem: JMS-Message delay is too big, send-receive take:{}ms. event={}", (now - cie.getCreated()), event);
 		}
 		
 		// update the eventBusInfo from the node
@@ -222,33 +250,38 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		final long msgId = ++latestSentMsgId;
 		final Integer nodeId = clusterConfig.getNodeId();
 		
-		jmsExecutor.execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					ObjectMessage message = sessionProducer.createObjectMessage();
-					message.setObject(new JMSWrapper(nodeId, msgId, ores, event));
-					if(strict) {
-						producer.send(message);
-					} else {
-						producer.send(message, DeliveryMode.NON_PERSISTENT, 3, 5000);
-					}
-				} catch (Exception e) {
-					log.error("Cannot send JMS message", e);
-					// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.
-					// if we are the only node running, then we could continue.
-					// a) either throw an exception - meaning olat doesn't really run at all and produces redscreens all the time and logging in is not possible.
-					// b) or warn in the log/jmx - but surveillance is critical here!!
-					// -> do the more fail-fast option a) at the moment for correctness reasons.
-					System.err.println("###############################################################################################");
-					System.err.println("### ClusterEventBus: communication error with JMS - cannot send messages!!!" + e);
-					System.err.println("###############################################################################################");
-					
-					throw new OLATRuntimeException("communication error with JMS - cannot send messages!!!", e);
+		try {
+			synchronized(sessionProducer) {
+				ObjectMessage message = sessionProducer.createObjectMessage();
+				if(StringHelper.containsNonWhitespace(event.getCommand())) {
+					message.setStringProperty("command", event.getCommand());
 				}
-				numOfSentMessages++;
+				message.setObject(new JMSWrapper(nodeId, msgId, ores, event));
+				if(event.getPriority() >= 0 && event.getPriority() <= 9) {
+					producer.setPriority(event.getPriority());
+				} else {
+					producer.setPriority(4);
+				}
+				if(strict) {
+					producer.send(message, new JMSCompletionListener());
+				} else {
+					producer.send(message, DeliveryMode.NON_PERSISTENT, 3, 5000, new JMSCompletionListener());
+				}
 			}
-		});
+		} catch (Exception e) {
+			log.error("Cannot send JMS message", e);
+			// cluster:::: what shall we do here: the JMS bus is broken! and we thus cannot know if other nodes are alive.
+			// if we are the only node running, then we could continue.
+			// a) either throw an exception - meaning olat doesn't really run at all and produces redscreens all the time and logging in is not possible.
+			// b) or warn in the log/jmx - but surveillance is critical here!!
+			// -> do the more fail-fast option a) at the moment for correctness reasons.
+			System.err.println("###############################################################################################");
+			System.err.println("### ClusterEventBus: communication error with JMS - cannot send messages!!!" + e);
+			System.err.println("###############################################################################################");
+			
+			throw new OLATRuntimeException("communication error with JMS - cannot send messages!!!", e);
+		}
+		numOfSentMessages++;
 
 		// store it for later access by the admin controller
 		String sentMsg = "sent msg: from node:" + nodeId + ", olat-id:" + msgId + ", ores:"	+ ores.getResourceableTypeName() + ":" + ores.getResourceableId()+", event:"+event;
@@ -260,8 +293,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 * called by springs org.springframework.jms.listener.DefaultMessageListenerContainer, see coredefaultconfig.xml
 	 * we receive a message here on the topic reserved for olat system bus messages. 
 	 */
-	@Override
-	public void onMessage(Message message) {
+	private void processMessage(Message message) {
 		try{
 			serveMessage(message, -1);
 		} catch(RuntimeException re) {
@@ -277,7 +309,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		}
 	}
 	
-	void serveMessage(Message message, long receiveEnqueueTime) {
+	private void serveMessage(Message message, long receiveEnqueueTime) {
 		// stats
 		final long receiveTime = System.currentTimeMillis();
 		if (receiveEnqueueTime>0) {
@@ -461,24 +493,13 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	public void stop() {
 		log.info("ClusterEventBus: Set stop flag for ClusterInfoEvent-Thread.");
 		isClusterInfoEventThreadRunning = false;
-		
-		if(consumer != null) {
-			try {
-				consumer.close();
-			} catch (JMSException e) {
-				log.error("", e);
-			}
-		}
-		
 		try {
-			jmsExecutor.shutdownNow();
-
 			producer.close();
 			sessionProducer.close();
-			sessionConsumer.close();
 			
-			connection.stop();
-			connection.close();
+			JMSHelper.close(connection, consumer, sessionConsumer);
+			JMSHelper.close(sessionClusterInfoConnection, clusterInfoConsumer, sessionClusterInfoConsumer);
+			JMSHelper.close(sessionAssessmentModeConnection, assessmentModeConsumer, sessionAssessmentModeConsumer);
 			log.info("ClusterEventBus stopped");
 		} catch (JMSException e) {
 			log.warn("Exception in stop ClusteredSearchProvider, ",e);
