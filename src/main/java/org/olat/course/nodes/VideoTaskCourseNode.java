@@ -155,7 +155,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			return oneClickStatusCache[0];
 		}
 		
-		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		if(statusDescs.isEmpty()) {
 			statusDescs.add(StatusDescription.NOERROR);
 		}
@@ -170,12 +170,12 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 			//isConfigValidWithTranslator add first
 			sds.remove(oneClickStatusCache[0]);
 		}
-		sds.addAll(validateInternalConfiguration());
+		sds.addAll(validateInternalConfiguration(cev));
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
 	}
 
-	private List<StatusDescription> validateInternalConfiguration() {
+	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(2);
 		RepositoryEntry videoEntry = VideoTaskEditController.getVideoReference(getModuleConfiguration(), false);
 		if (videoEntry == null) {
@@ -184,6 +184,18 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 					|| RepositoryEntryStatusEnum.trash == videoEntry.getEntryStatus()) {	
 			addStatusErrorDescription("video.deleted", "error.noreference.long", VideoTaskEditController.PANE_TAB_VIDEOCONFIG, sdList);
 		}
+		
+		if (cev != null) {
+			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
+				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
+				if (gradeScale == null) {
+					addStatusErrorDescription("error.missing.grade.scale", "error.fully.assessed.passed",
+							VideoTaskEditController.PANE_TAB_ASSESSMENT, sdList);
+				}
+			}
+		}
+		
 		return sdList;
 	}
 
