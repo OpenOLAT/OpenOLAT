@@ -457,6 +457,24 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		getWindowControl().getWindowBackOffice().sendCommandTo(command);
 	}
 
+	public void updateVideoDuration(String durationInSecondsString) {
+		if (videoDurationInMillis >= 0 || timelineModel == null) {
+			return;
+		}
+
+		try {
+			long durationInSeconds = Math.round(Double.parseDouble(durationInSecondsString));
+			if (durationInSeconds > 0L) {
+				videoDurationInMillis = durationInSeconds * 1000L;
+				fps = (int) (1000L * videoFrameCount / videoDurationInMillis);
+				timelineModel.setVideoLength(videoDurationInMillis);
+				flc.contextPut("durationInSeconds", durationInSecondsString);
+			}
+		} catch (NumberFormatException e) {
+			logError("Cannot parse duration: " + durationInSecondsString, e);
+		}
+	}
+
 	private class ThumbnailMapper implements Mapper {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {

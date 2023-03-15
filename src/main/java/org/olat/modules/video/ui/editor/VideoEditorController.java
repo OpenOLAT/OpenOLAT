@@ -104,6 +104,7 @@ public class VideoEditorController extends BasicController {
 			if (event instanceof VideoEvent videoEvent) {
 				detailsController.setCurrentTimeCode(videoEvent.getTimeCode());
 				masterController.setCurrentTimeCode(videoEvent.getTimeCode());
+				masterController.updateVideoDuration(videoEvent.getDuration());
 			} else if (event instanceof MarkerResizedEvent markerResizedEvent) {
 				detailsController.setAnnotationSize(markerResizedEvent.getMarkerId(), markerResizedEvent.getWidth(),
 						markerResizedEvent.getHeight());
