@@ -353,13 +353,13 @@ public class MessageEditController extends FormBasicController {
 		// add delete links for each attachment if user is allowed to see them
 		int attNr = 1;
 		for (VFSItem tmpFile : attachments) {
-			FormLink tmpLink = uifactory.addFormLink(CMD_DELETE_ATTACHMENT + attNr, tmpLayout, Link.BUTTON_XSMALL);
+			String id = CMD_DELETE_ATTACHMENT + attNr;
+			FormLink tmpLink = uifactory.addFormLink(id, id, "attachments.remove.string", null, tmpLayout, Link.BUTTON_XSMALL);
 			if (!(foCallback.mayEditMessageAsModerator() || (userIsMsgCreator && !msgHasChildren))) {
 				tmpLink.setEnabled(false);  
 				tmpLink.setVisible(false);
 			}
 			tmpLink.setUserObject(tmpFile);
-			tmpLink.setI18nKey("attachments.remove.string");
 			attNr++;
 		}
 	}
@@ -389,10 +389,10 @@ public class MessageEditController extends FormBasicController {
 				String password = passwordEl.getValue();
 				
 				if(!StringHelper.containsNonWhitespace(pseudonym)) {
-					pseudonymEl.setErrorKey("form.legende.mandatory", null);
+					pseudonymEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else if(!validatePseudonym(pseudonym)) {
-					pseudonymEl.setErrorKey("error.pseudonym", null);
+					pseudonymEl.setErrorKey("error.pseudonym");
 					allOk &= false;
 				} else if(!validatePseudonymProtected(pseudonym, password)) {
 					allOk &= false;
@@ -449,15 +449,15 @@ public class MessageEditController extends FormBasicController {
 				}
 				
 				if(!authenticated) {
-					passwordEl.setErrorKey("error.pseudonym.authentication", null);
+					passwordEl.setErrorKey("error.pseudonym.authentication");
 					allOk &= false;
 				}
 			} else if(fm.isPseudonymInUseInForums(value)) {
-				pseudonymEl.setErrorKey("error.pseudonym", null);
+				pseudonymEl.setErrorKey("error.pseudonym");
 				allOk &= false;
 			}
 		} else if(fm.isPseudonymProtected(value)) {
-			pseudonymEl.setErrorKey("error.pseudonym.protected", null);
+			pseudonymEl.setErrorKey("error.pseudonym.protected");
 			allOk &= false;
 		}
 
@@ -634,7 +634,7 @@ public class MessageEditController extends FormBasicController {
 					}
 
 					if (fileExists) {
-						fileUpload.setErrorKey("attachments.error.file.exists", null);
+						fileUpload.setErrorKey("attachments.error.file.exists");
 						FileUtils.deleteFile(fileUpload.getUploadFile());
 						fileUpload.showError(true);
 					} else {
