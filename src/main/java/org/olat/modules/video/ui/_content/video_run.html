@@ -87,7 +87,12 @@
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
-  		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
+						if (o_info.sendNextPlayEventWithResponse) {
+							o_info.sendNextPlayEventWithResponse = false;
+							$r.openJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
+						} else {
+							$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
+						}
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user

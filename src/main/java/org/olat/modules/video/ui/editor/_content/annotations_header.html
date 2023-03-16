@@ -10,3 +10,18 @@
 		<div class="o_video_common_form_header_commands">$r.render("commands")</div>
 	</div>
 </div>
+
+<script>
+	jQuery(() => {
+		const selector = '.o_video_common_form_header_items option';
+		const options = jQuery(selector);
+		for (let i = 0; i < options.length; i++) {
+			const option = jQuery(options[i]);
+			let text = option.text();
+			if (text.length > 40) {
+				text = text.substring(0, 40) + '...';
+			}
+			option.text(text);
+		}
+	});
+</script>

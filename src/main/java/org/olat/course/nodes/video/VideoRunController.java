@@ -19,9 +19,6 @@
  */
 package org.olat.course.nodes.video;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,10 +41,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
-import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
@@ -55,6 +50,7 @@ import org.olat.modules.video.ui.component.ContinueCommand;
 import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.event.VideoEvent;
+import org.olat.modules.video.ui.segment.SegmentsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
@@ -80,8 +76,6 @@ public class VideoRunController extends BasicController {
 	private final UserCourseEnvironment userCourseEnv;
 	private double currentProgress = 0d;
 
-	@Autowired
-	private VideoManager videoManager;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -305,35 +299,6 @@ public class VideoRunController extends BasicController {
 		
 		public String getCategoryColor() {
 			return category.getColor();
-		}
-	}
-	
-	private class SegmentsController extends BasicController {
-		
-		public SegmentsController(UserRequest ureq, WindowControl wControl,
-				RepositoryEntry videoEntry, String videoElementId, long totalDurationInMillis) {
-			super(ureq, wControl);
-			
-			VelocityContainer segmentsVC = createVelocityContainer("display_segments");
-			
-			VideoSegments segments = videoManager.loadSegments(videoEntry.getOlatResource());
-			List<VideoSegment> segmentsList = segments.getSegments();
-			List<RuntimeSegment> markers = new ArrayList<>(segmentsList.size());
-			for(VideoSegment videoSegment:segmentsList) {
-				VideoSegmentCategory category = segments.getCategory(videoSegment.getCategoryId()).orElse(null);
-				String durationString = translate("duration.description", Long.toString(videoSegment.getDuration()));
-				RuntimeSegment solution = RuntimeSegment.valueOf(category, videoSegment, totalDurationInMillis, durationString);
-				markers.add(solution);
-			}
-			segmentsVC.contextPut("segments", markers);
-			segmentsVC.contextPut("videoElementId", videoElementId);
-			
-			putInitialPanel(segmentsVC);
-		}
-
-		@Override
-		protected void event(UserRequest ureq, Component source, Event event) {
-			//
 		}
 	}
 }
