@@ -291,7 +291,7 @@ $label_right_margin_dialog: 5px;
 }
 
 .o_edit_position_size_left_error {
-	grid-area: e-top;
+	grid-area: e-left;
 }
 
 .o_edit_position_size_width_label {
@@ -307,7 +307,7 @@ $label_right_margin_dialog: 5px;
 }
 
 .o_edit_position_size_width_error {
-	grid-area: e-top;
+	grid-area: e-width;
 }
 
 .o_edit_position_size_height_label {
@@ -323,7 +323,7 @@ $label_right_margin_dialog: 5px;
 }
 
 .o_edit_position_size_height_error {
-	grid-area: e-top;
+	grid-area: e-height;
 }
 
 .o_edit_position_input_wrapper {
