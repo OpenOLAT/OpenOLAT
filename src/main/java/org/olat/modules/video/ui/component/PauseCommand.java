@@ -40,6 +40,7 @@ public class PauseCommand extends JSCommand {
 		sb.append("try {\n")
 		  .append(" var player = jQuery('#").append(elementId).append("').data('player');\n")
 		  .append(" player.pause();\n")
+		  .append(" o_info.sendNextPlayEventWithResponse = true;\n")
 		  .append(" player.options.enableKeyboard=true;\n")
 		  .append(" player.setCurrentTime(").append(timeInSeconds).append(");\n")
 		  .append(" jQuery('#' + player.id + ' .mejs__overlay-play')\n")
