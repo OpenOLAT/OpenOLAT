@@ -166,6 +166,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		} else if (segmentsDropdown == source) {
 			if (segmentsDropdown.isOneSelected()) {
 				segmentId = segmentsDropdown.getSelectedKey();
+				setValues();
 				handleSegmentSelected(ureq);
 			}
 		} else if (nextSegmentButton == source) {

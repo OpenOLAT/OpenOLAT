@@ -188,6 +188,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		} else if (questionsDropdown == source) {
 			if (questionsDropdown.isOneSelected()) {
 				questionId = questionsDropdown.getSelectedKey();
+				setValues();
 				handleQuestionSelected(ureq);
 			}
 		} else if (nextQuestionButton == source) {
