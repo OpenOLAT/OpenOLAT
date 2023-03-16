@@ -125,6 +125,7 @@ public class VideoRunController extends BasicController {
 					if (commentLayerController != null) {
 						commentLayerController.hideComment();
 						videoDispCtr.showOtherLayers(commentLayerController);
+						videoDispCtr.showHideProgressTooltip(true);
 					}
 				}
 			} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
@@ -132,6 +133,7 @@ public class VideoRunController extends BasicController {
 					commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
 					if (commentLayerController.isCommentVisible()) {
 						videoDispCtr.hideOtherLayers(commentLayerController);
+						videoDispCtr.showHideProgressTooltip(false);
 						doPause(markerReachedEvent.getTimeInSeconds());
 					}
 				}
@@ -140,6 +142,7 @@ public class VideoRunController extends BasicController {
 			if (event == Event.DONE_EVENT) {
 				commentLayerController.hideComment();
 				videoDispCtr.showOtherLayers(commentLayerController);
+				videoDispCtr.showHideProgressTooltip(true);
 				doContinue();
 			}
 		}
