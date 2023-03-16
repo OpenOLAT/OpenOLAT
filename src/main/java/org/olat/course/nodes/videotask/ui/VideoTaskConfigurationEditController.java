@@ -114,17 +114,17 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 	
 	private void initFeatures(FormItemContainer formLayout) {
 		SelectionValues elementsValues = new SelectionValues();
+		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_SEGMENTS, translate("video.config.elements.segments")));
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, translate("video.config.elements.comments")));
-		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, translate("video.config.elements.annotations")));
 		elementsValues.add(SelectionValues.entry(VideoTaskEditController.CONFIG_KEY_QUESTIONS, translate("video.config.elements.questions")));
 		videoElements = uifactory.addCheckboxesVertical("videoElements", "video.config.elements", formLayout,
 				elementsValues.keys(), elementsValues.values(), 1);
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, false));
-		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
 		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true);
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
 
 		SelectionValues categoriesValues = getCategoriesSelectionValues();
 		categoriesEl = uifactory.addCheckboxesVertical("video.config.categories", "video.config.categories", formLayout,

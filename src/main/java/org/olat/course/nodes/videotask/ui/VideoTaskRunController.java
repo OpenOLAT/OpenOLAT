@@ -84,6 +84,7 @@ import org.olat.modules.video.ui.VideoHelper;
 import org.olat.modules.video.ui.component.ContinueCommand;
 import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.editor.CommentLayerController;
+import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -348,26 +349,40 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(displayContainerCtrl == source) {
-			if(event instanceof FinishEvent fe) {
+		if (displayContainerCtrl == source) {
+			if (event instanceof FinishEvent fe) {
 				submit(fe.getTaskSession());// fire changed event
 				doFinishTask(ureq);
-				if(fe.isStartNextAttempt()) {
+				if (fe.isStartNextAttempt()) {
 					doStart(ureq);
 				} else {
 					fireEvent(ureq, Event.CHANGED_EVENT);
 				}
 			}
-		} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
-			if (commentLayerController != null) {
-				commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
-				if (commentLayerController.isCommentVisible()) {
-					doPause(markerReachedEvent.getTimeInSeconds());
+		} else if (displayCtrl == source) {
+			if (event instanceof VideoEvent videoEvent) {
+				if (videoEvent.getCommand().equals(VideoEvent.PLAY)) {
+					if (commentLayerController != null) {
+						commentLayerController.hideComment();
+						displayCtrl.showOtherLayers(commentLayerController);
+						displayCtrl.showHideProgressTooltip(true);
+					}
+				}
+			} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
+				if (commentLayerController != null) {
+					commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
+					if (commentLayerController.isCommentVisible()) {
+						displayCtrl.hideOtherLayers(commentLayerController);
+						displayCtrl.showHideProgressTooltip(true);
+						doPause(markerReachedEvent.getTimeInSeconds());
+					}
 				}
 			}
-		} else if (source == commentLayerController) {
+		} else if (commentLayerController == source) {
 			if (event == Event.DONE_EVENT) {
 				commentLayerController.hideComment();
+				displayCtrl.showOtherLayers(commentLayerController);
+				displayCtrl.showHideProgressTooltip(true);
 				doContinue();
 			}
 		}

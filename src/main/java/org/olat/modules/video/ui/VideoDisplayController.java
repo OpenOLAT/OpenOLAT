@@ -86,6 +86,7 @@ import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.ui.component.ContinueAtCommand;
 import org.olat.modules.video.ui.component.ContinueCommand;
+import org.olat.modules.video.ui.component.ShowHideProgressTooltipCommand;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
 import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
@@ -998,6 +999,12 @@ public class VideoDisplayController extends BasicController {
 				}
 			}
 		}
+	}
+
+	public void showHideProgressTooltip(boolean show) {
+		ShowHideProgressTooltipCommand elementProgressTooltipCommand =
+				new ShowHideProgressTooltipCommand(getVideoElementId(), show);
+		getWindowControl().getWindowBackOffice().sendCommandTo(elementProgressTooltipCommand);
 	}
 
 	public static class VideoMarkerWrapper {

@@ -112,9 +112,8 @@ public class VideoRunController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == videoDispCtr) {
-			if (event instanceof VideoEvent) {
-				VideoEvent videoEvent = (VideoEvent) event;
+		if (videoDispCtr == source) {
+			if (event instanceof VideoEvent videoEvent) {
 				if (videoEvent.getCommand().equals(VideoEvent.ENDED)) {
 					doUpdateAssessmentStatus(ureq, 1d, true);
 				} else if (videoEvent.getCommand().equals(VideoEvent.PAUSE)) {
@@ -125,6 +124,7 @@ public class VideoRunController extends BasicController {
 					if (commentLayerController != null) {
 						commentLayerController.hideComment();
 						videoDispCtr.showOtherLayers(commentLayerController);
+						videoDispCtr.showHideProgressTooltip(true);
 					}
 				}
 			} else if (event instanceof VideoDisplayController.MarkerReachedEvent markerReachedEvent) {
@@ -132,14 +132,16 @@ public class VideoRunController extends BasicController {
 					commentLayerController.setComment(ureq, markerReachedEvent.getMarkerId());
 					if (commentLayerController.isCommentVisible()) {
 						videoDispCtr.hideOtherLayers(commentLayerController);
+						videoDispCtr.showHideProgressTooltip(false);
 						doPause(markerReachedEvent.getTimeInSeconds());
 					}
 				}
 			}
-		} else if (source == commentLayerController) {
+		} else if (commentLayerController == source) {
 			if (event == Event.DONE_EVENT) {
 				commentLayerController.hideComment();
 				videoDispCtr.showOtherLayers(commentLayerController);
+				videoDispCtr.showHideProgressTooltip(true);
 				doContinue();
 			}
 		}
