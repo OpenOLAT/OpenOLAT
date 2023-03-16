@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
@@ -77,7 +78,7 @@ public class GradeUIFactory {
 	
 	public static String translateGradeSystemLabel(Translator translator, String gradeSystemIdent) {
 		String i18nKey = getGradeSystemLabelI18nKey(gradeSystemIdent);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			translation = translateGradeSystemLabelFallback(translator);
 		}

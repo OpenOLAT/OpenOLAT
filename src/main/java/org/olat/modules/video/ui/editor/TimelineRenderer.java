@@ -164,12 +164,14 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 	private void renderChannelLabel(StringOutput s, TimelineEventType type, TimelineModel timelineModel) {
 		int height = getChannelHeight(type, timelineModel);
 		int lineHeight = height - 2 * VERTICAL_CHANNEL_PADDING;
+		boolean active = type == timelineModel.getActiveType();
+		String typeMarker = " o_video_timeline_type_" + type.toString().toLowerCase();
 		s
 				.append("<div style=\"height: ")
 				.append(height)
 				.append("px; line-height: ")
 				.append(lineHeight)
-				.append("px;\" class=\"o_video_channel_label o_video_timeline_box\">")
+				.append("px;\" class=\"o_video_channel_label o_video_timeline_box").append(typeMarker).append(active ? " o_video_active" : "").append("\">")
 				.append("<i class=\"o_icon o_icon_lg ")
 				.append(type.getIcon())
 				.append("\"></i>")
@@ -239,8 +241,10 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 							   TimelineModel timelineModel) {
 		List<TimelineRow> timelineEvents = timelineModel.getEventsByType(type);
 		int height = getChannelHeight(type, timelineModel);
+		boolean active = type == timelineModel.getActiveType();
+		String typeMarker = " o_video_timeline_type_" + type.toString().toLowerCase();
 		s.append("<div style=\"width: ").append(timelineModel.getChannelWidth())
-				.append("px; height: ").append(height).append("px;\" class=\"o_video_channel o_video_timeline_box\">");
+				.append("px; height: ").append(height).append("px;\" class=\"o_video_channel o_video_timeline_box").append(typeMarker).append(active ? " o_video_active" : "").append("\">");
 		renderTimelineEvents(s, type, ftC, timelineModel, timelineEvents);
 		s.append("</div>");
 	}
@@ -277,10 +281,13 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (x == 0) {
 			x += 1;
 		}
+		String typeClass = "o_video_timeline_type_" + TimelineEventType.QUIZ.toString().toLowerCase();
 		s.append("<div id=\"o_video_event_").append(event.getId())
 				.append("\" class=\"o_video_question ").append(event.getColor()).append(event.isSelected() ? " o_video_selected" : "")
 				.append("\" style=\"left: ").append(x - 15).append("px; top: ").append(y - VERTICAL_CHANNEL_PADDING)
 				.append("px; \" onclick=\"")
+				.append("jQuery('.o_video_timeline_box').removeClass('o_video_active'); ")
+				.append("jQuery('.o_video_timeline_box.").append(typeClass).append("').addClass('o_video_active'); ")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
@@ -299,10 +306,13 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 		if (x == 0) {
 			x += 1;
 		}
+		String typeClass = "o_video_timeline_type_" + TimelineEventType.COMMENT.toString().toLowerCase();
 		s.append("<div id=\"o_video_event_").append(event.getId())
 				.append("\" class=\"o_video_question ").append(event.getColor()).append(event.isSelected() ? " o_video_selected" : "")
 				.append("\" style=\"left: ").append(x - 14).append("px; top: ").append(y - VERTICAL_CHANNEL_PADDING)
 				.append("px; \" onclick=\"")
+				.append("jQuery('.o_video_timeline_box').removeClass('o_video_active'); ")
+				.append("jQuery('.o_video_timeline_box.").append(typeClass).append("').addClass('o_video_active'); ")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
@@ -319,6 +329,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 							 TimelineRow event, int y, String cssClass, String idParameterName) {
 		long x = event.getStartTime() * timelineModel.getChannelWidth() / timelineModel.getVideoLength();
 		long width;
+		String typeClass = "o_video_timeline_type_" + event.getType().toString().toLowerCase();
 		if(event.getType() == TimelineEventType.CORRECT || event.getType() == TimelineEventType.INCORRECT) {
 			width = 2;
 		} else {
@@ -335,6 +346,8 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("\" style=\"left: ").append(x).append("px; width: ").append(width).append("px; ")
 				.append("top: ").append(y).append("px;")
 				.append("\" onclick=\"")
+				.append("jQuery('.o_video_timeline_box').removeClass('o_video_active'); ")
+				.append("jQuery('.o_video_timeline_box.").append(typeClass).append("').addClass('o_video_active'); ")
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,

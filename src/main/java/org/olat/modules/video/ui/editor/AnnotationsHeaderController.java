@@ -168,6 +168,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		} else if (annotationsDropdown == source) {
 			if (annotationsDropdown.isOneSelected()) {
 				annotationId = annotationsDropdown.getSelectedKey();
+				setValues();
 				handleAnnotationSelected(ureq);
 			}
 		} else if (nextAnnotationButton == source) {

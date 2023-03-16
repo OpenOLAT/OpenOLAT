@@ -109,6 +109,10 @@ public class EditPositionSizeController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 
 		allOk &= validatePercentInputField(topEl);
+		allOk &= validatePercentInputField(leftEl);
+		allOk &= validatePercentInputField(widthEl);
+		allOk &= validatePercentInputField(heightEl);
+
 		return allOk;
 	}
 

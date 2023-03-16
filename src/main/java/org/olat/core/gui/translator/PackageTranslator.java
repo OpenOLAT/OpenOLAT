@@ -72,8 +72,8 @@ public class PackageTranslator implements Translator {
 		this.packageName = packageName;
 		if(fallBackTranslator != null
 				&& packageName.equals(fallBackTranslator.getPackageName())
-				&& fallBackTranslator instanceof PackageTranslator) {
-			this.fallBackTranslator = ((PackageTranslator)fallBackTranslator).fallBackTranslator;
+				&& fallBackTranslator instanceof PackageTranslator fallBackPackageTranslator) {
+			this.fallBackTranslator = fallBackPackageTranslator.fallBackTranslator;
 		} else {
 			this.fallBackTranslator = fallBackTranslator;
 		}
@@ -207,8 +207,8 @@ public class PackageTranslator implements Translator {
 		  .append(": in ").append(packageName);
 
 		String babel;
-		if (fallBackTranslator instanceof PackageTranslator) {
-			babel = ((PackageTranslator)fallBackTranslator).packageName + " " + fallBackTranslator.toString();
+		if (fallBackTranslator instanceof PackageTranslator fallBackPackageTranslator) {
+			babel = fallBackPackageTranslator.packageName + " " + fallBackTranslator.toString();
 		} else {
 			babel = fallBackTranslator == null ? "-" : fallBackTranslator.toString();
 		}

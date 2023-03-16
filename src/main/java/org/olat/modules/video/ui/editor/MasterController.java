@@ -446,8 +446,11 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 	public void select(String id) {
 		timelineModel.select(id);
+		String typeClass = timelineModel.getActiveTypeAsClass();
 		JSCommand command = new JSCommand(
 				"try {" +
+						"  jQuery('.o_video_timeline_box').removeClass('o_video_active');" +
+						(typeClass != null ? "  jQuery('.o_video_timeline_box." + typeClass + "').addClass('o_video_active');" : "") +
 						"  jQuery('.o_video_selected').removeClass('o_video_selected');" +
 						"  jQuery('#o_video_event_" + id + "').addClass('o_video_selected');" +
 						"} catch(e) {" +

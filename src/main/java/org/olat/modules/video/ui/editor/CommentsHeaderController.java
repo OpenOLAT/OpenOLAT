@@ -190,6 +190,7 @@ public class CommentsHeaderController extends FormBasicController {
 		} else if (commentsDropdown == source) {
 			if (commentsDropdown.isOneSelected()) {
 				commentId = commentsDropdown.getSelectedKey();
+				setValues();
 				handleCommentSelected(ureq);
 			}
 		} else if (nextCommentButton == source) {
