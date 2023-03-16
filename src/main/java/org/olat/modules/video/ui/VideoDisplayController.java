@@ -86,6 +86,7 @@ import org.olat.modules.video.manager.VideoMediaMapper;
 import org.olat.modules.video.manager.VideoSubtitlesHelper;
 import org.olat.modules.video.ui.component.ContinueAtCommand;
 import org.olat.modules.video.ui.component.ContinueCommand;
+import org.olat.modules.video.ui.component.PauseCommand;
 import org.olat.modules.video.ui.component.ShowHideProgressTooltipCommand;
 import org.olat.modules.video.ui.event.MarkerMovedEvent;
 import org.olat.modules.video.ui.event.MarkerResizedEvent;
@@ -1005,6 +1006,16 @@ public class VideoDisplayController extends BasicController {
 		ShowHideProgressTooltipCommand elementProgressTooltipCommand =
 				new ShowHideProgressTooltipCommand(getVideoElementId(), show);
 		getWindowControl().getWindowBackOffice().sendCommandTo(elementProgressTooltipCommand);
+	}
+
+	public void play() {
+		ContinueCommand cmd = new ContinueCommand(getVideoElementId());
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
+	}
+
+	public void pause(long timeInSeconds) {
+		PauseCommand cmd = new PauseCommand(getVideoElementId(), timeInSeconds);
+		getWindowControl().getWindowBackOffice().sendCommandTo(cmd);
 	}
 
 	public static class VideoMarkerWrapper {
