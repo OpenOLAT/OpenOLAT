@@ -336,7 +336,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 			}
 		});
 		
-		Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
+		try {
+			Collections.sort(rows, new CurriculumElementViewsRowComparator(getLocale()));
+		} catch (Exception e) {
+			logError("", e);
+		}
 		
 		removeByPermissions(rows);
 		

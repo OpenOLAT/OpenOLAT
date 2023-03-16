@@ -46,6 +46,7 @@ import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureParticipantSummary;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
@@ -71,6 +72,8 @@ public class LectureServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private LectureService lectureService;
 	@Autowired
@@ -755,6 +758,37 @@ public class LectureServiceTest extends OlatTestCase {
 		
 		AbsenceNotice notice = lectureService.getAbsenceNotice(participant, block);
 		Assert.assertNotNull(notice);
+	}
+	
+	@Test
+	public void autoCloseRollCall() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		int period = lectureModule.getRollCallAutoClosePeriod();
+		block1.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
+		block1.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
+		block1 = lectureService.save(block1, null);
+		
+		LectureBlock block2 = createMinimalLectureBlock(entry);
+		block2.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
+		block2.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
+		block2 = lectureService.save(block2, null);
+		
+		LectureBlock block3 = createMinimalLectureBlock(entry);
+		block3.setStartDate(DateUtils.addDays(new Date(), - (period * 2)));
+		block3.setEndDate(DateUtils.addHours(block1.getStartDate(), 1));
+		block3 = lectureService.save(block3, null);
+		
+		lectureService.autoCloseRollCall();
+		
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock reloadBlock1 = lectureService.getLectureBlock(block1);
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock1.getRollCallStatus());
+		LectureBlock reloadBlock2 = lectureService.getLectureBlock(block2);
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock2.getRollCallStatus());
+		LectureBlock reloadBlock3 = lectureService.getLectureBlock(block3);
+		Assert.assertEquals(LectureRollCallStatus.autoclosed, reloadBlock3.getRollCallStatus());
 	}
 	
 	@Test

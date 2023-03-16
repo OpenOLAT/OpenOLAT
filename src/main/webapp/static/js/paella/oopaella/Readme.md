@@ -5,6 +5,13 @@ Th OpenOlat Paella Player is based on [Paella core](https://github.com/polimedia
 
 Used in live stream course element to display multiple streams in one movie panel.
 
+Fix vulnerability
+-----------------
+
+```sh
+% npm audit
+% npm audit fix
+```
 
 Build and Install
 -----------------
