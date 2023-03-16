@@ -175,7 +175,7 @@ public class UserSessionManager implements GenericEventListener {
 				if(extendedSessionTimeout(hreq)) {
 					interval = sessionModule.getSessionTimeoutAuthenticated();
 				} else {
-					interval = 600;
+					interval = 60;
 				}
 			} else {
 				interval = sessionModule.getSessionTimeoutAuthenticated();
@@ -296,13 +296,14 @@ public class UserSessionManager implements GenericEventListener {
 			}
 			usess.setAuthenticated(true);
 	
-			if (sessionInfo.isWebDAV()) {
+			if (sessionInfo.isWebDAV() || sessionInfo.isREST()) {
 				// load user prefs
 				usess.reloadPreferences();
 				// we're only adding this webdav session to the authUserSessions - not to the userNameToIdentity.
 				// userNameToIdentity is only needed for IM which can't do anything with a webdav session
 				authUserSessions.add(usess);
-				log.info(Tracing.M_AUDIT, "Logged on [via webdav]: " + sessionInfo.toString());
+				String type = sessionInfo.isWebDAV() ? "webdav" : "rest";
+				log.debug(Tracing.M_AUDIT, "Logged on [via {}]: {}", type, sessionInfo);
 			} else {	
 				UserSession invalidatedSession = null;
 
@@ -328,15 +329,14 @@ public class UserSessionManager implements GenericEventListener {
 				// user can choose upercase letters in identity name, but this has no effect on the
 				// database queries, the login form or the IM account. IM works only with lowercase
 				// characters -> map stores values as such
-				if(isDebug) log.debug("signOn() adding to userNameToIdentity: " + identity.getKey());
+				if(isDebug) log.debug("signOn() adding to userNameToIdentity: {}", identity.getKey());
 				userNameToIdentity.add(identity.getKey());
 				userSessionCache.put(identity.getKey(), Integer.valueOf(Settings.getNodeId()));
-			
 			
 				//reload user prefs
 				usess.reloadPreferences();
 	
-				log.info(Tracing.M_AUDIT, "Logged on: " + sessionInfo.toString());
+				log.info(Tracing.M_AUDIT, "Logged on: {}", sessionInfo);
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, true), ORES_USERSESSION);
 	
 				// THE FOLLOWING CHECK MUST BE PLACED HERE NOT TO PRODUCE A DEAD-LOCK WITH SIGNOFFANDCLEAR
@@ -403,9 +403,13 @@ public class UserSessionManager implements GenericEventListener {
 				SessionInfo sessionInfo = usess.getSessionInfo();
 				IdentityEnvironment identityEnvironment = usess.getIdentityEnvironment();
 				Identity identity = identityEnvironment.getIdentity();
-				log.info(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
-				CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
-				if(isDebug) log.debug("signOffAndClear() deregistering usersession from eventbus, id={}", sessionInfo);
+				if(sessionInfo.isREST() || sessionInfo.isWebDAV()) {
+					log.debug(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
+				} else {
+					log.info(Tracing.M_AUDIT, "Logged off: {}", sessionInfo);
+					CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new SignOnOffEvent(identity, false), ORES_USERSESSION);
+				}
+				log.debug("signOffAndClear() deregistering usersession from eventbus, id={}", sessionInfo);
 				//fxdiff FXOLAT-231: event on GUI Preferences extern changes
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
 				CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(usess, ores);

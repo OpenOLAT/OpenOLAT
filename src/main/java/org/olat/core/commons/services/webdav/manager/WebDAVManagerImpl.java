@@ -298,7 +298,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	protected UserSession handleDigestAuthentication(DigestAuthentication digestAuth, HttpServletRequest request) {
 		Identity identity = webDAVAuthManager.digestAuthentication(request.getMethod(), digestAuth);
 		if(identity != null && securityManager.isIdentityLoginAllowed(identity, WebDAVAuthManager.PROVIDER_HA1)) {
-			log.info("WebDAV Digest authentication of: {}", identity);
+			log.debug("WebDAV Digest authentication of: {}", identity);
 			return afterAuthorization(identity, request);
 		}
 		return null;
