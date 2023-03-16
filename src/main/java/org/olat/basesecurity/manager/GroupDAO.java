@@ -40,6 +40,7 @@ import org.olat.basesecurity.model.GrantImpl;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
@@ -269,8 +270,14 @@ public class GroupDAO {
 	}
 	
 	public List<GroupMembership> getMemberships(Group group, String role) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership from bgroupmember as membership")
+		  .append(" inner join membership.identity as ident")
+		  .append(" inner join ident.user as identUser")
+		  .where().append(" membership.group.key=:groupKey and membership.role=:role");
+		
 		return dbInstance.getCurrentEntityManager()
-			.createNamedQuery("membershipsByGroupAndRole", GroupMembership.class)
+			.createQuery(sb.toString(), GroupMembership.class)
 			.setParameter("groupKey", group.getKey())
 			.setParameter("role", role)
 			.getResultList();
