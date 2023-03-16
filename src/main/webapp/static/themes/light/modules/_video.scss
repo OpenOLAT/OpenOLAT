@@ -615,7 +615,11 @@
 }
 
 .o_video_timeline_box {
-	background-color: $gray-lighter;
+	background-color: $table-bg-hover;
+
+	&.o_video_active {
+		background-color: $o-table-row-selected-color;
+	}
 }
 
 .o_video_channel .o_video_question {

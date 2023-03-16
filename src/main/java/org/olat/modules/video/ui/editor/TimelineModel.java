@@ -58,6 +58,7 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	private String mediaUrl;
 	private List<TimelineEventType> visibleChannels = List.of(TimelineEventType.QUIZ, TimelineEventType.ANNOTATION,
 			TimelineEventType.VIDEO, TimelineEventType.CHAPTER, TimelineEventType.SEGMENT, TimelineEventType.COMMENT);
+	private TimelineEventType activeType;
 
 	public TimelineModel(FlexiTableDataSourceDelegate<TimelineRow> dataSource, FlexiTableColumnModel columnModel) {
 		super(dataSource, columnModel);
@@ -247,6 +248,22 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 	}
 
 	public void select(String id) {
-		getObjects().forEach(t -> t.setSelected(t.getId().equals(id)));
+		activeType = null;
+		getObjects().forEach(t -> {
+			if (t.getId().equals(id)) {
+				this.activeType = t.getType();
+				t.setSelected(true);
+			} else {
+				t.setSelected(false);
+			}
+		});
+	}
+
+	public TimelineEventType getActiveType() {
+		return activeType;
+	}
+
+	public String getActiveTypeAsClass() {
+		return getActiveType() != null ? "o_video_timeline_type_" + getActiveType().toString().toLowerCase() : null;
 	}
 }
