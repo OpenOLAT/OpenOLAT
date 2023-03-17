@@ -72,7 +72,8 @@ public class EnrollmentConfigurationPage {
 			int maxParticipants, boolean waitingList, boolean auto) {
 		By chooseGroupBy = By.cssSelector("a.o_form_groupcreate");
 		browser.findElement(chooseGroupBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_group_edit_group_form");
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");

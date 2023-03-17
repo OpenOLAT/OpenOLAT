@@ -22,7 +22,6 @@ package org.olat.selenium.page.course;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -58,16 +57,16 @@ public class EasyConditionConfigPage {
 	public EasyConditionConfigPage createBusinessGroup(String name) {
 		By createBy = By.cssSelector("a.o_sel_condition_create_groups");
 		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_group_edit_group_form");
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
-		WebElement nameEl = browser.findElement(nameBy);
-		nameEl.sendKeys(name);
+		browser.findElement(nameBy).sendKeys(name);
 
 		//save
 		By submitBy = By.cssSelector(".o_sel_group_edit_group_form button.btn-primary");
-		browser.findElement(submitBy).click();
+		OOGraphene.click(submitBy, browser);
 		OOGraphene.waitModalDialogDisappears(browser);
 		
 		return this;
