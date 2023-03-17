@@ -291,6 +291,9 @@ public class AuthHelper {
 
 				int result = doLogin(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), ureq);
 				if(ureq.getUserSession().getRoles().isInvitee()) {
+					if(result == LOGIN_OK) {
+						invitationService.acceptInvitation(invitation, identity);
+					}
 					return result;
 				}
 				return LOGIN_DENIED;
