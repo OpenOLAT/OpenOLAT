@@ -80,9 +80,8 @@ public class GroupsPage {
 		//click create button
 		By createBy = By.className("o_sel_group_create");
 		browser.findElement(createBy).click();
-		OOGraphene.waitModalDialog(browser);
-		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_group_edit_group_form");
-		OOGraphene.waitElement(popupBy, browser);
+		OOGraphene.waitModalDialog(browser, "fieldset.o_sel_group_edit_group_form");
+		OOGraphene.waitTinymce(browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_group_edit_title input[type='text']");
