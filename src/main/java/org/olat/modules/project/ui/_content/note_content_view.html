@@ -1,2 +1,7 @@
 <h2>$displayName</h2>
 $text
+#if($r.isNotEmpty("tags"))
+	<div class="o_block_top">
+		$tags
+	</div>
+#end

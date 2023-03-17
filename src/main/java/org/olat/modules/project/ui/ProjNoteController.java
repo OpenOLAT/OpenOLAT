@@ -43,6 +43,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteInfo;
 import org.olat.modules.project.ProjNoteRef;
@@ -196,7 +197,7 @@ public class ProjNoteController extends BasicController {
 	private boolean reloadNote() {
 		ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
 		searchParams.setNotes(List.of(noteInfo.getNote()));
-		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams);
+		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams, ProjArtefactInfoParams.ALL);
 		if (noteInfos.isEmpty()) {
 			// Should not happen. We do without error message for the moment.
 			return false;

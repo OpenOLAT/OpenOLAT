@@ -854,20 +854,6 @@ create table if not exists o_info_message (
   primary key (info_id)
 );
 
-
-create table if not exists o_tag (
-  tag_id bigint not null,
-  version mediumint unsigned not null,
-  creationdate datetime,
-  tag varchar(128) not null,
-  resname varchar(50) not null,
-  resid bigint not null,
-  ressubpath varchar(2048),
-  businesspath varchar(2048),
-  fk_author_id bigint not null,
-  primary key (tag_id)
-);
-
 create table if not exists o_bs_invitation (
    id bigint not null,
    creationdate datetime,
@@ -886,8 +872,15 @@ create table if not exists o_bs_invitation (
    primary key (id)
 );
 
--- mail system
+-- tag
+create table o_tag_tag (
+   id bigint not null,
+   creationdate datetime,
+   t_display_name varchar(256) not null,
+   primary key (id)
+);
 
+-- mail
 create table if not exists o_mail (
   mail_id bigint NOT NULL,
   meta_mail_id varchar(64),
@@ -903,7 +896,6 @@ create table if not exists o_mail (
   primary key (mail_id)
 );
 
--- mail recipient
 create table if not exists o_mail_to_recipient (
   pos mediumint NOT NULL default 0,
   fk_mail_id bigint,
@@ -923,7 +915,6 @@ create table if not exists o_mail_recipient (
   primary key (recipient_id)
 );
 
--- mail attachments
 create table o_mail_attachment (
    attachment_id bigint NOT NULL,
    creationdate datetime,
@@ -3836,6 +3827,14 @@ create table o_proj_artefact_to_artefact (
    fk_creator bigint not null,
    primary key (id)
 );
+create table o_proj_tag (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_project bigint not null,
+   fk_artefact bigint,
+   fk_tag bigint not null,
+   primary key (id)
+);
 create table o_proj_file (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4084,7 +4083,7 @@ alter table o_usercomment ENGINE = InnoDB;
 alter table o_userrating ENGINE = InnoDB;
 alter table o_mark ENGINE = InnoDB;
 alter table o_info_message ENGINE = InnoDB;
-alter table o_tag ENGINE = InnoDB;
+alter table o_tag_tag ENGINE = InnoDB;
 alter table o_bs_invitation ENGINE = InnoDB;
 alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
@@ -4268,6 +4267,7 @@ alter table o_proj_project_to_org ENGINE = InnoDB;
 alter table o_proj_project_user_info ENGINE = InnoDB;
 alter table o_proj_artefact ENGINE = InnoDB;
 alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
+alter table o_proj_tag ENGINE = InnoDB;
 alter table o_proj_file ENGINE = InnoDB;
 alter table o_proj_note ENGINE = InnoDB;
 alter table o_proj_appointment ENGINE = InnoDB;
@@ -4603,7 +4603,7 @@ alter table o_teams_attendee add constraint teams_att_user_idx foreign key (fk_t
 alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_meeting_id) references o_teams_meeting (id);
 
 -- tag
-alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
+create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
@@ -5134,6 +5134,10 @@ alter table o_proj_artefact_to_artefact add constraint projata_artefact1_idx for
 alter table o_proj_artefact_to_artefact add constraint projata_artefact2_idx foreign key (fk_artefact2) references o_proj_artefact (id);
 alter table o_proj_artefact_to_artefact add constraint projata_project_idx foreign key (fk_project) references o_proj_project (id);
 alter table o_proj_artefact_to_artefact add constraint projata_creator_idx foreign key (fk_creator) references o_bs_identity(id);
+
+alter table o_proj_tag add constraint tag_project_idx foreign key (fk_project) references o_proj_project (id);
+alter table o_proj_tag add constraint tag_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+alter table o_proj_tag add constraint tag_tag_idx foreign key (fk_tag) references o_tag_tag (id);
 
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +43,8 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
@@ -61,17 +64,21 @@ import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjArtefactInfo;
+import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjArtefactToArtefact;
 import org.olat.modules.project.ProjArtefactToArtefactSearchParams;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjFileInfo;
 import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjMemberInfo;
 import org.olat.modules.project.ProjMemberInfoSearchParameters;
 import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneInfo;
 import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjMilestoneSearchParams;
 import org.olat.modules.project.ProjMilestoneStatus;
@@ -84,12 +91,18 @@ import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjProjectToOrganisation;
 import org.olat.modules.project.ProjProjectUserInfo;
+import org.olat.modules.project.ProjTag;
+import org.olat.modules.project.ProjTagInfo;
+import org.olat.modules.project.ProjTagSearchParams;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
+import org.olat.modules.project.model.ProjArtefactInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
+import org.olat.modules.project.model.ProjFileInfoImpl;
 import org.olat.modules.project.model.ProjMemberInfoImpl;
+import org.olat.modules.project.model.ProjMilestoneInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +151,10 @@ public class ProjectServiceImpl implements ProjectService {
 	protected BaseSecurity securityManager;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private ProjTagDAO tagDao;
+	@Autowired
+	private TagService tagService;
 	
 	@Override
 	public ProjProject createProject(Identity doer) {
@@ -178,13 +195,14 @@ public class ProjectServiceImpl implements ProjectService {
 			updatedProject = projectDao.save(project);
 			
 			String after = ProjectXStream.toXml(updatedProject);
-			activityDao.create(Action.projectContentContent, before, after, doer, updatedProject);
+			activityDao.create(Action.projectContentUpdate, before, after, doer, updatedProject);
 			
 			if (titleChanged) {
 				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 				searchParams.setProject(reloadedProject);
 				searchParams.setStatus(List.of(ProjectStatus.active));
-				getAppointmentInfos(searchParams).forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
+				getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
+						.forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
 			}
 		}
 		
@@ -241,7 +259,8 @@ public class ProjectServiceImpl implements ProjectService {
 			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 			searchParams.setProject(reloadedProject);
 			searchParams.setStatus(List.of(ProjectStatus.active));
-			getAppointmentInfos(searchParams).forEach(info -> calendarHelper.deleteEvent(info.getAppointment(), info.getMembers()));
+			getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
+					.forEach(info -> calendarHelper.deleteEvent(info.getAppointment(), info.getMembers()));
 			
 			String before = ProjectXStream.toXml(reloadedProject);
 			
@@ -564,8 +583,49 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjArtefact getArtefact(ProjArtefactRef artefactRef) {
 		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
 		searchParams.setArtefacts(List.of(artefactRef));
+		searchParams.setStatus(List.of(ProjectStatus.active));
 		List<ProjArtefact> artefacts = artefactDao.loadArtefacts(searchParams);
 		return !artefacts.isEmpty()? artefacts.get(0): null;
+	}
+	
+	private Map<ProjArtefact, ProjArtefactInfo> getArtefactToInfo(List<ProjArtefact> artefacts, ProjArtefactInfoParams params) {
+		Map<Long, Set<Identity>> groupKeyToIdentities;
+		if (params.isMembers()) {
+			List<Long> groupKeys = artefacts.stream().map(artefact -> artefact.getBaseGroup().getKey()).toList();
+			groupKeyToIdentities = memberQueries.getGroupKeyToIdentities(groupKeys);
+		} else {
+			groupKeyToIdentities = Collections.emptyMap();
+		}
+		
+		Map<ProjArtefact, Set<ProjArtefact>> artefactToLinkedArtefacts = params.isNumReferences()
+				? getArtefactToLinkedArtefacts(artefacts)
+				: Collections.emptyMap();
+		
+		List<ProjTag> projTags = params.isTags() || params.isTagDisplayNames()
+				? getProjTags(artefacts)
+				: Collections.emptyList();
+		
+		Map<Long, List<Tag>> artefactKeyToTags = params.isTags()
+				? getArtefactKeyToTag(projTags)
+				: Collections.emptyMap();
+		
+		Map<Long, List<String>> artefactKeyToTagDisplayName = params.isTagDisplayNames()
+				? getArtefactKeyToTagDisplayName(projTags)
+				: Collections.emptyMap();
+		
+		Map<ProjArtefact, ProjArtefactInfo> infos = new HashMap<>(artefacts.size());
+		for (ProjArtefact artefact : artefacts) {
+			ProjArtefactInfoImpl info = new ProjArtefactInfoImpl();
+			info.setMembers(groupKeyToIdentities.getOrDefault(artefact.getBaseGroup().getKey(), Set.of()));
+			info.setNumReferences(artefactToLinkedArtefacts.getOrDefault(artefact, Set.of()).size());
+			info.setTags(artefactKeyToTags.getOrDefault(artefact.getKey(), 
+					params.isTags()? new ArrayList<>(0): List.of()));
+			info.setTagDisplayNames(artefactKeyToTagDisplayName.getOrDefault(artefact.getKey(), 
+					params.isTagDisplayNames()? new ArrayList<>(0): List.of()));
+			infos.put(artefact, info);
+		}
+		
+		return infos;
 	}
 	
 	@Override
@@ -642,6 +702,75 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		return artefactKeyToIdentityKeys;
 	}
+
+	@Override
+	public void updateTags(Identity doer, ProjArtefactRef artefact, List<String> displayNames) {
+		ProjArtefact reloadedArtefact = getArtefact(artefact);
+		if (reloadedArtefact == null) return;
+		
+		ProjTagSearchParams searchParams = new ProjTagSearchParams();
+		searchParams.setArtefacts(List.of(reloadedArtefact));
+		List<ProjTag> projTags = tagDao.loadTags(searchParams);
+		List<Tag> currentTags = projTags.stream().map(ProjTag::getTag).toList();
+		List<Tag> tags = tagService.getOrCreateTags(displayNames);
+		
+		boolean tagsChanged = false;
+		for (Tag tag : tags) {
+			if (!currentTags.contains(tag)) {
+				 tagDao.create(reloadedArtefact.getProject(), reloadedArtefact, tag);
+				 tagsChanged = true;
+			}
+		}
+		
+		for (ProjTag projTag : projTags) {
+			if (!tags.contains(projTag.getTag())) {
+				tagDao.delete(projTag);
+				tagsChanged = true;
+			}
+		}
+		
+		if (tagsChanged) {
+			String tagsBeforeXml = ProjectXStream.tagsToXml(currentTags.stream().map(Tag::getDisplayName).toList());
+			String tagsAfterXml = ProjectXStream.tagsToXml(displayNames);
+			activityDao.create(Action.updateTags(reloadedArtefact.getType()), tagsBeforeXml, tagsAfterXml, doer, reloadedArtefact);
+		}
+		
+	}
+
+	@Override
+	public List<ProjTagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact){
+		return tagDao.loadProjectTagInfos(project, selectionArtefact);
+	}
+	
+	private List<ProjTag> getProjTags(List<ProjArtefact> artefacts) {
+		ProjTagSearchParams searchParams = new ProjTagSearchParams();
+		searchParams.setArtefacts(artefacts);
+		searchParams.setArtefactStatus(List.of(ProjectStatus.active));
+		return tagDao.loadTags(searchParams);
+	}
+	
+	private Map<Long, List<Tag>> getArtefactKeyToTag(List<ProjTag> projTags) {
+		return projTags.stream().collect(
+				Collectors.groupingBy
+						(projTag -> projTag.getArtefact().getKey(),
+						Collectors.collectingAndThen(
+								Collectors.toList(),
+								projTag -> projTag.stream()
+										.map(ProjTag::getTag)
+										.collect(Collectors.toList()))));
+	}
+	
+	private Map<Long, List<String>> getArtefactKeyToTagDisplayName(List<ProjTag> projTags) {
+		return projTags.stream().collect(
+				Collectors.groupingBy
+						(projTag -> projTag.getArtefact().getKey(),
+						Collectors.collectingAndThen(
+								Collectors.toList(),
+								projTag -> projTag.stream()
+										.map(ProjTag::getTag)
+										.map(Tag::getDisplayName)
+										.collect(Collectors.toList()))));
+	}
 	
 	private void updateContentModified(ProjArtefact artefact, Identity modifiedBy) {
 		artefact.setContentModifiedDate(new Date());
@@ -657,6 +786,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	private void deleteArtefactPermanent(ProjArtefact artefact) {
+		tagDao.delete(artefact);
 		activityDao.delete(artefact);
 		artefactToArtefactDao.delete(artefact);
 		groupDao.removeMemberships(artefact.getBaseGroup());
@@ -759,10 +889,21 @@ public class ProjectServiceImpl implements ProjectService {
 	public List<ProjFile> getFiles(ProjFileSearchParams searchParams) {
 		return fileDao.loadFiles(searchParams);
 	}
+	
+	@Override
+	public List<ProjFileInfo> getFileInfos(ProjFileSearchParams searchParams, ProjArtefactInfoParams infoParams) {
+		List<ProjFile> files = getFiles(searchParams);
+		List<ProjArtefact> artefacts = files.stream().map(ProjFile::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
+		
+		return files.stream()
+				.map(file -> new ProjFileInfoImpl(file, artefactToInfo.get(file.getArtefact())))
+				.collect(Collectors.toList());
+	}
 
 	
 	/*
-	 * Notes
+	 * Files
 	 */
 	
 	@Override
@@ -854,30 +995,16 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 	
 	@Override
-	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams) {
+	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams, ProjArtefactInfoParams infoParams) {
 		List<ProjNote> notes = getNotes(searchParams);
+		List<ProjArtefact> artefacts = notes.stream().map(ProjNote::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
 		
-		List<Long> groupKeys = new ArrayList<>(notes.size());
-		List<ProjArtefact> artefacts = new ArrayList<>(notes.size());
-		for (ProjNote note : notes) {
-			groupKeys.add(note.getArtefact().getBaseGroup().getKey());
-			artefacts.add(note.getArtefact());
-		}
-		Map<Long, Set<Identity>> groupKeyToIdentities = memberQueries.getGroupKeyToIdentities(groupKeys);
-		Map<ProjArtefact, Set<ProjArtefact>> artefactToLinkedArtefacts = getArtefactToLinkedArtefacts(artefacts);
-		
-		List<ProjNoteInfo> infos = new ArrayList<>(notes.size());
-		for (ProjNote note : notes) {
-			ProjNoteInfoImpl info = new ProjNoteInfoImpl();
-			info.setNote(note);
-			info.setMembers(groupKeyToIdentities.get(note.getArtefact().getBaseGroup().getKey()));
-			info.setNumReferences(artefactToLinkedArtefacts.getOrDefault(note.getArtefact(), Set.of()).size());
-			infos.add(info);
-		}
-		
-		return infos;
+		return notes.stream()
+				.map(note -> new ProjNoteInfoImpl(note, artefactToInfo.get(note.getArtefact())))
+				.collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public VFSContainer getProjectContainer(ProjProjectRef project) {
 		return fileStorage.getOrCreateFileContainer(project);
@@ -1239,26 +1366,14 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams) {
+	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams, ProjArtefactInfoParams infoParams) {
 		List<ProjAppointment> appointments = getAppointments(searchParams);
+		List<ProjArtefact> artefacts = appointments.stream().map(ProjAppointment::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
 		
-		List<Long> groupKeys = new ArrayList<>(appointments.size());
-		List<ProjArtefact> artefacts = new ArrayList<>(appointments.size());
-		for (ProjAppointment appointment : appointments) {
-			groupKeys.add(appointment.getArtefact().getBaseGroup().getKey());
-			artefacts.add(appointment.getArtefact());
-		}
-		Map<Long, Set<Identity>> groupKeyToIdentities = memberQueries.getGroupKeyToIdentities(groupKeys);
-		
-		List<ProjAppointmentInfo> infos = new ArrayList<>(appointments.size());
-		for (ProjAppointment appointment : appointments) {
-			ProjAppointmentInfoImpl info = new ProjAppointmentInfoImpl();
-			info.setAppointment(appointment);
-			info.setMembers(groupKeyToIdentities.get(appointment.getArtefact().getBaseGroup().getKey()));
-			infos.add(info);
-		}
-		
-		return infos;
+		return appointments.stream()
+				.map(appointment -> new ProjAppointmentInfoImpl(appointment, artefactToInfo.get(appointment.getArtefact())))
+				.collect(Collectors.toList());
 	}
 	
 	@Override
@@ -1437,6 +1552,17 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public List<ProjMilestone> getMilestones(ProjMilestoneSearchParams searchParams) {
 		return milestoneDao.loadMilestones(searchParams);
+	}
+	
+	@Override
+	public List<ProjMilestoneInfo> getMilestoneInfos(ProjMilestoneSearchParams searchParams, ProjArtefactInfoParams infoParams) {
+		List<ProjMilestone> milestones = getMilestones(searchParams);
+		List<ProjArtefact> artefacts = milestones.stream().map(ProjMilestone::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
+		
+		return milestones.stream()
+				.map(milestone -> new ProjMilestoneInfoImpl(milestone, artefactToInfo.get(milestone.getArtefact())))
+				.collect(Collectors.toList());
 	}
 	
 	@Override

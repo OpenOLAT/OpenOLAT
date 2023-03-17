@@ -326,6 +326,8 @@ public class ProjActivityLogController extends FormBasicController {
 		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.delete");
 		return filterSV;
 	}
@@ -340,18 +342,9 @@ public class ProjActivityLogController extends FormBasicController {
 		case fileStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case fileMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
 		case fileMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
-		case fileReferenceAdd: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.add", null, value); break;
-			}
-		}
-		case fileReferenceRemove: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.remove", value, null); break;
-			}
-		}
+		case fileReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case fileReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case fileTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
 		case fileContentUpdate: {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjFile before = ProjectXStream.fromXml(activity.getBefore(), ProjFile.class);
@@ -373,7 +366,7 @@ public class ProjActivityLogController extends FormBasicController {
 		default: //
 		}
 	}
-
+	
 	private SelectionValues getActivityFilterNoteValues() {
 		SelectionValues filterSV = new SelectionValues();
 		addActivityFilterValue(filterSV, "activity.log.message.create");
@@ -385,6 +378,8 @@ public class ProjActivityLogController extends FormBasicController {
 		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.delete");
 		return filterSV;
 	}
@@ -397,18 +392,9 @@ public class ProjActivityLogController extends FormBasicController {
 		case noteStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case noteMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
 		case noteMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
-		case noteReferenceAdd: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.add", null, value); break;
-			}
-		}
-		case noteReferenceRemove: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.remove", value, null); break;
-			}
-		}
+		case noteReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case noteReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case noteTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
 		case noteContentUpdate: {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjNote before = ProjectXStream.fromXml(activity.getBefore(), ProjNote.class);
@@ -442,6 +428,8 @@ public class ProjActivityLogController extends FormBasicController {
 		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
 		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.delete.occurrence");
 		addActivityFilterValue(filterSV, "activity.log.message.delete");
 		return filterSV;
@@ -457,18 +445,9 @@ public class ProjActivityLogController extends FormBasicController {
 		case appointmentStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case appointmentMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
 		case appointmentMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
-		case appointmentReferenceAdd: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.add", null, value); break;
-			}
-		}
-		case appointmentReferenceRemove: {
-			String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
-			if (StringHelper.containsNonWhitespace(value)) {
-				addRow(rows, activity, "activity.log.message.reference.remove",value, null); break;
-			}
-		}
+		case appointmentReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case appointmentReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case appointmentTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
 		case appointmentContentUpdate: {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjAppointment before = ProjectXStream.fromXml(activity.getBefore(), ProjAppointment.class);
@@ -536,6 +515,8 @@ public class ProjActivityLogController extends FormBasicController {
 		addActivityFilterValue(filterSV, "activity.log.message.edit.description");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.status");
 		addActivityFilterValue(filterSV, "activity.log.message.edit.color");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		return filterSV;
 	}
 	
@@ -543,6 +524,7 @@ public class ProjActivityLogController extends FormBasicController {
 		switch (activity.getAction()) {
 		case milestoneCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case milestoneStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
+		case milestoneTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
 		case milestoneContentUpdate: {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjMilestone before = ProjectXStream.fromXml(activity.getBefore(), ProjMilestone.class);
@@ -572,6 +554,37 @@ public class ProjActivityLogController extends FormBasicController {
 			break;
 		}
 		default: //
+		}
+	}
+	
+	private void addActivityReferenceAddRow(List<ProjActivityLogRow> rows, ProjActivity activity,
+			ProjArtefactItems artefactReferenceItems) {
+		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
+		if (StringHelper.containsNonWhitespace(value)) {
+			addRow(rows, activity, "activity.log.message.reference.add", null, value);
+		}
+	}
+
+	private void addActivityReferenceRemoveRow(List<ProjActivityLogRow> rows, ProjActivity activity,
+			ProjArtefactItems artefactReferenceItems) {
+		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
+		if (StringHelper.containsNonWhitespace(value)) {
+			addRow(rows, activity, "activity.log.message.reference.remove", value, null); 
+		}
+	}
+	
+	private void addActivityTagsUpdateRows(List<ProjActivityLogRow> rows, ProjActivity activity) {
+		List<String> tagsBefore = ProjectXStream.tagsFromXml(activity.getBefore());
+		List<String> tagsAfter = ProjectXStream.tagsFromXml(activity.getAfter());
+		for (String tagAfter : tagsAfter) {
+			if (!tagsBefore.contains(tagAfter)) {
+				addRow(rows, activity, "activity.log.message.tag.add", null, tagAfter); 
+			}
+		}
+		for (String tagBefore : tagsBefore) {
+			if (!tagsAfter.contains(tagBefore)) {
+				addRow(rows, activity, "activity.log.message.tag.remove", tagBefore, null); 
+			}
 		}
 	}
 

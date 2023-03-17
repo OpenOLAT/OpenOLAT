@@ -19,9 +19,12 @@
  */
 package org.olat.modules.project.ui;
 
+import java.text.Collator;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
@@ -187,6 +190,20 @@ public class ProjectUIFactory {
 		case achieved -> "o_icon_proj_milestone_status_achieved";
 		default -> null;
 		};
+	}
+	
+	public static String getFormattedTags(Locale locale, List<String> tagDisplayNames) {
+		if (tagDisplayNames == null || tagDisplayNames.isEmpty()) return null;
+		
+		Collator collator = Collator.getInstance(locale);
+		tagDisplayNames.sort((t1, t2) -> collator.compare(t1,  t2));
+		StringBuilder sb = new StringBuilder();
+		sb.append("<span class=\"o_tag_selection_tags\">");
+		for (String displayName : tagDisplayNames) {
+			sb.append("<span class=\"o_tag o_selection_tag\">").append(displayName).append("</span>");
+		}
+		sb.append("</span>");
+		return sb.toString();
 	}
 
 	public static String getActionIconCss(Action action) {

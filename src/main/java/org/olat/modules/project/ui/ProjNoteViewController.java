@@ -59,7 +59,7 @@ public class ProjNoteViewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjNoteContentViewController(ureq, getWindowControl(), noteInfo.getNote());
+		contentCtrl = new ProjNoteContentViewController(ureq, getWindowControl(), noteInfo.getNote(), noteInfo.getTagDisplayNames());
 		listenTo(contentCtrl);
 		formLayout.add("content", new ComponentWrapperElement("contentView", contentCtrl.getInitialComponent()));
 		

@@ -1151,6 +1151,12 @@ $o-tag-background-color			: $brand-primary !default;
 $o-tag-font-color				: #fff;
 $o-tag-selected-background-color: $o-button-dirty-bg;
 $o-tag-selected-border-color	: $o-button-dirty-border;
+$o-tag-selection-border-color					: $btn-default-border !default;
+$o-tag-selection-background-color				: $btn-default-bg !default;
+$o-tag-selection-font-color						: $btn-default-color !default;
+$o-tag-selection-selected-border-color			: $btn-primary-border !default;
+$o-tag-selection-selected-background-color 		: $btn-primary-bg !default;
+$o-tag-selection-selected-font-color				: $btn-primary-color !default;
 
 /* Competences */
 $o-competences-color				: darken($brand-primary, 5%);

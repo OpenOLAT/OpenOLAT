@@ -56,7 +56,9 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjAppointmentSearchParams;
+import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneInfo;
 import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjMilestoneSearchParams;
 import org.olat.modules.project.ProjMilestoneStatus;
@@ -136,7 +138,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
 		appointmentSearchParams.setProject(project);
 		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams);
+		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.MEMBERS);
 		List<ProjAppointment> appointmentReadWrite = new ArrayList<>();
 		List<ProjAppointment> appointmentReadOnly = new ArrayList<>();
 		for (ProjAppointmentInfo appointmentInfo : appointmentInfos) {
@@ -397,14 +399,15 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
+		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams,
+				ProjArtefactInfoParams.of(true, false, false, true));
 		if (appointmentInfos.isEmpty()) {
 			return;
 		}
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
 		appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
-				appointmentInfo.getAppointment(), appointmentInfo.getMembers(), kalendarEvent);
+				appointmentInfo, kalendarEvent);
 		listenTo(appointmentPreviewCtrl);
 		
 		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -422,14 +425,14 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
-		if (milestones.isEmpty()) {
+		List<ProjMilestoneInfo> milestonesInfos = projectService.getMilestoneInfos(searchParams, ProjArtefactInfoParams.TAG_DISPLAY_NAMES);
+		if (milestonesInfos.isEmpty()) {
 			return;
 		}
-		ProjMilestone milestone = milestones.get(0);
+		ProjMilestoneInfo milestoneInfo = milestonesInfos.get(0);
 		
 		milestonePreviewCtrl = new ProjMilestonePreviewController(ureq, getWindowControl(), secCallback,
-				milestone);
+				milestoneInfo);
 		listenTo(milestonePreviewCtrl);
 		
 		calloutCtr = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -503,7 +506,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setIdentifiers(List.of(externalId));
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams);
+		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS);
 		if (appointmentInfos.isEmpty()) {
 			return;
 		}

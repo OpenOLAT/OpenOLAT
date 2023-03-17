@@ -117,7 +117,7 @@ public class ProjFileCreateController extends FormBasicController {
 		filenameEl = uifactory.addTextElement("file.filename", 100, null, formLayout);
 		filenameEl.setMandatory(true);
 		
-		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm);
+		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, project, null);
 		fileEditCtrl.setFilenameVisibility(false);
 		listenTo(fileEditCtrl);
 		formLayout.add("file", fileEditCtrl.getInitialFormItem());
@@ -183,6 +183,8 @@ public class ProjFileCreateController extends FormBasicController {
 			try (InputStream content = docTemplate.getContentProvider().getContent(getLocale())) {
 				file = projectService.createFile(getIdentity(), project, getFilename(), content, false);
 				if (file != null) {
+					projectService.updateTags(getIdentity(), file.getArtefact(), fileEditCtrl.getTagDisplayValues());
+					
 					VFSMetadata vfsMetadata = file.getVfsMetadata();
 					fileEditCtrl.updateVfsMetdata(vfsMetadata);
 					vfsMetadata = vfsRepositoryService.updateMetadata(vfsMetadata);

@@ -17,18 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.tagging.manager;
+package org.olat.core.commons.services.tag.ui;
 
-import java.util.List;
-
-public interface TagProposalManager {
-	
-	/**
-	 * get some good tags for the given text
-	 * @param referenceText
-	 * @param onlyExisting if true, returns only such tags, that yet exist
-	 * @return
-	 */
-	public List<String> proposeTagsForInputText(String referenceText, boolean onlyExisting);
+/**
+ * 
+ * Initial date: 6 Mar 2023<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
+ */
+public class TaggingUIFactory {
 
 }

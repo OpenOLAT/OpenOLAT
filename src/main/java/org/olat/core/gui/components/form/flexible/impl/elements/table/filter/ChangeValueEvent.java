@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Event;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class ChangeValueEvent extends Event {
+public class ChangeValueEvent extends Event {
 
 	private static final long serialVersionUID = -3124888245348453579L;
 

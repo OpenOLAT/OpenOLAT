@@ -63,7 +63,7 @@ public interface ProjActivity extends CreateInfo {
 	
 	public static List<Action> TIMELINE_ACTIONS = List.of(
 			Action.projectCreate,
-			Action.projectContentContent,
+			Action.projectContentUpdate,
 			Action.projectStatusActive,
 			Action.projectStatusDone,
 			Action.projectStatusDelete,
@@ -87,7 +87,7 @@ public interface ProjActivity extends CreateInfo {
 	
 	public enum Action {
 		projectCreate(ActionTarget.project),
-		projectContentContent(ActionTarget.project),
+		projectContentUpdate(ActionTarget.project),
 		projectStatusActive(ActionTarget.project),
 		projectStatusDone(ActionTarget.project),
 		projectStatusDelete(ActionTarget.project),
@@ -100,6 +100,7 @@ public interface ProjActivity extends CreateInfo {
 		fileCreate(ActionTarget.file),
 		fileUpload(ActionTarget.file),
 		fileContentUpdate(ActionTarget.file),
+		fileTagsUpdate(ActionTarget.file),
 		fileMemberAdd(ActionTarget.file),
 		fileMemberRemove(ActionTarget.file),
 		fileRolesUpdate(ActionTarget.file),
@@ -111,6 +112,7 @@ public interface ProjActivity extends CreateInfo {
 		fileEdit(ActionTarget.file),
 		noteCreate(ActionTarget.note),
 		noteContentUpdate(ActionTarget.note),
+		noteTagsUpdate(ActionTarget.note),
 		noteMemberAdd(ActionTarget.note),
 		noteMemberRemove(ActionTarget.note),
 		noteRolesUpdate(ActionTarget.note),
@@ -121,6 +123,7 @@ public interface ProjActivity extends CreateInfo {
 		noteDownload(ActionTarget.note),
 		appointmentCreate(ActionTarget.appointment),
 		appointmentContentUpdate(ActionTarget.appointment),
+		appointmentTagsUpdate(ActionTarget.appointment),
 		appointmentMemberAdd(ActionTarget.appointment),
 		appointmentMemberRemove(ActionTarget.appointment),
 		appointmentRolesUpdate(ActionTarget.appointment),
@@ -130,6 +133,7 @@ public interface ProjActivity extends CreateInfo {
 		appointmentStatusDelete(ActionTarget.appointment),
 		milestoneCreate(ActionTarget.milestone),
 		milestoneContentUpdate(ActionTarget.milestone),
+		milestoneTagsUpdate(ActionTarget.milestone),
 		milestoneStatusDelete(ActionTarget.milestone);
 		
 		private final ActionTarget target;
@@ -141,7 +145,18 @@ public interface ProjActivity extends CreateInfo {
 		public ActionTarget getTarget() {
 			return target;
 		}
-
+		
+		public static Action updateTags(String type) {
+			switch (type) {
+			case ProjFile.TYPE: return fileTagsUpdate;
+			case ProjNote.TYPE: return noteTagsUpdate;
+			case ProjAppointment.TYPE: return appointmentTagsUpdate;
+			case ProjMilestone.TYPE: return milestoneTagsUpdate;
+			default:
+				throw new AssertException("No update tags project action for " + type);
+			}
+		}
+			
 		public static Action addMember(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberAdd;

@@ -99,7 +99,11 @@ public interface ProjectService {
 	
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts);
 	
+	public void updateTags(Identity doer, ProjArtefactRef artefact, List<String> displayNames);
 	
+	public List<ProjTagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact);
+	
+
 	/*
 	 * Files 
 	 */
@@ -117,6 +121,8 @@ public interface ProjectService {
 	public long getFilesCount(ProjFileSearchParams searchParams);
 	
 	public List<ProjFile> getFiles(ProjFileSearchParams searchParams);
+	
+	public List<ProjFileInfo> getFileInfos(ProjFileSearchParams searchParams, ProjArtefactInfoParams infoParams);
 	
 	
 	/*
@@ -137,7 +143,7 @@ public interface ProjectService {
 
 	public List<ProjNote> getNotes(ProjNoteSearchParams searchParams);
 	
-	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams);
+	public List<ProjNoteInfo> getNoteInfos(ProjNoteSearchParams searchParams, ProjArtefactInfoParams infoParams);
 
 	public VFSContainer getProjectContainer(ProjProjectRef project);
 	
@@ -171,7 +177,7 @@ public interface ProjectService {
 
 	public List<ProjAppointment> getAppointments(ProjAppointmentSearchParams searchParams);
 	
-	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams);
+	public List<ProjAppointmentInfo> getAppointmentInfos(ProjAppointmentSearchParams searchParams, ProjArtefactInfoParams infoParams);
 	
 	public Kalendar getAppointmentsKalendar(List<ProjAppointment> appointments);
 	
@@ -197,6 +203,8 @@ public interface ProjectService {
 	
 	public List<ProjMilestone> getMilestones(ProjMilestoneSearchParams searchParams);
 	
+	public List<ProjMilestoneInfo> getMilestoneInfos(ProjMilestoneSearchParams searchParams, ProjArtefactInfoParams infoParams);
+
 	public Kalendar getMilestonesKalendar(List<ProjMilestone> milestones);
 	
 	

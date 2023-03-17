@@ -148,6 +148,9 @@
 			@extend %o_muted;
 			@extend %o_flex_block_one_line_left;
 		}
+		.o_proj_card_tags {
+			margin-top: 0.5em;
+		}
 	}
 }
 
@@ -184,6 +187,15 @@
 						background-repeat:no-repeat;
 						background-position:50% 50%;	
 						background-size: contain;
+					}
+					.o_proj_file_tags {
+						position: absolute;
+						bottom: 10px;
+						right: 20px;
+						max-width: 90%;
+						.o_tag_selection_tags {
+							justify-content: end;
+						}
 					}
 				}
 				.o_proj_file_meta {
@@ -271,6 +283,16 @@
 	.o_proj_status_color {
 		display: flex;
 		gap: 10px;
+	}
+}
+.o_proj_appointment_preview {
+	.o_proj_appointment_tags {
+		margin-top: 0.5em;
+	}
+}
+.o_proj_milestone_preview {
+	.o_proj_milestone_tags {
+		margin-top: 0.5em;
 	}
 }
 .o_proj_timeline {

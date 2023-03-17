@@ -23,5 +23,10 @@
 				$row.modified
 			</div>
 		</div>
+		<div class="o_proj_note_tags o_proj_card_tags">
+			#if($r.isNotEmpty($row.formattedTags))
+				$row.formattedTags
+			#end
+		</div>
 	</div>
 </div>

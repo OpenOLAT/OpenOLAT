@@ -28,6 +28,7 @@ package org.olat.modules.project;
 public enum ProjNoteFilter {
 	
 	my,
+	tag,
 	status;
 
 }

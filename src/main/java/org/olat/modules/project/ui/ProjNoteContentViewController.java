@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -37,7 +39,7 @@ import org.olat.modules.project.ProjNote;
  */
 public class ProjNoteContentViewController extends BasicController {
 
-	protected ProjNoteContentViewController(UserRequest ureq, WindowControl wControl, ProjNote note) {
+	protected ProjNoteContentViewController(UserRequest ureq, WindowControl wControl, ProjNote note, List<String> tagDisplayNames) {
 		super(ureq, wControl);
 		
 		VelocityContainer mainVC = createVelocityContainer("note_content_view");
@@ -46,6 +48,8 @@ public class ProjNoteContentViewController extends BasicController {
 		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), note);
 		mainVC.contextPut("displayName", displayName);
 		mainVC.contextPut("text", Formatter.escWithBR(StringHelper.blankIfNull(note.getText())).toString());
+		
+		mainVC.contextPut("tags", ProjectUIFactory.getFormattedTags(getLocale(), tagDisplayNames));
 	}
 
 	@Override

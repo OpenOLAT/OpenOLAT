@@ -46,7 +46,7 @@
 		<class>org.olat.core.commons.services.mark.impl.MarkImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.SubscriberImpl</class>
 		<class>org.olat.core.commons.services.notifications.model.PublisherImpl</class>
-		<class>org.olat.core.commons.services.tagging.model.TagImpl</class>
+		<class>org.olat.core.commons.services.tag.model.TagImpl</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTask</class>
 		<class>org.olat.core.commons.services.taskexecutor.model.PersistentTaskModifier</class>
 		<class>org.olat.core.commons.services.commentAndRating.model.UserRatingImpl</class>
@@ -257,6 +257,7 @@
 		<class>org.olat.modules.project.model.ProjProjectToOrganisationImpl</class>
 		<class>org.olat.modules.project.model.ProjProjectUserInfoImpl</class>
 		<class>org.olat.modules.project.model.ProjNoteImpl</class>
+		<class>org.olat.modules.project.model.ProjTagImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>
 		<class>org.olat.modules.qpool.model.PoolItemShortView</class>

@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
@@ -41,6 +42,8 @@ public class ProjFileRow implements ProjFileRef {
 	private final Date lastModifiedDate;
 	private final Identity lastModifiedBy;
 	private String modified;
+	private Set<Long> tagKeys;
+	private String formattedTags;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
 	private FormLink selectLink;
@@ -86,6 +89,22 @@ public class ProjFileRow implements ProjFileRef {
 
 	public void setModified(String modified) {
 		this.modified = modified;
+	}
+
+	public Set<Long> getTagKeys() {
+		return tagKeys;
+	}
+
+	public void setTagKeys(Set<Long> tagKeys) {
+		this.tagKeys = tagKeys;
+	}
+
+	public String getFormattedTags() {
+		return formattedTags;
+	}
+
+	public void setFormattedTags(String formattedTags) {
+		this.formattedTags = formattedTags;
 	}
 
 	public boolean isThumbnailAvailable() {

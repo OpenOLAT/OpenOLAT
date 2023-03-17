@@ -15,6 +15,11 @@
 			$r.xssScan($description)
 		</div>
 	#end
+	#if($r.isNotEmpty($formattedTags))
+		<div class="o_proj_milestone_tags">
+			$formattedTags
+		</div>
+	#end
 	#if($r.available("milestone.mark.done"))
 		<div class="o_button_group o_button_group_left o_proj_milestone_mark_done">
 			$r.render("milestone.mark.done")

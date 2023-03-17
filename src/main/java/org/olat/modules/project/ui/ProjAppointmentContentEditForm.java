@@ -21,12 +21,17 @@ package org.olat.modules.project.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarColorChooserController;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
@@ -62,8 +67,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private static final String RECURRENCE_NONE = "none";
 	private static final String CMD_COLOR = "color";
 
-	private final ProjAppointment appointment;
 	private TextElement subjectEl;
+	private TagSelection tagsEl;
 	private FormToggle allDayEl;
 	private DateChooser startEl;
 	private DateChooser endEl;
@@ -73,15 +78,20 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private DropdownItem colorEl;
 	private TextAreaElement descriptionEl;
 	
+	private final ProjAppointment appointment;
+	private final List<? extends TagInfo> projectTags;
+	private final Collection<? extends TagRef> artefactTags;
+
 	@Autowired
 	private CalendarManager calendarManager;
 
-
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment) {
+			ProjAppointment appointment, List<? extends TagInfo> projectTags, Collection<? extends TagRef> artefactTags) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "appointment_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.appointment = appointment;
+		this.projectTags = projectTags;
+		this.artefactTags = artefactTags;
 		
 		initForm(ureq);
 		updateAllDayUI();
@@ -102,6 +112,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		
 		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, appointment.getSubject(), formLayout);
 		subjectEl.setMandatory(true);
+		
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
 		
 		allDayEl = uifactory.addToggleButton("all.day", null, "&nbsp;&nbsp;", formLayout, null, null);
 		allDayEl.addActionListener(FormEvent.ONCHANGE);
@@ -282,6 +294,10 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		return recurrenceRuleEl.isOneSelected() && !RECURRENCE_NONE.equals(recurrenceRuleEl.getSelectedKey())
 				? calendarManager.getRecurrenceRule(recurrenceRuleEl.getSelectedKey(), recurrenceEndEl.getDate())
 				: null;
+	}
+	
+	public List<String> getTagDisplayValues() {
+		return tagsEl.getDisplayNames();
 	}
 
 }

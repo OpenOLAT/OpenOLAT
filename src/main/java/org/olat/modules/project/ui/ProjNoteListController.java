@@ -26,9 +26,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -49,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -74,6 +78,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteFilter;
 import org.olat.modules.project.ProjNoteInfo;
@@ -81,6 +86,7 @@ import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjNoteSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjNoteDataModel.NoteCols;
@@ -174,6 +180,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.id));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.displayName, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
@@ -211,6 +218,11 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		SelectionValues myValues = new SelectionValues();
 		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("note.filter.my.value")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("note.filter.my"), ProjNoteFilter.my.name(), myValues, true));
+		
+		List<ProjTagInfo> tagInfos = projectService.getTagInfos(project, null);
+		if (!tagInfos.isEmpty()) {
+			filters.add(new FlexiTableTagFilter(translate("tags"), ProjNoteFilter.tag.name(), tagInfos, true));
+		}
 		
 		SelectionValues statusValues = new SelectionValues();
 		statusValues.add(SelectionValues.entry(ProjectStatus.active.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.active)));
@@ -287,7 +299,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjNoteSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams);
+		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams, ProjArtefactInfoParams.of(true, false, true, true));
 		List<ProjNoteRow> rows = new ArrayList<>(noteInfos.size());
 		
 		for (ProjNoteInfo info : noteInfos) {
@@ -302,6 +314,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
 			
+			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
+			row.setFormattedTags(ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
+			
 			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeSelectLink(row);
 			forgeToolsLink(row);
@@ -309,6 +324,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			rows.add(row);
 		}
 		
+		applyFilters(rows);
 		dataModel.setObjects(rows);
 		if (sort) {
 			sortTable();
@@ -362,6 +378,21 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
 				} else {
 					searchParams.setStatus(null);
+				}
+			}
+		}
+	}
+	
+	private void applyFilters(List<ProjNoteRow> rows) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (ProjNoteFilter.tag.name().equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableTagFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					Set<Long> selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
+					rows.removeIf(row -> row.getTagKeys() == null || !row.getTagKeys().stream().anyMatch(key -> selectedTagKeys.contains(key)));
 				}
 			}
 		}
@@ -562,7 +593,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	protected void doOpenNote(UserRequest ureq, ProjNoteRef noteRef, boolean edit) {
 		ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
 		searchParams.setNotes(List.of(noteRef));
-		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams);
+		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams, ProjArtefactInfoParams.ALL);
 		if (noteInfos.isEmpty()) {
 			loadModel(ureq, false);
 			return;

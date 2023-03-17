@@ -1,4 +1,16 @@
 
+-- Tags
+create table o_tag_tag (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   t_display_name varchar(256) not null,
+   primary key (id)
+);
+alter table o_tag_tag ENGINE = InnoDB;
+
+create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
+
+
 -- Projects
 create table o_proj_project (
    id bigint not null auto_increment,
@@ -49,6 +61,14 @@ create table o_proj_artefact_to_artefact (
    fk_artefact2 bigint not null,
    fk_project bigint not null,
    fk_creator bigint not null,
+   primary key (id)
+);
+create table o_proj_tag (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_project bigint not null,
+   fk_artefact bigint,
+   fk_tag bigint not null,
    primary key (id)
 );
 create table o_proj_file (
@@ -121,6 +141,7 @@ alter table o_proj_project_to_org ENGINE = InnoDB;
 alter table o_proj_project_user_info ENGINE = InnoDB;
 alter table o_proj_artefact ENGINE = InnoDB;
 alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
+alter table o_proj_tag ENGINE = InnoDB;
 alter table o_proj_file ENGINE = InnoDB;
 alter table o_proj_note ENGINE = InnoDB;
 alter table o_proj_appointment ENGINE = InnoDB;
@@ -143,6 +164,10 @@ alter table o_proj_artefact_to_artefact add constraint projata_artefact2_idx for
 alter table o_proj_artefact_to_artefact add constraint projata_project_idx foreign key (fk_project) references o_proj_project (id);
 alter table o_proj_artefact_to_artefact add constraint projata_creator_idx foreign key (fk_creator) references o_bs_identity(id);
 
+alter table o_proj_tag add constraint tag_project_idx foreign key (fk_project) references o_proj_project (id);
+alter table o_proj_tag add constraint tag_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+alter table o_proj_tag add constraint tag_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
@@ -158,3 +183,4 @@ alter table o_proj_activity add constraint activity_artefact_ref_idx foreign key
 alter table o_proj_activity add constraint activity_member_idx foreign key (fk_member) references o_bs_identity (id);
 alter table o_proj_activity add constraint activity_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
+

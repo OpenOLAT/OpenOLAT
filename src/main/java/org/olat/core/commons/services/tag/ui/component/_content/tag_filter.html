@@ -1,0 +1,20 @@
+#if($r.isNotNull($numOfItems) && $numOfItems > 0)
+	<div class="clearfix">
+		<div class="input-group o_tag_selection_search">$r.render("quicksearch")<div class="input-group-btn">$r.render("resetQuickSearch") $r.render("quickSearchButton")</div></div>
+	</div>
+	<div class="clearfix #if($r.isNotNull($numOfItems) && $numOfItems > 15) o_filter_search_list_values #end">
+	$r.render("tags","minimal")
+	</div>
+#else 
+	$r.translate("no.values.available")
+#end
+<div class="o_block">
+	#if($r.available("update"))
+		$r.render("update")
+	#end
+	#if($r.isNotNull($numOfItems) && $numOfItems > 0)
+		#if($r.available("clear"))
+			$r.render("clear")
+		#end
+	#end
+</div>

@@ -19,20 +19,14 @@
  */
 package org.olat.modules.project;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
-
 /**
  * 
  * Initial date: 13 Feb 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjAppointmentInfo {
+public interface ProjAppointmentInfo extends ProjArtefactInfo {
 
 	public ProjAppointment getAppointment();
-	
-	public Set<Identity> getMembers();
 	
 }

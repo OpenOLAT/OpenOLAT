@@ -63,6 +63,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		switch(COLS[col]) {
 		case id: return row.getKey();
 		case displayName: return row.getDisplayName();
+		case tags: return row.getFormattedTags();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getLastModifiedDate();
 		case lastModifiedBy: return row.getLastModifiedBy();
@@ -74,6 +75,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 	public enum FileCols implements FlexiSortableColumnDef {
 		id("id"),
 		displayName("title"),
+		tags("tags"),
 		creationDate("created"),
 		lastModifiedDate("last.modified.date"),
 		lastModifiedBy("last.modified.by"),

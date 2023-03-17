@@ -74,6 +74,7 @@ public class ProjNoteDataModel extends DefaultFlexiTableDataModel<ProjNoteRow> i
 		case id: return row.getKey();
 		case displayName: return row.getDisplayName();
 		case text: return row.getText();
+		case tags: return row.getFormattedTags();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getContentModifiedDate();
 		case lastModifiedBy: return row.getContentModifiedBy();
@@ -87,6 +88,7 @@ public class ProjNoteDataModel extends DefaultFlexiTableDataModel<ProjNoteRow> i
 		displayName("title"),
 		participants("note.participants"),
 		text("note.text"),
+		tags("tags"),
 		creationDate("created"),
 		lastModifiedDate("last.modified.date"),
 		lastModifiedBy("last.modified.by"),

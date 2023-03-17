@@ -575,7 +575,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		switch (activity.getAction()) {
 		case projectCreate: row.setMessage(translate("timeline.activity.project.create")); break;
-		case projectContentContent: row.setMessage(translate("timeline.activity.project.content.update")); break;
+		case projectContentUpdate: row.setMessage(translate("timeline.activity.project.content.update")); break;
 		case projectStatusActive: row.setMessage(translate("timeline.activity.project.status.active")); break;
 		case projectStatusDone: row.setMessage(translate("timeline.activity.project.status.done")); break;
 		case projectStatusDelete: row.setMessage(translate("timeline.activity.project.status.deleted")); break;

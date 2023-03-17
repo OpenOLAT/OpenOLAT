@@ -19,21 +19,13 @@
  */
 package org.olat.modules.project;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
-
 /**
  * 
  * Initial date: 19 Dec 2022<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjNoteInfo {
+public interface ProjNoteInfo extends ProjArtefactInfo {
 
 	public ProjNote getNote();
-	
-	public Set<Identity> getMembers();
-	
-	public int getNumReferences();
 }

@@ -20,7 +20,6 @@
 package org.olat.modules.project.ui;
 
 import java.util.Date;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
@@ -34,11 +33,11 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.model.ProjFormattedDateRange;
 import org.olat.modules.project.ui.event.AppointmentDeleteEvent;
@@ -69,11 +68,11 @@ public class ProjAppointmentPreviewController extends BasicController {
 	private CalendarManager calendarManager;
 	
 	public ProjAppointmentPreviewController(UserRequest ureq, WindowControl wControl,
-			ProjProjectSecurityCallback secCallback, ProjAppointment appointment, Set<Identity> members,
+			ProjProjectSecurityCallback secCallback, ProjAppointmentInfo info,
 			KalendarEvent kalendarEvent) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
-		this.appointment = appointment;
+		this.appointment = info.getAppointment();
 		this.kalendarEvent = kalendarEvent;
 		
 		mainVC = createVelocityContainer("appointment_preview");
@@ -89,10 +88,13 @@ public class ProjAppointmentPreviewController extends BasicController {
 		mainVC.contextPut("description", appointment.getDescription());
 		mainVC.contextPut("location", appointment.getLocation());
 		
-		String userNames = members.stream()
+		String userNames = info.getMembers().stream()
 				.map(member -> userManager.getUserDisplayName(member))
 				.collect(Collectors.joining(" / "));
 		mainVC.contextPut("members", userNames);
+		
+		
+		mainVC.contextPut("formattedTags", ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
 		
 		String recurrenceRule = CalendarUtils.getRecurrence(appointment.getRecurrenceRule());
 		if (StringHelper.containsNonWhitespace(recurrenceRule)) {
@@ -119,10 +121,10 @@ public class ProjAppointmentPreviewController extends BasicController {
 		listenTo(referencesCtrl);
 		mainVC.put("references", referencesCtrl.getInitialComponent());
 		
-		if (secCallback.canEditAppointment(appointment, members.contains(getIdentity()))) {
+		if (secCallback.canEditAppointment(appointment, info.getMembers().contains(getIdentity()))) {
 			editLink = LinkFactory.createButton("edit", mainVC, this);
 		}
-		if (secCallback.canDeleteAppointment(appointment, members.contains(getIdentity()))) {
+		if (secCallback.canDeleteAppointment(appointment, info.getMembers().contains(getIdentity()))) {
 			deleteLink = LinkFactory.createButton("delete", mainVC, this);
 		}
 	}

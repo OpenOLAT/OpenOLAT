@@ -19,9 +19,7 @@
  */
 package org.olat.modules.project.model;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjArtefactInfo;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteInfo;
 
@@ -31,37 +29,17 @@ import org.olat.modules.project.ProjNoteInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjNoteInfoImpl implements ProjNoteInfo {
+public class ProjNoteInfoImpl extends ProjArtefactInfoImpl implements ProjNoteInfo {
 	
-	private ProjNote note;
-	private Set<Identity> members;
-	private int numReferences;
+	private final ProjNote note;
 	
+	public ProjNoteInfoImpl(ProjNote note, ProjArtefactInfo info) {
+		super(info);
+		this.note = note;
+	}
+
 	@Override
 	public ProjNote getNote() {
 		return note;
 	}
-	
-	public void setNote(ProjNote note) {
-		this.note = note;
-	}
-	
-	@Override
-	public Set<Identity> getMembers() {
-		return members;
-	}
-	
-	public void setMembers(Set<Identity> members) {
-		this.members = members;
-	}
-
-	@Override
-	public int getNumReferences() {
-		return numReferences;
-	}
-
-	public void setNumReferences(int numReferences) {
-		this.numReferences = numReferences;
-	}
-
 }

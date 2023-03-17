@@ -17,34 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-
-package org.olat.core.commons.services.tagging.model;
-
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
+package org.olat.modules.project;
 
 /**
  * 
- * Description:<br>
- * Interface for the tag object
- * 
- * <P>
- * Initial Date:  19 juil. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 15 Mar 2023<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ *
  */
-public interface Tag {
+public interface ProjFileInfo extends ProjArtefactInfo {
+	
+	public ProjFile getFile();
 
-	public String getTag();
-	
-	public void setTag(String tag);
-	
-	public OLATResourceable getOLATResourceable();
-	
-	public String getResSubPath();
-	
-	public String getBusinessPath();
-	
-	public Identity getAuthor();
-	
-	public Long getKey();
 }

@@ -1,4 +1,14 @@
 
+-- Tags
+create table o_tag_tag (
+   id bigserial,
+   creationdate timestamp not null,
+   t_display_name varchar(256) not null,
+   primary key (id)
+);
+create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
+
+
 -- Projects
 create table o_proj_project (
    id bigserial,
@@ -49,6 +59,14 @@ create table o_proj_artefact_to_artefact (
    fk_artefact2 int8 not null,
    fk_project int8 not null,
    fk_creator int8 not null,
+   primary key (id)
+);
+create table o_proj_tag (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_project int8 not null,
+   fk_artefact int8,
+   fk_tag int8,
    primary key (id)
 );
 create table o_proj_file (
@@ -148,6 +166,13 @@ create index idx_projata_project_idx on o_proj_artefact_to_artefact (fk_project)
 alter table o_proj_artefact_to_artefact add constraint projata_creator_idx foreign key (fk_creator) references o_bs_identity(id);
 create index idx_projata_creator_idx on o_proj_artefact_to_artefact (fk_creator);
 
+alter table o_proj_tag add constraint tag_project_idx foreign key (fk_project) references o_proj_project(id);
+create index idx_tag_project_idx on o_proj_tag (fk_project);
+alter table o_proj_tag add constraint tag_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_tag_artefact_idx on o_proj_tag (fk_artefact);
+alter table o_proj_tag add constraint tag_tag_idx foreign key (fk_tag) references o_tag_tag(id);
+create index idx_tag_tag_idx on o_proj_tag (fk_tag);
+
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_file_artefact_idx on o_proj_file (fk_artefact);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
@@ -177,4 +202,3 @@ create index idx_activity_member_idx on o_proj_activity (fk_member);
 alter table o_proj_activity add constraint activity_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_activity_organisation_idx on o_proj_activity (fk_organisation);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
-

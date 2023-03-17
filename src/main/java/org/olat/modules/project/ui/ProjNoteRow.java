@@ -45,6 +45,8 @@ public class ProjNoteRow implements ProjNoteRef {
 	private String displayName;
 	private String text;
 	private String modified;
+	private Set<Long> tagKeys;
+	private String formattedTags;
 	private Component userPortraits;
 	private FormLink selectLink;
 	private FormLink toolsLink;
@@ -102,6 +104,22 @@ public class ProjNoteRow implements ProjNoteRef {
 		this.modified = modified;
 	}
 	
+	public Set<Long> getTagKeys() {
+		return tagKeys;
+	}
+
+	public void setTagKeys(Set<Long> tagKeys) {
+		this.tagKeys = tagKeys;
+	}
+
+	public String getFormattedTags() {
+		return formattedTags;
+	}
+
+	public void setFormattedTags(String formattedTags) {
+		this.formattedTags = formattedTags;
+	}
+
 	public String getUserPortraitsName() {
 		return userPortraits != null? userPortraits.getComponentName(): null;
 	}

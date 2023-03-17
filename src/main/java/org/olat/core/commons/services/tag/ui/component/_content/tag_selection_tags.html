@@ -1,0 +1,12 @@
+<div class="o_tag_selection_results">
+	#if($r.available("create"))
+		<div class="o_tag_selection_create">
+			$r.render("create")
+		</div>
+	#end
+	<div class="clearfix o_filter_search_list_values o_tag_selection_tags">
+		#foreach($tag in $tags)
+			$r.render($tag.getLinkName())
+		#end
+	</div>
+</div>

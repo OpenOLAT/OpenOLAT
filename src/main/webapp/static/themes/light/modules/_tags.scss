@@ -59,3 +59,95 @@
 	font-size: 75%;
 	font-weight: normal;
 }
+
+
+/** Tag selection element **/
+.o_tag_selection_button {
+	font-size: 12px;
+	display: flex;
+	&>span {
+		width: 100%;
+	}
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+	.o_tag_selection_tags {
+		.o_tag {
+			background-color: #ffffff;
+			color: $o-competences-font-color;
+			border-color: $o-competences-color; 
+			border-radius: 0.5em;
+			margin: 0;
+		}
+	}
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-height: $input-height-base;
+	}
+}
+.o_tag_selection_button_tags {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.o_tag_selection_search {
+	margin-bottom: 10px;
+}
+
+.o_tag_selection_results {
+	.o_tag_selection_create {
+		line-height: 2em;
+	}
+}
+.o_tag_selection_tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	.o_tag {
+		@extend %o_nowrap;
+		margin: 0;
+	}
+}
+.o_tag.o_selection_tag {
+	border-color: $o-tag-selection-border-color;
+	background-color: $o-tag-selection-background-color;
+	color: $o-tag-selection-font-color;
+	
+	&.o_tag_in_button {
+		border-color: $o-tag-selection-selected-border-color;
+		color: $o-tag-selection-selected-border-color;
+	}
+	
+	&.o_tag_clickable {
+		&:hover {
+			text-decoration: none;
+			background-color: darken($o-tag-selection-background-color, 10%);
+			border-color: darken($o-tag-selection-border-color, 12%);
+		}
+		
+		&:active {
+			background-color: darken($o-tag-selection-background-color, 15%);
+			border-color: darken($o-tag-selection-background-color, 15%);
+		}
+	}
+	
+	&.o_tag_selected {
+		border-color: $o-tag-selection-selected-border-color;
+		background-color: $o-tag-selection-selected-background-color;
+		color: $o-tag-selection-selected-font-color;
+		
+		&.o_tag_clickable {
+			&:hover {
+				text-decoration: none;
+				background-color: darken($o-tag-selection-selected-background-color, 10%);
+				border-color: darken($o-tag-selection-selected-border-color, 10%);
+			}
+			
+			&:active {
+				background-color: darken($o-tag-selection-selected-background-color, 15%);
+				border-color: darken($o-tag-selection-selected-border-color, 15%);
+			}
+		}
+	}
+}

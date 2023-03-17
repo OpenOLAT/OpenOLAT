@@ -44,6 +44,11 @@
 			$r.xssScan($description)
 		</div>
 	#end
+	#if($r.isNotEmpty($formattedTags))
+		<div class="o_proj_appointment_tags">
+			$formattedTags
+		</div>
+	#end
 	<div class="o_proj_appointment_references">
 		$r.render("references")
 	</div>

@@ -22,17 +22,21 @@ package org.olat.modules.project.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -52,6 +56,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
@@ -82,12 +87,15 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjFileFilter;
+import org.olat.modules.project.ProjFileInfo;
 import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
@@ -174,6 +182,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.id));
 		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.displayName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
@@ -198,12 +207,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
 		
+		// Load before init filter because the filter uses the loaded data to get the available values.
+		loadModel(ureq, true);
 		if (isFullTable()) {
 			initFilters();
 			initFilterTabs(ureq);
 		}
 		doSelectFilterTab(null);
-		loadModel(ureq, true);
 	}
 	
 	private void initFilters() {
@@ -213,6 +223,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("file.filter.my.value")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("file.filter.my"), ProjFileFilter.my.name(), myValues, true));
 		
+		List<ProjTagInfo> tagInfos = projectService.getTagInfos(project, null);
+		if (!tagInfos.isEmpty()) {
+			filters.add(new FlexiTableTagFilter(translate("tags"), ProjFileFilter.tag.name(), tagInfos, true));
+		}
 		
 		SelectionValues suffixValues = new SelectionValues();
 		dataModel.getObjects().stream()
@@ -300,17 +314,20 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjFileSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjFile> files = projectService.getFiles(searchParams);
-		List<ProjFileRow> rows = new ArrayList<>(files.size());
+		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(false, false, true, true));
+		List<ProjFileRow> rows = new ArrayList<>(infos.size());
 		
-		for (ProjFile file : files) {
-			ProjFileRow row = new ProjFileRow(file);
-			VFSMetadata vfsMetadata = file.getVfsMetadata();
+		for (ProjFileInfo info : infos) {
+			ProjFileRow row = new ProjFileRow(info.getFile());
+			VFSMetadata vfsMetadata = info.getFile().getVfsMetadata();
 			
 			String modifiedDate = formatter.formatDateRelative(vfsMetadata.getFileLastModified());
 			String modifiedBy = userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy());
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
+			
+			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
+			row.setFormattedTags(ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
 			
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 			if (vfsItem instanceof VFSLeaf) {
@@ -327,12 +344,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				}
 			}
 			
-			forgeSelectLink(row, file, vfsMetadata, ureq.getUserSession().getRoles());
+			forgeSelectLink(row, info.getFile(), vfsMetadata, ureq.getUserSession().getRoles());
 			forgeToolsLink(row);
 			
 			rows.add(row);
 		}
 		
+		applyFilters(rows);
 		dataModel.setObjects(rows);
 		if (sort) {
 			sortTable();
@@ -385,6 +403,21 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
 				} else {
 					searchParams.setStatus(null);
+				}
+			}
+		}
+	}
+	
+	private void applyFilters(List<ProjFileRow> rows) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (ProjFileFilter.tag.name().equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableTagFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					Set<Long> selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
+					rows.removeIf(row -> row.getTagKeys() == null || !row.getTagKeys().stream().anyMatch(key -> selectedTagKeys.contains(key)));
 				}
 			}
 		}

@@ -790,20 +790,15 @@ create table o_bs_invitation (
    primary key (id)
 );
 
--- tagging
-create table o_tag (
-  tag_id int8 not null,
-  version int4 not null,
-  creationdate timestamp,
-  tag varchar(128) not null,
-  resname varchar(50) not null,
-  resid int8 not null,
-  ressubpath varchar(2048),
-  businesspath varchar(2048),
-  fk_author_id int8 not null,
-  primary key (tag_id)
+-- tag
+create table o_tag_tag (
+   id bigserial,
+   creationdate timestamp not null,
+   t_display_name varchar(256) not null,
+   primary key (id)
 );
 
+-- mail
 create table o_mail (
   mail_id int8 not null,
   meta_mail_id varchar(64),
@@ -819,7 +814,6 @@ create table o_mail (
   primary key (mail_id)
 );
 
--- mail recipient
 create table o_mail_to_recipient (
   pos int4 NOT NULL default 0,
   fk_mail_id int8,
@@ -839,7 +833,6 @@ create table o_mail_recipient (
   primary key (recipient_id)
 );
 
--- mail attachments
 create table o_mail_attachment (
    attachment_id int8 NOT NULL,
    creationdate timestamp,
@@ -3854,6 +3847,14 @@ create table o_proj_artefact_to_artefact (
    fk_creator int8 not null,
    primary key (id)
 );
+create table o_proj_tag (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_project int8 not null,
+   fk_artefact int8,
+   fk_tag int8,
+   primary key (id)
+);
 create table o_proj_file (
    id bigserial,
    creationdate timestamp not null,
@@ -4482,9 +4483,7 @@ alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_m
 create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
 
 -- tag
-alter table o_tag add constraint FK6491FCA5A4FA5DC foreign key (fk_author_id) references o_bs_identity (id);
-create index idx_tag_to_auth_idx on o_tag (fk_author_id);
-create index idx_tag_to_resid_idx on o_tag (resid);
+create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
@@ -5250,6 +5249,13 @@ alter table o_proj_artefact_to_artefact add constraint projata_project_idx forei
 create index idx_projata_project_idx on o_proj_artefact_to_artefact (fk_project);
 alter table o_proj_artefact_to_artefact add constraint projata_creator_idx foreign key (fk_creator) references o_bs_identity(id);
 create index idx_projata_creator_idx on o_proj_artefact_to_artefact (fk_creator);
+
+alter table o_proj_tag add constraint tag_project_idx foreign key (fk_project) references o_proj_project(id);
+create index idx_tag_project_idx on o_proj_tag (fk_project);
+alter table o_proj_tag add constraint tag_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_tag_artefact_idx on o_proj_tag (fk_artefact);
+alter table o_proj_tag add constraint tag_tag_idx foreign key (fk_tag) references o_tag_tag(id);
+create index idx_tag_tag_idx on o_proj_tag (fk_tag);
 
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_file_artefact_idx on o_proj_file (fk_artefact);

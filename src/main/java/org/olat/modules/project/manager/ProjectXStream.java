@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjectStatus;
@@ -109,6 +110,28 @@ public class ProjectXStream {
 		return roles != null && !roles.isEmpty()
 				? rolesXStream.toXML(new ArrayList<>(roles))
 				: null;
+	}
+	
+	private static final XStream tagsXStream = XStreamHelper.createXStreamInstance();
+	static {
+		Class<?>[] types = new Class[] {};
+		tagsXStream.addPermission(new ExplicitTypePermission(types));
+		tagsXStream.alias("Tags", List.class);
+		tagsXStream.alias("Tags", ArrayList.class);
+		tagsXStream.alias("Tag", String.class);
+	}
+	
+	public static String tagsToXml(Collection<String> roles) {
+		return roles != null && !roles.isEmpty()
+				? tagsXStream.toXML(new ArrayList<>(roles))
+				: null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static List<String> tagsFromXml(String xml) {
+		return StringHelper.containsNonWhitespace(xml)
+				? (ArrayList<String>) tagsXStream.fromXML(xml)
+				: List.of();
 	}
 	
 }

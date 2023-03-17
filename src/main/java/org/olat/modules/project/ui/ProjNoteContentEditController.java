@@ -19,6 +19,11 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -31,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjNote;
-import org.olat.modules.project.ProjNoteRef;
+import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,12 +49,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ProjNoteContentEditController extends FormBasicController {
 	
 	private TextElement titleEl;
+	private TagSelection tagsEl;
 	private TextAreaElement textEl;
 
-	private final ProjNoteRef note;
+	private final ProjNote note;
 	private final String tempIdentifier;
+	private final List<ProjTagInfo> projectTags;
+	private final Collection<? extends TagRef> artefactTags;
 	private String title;
 	private String text;
+	private List<String> tagDisplayName;
 	
 	@Autowired
 	private ProjectService projectService;
@@ -60,6 +69,9 @@ public class ProjNoteContentEditController extends FormBasicController {
 		this.tempIdentifier = tempIdentifier;
 		this.title = note.getTitle();
 		this.text = note.getText();
+		this.projectTags = projectService.getTagInfos(note.getArtefact().getProject(), note.getArtefact());
+		this.artefactTags = projectTags.stream().filter(ProjTagInfo::isSelected).toList();
+		this.tagDisplayName = projectTags.stream().filter(ProjTagInfo::isSelected).map(ProjTagInfo::getDisplayName).toList();
 		
 		initForm(ureq);
 	}
@@ -68,6 +80,9 @@ public class ProjNoteContentEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		titleEl = uifactory.addTextElement("title", 80, title, formLayout);
 		titleEl.addActionListener(FormEvent.ONCHANGE);
+		
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
+		tagsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		textEl = uifactory.addTextAreaElement("note.text", "note.text", -1, 4, 1, true, false, text, formLayout);
 		textEl.addActionListener(FormEvent.ONCHANGE);
@@ -78,6 +93,9 @@ public class ProjNoteContentEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (titleEl == source) {
 			title = titleEl.getValue();
+			doSave();
+		} else if (tagsEl == source) {
+			tagDisplayName = tagsEl.getDisplayNames();
 			doSave();
 		} else if (textEl == source) {
 			if (event instanceof TextAreaAutosaveEvent) {
@@ -99,11 +117,13 @@ public class ProjNoteContentEditController extends FormBasicController {
 	public void doSave() {
 		title = titleEl.getValue();
 		text = textEl.getValue();
+		tagDisplayName = tagsEl.getDisplayNames();
 		doSaveInternal();
 	}
 
 	private void doSaveInternal() {
 		projectService.updateNote(getIdentity(), note, tempIdentifier, title, text);
+		projectService.updateTags(getIdentity(), note.getArtefact(), tagDisplayName);
 	}
 
 }

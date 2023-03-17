@@ -27,12 +27,17 @@ package org.olat.core.gui.components.form.flexible;
 
 import java.io.File;
 import java.lang.management.MemoryType;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
+import org.olat.core.commons.services.tag.ui.component.TagSelectionImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -358,6 +363,14 @@ public class FormUIFactory {
 	public TaxonomyLevelSelection addTaxonomyLevelSelection(String name, String i18nLabel, FormItemContainer formLayout,
 			WindowControl wControl, Set<TaxonomyLevel> allTaxonomyLevels) {
 		TaxonomyLevelSelectionImpl tlsi = new TaxonomyLevelSelectionImpl(wControl, name, allTaxonomyLevels);
+		setLabelIfNotNull(i18nLabel, tlsi);
+		formLayout.add(tlsi);
+		return tlsi;
+	}
+	
+	public TagSelection addTagSelection(String name, String i18nLabel, FormItemContainer formLayout,
+			WindowControl wControl, List<? extends TagInfo> allTags, Collection<? extends TagRef> initialSelection) {
+		TagSelectionImpl tlsi = new TagSelectionImpl(wControl, name, allTags, initialSelection);
 		setLabelIfNotNull(i18nLabel, tlsi);
 		formLayout.add(tlsi);
 		return tlsi;

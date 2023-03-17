@@ -63,8 +63,8 @@ public class ProjFileEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm);
-		contentCtrl.setFilename(file.getArtefact().getProject(), file.getVfsMetadata().getFilename());
+		contentCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, file.getArtefact().getProject(), file);
+		contentCtrl.setFilename(file.getVfsMetadata().getFilename());
 		contentCtrl.updateUI(file.getVfsMetadata());
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
@@ -119,6 +119,7 @@ public class ProjFileEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		projectService.updateFile(getIdentity(), file, contentCtrl.getFilename(), contentCtrl.getTitle(), contentCtrl.getDescription());
+		projectService.updateTags(getIdentity(), file.getArtefact(), contentCtrl.getTagDisplayValues());
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}

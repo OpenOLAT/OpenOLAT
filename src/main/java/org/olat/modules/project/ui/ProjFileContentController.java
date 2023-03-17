@@ -19,7 +19,12 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
+import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,7 +37,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,17 +53,23 @@ public class ProjFileContentController extends FormBasicController {
 	
 	private TextElement filenameEl;
 	private TextElement titleEl;
+	private TagSelection tagsEl;
 	private TextAreaElement descriptionEl;
 	
-	private ProjProject project;
+	private final ProjProject project;
+	private final List<ProjTagInfo> projectTags;
+	private final Collection<? extends TagRef> artefactTags;
 	private String initialFilename;
 	
 	@Autowired
 	private ProjectService projectService;
 
-	public ProjFileContentController(UserRequest ureq, WindowControl wControl, Form mainForm) {
+	public ProjFileContentController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjFile file) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		setTranslator(Util.createPackageTranslator(CreateDocumentController.class, getLocale(), getTranslator()));
+		this.project = project;
+		this.projectTags = projectService.getTagInfos(project, file != null? file.getArtefact(): null);
+		this.artefactTags = projectTags.stream().filter(ProjTagInfo::isSelected).toList();
 		
 		initForm(ureq);
 	}
@@ -69,6 +82,8 @@ public class ProjFileContentController extends FormBasicController {
 		
 		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
 		
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
+		
 		descriptionEl = uifactory.addTextAreaElement("file.description", "file.description", -1, 3, 1, true, false, null, formLayout);
 	}
 	
@@ -80,8 +95,7 @@ public class ProjFileContentController extends FormBasicController {
 		return filenameEl.isVisible() && StringHelper.containsNonWhitespace(filenameEl.getValue()) ? filenameEl.getValue(): null;
 	}
 	
-	public void setFilename(ProjProject project, String filename) {
-		this.project = project;
+	public void setFilename(String filename) {
 		this.initialFilename = filename;
 		filenameEl.setValue(filename);
 	}
@@ -104,6 +118,10 @@ public class ProjFileContentController extends FormBasicController {
 		vfsMetadata.setTitle(title);
 		String description = StringHelper.containsNonWhitespace(descriptionEl.getValue())? descriptionEl.getValue(): null;
 		vfsMetadata.setComment(description);
+	}
+	
+	public List<String> getTagDisplayValues() {
+		return tagsEl.getDisplayNames();
 	}
 	
 	@Override

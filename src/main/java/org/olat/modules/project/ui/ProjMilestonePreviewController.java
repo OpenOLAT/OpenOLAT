@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneInfo;
 import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ui.event.MilestoneDeleteEvent;
@@ -53,10 +54,10 @@ public class ProjMilestonePreviewController extends BasicController {
 	private final ProjMilestone milestone;
 	
 	public ProjMilestonePreviewController(UserRequest ureq, WindowControl wControl,
-			ProjProjectSecurityCallback secCallback, ProjMilestone milestone) {
+			ProjProjectSecurityCallback secCallback, ProjMilestoneInfo info) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
-		this.milestone = milestone;
+		this.milestone = info.getMilestone();
 		
 		mainVC = createVelocityContainer("milestone_preview");
 		putInitialPanel(mainVC);
@@ -65,6 +66,8 @@ public class ProjMilestonePreviewController extends BasicController {
 		mainVC.contextPut("achieved", Boolean.valueOf(ProjMilestoneStatus.achieved == milestone.getStatus()));
 		mainVC.contextPut("subject", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
 		mainVC.contextPut("description", milestone.getDescription());
+		
+		mainVC.contextPut("formattedTags", ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
 		
 		if (secCallback.canEditMilestone(milestone)) {
 			if (ProjMilestoneStatus.open == milestone.getStatus()) {

@@ -19,11 +19,9 @@
  */
 package org.olat.modules.project.model;
 
-import java.util.Set;
-
-import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentInfo;
+import org.olat.modules.project.ProjArtefactInfo;
 
 /**
  * 
@@ -31,27 +29,18 @@ import org.olat.modules.project.ProjAppointmentInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjAppointmentInfoImpl implements ProjAppointmentInfo {
+public class ProjAppointmentInfoImpl extends ProjArtefactInfoImpl implements ProjAppointmentInfo {
 	
-	private ProjAppointment appointment;
-	private Set<Identity> members;
+	private final ProjAppointment appointment;
 	
+	public ProjAppointmentInfoImpl(ProjAppointment appointment, ProjArtefactInfo artefactInfo) {
+		super(artefactInfo);
+		this.appointment = appointment;
+	}
+
 	@Override
 	public ProjAppointment getAppointment() {
 		return appointment;
 	}
 	
-	public void setAppointment(ProjAppointment appointment) {
-		this.appointment = appointment;
-	}
-	
-	@Override
-	public Set<Identity> getMembers() {
-		return members;
-	}
-	
-	public void setMembers(Set<Identity> members) {
-		this.members = members;
-	}
-
 }
