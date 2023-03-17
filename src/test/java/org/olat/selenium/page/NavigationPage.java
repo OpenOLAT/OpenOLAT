@@ -183,11 +183,11 @@ public class NavigationPage {
 	}
 	
 	private void openMoreMenu() {
-		By openMoreBy = By.cssSelector("#o_navbar_more a.dropdown-toggle");
+		By openMoreBy = By.cssSelector("#o_navbar_more>li>a.dropdown-toggle");
 		OOGraphene.waitElement(openMoreBy, browser);
 		browser.findElement(openMoreBy).click();
 		//wait the small transition
-		By openedMoreMenuby = By.cssSelector("#o_navbar_more ul.dropdown-menu.dropdown-menu-right");
+		By openedMoreMenuby = By.cssSelector("#o_navbar_more>li.open ul.dropdown-menu.dropdown-menu-right");
 		OOGraphene.waitElement(openedMoreMenuby, browser);
 	}
 	

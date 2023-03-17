@@ -633,7 +633,7 @@ public class AssessmentForm extends FormBasicController {
 			gradeCont.setRootForm(mainForm);
 			assessmentCont.add(gradeCont);
 			
-			gradeEl = uifactory.addStaticTextElement("grade", "", gradeCont);
+			gradeEl = uifactory.addStaticTextElement("grade", null, "", gradeCont);
 			gradeEl.setDomWrapperElement(DomWrapperElement.span);
 			
 			gradeApplyLink = uifactory.addFormLink("grade.apply.button", gradeCont, Link.BUTTON);
