@@ -506,7 +506,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.openmeetings.manager.OpenMeetingsDAOTest.class,
 	org.olat.commons.info.InfoManagerTest.class,
 	org.olat.core.commons.services.tag.manager.TagDAOTest.class,
-	org.olat.core.commons.services.tag.TagService.class,
+	org.olat.core.commons.services.tag.TagServiceTest.class,
 	org.olat.core.dispatcher.DispatcherModuleRedirectTest.class,
 	org.olat.core.dispatcher.mapper.MapperDAOTest.class,
 	org.olat.core.dispatcher.mapper.MapperServiceTest.class,
