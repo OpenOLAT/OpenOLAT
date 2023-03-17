@@ -177,7 +177,15 @@ $r.render("timelineEvents")
 		const timeBar = jQuery('#o_video_time_bar');
 		const videoElementId = 'o_so_vid$videoElementId';
 		const videoElement = jQuery('#' + videoElementId);
+		if (!videoElement) {
+			return;
+		}
+
 		const player = videoElement.data('player');
+		if (!player) {
+			return;
+		}
+
 		const currentTimeInSeconds = player.media.currentTime;
 		const durationInSeconds = player.media.duration;
 
