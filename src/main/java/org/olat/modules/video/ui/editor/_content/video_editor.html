@@ -18,60 +18,42 @@
 </div>
 
 <script>
-	var globalVideoEditor = jQuery('#o_video_editor');
+	jQuery(() => {
+		var globalVideoEditor = jQuery('#o_video_editor');
 
-	function resize() {
-		#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
-		var videoWidth = $videoWidth;
-		var videoHeight = $videoHeight;
-		var aspectRatio = videoWidth / videoHeight;
-		#else
-		var aspectRatio = 1.778;
-		#end
+		function resize() {
+			#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
+			var videoWidth = $videoWidth;
+			var videoHeight = $videoHeight;
+			var aspectRatio = videoWidth / videoHeight;
+			#else
+			var aspectRatio = 1.778;
+			#end
 
-		var videoEditor = jQuery('#o_video_editor');
-		var toolbar = jQuery('#o_main_toolbar');
-		var footer = jQuery('#o_footer_wrapper');
-		var video = jQuery('#o_video_editor_video');
-		var detail = jQuery('#o_video_editor_detail');
-		var master = jQuery('#o_video_editor_master');
+			var videoEditor = jQuery('#o_video_editor');
+			var toolbar = jQuery('#o_main_toolbar');
+			var footer = jQuery('#o_footer_wrapper');
+			var video = jQuery('#o_video_editor_video');
+			var detail = jQuery('#o_video_editor_detail');
+			var master = jQuery('#o_video_editor_master');
 
-		if (!(videoEditor && toolbar && footer && video && detail && master)) {
-			return;
+			if (!(videoEditor && toolbar && footer && video && detail && master)) {
+				return;
+			}
+
+			var availableWidth = Math.round(videoEditor.width()) + parseInt(videoEditor.css('margin-left'), 10)
+				+ parseInt(videoEditor.css('margin-right'), 10);
+			var videoViewWidth = videoEditor.width() >= 992 ? Math.floor(availableWidth / 2) - 30 : Math.floor(availableWidth);
+			var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
+			video.width(videoViewWidth);
+			video.height(videoViewHeight);
+			window.dispatchEvent(new Event('resize'));
+
+			${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error',
+				'availableWidth', availableWidth, 'videoViewWidth', videoViewWidth);
 		}
 
-		var availableWidth = Math.round(videoEditor.width()) + parseInt(videoEditor.css('margin-left'), 10)
-			+ parseInt(videoEditor.css('margin-right'), 10);
-		var videoViewWidth = videoEditor.width() >= 992 ? Math.floor(availableWidth / 2) - 30 : Math.floor(availableWidth);
-		var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
-		video.width(videoViewWidth);
-		video.height(videoViewHeight);
-		window.dispatchEvent(new Event('resize'));
-
-		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error',
-			'availableWidth', availableWidth, 'videoViewWidth', videoViewWidth);
-
-		// var toolbarOffset = toolbar.offset();
-		// var toolbarTop = toolbarOffset.top;
-		// var footerOffset = footer.offset();
-		// var footerTop = Math.min(footerOffset.top, window.innerHeight);
-		// var toolbarHeight = toolbar.height();
-		// var goToTopHeightPlusMargins = 80;
-		// var availableHeight = footerTop - toolbarTop - toolbarHeight - goToTopHeightPlusMargins;
-		//
-		// var	unitHeight = Math.floor(availableHeight / 2);
-		// var unitWidth = Math.floor(availableWidth / 2) - 30;
-		//
-
-		//
-		// detail.height(unitHeight);
-		// detail.width(unitWidth * 2 - unitHeight * aspectRatio);
-		//
-		// master.width(unitWidth * 2);
-		// master.height(unitHeight);
-	}
-
-	resize();
-	//window.addEventListener("resize", resize);
-	new ResizeObserver(resize).observe(globalVideoEditor[0]);
+		resize();
+		new ResizeObserver(resize).observe(globalVideoEditor[0]);
+	})
 </script>
