@@ -874,7 +874,7 @@ create table if not exists o_bs_invitation (
 
 -- tag
 create table o_tag_tag (
-   id bigint not null,
+   id bigint not null auto_increment,
    creationdate datetime,
    t_display_name varchar(256) not null,
    primary key (id)
