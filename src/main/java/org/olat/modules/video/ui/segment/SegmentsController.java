@@ -44,16 +44,30 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SegmentsController extends BasicController {
 
+	private final VelocityContainer mainVC;
+	private final RepositoryEntry repositoryEntry;
+	private final long totalDurationInMillis;
+
 	@Autowired
 	private VideoManager videoManager;
 
 	public SegmentsController(UserRequest ureq, WindowControl wControl,
-							  RepositoryEntry videoEntry, String videoElementId, long totalDurationInMillis) {
+							  RepositoryEntry repositoryEntry, String videoElementId, long totalDurationInMillis) {
 		super(ureq, wControl);
+		this.repositoryEntry = repositoryEntry;
+		this.totalDurationInMillis = totalDurationInMillis;
 
-		VelocityContainer segmentsVC = createVelocityContainer("display_segments");
+		mainVC = createVelocityContainer("display_segments");
 
-		VideoSegments segments = videoManager.loadSegments(videoEntry.getOlatResource());
+		mainVC.contextPut("videoElementId", videoElementId);
+
+		loadSegments();
+
+		putInitialPanel(mainVC);
+	}
+
+	public void loadSegments() {
+		VideoSegments segments = videoManager.loadSegments(repositoryEntry.getOlatResource());
 		List<VideoSegment> segmentsList = segments.getSegments();
 		List<VideoRunController.RuntimeSegment> markers = new ArrayList<>(segmentsList.size());
 		for (VideoSegment videoSegment : segmentsList) {
@@ -62,10 +76,7 @@ public class SegmentsController extends BasicController {
 			VideoRunController.RuntimeSegment solution = VideoRunController.RuntimeSegment.valueOf(category, videoSegment, totalDurationInMillis, durationString);
 			markers.add(solution);
 		}
-		segmentsVC.contextPut("segments", markers);
-		segmentsVC.contextPut("videoElementId", videoElementId);
-
-		putInitialPanel(segmentsVC);
+		mainVC.contextPut("segments", markers);
 	}
 
 	@Override

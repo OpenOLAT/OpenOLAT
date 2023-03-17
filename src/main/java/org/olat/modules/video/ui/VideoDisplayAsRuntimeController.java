@@ -37,14 +37,15 @@ import org.olat.repository.RepositoryEntry;
  */
 public class VideoDisplayAsRuntimeController extends VideoDisplayController {
 
+	private final SegmentsController segmentsController;
 	private final CommentLayerController commentLayerController;
 
 	public VideoDisplayAsRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, repositoryEntry);
 
 		long totalDurationInMillis = VideoHelper.durationInSeconds(repositoryEntry, this) * 1000L;
-		SegmentsController segmentsController = new SegmentsController(ureq, wControl,
-				repositoryEntry, getVideoElementId(), totalDurationInMillis);
+		segmentsController = new SegmentsController(ureq, wControl, repositoryEntry, getVideoElementId(),
+				totalDurationInMillis);
 		listenTo(segmentsController);
 		addLayer(segmentsController);
 
@@ -54,6 +55,16 @@ public class VideoDisplayAsRuntimeController extends VideoDisplayController {
 		commentLayerController.addControllerListener(this);
 		addLayer(commentLayerController);
 		addMarkers(commentLayerController.getCommentsAsMarkers());
+	}
+
+	@Override
+	protected void reloadVideo(UserRequest ureq) {
+		super.reloadVideo(ureq);
+
+		commentLayerController.loadComments();
+		addMarkers(commentLayerController.getCommentsAsMarkers());
+
+		segmentsController.loadSegments();
 	}
 
 	@Override
