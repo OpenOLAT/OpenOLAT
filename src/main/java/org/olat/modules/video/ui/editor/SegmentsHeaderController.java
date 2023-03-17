@@ -155,6 +155,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		}
 
 		addSegmentButton.setEnabled(!freeSegments().isEmpty());
+		commandsButton.setEnabled(!segmentsKV.isEmpty());
 	}
 
 	@Override
