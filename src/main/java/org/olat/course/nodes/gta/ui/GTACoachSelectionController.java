@@ -119,7 +119,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		
 		mainVC = createVelocityContainer("coach_selection");
 		backLink = LinkFactory.createLinkBack(mainVC, this);
-		
+
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		File solutionsDir = gtaManager.getSolutionsDirectory(courseEnv, gtaNode);
 		solutionMapperUri = registerMapper(ureq, new DownloadDocumentMapper(solutionsDir));
 		solutionDownloadCmp = new DisplayOrDownloadComponent("download", null);
@@ -127,7 +128,8 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		
 		coachAssignmentButton = LinkFactory.createButton("bulk.coach.assignment", mainVC, this);
 		coachAssignmentButton.setElementCssClass("o_sel_assessment_bulk_coach_assignment");
-		coachAssignmentButton.setVisible(isCoachAssignmentAvailable());
+		coachAssignmentButton.setVisible(isCoachAssignmentAvailable()
+				&& GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)));
 		
 		downloadButton = LinkFactory.createButton("bulk.download.title", mainVC, this);
 		downloadButton.setTranslator(getTranslator());
@@ -146,7 +148,6 @@ public class GTACoachSelectionController extends BasicController implements Acti
 		nextIdentityLink.setTitle(translate("command.next"));
 		assessedIdentityStackPanel.addTool(nextIdentityLink, Align.rightEdge, true, "o_tool_next");
 		
-		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			List<BusinessGroup> groups;
 			CourseGroupManager gm = coachCourseEnv.getCourseEnvironment().getCourseGroupManager();
@@ -340,7 +341,7 @@ public class GTACoachSelectionController extends BasicController implements Acti
 	private void doCoachAssignment(UserRequest ureq) {
 		if(coachAssignmentListCtrl != null) {
 			assessedIdentityStackPanel.popController(coachAssignmentListCtrl);
-			this.removeAsListenerAndDispose(coachAssignmentListCtrl);
+			removeAsListenerAndDispose(coachAssignmentListCtrl);
 		}
 
 		List<Identity> assessedIdentities = participantListCtrl.getAssessableIdentities();

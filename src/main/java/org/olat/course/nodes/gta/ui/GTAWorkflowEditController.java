@@ -391,9 +391,11 @@ public class GTAWorkflowEditController extends FormBasicController {
 	private void initCoaching(FormItemContainer formLayout) {
 		FormLayoutContainer coachingLayout = uifactory.addDefaultFormLayout("coaching", null, formLayout);
 		coachingLayout.setFormTitle(translate("coach.assignment.title"));
+		coachingLayout.setVisible(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)));
 		
 		String[] onValues = new String[]{ translate("coach.assignment.enabled") };
 		coachAssignmentEnabledEl = uifactory.addCheckboxesVertical("coach.assignment", coachingLayout, onKeys, onValues, 1);
+		coachAssignmentEnabledEl.setVisible(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE)));
 		coachAssignmentEnabledEl.addActionListener(FormEvent.ONCHANGE);
 		boolean coachAssignment = config.getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT, false);
 		if(coachAssignment) {
@@ -600,7 +602,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 			config.setBooleanEntry(GTACourseNode.GTASK_COACH_ALLOWED_UPLOAD_TASKS, coachUploadAllowed);
 		}
 		
-		boolean coachAssignment = coachAssignmentEnabledEl.isAtLeastSelected(1);
+		boolean coachAssignment = coachAssignmentEnabledEl.isVisible() && coachAssignmentEnabledEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_COACH_ASSIGNMENT, coachAssignment);
 		
 		if(coachAssignment) {

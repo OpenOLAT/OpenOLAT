@@ -45,6 +45,7 @@ import org.olat.course.nodes.CourseNodeSegmentPrefs;
 import org.olat.course.nodes.CourseNodeSegmentPrefs.CourseNodeSegment;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.model.Membership;
 import org.olat.course.reminder.ui.CourseNodeReminderRunController;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -144,7 +145,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	}
 	
 	private void coachAssignmentWarning() {
-		if(userCourseEnv.isAdmin() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)) {
+		if(userCourseEnv.isAdmin() && gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_COACH_ASSIGNMENT)
+				&& GTAType.individual.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			if(assessmentService.hasAssessmentEntryWithoutCoachAssignment(courseEntry, gtaNode.getIdent())) {
 				coachAssignmentLink = LinkFactory.createLink("coach.assignment", getTranslator(), this);
