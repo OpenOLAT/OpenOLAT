@@ -132,8 +132,14 @@ public class VideoController extends BasicController {
 		return durationInSeconds;
 	}
 
-	public void reloadMarkers() {
-		List<VideoDisplayController.Marker> markers = videoDisplayController.loadMarkers();
+	public void reloadMarkers(TimelineEventType timelineEventType) {
+		List<VideoDisplayController.Marker> markers;
+		if (TimelineEventType.COMMENT.equals(timelineEventType) && commentLayerController != null) {
+			videoDisplayController.loadMarkers();
+			markers = videoDisplayController.addMarkers(commentLayerController.getCommentsAsMarkers());
+		} else {
+			markers = videoDisplayController.loadMarkers();
+		}
 		ReloadMarkersCommand reloadMarkersCommand = new ReloadMarkersCommand(videoElementId, markers);
 		getWindowControl().getWindowBackOffice().sendCommandTo(reloadMarkersCommand);
 	}
@@ -164,7 +170,7 @@ public class VideoController extends BasicController {
 		videoDisplayController.setMode(timelineEventType == TimelineEventType.QUIZ,
 				timelineEventType == TimelineEventType.ANNOTATION);
 
-		reloadMarkers();
+		reloadMarkers(timelineEventType);
 
 		commentLayerController.hideComment();
 

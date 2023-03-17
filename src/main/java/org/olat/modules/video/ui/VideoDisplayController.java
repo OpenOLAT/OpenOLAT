@@ -554,7 +554,7 @@ public class VideoDisplayController extends BasicController {
 		return vcMarkers;
 	}
 
-	public void addMarkers(List<Marker> markers) {
+	public List<Marker> addMarkers(List<Marker> markers) {
 		for (Marker marker : markers) {
 			if (!this.markers.contains(marker)) {
 				this.markers.add(marker);
@@ -562,6 +562,7 @@ public class VideoDisplayController extends BasicController {
 		}
 		Collections.sort(this.markers);
 		mainVC.getContext().put("markers", this.markers); // make it without dirty=true
+		return this.markers;
 	}
 
 	@Override

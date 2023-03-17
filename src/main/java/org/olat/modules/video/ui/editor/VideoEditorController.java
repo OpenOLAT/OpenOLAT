@@ -114,7 +114,7 @@ public class VideoEditorController extends BasicController {
 			}
 		} else if (detailsController == source) {
 			if (event == AnnotationsController.RELOAD_MARKERS_EVENT) {
-				videoController.reloadMarkers();
+				videoController.reloadMarkers(TimelineEventType.ANNOTATION);
 				masterController.reload();
 			} else if (event == ChaptersController.RELOAD_CHAPTERS_EVENT) {
 				videoController.reloadChapters();
