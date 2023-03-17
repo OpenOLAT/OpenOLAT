@@ -236,40 +236,40 @@
 
 .mejs__time-rail {
 	.o_video_marker_lightgray {
-		background: $o-video-border-color-light-gray;
+		background: lighten($o-video-color-light-gray, 20%);
 	}
 	.o_video_marker_yellow {
-		background: $o-video-border-color-yellow;
+		background: lighten($o-video-color-yellow, 10%);
 	}
 	.o_video_marker_orange {
-		background: $o-video-border-color-orange;
+		background: lighten($o-video-color-orange, 10%);
 	}
 	.o_video_marker_brown {
-		background: $o-video-border-color-brown;
+		background: lighten($o-video-color-brown, 10%);
 	}
 	.o_video_marker_red {
-		background: $o-video-border-color-red;
+		background: lighten($o-video-color-red, 10%);
 	}
 	.o_video_marker_orchid {
-		background: $o-video-border-color-orchid;
+		background: lighten($o-video-color-orchid, 10%);
 	}
 	.o_video_marker_purple {
-		background: $o-video-border-color-purple;
+		background:lighten( $o-video-color-purple, 10%);
 	}
 	.o_video_marker_lightblue {
-		background: $o-video-border-color-light-blue;
+		background: lighten($o-video-color-light-blue, 10%);
 	}
 	.o_video_marker_cobaltblue {
-		background: $o-video-border-color-cobalt-blue;
+		background: lighten($o-video-color-cobalt-blue, 10%);
 	}
 	.o_video_marker_darkblue {
-		background: $o-video-border-color-dark-blue;
+		background: lighten($o-video-color-dark-blue, 10%);
 	}
 	.o_video_marker_lightgreen {
-		background: $o-video-border-color-light-green;
+		background: lighten($o-video-color-light-green, 10%);
 	}
 	.o_video_marker_seagreen {
-		background: $o-video-border-color-sea-green;
+		background: lighten($o-video-color-sea-green, 10%);
 	}
 }
 
