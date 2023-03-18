@@ -91,8 +91,13 @@ public class BinderPage {
 	 * @return
 	 */
 	public BinderPage assertOnPage(String title) {
-		By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(metaTitleBy, browser);
+		try {
+			By metaTitleBy = By.xpath("//div[contains(@class,'o_page_lead')]//h2[contains(text(),'" + title + "')]");
+			OOGraphene.waitElement(metaTitleBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("Binderpage-"+title, browser);
+			throw e;
+		}
 		return this;
 	}
 	
