@@ -29,6 +29,7 @@ import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -58,6 +59,8 @@ public class EditOrganisationTypeController extends FormBasicController {
 	
 	private OrganisationType organisationType;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private OrganisationService organisationService;
 	
@@ -155,6 +158,7 @@ public class EditOrganisationTypeController extends FormBasicController {
 			allowedSubTypes.add(organisationService.getOrganisationType(new OrganisationTypeRefImpl(Long.valueOf(selectedAllowedSubTypeKey))));
 		}
 		organisationType = organisationService.updateOrganisationType(organisationType, allowedSubTypes);
+		dbInstance.commit();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
