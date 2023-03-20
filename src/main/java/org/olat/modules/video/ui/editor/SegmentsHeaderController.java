@@ -154,7 +154,7 @@ public class SegmentsHeaderController extends FormBasicController {
 			nextSegmentButton.setEnabled(selectedIndex < (segmentsKV.size() - 1));
 		}
 
-		addSegmentButton.setEnabled(!freeSegments().isEmpty());
+		commandsButton.setEnabled(!segmentsKV.isEmpty());
 	}
 
 	@Override
@@ -226,7 +226,7 @@ public class SegmentsHeaderController extends FormBasicController {
 	private void doAddSegment(UserRequest ureq) {
 		List<VideoSegment> freeSegments = freeSegments();
 		if (freeSegments.isEmpty()) {
-			return;
+			showInfo("form.segment.add.error");
 		}
 
 		long timeInSeconds = 0;

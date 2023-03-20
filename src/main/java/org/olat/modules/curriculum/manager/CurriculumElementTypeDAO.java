@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.manager;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
@@ -49,6 +50,7 @@ public class CurriculumElementTypeDAO {
 		type.setDisplayName(displayName);
 		type.setDescription(description);
 		type.setExternalId(externalId);
+		type.setAllowedSubTypes(new HashSet<>());
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}

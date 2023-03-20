@@ -84,6 +84,24 @@
 		        jQuery('#$r.getId("o_vid")').data('player', player);
 		        jQuery('#$r.getId("o_vid")').data('playerloaded', false);
 
+				#if ($isVimeo)
+				var checkMarkers = () => {
+					if (player.options.markers.length > 0) {
+						var markers = player.controls.querySelectorAll('.' + player.options.classPrefix + 'time-marker');
+						if (markers.length > 0 && markers[0].style && !(markers[0].style.left)) {
+							if (player.media.duration) {
+								player.setmarkers(player.controls);
+							}
+							setTimeout(checkMarkers, 500);
+						}
+					}
+					if (player.media.duration) {
+						jQuery('#$r.getId("o_vid")').data('playerloaded', true);
+					}
+				};
+				checkMarkers();
+				#end
+
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
@@ -93,6 +111,7 @@
 						} else {
 							$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 						}
+						checkMarkers();
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user

@@ -20,6 +20,7 @@
 package org.olat.basesecurity.manager;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
 import org.olat.basesecurity.OrganisationType;
@@ -47,6 +48,7 @@ public class OrganisationTypeDAO {
 		type.setDisplayName(displayName);
 		type.setIdentifier(identifier);
 		type.setDescription(description);
+		type.setAllowedSubTypes(new HashSet<>());
 		dbInstance.getCurrentEntityManager().persist(type);
 		return type;
 	}

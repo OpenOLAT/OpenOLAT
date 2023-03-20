@@ -193,7 +193,8 @@ public class VideoDisplayController extends BasicController {
 		}
 		initMediaElementJs();
 
-		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());	
+		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
+		mainVC.contextPut("isVimeo", videoMetadata != null && videoMetadata.getVideoFormat() != null ? videoMetadata.getVideoFormat() == VideoFormat.vimeo : false);
 		VFSLeaf video = videoManager.getMasterVideoFile(videoEntry.getOlatResource());
 		if(videoMetadata != null && videoMetadata.getHeight() != 600 && videoMetadata.getWidth() != 800) {
 			// we exclude 800x600 because it's the default (unkown) size and in this case we let the browser estimate the size
