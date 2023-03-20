@@ -96,11 +96,20 @@
 		const updateEnd = () => {
 			const startInSec = parseTimeToSeconds(start.val());
 			const durationInSec = parseInt(duration.val());
-			const endTimeString = formatTime(startInSec + durationInSec, end.val());
+			if (isNaN(startInSec) || isNaN(durationInSec)) {
+				return;
+			}
+			let newEndInSec = startInSec + durationInSec;
+			if ($videoDurationInSeconds > 0) {
+				newEndInSec = Math.min(newEndInSec, $videoDurationInSeconds);
+			}
+			const newDurationInSec = newEndInSec - startInSec;
+			const endTimeString = formatTime(newEndInSec, end.val());
 			end.val(endTimeString);
+			duration.val(newDurationInSec);
 		}
 
-		start.on('keyup', updateDuration);
+		start.on('keyup', updateEnd);
 		end.on('keyup', updateDuration);
 		duration.on('keyup', updateEnd);
 	});

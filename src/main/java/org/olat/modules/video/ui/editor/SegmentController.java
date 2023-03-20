@@ -83,6 +83,7 @@ public class SegmentController extends FormBasicController {
 		this.segment = segment;
 		this.segments = segments;
 		this.videoDurationInSeconds = videoDurationInSeconds;
+		flc.contextPut("videoDurationInSeconds", videoDurationInSeconds);
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -201,13 +202,14 @@ public class SegmentController extends FormBasicController {
 		}
 
 		try {
-			long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long endTimeInSeconds = timeFormat.parse(endEl.getValue()).getTime() / 1000;
-			long newStartTimeInSeconds = Long.min(endTimeInSeconds - MIN_DURATION, startTimeInSeconds);
+			long newStartTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
+			long duration = Long.parseLong(durationEl.getValue());
+			long newEndTimeInSeconds = Long.min(newStartTimeInSeconds + duration, videoDurationInSeconds);
+			long newDuration = newEndTimeInSeconds - newStartTimeInSeconds;
 			startEl.setValue(timeFormat.format(new Date(newStartTimeInSeconds * 1000)));
-			long duration = endTimeInSeconds - newStartTimeInSeconds;
-			durationEl.setValue(Long.toString(duration));
-		} catch (ParseException e) {
+			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
+			durationEl.setValue(Long.toString(newDuration));
+		} catch (NumberFormatException e) {
 			//
 		}
 	}
