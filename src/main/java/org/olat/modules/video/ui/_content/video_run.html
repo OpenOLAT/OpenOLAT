@@ -93,6 +93,9 @@
 							setTimeout(checkMarkers, 500);
 						}
 					}
+					if (player.media.duration) {
+						jQuery('#$r.getId("o_vid")').data('playerloaded', true);
+					}
 				};
 				checkMarkers();
 				#end
