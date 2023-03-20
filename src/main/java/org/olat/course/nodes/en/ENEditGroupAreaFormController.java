@@ -513,10 +513,13 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 				String cmd = se.getCommand();
 				if (CMD_UP.equals(cmd)) {
 					doUp(se.getIndex());	
+					markDirty();
 				} else if (CMD_DOWN.equals(cmd)) {
 					doDown(se.getIndex());
+					markDirty();
 				} else if(CMD_REMOVE.equals(cmd)) {
 					doDelete(se.getIndex());
+					markDirty();
 				}
 			}
 		}
