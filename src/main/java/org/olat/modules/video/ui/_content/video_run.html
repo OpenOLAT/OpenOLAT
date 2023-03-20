@@ -88,8 +88,10 @@
 				var checkMarkers = () => {
 					if (player.options.markers.length > 0) {
 						var markers = player.controls.querySelectorAll('.' + player.options.classPrefix + 'time-marker');
-						if (markers.length > 0 && markers[0].style && !(markers[0].style.width)) {
-							player.setmarkers(player.controls);
+						if (markers.length > 0 && markers[0].style && !(markers[0].style.left)) {
+							if (player.media.duration) {
+								player.setmarkers(player.controls);
+							}
 							setTimeout(checkMarkers, 500);
 						}
 					}
