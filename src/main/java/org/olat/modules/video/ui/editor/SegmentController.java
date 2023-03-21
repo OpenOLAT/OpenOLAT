@@ -22,8 +22,6 @@ package org.olat.modules.video.ui.editor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import org.olat.core.gui.UserRequest;
@@ -38,6 +36,8 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
@@ -45,7 +45,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
-import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.ui.VideoSettingsController;
 
@@ -68,7 +67,6 @@ public class SegmentController extends FormBasicController {
 	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private FormLink categoryButton;
-	private SelectionValues categoriesKV;
 	private FormLink editCategoriesButton;
 	private CloseableModalController cmc;
 	private EditCategoriesController editCategoriesController;
@@ -76,6 +74,8 @@ public class SegmentController extends FormBasicController {
 	@Autowired
 	private VideoModule videoModule;
 	private String currentTimeCode;
+	private CloseableCalloutWindowController ccwc;
+	private SegmentCategoryController segmentCategoryController;
 
 	public SegmentController(UserRequest ureq, WindowControl wControl, VideoSegment segment,
 							 VideoSegments segments, long videoDurationInSeconds) {
@@ -87,8 +87,6 @@ public class SegmentController extends FormBasicController {
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-		categoriesKV = new SelectionValues();
 
 		SelectionValues colorsKV = new SelectionValues();
 		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
@@ -103,7 +101,6 @@ public class SegmentController extends FormBasicController {
 	public void setSegment(VideoSegment segment) {
 		this.segment = segment;
 		setValues();
-		flc.contextPut("categoryOpen", false);
 	}
 
 	public VideoSegment getSegment() {
@@ -112,9 +109,13 @@ public class SegmentController extends FormBasicController {
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
+		removeAsListenerAndDispose(ccwc);
 		removeAsListenerAndDispose(editCategoriesController);
+		removeAsListenerAndDispose(segmentCategoryController);
 		cmc = null;
+		ccwc = null;
 		editCategoriesController = null;
+		segmentCategoryController = null;
 	}
 
 	@Override
@@ -146,8 +147,6 @@ public class SegmentController extends FormBasicController {
 				formLayout, Link.BUTTON | Link.NONTRANSLATED);
 		categoryButton.setIconRightCSS("o_icon o_icon_caret o_video_segment_category_icon");
 		categoryButton.setElementCssClass("o_video_segment_category");
-		flc.contextPut("categoryOpen", false);
-		flc.contextPut("categoriesAvailable", false);
 
 		editCategoriesButton = uifactory.addFormLink("editCategories", "form.segment.category.edit",
 				"form.segment.category.edit", formLayout, Link.BUTTON);
@@ -169,11 +168,6 @@ public class SegmentController extends FormBasicController {
 		durationEl.setValue(Long.toString(segment.getDuration()));
 		segments.getCategory(segment.getCategoryId())
 				.ifPresent(c -> categoryButton.setI18nKey(c.getLabelAndTitle()));
-
-		categoriesKV = new SelectionValues();
-		for (VideoSegmentCategory category : segments.getCategories()) {
-			categoriesKV.add(SelectionValues.entry(category.getId(), category.getLabelAndTitle()));
-		}
 	}
 
 	@Override
@@ -183,16 +177,9 @@ public class SegmentController extends FormBasicController {
 		} else if (endApplyPositionButton == source) {
 			doApplyEndPosition();
 		} else if (categoryButton == source) {
-			doToggleCategory();
+			doSelectCategory(ureq);
 		} else if (editCategoriesButton == source) {
 			doEditCategories(ureq);
-		} else if (flc == source) {
-			if ("ONCLICK".equals(event.getCommand())) {
-				String categoryId = ureq.getParameter("categoryId");
-				if (categoryId != null) {
-					doSetCategory(categoryId);
-				}
-			}
 		}
 	}
 
@@ -231,44 +218,18 @@ public class SegmentController extends FormBasicController {
 		}
 	}
 
-	private void doSetCategory(String categoryId) {
-		flc.contextPut("categoryOpen", false);
-		flc.contextPut("categoryId", categoryId);
-
-		if (segment == null) {
-			return;
-		}
-		segment.setCategoryId(categoryId);
-		setValues();
-	}
-
-	private void doToggleCategory() {
+	private void doSelectCategory(UserRequest ureq) {
 		if (segment == null) {
 			return;
 		}
 
-		boolean categoryOpen = (boolean) flc.contextGet("categoryOpen");
-		categoryOpen = !categoryOpen;
-		flc.contextPut("categoryOpen", categoryOpen);
-		flc.contextPut("categoriesAvailable", !categoriesKV.isEmpty());
-		flc.contextPut("categories", segments.getCategories());
-		flc.contextPut("categoryUsedCounts", getCategoryUsedCounts());
-		if (categoryOpen) {
-			flc.contextPut("categoryId", segment.getCategoryId());
-		}
-	}
-
-	private Map<String, Integer> getCategoryUsedCounts() {
-		Map<String, Integer> result = new HashMap<>();
-		segments.getSegments().stream().map(VideoSegment::getCategoryId)
-				.forEach(cid -> result.put(cid, result.containsKey(cid) ? result.get(cid) + 1 : 1));
-		segments.getCategories().stream().map(VideoSegmentCategory::getId)
-				.forEach(cid -> {
-					if (!result.containsKey(cid)) {
-						result.put(cid, 0);
-					}
-				});
-		return result;
+		segmentCategoryController = new SegmentCategoryController(ureq, getWindowControl(), segments, segment);
+		listenTo(segmentCategoryController);
+		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				segmentCategoryController.getInitialComponent(), categoryButton.getFormDispatchId(), "",
+				true, "", new CalloutSettings(false));
+		listenTo(ccwc);
+		ccwc.activate();
 	}
 
 	private void doEditCategories(UserRequest ureq) {
@@ -381,14 +342,20 @@ public class SegmentController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (editCategoriesController == source) {
 			if (event == Event.DONE_EVENT) {
-				flc.contextPut("categories", segments.getCategories());
-				flc.contextPut("categoryUsedCounts", getCategoryUsedCounts());
 				setValues();
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (cmc == source) {
+			cleanUp();
+		} else if (ccwc == source) {
+			cleanUp();
+		} else if (segmentCategoryController == source) {
+			if (event == Event.DONE_EVENT) {
+				setValues();
+			}
+			ccwc.deactivate();
 			cleanUp();
 		}
 		super.event(ureq, source, event);

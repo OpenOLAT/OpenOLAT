@@ -20,9 +20,9 @@
 package org.olat.core.gui.components.addremove;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
+import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
@@ -30,7 +30,7 @@ import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  *
  */
-public class AddRemoveComponent extends AbstractComponent {
+public class AddRemoveComponent extends FormBaseComponentImpl {
 	
 	private static final ComponentRenderer RENDERER = new AddRemoveRenderer();
 	
@@ -41,8 +41,9 @@ public class AddRemoveComponent extends AbstractComponent {
 		
 		this.addRemoveElement = addRemoveElement;
 	}
-	
-	public AddRemoveElement getAddRemoveElement() {
+
+	@Override
+	public AddRemoveElement getFormItem() {
 		return addRemoveElement;
 	}
 

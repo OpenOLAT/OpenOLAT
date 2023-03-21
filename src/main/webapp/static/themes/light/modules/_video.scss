@@ -1060,56 +1060,6 @@
 		display: inline-block;
 		padding: 16px;
 	}
-
-	.o_edit_categories {
-		padding-left: 16px;
-	}
-
-	.o_categories {
-		border: 1px solid $btn-default-border;
-		border-radius: 4px;
-		padding: 0 0 16px 0;
-
-		.o_category_list {
-			list-style-type: none;
-			margin: 0;
-			padding: 12px 0 14px 0;
-
-			.o_category_list_item {
-				display: flex;
-				height: 30px;
-				padding: 0 16px;
-				justify-content: left;
-				align-items: center;
-				gap: 5px;
-				cursor: pointer;
-			}
-
-			.o_category_list_item:hover {
-				background-color: #eee;
-			}
-
-			.o_category_list_item:active {
-				background-color: #ddd;
-				font-weight: bold;
-			}
-
-			.o_category_list_item.o_selected {
-				background-color: #ddd;
-			}
-
-			.o_color_cube {
-				display: inline-block;
-				width: 14px;
-				height: 14px;
-				border-radius: 2px;
-			}
-
-			.o_category_text {
-				display: inline-block;
-			}
-		}
-	}
 }
 
 .o_video_me_segments {
