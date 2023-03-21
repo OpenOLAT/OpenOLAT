@@ -1132,3 +1132,54 @@
 	width: 18px;
 	height: 18px;
 }
+
+.o_video_comment_player .mejs__overlay-button {
+	transform: scale(0.4);
+}
+
+@media all and (display-mode: fullscreen) {
+	.o_video_comment_player .mejs__overlay-button {
+		transform: inherit;
+	}
+
+	.o_video_comment_container {
+		font-size: 20px;
+	}
+
+	.o_video_comment_author_box {
+		margin-bottom: 20px;
+
+		.o_portrait img.o_video_comment_author_portrait_tiny {
+			width: 32px;
+			height: 32px;
+		}
+	}
+
+	.o_video_comment_box {
+		padding: 24px;
+		margin-left: 16px;
+		margin-right: 16px;
+	}
+}
+
+@media (max-width: $screen-sm) {
+	.o_video_comment_container {
+		width: 50%;
+	}
+}
+
+@media (max-width: $screen-xs) {
+	.o_video_comment_container {
+		width: 62%;
+	}
+
+	.o_video_comment_box {
+		padding-top: 8px;
+		padding-bottom: 8px;
+	}
+
+	.o_video_comment_close {
+		margin-top: 4px;
+		margin-bottom: 0;
+	}
+}
