@@ -322,7 +322,7 @@ public class EnrollmentManager implements GenericEventListener {
 		  .append(" ) as numOfParticipants,")
 		  //num of pending
 		  .append(" (select count(reservations.key) from resourcereservation reservations ")
-		  .append("  where reservations.resource.key=grp.resource.key")
+		  .append("  where reservations.resource.key=grp.resource.key and reservations.type='group_participant'")
 		  .append(" ) as numOfReservationss,")
 		  //length of the waiting list
 		  .append(" (select count(waiters.key) from bgroupmember waiters ")
