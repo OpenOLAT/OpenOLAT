@@ -42,8 +42,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.gta.ui.AVDoneEvent;
 import org.olat.modules.video.VideoComment;
+import org.olat.modules.video.VideoCommentType;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
@@ -295,7 +297,7 @@ public class CommentsHeaderController extends FormBasicController {
 			cleanUp();
 		} else if (importFileController == source) {
 			if (event == Event.DONE_EVENT) {
-				doAddFile(ureq, importFileController.getFileName());
+				doAddFile(ureq, importFileController.getFileName(), null, false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -307,15 +309,26 @@ public class CommentsHeaderController extends FormBasicController {
 			cleanUp();
 		} else if (recordCommentController == source) {
 			if (event instanceof AVDoneEvent avDoneEvent) {
-				doAddFile(ureq, avDoneEvent.getRecording().getName());
+				doAddFile(ureq, avDoneEvent.getRecording().getName(), wrapInPTag(recordCommentController.getTitle()),
+						true);
 			}
 			cmc.deactivate();
 			cleanUp();
 		}
 	}
 
+	private String wrapInPTag(String text) {
+		if (StringHelper.containsNonWhitespace(text)) {
+			if (!text.startsWith("<p")) {
+				return "<p>" + text + "</p>";
+			}
+		}
+		return text;
+	}
+
 	private void doAddText(UserRequest ureq) {
 		VideoCommentImpl newComment = createBaseComment();
+		newComment.setType(VideoCommentType.text.name());
 		newComment.setText(translate("comment.add.new"));
 
 		commentId = newComment.getId();
@@ -324,9 +337,11 @@ public class CommentsHeaderController extends FormBasicController {
 		fireEvent(ureq, COMMENT_ADDED_EVENT);
 	}
 
-	private void doAddFile(UserRequest ureq, String fileName) {
+	private void doAddFile(UserRequest ureq, String fileName, String text, boolean isRecording) {
 		VideoCommentImpl newComment = createBaseComment();
+		newComment.setType(isRecording ? VideoCommentType.videoRecording.name() : VideoCommentType.videoFile.name());
 		newComment.setFileName(fileName);
+		newComment.setText(text);
 
 		commentId = newComment.getId();
 		comments.getComments().add(newComment);
@@ -336,6 +351,7 @@ public class CommentsHeaderController extends FormBasicController {
 
 	private void doAddUrl(UserRequest ureq) {
 		VideoCommentImpl newComment = createBaseComment();
+		newComment.setType(VideoCommentType.videoUrl.name());
 		newComment.setUrl(importUrlController.getUrl());
 
 		commentId = newComment.getId();

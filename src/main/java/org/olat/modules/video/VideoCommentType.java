@@ -19,31 +19,28 @@
  */
 package org.olat.modules.video;
 
-import java.util.Date;
-
-import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
- * Initial date: 2023-02-28<br>
+ * Initial date: 2023-03-21<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface VideoComment {
-	String getId();
-	Date getStart();
-	void setStart(Date start);
-	String getColor();
-	void setColor(String color);
-	String getAuthor();
-	void setAuthor(String author);
-	String getText();
-	void setText(String text);
-	String getFileName();
-	void setFileName(String fileName);
-	String getUrl();
-	void setUrl(String url);
-	String getType();
-	void setType(String type);
+public enum VideoCommentType {
+	text,
+	videoRecording,
+	videoFile,
+	videoUrl,
+	undefined;
 
-	String getDisplayText(Translator translator);
+	public static VideoCommentType safeValueOf(String val) {
+		if (StringHelper.containsNonWhitespace(val)) {
+			for (VideoCommentType type : values()) {
+				if (type.name().equals(val)) {
+					return type;
+				}
+			}
+		}
+		return undefined;
+	}
 }

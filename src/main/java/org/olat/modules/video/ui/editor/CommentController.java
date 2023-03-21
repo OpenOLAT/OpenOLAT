@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComment;
+import org.olat.modules.video.VideoCommentType;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
@@ -135,15 +136,14 @@ public class CommentController extends FormBasicController {
 		colorDropdown = uifactory.addDropdownSingleselect("color", "form.common.color", formLayout,
 				colorsKV.keys(), colorsKV.values());
 
+		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
+				Link.LINK | Link.NONTRANSLATED);
+
 		textEl = uifactory.addRichTextElementVeryMinimalistic("text", "form.common.text",
 				"", 3, -1, true, null, formLayout,
 				ureq.getUserSession(), getWindowControl());
 		textEl.getEditorConfiguration().disableImageAndMovie();
 		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
-		textEl.setMandatory(true);
-
-		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
-				Link.LINK | Link.NONTRANSLATED);
 
 		uifactory.addFormSubmitButton("save", formLayout);
 		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
@@ -156,24 +156,29 @@ public class CommentController extends FormBasicController {
 
 		startEl.setValue(timeFormat.format(comment.getStart()));
 
-		flc.contextPut("showText", false);
+		flc.contextPut("showText", true);
 		flc.contextPut("showVideo", false);
+		textEl.setMandatory(false);
 
 		if (StringHelper.containsNonWhitespace(comment.getText())) {
 			textEl.setValue(comment.getText());
-			flc.contextPut("showText", true);
 		} else {
 			textEl.setValue("");
 		}
 
 		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
-			videoLink.setI18nKey(comment.getFileName());
+			if (VideoCommentType.safeValueOf(comment.getType()).equals(VideoCommentType.videoRecording)) {
+				videoLink.setI18nKey(translate("comment.video.recording"));
+			} else {
+				videoLink.setI18nKey(comment.getFileName());
+			}
 			flc.contextPut("showVideo", true);
 		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
 			videoLink.setI18nKey(comment.getUrl());
 			flc.contextPut("showVideo", true);
 		} else {
 			videoLink.setI18nKey("");
+			textEl.setMandatory(true);
 		}
 
 		if (comment.getColor() != null) {

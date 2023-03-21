@@ -17,14 +17,14 @@
 			</div>
 			$name
 		</div>
-		#if ($text)
-		<div class="o_video_comment_text">
-			$r.xssScan($text)
-		</div>
-		#end
 		#if ($r.available("video"))
 		<div class="o_video_comment_player">
 			$r.render("video")
+		</div>
+		#end
+		#if ($text)
+		<div class="o_video_comment_text">
+			$r.xssScan($text)
 		</div>
 		#end
 	</div>

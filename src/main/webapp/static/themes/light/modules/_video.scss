@@ -1114,11 +1114,19 @@
 .o_video_comment_box {
 	margin-left: 10px;
 	margin-right: 10px;
-	padding: 16px;
+	padding: 16px 16px 6px 16px;
 	background-color: white;
 	border-width: medium;
 	border-style: solid;
 	border-radius: 5px;
+
+	.o_video_run.o_block_large_bottom {
+		margin-bottom: 10px;
+	}
+
+	.o_video_comment_text {
+		margin-bottom: -6px;
+	}
 }
 
 .o_video_comment_author_box {
@@ -1156,9 +1164,13 @@
 	}
 
 	.o_video_comment_box {
-		padding: 24px;
+		padding: 24px 24px 10px 24px;
 		margin-left: 16px;
 		margin-right: 16px;
+
+		.o_video_run.o_block_large_bottom {
+			margin-bottom: 16px;
+		}
 	}
 }
 
