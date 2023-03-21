@@ -47,7 +47,7 @@ public class AddRemoveRenderer extends DefaultComponentRenderer {
 	}
 
 	private void renderAddRemove(Renderer renderer, StringOutput sb, AddRemoveComponent addRemoveComponent, Translator translator) {
-		AddRemoveElement addRemoveElement = addRemoveComponent.getAddRemoveElement();
+		AddRemoveElement addRemoveElement = addRemoveComponent.getFormItem();
 		String addText = ""; 
 		String removeText = ""; 
 		
