@@ -262,7 +262,6 @@ public class CommentController extends FormBasicController {
 
 		try {
 			comment.setStart(timeFormat.parse(startEl.getValue()));
-			comment.setAuthor(getIdentity().getName());
 			comment.setColor(colorDropdown.getSelectedKey());
 			comment.setText(textEl.getValue());
 			fireEvent(ureq, Event.DONE_EVENT);
