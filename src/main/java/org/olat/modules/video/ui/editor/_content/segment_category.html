@@ -1,0 +1,17 @@
+<div class="o_video_segment_category_selection">
+	<div class="o_categories">
+		#if ($categoriesAvailable)
+		<ul class="o_category_list">
+			#foreach ($category in $categories)
+			#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
+			<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
+				<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
+				<div class="o_category_text">${category.getLabelAndTitle()} (${categoryUsedCounts.get($category.getId())})</div>
+			</li>
+			#end
+		</ul>
+		#else
+		<span class="o_video_segment_category_placeholder">$r.translate("form.segment.noCategoryAvailableYet")</span>
+		#end
+	</div>
+</div>

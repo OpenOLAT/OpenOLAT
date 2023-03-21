@@ -42,11 +42,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegmentCategory;
 import org.olat.modules.video.VideoSegments;
 import org.olat.modules.video.model.VideoSegmentCategoryImpl;
 import org.olat.modules.video.model.VideoSegmentImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-01-30<br>
@@ -71,7 +74,8 @@ public class SegmentsHeaderController extends FormBasicController {
 	private HeaderCommandsController commandsController;
 	private CloseableCalloutWindowController ccwc;
 	private final SimpleDateFormat timeFormat;
-
+	@Autowired
+	private VideoModule videoModule;
 
 	public SegmentsHeaderController(UserRequest ureq, WindowControl wControl, long videoDurationInSeconds) {
 		super(ureq, wControl, "segments_header");
@@ -258,7 +262,7 @@ public class SegmentsHeaderController extends FormBasicController {
 			category.setId(UUID.randomUUID().toString());
 			category.setLabel(translate("form.segment.category.label.new"));
 			category.setTitle(translate("form.segment.category.title.new"));
-			category.setColor("o_video_marker_green");
+			category.setColor(videoModule.getMarkerStyles().get(0));
 			segments.getCategories().add(category);
 		}
 

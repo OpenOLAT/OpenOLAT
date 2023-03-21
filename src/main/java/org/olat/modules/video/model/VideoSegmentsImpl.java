@@ -48,6 +48,9 @@ public class VideoSegmentsImpl implements VideoSegments {
 
 	@Override
 	public Optional<VideoSegmentCategory> getCategory(String categoryId) {
+		if (categoryId == null) {
+			return Optional.empty();
+		}
 		return categories.stream().filter((c) -> categoryId.equals(c.getId())).findFirst();
 	}
 
