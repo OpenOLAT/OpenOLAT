@@ -120,7 +120,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		boolean showOverlayComments = config.getBooleanSafe(VideoEditController.CONFIG_KEY_OVERLAY_COMMENTS, false);
 		String customtext = config.getStringValue(VideoEditController.CONFIG_KEY_DESCRIPTION_CUSTOMTEXT);
 
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, courseCommentsRatings, title, false, false, null, false, readOnly, forwardSeekingRestrictred);
+		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(autoplay, comments, ratings, courseCommentsRatings, title, false, false, null, false, readOnly, forwardSeekingRestrictred, false);
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
 		displayOptions.setShowSegments(showSegments);

@@ -169,7 +169,9 @@ public class CommentLayerController extends BasicController {
 	}
 
 	public void hideComment() {
-		mainVC.contextPut("showComment", false);
+		if (mainVC.contextGet("showComment") instanceof Boolean showComment && showComment) {
+			mainVC.contextPut("showComment", false);
+		}
 	}
 
 	public boolean isCommentVisible() {

@@ -111,7 +111,9 @@
 						} else {
 							$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 						}
+						#if ($isVimeo)
 						checkMarkers();
+						#end
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user
@@ -164,12 +166,8 @@
 		        
 		        ## Place the markers holder
 		        var markerCmpId = 'o_c' + '${r.getComponent("markers").getDispatchID()}';
-				var segmentsCmpId = 'o_c' + '${r.getComponent("segments").getDispatchID()}';
-		        jQuery('#' + player.id + ' .mejs__layers')
-					.append('<div id="' + markerCmpId + '"><!-- empty --></div>')
-					.append('<div id="' + segmentsCmpId + '"><!-- empty --></div>');
+		        jQuery('#' + player.id + ' .mejs__layers').append('<div id="' + markerCmpId + '"><!-- empty --></div>');
 		        jQuery('#' + markerCmpId).hide();
-				jQuery('#' + segmentsCmpId).hide();
 
 				#foreach($layerPanelName in $layerPanelNames)
 				jQuery('#' + player.id + ' .mejs__layers')
