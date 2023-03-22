@@ -70,6 +70,7 @@ public class AssessmentEntryDAO {
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
 		data.setCreationDate(new Date());
 		data.setLastModified(data.getCreationDate());
+		data.setRun(1);
 		data.setIdentity(assessedIdentity);
 		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);

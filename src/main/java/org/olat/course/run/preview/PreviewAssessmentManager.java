@@ -169,6 +169,11 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	public void updateLastVisited(CourseNode courseNode, Identity assessedIdentity, Date lastVisit) {
 		//
 	}
+	
+	@Override
+	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by) {
+		//
+	}
 
 	@Override
 	public Float getNodeScore(CourseNode courseNode, Identity identity) {

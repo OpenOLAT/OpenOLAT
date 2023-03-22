@@ -53,6 +53,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -60,6 +61,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseEntryRef;
+import org.olat.course.CourseFactory;
+import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -808,6 +811,28 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, uce, false, Role.coach);
 		}
 		doUpdateFullyAssessedOnAllChecked(uce);
+	}
+
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		ICourse course = CourseFactory.loadCourse(assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+		new CheckListExcelExport(this, course, locale)
+			.export(assessedIdentity, ZipUtil.concat(path, "Checklist"), archiveStream);
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		OLATResourceable courseOres = OresHelper
+				.createOLATResourceableInstance(CourseModule.ORES_TYPE_COURSE, assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId());
+		CoreSpringFactory.getImpl(CheckboxManager.class).resetChecks(assessedIdentity, courseOres, getIdent());
+		
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	/**

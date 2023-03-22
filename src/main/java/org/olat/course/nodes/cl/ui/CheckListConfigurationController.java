@@ -402,13 +402,13 @@ public class CheckListConfigurationController extends FormBasicController {
 		if(wizard) {
 			titlePrefixEl.clearError();
 			if(!StringHelper.containsNonWhitespace(titlePrefixEl.getValue())) {
-				titlePrefixEl.setErrorKey("form.legende.mandatory", null);
+				titlePrefixEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
 			numOfCheckListEl.clearError();
 			if(!numOfCheckListEl.isOneSelected()) {
-				numOfCheckListEl.setErrorKey("form.legende.mandatory", null);
+				numOfCheckListEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -420,15 +420,15 @@ public class CheckListConfigurationController extends FormBasicController {
 			float min = toFloat(minPointsEl.getValue());
 			float max = toFloat(maxPointsEl.getValue());
 			if (Float.isNaN(min) || min < 0.0f) {
-				minPointsEl.setErrorKey("form.error.wrongFloat", null);
+				minPointsEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 			if (Float.isNaN(max) || max < 0.0f) {
-				maxPointsEl.setErrorKey("form.error.wrongFloat", null);
+				maxPointsEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
-			if (!Float.isNaN(min) && !Float.isNaN(min) && min > max) {
-				maxPointsEl.setErrorKey("form.error.minGreaterThanMax", null);
+			if (!Float.isNaN(min) && !Float.isNaN(max) && min > max) {
+				maxPointsEl.setErrorKey("form.error.minGreaterThanMax");
 				allOk &= false;
 			}
 		}
@@ -441,7 +441,7 @@ public class CheckListConfigurationController extends FormBasicController {
 				if("cutvalue".equals(selectKey)) {
 					float cut = toFloat(cutValueEl.getValue());
 					if (Float.isNaN(cut) || cut < 0.0f) {
-						cutValueEl.setErrorKey("form.error.wrongFloat", null);
+						cutValueEl.setErrorKey("form.error.wrongFloat");
 						allOk &= false;
 					}
 				}
@@ -451,7 +451,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		dueDateChooserEl.clearError();
 		if(dueDateEl.isAtLeastSelected(1)) {
 			if (!wizard && dueDateChooserEl.isEmpty()) {
-				dueDateChooserEl.setErrorKey("form.error.date", null);
+				dueDateChooserEl.setErrorKey("form.error.date");
 				allOk &= false;
 			}
 		}

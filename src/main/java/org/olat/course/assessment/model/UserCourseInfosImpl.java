@@ -85,6 +85,9 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 	@Column(name="timespend", nullable=false, insertable=true, updatable=true)
 	private long timeSpend;
 	
+	@Column(name="run", nullable=false, insertable=true, updatable=true)
+	private int run;
+
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, updatable=false)
 	private Identity identity;
@@ -155,6 +158,14 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 		this.timeSpend = timeSpend;
 	}
 
+	public int getRun() {
+		return run;
+	}
+
+	public void setRun(int run) {
+		this.run = run;
+	}
+
 	@Override
 	public Identity getIdentity() {
 		return identity;
@@ -187,8 +198,7 @@ public class UserCourseInfosImpl implements UserCourseInformations, Persistable,
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserCourseInfosImpl) {
-			UserCourseInfosImpl prop = (UserCourseInfosImpl)obj;
+		if(obj instanceof UserCourseInfosImpl prop) {
 			return getKey() != null && getKey().equals(prop.getKey());	
 		}
 		return false;

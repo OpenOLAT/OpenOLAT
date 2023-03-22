@@ -71,9 +71,11 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeService;
+import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
@@ -356,6 +358,26 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		if (withReferences && rie.anyExportedPropertiesAvailable()) {
 			PortfolioCourseNodeEditController.removeReference(getModuleConfiguration());
 		}
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		RepositoryEntry mapEntry = getReferencedRepositoryEntry();
+		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
+			Binder templateBinder = portfolioService.getBinderByResource(mapEntry.getOlatResource());
+			if(templateBinder != null) {
+				Binder copyBinder = portfolioService.getBinder(assessedIdentity, templateBinder, courseEntry, getIdent());
+				if(copyBinder != null) {
+					log.info("Detach binder {} by {} in course {} element {}", copyBinder.getKey(), assessedIdentity.getKey(), courseEntry, getIdent());
+					portfolioService.detachRepositoryEntryFromBinders(copyBinder);
+				}
+			}
+		}
+		
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override

@@ -26,7 +26,6 @@ import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
@@ -39,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -50,6 +50,11 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.reset.ResetData1OptionsStep;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
+import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -60,6 +65,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,10 +84,12 @@ public class AssessmentIdentityCourseController extends BasicController
 	private Link pdfLink;
 	private Link nextLink;
 	private Link previousLink;
+	private Link resetDataLink;
 	private Link courseNodeSelectionLink;
 	
 	private IdentityCertificatesController certificateCtrl;
 	private IdentityPassedController passedCtrl;
+	private StepsMainRunController resetDataCtrl;
 	private AssessedIdentityLargeInfosController infosController;
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
@@ -92,6 +100,7 @@ public class AssessmentIdentityCourseController extends BasicController
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
 	private final UserCourseEnvironment coachCourseEnv;
+	private final AssessmentToolSecurityCallback secCallback;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -103,11 +112,13 @@ public class AssessmentIdentityCourseController extends BasicController
 	private PdfService pdfService;
 	
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable,
+			AssessmentToolSecurityCallback secCallback) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
 		this.courseEntry = courseEntry;
+		this.secCallback = secCallback;
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedIdentity = assessedIdentity;
 		
@@ -154,6 +165,12 @@ public class AssessmentIdentityCourseController extends BasicController
 	
 	@Override
 	public void initTools() {
+		if(secCallback.canResetData()) {
+			resetDataLink = LinkFactory.createToolLink("reset.data", translate("reset.data"), this);
+			resetDataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
+			stackPanel.addTool(resetDataLink, Align.right, false);
+		}
+		
 		if (pdfModule.isEnabled()) {
 			pdfLink = LinkFactory.createToolLink("output.pdf", translate("output.pdf"), this);
 			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tool_pdf");
@@ -176,8 +193,7 @@ public class AssessmentIdentityCourseController extends BasicController
 			}
 		} else if(courseNodeChooserCtrl == source) {
 			if(CourseNodeEvent.SELECT_COURSE_NODE.equals(event.getCommand())
-					&& event instanceof CourseNodeEvent) {
-				CourseNodeEvent cne = (CourseNodeEvent)event;
+					&& event instanceof CourseNodeEvent cne) {
 				CourseNode selectedNode = treeOverviewCtrl.getNodeByIdent(cne.getIdent());
 				if(selectedNode != null) {
 					doSelectCourseNode(ureq, selectedNode);
@@ -188,8 +204,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		} else if(courseNodeChooserCalloutCtrl == source) {
 			cleanUp();
 		} else if(currentNodeCtrl == source) {
-			if(event instanceof AssessmentFormEvent) {
-				AssessmentFormEvent aee = (AssessmentFormEvent)event;
+			if(event instanceof AssessmentFormEvent aee) {
 				treeOverviewCtrl.loadModel();
 				if (passedCtrl != null) passedCtrl.refresh();
 				if (certificateCtrl != null) certificateCtrl.loadList();
@@ -204,10 +219,20 @@ public class AssessmentIdentityCourseController extends BasicController
 				fireEvent(ureq, event);
 			}
 		} else if (source == passedCtrl) {
-			if (event == FormEvent.CHANGED_EVENT) {
+			if (event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
 				if (certificateCtrl != null) certificateCtrl.loadList();
 				fireEvent(ureq, event);
+			}
+		} else if(resetDataCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					treeOverviewCtrl.loadModel();
+					if (passedCtrl != null) passedCtrl.refresh();
+					if (certificateCtrl != null) certificateCtrl.loadList();
+				}
+				cleanUp();
 			}
 		}
 		super.event(ureq, source, event);
@@ -221,16 +246,20 @@ public class AssessmentIdentityCourseController extends BasicController
 			doNextNode(ureq);
 		} else if(courseNodeSelectionLink == source) {
 			doSelectCourseNode(ureq);
-		} else if (source == pdfLink) {
+		} else if (pdfLink == source) {
 			doExportPdf(ureq);
+		} else if(resetDataLink == source) {
+			doResetData(ureq);
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(courseNodeChooserCtrl);
 		removeAsListenerAndDispose(courseNodeChooserCalloutCtrl);
 		courseNodeChooserCalloutCtrl = null;
 		courseNodeChooserCtrl = null;
+		resetDataCtrl = null;
 	}
 	
 	private void doSelectCourseNode(UserRequest ureq) {
@@ -348,7 +377,7 @@ public class AssessmentIdentityCourseController extends BasicController
 	
 	private void doExportPdf(UserRequest ureq) {
 		ControllerCreator printControllerCreator = (lureq, lwControl) -> new AssessmentIdentityCourseController(lureq, lwControl, stackPanel,
-		courseEntry, coachCourseEnv, assessedIdentity, false);
+		courseEntry, coachCourseEnv, assessedIdentity, false, secCallback);
 		String title = getPdfTitle();
 		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
 		ureq.getDispatchResult().setResultingMediaResource(resource);
@@ -364,6 +393,20 @@ public class AssessmentIdentityCourseController extends BasicController
 		sb.append("_");
 		sb.append(assessedIdentity.getUser().getFirstName());
 		return FileUtils.normalizeFilename(sb.toString());
+	}
+	
+	private void doResetData(UserRequest ureq) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetCourse(ResetCourse.all);
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(List.of(assessedIdentity));
+		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, dataContext, coachCourseEnv, secCallback, true, false);
+		
+		String title = translate("wizard.reset.data.title");
+		ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, secCallback);
+		resetDataCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(resetDataCtrl);
+		getWindowControl().pushAsModalDialog(resetDataCtrl.getInitialComponent());
 	}
 
 }

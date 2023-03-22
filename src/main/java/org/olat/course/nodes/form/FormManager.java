@@ -96,6 +96,8 @@ public interface FormManager {
 	public void deleteAllData(EvaluationFormSurvey survey, CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, UserColumns userColumns);
+	
+	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode, EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns);
 
 	public List<String> getRelativeToDateTypes(RepositoryEntry courseEntry);
 

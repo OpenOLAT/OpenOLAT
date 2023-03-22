@@ -477,6 +477,15 @@ public class FormManagerImpl implements FormManager {
 			EvaluationFormSurveyIdentifier identifier, UserColumns userColumns) {
 		EvaluationFormSurvey survey = loadSurvey(identifier);
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey, true);
+		return getExcelExport(courseNode, identifier, filter, userColumns);
+	}
+	
+	
+
+	@Override
+	public EvaluationFormExcelExport getExcelExport(FormCourseNode courseNode,
+			EvaluationFormSurveyIdentifier identifier, SessionFilter filter, UserColumns userColumns) {
+		EvaluationFormSurvey survey = loadSurvey(identifier);
 		Form form = loadForm(survey);
 		String surveyName = courseNode.getShortName();
 		return new EvaluationFormExcelExport(form, filter, null, userColumns, surveyName);

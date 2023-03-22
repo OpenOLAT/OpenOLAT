@@ -53,7 +53,10 @@ public class AssessmentToolSecurityCallback {
 		this.coachedGroups = coachedGroups;
 		this.fakeParticipants = fakeParticipants;
 	}
-
+	
+	public static AssessmentToolSecurityCallback nothing() {
+		return new AssessmentToolSecurityCallback(false, false, false, false, false, List.of(), Set.of());
+	}
 
 	public boolean isAdmin() {
 		return admin;
@@ -84,6 +87,11 @@ public class AssessmentToolSecurityCallback {
 	}
 	
 	public boolean canAssignCoaches() {
+		return admin;
+	}
+	
+	public boolean canResetData() {
+		
 		return admin;
 	}
 

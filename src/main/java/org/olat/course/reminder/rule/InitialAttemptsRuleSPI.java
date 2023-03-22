@@ -151,8 +151,7 @@ public class InitialAttemptsRuleSPI extends AbstractLaunchDateRuleSPI implements
 	
 	@Override
 	public String getCourseNodeIdent(ReminderRule rule) {
-		if(rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+		if(rule instanceof ReminderRuleImpl r) {
 			return r.getLeftOperand();
 		}
 		return null;

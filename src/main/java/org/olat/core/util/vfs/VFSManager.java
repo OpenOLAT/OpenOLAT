@@ -45,6 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class VFSManager {
@@ -850,7 +851,7 @@ public class VFSManager {
 			} catch (IOException e) {
 				// something went wrong.
 				successful = false;
-				log.error("Error while copying content from source: " + source + " to target stream.", e);
+				log.error("Error while copying content from source: {} to target stream.", source, e);
 			}
 		} else {
 			// source or target is null
@@ -858,6 +859,24 @@ public class VFSManager {
 			if (log.isDebugEnabled()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
 		}
 		return successful;
+	}
+	
+	public static boolean deleteContainersAndLeaves(VFSContainer container, boolean recursive, boolean deleteContainer) {
+		if(container == null) return true;// Nothing to do
+		
+		List<VFSItem> items = container.getItems(new VFSSystemItemFilter());
+		for(VFSItem item:items) {
+			if(item instanceof VFSLeaf leaf) {
+				leaf.delete();
+			} else if(recursive && item instanceof VFSContainer subContainer) {
+				deleteContainersAndLeaves(subContainer, true, true);
+			}
+		}
+		
+		if(deleteContainer) {
+			container.delete();
+		}
+		return true;
 	}
 	
 	/**

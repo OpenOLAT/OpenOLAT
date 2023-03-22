@@ -154,10 +154,8 @@ public class QTI21ResetDataController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
-			String[] args = new String[]{ Integer.toString(identities.size()) };
-			String msg = translate("reset.test.data.text", args);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			String msg = translate("reset.test.data.text", Integer.toString(identities.size()));
 			layoutCont.contextPut("msg", msg);
 		}
 		
@@ -181,7 +179,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		
 		acknowledgeEl.clearError();
 		if(!acknowledgeEl.isAtLeastSelected(1)) {
-			acknowledgeEl.setErrorKey("form.legende.mandatory", null);
+			acknowledgeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

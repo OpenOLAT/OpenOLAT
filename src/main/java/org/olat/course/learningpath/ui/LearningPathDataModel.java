@@ -33,6 +33,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  *
  */
 public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<LearningPathRow> {
+	
+	private static final LearningPathCols[] COLS = LearningPathCols.values();
 
 	public LearningPathDataModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
@@ -56,7 +58,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 	}
 
 	public Object getValueAt(LearningPathRow row, int col) {
-		switch(LearningPathCols.values()[col]) {
+		switch(COLS[col]) {
 			case learningPathStatus: return row.getLearningPathNode();
 			case progress: return row.getLearningPathNode();
 			case learningProgress: return row.getProgressLink() != null
@@ -75,6 +77,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case lastVisit: return row.getLastVisit();
 			case status: return row.getStatus();
 			case fullyAssessedDate: return row.getFullyAssessedDate();
+			case tools: return row.getToolsLink();
 			default: return null;
 		}
 	}
@@ -91,7 +94,8 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 		firstVisit("table.header.first.visit"),
 		lastVisit("table.header.last.visit"),
 		status("table.header.status"),
-		fullyAssessedDate("table.header.fully.assessed.date");
+		fullyAssessedDate("table.header.fully.assessed.date"),
+		tools("table.header.tools");
 		
 		private final String i18nKey;
 		

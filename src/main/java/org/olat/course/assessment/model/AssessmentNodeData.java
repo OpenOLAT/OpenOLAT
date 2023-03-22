@@ -20,6 +20,7 @@
 package org.olat.course.assessment.model;
 
 import static org.olat.course.assessment.AssessmentHelper.KEY_ATTEMPTS;
+import static org.olat.course.assessment.AssessmentHelper.KEY_COMPLETION;
 import static org.olat.course.assessment.AssessmentHelper.KEY_DETAILS;
 import static org.olat.course.assessment.AssessmentHelper.KEY_GRADE;
 import static org.olat.course.assessment.AssessmentHelper.KEY_GRADE_SYSTEM_IDENT;
@@ -83,6 +84,8 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Mode passedMode;
 	private Boolean passed;
 	private Overridable<Boolean> passedOverridable;
+	
+	private Double completion;
 	
 	private Boolean userVisibility;
 	private AssessmentEntryStatus assessmentStatus;
@@ -272,6 +275,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		this.passedOverridable = passedOverridable;
 	}
 
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
+
 	public AssessmentEntryStatus getAssessmentStatus() {
 		return assessmentStatus;
 	}
@@ -370,13 +381,16 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		if(lastCoachModified != null) {
 			nodeData.put(KEY_LAST_COACH_MODIFIED, lastCoachModified);
 		}
+		if(completion != null) {
+			nodeData.put(KEY_COMPLETION, completion);
+		}
 		nodeData.put(KEY_SELECTABLE, selectable ? Boolean.TRUE : Boolean.FALSE);
 		return nodeData;
 	}
 
 	private void fromMap(Map<String,Object> nodeData) {
-		if(nodeData.get(KEY_INDENT) instanceof Integer) {
-			recursionLevel = ((Integer)nodeData.get(KEY_INDENT)).intValue();
+		if(nodeData.get(KEY_INDENT) instanceof Integer indent) {
+			recursionLevel = indent.intValue();
 		}
 		type = (String)nodeData.get(KEY_TYPE);
 		shortTitle = (String)nodeData.get(KEY_TITLE_SHORT);
@@ -384,7 +398,9 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		ident = (String)nodeData.get(KEY_IDENTIFYER);
 		details = (String)nodeData.get(KEY_DETAILS);
 		attempts = (Integer)nodeData.get(KEY_ATTEMPTS);
-		score = (Float)nodeData.get(KEY_SCORE_F);
+		if(nodeData.get(KEY_SCORE_F) instanceof Float fScore) {
+			score = fScore;
+		}
 		roundedScore = (String)nodeData.get(KEY_SCORE);
 		maxScore = (Float)nodeData.get(KEY_MAX);
 		minScore = (Float)nodeData.get(KEY_MIN);
@@ -392,16 +408,18 @@ public class AssessmentNodeData implements IndentedCourseNode {
 		gradeSystemIdent = (String)nodeData.get(KEY_GRADE_SYSTEM_IDENT);
 		performanceClassIdent = (String)nodeData.get(KEY_PERFORMANCE_CLASS_IDENT);
 		passed = (Boolean)nodeData.get(KEY_PASSED);
-		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean) {
-			selectable = ((Boolean)nodeData.get(KEY_SELECTABLE)).booleanValue();
+		if(nodeData.get(KEY_SELECTABLE) instanceof Boolean selectableData) {
+			selectable = selectableData.booleanValue();
 		}
-		if(nodeData.get(KEY_LAST_USER_MODIFIED) instanceof Date) {
-			lastUserModified = ((Date)nodeData.get(KEY_LAST_USER_MODIFIED));
+		if(nodeData.get(KEY_LAST_USER_MODIFIED) instanceof Date modified) {
+			lastUserModified = modified;
 		}
-		if(nodeData.get(KEY_LAST_COACH_MODIFIED) instanceof Date) {
-			lastCoachModified = ((Date)nodeData.get(KEY_LAST_COACH_MODIFIED));
+		if(nodeData.get(KEY_LAST_COACH_MODIFIED) instanceof Date modified) {
+			lastCoachModified = modified;
 		}
-		
+		if(nodeData.get(KEY_COMPLETION) instanceof Double completionData) {
+			completion = completionData;
+		}
 	}
 	
 	@Override

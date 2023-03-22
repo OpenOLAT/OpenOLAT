@@ -1,0 +1,12 @@
+<fieldset class="o_form form-horizontal">
+	<div class="o_error">
+		<p>$r.xssScan($msgCourseElements)</p>
+		<p>$r.translate("confirmation.impact")</p>
+		$r.translate("confirmation.impact.list")
+		<p>$r.translate("confirmation.archive")</p>
+	</div>
+	$r.render("confirmation.check", "3_9")
+	#if($r.available("buttons"))
+		$r.render("buttons", "3_9")
+	#end
+</fieldset>

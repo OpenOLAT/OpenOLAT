@@ -358,7 +358,8 @@ public class CoachingDAO {
 		  .append(" inner join o_re_to_group togroup on (togroup.r_defgroup=").appendFalse().append(" and togroup.fk_entry_id = sg_re.repositoryentry_id) ")
 		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role = 'coach') ")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant') ")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id ")
+		  .append("   and sg_statement.fk_resource_id = sg_re.fk_olatresource and sg_statement.last_statement=").appendTrue().append(")")
 		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_coach.g_role = 'coach'")
 		  .append("  and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .append(") ").appendAs().append(" fin_statement ")
@@ -411,7 +412,8 @@ public class CoachingDAO {
 		  		.in(GroupRoles.owner).append(")")
 		  .append(" inner join o_re_to_group togroup on (togroup.r_defgroup=").appendFalse().append(" and togroup.fk_entry_id = sg_re.repositoryentry_id)")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
+		  .append("   and sg_statement.last_statement=").appendTrue().append(")")
 		  .append(" where sg_owner.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .append(") ").appendAs().append(" fin_statement ")
 		  .append("group by fin_statement.bgp_id, fin_statement.re_id");
@@ -592,7 +594,8 @@ public class CoachingDAO {
 		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
 		  .append(" inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id and sg_coach.g_role in ('owner','coach')) ")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
+		  .append("  and sg_statement.last_statement=").appendTrue().append(")")
 		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
 		  .append(" union select sg_statement.id ")
 		  .append(" from o_repositoryentry sg_re ")
@@ -601,10 +604,11 @@ public class CoachingDAO {
 		  		.in(GroupRoles.owner).append(")")
 		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
+		  .append("  and sg_statement.last_statement=").appendTrue().append(")")
 		  .append(" where sg_coach.fk_identity_id=:coachKey and sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
-		  .append(") ")
-		  .append("group by fin_statement.course_repo_key ");
+		  .append(")")
+		  .append(" group by fin_statement.course_repo_key ");
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()
 				.createNativeQuery(sb.toString())
@@ -858,8 +862,8 @@ public class CoachingDAO {
 			  .append("  inner join o_bs_group_member sg_coach on (sg_coach.fk_group_id=togroup.fk_group_id")
 			  .append("   and sg_coach.fk_identity_id=:coachKey and sg_coach.g_role = 'coach') ")
 			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=sg_coach.fk_group_id and sg_participant.g_role='participant')")
-			  .append("  inner join o_as_eff_statement sg_statement")
-			  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)")
+			  .append("  inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id")
+			  .append("   and sg_statement.fk_resource_id = sg_re.fk_olatresource and sg_statement.last_statement=").appendTrue().append(")")
 			  .append("  where  sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		}
 		if(hasOwned) {
@@ -875,8 +879,8 @@ public class CoachingDAO {
 			  .append("    and sg_owner.g_role='owner' and sg_owner.fk_identity_id=:coachKey and owngroup.r_defgroup=").appendTrue().append(")")
 			  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
 			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-			  .append("  inner join o_as_eff_statement sg_statement ")
-			  .append("    on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)")
+			  .append("  inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id")
+			  .append("   and sg_statement.fk_resource_id = sg_re.fk_olatresource and sg_statement.last_statement=").appendTrue().append(")")
 			  .append("  where sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed()).append("");
 		  
 		}
@@ -1079,13 +1083,14 @@ public class CoachingDAO {
 		  .append(" from o_repositoryentry sg_re ")
  		  .append(" inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id) ")
 		  .append(" inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant') ")
-		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource) ")
+		  .append(" inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_participant.fk_identity_id and sg_statement.fk_resource_id = sg_re.fk_olatresource")
+		  .append("   and sg_statement.last_statement=").appendTrue().append(")")
 		  .append(" inner join o_bs_identity id_participant on (sg_participant.fk_identity_id = id_participant.id) ");
 		appendUsersStatisticsJoins(params, sb)
 		  .append(" where  sg_re.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 		appendUsersStatisticsSearchParams(params, queryParams, sb)
-		  .append(") ")
-		  .append("group by fin_statement.fk_identity ");
+		  .append(")")
+		  .append(" group by fin_statement.fk_identity ");
 		
 		Query query = dbInstance.getCurrentEntityManager().createNativeQuery(sb.toString());
 		for(Map.Entry<String, Object> entry:queryParams.entrySet()) {
@@ -1453,17 +1458,16 @@ public class CoachingDAO {
 		  .append("  sum(case when fin_statement.passed=").appendTrue().append(" then 1 else 0 end) as num_of_passed, ")
 		  .append("  sum(case when fin_statement.passed=").appendFalse().append(" then 1 else 0 end) as num_of_failed ")
 		  .append(" from o_as_eff_statement fin_statement ")
-		  .append(" where fin_statement.id in (");
-			sb.append(" select ").append("distinct")
-			  .append(" sg_statement.id as st_id")
-			  .append(" from o_repositoryentry sg_re")
-			  .append("  inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
-			  .append("  inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
-			  .append("  inner join o_bs_identity_to_identity sg_relation on (sg_relation.fk_target_id=sg_participant.fk_identity_id)")
-			  .append("  inner join o_as_eff_statement sg_statement")
-			  .append("   on (sg_statement.fk_identity = sg_relation.fk_target_id and sg_statement.fk_resource_id = sg_re.fk_olatresource)")
-			  .append(" where sg_relation.fk_role_id=:roleKey and sg_relation.fk_source_id=:sourceKey and sg_re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
-		sb.append(")")
+		  .append(" where fin_statement.id in (")
+		  .append("  select ").append("distinct sg_statement.id as st_id")
+		  .append("   from o_repositoryentry sg_re")
+		  .append("   inner join o_re_to_group togroup on (togroup.fk_entry_id = sg_re.repositoryentry_id)")
+		  .append("   inner join o_bs_group_member sg_participant on (sg_participant.fk_group_id=togroup.fk_group_id and sg_participant.g_role='participant')")
+		  .append("   inner join o_bs_identity_to_identity sg_relation on (sg_relation.fk_target_id=sg_participant.fk_identity_id)")
+		  .append("   inner join o_as_eff_statement sg_statement on (sg_statement.fk_identity = sg_relation.fk_target_id")
+		  .append("    and sg_statement.fk_resource_id = sg_re.fk_olatresource and sg_statement.last_statement=").appendTrue().append(")")
+		  .append(" where sg_relation.fk_role_id=:roleKey and sg_relation.fk_source_id=:sourceKey and sg_re.status").in(RepositoryEntryStatusEnum.coachPublishedToClosed())
+		  .append(")")
 		  .append(" group by fin_statement.fk_identity");
 
 		List<?> rawList = dbInstance.getCurrentEntityManager()

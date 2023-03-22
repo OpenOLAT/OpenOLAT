@@ -106,6 +106,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
@@ -799,21 +800,25 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private void archiveNodeData(ICourse course, Identity assessedIdentity, TaskList taskList, String dirName, ZipOutputStream exportStream) {
-		ModuleConfiguration config = getModuleConfiguration();
-		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		
 		User user = assessedIdentity.getUser();
 		String name = user.getLastName()
 				+ "_" + user.getFirstName()
 				+ "_" + (StringHelper.containsNonWhitespace(user.getNickName()) ? user.getNickName() : assessedIdentity.getName());
 		
-		int flow = 0;//for beautiful ordering
 		String userDirName = dirName + "/" + StringHelper.transformDisplayNameToFileSystemName(name);
+		archiveNodeUserData(course.getCourseEnvironment(), assessedIdentity, taskList, exportStream, userDirName);
+	}
+	
+	private void archiveNodeUserData(CourseEnvironment courseEnv, Identity assessedIdentity, TaskList taskList, ZipOutputStream exportStream, String userDirName) {	
+		ModuleConfiguration config = getModuleConfiguration();
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+
+		int flow = 0;//for beautiful ordering
 		
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
 		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
-			File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
+			File taskDirectory = gtaManager.getTasksDirectory(courseEnv, this);
 			File taskFile = new File(taskDirectory, task.getTaskName());
 			if(taskFile.exists()) {
 				String path = userDirName + "/"  + (++flow) + "_task/" + taskFile.getName(); 
@@ -822,7 +827,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		if(config.getBooleanSafe(GTASK_SUBMIT)) {
-			File submitDirectory = gtaManager.getSubmitDirectory(course.getCourseEnvironment(), this, assessedIdentity);
+			File submitDirectory = gtaManager.getSubmitDirectory(courseEnv, this, assessedIdentity);
 			String submissionDirName = userDirName + "/" + (++flow) + "_submissions";
 			int files = ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
 			if(files > 0 && gtaManager.isSubmissionExtended(task, assessedIdentity, null, this, courseEntry, true)) {
@@ -835,7 +840,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
-			File correctionsDir = gtaManager.getCorrectionDirectory(course.getCourseEnvironment(), this, assessedIdentity);
+			File correctionsDir = gtaManager.getCorrectionDirectory(courseEnv, this, assessedIdentity);
 			String correctionDirName = userDirName + "/" + (++flow) + "_corrections";
 			ZipUtil.addDirectoryToZip(correctionsDir.toPath(), correctionDirName, exportStream);
 		}
@@ -843,11 +848,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if(task != null && config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			int numOfIteration = task.getRevisionLoop();
 			for(int i=1; i<=numOfIteration; i++) {
-				File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(course.getCourseEnvironment(), this, i, assessedIdentity);
+				File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, this, i, assessedIdentity);
 				String revisionDirName = userDirName + "/" + (++flow) + "_revisions_" + i;
 				ZipUtil.addDirectoryToZip(revisionDirectory.toPath(), revisionDirName, exportStream);
 				
-				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(course.getCourseEnvironment(), this, i, assessedIdentity);
+				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, this, i, assessedIdentity);
 				String correctionDirName = userDirName + "/" + (++flow) + "_corrections_" + i;
 				ZipUtil.addDirectoryToZip(correctionDirectory.toPath(), correctionDirName, exportStream);
 			}
@@ -855,8 +860,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		
 		//assessment documents
 		if(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
-			List<File> assessmentDocuments = course.getCourseEnvironment()
-					.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+			List<File> assessmentDocuments = courseEnv.getAssessmentManager()
+					.getIndividualAssessmentDocuments(this, assessedIdentity);
 			if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
 				String assessmentDir = userDirName + "/"  + (++flow) + "_assessment/";
 				for(File document:assessmentDocuments) {
@@ -1051,6 +1056,36 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				DBFactory.getInstance().commit();
 			}
 		}
+	}
+
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream, String path, Identity doer, Role by) {
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), this);
+		archiveNodeUserData(courseEnv, assessedIdentity, taskList, archiveStream, path);
+		
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		TaskList taskList = gtaManager.getTaskList(courseEntry, this);
+		if(taskList == null) {
+			return; // No task configured, nothing to do
+		}
+		
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		Task task = gtaManager.getTask(assessedIdentity, taskList);
+		if(task != null) {
+			gtaManager.resetCourseNode(task, assessedIdentity, this, courseEnv, identity);
+		}
+		
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override

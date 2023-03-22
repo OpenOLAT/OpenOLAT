@@ -64,6 +64,7 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.course.style.ImageSource;
 import org.olat.course.style.TeaserImageStyle;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -278,6 +279,16 @@ public interface CourseNode extends INode, ShortName {
 	
 	
 	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents);
+	
+	/**
+	 * 
+	 * @param assessedUserCourseEnv
+	 * @param exportStream
+	 * @param path
+	 */
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream, String path, Identity doer, Role by);
+	
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity doer, Role by);
 
 	/**
 	 * Called if this node is ABOUT TO BE deleted. For the time being, the node

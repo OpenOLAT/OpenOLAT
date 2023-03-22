@@ -121,8 +121,7 @@ public class PracticeRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == coachLink) {
@@ -139,8 +138,7 @@ public class PracticeRunController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(participantCtrl == source || composeSerieCtrl == source) {
-			if(event instanceof StartPracticeEvent) {
-				StartPracticeEvent spe = (StartPracticeEvent)event;
+			if(event instanceof StartPracticeEvent spe) {
 				doStartPractice(ureq, spe.getPlayMode(), spe.getItems());
 			} else if(event instanceof ComposeSerieEvent) {
 				doComposeSerie(ureq);
@@ -149,8 +147,8 @@ public class PracticeRunController extends BasicController {
 			if(event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT || event instanceof OverviewEvent) {
 				cleanUpSerie();
 				participantCtrl.reload();
-			} else if(event instanceof NextSerieEvent) {
-				doNextSerie(ureq, ((NextSerieEvent)event).getPlayMode());
+			} else if(event instanceof NextSerieEvent nse) {
+				doNextSerie(ureq, nse.getPlayMode());
 			} else if(event == AssessmentEvents.CHANGED_EVENT) {
 				fireEvent(ureq, event);
 			}

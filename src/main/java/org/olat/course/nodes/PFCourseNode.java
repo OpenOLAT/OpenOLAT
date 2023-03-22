@@ -43,9 +43,12 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.duedate.DueDateConfig;
@@ -68,6 +71,7 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 
@@ -340,6 +344,34 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 				PFManager.FILENAME_PARTICIPANTFOLDER, getIdent()); 
 		Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 		return FileSystemExport.fsToZip(exportStream, archivePath, sourceFolder, this, null, translator);
+	}
+	
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
+		
+		VFSContainer dropContainer = pfManager.resolveDropFolder(courseEnv, this, assessedIdentity);
+		ZipUtil.zip(dropContainer, archiveStream, path + "/" + PFManager.FILENAME_DROPBOX, new VFSSystemItemFilter(), false);
+		
+		VFSContainer returnContainer = pfManager.resolveReturnFolder(courseEnv, this, assessedIdentity);
+		ZipUtil.zip(returnContainer, archiveStream, path + "/" + PFManager.FILENAME_RETURNBOX, new VFSSystemItemFilter(), false);
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
+		
+		VFSContainer dropContainer = pfManager.resolveDropFolder(courseEnv, this, assessedIdentity);
+		VFSManager.deleteContainersAndLeaves(dropContainer, true, false);
+		VFSContainer returnContainer = pfManager.resolveReturnFolder(courseEnv, this, assessedIdentity);
+		VFSManager.deleteContainersAndLeaves(returnContainer, true, false);
 	}
 
 	@Override

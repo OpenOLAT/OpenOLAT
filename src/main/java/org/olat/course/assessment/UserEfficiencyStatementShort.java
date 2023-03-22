@@ -60,4 +60,16 @@ public interface UserEfficiencyStatementShort {
 	public Integer getAttemptedNodes();
 	
 	public Integer getPassedNodes();
+	
+	public Double getCompletion();
+	
+	/**
+	 * @return true if this statement is active, false if it's archived
+	 */
+	public boolean isLastStatement();
+	
+	/**
+	 * @return The current certificate at the point which this statement was archived.
+	 */
+	public Long getArchiveCertificateKey();
 }

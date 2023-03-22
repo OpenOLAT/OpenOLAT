@@ -46,6 +46,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -165,9 +166,9 @@ public class ScormResultDetailsController extends BasicController {
 		} else if ( source == resetConfirmationBox) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				//delete scorm
-				String username = assessedUserCourseEnv.getIdentityEnvironment().getIdentity().getName();
+				Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 				CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
-				ScormAssessmentManager.getInstance().deleteResults(username, courseEnv, node);
+				ScormAssessmentManager.getInstance().deleteResults(assessedIdentity, courseEnv, node);
 				fireEvent(ureq, Event.DONE_EVENT);
 				loadModel();
 			}

@@ -104,6 +104,7 @@ import org.olat.course.style.TeaserImageStyle;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.grade.GradeService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
@@ -421,6 +422,18 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
 		//default do nothing
+	}
+
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		// default do nothing
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		courseAssessmentService.resetEvaluation(this, assessedUserCourseEnv, identity, by);
 	}
 
 	/**

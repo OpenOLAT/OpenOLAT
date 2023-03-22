@@ -663,21 +663,30 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		}
 		return assignmentStatistics;
 	}
+	
+	@Override
+	public long countAssessedIdentities(Identity coach, SearchAssessedIdentityParams params) {
+		TypedQuery<Long> list = createAssessedParticipants(coach, params, Long.class, true);
+		List<Long> count = list.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).longValue();
+	}
 
 	@Override
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params) {
-		TypedQuery<Identity> list = createAssessedParticipants(coach, params, Identity.class);
+		TypedQuery<Identity> list = createAssessedParticipants(coach, params, Identity.class, false);
 		return list.getResultList();
 	}
 	
-	private <T> TypedQuery<T> createAssessedParticipants(Identity coach, SearchAssessedIdentityParams params, Class<T> classResult) {
+	private <T> TypedQuery<T> createAssessedParticipants(Identity coach, SearchAssessedIdentityParams params, Class<T> classResult, boolean count) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select distinct ");
+		sb.append("select ");
 		if(Identity.class.equals(classResult)) {
-			sb.append("ident").append(" from ").append(IdentityImpl.class.getName()).append(" as ident")
+			sb.append("distinct ident").append(" from ").append(IdentityImpl.class.getName()).append(" as ident")
 			  .append(" inner join fetch ident.user user");
+		} else if(count) {
+			sb.append("count(distinct ident.key) ").append(" from ").append(IdentityImpl.class.getName()).append(" as ident");
 		} else {
-			sb.append(" ident.key").append(" from ").append(IdentityImpl.class.getName()).append(" as ident");
+			sb.append("distinct ident.key").append(" from ").append(IdentityImpl.class.getName()).append(" as ident");
 		}
 		sb.append(" where ident.status<").append(Identity.STATUS_DELETED);
 		QueryParams queryParams = new QueryParams();

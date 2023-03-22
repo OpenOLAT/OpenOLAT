@@ -105,6 +105,7 @@ import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ResetCourseDataEvent;
 import org.olat.course.run.tools.CourseTool;
 import org.olat.course.run.tools.OpenCourseToolEvent;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
@@ -1040,20 +1041,17 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	 */
 	@Override
 	public void event(Event event) {	
-		if (event instanceof PublishEvent) {
-			PublishEvent pe = (PublishEvent)event;
+		if (event instanceof PublishEvent pe) {
 			if(course.getResourceableId().equals(pe.getPublishedCourseResId())) {
 				processPublishEvent(pe);
 			}
-		} else if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
-			OLATResourceableJustBeforeDeletedEvent ojde = (OLATResourceableJustBeforeDeletedEvent) event;
+		} else if (event instanceof OLATResourceableJustBeforeDeletedEvent ojde) {
 			// make sure it is our course (actually not needed till now, since we
 			// registered only to one event, but good style.
 			if (ojde.targetEquals(course, true)) {
 				doDisposeAfterEvent();
 			}
-		} else if (event instanceof AssessmentChangedEvent) {
-			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
+		} else if (event instanceof AssessmentChangedEvent ace) {
 			Identity identity = uce.getIdentityEnvironment().getIdentity();
 			// reevaluate the changed node if the event changed the current user
 			if (ace.getIdentityKey().equals(identity.getKey())) {
@@ -1065,6 +1063,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					updateProgressUI();
 					updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 				}
+				// raise a flag to indicate refresh
+				needsRebuildAfterRunDone = true;
+			}
+		} else if (event instanceof ResetCourseDataEvent rcde) {
+			Identity identity = uce.getIdentityEnvironment().getIdentity();
+			if (rcde.getIdentityKey().equals(identity.getKey())) {
+				uce.getScoreAccounting().evaluateAll();
+				updateProgressUI();
+				updateAfterChanges(getCurrentCourseNode(), luTree.getSelectedNodeId());
 				// raise a flag to indicate refresh
 				needsRebuildAfterRunDone = true;
 			}

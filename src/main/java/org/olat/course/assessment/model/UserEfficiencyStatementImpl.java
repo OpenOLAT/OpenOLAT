@@ -93,6 +93,8 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 	private Integer attemptedNodes;
 	@Column(name="passed_nodes", nullable=true, insertable=true, updatable=true)
 	private Integer passedNodes;
+	@Column(name="completion", nullable=true, insertable=true, updatable=true)
+	private Double completion;
 
 	@Column(name="course_title", nullable=true, insertable=true, updatable=true)
 	private String title;
@@ -103,6 +105,12 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 
 	@Column(name="statement_xml", nullable=true, insertable=true, updatable=true)
 	private String statementXml;
+	@Column(name="last_statement", nullable=true, insertable=true, updatable=true)
+	private boolean lastStatement;
+	@Column(name="archive_path", nullable=true, insertable=true, updatable=true)
+	private String archivePath;
+	@Column(name="archive_certificate", nullable=true, insertable=true, updatable=true)
+	private Long archiveCertificateKey;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastusermodified", nullable=true, insertable=true, updatable=true)
@@ -249,6 +257,41 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 		this.passedNodes = passedNodes;
 	}
 
+	@Override
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
+
+	@Override
+	public boolean isLastStatement() {
+		return lastStatement;
+	}
+
+	public void setLastStatement(boolean lastStatement) {
+		this.lastStatement = lastStatement;
+	}
+
+	public String getArchivePath() {
+		return archivePath;
+	}
+
+	public void setArchivePath(String archivePath) {
+		this.archivePath = archivePath;
+	}
+
+	@Override
+	public Long getArchiveCertificateKey() {
+		return archiveCertificateKey;
+	}
+
+	public void setArchiveCertificateKey(Long archiveCertificateKey) {
+		this.archiveCertificateKey = archiveCertificateKey;
+	}
+
 	public String getStatementXml() {
 		return statementXml;
 	}
@@ -316,8 +359,7 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserEfficiencyStatementImpl) {
-			UserEfficiencyStatementImpl statement = (UserEfficiencyStatementImpl)obj;
+		if(obj instanceof UserEfficiencyStatementImpl statement) {
 			return getKey() != null && getKey().equals(statement.getKey());
 		}
 		return false;

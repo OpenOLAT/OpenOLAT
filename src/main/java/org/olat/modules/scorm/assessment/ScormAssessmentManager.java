@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -71,16 +72,18 @@ public class ScormAssessmentManager {
 		if(scoDirectory == null) return null;
 		
 		VFSItem reloadSettingsFile = scoDirectory.resolve(RELOAD_SETTINGS_FILE);
-		if(reloadSettingsFile instanceof LocalFileImpl) {
-			LocalFileImpl fileImpl = (LocalFileImpl)reloadSettingsFile;
+		if(reloadSettingsFile instanceof LocalFileImpl fileImpl) {
 			return new SequencerModel(fileImpl.getBasefile());
 		} else if (reloadSettingsFile != null) {
 			throw new OLATRuntimeException(this.getClass(), "Programming error, SCORM results must be file based", null);
 		}
 		return null;
 	}
+
+	public boolean deleteResults(Identity assessedIdentity, CourseEnvironment courseEnv, CourseNode node) {
+		return deleteResults(assessedIdentity.getName(), courseEnv, node);
+	}
 	
-	//fxdiff FXOLAT-108: reset SCORM test
 	public boolean deleteResults(String username, CourseEnvironment courseEnv, CourseNode node) {
 		VFSContainer scoDirectory = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoDirectory == null) return true; //nothing to reset -> ok
@@ -185,7 +188,7 @@ public class ScormAssessmentManager {
 		return datas;
 	}
 	
-	public class XMLFilter implements VFSItemFilter {
+	public static class XMLFilter implements VFSItemFilter {
 		@Override
 		public boolean accept(VFSItem file) {
 			String name = file.getName();
@@ -197,7 +200,7 @@ public class ScormAssessmentManager {
 		}
 	}
 	
-	public class FileDateComparator implements Comparator<VFSItem> {
+	public static class FileDateComparator implements Comparator<VFSItem> {
 
 		@Override
 		public int compare(VFSItem f1, VFSItem f2) {

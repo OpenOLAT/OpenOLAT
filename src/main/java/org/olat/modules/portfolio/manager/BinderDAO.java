@@ -520,6 +520,15 @@ public class BinderDAO {
 			.executeUpdate();
 	}
 	
+	public int detachBinderFromRepositoryEntry(BinderRef binder) {
+		//remove reference to the course and the course node
+		String sb = "update pfbinder binder set binder.entry=null,binder.subIdent=null where binder.key=:binderKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb)
+			.setParameter("binderKey", binder.getKey())
+			.executeUpdate();
+	}
+	
 	/**
 	 * The same type of query is user for the categories
 	 * @param owner

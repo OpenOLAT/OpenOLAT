@@ -488,21 +488,28 @@ public interface BusinessGroupService {
 	public LeaveOption isAllowToLeaveBusinessGroup(Identity identity, BusinessGroup group);
 	
 	/**
-	 * Remove a list of users from a group as participant and does all the magic that needs
-	 * to be done:
-	 * <ul>
-	 * 	<li>remove from secgroup (optional)
-	 *  <li>remove from jabber roster -
-	 *  <li>fire multi-user event
-	 * </ul>
-	 * The method is made under doInSync.
+	 * Remove a list of participants from the business group, transfers the users waiting
+	 * if configured, send events, send e-mails if wanted...
 	 * 
-	 * @param ureqIdentity
-	 * @param identities The user who should be removed
-	 * @param group
-	 * @param flags
+	 * @param ureqIdentity The identity which does the action
+	 * @param identities A list of identities to remove as participant
+	 * @param group The business group
+	 * @param mailing The mail options
 	 */
 	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, MailPackage mailing);
+	
+	/**
+	 * Remove a list of participants from the business group, transfers the users waiting
+	 * if configured, send events, send e-mails if wanted...
+	 * 
+	 * @param ureqIdentity The identity which does the action
+	 * @param identities A list of identities to remove as participant
+	 * @param group The business group
+	 * @param blockTransfert true will veto transfers from the waiting list if configured
+	 * @param mailing The mail options
+	 */
+	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group,
+			boolean blockTransfert, MailPackage mailing);
 	
 	/**
 	 * Remove the members (tutors and participants) from all business groups connected

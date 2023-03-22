@@ -636,12 +636,20 @@ public class ZipUtil {
 		}
 	}
 	
+	public static boolean zip(VFSContainer container, ZipOutputStream zout, String path, VFSItemFilter filter, boolean withMetadata) {
+		List<VFSItem> items=container.getItems(new VFSSystemItemFilter());
+		for(VFSItem item:items) {
+			addToZip(item, path, zout, filter, withMetadata);
+		}
+		return true;
+	}
+	
 	public static boolean zip(List<VFSItem> vfsFiles, VFSLeaf target, VFSItemFilter filter, boolean withMetadata) {
 		boolean success = true;
 		
 		String zname = target.getName();
-		if (target instanceof LocalImpl) {
-			zname = ((LocalImpl)target).getBasefile().getAbsolutePath();
+		if (target instanceof LocalImpl localTarget) {
+			zname = localTarget.getBasefile().getAbsolutePath();
 		}
 
 		try(OutputStream out = target.getOutputStream(false);

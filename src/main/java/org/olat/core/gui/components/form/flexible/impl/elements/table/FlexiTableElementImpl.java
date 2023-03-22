@@ -1968,8 +1968,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	}
 	
 	private Choice getColumnListAndTheirVisibility() {
-		Choice choice = new Choice("colchoice", getTranslator());
-		choice.setModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, getTranslator()));
+		Choice choice = new Choice("colchoice", component.getTranslator());
+		choice.setModel(new VisibleFlexiColumnsModel(dataModel.getTableColumnModel(), enabledColumnIndex, component.getTranslator()));
 		choice.addListener(this);
 		choice.setEscapeHtml(false);
 		choice.setCancelKey("cancel");

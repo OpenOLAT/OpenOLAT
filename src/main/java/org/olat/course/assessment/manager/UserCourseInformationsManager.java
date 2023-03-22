@@ -45,6 +45,8 @@ public interface UserCourseInformationsManager {
 	
 	public void updateUserCourseInformations(OLATResource courseResource, Identity identity);
 	
+	public void incrementUserCourseInformationsRun(OLATResource courseResource, Identity identity);
+	
 	public Date getInitialLaunchDate(OLATResource resource, IdentityRef identity);
 	
 	public Date getInitialLaunchDate(RepositoryEntryRef entry, IdentityRef identity);
@@ -79,6 +81,14 @@ public interface UserCourseInformationsManager {
 	public Map<Long,Date> getInitialLaunchDates(Long courseResourceId);
 	
 	public Map<Long,Date> getInitialLaunchDates(OLATResource resource);
+	
+	/**
+	 * 
+	 * @param resource The resource of the repository entry
+	 * @param identities A list of users
+	 * @return Map with the key of the user and its number of runs
+	 */
+	public Map<Long,Long> getCourseRuns(OLATResource resource, List<Identity> identities);
 	
 	public int deleteUserCourseInformations(RepositoryEntry entry);
 

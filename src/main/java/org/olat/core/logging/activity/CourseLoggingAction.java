@@ -193,6 +193,15 @@ public class CourseLoggingAction extends BaseLoggingAction {
 			new CourseLoggingAction(ActionType.tracking, CrudAction.delete, ActionVerb.remove, ActionObject.disclaimerConsent).setTypeList(
 			new ResourceableTypeList().addMandatory(OlatResourceableType.course));
 
+	public static final ILoggingAction COURSE_RESET  = 
+			new CourseLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.reset, ActionObject.course).setTypeList(
+			new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(StringResourceableType.targetIdentity));
+	public static final ILoggingAction COURSE_NODE_RESET = 
+			new CourseLoggingAction(ActionType.admin, CrudAction.update, ActionVerb.reset, ActionObject.node).setTypeList(
+			new ResourceableTypeList().addMandatory(OlatResourceableType.course).addOptional(StringResourceableType.targetIdentity));
+
+	
+	
 	
 
 	/**

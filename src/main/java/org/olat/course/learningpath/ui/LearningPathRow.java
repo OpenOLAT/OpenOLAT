@@ -39,6 +39,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final LearningPathTreeNode learningPathNode;
 	private String progressText;
+	private FormLink toolsLink;
 	private FormLink progressLink;
 	private FormLink endDateFormItem;
 	private String translatedObligation;
@@ -100,6 +101,14 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public void setProgressText(String progressText) {
 		this.progressText = progressText;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 
 	public FormLink getProgressLink() {

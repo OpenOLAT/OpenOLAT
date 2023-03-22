@@ -70,6 +70,7 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
 import org.olat.resource.OLATResource;
@@ -507,5 +508,12 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		DBFactory.getInstance().commitAndCloseSession();
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
-	
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+
+		EnrollmentManager enrollmentManager = CoreSpringFactory.getImpl(EnrollmentManager.class);
+		enrollmentManager.doResetEnrollment(assessedUserCourseEnv, this, identity);
+	}
 }

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,22 +43,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentIdentiesPrintController extends BasicController {
 	
-	private VelocityContainer mainVC;
-	
 	@Autowired
 	private BaseSecurityManager securityManager;
 
 	public AssessmentIdentiesPrintController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			UserCourseEnvironment coachCourseEnv, List<Long> assessesIdentityKeys) {
+			UserCourseEnvironment coachCourseEnv, List<Long> assessesIdentityKeys,
+			AssessmentToolSecurityCallback secCallback) {
 		super(ureq, wControl);
-		mainVC = createVelocityContainer("identities_print");
+		VelocityContainer mainVC = createVelocityContainer("identities_print");
 		
 		List<Identity> assessedIdentities = securityManager.loadIdentityByKeys(assessesIdentityKeys);
 		List<String> names = new ArrayList<>(assessedIdentities.size());
 		int counter = 0;
 		for (Identity assessedIdentity : assessedIdentities) {
 			AssessmentIdentityCourseController controller = new AssessmentIdentityCourseController(ureq, wControl,
-					null, courseEntry, coachCourseEnv, assessedIdentity, false);
+					null, courseEntry, coachCourseEnv, assessedIdentity, false, secCallback);
 			listenTo(controller);
 			String name = "ass" + counter++;
 			mainVC.put(name, controller.getInitialComponent());

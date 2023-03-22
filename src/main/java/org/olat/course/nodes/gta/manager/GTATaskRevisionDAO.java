@@ -94,4 +94,13 @@ public class GTATaskRevisionDAO {
 			.setParameter("taskListKey", taskList.getKey())
 			.executeUpdate();
 	}
+	
+	public int deleteTaskRevision(Task task) {
+		StringBuilder taskSb = new StringBuilder(128);
+		taskSb.append("delete from gtataskrevision as taskrev where taskrev.task.key=:taskKey");
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(taskSb.toString())
+			.setParameter("taskKey", task.getKey())
+			.executeUpdate();
+	}
 }

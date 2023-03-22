@@ -59,6 +59,9 @@ public interface CheckboxManager {
 	
 	public void check(DBCheckbox checkbox, Identity owner, Float score, Boolean checked);
 	
+	
+	public void resetChecks(Identity identity, OLATResourceable ores, String resSubPath);
+	
 	public void check(OLATResourceable ores, String resSubPath, List<AssessmentBatch> batch);
 
 	public List<DBCheck> loadCheck(OLATResourceable ores, String resSubPath);
@@ -97,7 +100,17 @@ public interface CheckboxManager {
 	 * @param fakeParticipantKeys 
 	 * @return
 	 */
-	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re, IdentityRef coach, boolean admin, Set<Long> fakeParticipantKeys);
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, RepositoryEntryRef re,
+			IdentityRef coach, boolean admin, Set<Long> fakeParticipantKeys);
+	
+	/**
+	 * 
+	 * @param ores
+	 * @param resSubPath
+	 * @param identity Filter to a single participant
+	 * @return
+	 */
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, IdentityRef identity);
 	
 	public List<AssessedIdentity> getAssessedIdentities(RepositoryEntryRef re, IdentityRef coach, boolean admin);
 	

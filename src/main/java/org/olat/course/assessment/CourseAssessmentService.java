@@ -135,6 +135,9 @@ public interface CourseAssessmentService {
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Boolean fullyAssessed, AssessmentEntryStatus status);
 	
+	
+	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by);
+	
 	/**
 	 * @param courseNode
 	 * @param userCourseEnvironment

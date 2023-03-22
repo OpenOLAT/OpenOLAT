@@ -256,6 +256,16 @@ public class CheckboxManagerImpl implements CheckboxManager {
 	}
 
 	@Override
+	public void resetChecks(Identity identity, OLATResourceable ores, String resSubPath) {
+		List<DBCheck> checks = loadCheck(identity, ores, resSubPath);
+		for(DBCheck check:checks) {
+			check.setScore(null);
+			check.setChecked(null);
+			dbInstance.getCurrentEntityManager().merge(check);
+		}
+	}
+
+	@Override
 	public void check(DBCheckbox checkbox, Identity owner, Float score, Boolean checked) {
 		DBCheck currentCheck = loadCheck(checkbox, owner);
 		if(currentCheck == null) {
@@ -489,6 +499,41 @@ public class CheckboxManagerImpl implements CheckboxManager {
 			}
 		}
 		return assessedIdentities;
+	}
+	
+	@Override
+	public List<AssessmentData> getAssessmentDatas(OLATResourceable ores, String resSubPath, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select check from clcheck check")
+		  .append(" inner join fetch check.checkbox box")
+		  .append(" inner join fetch check.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where box.resName=:resName and box.resId=:resId");
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			sb.append(" and box.resSubPath=:resSubPath");
+		}
+		sb.append(" and ident.key = :identityKey");
+
+		TypedQuery<DBCheck> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), DBCheck.class)
+				.setParameter("resName", ores.getResourceableTypeName())
+				.setParameter("resId", ores.getResourceableId())
+				.setParameter("identityKey", identity.getKey());
+		if(StringHelper.containsNonWhitespace(resSubPath)) {
+			query.setParameter("resSubPath", resSubPath);
+		}
+
+		List<DBCheck> checks = query.getResultList();
+		Map<Long, AssessmentData> identToBox = new HashMap<>();
+		for(DBCheck check:checks) {
+			AssessmentData data = identToBox.get(check.getIdentity().getKey());
+			if(data == null) {
+				data = new AssessmentData(check.getIdentity());
+				identToBox.put(check.getIdentity().getKey(), data);
+			}
+			data.getChecks().add(check);
+		}
+		return new ArrayList<>(identToBox.values());
 	}
 
 	@Override

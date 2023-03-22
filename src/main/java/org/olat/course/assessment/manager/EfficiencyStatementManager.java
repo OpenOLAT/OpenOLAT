@@ -154,6 +154,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 
 		efficiencyProperty.setIdentity(identity);
 		efficiencyProperty.setResource(resource);
+		
+		efficiencyProperty.setLastStatement(true);
 
 		ICourse course = CourseFactory.loadCourse(resource.getResourceableId());
 		efficiencyProperty.setTitle(course.getCourseEnvironment().getCourseTitle());
@@ -188,6 +190,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		efficiencyProperty.setAttemptedNodes(attemptedNodes == null ? Integer.valueOf(0) : attemptedNodes);
 		efficiencyProperty.setPassedNodes(passedNodes == null ? Integer.valueOf(0) : passedNodes);
 		
+		efficiencyProperty.setLastStatement(true);
 		efficiencyProperty.setStatementXml(statementXml);
 
 		efficiencyProperty.setIdentity(identity);
@@ -223,23 +226,9 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public void updateUserEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv,
 			List<AssessmentNodeData> assessmentNodeList, AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
 		List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
-			
-		EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
-		efficiencyStatement.setAssessmentNodes(assessmentNodes);
-		efficiencyStatement.setCourseTitle(courseEnv.getCourseTitle());
-		efficiencyStatement.setCourseRepoEntryKey(repoEntry.getKey());
-		String userInfos = userManager.getUserDisplayName(assessedIdentity);
-		efficiencyStatement.setDisplayableUserInfo(userInfos);
-		efficiencyStatement.setLastUpdated(System.currentTimeMillis());
-		if(lastModifications != null) {
-			if(lastModifications.getLastUserModified() != null) {
-				efficiencyStatement.setLastUserModified(lastModifications.getLastUserModified().getTime());
-			}
-			if(lastModifications.getLastCoachModified() != null) {
-				efficiencyStatement.setLastCoachModified(lastModifications.getLastCoachModified().getTime());
-			}
-		}
 		
+		EfficiencyStatement efficiencyStatement = createEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, repoEntry);
+
 		boolean debug = log.isDebugEnabled();
 		UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, assessedIdentity);
 		if (assessmentNodes != null && !assessmentNodes.isEmpty()) {
@@ -254,6 +243,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				efficiencyProperty.setCourseRepoKey(repoEntry.getKey());
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
+				efficiencyProperty.setLastStatement(true);
 				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
 				efficiencyProperty = persistOrLoad(efficiencyProperty, repoEntry, assessedIdentity);
 				if (debug) {
@@ -269,7 +259,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				efficiencyProperty.setShortTitle(courseEnv.getRunStructure().getRootNode().getShortTitle());
 				efficiencyProperty.setTitle(courseEnv.getRunStructure().getRootNode().getLongTitle());
 				fillEfficiencyStatement(efficiencyStatement, lastModifications, efficiencyProperty);
-				dbInstance.getCurrentEntityManager().merge(efficiencyProperty);
+				efficiencyProperty = updateUserEfficiencyStatement(efficiencyProperty);
 			}
 		} else {
 			if (efficiencyProperty != null) {
@@ -290,6 +280,10 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, courseOres);
 	}
 	
+	public UserEfficiencyStatementImpl updateUserEfficiencyStatement(UserEfficiencyStatementImpl statement) {
+		return dbInstance.getCurrentEntityManager().merge(statement);
+	}
+	
 	protected UserEfficiencyStatementImpl persistOrLoad(UserEfficiencyStatementImpl efficiencyProperty, RepositoryEntry entry, Identity identity) {
 		try {
 			dbInstance.commit();
@@ -305,6 +299,28 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			}
 		}
 		return efficiencyProperty;
+	}
+	
+	public EfficiencyStatement createEfficiencyStatement(Identity assessedIdentity, final CourseEnvironment courseEnv,
+			List<AssessmentNodeData> assessmentNodeList, AssessmentNodesLastModified lastModifications, final RepositoryEntry repoEntry) {
+		List<Map<String,Object>> assessmentNodes = AssessmentHelper.assessmentNodeDataListToMap(assessmentNodeList);
+		
+		EfficiencyStatement efficiencyStatement = new EfficiencyStatement();
+		efficiencyStatement.setAssessmentNodes(assessmentNodes);
+		efficiencyStatement.setCourseTitle(courseEnv.getCourseTitle());
+		efficiencyStatement.setCourseRepoEntryKey(repoEntry.getKey());
+		String userInfos = userManager.getUserDisplayName(assessedIdentity);
+		efficiencyStatement.setDisplayableUserInfo(userInfos);
+		efficiencyStatement.setLastUpdated(System.currentTimeMillis());
+		if(lastModifications != null) {
+			if(lastModifications.getLastUserModified() != null) {
+				efficiencyStatement.setLastUserModified(lastModifications.getLastUserModified().getTime());
+			}
+			if(lastModifications.getLastCoachModified() != null) {
+				efficiencyStatement.setLastCoachModified(lastModifications.getLastCoachModified().getTime());
+			}
+		}
+		return efficiencyStatement;
 	}
 	
 	public void fillEfficiencyStatement(EfficiencyStatement efficiencyStatement, AssessmentNodesLastModified lastModifications, UserEfficiencyStatementImpl efficiencyProperty) {
@@ -323,44 +339,43 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		if(!nodeData.isEmpty()) {
 			Map<String,Object> rootNode = nodeData.get(0);
 			Object passed = rootNode.get(AssessmentHelper.KEY_PASSED);
-			if(passed instanceof Boolean) {
-				efficiencyProperty.setPassed((Boolean)passed);
+			if(passed instanceof Boolean pass) {
+				efficiencyProperty.setPassed(pass);
 			} else {
 				efficiencyProperty.setPassed(null);
 			}
 			
-			Object fscore = rootNode.get(AssessmentHelper.KEY_SCORE_F);
-			if(fscore instanceof Float) {
-				efficiencyProperty.setScore((Float)fscore);	
-			} else if(fscore instanceof Number) {
-				efficiencyProperty.setScore(((Number)fscore).floatValue());
+			Object score = rootNode.get(AssessmentHelper.KEY_SCORE_F);
+			if(score instanceof Float fScore) {
+				efficiencyProperty.setScore(fScore);	
+			} else if(score instanceof Number nScore) {
+				efficiencyProperty.setScore(nScore.floatValue());
 			} else {
 				efficiencyProperty.setScore(null);
 			}
+			
+			if(rootNode.get(AssessmentHelper.KEY_COMPLETION) instanceof Double completion) {
+				efficiencyProperty.setCompletion(completion);
+			}
 	
-			Object grade = rootNode.get(AssessmentHelper.KEY_GRADE);
-			if(grade instanceof String) {
-				efficiencyProperty.setGrade((String)grade);
+			if(rootNode.get(AssessmentHelper.KEY_GRADE) instanceof String grade) {
+				efficiencyProperty.setGrade(grade);
 			}
 			
-			Object gradeSystemIdent = rootNode.get(AssessmentHelper.KEY_GRADE_SYSTEM_IDENT);
-			if(gradeSystemIdent instanceof String) {
-				efficiencyProperty.setGradeSystemIdent((String)gradeSystemIdent);
+			if(rootNode.get(AssessmentHelper.KEY_GRADE_SYSTEM_IDENT) instanceof String gradeSystemIdent) {
+				efficiencyProperty.setGradeSystemIdent(gradeSystemIdent);
 			}
 			
-			Object performanceClassIdent = rootNode.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT);
-			if(performanceClassIdent instanceof String) {
-				efficiencyProperty.setPerformanceClassIdent((String)performanceClassIdent);
+			if(rootNode.get(AssessmentHelper.KEY_PERFORMANCE_CLASS_IDENT) instanceof String performanceClassIdent) {
+				efficiencyProperty.setPerformanceClassIdent(performanceClassIdent);
 			}
 			
-			Object shortTitle = rootNode.get(AssessmentHelper.KEY_TITLE_SHORT);
-			if(shortTitle instanceof String) {
-				efficiencyProperty.setShortTitle((String)shortTitle);
+			if(rootNode.get(AssessmentHelper.KEY_TITLE_SHORT) instanceof String shortTitle) {
+				efficiencyProperty.setShortTitle(shortTitle);
 			}
 			
-			Object longTitle = rootNode.get(AssessmentHelper.KEY_TITLE_LONG);
-			if(longTitle instanceof String) {
-				efficiencyProperty.setTitle((String)longTitle);
+			if(rootNode.get(AssessmentHelper.KEY_TITLE_LONG) instanceof String longTitle) {
+				efficiencyProperty.setTitle(longTitle);
 			}
 			
 			int totalNodes = getTotalNodes(nodeData);
@@ -391,6 +406,20 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		efficiencyProperty.setLastModified(new Date());
 		efficiencyProperty.setStatementXml(toXML(efficiencyStatement));
 	}
+	
+	public boolean invalidateEfficiencyStatement(RepositoryEntryRef courseRepoEntry, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("update effstatement statement set statement.lastStatement=false")
+		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey")
+		  .append(" and statement.lastStatement=true");
+
+		int rowUpdated = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", courseRepoEntry.getKey())
+				.executeUpdate();
+		return rowUpdated > 0;
+	}
 
 	/**
 	 * Get the user efficiency statement list for this course
@@ -407,10 +436,18 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return fromXML(s.getStatementXml());
 	}
 	
+	/**
+	 * Returns the efficiency statement marked as last statement.
+	 * 
+	 * @param resourceKey The resource key
+	 * @param identity The identity
+	 * @return The efficiency statement
+	 */
 	public EfficiencyStatement getUserEfficiencyStatementByResourceKey(Long resourceKey, Identity identity){
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementstandalone as statement")
-		  .append(" where statement.identity.key=:identityKey and statement.resourceKey=:resourceKey");
+		  .append(" where statement.identity.key=:identityKey and statement.resourceKey=:resourceKey")
+		  .append(" and statement.lastStatement=true");
 
 		List<UserEfficiencyStatementStandalone> statement = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementStandalone.class)
@@ -423,12 +460,51 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return fromXML(statement.get(0).getStatementXml());
 	}
 	
+	/**
+	 * Returns the specified efficiency statement.
+	 * 
+	 * @param statementKey The user efficiency statement key
+	 * @return The efficiency statement
+	 */
+	public EfficiencyStatement getEfficiencyStatementByKey(Long statementKey) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select statement from effstatement as statement ")
+		  .append(" left join fetch statement.resource as resource")
+		  .append(" where statement.key=:statementKey");
 
+		List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+				.setParameter("statementKey", statementKey)
+				.getResultList();
+		if(statement.isEmpty() || statement.get(0).getStatementXml() == null) {
+			return null;
+		}
+		return fromXML(statement.get(0).getStatementXml());
+	}
+	
+	public EfficiencyStatement getEfficiencyStatement(UserEfficiencyStatement userEfficiencyStatement) {
+		if(userEfficiencyStatement instanceof UserEfficiencyStatementImpl uefs) {
+			return fromXML(uefs.getStatementXml());
+		}
+		if(userEfficiencyStatement instanceof UserEfficiencyStatementStandalone uefs) {
+			return fromXML(uefs.getStatementXml());
+		}
+		return getEfficiencyStatementByKey(userEfficiencyStatement.getKey());
+	}
+	
+	/**
+	 * Returns the efficiency statement marked as last statement.
+	 * 
+	 * @param courseRepoEntry The repository entry key
+	 * @param identity The identity
+	 * @return The user efficiency statement with the XML statement loaded
+	 */
 	public UserEfficiencyStatementImpl getUserEfficiencyStatementFull(RepositoryEntryRef courseRepoEntry, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatement as statement ")
 		  .append(" left join fetch statement.resource as resource")
-		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
+		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey")
+		  .append(" and statement.lastStatement=true");
 
 		List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
@@ -441,11 +517,18 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return statement.get(0);
 	}
 	
+	/**
+	 * Returns the efficiency statements of the specified user, but only the statements
+	 * marked as last statement of a course.
+	 * 
+	 * @param identity The identity
+	 * @return A list of efficiency statements
+	 */
 	public List<UserEfficiencyStatementImpl> getUserEfficiencyStatementFull(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatement as statement")
 		  .append(" left join fetch statement.resource as resource")
-		  .append(" where statement.identity.key=:identityKey");
+		  .append(" where statement.identity.key=:identityKey and statement.lastStatement=true");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
@@ -468,10 +551,18 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return count != null && !count.isEmpty() && count.get(0) != null;
 	}
 	
+	/**
+	 * Returns the user efficiency statement marked as last statement.
+	 * 
+	 * @param courseRepo The repository entry
+	 * @param identity The identity
+	 * @return The user efficiency statement
+	 */
 	public UserEfficiencyStatement getUserEfficiencyStatementLightByRepositoryEntry(RepositoryEntryRef courseRepo, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementlight as statement")
-		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey");
+		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey")
+		  .append(" and statement.lastStatement=true");
 
 		List<UserEfficiencyStatement> statement = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatement.class)
@@ -483,6 +574,26 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		}
 		return statement.get(0);
 	}
+
+	/**
+	 * Returns all the user efficiency statements of the specified course and identity.
+	 * 
+	 * @param courseRepo The repository entry key
+	 * @param identity The identity
+	 * @return A list of user efficiency statements
+	 */
+	public List<UserEfficiencyStatement> getHistoryOfUserEfficiencyStatementsLightByRepositoryEntry(RepositoryEntryRef courseRepo, IdentityRef identity) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select statement from effstatementlight as statement")
+		  .append(" where statement.identity.key=:identityKey and statement.courseRepoKey=:repoKey")
+		  .append(" order by statement.creationDate desc");
+
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), UserEfficiencyStatement.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("repoKey", courseRepo.getKey())
+				.getResultList();
+	} 
 	
 	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(IdentityRef student, List<RepositoryEntry> courses) {
 		if(student == null || courses == null || courses.isEmpty()) {
@@ -491,7 +602,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementlight as statement")
-		  .append(" where statement.identity.key=:studentKey and statement.resourceKey in (:courseResourcesKey)");
+		  .append(" where statement.identity.key=:studentKey and statement.resourceKey in (:courseResourcesKey)")
+		  .append(" and statement.lastStatement=true");
 		
 		List<Long> coursesKey = new ArrayList<>();
 		for(RepositoryEntry course:courses) {
@@ -508,7 +620,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(IdentityRef student) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select statement from effstatementlight as statement")
-		  .append(" where statement.identity.key=:studentKey");
+		  .append(" where statement.identity.key=:studentKey")
+		  .append(" and statement.lastStatement=true");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatement.class)
@@ -534,7 +647,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		  .append(" inner join v.groups as relGroup ")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.participant.name()).append("'")
-		  .append(" where baseGroup.key=:bGroupKey and statement.identityKey=membership.identity.key");
+		  .append(" where baseGroup.key=:bGroupKey and statement.identityKey=membership.identity.key")
+		  .append(" and statement.lastStatement=true");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementForCoaching.class)
@@ -545,7 +659,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public UserEfficiencyStatement getUserEfficiencyStatementLightByResource(Long resourceKey, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementstandalone as statement")
-		  .append(" where statement.identity.key=:identityKey and statement.resourceKey=:resourceKey");
+		  .append(" where statement.identity.key=:identityKey and statement.resourceKey=:resourceKey")
+		  .append(" and statement.lastStatement=true");
 
 		List<UserEfficiencyStatement> statement = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatement.class)
@@ -558,7 +673,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		return statement.get(0);
 	}
 	
-	public EfficiencyStatement getUserEfficiencyStatementByKey(Long key) {
+	public UserEfficiencyStatement getUserEfficiencyStatementByKey(Long key) {
 		String query = "select statement from effstatement as statement where statement.key=:key";
 
 		List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
@@ -568,7 +683,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		if(statement.isEmpty() || !StringHelper.containsNonWhitespace(statement.get(0).getStatementXml())) {
 			return null;
 		}
-		return fromXML(statement.get(0).getStatementXml());
+		return statement.get(0);
 	}
 	
 	public UserEfficiencyStatementLight getUserEfficiencyStatementLightByKey(Long key) {
@@ -675,7 +790,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 		List<EfficiencyStatement> efficiencyStatements = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		sb.append("select statement from effstatement as statement")
-		  .append(" where statement.identity.key=:identityKey");
+		  .append(" where statement.identity.key=:identityKey")
+		  .append(" and statement.lastStatement=true");
 
 		List<UserEfficiencyStatementImpl> statements = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
@@ -693,7 +809,8 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public List<UserEfficiencyStatementLight> findEfficiencyStatementsLight(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select statement from effstatementlight as statement")
-		  .append(" where statement.identity.key=:identityKey");
+		  .append(" where statement.identity.key=:identityKey")
+		  .append(" and statement.lastStatement=true");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), UserEfficiencyStatementLight.class)

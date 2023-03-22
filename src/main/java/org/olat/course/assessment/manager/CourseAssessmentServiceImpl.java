@@ -248,6 +248,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
+	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by) {
+		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
+			return;
+		
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		am.resetEvaluation(courseNode, userCourseEnvironment, doer, by);
+	}
+
+	@Override
 	public Integer getAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();

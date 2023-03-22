@@ -115,6 +115,17 @@ public class CheckListExcelExport {
 		}
 	}
 	
+	public void export(Identity assessedIdentity, String filename, ZipOutputStream exportStream) {
+		List<AssessmentData> dataList = checkboxManager.getAssessmentDatas(course, courseNode.getIdent(), assessedIdentity);
+		try(OutputStream out = new ShieldOutputStream(exportStream)) {
+			exportStream.putNextEntry(new ZipEntry(filename + ".xlsx"));
+			exportWorkbook(dataList, out);
+			exportStream.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	public void exportWorkbook(List<AssessmentData> dataList, OutputStream exportStream) {
 		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(exportStream, 1)) {
 			//headers

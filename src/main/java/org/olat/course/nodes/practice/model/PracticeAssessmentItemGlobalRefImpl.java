@@ -200,8 +200,7 @@ public class PracticeAssessmentItemGlobalRefImpl implements Persistable, Practic
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof PracticeAssessmentItemGlobalRefImpl) {
-			PracticeAssessmentItemGlobalRefImpl ref = (PracticeAssessmentItemGlobalRefImpl)obj;
+		if(obj instanceof PracticeAssessmentItemGlobalRefImpl ref) {
 			return getKey() != null && getKey().equals(ref.getKey());
 		}
 		return false;
