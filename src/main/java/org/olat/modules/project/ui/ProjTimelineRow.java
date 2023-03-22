@@ -45,7 +45,6 @@ public class ProjTimelineRow {
 	private FormItem iconItem;
 	private FormItem messageItem;
 	private FormLink rangeLink;
-	private FormLink moreLink;
 	
 	public String getMessage() {
 		return message;
@@ -137,18 +136,6 @@ public class ProjTimelineRow {
 
 	public void setRangeLink(FormLink rangeLink) {
 		this.rangeLink = rangeLink;
-	}
-	
-	public String getMoreLinkName() {
-		return moreLink != null? moreLink.getComponent().getComponentName(): null;
-	}
-
-	public FormLink getMoreLink() {
-		return moreLink;
-	}
-
-	public void setMoreLink(FormLink moreLink) {
-		this.moreLink = moreLink;
 	}
 	
 }

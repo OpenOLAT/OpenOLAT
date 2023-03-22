@@ -78,7 +78,6 @@ public interface ProjActivity extends CreateInfo {
 			Action.noteContentUpdate,
 			Action.noteStatusDelete,
 			Action.appointmentCreate,
-			Action.appointmentContentUpdate,
 			Action.appointmentStatusDelete,
 			Action.milestoneCreate,
 			Action.milestoneContentUpdate,
