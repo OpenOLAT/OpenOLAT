@@ -198,7 +198,7 @@ public class CheckboxEditController extends FormBasicController {
 			try {
 				Float.parseFloat(pointsEl.getValue());
 			} catch (NumberFormatException e) {
-				pointsEl.setErrorKey("form.error.wrongFloat", null);
+				pointsEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
 		}

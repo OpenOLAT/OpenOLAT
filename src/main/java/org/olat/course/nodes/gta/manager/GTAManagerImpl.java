@@ -1774,6 +1774,68 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setAllowResetIdentity(null);
 		return updateTask(task, task.getTaskStatus(), cNode, false, doerIdentity, Role.user);
 	}
+	
+	@Override
+	public Task resetCourseNode(Task task, Identity assessedIdentity, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity) {
+		// Delete the files
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			VFSContainer submitDirectory = getSubmitContainer(courseEnv, cNode, assessedIdentity);
+			VFSManager.deleteContainersAndLeaves(submitDirectory, true, false);
+		}
+
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			VFSContainer correctionsContainer = getCorrectionContainer(courseEnv, cNode, assessedIdentity);
+			VFSManager.deleteContainersAndLeaves(correctionsContainer, true, false);
+		}
+		
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			int numOfIteration = task.getRevisionLoop();
+			for(int i=1; i<=numOfIteration; i++) {
+				VFSContainer revisionContainer = getRevisedDocumentsContainer(courseEnv, cNode, i, assessedIdentity);
+				VFSManager.deleteContainersAndLeaves(revisionContainer, true, false);
+				
+				VFSContainer correctionContainer = getRevisedDocumentsCorrectionsContainer(courseEnv, cNode, i, assessedIdentity);
+				VFSManager.deleteContainersAndLeaves(correctionContainer, true, false);
+			}
+		}
+		
+		// Reset the task
+		TaskImpl taskImpl = (TaskImpl)task;
+		taskImpl.setTaskName(null);
+		taskImpl.setTaskStatus(TaskProcess.assignment);
+		
+		taskImpl.setAcceptationDate(null);
+		taskImpl.setAllowResetDate(null);
+		taskImpl.setAllowResetIdentity(null);
+		taskImpl.setAssignmentDate(null);
+		taskImpl.setAssignmentDueDate(null);
+		taskImpl.setCollectionDate(null);
+		taskImpl.setCollectionNumOfDocs(null);
+		taskImpl.setCollectionRevisionsDate(null);
+		taskImpl.setCollectionRevisionsDate(null);
+		taskImpl.setCollectionRevisionsNumOfDocs(null);
+		taskImpl.setGraduationDate(null);
+		taskImpl.setLastModified(new Date());
+		taskImpl.setRevisionLoop(0);
+		taskImpl.setRevisionsDueDate(null);
+		taskImpl.setSolutionDate(null);
+		taskImpl.setSolutionDueDate(null);
+		taskImpl.setSubmissionDate(null);
+		taskImpl.setSubmissionDoerRole(null);
+		taskImpl.setSubmissionDueDate(null);
+		taskImpl.setSubmissionNumOfDocs(null);
+		taskImpl.setSubmissionRevisionsDate(null);
+		taskImpl.setSubmissionRevisionsDate(null);
+		taskImpl.setSubmissionRevisionsDoerRole(null);
+		taskImpl.setSubmissionRevisionsNumOfDocs(null);
+
+		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
+		
+		taskRevisionDao.deleteTaskRevision(taskImpl);
+		taskRevisionDateDao.deleteTaskRevisionDate(taskImpl);
+
+		return taskImpl;
+	}
 
 	@Override
 	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by) {

@@ -1,0 +1,42 @@
+#if ($segments)
+<div class="o_videotask_layer">
+	<div id="o_videotask_segments" class="o_videotask_segments $segmentsCssClass">
+		#foreach ($segment in $segments)
+		<div id="vt-marker-${foreach.count}"
+			 data-label-title="${segment.getCategoryLabelAndTitle()}"
+			 data-start="${segment.start()}"
+			 data-duration="${segment.duration()}"
+			 data-duration-string="${segment.durationString()}"
+			 data-index="${foreach.count}"
+			 data-category-color="${segment.categoryColor}"
+			 class="o_vt_marker o_videotask_segment ${segment.categoryColor}"
+			 style="#if($r.isNotEmpty($segment.width())) width: ${segment.width()}; #end left: ${segment.left()};">
+			<span>${segment.categoryLabel}</span>
+		</div>
+		#end
+	</div>
+
+	<script>
+		"use strict";
+		jQuery(function() {
+			jQuery('#o_videotask_segments>.o_vt_marker').each(function(index, el) {
+				const jEl = jQuery(el);
+				const title = '<strong>' + jEl.attr('data-label-title') + '</strong><br>' + jEl.attr('data-duration-string');
+				const categoryCssClass = jEl.attr('data-category-color');
+				jEl.tooltip({
+					html: true,
+					container: false,
+					title: title
+				}).on('show.bs.tooltip', function () {
+					jEl.tooltip().data('bs.tooltip')
+						.tip()
+						.addClass('o_videotask_tooltip')
+						.addClass(categoryCssClass);
+				})
+			});
+		});
+	</script>
+</div>
+#end
+
+

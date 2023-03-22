@@ -155,6 +155,55 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getRecentLaunchDates() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-19-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long,Date> launchDates = userCourseInformationsManager.getRecentLaunchDates(courseResource);
+		Assert.assertNotNull(launchDates);
+		Assert.assertNotNull(launchDates.get(user.getKey()));
+	}
+	
+	@Test
+	public void getRecentLaunchDatesWitListOfIdentities() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-18-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long,Date> launchDates = userCourseInformationsManager.getRecentLaunchDates(courseResource, List.of(user));
+		Assert.assertNotNull(launchDates);
+		Assert.assertNotNull(launchDates.get(user.getKey()));
+	}
+	
+	@Test
+	public void getCourseRuns() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-17-");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commitAndCloseSession();
+		
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
+		userCourseInformationsManager.incrementUserCourseInformationsRun(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		Map<Long,Long> runs = userCourseInformationsManager.getCourseRuns(courseResource, List.of(user));
+		Assert.assertNotNull(runs);
+		Assert.assertEquals(Long.valueOf(2l), runs.get(user.getKey()));
+	}
+	
+	@Test
 	public void getInitialLaunchDate_ressource() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
@@ -263,12 +312,30 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(launchDates.get(user3.getKey()));
 	}
 	
+	@Test
+	public void incrementUserCourseInformationsRun() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-9");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commit();
+		OLATResource courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+		userCourseInformationsManager.updateUserCourseInformations(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		userCourseInformationsManager.incrementUserCourseInformationsRun(courseResource, user);
+		dbInstance.commitAndCloseSession();
+		
+		UserCourseInformations infos = userCourseInformationsManager.getUserCourseInformations(courseResource, user);
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(2, infos.getRun());
+	}
+	
 	/**
 	 * This test is to analyze a red screen
 	 */
 	@Test
 	public void updateInitialLaunchDates_loop() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-5-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-5-");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();
@@ -293,7 +360,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 	 */
 	@Test
 	public void updateInitialLaunchDates_concurrent() {
-		Identity user = JunitTestHelper.createAndPersistIdentityAsUser("user-launch-concurrent-6-" + UUID.randomUUID().toString());
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("user-launch-concurrent-6");
 		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(user);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		dbInstance.commitAndCloseSession();

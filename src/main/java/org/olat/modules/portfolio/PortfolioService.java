@@ -110,6 +110,14 @@ public interface PortfolioService {
 	 */
 	public boolean detachRepositoryEntryFromBinders(RepositoryEntry entry, PortfolioCourseNode courseNode);
 	
+	/**
+	 * Detach a specific binder from its template in a course element.
+	 * 
+	 * @param binder The binder reference
+	 * @return true if something happended
+	 */
+	public boolean detachRepositoryEntryFromBinders(BinderRef binder);
+	
 	
 	/**
 	 * Set some extra options for the template.

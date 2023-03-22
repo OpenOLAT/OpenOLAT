@@ -878,6 +878,58 @@ public class AssessmentTestSessionDAO {
 	}
 	
 	/**
+	 * Delete the test sessions of the specified user.
+	 * 
+	 * @param identity The owner of the test sessions
+	 * @param entry The repository entry
+	 * @param subIdent An optional sub-identifier
+	 * @return
+	 */
+	public int deleteAllUserTestSessionsByCourse(IdentityRef identity, RepositoryEntryRef entry, String subIdent) {
+		String marksSb = "delete from qtiassessmentmarks marks where marks.repositoryEntry.key=:entryKey and marks.subIdent=:subIdent and marks.identity.key=:identityKey";
+		int marks = dbInstance.getCurrentEntityManager()
+				.createQuery(marksSb)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+
+		StringBuilder responseSb  = new StringBuilder();
+		responseSb.append("delete from qtiassessmentresponse response where")
+		  .append("  response.assessmentItemSession.key in (")
+		  .append("   select itemSession.key from qtiassessmentitemsession itemSession, qtiassessmenttestsession session ")
+		  .append("   where itemSession.assessmentTestSession.key=session.key and session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent and session.identity.key=:identityKey")
+		  .append(" )");
+		int responses = dbInstance.getCurrentEntityManager()
+				.createQuery(responseSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+
+		StringBuilder itemSb  = new StringBuilder();
+		itemSb.append("delete from qtiassessmentitemsession itemSession")
+		  .append(" where itemSession.assessmentTestSession.key in(")
+		  .append("  select session.key from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent and session.identity.key=:identityKey")
+		  .append(" )");
+		int itemSessions = dbInstance.getCurrentEntityManager()
+				.createQuery(itemSb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+		
+		String q = "delete from qtiassessmenttestsession session where session.repositoryEntry.key=:entryKey and session.subIdent=:subIdent and session.identity.key=:identityKey";
+		int sessions = dbInstance.getCurrentEntityManager()
+				.createQuery(q)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("subIdent", subIdent)
+				.setParameter("identityKey", identity.getKey())
+				.executeUpdate();
+		return marks + itemSessions + sessions + responses;
+	}
+	
+	/**
 	 * The query only returns session with a valid finish time and which are not in
 	 * author mode.
 	 * 

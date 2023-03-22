@@ -115,8 +115,8 @@ public class PFManager {
 	public VFSContainer resolveDropFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
 		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_DROPBOX); 
 		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
-		VFSItem dropboxContainer = baseContainer.resolve(relPath.toString());
-		return dropboxContainer instanceof VFSContainer ? (VFSContainer)dropboxContainer : null;
+		VFSItem dropboxItem = baseContainer.resolve(relPath.toString());
+		return dropboxItem instanceof VFSContainer dropboxContainer ? dropboxContainer : null;
 	}
 	
 	/**
@@ -131,6 +131,21 @@ public class PFManager {
 		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_DROPBOX); 
 		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, relPath.toString());
+	}
+	
+	/**
+	 * Resolve an existing return folder or return null
+	 * 
+	 * @param courseEnv The course environment
+	 * @param pfNode The course element
+	 * @param identity The assessed identity
+	 * @return A VFS container or null
+	 */
+	public VFSContainer resolveReturnFolder(CourseEnvironment courseEnv, PFCourseNode pfNode, Identity identity) {
+		Path relPath = Paths.get(FILENAME_PARTICIPANTFOLDER, pfNode.getIdent(), getIdFolderName(identity), FILENAME_RETURNBOX); 
+		VFSContainer baseContainer = courseEnv.getCourseBaseContainer();
+		VFSItem returnItem = baseContainer.resolve(relPath.toString());
+		return returnItem instanceof VFSContainer returnContainer ? returnContainer : null;
 	}
 
 	/**

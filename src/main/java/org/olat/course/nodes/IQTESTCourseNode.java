@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -148,6 +149,8 @@ import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
 import org.olat.modules.grade.GradeService;
 import org.olat.modules.grade.ui.GradeUIFactory;
+import org.olat.modules.grading.GradingAssignment;
+import org.olat.modules.grading.GradingAssignmentStatus;
 import org.olat.modules.grading.GradingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -862,6 +865,38 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				&& !testSession.isCancelled()
 				&& !testSession.isExploded()
 				&& (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity doer, Role by) {
+		DB dbInstance = CoreSpringFactory.getImpl(DB.class);
+		QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
+		GradingService gradingService = CoreSpringFactory.getImpl(GradingService.class);
+		
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		List<AssessmentTestSession> testSessions = qti21Service
+				.getAssessmentTestSessions(courseEntry, getIdent(), assessedIdentity, false);
+		
+		for(AssessmentTestSession testSession:testSessions) {
+			testSession.setCancelled(true);
+			qti21Service.updateAssessmentTestSession(testSession);
+			dbInstance.commit();
+		}
+		
+		RepositoryEntry testEntry = getReferencedRepositoryEntry();
+		if(gradingService.isGradingEnabled(testEntry, null)) {
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
+			GradingAssignment assignment = gradingService.getGradingAssignment(testEntry, assessmentEntry);
+			if(assignment != null && (assignment.getAssignmentStatus() == GradingAssignmentStatus.assigned
+					|| assignment.getAssignmentStatus() == GradingAssignmentStatus.inProcess
+					|| assignment.getAssignmentStatus() == GradingAssignmentStatus.done)) {
+				gradingService.deactivateAssignment(assignment);
+			}
+		}
+		
+		super.resetUserData(assessedUserCourseEnv, doer, by);
 	}
 
 	/**

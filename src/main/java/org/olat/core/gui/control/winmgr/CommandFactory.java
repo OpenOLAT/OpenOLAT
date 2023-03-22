@@ -28,8 +28,14 @@ package org.olat.core.gui.control.winmgr;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.AssertException;
+import org.olat.core.util.CodeHelper;
 
 /**
  * Description:<br>
@@ -125,6 +131,22 @@ public class CommandFactory {
 		JSONObject root = new JSONObject();
 		try {
 			root.put("rurl", redirectMapperURL);
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
+		Command c = new Command(5);
+		c.setSubJSON(root);
+		return c;
+	}
+	
+	public static Command createDownloadMediaResource(UserRequest ureq, MediaResource resource) {
+		JSONObject root = new JSONObject();
+		try {
+			MediaResourceMapper extMRM = new MediaResourceMapper(resource);
+			String mapperId = "cmd-download-" + ureq.getUuid() + "-" + CodeHelper.getForeverUniqueID();
+			MapperKey mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperId, extMRM, 3000);
+			String resUrl = mapperKey.getUrl() + "/";
+			root.put("rurl", resUrl);
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
 		}

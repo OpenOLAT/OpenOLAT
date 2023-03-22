@@ -205,6 +205,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.gta.manager.GTAManagerTest.class,
 	org.olat.course.nodes.gta.manager.GTATaskRevisionDAOTest.class,
 	org.olat.course.nodes.gta.manager.GTAIdentityMarkDAOTest.class,
+	org.olat.course.nodes.gta.manager.GTATaskRevisionDateDAOTest.class,
 	org.olat.course.nodes.gta.rule.GTAReminderRuleTest.class,
 	org.olat.course.nodes.livestream.manager.LaunchDAOTest.class,
 	org.olat.course.nodes.livestream.manager.UrlTemplateDAOTest.class,

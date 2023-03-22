@@ -44,6 +44,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -70,8 +71,12 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormExcelExport.UserColumns;
@@ -287,6 +292,39 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		return true;
 	}
 	
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		FormManager formManager = CoreSpringFactory.getImpl(FormManager.class);
+		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
+		
+		try {
+			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
+
+			EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
+			EvaluationFormSession session = formManager.getDoneSession(survey, assessedIdentity);
+			if(session != null) {
+				List<UserPropertyHandler> userPropertyHandlers = userManager
+					.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, true);
+				Translator translator = Util.createPackageTranslator(FormCourseNode.class, locale,
+						Util.createPackageTranslator(FormRunController.class, locale));
+				Translator userPropertyTranslator = userManager.getPropertyHandlerTranslator(translator);
+				
+				UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, userPropertyTranslator);
+				SessionFilter sessionFilter = SessionFilterFactory.create(session);
+				EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, sessionFilter, userColumns);
+				excelExport.export(archiveStream, path);
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);

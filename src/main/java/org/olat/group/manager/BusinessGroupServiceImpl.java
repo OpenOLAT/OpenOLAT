@@ -593,7 +593,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				removeOwner(ureqIdentity, removed, group, events);
 			}
 			if(currentParticipants.contains(removed)) {
-				removeParticipant(ureqIdentity, removed, group, mailing, events);
+				removeParticipant(ureqIdentity, removed, group, false, mailing, events);
 			}
 			if(currentWaitingList.contains(removed)) {
 				removeFromWaitingList(ureqIdentity, removed, group, mailing, events);
@@ -665,7 +665,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				addParticipant(ureqIdentity, ureqRoles, id, group, mailing, events);
 			}
 			for(Identity id:changesWrapper.removeParticipants) {
-				removeParticipant(ureqIdentity, id, group, mailing, events);
+				removeParticipant(ureqIdentity, id, group, false, mailing, events);
 			}
 			//release lock
 			dbInstance.commit();
@@ -771,7 +771,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			} else if(businessGroupRelationDAO.countResources(group) > 1) {
 				status.setWarningGroupWithMultipleResources(true);
 			} else {
-				removeParticipant(identity, identity, group, mailing, null);
+				removeParticipant(identity, identity, group, false, mailing, null);
 			}
 		}
 		dbInstance.commit();
@@ -971,8 +971,8 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 	}
 
-	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, MailPackage mailing,
-			List<BusinessGroupModifiedEvent.Deferred> events) {
+	private void removeParticipant(Identity ureqIdentity, Identity identity, BusinessGroup group, boolean blockTransfer,
+			MailPackage mailing, List<BusinessGroupModifiedEvent.Deferred> events) {
 		boolean removed = businessGroupRelationDAO.removeRole(identity, group, GroupRoles.participant.name());
 		if(removed) {
 			// notify currently active users of this business group
@@ -985,7 +985,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			log.info(Tracing.M_AUDIT, "Identity(.key):{} removed identity '{}' from group with key {}",
 				ureqIdentity.getKey(), identity.getKey(), group.getKey());
 			// Check if a waiting-list with auto-close-ranks is configurated
-			if ( group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
+			if (!blockTransfer && group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
 				// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
 				transferFirstIdentityFromWaitingToParticipant(ureqIdentity, group, null, events);
 			}	
@@ -1076,10 +1076,15 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 
 	@Override
 	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, MailPackage mailing) {
+		removeParticipants(ureqIdentity, identities, group, false, mailing);
+	}
+
+	@Override
+	public void removeParticipants(Identity ureqIdentity, List<Identity> identities, BusinessGroup group, boolean blockTransfer, MailPackage mailing) {
 		group = businessGroupDAO.loadForUpdate(group);
 		List<BusinessGroupModifiedEvent.Deferred> events = new ArrayList<>();
 		for (Identity identity : identities) {
-		  removeParticipant(ureqIdentity, identity, group, mailing, events);
+			removeParticipant(ureqIdentity, identity, group, blockTransfer, mailing, events);
 		}
 		dbInstance.commit();
 		BusinessGroupModifiedEvent.fireDeferredEvents(events);
@@ -1184,7 +1189,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					removeOwner(ureqIdentity, id, currentGroup, events);
 				}
 				if(GroupRoles.participant.name().equals(membership.getRole())) {
-					removeParticipant(ureqIdentity, id, currentGroup, mailing, events);
+					removeParticipant(ureqIdentity, id, currentGroup, false, mailing, events);
 				}
 				if(GroupRoles.waiting.name().equals(membership.getRole())) {
 					removeFromWaitingList(ureqIdentity, id, currentGroup, mailing, events);

@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.reminder.model.ReminderInfos;
@@ -91,6 +92,8 @@ public interface ReminderService {
 	public List<SentReminder> getSentReminders(Reminder reminder);
 	
 	public List<SentReminder> getSentReminders(RepositoryEntryRef entry);
+	
+	public void resetSentReminders(RepositoryEntryRef entry, IdentityRef identity);
 	
 	/**
 	 * The list of reminders to send at a specific date.

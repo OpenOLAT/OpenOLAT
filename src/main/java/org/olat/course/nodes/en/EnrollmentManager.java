@@ -74,9 +74,11 @@ import org.olat.course.run.scoring.SingleUserObligationContext;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -122,6 +124,8 @@ public class EnrollmentManager implements GenericEventListener {
 	private CoordinatorManager coordinatorManager;
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private BusinessGroupRelationDAO businessGroupRelationDao;
 
 	@PostConstruct
 	public void registerForEvents() {
@@ -231,6 +235,36 @@ public class EnrollmentManager implements GenericEventListener {
 		}
 		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 	}
+	
+	public void doResetEnrollment(UserCourseEnvironment userCourseEnv, ENCourseNode enNode, Identity doer) {
+		log.debug("doResetEnrollment");
+		
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		List<Long> enrollableGroupKeys = getBusinessGroupKeys(courseEntry, enNode);
+		List<BusinessGroupRef> enrollableGroupRefs = enrollableGroupKeys.stream()
+				.map(BusinessGroupRefImpl::new).map(BusinessGroupRef.class::cast)
+				.toList();
+		List<BusinessGroup> enrolledBusinessGroups = businessGroupRelationDao
+				.filterMembership(enrollableGroupRefs, identity, GroupRoles.participant.name(), GroupRoles.waiting.name());
+		
+		final List<Identity> identityList = List.of(identity);
+		final MailPackage mailers = new MailPackage(false);
+		for(BusinessGroup enrolledBusinessGroup:enrolledBusinessGroups) {
+			businessGroupService.removeFromWaitingList(doer, identityList, enrolledBusinessGroup, mailers);
+			businessGroupService.removeParticipants(doer, identityList, enrolledBusinessGroup, mailers);
+			log.info("{} doResetEnrollment in group {}", identity.getKey(), enrolledBusinessGroup);
+		}
+
+		// 2. Remove enrollmentdate property
+		// only remove last time date, not firsttime
+		CoursePropertyManager coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
+		if (lastTime != null) {
+			coursePropertyManager.deleteProperty(lastTime);
+		}
+	}
 
 	// Helper Methods
 	// ////////////////
@@ -240,7 +274,7 @@ public class EnrollmentManager implements GenericEventListener {
 	 * @param List<Long> areaKeys which are in the list
 	 * @return List<BusinessGroup> in which the identity is enrolled
 	 */
-	protected List<BusinessGroup> getBusinessGroupsWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
+	public List<BusinessGroup> getBusinessGroupsWhereEnrolled(Identity identity, List<Long> groupKeys, List<Long> areaKeys, RepositoryEntry courseResource) {
 		Set<BusinessGroup> groups = new HashSet<>();
 		//search in the enrollable bg keys for the groups where identity is attendee
 		if(groupKeys != null && !groupKeys.isEmpty()) {
@@ -294,6 +328,22 @@ public class EnrollmentManager implements GenericEventListener {
 		return groups;
 	}
 	
+	public List<Long> getBusinessGroupKeys(RepositoryEntry courseEntry, ENCourseNode courseNode) {
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		List<Long> enrollableGroupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		if(enrollableGroupKeys == null || enrollableGroupKeys.isEmpty()) {
+			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			enrollableGroupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseEntry);
+		}
+
+		List<Long> enrollableAreaKeys = moduleConfig.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		if(enrollableAreaKeys == null || enrollableAreaKeys.isEmpty()) {
+			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+			enrollableAreaKeys = areaManager.toAreaKeys(areaInitVal, courseEntry.getOlatResource());
+		}
+		return getBusinessGroupKeys(enrollableGroupKeys, enrollableAreaKeys);
+	}
+	
 	public List<Long> getBusinessGroupKeys(List<Long> groupKeys, List<Long> areaKeys) {
 		List<Long> allKeys = new ArrayList<>();
 		if(groupKeys != null && !groupKeys.isEmpty()) {
@@ -322,7 +372,7 @@ public class EnrollmentManager implements GenericEventListener {
 		  .append(" ) as numOfParticipants,")
 		  //num of pending
 		  .append(" (select count(reservations.key) from resourcereservation reservations ")
-		  .append("  where reservations.resource.key=grp.resource.key")
+		  .append("  where reservations.resource.key=grp.resource.key and reservations.type='group_participant'")
 		  .append(" ) as numOfReservationss,")
 		  //length of the waiting list
 		  .append(" (select count(waiters.key) from bgroupmember waiters ")

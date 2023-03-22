@@ -228,12 +228,12 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 						float maxScore = max == null ? 0f : max.floatValue();
 						float score = Float.parseFloat(val);
 						if(score < 0f || score > maxScore) {
-							pointEl.setErrorKey("form.error.scoreOutOfRange", null);
+							pointEl.setErrorKey("form.error.scoreOutOfRange");
 							allOk &= false;
 						}
 
 					} catch (NumberFormatException e) {
-						pointEl.setErrorKey("form.error.wrongFloat", null);
+						pointEl.setErrorKey("form.error.wrongFloat");
 						allOk &= false;
 					}
 				}

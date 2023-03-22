@@ -144,6 +144,9 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Column(name="a_num_visits", nullable=true, insertable=true, updatable=true)
 	private Integer numberOfVisits;
 	
+	@Column(name="a_run", nullable=true, insertable=true, updatable=true)
+	private int run;
+	
 	@Column(name="a_fully_assessed", nullable=true, insertable=true, updatable=true)
 	private Boolean fullyAssessed;
 	@Column(name="a_date_fully_assessed", nullable=true, insertable=true, updatable=true)
@@ -714,6 +717,14 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setNumberOfVisits(Integer numberOfVisits) {
 		this.numberOfVisits = numberOfVisits;
+	}
+
+	public int getRun() {
+		return run;
+	}
+
+	public void setRun(int run) {
+		this.run = run;
 	}
 
 	@Override

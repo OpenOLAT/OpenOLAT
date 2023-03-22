@@ -1,0 +1,14 @@
+<ul class="o_dropdown list-unstyled">
+#if($r.available("reset.fully.assessed.link"))
+	<li>$r.render("reset.fully.assessed.link")</li>
+#end
+#if($r.available("edit.obligation"))
+	<li>$r.render("edit.obligation")</li>
+#end
+#if($r.available("reset.data"))
+	#if($r.available("reset.fully.assessed.link") || $r.available("edit.obligation"))
+	<li class="divider"></li>
+	#end
+	<li>$r.render("reset.data")</li>
+#end
+</ul>

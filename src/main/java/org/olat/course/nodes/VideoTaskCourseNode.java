@@ -251,7 +251,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		boolean showOverlayComments = config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true);
 
 		VideoDisplayOptions displayOptions = VideoDisplayOptions.valueOf(false, false, false, false,
-				title, false, false, null, false, readOnly, forwardSeekingRestrictred);
+				title, false, false, null, false, readOnly, forwardSeekingRestrictred, false);
 		displayOptions.setShowQuestions(showQuestions);
 		displayOptions.setShowAnnotations(showAnnotations);
 		displayOptions.setShowSegments(true);

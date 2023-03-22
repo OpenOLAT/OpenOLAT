@@ -187,4 +187,62 @@ public class GTATaskRevisionDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, revisions.size());
 		Assert.assertEquals(rev, revisions.get(0));
 	}
+	
+	@Test
+	public void deleteTaskRevisionsByTaskList() {
+		// course with task course element
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-7");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-8");
+		
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		TaskList taskList = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		// participant select a task
+		File taskFile = new File("tasked.txt");
+		AssignmentResponse response = gtaManager.selectTask(participant, taskList, null, node, taskFile);
+		Task task = response.getTask();
+		Assert.assertNotNull(task);
+		
+		// coach create the revision
+		TaskRevision rev = taskRevisionDao.createTaskRevision(task, TaskProcess.revision.name(), 3, "Still to do", coach, new Date());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rev);
+		
+		int rowDeleted = taskRevisionDao.deleteTaskRevision(taskList);
+		Assert.assertEquals(1, rowDeleted);
+		List<TaskRevision> revisions = taskRevisionDao.getTaskRevisions(task);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
+	@Test
+	public void deleteTaskRevisionsByTask() {
+		// course with task course element
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-9");
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-rev-user-10");
+		
+		RepositoryEntry re = GTAManagerTest.deployGTACourse();
+		GTACourseNode node = GTAManagerTest.getGTACourseNode(re);
+		TaskList taskList = gtaManager.createIfNotExists(re, node);
+		dbInstance.commit();
+		
+		// participant select a task
+		File taskFile = new File("tasked.txt");
+		AssignmentResponse response = gtaManager.selectTask(participant, taskList, null, node, taskFile);
+		Task task = response.getTask();
+		Assert.assertNotNull(task);
+		
+		// coach create the revision
+		TaskRevision rev = taskRevisionDao.createTaskRevision(task, TaskProcess.revision.name(), 1, "Still to do", coach, new Date());
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(rev);
+		
+		int rowDeleted = taskRevisionDao.deleteTaskRevision(task);
+		dbInstance.commit();
+		Assert.assertEquals(1, rowDeleted);
+		List<TaskRevision> revisions = taskRevisionDao.getTaskRevisions(task);
+		Assert.assertTrue(revisions.isEmpty());
+	}
+	
 }

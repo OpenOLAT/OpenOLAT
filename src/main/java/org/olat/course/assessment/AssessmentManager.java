@@ -117,6 +117,9 @@ public interface AssessmentManager {
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Boolean fullyAssessed, AssessmentEntryStatus status);
 	
+	
+	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity identity, Role by);
+	
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 
 	 * it will be overwritten with the new value

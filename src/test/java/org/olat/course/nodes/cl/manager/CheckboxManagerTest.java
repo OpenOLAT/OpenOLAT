@@ -412,6 +412,41 @@ public class CheckboxManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void loadAssessmentDatasOfIdentity() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("check-14");
+		repositoryEntryRelationDao.addRole(id, entry, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		OLATResourceable ores = entry.getOlatResource();
+		String resSubPath = UUID.randomUUID().toString();
+		String checkboxId1 = UUID.randomUUID().toString();
+		DBCheckbox checkbox1 = checkboxManager.createDBCheckbox(checkboxId1, ores, resSubPath);
+		String checkboxId2 = UUID.randomUUID().toString();
+		DBCheckbox checkbox2 = checkboxManager.createDBCheckbox(checkboxId2, ores, resSubPath);
+		//create a check
+		DBCheck check1_1 = checkboxManager.createCheck(checkbox1, id, null, Boolean.TRUE);
+		DBCheck check1_2 = checkboxManager.createCheck(checkbox2, id, null, Boolean.TRUE);
+		dbInstance.commitAndCloseSession();
+		
+		//load the check
+		List<AssessmentData> loadedChecks = checkboxManager.getAssessmentDatas(ores, resSubPath, id);
+		Assert.assertNotNull(loadedChecks);
+		Assert.assertEquals(1, loadedChecks.size());
+		
+		List<DBCheck> collectedChecks = new ArrayList<>();
+		for(AssessmentData loadedCheck:loadedChecks) {
+			for(DBCheck loaded:loadedCheck.getChecks()) {
+				collectedChecks.add(loaded);
+			}
+		}
+
+		Assert.assertEquals(2, collectedChecks.size());
+		Assert.assertTrue(collectedChecks.contains(check1_1));
+		Assert.assertTrue(collectedChecks.contains(check1_2));
+	}
+	
+	@Test
 	public void countChecks_resource() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-16");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("check-17");

@@ -51,6 +51,7 @@ import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementControlle
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.lecture.LectureService;
@@ -249,13 +250,13 @@ public class UserDetailsController extends BasicController implements Activateab
 			Long statementKey = statementEntry.getUserEfficiencyStatementKey();
 			EfficiencyStatement efficiencyStatement = null;
 			if(statementKey != null) {
-				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByKey(statementKey);
+				efficiencyStatement = efficiencyStatementManager.getEfficiencyStatementByKey(statementKey);
 			}
 			if(efficiencyStatement == null) {
 				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
 			}
 			statementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null, true);
+					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null, true, true);
 			listenTo(statementCtrl);
 			hasChanged = false;
 		}
@@ -274,7 +275,9 @@ public class UserDetailsController extends BasicController implements Activateab
 		if(assessmentCtrl == null) {
 			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
 			UserCourseEnvironment coachCourseEnv = loadUserCourseEnvironment(ureq, entry);
-			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv, assessedIdentity, true);
+			AssessmentToolSecurityCallback secCallback = AssessmentToolSecurityCallback.nothing();
+			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv,
+					assessedIdentity, true, secCallback);
 			listenTo(assessmentCtrl);
 		}
 		mainVC.put("segmentCmp", assessmentCtrl.getInitialComponent());

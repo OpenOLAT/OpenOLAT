@@ -48,7 +48,7 @@ import org.olat.course.assessment.UserEfficiencyStatementShort;
  */
 @Entity(name="effstatementcoaching")
 @Table(name="o_as_eff_statement")
-@NamedQuery(name="efficiencyStatemtForCoachingByResourceKeys", query="select statement from effstatementcoaching as statement where resourceKey=:courseResourceKey")
+@NamedQuery(name="efficiencyStatemtForCoachingByResourceKeys", query="select statement from effstatementcoaching as statement where resourceKey=:courseResourceKey and statement.lastStatement=true")
 public class UserEfficiencyStatementForCoaching implements Persistable, UserEfficiencyStatementShort, ModifiedInfo {
 
 	private static final long serialVersionUID = 2996458434418813284L;
@@ -91,6 +91,8 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	private Integer attemptedNodes;
 	@Column(name="passed_nodes", nullable=true, insertable=false, updatable=false)
 	private Integer passedNodes;
+	@Column(name="completion", nullable=true, insertable=true, updatable=true)
+	private Double completion;
 
 	@Column(name="course_title", nullable=true, insertable=true, updatable=true)
 	private String title;
@@ -98,6 +100,11 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	private String shortTitle;
 	@Column(name="course_repo_key", nullable=true, insertable=false, updatable=false)
 	private Long courseRepoKey;
+	
+	@Column(name="last_statement", nullable=true, insertable=true, updatable=true)
+	private boolean lastStatement;
+	@Column(name="archive_certificate", nullable=true, insertable=true, updatable=true)
+	private Long archiveCertificateKey;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastusermodified", nullable=true, insertable=false, updatable=false)
@@ -228,6 +235,15 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	public void setPassedNodes(Integer passedNodes) {
 		this.passedNodes = passedNodes;
 	}
+	
+	@Override
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
 
 	public Long getIdentityKey() {
 		return identityKey;
@@ -273,6 +289,24 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	}
 
 	@Override
+	public boolean isLastStatement() {
+		return lastStatement;
+	}
+
+	public void setLastStatement(boolean lastStatement) {
+		this.lastStatement = lastStatement;
+	}
+	
+	@Override
+	public Long getArchiveCertificateKey() {
+		return archiveCertificateKey;
+	}
+
+	public void setArchiveCertificateKey(Long archiveCertificateKey) {
+		this.archiveCertificateKey = archiveCertificateKey;
+	}
+
+	@Override
 	public String toString() {
 		return super.toString();
 	}
@@ -287,8 +321,7 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserEfficiencyStatementForCoaching) {
-			UserEfficiencyStatementForCoaching statement = (UserEfficiencyStatementForCoaching)obj;
+		if(obj instanceof UserEfficiencyStatementForCoaching statement) {
 			return getKey() != null && getKey().equals(statement.getKey());
 		}
 		return false;

@@ -21,6 +21,7 @@ package org.olat.course.learningpath.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -38,7 +39,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathIdentityController extends BasicController {
+public class LearningPathIdentityController extends BasicController implements TooledController {
 
 	private CoachedIdentityLargeInfosController coachedIdentityLargeInfosCtrl;
 	private LearningPathListController learningPathListCtrl;
@@ -72,6 +73,11 @@ public class LearningPathIdentityController extends BasicController {
 		identityEnv.setIdentity(getIdentity());
 		UserCourseEnvironment myCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		return !myCourseEnv.isCourseReadOnly() && (myCourseEnv.isAdmin() || myCourseEnv.isCoach());
+	}
+
+	@Override
+	public void initTools() {
+		learningPathListCtrl.initTools();
 	}
 
 	@Override

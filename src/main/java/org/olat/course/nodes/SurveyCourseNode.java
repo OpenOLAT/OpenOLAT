@@ -42,6 +42,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -69,6 +70,7 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
@@ -378,6 +380,35 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		return true;
 	}
 	
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		
+		try {
+			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+			
+			RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
+			
+			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+			
+			Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
+			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
+			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
+			
+			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
+					reportHelper.getComparator(), userColumns, getShortName());
+			evaluationFormExport.export(archiveStream, path);
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);

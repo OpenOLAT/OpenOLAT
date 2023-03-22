@@ -176,17 +176,28 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 							infos.setLastModified(new Date());
 							infos.setRecentLaunch(new Date());
 							infos.setVisit(1);
+							infos.setRun(1);
 							infos.setResource(courseResource);
 							dbInstance.getCurrentEntityManager().persist(infos);
 						}
 					} catch (Exception e) {
-						log.error("Cannot update course informations for: " + identity + " from " + identity, e);
+						log.error("Cannot update course informations for: {} from {}", identity, identity, e);
 					}
 				}
 			});
 		}
 	}
 	
+	@Override
+	public void incrementUserCourseInformationsRun(OLATResource courseResource, Identity identity) {
+		UserCourseInfosImpl userCourseInfos = getUserCourseInformations(courseResource, identity);
+		if(userCourseInfos != null) {
+			userCourseInfos.setRun(userCourseInfos.getRun() + 1);
+			dbInstance.getCurrentEntityManager().merge(userCourseInfos);
+			dbInstance.commit();
+		}
+	}
+
 	@Override
 	public Date getRecentLaunchDate(OLATResource resource, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
@@ -387,7 +398,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return dateMap;
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource, e);
+			log.error("Cannot retrieve course informations for: {}", resource, e);
 			return Collections.emptyMap();
 		}
 	}
@@ -410,7 +421,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return dateMap;
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource.getResourceableId(), e);
+			log.error("Cannot retrieve course informations for: {}", resource.getResourceableId(), e);
 			return Collections.emptyMap();
 		}
 	}
@@ -456,7 +467,49 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return dateMap;
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource.getResourceableId(), e);
+			log.error("Cannot retrieve course informations for: {}", resource.getResourceableId(), e);
+			return Collections.emptyMap();
+		}
+	}
+
+	@Override
+	public Map<Long, Long> getCourseRuns(OLATResource resource, List<Identity> identities) {
+		if(identities == null || identities.isEmpty()) {
+			return new HashMap<>();
+		}
+		try {
+			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("select infos.identity.key, infos.run from usercourseinfos as infos ")
+			  .append(" inner join infos.resource as resource")
+			  .append(" where resource.key=:resKey and resource.resName='CourseModule'");
+			
+			Set<Long> identityKeySet = null;
+			if(identityKeys.size() < 100) {
+				sb.append(" and infos.identity.key in (:identityKeys)");
+				identityKeySet = new HashSet<>(identityKeys);
+			}
+
+			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+					.createQuery(sb.toString(), Object[].class)
+					.setParameter("resKey", resource.getKey());
+			if(identityKeys.size() < 100) {
+				query.setParameter("identityKeys", identityKeys);
+			}
+
+			List<Object[]> infoList = query.getResultList();
+			Map<Long,Long> runMap = new HashMap<>();
+			for(Object[] infos:infoList) {
+				Long identityKey = (Long)infos[0];
+				if(identityKeySet == null || identityKeySet.contains(identityKey)) {
+					Long run = PersistenceHelper.extractLong(infos, 1);
+					runMap.put(identityKey, run);
+				}
+			}
+			return runMap;
+		} catch (Exception e) {
+			log.error("Cannot retrieve course informations for: {}", resource.getResourceableId(), e);
 			return Collections.emptyMap();
 		}
 	}
@@ -468,14 +521,13 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			sb.append("delete from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
 			  .append(" where resource.key=:resourceKey");
 
-			int count = dbInstance.getCurrentEntityManager()
+			return dbInstance.getCurrentEntityManager()
 					.createQuery(sb.toString())
 					.setParameter("resourceKey", entry.getOlatResource().getKey())
 					.setFlushMode(FlushModeType.AUTO)
 					.executeUpdate();
-			return count;
 		} catch (Exception e) {
-			log.error("Cannot Delete course informations for: " + entry, e);
+			log.error("Cannot Delete course informations for: {}", entry, e);
 			return -1;
 		}
 	}

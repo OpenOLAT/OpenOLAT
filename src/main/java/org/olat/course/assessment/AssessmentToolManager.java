@@ -65,6 +65,8 @@ public interface AssessmentToolManager {
 	
 	public List<Identity> getAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
 	
+	public long countAssessedIdentities(Identity coach, SearchAssessedIdentityParams params);
+	
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);
 	
 	public List<GradingAssignment> getGradingAssignments(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status);

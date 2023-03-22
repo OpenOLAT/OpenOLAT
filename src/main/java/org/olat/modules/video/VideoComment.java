@@ -42,5 +42,8 @@ public interface VideoComment {
 	void setFileName(String fileName);
 	String getUrl();
 	void setUrl(String url);
+	String getType();
+	void setType(String type);
+
 	String getDisplayText(Translator translator);
 }

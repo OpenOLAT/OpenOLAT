@@ -59,6 +59,10 @@ public class RecordCommentController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
+	public String getTitle() {
+		return recordCommentDetailsController.getTitle();
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -74,8 +78,7 @@ public class RecordCommentController extends BasicController {
 			}
 		} else if (recordCommentDetailsController == source) {
 			if (event == Event.DONE_EVENT) {
-				VFSLeaf recording = creationController.moveUploadFileTo(targetContainer,
-						recordCommentDetailsController.getFileName());
+				VFSLeaf recording = creationController.moveUploadFileTo(targetContainer, creationController.getFileName());
 				fireEvent(ureq, new AVDoneEvent(recording));
 			} else if (event == Event.CANCELLED_EVENT) {
 				fireEvent(ureq, Event.CANCELLED_EVENT);
@@ -84,8 +87,7 @@ public class RecordCommentController extends BasicController {
 	}
 
 	private void doSetDetails(UserRequest ureq) {
-		recordCommentDetailsController = new RecordCommentDetailsController(ureq, getWindowControl(), targetContainer,
-				creationController.getFileName());
+		recordCommentDetailsController = new RecordCommentDetailsController(ureq, getWindowControl());
 		listenTo(recordCommentDetailsController);
 		mainVC.put("component", recordCommentDetailsController.getInitialComponent());
 	}

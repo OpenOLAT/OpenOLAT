@@ -35,6 +35,8 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.progressbar.ProgressBar;
@@ -66,6 +68,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
+import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
@@ -99,15 +102,19 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	private VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
+	private Link homeLink;
+	private Link courseLink;
+	private Link groupLink;
+	private Link contactLink;
 	private Link certificateLink;
 	private Link courseDetailsLink;
-	private Link homeLink, courseLink, groupLink, contactLink;
+	private Dropdown historyOfStatementsDropdown;
 	
-	private final Certificate certificate;
-	private final EfficiencyStatement efficiencyStatement;
+	private Certificate certificate;
 	private final Identity statementOwner;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry courseRepoEntry;
+	private EfficiencyStatement efficiencyStatement;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -128,6 +135,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
 	
 	/**
 	 * The constructor shows the efficiency statement given as parameter for the current user
@@ -136,19 +145,32 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	 * @param courseId
 	 */
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false);
+		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false, false);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
 				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
-				null, false);
+				null, false, true);
 	}
 	
+	/**
+	 * 
+	 * @param wControl
+	 * @param ureq
+	 * @param statementOwner
+	 * @param businessGroup
+	 * @param resourceKey
+	 * @param courseRepo
+	 * @param efficiencyStatement
+	 * @param preloadedCertificate
+	 * @param links
+	 * @param history The history of efficiency statements
+	 */
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo,
-			EfficiencyStatement efficiencyStatement, Certificate preloadedCertificate, boolean links) {
+			EfficiencyStatement efficiencyStatement, Certificate preloadedCertificate, boolean links, boolean history) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
@@ -167,28 +189,30 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		this.statementOwner = statementOwner;
 		this.efficiencyStatement = efficiencyStatement;
 		if(preloadedCertificate == null) {
-			this.certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
+			certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
 		} else {
-			this.certificate = preloadedCertificate;
+			certificate = preloadedCertificate;
 		}
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
 		populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
 		
-		if(efficiencyStatement != null && certificate != null) {
-			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-			certificateLink = LinkFactory.createLink("details.certificate", mainVC, this);
-			certificateLink.setElementCssClass("o_select_certificate_segement");
-			segmentView.addSegment(certificateLink, true);
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
+		certificateLink = LinkFactory.createLink("details.certificate", mainVC, this);
+		certificateLink.setElementCssClass("o_select_certificate_segement");
+		certificateLink.setVisible(certificate != null);
+		segmentView.addSegment(certificateLink, true);
+		
+		courseDetailsLink = LinkFactory.createLink("details.course.infos", mainVC, this);
+		courseDetailsLink.setElementCssClass("o_select_statement_segment");
+		courseDetailsLink.setVisible(efficiencyStatement != null);
+		segmentView.addSegment(courseDetailsLink, false);
+		
+		if(certificate != null) {
 			selectCertificate(ureq);
-			
-			courseDetailsLink = LinkFactory.createLink("details.course.infos", mainVC, this);
-			courseDetailsLink.setElementCssClass("o_select_statement_segment");
-			segmentView.addSegment(courseDetailsLink, false);
 		} else if(efficiencyStatement != null) {
 			selectCourseInfos(ureq);
-		} else if(certificate != null) {
-			selectCertificate(ureq);
 		}
 		
 		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity()) && portfolioV2Module.isEnabled()) {
@@ -197,8 +221,39 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 					mediaHandler, businessPath);
 			mainVC.put("collectArtefactLink", collectorCmp);
 		}
+		
+		if(history) {
+			loadEfficiencyStatementsHistory();
+		}
 
 		putInitialPanel(mainVC);
+	}
+	
+	private void loadEfficiencyStatementsHistory() {
+		List<UserEfficiencyStatement> statements = efficiencyStatementManager.getHistoryOfUserEfficiencyStatementsLightByRepositoryEntry(courseRepoEntry, statementOwner);
+		if(statements.size() > 1) {
+			historyOfStatementsDropdown = new Dropdown("statements.list", null, false, getTranslator());
+			historyOfStatementsDropdown.setTranslatedLabel(translate("current.version"));
+			historyOfStatementsDropdown.setButton(true);
+			historyOfStatementsDropdown.setIconCSS("o_icon o_icon_reset_data");
+			historyOfStatementsDropdown.setOrientation(DropdownOrientation.right);
+			mainVC.put(historyOfStatementsDropdown.getComponentName(), historyOfStatementsDropdown);
+			
+			int counter = 0;
+			Formatter formatter = Formatter.getInstance(getLocale());
+			for(UserEfficiencyStatement statement:statements) {
+				
+				String label;
+				if(statement.isLastStatement()) {
+					label = translate("current.version");
+				} else {
+					label = translate("statement.version", formatter.formatDate(statement.getCreationDate()), formatter.formatDate(statement.getLastModified()));
+				}
+				Link statementLink = LinkFactory.createCustomLink("statement_" + (++counter), "statement", label, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+				statementLink.setUserObject(statement.getKey());
+				historyOfStatementsDropdown.addComponent(statementLink);
+			}
+		}
 	}
 
 	public void disableMediaCollector() {
@@ -250,6 +305,10 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		
+		populateAssessedIdentityCompletion();
+	}
+	
+	private void populateAssessedIdentityCompletion() { 
 		List<AssessmentEntryScoring> completions = Collections.emptyList();
 		if(courseRepoEntry != null) {
 			completions = assessmentService.loadRootAssessmentEntriesByAssessedIdentity(statementOwner,
@@ -259,20 +318,28 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			AssessmentEntryScoring assessmentEntryScoring = completions.get(0);
 			Double completion = assessmentEntryScoring.getCompletion();
 			if (completion != null) {
-				ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue() * 100,
-						Float.valueOf(100), "%");
-				completionItem.setWidthInPercent(true);
-				completionItem.setLabelAlignment(LabelAlignment.right);
-				completionItem.setLabelMaxEnabled(false);
-				completionItem.setRenderStyle(RenderStyle.radial);
-				completionItem.setRenderSize(RenderSize.inline);
-				BarColor barColor =  assessmentEntryScoring.getPassed() == null || assessmentEntryScoring.getPassed().booleanValue()
-						? BarColor.success
-						: BarColor.danger;
-				completionItem.setBarColor(barColor);
-				mainVC.put("completion", completionItem);
+				setIdentityCompletion(completion, assessmentEntryScoring.getPassed());
+			} else {
+				mainVC.remove("completion");	
 			}
+		} else {
+			mainVC.remove("completion");
 		}
+	}
+	
+	private void setIdentityCompletion(Double completion, Boolean passed) {
+		ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue() * 100,
+				Float.valueOf(100), "%");
+		completionItem.setWidthInPercent(true);
+		completionItem.setLabelAlignment(LabelAlignment.right);
+		completionItem.setLabelMaxEnabled(false);
+		completionItem.setRenderStyle(RenderStyle.radial);
+		completionItem.setRenderSize(RenderSize.inline);
+		BarColor barColor =  passed == null || passed.booleanValue()
+				? BarColor.success
+				: BarColor.danger;
+		completionItem.setBarColor(barColor);
+		mainVC.put("completion", completionItem);
 	}
 	
 	@Override
@@ -285,8 +352,10 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			doOpenGroup(ureq);
 		} else if (source == contactLink) {
 			contact(ureq);
-		} else if(source == segmentView && event instanceof SegmentViewEvent) {
-			SegmentViewEvent sve = (SegmentViewEvent)event;
+		} else if (source instanceof Link link && "statement".equals(link.getCommand())
+				&& link.getUserObject() instanceof Long statementKey) {
+			doLoadStatement(ureq, link, statementKey);
+		} else if(source == segmentView && event instanceof SegmentViewEvent sve) {
 			if(certificateLink.getComponentName().equals(sve.getComponentName())) {
 				selectCertificate(ureq);
 			} else if(courseDetailsLink.getComponentName().equals(sve.getComponentName())) {
@@ -310,6 +379,65 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		removeAsListenerAndDispose(contactCtrl);
 		cmc = null;
 		contactCtrl = null;
+	}
+	
+	private void doLoadStatement(UserRequest ureq, Link statementLink, Long statementKey) {
+		UserEfficiencyStatement userEfficiencyStatement = null;
+		if(statementKey != null && statementKey.longValue() > 0) {
+			userEfficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByKey(statementKey);
+			efficiencyStatement = efficiencyStatementManager.getEfficiencyStatement(userEfficiencyStatement);
+			if(userEfficiencyStatement.isLastStatement()) {
+				historyOfStatementsDropdown.setTranslatedLabel(translate("current.version"));
+			} else {
+				historyOfStatementsDropdown.setTranslatedLabel(statementLink.getI18n());
+			}
+			
+			if(userEfficiencyStatement.getCompletion() != null) {
+				setIdentityCompletion(userEfficiencyStatement.getCompletion(), userEfficiencyStatement.getPassed());
+			} else {
+				mainVC.remove("completion");
+			}
+		} else {
+			efficiencyStatement = null;
+			mainVC.remove("completion");
+		}
+		
+		// Reset controllers
+		removeAsListenerAndDispose(certificateCtrl);
+		removeAsListenerAndDispose(courseDetailsCtrl);
+		certificateCtrl = null;
+		courseDetailsCtrl = null;
+		mainVC.remove("segmentCmp");
+
+		if(userEfficiencyStatement != null) {
+			if(userEfficiencyStatement.getArchiveCertificateKey() != null) {
+				certificate = certificatesManager.getCertificateById(userEfficiencyStatement.getArchiveCertificateKey());
+			} else {
+				certificate = certificatesManager.getLastCertificate(statementOwner, courseRepoEntry.getOlatResource().getKey());
+			}
+			certificateLink.setVisible(certificate != null);
+		} else {
+			certificate = certificatesManager.getLastCertificate(statementOwner, courseRepoEntry.getOlatResource().getKey());
+		}
+		certificateLink.setVisible(certificate != null);
+		courseDetailsLink.setVisible(efficiencyStatement != null);
+
+		if(segmentView.getSelectedComponent() == certificateLink) {
+			if(certificate != null) {
+				selectCertificate(ureq);
+			} else if(efficiencyStatement!= null) {
+				selectCourseInfos(ureq);
+				segmentView.select(courseDetailsLink);
+			} else {
+				
+			}
+		} else if(segmentView.getSelectedComponent() == courseDetailsLink) {
+			if(efficiencyStatement != null) {
+				selectCourseInfos(ureq);
+			} else if(certificate != null) {
+				selectCertificate(ureq);
+			}
+		}
 	}
 	
 	private void selectCertificate(UserRequest ureq) {

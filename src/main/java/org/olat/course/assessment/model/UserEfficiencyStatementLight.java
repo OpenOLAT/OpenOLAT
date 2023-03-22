@@ -93,6 +93,8 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	private Integer attemptedNodes;
 	@Column(name="passed_nodes", nullable=true, insertable=true, updatable=true)
 	private Integer passedNodes;
+	@Column(name="completion", nullable=true, insertable=true, updatable=true)
+	private Double completion;
 
 	@Column(name="course_title", nullable=true, insertable=true, updatable=true)
 	private String title;
@@ -102,6 +104,11 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	private Long courseRepoKey;
 	@Column(name="fk_resource_id", nullable=true, insertable=false, updatable=false)
 	private Long resourceKey;
+	
+	@Column(name="last_statement", nullable=true, insertable=true, updatable=true)
+	private boolean lastStatement;
+	@Column(name="archive_certificate", nullable=true, insertable=true, updatable=true)
+	private Long archiveCertificateKey;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="lastusermodified", nullable=true, insertable=true, updatable=true)
@@ -231,6 +238,15 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	public void setPassedNodes(Integer passedNodes) {
 		this.passedNodes = passedNodes;
 	}
+	
+	@Override
+	public Double getCompletion() {
+		return completion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.completion = completion;
+	}
 
 	@Override
 	public Identity getIdentity() {
@@ -277,6 +293,24 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 	}
 
 	@Override
+	public boolean isLastStatement() {
+		return lastStatement;
+	}
+
+	public void setLastStatement(boolean lastStatement) {
+		this.lastStatement = lastStatement;
+	}
+
+	@Override
+	public Long getArchiveCertificateKey() {
+		return archiveCertificateKey;
+	}
+
+	public void setArchiveCertificateKey(Long archiveCertificateKey) {
+		this.archiveCertificateKey = archiveCertificateKey;
+	}
+
+	@Override
 	public String toString() {
 		return super.toString();
 	}
@@ -291,8 +325,7 @@ public class UserEfficiencyStatementLight implements Persistable, UserEfficiency
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof UserEfficiencyStatementLight) {
-			UserEfficiencyStatementLight statement = (UserEfficiencyStatementLight)obj;
+		if(obj instanceof UserEfficiencyStatementLight statement) {
 			return getKey() != null && getKey().equals(statement.getKey());
 		}
 		return false;

@@ -41,7 +41,11 @@ public class VideoDisplayAsRuntimeController extends VideoDisplayController {
 	private final CommentLayerController commentLayerController;
 
 	public VideoDisplayAsRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
-		super(ureq, wControl, repositoryEntry);
+		super(ureq, wControl, repositoryEntry, null, null,
+				VideoDisplayOptions.valueOf(false, false, false,
+						false, true, true, true,
+						repositoryEntry.getDescription(), false, false,
+						false, true));
 
 		long totalDurationInMillis = VideoHelper.durationInSeconds(repositoryEntry, this) * 1000L;
 		segmentsController = new SegmentsController(ureq, wControl, repositoryEntry, getVideoElementId(),

@@ -90,11 +90,6 @@ public class VideoEditorController extends BasicController {
 				masterController.setAvailableWidth(availableWidth);
 				masterController.getInitialComponent().setDirty(true);
 			}
-			String videoViewWidthString = ureq.getHttpReq().getParameter("videoViewWidth");
-			if (videoViewWidthString != null) {
-				int videoViewWidth = Integer.parseInt(videoViewWidthString);
-				videoController.setViewWidth(videoViewWidth);
-			}
 		}
 	}
 

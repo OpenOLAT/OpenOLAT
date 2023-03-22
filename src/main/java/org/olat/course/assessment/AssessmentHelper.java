@@ -87,6 +87,7 @@ public class AssessmentHelper {
 	public static final String KEY_PASSED = "passed";
 	public static final String KEY_SCORE = "score";
 	public static final String KEY_SCORE_F = "fscore";
+	public static final String KEY_COMPLETION = "completion";
 	public static final String KEY_GRADE = "grade";
 	public static final String KEY_GRADE_SYSTEM_IDENT = "gradeSystemIdent";
 	public static final String KEY_PERFORMANCE_CLASS_IDENT = "performanceClassIdent";
@@ -413,6 +414,7 @@ public class AssessmentHelper {
 					lastModifications.addLastUserModified(scoreEvaluation.getLastUserModified());
 					lastModifications.addLastCoachModified(scoreEvaluation.getLastCoachModified());
 				}
+				assessmentNodeData.setCompletion(scoreEvaluation.getCompletion());
 				
 				if(!followUserVisibility || (scoreEvaluation.getUserVisible() != null && scoreEvaluation.getUserVisible().booleanValue())) {
 					// attempts

@@ -188,6 +188,16 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 	}
 	
 	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		// 1) Delete all assessment test sessions 
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class).deleteAllUserTestSessionsByCourse(assessedIdentity, courseEntry, getIdent());
+		
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+	}
+
+	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		

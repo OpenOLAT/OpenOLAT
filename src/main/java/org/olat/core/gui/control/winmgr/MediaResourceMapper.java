@@ -46,6 +46,10 @@ public class MediaResourceMapper implements Mapper {
 	public MediaResourceMapper() {
 		//
 	}
+	
+	public MediaResourceMapper(MediaResource mediaResource) {
+		this.mediaResource = mediaResource;
+	}
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {

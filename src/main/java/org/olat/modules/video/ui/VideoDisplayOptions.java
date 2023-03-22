@@ -52,8 +52,11 @@ public class VideoDisplayOptions {
 	private boolean startFullScreen;
 	private boolean showOverlayComments;
 	
-	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating, boolean useContainerForCommentsAndRatings, boolean showTitle, boolean showDescription,
-			boolean autoWidth, String descriptionText, boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted) {
+	public static VideoDisplayOptions valueOf(boolean autoplay, boolean showComments, boolean showRating,
+											  boolean useContainerForCommentsAndRatings, boolean showTitle,
+											  boolean showDescription, boolean autoWidth, String descriptionText,
+											  boolean authorMode, boolean readOnly, boolean forwardSeekingRestricted,
+											  boolean progressFullWidth) {
 		VideoDisplayOptions options = new VideoDisplayOptions();
 		options.setAutoplay(autoplay);
 		options.setAutoWidth(autoWidth);
@@ -65,6 +68,7 @@ public class VideoDisplayOptions {
 		options.setShowTitle(showTitle);
 		options.setShowDescription(showDescription);
 		options.setForwardSeekingRestricted(forwardSeekingRestricted);
+		options.setProgressFullWidth(progressFullWidth);
 		options.setShowPoster(true);
 		options.setShowQuestions(true);
 		options.setShowAnnotations(true);

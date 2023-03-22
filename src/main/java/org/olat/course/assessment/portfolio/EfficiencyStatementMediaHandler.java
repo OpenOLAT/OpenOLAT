@@ -100,8 +100,8 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
-		if (mediaObject instanceof EfficiencyStatement) {
-			title = ((EfficiencyStatement)mediaObject).getCourseTitle();
+		if (mediaObject instanceof EfficiencyStatement statement) {
+			title = statement.getCourseTitle();
 		}
 		return new Informations(title, null);
 	}
@@ -109,8 +109,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		Media media = null;
-		if (mediaObject instanceof EfficiencyStatement) {
-			EfficiencyStatement statement = (EfficiencyStatement) mediaObject;
+		if (mediaObject instanceof EfficiencyStatement statement) {
 			String xml = EfficiencyStatementManager.toXML(statement); 
 			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, null, 90, author);
 			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),

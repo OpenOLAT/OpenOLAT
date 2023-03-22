@@ -35,6 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -47,6 +48,11 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.assessment.ui.reset.ResetData1OptionsStep;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
+import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeIdentityEvent;
@@ -76,6 +82,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 
 	private Link bulkAssessmentLink;
 	private Link recalculateLink;
+	private Link resetDataLink;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 
@@ -84,6 +91,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private AssessmentEventToState assessmentEventToState;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private AssessmentResetController assessmentResetCtrl;
+	private StepsMainRunController resetDataCtrl;
 
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -110,6 +118,12 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 
 	public void initToolbar() {
+		if(assessmentCallback.canResetData()) {
+			resetDataLink = LinkFactory.createToolLink("reset.data", translate("reset.data"), this,
+					"o_icon_reset_data");
+			stackPanel.addTool(resetDataLink, Align.right);
+		}
+		
 		recalculateLink = LinkFactory.createToolLink("recalculate", translate("menu.recalculate"), this,
 				"o_icon_recalculate");
 		stackPanel.addTool(recalculateLink, Align.right);
@@ -149,6 +163,9 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if (bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
+		} else if(resetDataLink == source) {
+			cleanUp();
+			doResetData(ureq);
 		} else if (stackPanel == source) {
 			if (event instanceof PopEvent pe) {
 				if (pe.isClose()) {
@@ -195,6 +212,16 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(resetDataCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					if (courseTreeCtrl != null) {
+						courseTreeCtrl.reload();
+					}
+				}
+				cleanUp();
+			}
 		} else if (source == cmc) {
 			cmc.deactivate();
 			cleanUp();
@@ -205,9 +232,11 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	private void cleanUp() {
 		removeAsListenerAndDispose(bulkAssessmentOverviewCtrl);
 		removeAsListenerAndDispose(assessmentResetCtrl);
+		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
 		bulkAssessmentOverviewCtrl = null;
 		assessmentResetCtrl = null;
+		resetDataCtrl = null;
 		cmc = null;
 	}
 
@@ -251,6 +280,19 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		if (courseTreeCtrl != null) {
 			courseTreeCtrl.reload();
 		}
+	}
+	
+	private void doResetData(UserRequest ureq) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetCourse(ResetCourse.all);
+		dataContext.setResetParticipants(ResetParticipants.all);
+		ResetData1OptionsStep step = new ResetData1OptionsStep(ureq, dataContext, coachUserEnv, assessmentCallback, true, true);
+		
+		String title = translate("wizard.reset.data.title");
+		ResetDataFinishStepCallback finishCallback = new ResetDataFinishStepCallback(dataContext, assessmentCallback);
+		resetDataCtrl = new StepsMainRunController(ureq, getWindowControl(), step, finishCallback, null, title, "");
+		listenTo(resetDataCtrl);
+		getWindowControl().pushAsModalDialog(resetDataCtrl.getInitialComponent());
 	}
 
 	private AssessmentCourseTreeController doTreeView(UserRequest ureq) {

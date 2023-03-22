@@ -573,7 +573,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		fakeParticipantStopCtrl = null;
 		
 		if (Role.fakeParticipant == reSecurity.getCurrentRole()) {
-			fakeParticipantStopCtrl = new FakeParticipantStopController(ureq, getWindowControl());
+			fakeParticipantStopCtrl = new FakeParticipantStopController(ureq, getWindowControl(), getRepositoryEntry());
 			listenTo(fakeParticipantStopCtrl);
 			toolbarPanel.setMessageComponent(fakeParticipantStopCtrl.getInitialComponent());
 		} else {

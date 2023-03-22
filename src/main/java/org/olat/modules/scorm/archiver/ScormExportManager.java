@@ -92,8 +92,17 @@ public class ScormExportManager {
 	 */
 	public boolean hasResults(CourseEnvironment courseEnv, CourseNode node, Translator translator) {
 		ScormExportVisitor visitor = new ScormExportFormatter(translator);		
-		boolean dataFound = visitScoDatas(courseEnv, (ScormCourseNode)node, visitor);
-		return dataFound;
+		return visitScoDatas(courseEnv, (ScormCourseNode)node, visitor);
+	}
+	
+	public String getResults(Identity identity, CourseEnvironment courseEnv, ScormCourseNode node, Translator translator) {
+		ScormExportFormatter visitor = new ScormExportFormatter(translator);
+	
+		Long courseId = courseEnv.getCourseResourceableId();
+		String scoDirectoryName = courseId.toString() + "-" + node.getIdent();
+		VFSContainer scormRoot = ScormDirectoryHelper.getScormRootFolder();
+		collectData(identity, scormRoot, scoDirectoryName, visitor);
+		return visitor.export();
 	}
 	
 	/**
@@ -113,14 +122,20 @@ public class ScormExportManager {
 		DBFactory.getInstance().commitAndCloseSession();
 		
 		for (Identity identity : users) {
-			String username = identity.getName();
-			VFSItem userFolder = scormRoot.resolve(username);
-			if(userFolder instanceof VFSContainer) {
-				VFSItem scosFolder = ((VFSContainer)userFolder).resolve(scoDirectoryName);
-				if(scosFolder instanceof VFSContainer) {
-					collectData(username, (VFSContainer)scosFolder, visitor);
-					dataFound = true;
-				}
+			dataFound |= collectData(identity, scormRoot, scoDirectoryName, visitor);
+		}
+		return dataFound;
+	}
+	
+	private boolean collectData(Identity identity, VFSContainer scormRoot, String scoDirectoryName, ScormExportVisitor visitor) {
+		boolean dataFound = false;
+		String username = identity.getName();
+		VFSItem userFolder = scormRoot.resolve(username);
+		if(userFolder instanceof VFSContainer userContainer) {
+			VFSItem scosFolder = userContainer.resolve(scoDirectoryName);
+			if(scosFolder instanceof VFSContainer scosContainer) {
+				collectData(username, scosContainer, visitor);
+				dataFound = true;
 			}
 		}
 		return dataFound;

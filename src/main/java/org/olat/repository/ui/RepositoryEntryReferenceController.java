@@ -310,6 +310,8 @@ public class RepositoryEntryReferenceController extends BasicController {
 			if (event.equals(Event.DONE_EVENT)) {
 				repositoryEntry = importUrlCtrl.getImportedEntry();
 				updateUI(ureq);
+				cmc.deactivate();
+				cleanUp();
 				fireEvent(ureq, SELECTION_EVENT);
 			} else if (event.equals(Event.FAILED_EVENT)) {
 				cmc.deactivate();

@@ -29,6 +29,7 @@ import java.util.Set;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -147,6 +148,24 @@ public class ReminderDAO {
 		List<Reminder> reminders = getReminders(entry);
 		for(Reminder reminder:reminders) {
 			rowsDeleted += delete(reminder);
+		}
+		return rowsDeleted;
+	}
+	
+	public int deleteSentReminder(RepositoryEntryRef entry, IdentityRef identity) {
+		int rowsDeleted = 0;
+		List<Reminder> reminders = getReminders(entry);
+		if(!reminders.isEmpty()) {
+			List<Long> reminderkeys = reminders.stream()
+					.map(Reminder::getKey)
+					.toList();
+
+			String del = "delete from sentreminder sent where sent.reminder.key in (:reminderKeys) and sent.identity.key=:identityKey";
+			rowsDeleted += dbInstance.getCurrentEntityManager()
+					.createQuery(del)
+					.setParameter("reminderKeys", reminderkeys)
+					.setParameter("identityKey", identity.getKey())
+					.executeUpdate();
 		}
 		return rowsDeleted;
 	}

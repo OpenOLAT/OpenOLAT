@@ -27,6 +27,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.model.AssessmentNodeData;
+import org.olat.course.assessment.ui.reset.ResetDataIdentityRow;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 
@@ -41,15 +42,14 @@ public class ColorizedScoreCellRenderer extends PassedDependentRenderer implemen
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if (cellValue instanceof AssessedIdentityElementRow) {
-			AssessedIdentityElementRow assessmentRow = (AssessedIdentityElementRow)cellValue;
-			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
-		} else if (cellValue instanceof AssessmentNodeData) {
-			AssessmentNodeData assessmentRow = (AssessmentNodeData)cellValue;
-			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
-		} else if (cellValue instanceof EfficiencyStatementEntry) {
-			EfficiencyStatementEntry assessmentRow = (EfficiencyStatementEntry)cellValue;
-			append(target, assessmentRow.getPassed(), AssessmentHelper.getRoundedScore(assessmentRow.getScore()));
+		if (cellValue instanceof AssessedIdentityElementRow elementRow) {
+			append(target, elementRow.getPassed(), AssessmentHelper.getRoundedScore(elementRow.getScore()));
+		} else if (cellValue instanceof AssessmentNodeData assessmentData) {
+			append(target, assessmentData.getPassed(), AssessmentHelper.getRoundedScore(assessmentData.getScore()));
+		} else if (cellValue instanceof EfficiencyStatementEntry statementEntry) {
+			append(target, statementEntry.getPassed(), AssessmentHelper.getRoundedScore(statementEntry.getScore()));
+		} else if(cellValue instanceof ResetDataIdentityRow identityRow) {
+			append(target, identityRow.getPassed(), AssessmentHelper.getRoundedScore(identityRow.getScore()));
 		}
 	}
 

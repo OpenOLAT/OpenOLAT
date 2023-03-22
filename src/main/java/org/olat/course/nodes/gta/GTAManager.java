@@ -498,8 +498,19 @@ public interface GTAManager {
 	public Task allowResetTask(Task task, Identity allower, GTACourseNode cNode);
 	
 	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
-	
+
 	public Task resetTaskRefused(Task task, GTACourseNode cNode, Identity doerIdentity);
+	
+	/**
+	 * This method doesn't recalculate the score. It only resets the task.
+	 * 
+	 * @param task
+	 * @param cNode
+	 * @param courseEnv
+	 * @param doerIdentity
+	 * @return
+	 */
+	public Task resetCourseNode(Task task, Identity assessedIdentity, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
 	
 	public boolean toggleMark(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker, Identity participant);
 

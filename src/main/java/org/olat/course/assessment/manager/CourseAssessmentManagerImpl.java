@@ -74,6 +74,7 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Overridable;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
@@ -744,6 +745,42 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 				certificatesManager.generateCertificate(certificateInfos, cgm.getCourseEntry(), template, config);
 			}
 		}
+	}
+
+	@Override
+	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		AssessmentEntry assessmentEntry = assessmentService
+				.loadAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent());
+		if(assessmentEntry == null) {
+			return; //No entry, nothing to reset
+		}
+		
+		assessmentEntry.setCurrentRunCompletion(null);
+		assessmentEntry.setCurrentRunStatus(null);
+		assessmentEntry.setCompletion(null);
+		assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+		assessmentEntry.setFullyAssessed(null);
+		// score
+		assessmentEntry.setScore(null);
+		assessmentEntry.setMaxScore(null);
+		assessmentEntry.setPassed(null);
+		assessmentEntry.setAttempts(0);
+		// grade
+		assessmentEntry.setGrade(null);
+		assessmentEntry.setGradeSystemIdent(null);
+		assessmentEntry.setPerformanceClassIdent(null);
+		
+		if(assessmentEntry instanceof AssessmentEntryImpl entryImpl) {
+			entryImpl.setRun(entryImpl.getRun() + 1);
+		}
+		
+		assessmentService.updateAssessmentEntry(assessmentEntry);
+		
+		// node log
+		CourseEnvironment courseEnv = userCourseEnvironment.getCourseEnvironment();
+		UserNodeAuditManager am = courseEnv.getAuditManager();
+		am.appendToUserNodeLog(courseNode, doer, assessedIdentity, "reset course element", by);
 	}
 
 	@Override

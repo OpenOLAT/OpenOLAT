@@ -853,10 +853,10 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	
 	private void doShowStatement(UserRequest ureq, CertificateAndEfficiencyStatementRow statement) {
 		RepositoryEntry entry = repositoryService.loadByResourceKey(statement.getResourceKey());
-		EfficiencyStatement efficiencyStatment = esm.getUserEfficiencyStatementByKey(statement.getEfficiencyStatementKey());
+		EfficiencyStatement efficiencyStatment = esm.getEfficiencyStatementByKey(statement.getEfficiencyStatementKey());
 		Certificate certificate = certificatesManager.getCertificateById(statement.getCertificateKey());
 		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, certificate, false);
+				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, certificate, false, true);
 		listenTo(efficiencyCtrl);
 		stackPanel.pushController(statement.getDisplayName(), efficiencyCtrl);
 	}
@@ -919,7 +919,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private void doCollectMedia(UserRequest ureq, String title, Long efficiencyStatementKey) {
 		if(guardModalController(collectorCtrl)) return;
 		
-		EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
+		EfficiencyStatement fullStatement = esm.getEfficiencyStatementByKey(efficiencyStatementKey);
 		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), fullStatement, mediaHandler, null);
 		listenTo(collectorCtrl);
 		

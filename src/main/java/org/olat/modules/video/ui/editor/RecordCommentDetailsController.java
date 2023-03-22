@@ -27,10 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 
 /**
  * Initial date: 2023-03-13<br>
@@ -38,28 +35,22 @@ import org.olat.core.util.vfs.VFSItem;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RecordCommentDetailsController extends FormBasicController {
-	private TextElement fileNameEl;
-	private final VFSContainer targetContainer;
-	private String fileName;
+	private TextElement titleEl;
+	private String title;
 
-	public RecordCommentDetailsController(UserRequest ureq, WindowControl wControl, VFSContainer targetContainer,
-										  String fileName) {
+	public RecordCommentDetailsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.targetContainer = targetContainer;
-		this.fileName = fileName;
 
 		initForm(ureq);
 	}
 
-	public String getFileName() {
-		return fileName;
-	}
+	public String getTitle() { return title; }
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		fileNameEl = uifactory.addTextElement("fileName", "comment.add.import.file.file", 128, fileName,
-				formLayout);
-		fileNameEl.setMandatory(true);
+		titleEl = uifactory.addTextElement("title", "comment.video.title", 128,
+				translate("comment.video.title.new"), formLayout);
+		titleEl.setMandatory(true);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
@@ -72,19 +63,10 @@ public class RecordCommentDetailsController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
-		fileNameEl.clearError();
-		if (!StringHelper.containsNonWhitespace(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("form.mandatory.hover");
+		titleEl.clearError();
+		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.mandatory.hover");
 			allOk = false;
-		} else if (!FileUtils.validateFilename(fileNameEl.getValue())) {
-			fileNameEl.setErrorKey("form.common.error.invalidFile");
-			allOk = false;
-		} else {
-			VFSItem item = targetContainer.resolve(fileNameEl.getValue());
-			if (item != null && item.exists()) {
-				fileNameEl.setErrorKey("form.common.error.file.exists", fileNameEl.getValue());
-				allOk = false;
-			}
 		}
 
 		return allOk;
@@ -92,7 +74,7 @@ public class RecordCommentDetailsController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fileName = fileNameEl.getValue();
+		title = titleEl.getValue();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

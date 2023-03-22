@@ -80,7 +80,7 @@ public class FullyAssessedResetController extends FormBasicController implements
 		
 		confirmationEl.clearError();
 		if (!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("reset.fully.assessed.confirmation.error", null);
+			confirmationEl.setErrorKey("reset.fully.assessed.confirmation.error");
 			allOk &= false;
 		}
 		

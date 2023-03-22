@@ -38,6 +38,7 @@ public class VideoCommentImpl implements VideoComment {
 	private String text;
 	private String fileName;
 	private String url;
+	private String type;
 
 	@Override
 	public String getId() {
@@ -106,6 +107,16 @@ public class VideoCommentImpl implements VideoComment {
 	@Override
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	@Override
+	public String getType() {
+		return type;
+	}
+
+	@Override
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override

@@ -1398,9 +1398,13 @@ create table if not exists o_as_eff_statement (
    grade varchar(100),
    grade_system_ident varchar(64),
    performance_class_ident varchar(50),
+   last_statement bool default true not null,
+   archive_path varchar(255),
+   archive_certificate bigint,
    total_nodes mediumint,
    attempted_nodes mediumint,
    passed_nodes mediumint,
+   completion float(65,30),
    course_title varchar(255),
    course_short_title varchar(128),
    course_repo_key bigint,
@@ -1419,6 +1423,7 @@ create table o_as_user_course_infos (
    initiallaunchdate datetime,
    recentlaunchdate datetime,
    visit mediumint,
+   run bigint default 1 not null,
    timespend bigint,
    fk_identity bigint,
    fk_resource_id bigint,
@@ -1470,6 +1475,7 @@ create table o_as_entry (
    a_first_visit datetime,
    a_last_visit datetime,
    a_num_visits int8,
+   a_run bigint default 1 not null,
    fk_entry bigint not null,
    a_subident varchar(512),
    a_entry_root bit default null,
@@ -4639,7 +4645,7 @@ create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressu
 alter table o_im_preferences add constraint idx_im_prfs_to_id foreign key (fk_from_identity_id) references o_bs_identity (id);
 
 -- efficiency statements
-alter table o_as_eff_statement add unique eff_statement_id_cstr (fk_identity, fk_resource_id), add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
+alter table o_as_eff_statement add constraint eff_statement_id_cstr foreign key (fk_identity) references o_bs_identity (id);
 create index eff_statement_repo_key_idx on o_as_eff_statement (course_repo_key);
 create index idx_eff_stat_course_ident_idx on o_as_eff_statement (fk_identity,course_repo_key);
 

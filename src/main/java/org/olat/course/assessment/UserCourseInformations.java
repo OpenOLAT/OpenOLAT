@@ -40,6 +40,8 @@ public interface UserCourseInformations {
 	
 	public int getVisit();
 	
+	public int getRun();
+	
 	public long getTimeSpend();
 	
 	public Identity getIdentity();

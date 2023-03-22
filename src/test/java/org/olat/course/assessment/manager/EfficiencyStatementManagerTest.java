@@ -180,6 +180,7 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 				statement.setIdentity(participant);
 				statement.setResource(re.getOlatResource());
 				statement.setCourseRepoKey(re.getKey());
+				statement.setLastStatement(true);
 				statement = effManager.persistOrLoad(statement, re, participant);
 				dbInstance.commit();
 				ok = statement != null;
@@ -236,10 +237,16 @@ public class EfficiencyStatementManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		effManager.updateEfficiencyStatements(re, Collections.singletonList(participant));
 		
-		EfficiencyStatement effStatement = effManager.getUserEfficiencyStatementByKey(statement.getKey());
-		Assert.assertNotNull(effStatement);
-		Assert.assertEquals(course.getCourseTitle(), effStatement.getCourseTitle());
-		Assert.assertEquals(re.getKey(), effStatement.getCourseRepoEntryKey());
+		UserEfficiencyStatement reloadedStatement = effManager.getUserEfficiencyStatementByKey(statement.getKey());
+		Assert.assertNotNull(reloadedStatement);
+		Assert.assertEquals(course.getCourseTitle(), reloadedStatement.getTitle());
+		Assert.assertEquals(re.getKey(), reloadedStatement.getCourseRepoKey());
+		
+		Assert.assertTrue(reloadedStatement instanceof UserEfficiencyStatementImpl);
+		UserEfficiencyStatementImpl reloadedStatementImpl = (UserEfficiencyStatementImpl)reloadedStatement;
+		EfficiencyStatement efficiencyStatement = EfficiencyStatementManager.fromXML(reloadedStatementImpl.getStatementXml());
+		Assert.assertEquals(course.getCourseTitle(), efficiencyStatement.getCourseTitle());
+		Assert.assertEquals(re.getKey(), efficiencyStatement.getCourseRepoEntryKey());
 	}
 	
 	@Test

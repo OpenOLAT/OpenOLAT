@@ -93,7 +93,6 @@ import org.olat.modules.video.ui.event.MarkerResizedEvent;
 import org.olat.modules.video.ui.event.VideoEvent;
 import org.olat.modules.video.ui.question.VideoAssessmentItemController;
 import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
-import org.olat.modules.video.ui.segment.VideoSegmentController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -120,7 +119,6 @@ public class VideoDisplayController extends BasicController {
 	private final VelocityContainer mainVC;
 	private final VelocityContainer markerVC;
 	private final Panel markerPanel = new Panel("markerpanes");
-	private final Panel segmentsPanel = new Panel("segmentsPanel");
 	private final List<Panel> layerPanels;
 	
 	// User preferred resolution, stored in GUI prefs
@@ -136,7 +134,6 @@ public class VideoDisplayController extends BasicController {
 	private final VideoDisplayOptions displayOptions;
 
 	private List<Marker> markers = new ArrayList<>();
-	private VideoSegmentController videoSegmentController;
 
 	@Autowired
 	private VideoModule videoModule;
@@ -146,7 +143,7 @@ public class VideoDisplayController extends BasicController {
 	private LicenseService licenseService;
 	
 	public VideoDisplayController(UserRequest ureq, WindowControl wControl, RepositoryEntry videoEntry) {
-		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, false, true, true, true, videoEntry.getDescription(), false, false, false));
+		this(ureq, wControl, videoEntry, null, null, VideoDisplayOptions.valueOf(false, false, false, false, true, true, true, videoEntry.getDescription(), false, false, false, false));
 	}
 	
 	/**
@@ -184,8 +181,6 @@ public class VideoDisplayController extends BasicController {
 				getVideoElementId(), displayOptions.isAuthorMode());
 		listenTo(questionCtrl);
 
-		mainVC.put("segments", segmentsPanel);
-
 		RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(videoEntry);
 		VFSContainer mediaContainer = handler.getMediaContainer(videoEntry);
 		if(mediaContainer != null) {
@@ -194,7 +189,7 @@ public class VideoDisplayController extends BasicController {
 		initMediaElementJs();
 
 		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
-		mainVC.contextPut("isVimeo", videoMetadata != null && videoMetadata.getVideoFormat() != null ? videoMetadata.getVideoFormat() == VideoFormat.vimeo : false);
+		mainVC.contextPut("isVimeo", videoMetadata != null && videoMetadata.getVideoFormat() != null && videoMetadata.getVideoFormat() == VideoFormat.vimeo);
 		VFSLeaf video = videoManager.getMasterVideoFile(videoEntry.getOlatResource());
 		if(videoMetadata != null && videoMetadata.getHeight() != 600 && videoMetadata.getWidth() != 800) {
 			// we exclude 800x600 because it's the default (unkown) size and in this case we let the browser estimate the size
@@ -332,7 +327,6 @@ public class VideoDisplayController extends BasicController {
 
 	/**
 	 * Reload the video, e.g. when new captions or transcoded versions are available
-	 * @param ureq
 	 */
 	protected void reloadVideo(UserRequest ureq) {
 		videoMetadata = videoManager.getVideoMetadata(videoEntry.getOlatResource());
@@ -828,37 +822,6 @@ public class VideoDisplayController extends BasicController {
 		});
 	}
 
-	public void setSegments(UserRequest ureq) {
-		if (videoSegmentController == null) {
-			videoSegmentController = new VideoSegmentController(ureq, getWindowControl(), videoEntry,
-					VideoHelper.durationInSeconds(videoEntry, this) * 1000);
-			listenTo(videoSegmentController);
-		}
-
-		videoSegmentController.loadSegments();
-		segmentsPanel.setContent(videoSegmentController.getInitialComponent());
-	}
-
-	public void clearSegments() {
-		segmentsPanel.setContent(null);
-	}
-
-	public void setSegment(String segmentId, Integer videoViewWidth) {
-		if (videoSegmentController == null) {
-			return;
-		}
-
-		videoSegmentController.showSegment(segmentId, videoViewWidth);
-	}
-
-	public void hideSegment() {
-		if (videoSegmentController == null) {
-			return;
-		}
-
-		videoSegmentController.hideSegment();
-	}
-
 	/**
 	 * Update the users preferred resolution in the GUI prefs from the given video URL
 	 * @param ureq
@@ -980,6 +943,10 @@ public class VideoDisplayController extends BasicController {
 
 	public void clearMarkerLayer() {
 		markerPanel.setContent(null);
+	}
+
+	public boolean isMarkerLayerSet() {
+		return markerPanel.getContent() != null;
 	}
 
 	public void hideOtherLayers(Controller commentLayerController) {

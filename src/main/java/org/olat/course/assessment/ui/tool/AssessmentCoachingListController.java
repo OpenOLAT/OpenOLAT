@@ -95,6 +95,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessedIdentityController;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.AssessmentFormEvent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.grade.GradeScale;
@@ -461,8 +462,9 @@ public abstract class AssessmentCoachingListController extends FormBasicControll
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Identity", assessedIdentity.getKey());
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
+			AssessmentToolSecurityCallback secCallback = AssessmentToolSecurityCallback.nothing();
 			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel, courseEntry,
-					coachCourseEnv, assessedIdentity, true);
+					coachCourseEnv, assessedIdentity, true, secCallback);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true, true);

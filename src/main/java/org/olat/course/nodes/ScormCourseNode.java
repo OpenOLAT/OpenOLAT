@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,7 +52,12 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -69,15 +75,19 @@ import org.olat.course.nodes.scorm.ScormRunSegmentController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.reminder.AssessmentReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.scorm.ScormDirectoryHelper;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
+import org.olat.modules.scorm.assessment.ScormAssessmentManager.XMLFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryEntryRef;
@@ -101,7 +111,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final String CONFIG_RAW_CONTENT = "rawcontent";
 	private static final String CONFIG_HEIGHT = "height";	
-	private final static String CONFIG_HEIGHT_AUTO = "auto";
+	private static final String CONFIG_HEIGHT_AUTO = "auto";
 	
 	public ScormCourseNode() {
 		super(TYPE);
@@ -385,16 +395,55 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 
 		Translator trans = Util.createPackageTranslator(ScormExportManager.class, locale);
 		String results = ScormExportManager.getInstance().getResults(course.getCourseEnvironment(), this, trans);
-		try {
-			exportStream.putNextEntry(new ZipEntry(fileName));
-			IOUtils.write(results, exportStream, "UTF-8");
-			exportStream.closeEntry();
-		} catch (IOException e) {
-			log.error("", e);
-		}
+		addResultsToZip(fileName, results, exportStream);
 		return true;
 	}
 	
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		
+		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+
+		Translator trans = Util.createPackageTranslator(ScormExportManager.class, locale);
+		String results = ScormExportManager.getInstance().getResults(courseEnv, this, trans);
+		addResultsToZip(ZipUtil.concat(path, "SCORM_data.csv"), results, archiveStream);
+		
+		VFSContainer scosContainer = ScormDirectoryHelper.getScoDirectory(assessedIdentity.getName(), courseEnv, this);
+		if(scosContainer != null) {
+			List<VFSItem> contents = scosContainer.getItems(new XMLFilter());
+			for(VFSItem content:contents) {
+				ZipUtil.addToZip(content, path, archiveStream, new VFSSystemItemFilter(), false);
+			}
+		}
+	}
+	
+	private void addResultsToZip(String entryName, String results, ZipOutputStream zout) {
+		try {
+			zout.putNextEntry(new ZipEntry(entryName));
+			IOUtils.write(results, zout, StandardCharsets.UTF_8);
+			zout.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+		
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		
+		VFSContainer scosContainer = ScormDirectoryHelper.getScoDirectory(assessedIdentity.getName(), courseEnv, this);
+		if(scosContainer != null) {
+			VFSManager.deleteContainersAndLeaves(scosContainer, true, false);
+		}
+	}
+
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
