@@ -142,6 +142,9 @@
 	<filter-mapping>
 		<filter-name>RESTApiLoginFilter</filter-name>
 		<url-pattern>/restapi/*</url-pattern>
+		<dispatcher>INCLUDE</dispatcher>
+		<dispatcher>FORWARD</dispatcher>
+  		<dispatcher>REQUEST</dispatcher>
 	</filter-mapping>
 	
 	<!-- The mapping for the RSS servlet -->

@@ -35,7 +35,7 @@ $r.render("backLink")
 			return;
 		}
 
-		var availableWidth = videoEditor.width() + parseInt(videoEditor.css('margin-left'), 10)	+ parseInt(videoEditor.css('margin-right'), 10);
+		var availableWidth = Math.round(videoEditor.width()) + parseInt(videoEditor.css('margin-left'), 10)	+ parseInt(videoEditor.css('margin-right'), 10);
 		var videoViewWidth = Math.floor(availableWidth);
 		var videoViewHeight = Math.floor(videoViewWidth / aspectRatio);
 		video.width(videoViewWidth);
