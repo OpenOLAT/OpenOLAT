@@ -183,6 +183,13 @@ public class VideoModule extends AbstractSpringModule {
 		return styleList;
 	}
 
+	public static String getColorClassFromMarkerStyle(String markerStyle) {
+		if (markerStyle == null) {
+			return null;
+		}
+		return markerStyle.replace("o_video_marker_", "o_color_");
+	}
+
 	/**
 	 * The values represent the target height of the transcoded video, 1080 for
 	 * 1080p video size etc. This config can only be set in

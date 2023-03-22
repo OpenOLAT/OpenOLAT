@@ -1164,24 +1164,53 @@ $o-selection-yellow		: #FFD70033;
 $o-selection-light-green: #32CD3233;
 $o-selection-dark-green : #228B2233;
 
+/* Shared Colors */
+$o-color-light-gray  : #4f4f4f;
+$o-color-yellow      : #C69B02;
+$o-color-orange      : #C06613;
+$o-color-brown       : #855E3A;
+$o-color-red         : #D73939;
+$o-color-orchid      : #BE0C87;
+$o-color-purple      : #6F199D;
+$o-color-light-blue  : #2276D9;
+$o-color-cobalt-blue : #2422DB;
+$o-color-dark-blue   : #18188F;
+$o-color-light-green : #407303;
+$o-color-sea-green   : #00644F;
+
+$o-darker-color-light-gray  : darken($o-color-light-gray,  15);
+$o-darker-color-yellow      : darken($o-color-yellow,      15);
+$o-darker-color-orange      : darken($o-color-orange,      15);
+$o-darker-color-brown       : darken($o-color-brown,       15);
+$o-darker-color-red         : darken($o-color-red,         15);
+$o-darker-color-orchid      : darken($o-color-orchid,      15);
+$o-darker-color-purple      : darken($o-color-purple,      15);
+$o-darker-color-light-blue  : darken($o-color-light-blue,  15);
+$o-darker-color-cobalt-blue : darken($o-color-cobalt-blue, 15);
+$o-darker-color-dark-blue   : darken($o-color-dark-blue,   15);
+$o-darker-color-light-green : darken($o-color-light-green, 15);
+$o-darker-color-sea-green   : darken($o-color-sea-green,   15);
+
+$o-bright-text-and-border : #FCFCFC;
+
 /* Video Colors */
 $o-video-color             : #FCFCFC;
 
-$o-video-color-light-gray  : #4f4f4f;
-$o-video-color-yellow      : #C69B02;
-$o-video-color-orange      : #C06613;
-$o-video-color-brown       : #855E3A;
-$o-video-color-red         : #D73939;
-$o-video-color-orchid      : #BE0C87;
-$o-video-color-purple      : #6F199D;
-$o-video-color-light-blue  : #2276D9;
-$o-video-color-cobalt-blue : #2422DB;
-$o-video-color-dark-blue   : #18188F;
-$o-video-color-light-green : #407303;
-$o-video-color-sea-green   : #00644F;
+$o-video-color-light-gray  : $o-color-light-gray;
+$o-video-color-yellow      : $o-color-yellow;
+$o-video-color-orange      : $o-color-orange;
+$o-video-color-brown       : $o-color-brown;
+$o-video-color-red         : $o-color-red;
+$o-video-color-orchid      : $o-color-orchid;
+$o-video-color-purple      : $o-color-purple;
+$o-video-color-light-blue  : $o-color-light-blue;
+$o-video-color-cobalt-blue : $o-color-cobalt-blue;
+$o-video-color-dark-blue   : $o-color-dark-blue;
+$o-video-color-light-green : $o-color-light-green;
+$o-video-color-sea-green   : $o-color-sea-green;
 $o-video-color-practice    : #FFFFFF;
 
-$o-video-border-color             : #FCFCFC;
+$o-video-border-color             : $o-bright-text-and-border;
 $o-video-border-color-light-gray  : $o-video-border-color;
 $o-video-border-color-yellow      : $o-video-border-color;
 $o-video-border-color-orange      : $o-video-border-color;
