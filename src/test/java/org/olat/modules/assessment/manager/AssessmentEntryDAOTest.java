@@ -1141,10 +1141,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<AssessmentEntry> rootEntries = assessmentEntryDao.getRootEntriesWithStartOverSubEntries(start);
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(rootEntries)
 				.contains(ae1Root, ae2Root)
 				.doesNotContain(ae1SubOver1, ae1SubOver2, ae2SubOver1, ae3Root, ae3SubOver1, ae3SubOver2, ae4Root, ae4SubOver1, ae5Root, ae5SubOver1);
+		
+		// Check that the resource is load
+		Assert.assertNotNull(rootEntries.get(0).getRepositoryEntry().getOlatResource().getResourceableTypeName());
 	}
 	
 	@Test

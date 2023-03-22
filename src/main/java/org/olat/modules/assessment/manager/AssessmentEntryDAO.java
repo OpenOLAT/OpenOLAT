@@ -632,6 +632,7 @@ public class AssessmentEntryDAO {
 		sb.append("select ae");
 		sb.append("  from assessmententry ae");
 		sb.append("       inner join fetch ae.repositoryEntry re");
+		sb.append("       inner join fetch re.olatResource reresource");
 		sb.append("       inner join fetch ae.identity identity");
 		sb.append("       inner join fetch identity.user user");
 		sb.append(" where ae.entryRoot = true");
