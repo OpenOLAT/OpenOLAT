@@ -62,6 +62,7 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		editorCtrl.activate(ureq, entries, state);
+		getWindow().setTitle(getTranslator(), translate("window.title"));
 	}
 
 	@Override
