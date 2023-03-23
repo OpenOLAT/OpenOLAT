@@ -168,22 +168,30 @@ public class ProjProjectDashboardController extends BasicController implements A
 		usersPortraitCmp.setUsers(portraitUsers);
 		
 		//Widgets
-		fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate);
-		listenTo(fileWidgetCtrl);
-		mainVC.put("files", fileWidgetCtrl.getInitialComponent());
+		if (secCallback.canViewFiles()) {
+			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate);
+			listenTo(fileWidgetCtrl);
+			mainVC.put("files", fileWidgetCtrl.getInitialComponent());
+		}
 		
-		noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
-		listenTo(noteWidgetCtrl);
-		mainVC.put("notes", noteWidgetCtrl.getInitialComponent());
+		if (secCallback.canViewNotes()) {
+			noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
+			listenTo(noteWidgetCtrl);
+			mainVC.put("notes", noteWidgetCtrl.getInitialComponent());
+		}
 		
-		calendarWidgetCtrl = new ProjCalendarWidgetController(ureq, wControl, project, secCallback);
-		listenTo(calendarWidgetCtrl);
-		mainVC.put("calendar", calendarWidgetCtrl.getInitialComponent());
+		if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
+			calendarWidgetCtrl = new ProjCalendarWidgetController(ureq, wControl, project, secCallback);
+			listenTo(calendarWidgetCtrl);
+			mainVC.put("calendar", calendarWidgetCtrl.getInitialComponent());
+		}
 		
 		// Timeline
-		timelineCtrl = new ProjTimelineController(ureq, wControl, project, members, avatarMapperKey);
-		listenTo(timelineCtrl);
-		mainVC.put("timeline", timelineCtrl.getInitialComponent());
+		if (secCallback.canViewTimeline()) {
+			timelineCtrl = new ProjTimelineController(ureq, wControl, project, members, avatarMapperKey);
+			listenTo(timelineCtrl);
+			mainVC.put("timeline", timelineCtrl.getInitialComponent());
+		}
 	}
 	
 	public void reload(UserRequest ureq) {
@@ -211,9 +219,11 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void putProjectToVC() {
 		mainVC.contextPut("projectExternalRef", project.getExternalRef());
 		mainVC.contextPut("projectTitle", project.getTitle());
-		mainVC.contextPut("projectTeaser", project.getTeaser());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
 		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
+		if (secCallback.canViewProjectMetadata()) {
+			mainVC.contextPut("projectTeaser", project.getTeaser());
+		}
 	}
 	
 	private void updateCmdsUI() {
@@ -237,17 +247,23 @@ public class ProjProjectDashboardController extends BasicController implements A
 		if (ProjectBCFactory.TYPE_MEMBERS_MANAGEMENT.equalsIgnoreCase(typeName) && membersManagementLink.isVisible()) {
 			doOpenMembersManagement(ureq);
 		} else if (ProjectBCFactory.TYPE_FILES.equalsIgnoreCase(typeName)) {
-			doOpenFiles(ureq);
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			fileAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			if (secCallback.canViewFiles()) {
+				doOpenFiles(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				fileAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if (ProjectBCFactory.TYPE_NOTES.equalsIgnoreCase(typeName)) {
-			doOpenNotes(ureq);
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			noteAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			if (secCallback.canViewNotes()) {
+				doOpenNotes(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				noteAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if (ProjectBCFactory.TYPE_CALENDAR.equalsIgnoreCase(typeName)) {
-			doOpenCalendar(ureq);
-			List<ContextEntry> subEntries = entries.subList(1, entries.size());
-			calendarAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
+				doOpenCalendar(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				calendarAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		}
 	}
 

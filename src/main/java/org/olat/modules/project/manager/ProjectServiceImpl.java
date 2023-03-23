@@ -49,6 +49,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -320,6 +321,13 @@ public class ProjectServiceImpl implements ProjectService {
 		if (project == null) return List.of();
 		
 		return projectToOrganisationDao.loadOrganisations(project);
+	}
+	
+	@Override
+	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations) {
+		List<Long> projectOrganisationKeys = getOrganisations(project).stream().map(Organisation::getKey).toList();
+		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();
+		return !Collections.disjoint(projectOrganisationKeys, organisationKeys);
 	}
 
 	@Override

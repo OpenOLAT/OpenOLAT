@@ -44,12 +44,14 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	private static final Collection<ProjectRole> OWN_OBJECTS = of(ProjectRole.owner, ProjectRole.leader,
 			ProjectRole.projectOffice, ProjectRole.participant, ProjectRole.supplier);
 	private static final Collection<ProjectRole> OTHER_OBJECTS = of(ProjectRole.owner, ProjectRole.leader,
-			ProjectRole.projectOffice, ProjectRole.supplier);
+			ProjectRole.projectOffice, ProjectRole.participant, ProjectRole.supplier);
 	
 	private final boolean projectReadOnly;
 	private final Set<ProjectRole> roles;
+	private final boolean manager;
 
-	public RoleProjectSecurityCallback(ProjectStatus status, Set<ProjectRole> roles) {
+	public RoleProjectSecurityCallback(ProjectStatus status, Set<ProjectRole> roles, boolean manager) {
+		this.manager = manager;
 		this.projectReadOnly = ProjectStatus.deleted == status;
 		this.roles = roles;
 	}
@@ -71,7 +73,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canDeleteProject() {
-		return roles.contains(ProjectRole.owner);
+		return manager || roles.contains(ProjectRole.owner);
 	}
 
 	@Override
@@ -81,7 +83,17 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canEditMembers() {
-		return !projectReadOnly && hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
+		return !projectReadOnly && (manager || hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice)));
+	}
+	
+	@Override
+	public boolean canViewTimeline() {
+		return !roles.isEmpty();
+	}
+
+	@Override
+	public boolean canViewFiles() {
+		return !roles.isEmpty();
 	}
 	
 	@Override
@@ -110,6 +122,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 	
 	@Override
+	public boolean canViewNotes() {
+		return !roles.isEmpty();
+	}
+	
+	@Override
 	public boolean canCreateNotes() {
 		return !projectReadOnly && hasRole(OWN_OBJECTS);
 	}
@@ -131,6 +148,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != note.getArtefact().getStatus() 
 				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	}
+
+	@Override
+	public boolean canViewAppointments() {
+		return !roles.isEmpty();
 	}
 	
 	@Override
@@ -155,6 +177,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != appointment.getArtefact().getStatus() 
 				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	}
+
+	@Override
+	public boolean canViewMilestones() {
+		return !roles.isEmpty();
 	}
 	
 	@Override

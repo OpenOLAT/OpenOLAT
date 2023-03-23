@@ -491,7 +491,9 @@ public class ProjProjectListController extends FormBasicController implements Ac
 			ProjProject project = projects.get(0);
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(ProjProject.TYPE, project.getKey()), null);
 			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), roles);
+			boolean manager = projectService.isInOrganisation(project, ureq.getUserSession().getRoles()
+					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager));
+			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), roles, manager);
 			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback);
 			listenTo(projectCtrl);
 			String title = Formatter.truncate(project.getTitle(), 50);

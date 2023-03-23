@@ -30,6 +30,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.vfs.VFSContainer;
 
 /**
@@ -57,6 +58,8 @@ public interface ProjectService {
 	public void updateProjectOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations);
 
 	public List<Organisation> getOrganisations(ProjProjectRef project);
+	
+	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations);
 
 	public void updateMember(Identity doer, ProjProject project, Identity identity, Set<ProjectRole> roles);
 	

@@ -134,57 +134,67 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 
 	private void loadModel() {
+		List<KalendarRenderWrapper> calendarWrappers = new ArrayList<>(3);
+		
 		// Appointments
-		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
-		appointmentSearchParams.setProject(project);
-		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.MEMBERS);
-		List<ProjAppointment> appointmentReadWrite = new ArrayList<>();
-		List<ProjAppointment> appointmentReadOnly = new ArrayList<>();
-		for (ProjAppointmentInfo appointmentInfo : appointmentInfos) {
-			ProjAppointment appointment = appointmentInfo.getAppointment();
-			boolean participant = appointmentInfo.getMembers().contains(getIdentity());
-			if (secCallback.canEditAppointment(appointment, participant)) {
-				appointmentReadWrite.add(appointment);
-			} else {
-				appointmentReadOnly.add(appointment);
+		if (secCallback.canViewAppointments()) {
+			ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
+			appointmentSearchParams.setProject(project);
+			appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
+			List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.MEMBERS);
+			List<ProjAppointment> appointmentReadWrite = new ArrayList<>();
+			List<ProjAppointment> appointmentReadOnly = new ArrayList<>();
+			for (ProjAppointmentInfo appointmentInfo : appointmentInfos) {
+				ProjAppointment appointment = appointmentInfo.getAppointment();
+				boolean participant = appointmentInfo.getMembers().contains(getIdentity());
+				if (secCallback.canEditAppointment(appointment, participant)) {
+					appointmentReadWrite.add(appointment);
+				} else {
+					appointmentReadOnly.add(appointment);
+				}
 			}
+			
+			Kalendar appointmentReadWriteKalendar = projectService.getAppointmentsKalendar(appointmentReadWrite);
+			appointmentReadWriteKalendarId = appointmentReadWriteKalendar.getCalendarID();
+			KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
+					translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
+			appointmentReadWriteWrapper.setPrivateEventsVisible(true);
+			appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+			appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+			calendarWrappers.add(appointmentReadWriteWrapper);
+			
+			Kalendar appointmentReadOnlyKalendar = projectService.getAppointmentsKalendar(appointmentReadOnly);
+			appointmentReadOnlyKalendarId = appointmentReadOnlyKalendar.getCalendarID();
+			KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
+					translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
+			appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
+			appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+			appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+			calendarWrappers.add(appointmentReadOnlyWrapper);
 		}
 		
-		Kalendar appointmentReadWriteKalendar = projectService.getAppointmentsKalendar(appointmentReadWrite);
-		appointmentReadWriteKalendarId = appointmentReadWriteKalendar.getCalendarID();
-		KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
-				translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
-		appointmentReadWriteWrapper.setPrivateEventsVisible(true);
-		appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
-		appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-		
-		Kalendar appointmentReadOnlyKalendar = projectService.getAppointmentsKalendar(appointmentReadOnly);
-		appointmentReadOnlyKalendarId = appointmentReadOnlyKalendar.getCalendarID();
-		KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
-				translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
-		appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
-		appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
-		appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-		
 		// Milestones
-		ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
-		milestoneSearchParams.setProject(project);
-		milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+		if (secCallback.canViewMilestones()) {
+			ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
+			milestoneSearchParams.setProject(project);
+			milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+			List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+			
+			Kalendar milestoneKalendar = projectService.getMilestonesKalendar(milestones);
+			milestoneKalendarId = milestoneKalendar.getCalendarID();
+			KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
+					translate("milestone.calendar.name"), "project.milestones." + project.getKey());
+			milestoneWrapper.setPrivateEventsVisible(true);
+			milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
+			int milestonesAccess = secCallback.canEditMilestones()
+					? KalendarRenderWrapper.ACCESS_READ_WRITE
+							: KalendarRenderWrapper.ACCESS_READ_ONLY;
+			milestoneWrapper.setAccess(milestonesAccess);
+			calendarWrappers.add(milestoneWrapper);
+		}
 		
-		Kalendar milestoneKalendar = projectService.getMilestonesKalendar(milestones);
-		milestoneKalendarId = milestoneKalendar.getCalendarID();
-		KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
-				translate("milestone.calendar.name"), "project.milestones." + project.getKey());
-		milestoneWrapper.setPrivateEventsVisible(true);
-		milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
-		int milestonesAccess = secCallback.canEditMilestones()
-				? KalendarRenderWrapper.ACCESS_READ_WRITE
-						: KalendarRenderWrapper.ACCESS_READ_ONLY;
-		milestoneWrapper.setAccess(milestonesAccess);
 		
-		calendarEl.setCalendars(List.of(appointmentReadWriteWrapper, appointmentReadOnlyWrapper, milestoneWrapper));
+		calendarEl.setCalendars(calendarWrappers);
 	}
 	
 	@Override
@@ -193,34 +203,38 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			ContextEntry entry = entries.get(0);
 			String type = entry.getOLATResourceable().getResourceableTypeName();
 			if (ProjectBCFactory.TYPE_APPOINTMENT.equals(type)) {
-				Long key = entry.getOLATResourceable().getResourceableId();
-				KalendarRenderWrapper calendar = calendarEl.getCalendar(appointmentReadWriteKalendarId);
-				if (calendar != null) {
-					String calendarId = key.toString();
-					Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-					if (event.isPresent()) {
-						calendarEl.setFocusDate(event.get().getBegin());
-						return;
+				if (secCallback.canViewAppointments()) {
+					Long key = entry.getOLATResourceable().getResourceableId();
+					KalendarRenderWrapper calendar = calendarEl.getCalendar(appointmentReadWriteKalendarId);
+					if (calendar != null) {
+						String calendarId = key.toString();
+						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
+						if (event.isPresent()) {
+							calendarEl.setFocusDate(event.get().getBegin());
+							return;
+						}
 					}
-				}
-				calendar = calendarEl.getCalendar(appointmentReadOnlyKalendarId);
-				if (calendar != null) {
-					String calendarId = key.toString();
-					Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-					if (event.isPresent()) {
-						calendarEl.setFocusDate(event.get().getBegin());
-						return;
+					calendar = calendarEl.getCalendar(appointmentReadOnlyKalendarId);
+					if (calendar != null) {
+						String calendarId = key.toString();
+						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
+						if (event.isPresent()) {
+							calendarEl.setFocusDate(event.get().getBegin());
+							return;
+						}
 					}
 				}
 			} else if (ProjectBCFactory.TYPE_MILESTONE.equals(type)) {
-				Long key = entry.getOLATResourceable().getResourceableId();
-				KalendarRenderWrapper calendar = calendarEl.getCalendar(milestoneKalendarId);
-				if (calendar != null) {
-					String calendarId = key.toString();
-					Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-					if (event.isPresent()) {
-						calendarEl.setFocusDate(event.get().getBegin());
-						return;
+				if (secCallback.canViewMilestones()) {
+					Long key = entry.getOLATResourceable().getResourceableId();
+					KalendarRenderWrapper calendar = calendarEl.getCalendar(milestoneKalendarId);
+					if (calendar != null) {
+						String calendarId = key.toString();
+						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
+						if (event.isPresent()) {
+							calendarEl.setFocusDate(event.get().getBegin());
+							return;
+						}
 					}
 				}
 			}

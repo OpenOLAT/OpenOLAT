@@ -39,15 +39,21 @@ public interface ProjProjectSecurityCallback {
 	
 	boolean canViewMembers();
 	
-	boolean canEditMembers();
+	boolean canViewTimeline();
 	
 	boolean canCreateFiles();
+
+	boolean canEditMembers();
 	
+	boolean canViewFiles();
+
 	boolean canEditFiles();
 
 	boolean canEditFile(ProjFile file, Identity identity);
 
 	boolean canDeleteFile(ProjFile file, Identity identity);
+
+	boolean canViewNotes();
 
 	boolean canCreateNotes();
 	
@@ -57,6 +63,8 @@ public interface ProjProjectSecurityCallback {
 
 	boolean canDeleteNote(ProjNote note, boolean participant);
 
+	boolean canViewAppointments();
+
 	boolean canCreateAppointments();
 	
 	boolean canEditAppointments();
@@ -64,6 +72,8 @@ public interface ProjProjectSecurityCallback {
 	boolean canEditAppointment(ProjAppointment appointment, boolean participant);
 
 	boolean canDeleteAppointment(ProjAppointment appointment, boolean participant);
+
+	boolean canViewMilestones();
 
 	boolean canCreateMilestones();
 	
