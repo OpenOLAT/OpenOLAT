@@ -1591,7 +1591,6 @@ function o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, dirt
 		// Start event execution, start server to prevent concurrent executions of other events.
 		// This check will call o_beforeserver(). 
 		// o_afterserver() called when AJAX call terminates
-		console.log('Event vetoed');
 		return false;
 	}	
 	// Don't call o_beforeserver() here because already called in o2cl_noDirtyCheck()

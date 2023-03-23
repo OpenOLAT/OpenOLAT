@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.reset;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -29,6 +31,7 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentToolManager;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
@@ -100,10 +103,11 @@ public class ConfirmResetDataController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			long numOfParticipants;
+			RepositoryEntry courseEntry = dataContext.getRepositoryEntry();
+			SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, secCallback);
+			
 			if(dataContext.getResetParticipants() == ResetParticipants.all) {
 				if(secCallback != null) {
-					RepositoryEntry courseEntry = dataContext.getRepositoryEntry();
-					SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, null, null, secCallback);
 					numOfParticipants = assessmentToolManager.countAssessedIdentities(ureq.getIdentity(), params);
 				} else {
 					numOfParticipants = -1;
@@ -117,8 +121,13 @@ public class ConfirmResetDataController extends FormBasicController {
 				if(numOfParticipants > 1) {
 					message = translate("confirmation.message.course.participants.plural", Long.toString(numOfParticipants));
 				} else if(numOfParticipants == 1) {
-					String fullName = userManager.getUserDisplayName(dataContext.getSelectedParticipants().get(0));
-					message = translate("confirmation.message.course.participant.singular", fullName);
+					List<Identity> participants = assessmentToolManager.getAssessedIdentities(ureq.getIdentity(), params);
+					if(participants.size() == 1) {
+						String fullName = userManager.getUserDisplayName(participants.get(0));
+						message = translate("confirmation.message.course.participant.singular", fullName);
+					} else {// Normally not possible
+						message = translate("confirmation.message.course.participants.plural", Long.toString(numOfParticipants));
+					}
 				}
 			} else {
 				int numOfCourseElements = dataContext.getCourseNodes().size();

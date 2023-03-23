@@ -82,12 +82,13 @@ public class UserConstants {
 	public static final String STUDYSUBJECT = "studySubject";
 	/** USERNAME */
 	public static final String USERNAME  = "userName";
+	/** USERINTERESTS field identifier. */
+	public static final String USERINTERESTS = "userInterests";
 	/** USERNAME */
 	public static final String NICKNAME  = "nickName";
 	/** DEPARTMENT */
 	public static final String DEPARTMENT  = "department";
 
-	
 	/**
 	 * Preferences keys
 	 */
