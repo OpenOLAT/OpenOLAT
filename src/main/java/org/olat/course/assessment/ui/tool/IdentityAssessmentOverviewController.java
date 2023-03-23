@@ -76,6 +76,8 @@ import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
 import org.olat.course.assessment.ui.tool.component.IdentityAssessmentPassedCellRenderer;
 import org.olat.course.assessment.ui.tool.component.IdentityAssessmentStatusCellRenderer;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -131,6 +133,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
+	private Boolean learningPath;
 	private boolean hasStatus;
 	private boolean hasGrade;
 	private boolean hasPassedOverridable;
@@ -167,7 +170,8 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		this.nodesSelectable = nodesSelectable;
 		this.discardEmptyNodes = discardEmptyNodes;
 		this.allowTableFiltering = allowTableFiltering;
-		this.userCourseEnvironment = userCourseEnvironment;		
+		this.userCourseEnvironment = userCourseEnvironment;
+		this.learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(userCourseEnvironment).getType());
 		loadNodesFromCourse = true;
 		followUserResultsVisibility = false;
 		this.hasStatus = true;
@@ -223,11 +227,12 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	 * @param wControl
 	 * @param assessmentCourseNodes List of maps containing the node assessment data using the AssessmentManager keys
 	 */
-	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes) {
+	public IdentityAssessmentOverviewController(UserRequest ureq, WindowControl wControl, List<AssessmentNodeData> assessmentCourseNodes, Boolean learningPath) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		
+		this.learningPath = learningPath;
 		runStructure = null;
 		nodesSelectable = false;
 		discardEmptyNodes = true;
@@ -361,7 +366,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		if (hasPassedOverridable) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NodeCols.passedOverriden, new PassedOverridenCellRenderer()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new IdentityAssessmentPassedCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.passed, new IdentityAssessmentPassedCellRenderer(getLocale(), learningPath)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.numOfAssessmentDocs));
 		if (hasStatus) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NodeCols.status, new IdentityAssessmentStatusCellRenderer(getLocale())));
@@ -535,6 +540,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 		List<AssessmentNodeData> selectedRows = tableEl.getMultiSelectedIndex().stream()
 				.map(index -> tableModel.getObject(index.intValue()))
 				.filter(Objects::nonNull)
+				.filter(AssessmentNodeData::isUserVisibilityEditable)
 				.collect(Collectors.toList());
 		
 		userCourseEnvironment.getScoreAccounting().evaluateAll(true);

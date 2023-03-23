@@ -40,6 +40,7 @@ public class AssessmentConfigMock implements AssessmentConfig {
 	private Float cutValue;
 	private boolean passedOverridable;
 	private Boolean initialUserVisibility;
+	private boolean userVisibilityEditable;
 	private Mode completionMode;
 	private boolean attempts;
 	private boolean hasMaxAttempts;
@@ -152,6 +153,15 @@ public class AssessmentConfigMock implements AssessmentConfig {
 
 	public void setInitialUserVisibility(Boolean initialUserVisibility) {
 		this.initialUserVisibility = initialUserVisibility;
+	}
+
+	@Override
+	public boolean isUserVisibilityEditable() {
+		return userVisibilityEditable;
+	}
+
+	public void setUserVisibilityEditable(boolean userVisibilityEditable) {
+		this.userVisibilityEditable = userVisibilityEditable;
 	}
 
 	@Override

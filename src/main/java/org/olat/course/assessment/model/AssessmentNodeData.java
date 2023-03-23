@@ -97,6 +97,7 @@ public class AssessmentNodeData implements IndentedCourseNode {
 	private Date lastCoachModified;
 	
 	private boolean selectable;
+	private boolean userVisibilityEditable;
 	private boolean onyx = false;
 	
 	public AssessmentNodeData() {
@@ -337,6 +338,14 @@ public class AssessmentNodeData implements IndentedCourseNode {
 
 	public void setSelectable(boolean selectable) {
 		this.selectable = selectable;
+	}
+
+	public boolean isUserVisibilityEditable() {
+		return userVisibilityEditable;
+	}
+
+	public void setUserVisibilityEditable(boolean userVisibilityEditable) {
+		this.userVisibilityEditable = userVisibilityEditable;
 	}
 
 	public Map<String,Object> toMap() {

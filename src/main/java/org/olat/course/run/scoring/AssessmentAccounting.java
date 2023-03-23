@@ -36,6 +36,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.evaluation.ExceptionalObligationEvaluator;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
@@ -256,12 +257,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 			result.getPassedOverridable().setCurrent(rootPassed);
 		}
 		
-		// STCourseNode may have a calculated score.
-		if (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null)) {
+		// Always set the user visibility if it is not editable to correct present values
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(userCourseEnvironment), courseNode);
+		if (!assessmentConfig.isUserVisibilityEditable()
+				|| (result.getUserVisible() == null && (result.getScore() != null || result.getPassed() != null || result.getComment() != null))) {
 			boolean done = result.getAssessmentStatus() != null && AssessmentEntryStatus.done == result.getAssessmentStatus();
-			Boolean initialUserVisibility = courseAssessmentService
-					.getAssessmentConfig(new CourseEntryRef(userCourseEnvironment), courseNode)
-					.getInitialUserVisibility(done, false);
+			Boolean initialUserVisibility = assessmentConfig.getInitialUserVisibility(done, false);
 			result.setUserVisible(initialUserVisibility);
 		}
 		

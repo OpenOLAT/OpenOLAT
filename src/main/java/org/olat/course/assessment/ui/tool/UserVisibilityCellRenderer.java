@@ -45,8 +45,8 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
-		Boolean userVisibility = getUserVisibility(val);
-		if (showText) {
+		if (showText && isShowUserVisibility(val)) {
+			Boolean userVisibility = getUserVisibility(val);
 			return userVisibility != null && userVisibility.booleanValue()
 					? translator.translate("user.visibility.visible")
 					: translator.translate("user.visibility.hidden");
@@ -56,40 +56,52 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
-		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility == null) {
-			return "o_icon_results_hidden o_no_user_visibility";
-		} else if (userVisibility.booleanValue()) {
-			return "o_icon_results_visible";
+		if (isShowUserVisibility(val)) {
+			Boolean userVisibility = getUserVisibility(val);
+			if (userVisibility == null) {
+				return "o_icon_results_hidden o_no_user_visibility";
+			} else if (userVisibility.booleanValue()) {
+				return "o_icon_results_visible";
+			}
+			return "o_icon_results_hidden";
 		}
-		return "o_icon_results_hidden";
+		return null;
 	}
 
 	@Override
 	protected String getElementCssClass(Object val) {
-		Boolean userVisibility = getUserVisibility(val);
-		if (userVisibility == null) {
-			return "o_results_hidden o_no_user_visibility";
-		} else if (userVisibility.booleanValue()) {
-			return "o_results_visible";
+		if (isShowUserVisibility(val)) {
+			Boolean userVisibility = getUserVisibility(val);
+			if (userVisibility == null) {
+				return "o_results_hidden o_no_user_visibility";
+			} else if (userVisibility.booleanValue()) {
+				return "o_results_visible";
+			}
+			return "o_results_hidden";
 		}
-		return "o_results_hidden";
+		return null;
 	}
 	
 	@Override
 	protected String getTitle(Object val, Translator translator) {
-		Boolean userVisibility = getUserVisibility(val);
-		return userVisibility != null && userVisibility.booleanValue()
-				? translator.translate("user.visibility.visible.tooltip")
-				: translator.translate("user.visibility.hidden.tooltip");
+		if (isShowUserVisibility(val)) {
+			Boolean userVisibility = getUserVisibility(val);
+			return userVisibility != null && userVisibility.booleanValue()
+					? translator.translate("user.visibility.visible.tooltip")
+					: translator.translate("user.visibility.hidden.tooltip");
+		}
+		return null;
 	}
 
 	@Override
 	protected String getExportValue(Object val, Translator translator) {
-		Boolean userVisibility = getUserVisibility(val);
-		return userVisibility != null && userVisibility.booleanValue()
-				? translator.translate("yes")
-				: translator.translate("no");
+		if (isShowUserVisibility(val)) {
+			Boolean userVisibility = getUserVisibility(val);
+			return userVisibility != null && userVisibility.booleanValue()
+					? translator.translate("yes")
+					: translator.translate("no");
+		}
+		return null;
 	}
 	
 	protected Boolean getUserVisibility(Object val) {
@@ -97,5 +109,9 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 			return (Boolean) val;
 		}
 		return null;
+	}
+	
+	protected boolean isShowUserVisibility(@SuppressWarnings("unused") Object val) {
+		return true;
 	}
 }

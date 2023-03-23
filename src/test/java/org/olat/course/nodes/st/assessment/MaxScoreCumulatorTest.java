@@ -190,6 +190,11 @@ public class MaxScoreCumulatorTest {
 		public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
 			return Boolean.FALSE;
 		}
+		
+		@Override
+		public boolean isUserVisibilityEditable() {
+			return false;
+		}
 
 		@Override
 		public Mode getCompletionMode() {

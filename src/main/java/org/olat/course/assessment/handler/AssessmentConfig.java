@@ -100,11 +100,16 @@ public interface AssessmentConfig {
 	public boolean isPassedOverridable();
 	
 	/**
+	 * The user visibility is initialized when the course node gets assessment data
+	 * the first time (score, passed, comment).
+	 * 
 	 * @param done Is the assessment done?
 	 * @param coachCanNotEdit Can the coach edit the user visibility?
 	 * @return Returns the initial user visibility.
 	 */
 	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit);
+	
+	public boolean isUserVisibilityEditable();
 	
 	/**
 	 * @return if this course node can produces a completion variable for the learner

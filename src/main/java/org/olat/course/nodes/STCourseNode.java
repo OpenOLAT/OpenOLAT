@@ -76,9 +76,9 @@ import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.nodes.st.STReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -207,7 +207,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		} else {
 			// evaluate the score accounting for this node. this uses the score accountings local
 			// cache hash map to reduce unnecessary calculations
-			ScoreEvaluation se = userCourseEnv.getScoreAccounting().evalCourseNode(this);
+			AssessmentEvaluation se = userCourseEnv.getScoreAccounting().evalCourseNode(this);
 			cont = TitledWrapperHelper.getWrapper(ureq, wControl,
 					new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se, visibilityFilter),
 					userCourseEnv, this, ICON_CSS_CLASS);

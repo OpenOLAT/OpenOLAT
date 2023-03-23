@@ -65,6 +65,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatement;
@@ -75,6 +77,8 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -115,6 +119,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
+	private Boolean learningPath;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -137,7 +142,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private AssessmentService assessmentService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
-	
+
 	/**
 	 * The constructor shows the efficiency statement given as parameter for the current user
 	 * @param wControl
@@ -192,6 +197,13 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			certificate = certificatesManager.getLastCertificate(statementOwner, resourceKey);
 		} else {
 			certificate = preloadedCertificate;
+		}
+		
+		if (courseRepo != null) {
+			ICourse course = CourseFactory.loadCourse(courseRepo);
+			if (course != null) {
+				learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
+			}
 		}
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
@@ -458,7 +470,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		if(courseDetailsCtrl == null) {
 			List<Map<String,Object>> assessmentNodes = efficiencyStatement.getAssessmentNodes();
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
-			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList);
+			courseDetailsCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessmentNodeList, learningPath);
 			listenTo(courseDetailsCtrl);
 		}
 		mainVC.put("segmentCmp", courseDetailsCtrl.getInitialComponent());

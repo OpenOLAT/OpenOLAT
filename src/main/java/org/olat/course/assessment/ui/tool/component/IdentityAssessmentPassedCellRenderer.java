@@ -34,15 +34,18 @@ import org.olat.modules.assessment.ui.component.PassedCellRenderer;
  */
 public class IdentityAssessmentPassedCellRenderer extends PassedCellRenderer {
 
-	public IdentityAssessmentPassedCellRenderer(Locale locale) {
+	private final boolean learningPath;
+
+	public IdentityAssessmentPassedCellRenderer(Locale locale, Boolean learningPath) {
 		super(locale);
+		this.learningPath = learningPath != null && learningPath.booleanValue();
 	}
 
 	@Override
 	protected boolean isShowNull(Object cellValue) {
 		if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
-			if (STCourseNode.TYPE.equals(nodeData.getType()) && Mode.none == nodeData.getPassedMode()) {
+			if (isNotVisible(nodeData)) {
 				return false;
 			}
 		}
@@ -53,12 +56,17 @@ public class IdentityAssessmentPassedCellRenderer extends PassedCellRenderer {
 	protected Boolean getPassed(Object cellValue) {
 		if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
-			if (STCourseNode.TYPE.equals(nodeData.getType()) && Mode.none == nodeData.getPassedMode()) {
+			if (isNotVisible(nodeData)) {
 				return null;
 			}
 			return nodeData.getPassed();
 		}
 		return super.getPassed(cellValue);
+	}
+
+	private boolean isNotVisible(AssessmentNodeData nodeData) {
+		return STCourseNode.TYPE.equals(nodeData.getType()) 
+				&& (Mode.none == nodeData.getPassedMode() || (learningPath && nodeData.getRecursionLevel() > 0));
 	}
 	
 }

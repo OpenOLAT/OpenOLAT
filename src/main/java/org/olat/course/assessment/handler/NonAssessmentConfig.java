@@ -96,6 +96,11 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
 		return null;
 	}
+	
+	@Override
+	public boolean isUserVisibilityEditable() {
+		return false;
+	}
 
 	@Override
 	public Mode getCompletionMode() {

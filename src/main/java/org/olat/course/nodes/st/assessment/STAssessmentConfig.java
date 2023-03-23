@@ -147,6 +147,11 @@ public class STAssessmentConfig implements AssessmentConfig {
 	public Boolean getInitialUserVisibility(boolean done, boolean coachCanNotEdit) {
 		return Boolean.TRUE;
 	}
+	
+	@Override
+	public boolean isUserVisibilityEditable() {
+		return false;
+	}
 
 	@Override
 	public Mode getCompletionMode() {

@@ -1,48 +1,9 @@
 <div id="$r.getCId()" class="o_course_run">
-#if ($hasScore || $hasPassed)
-	<div class="panel panel-default o_personal">
-	  	<div class="panel-heading"><h4 class="panel-title">$r.translate("score.title")</h4></div>
-		<table class="table">
-		<tbody>
-			#if ($hasScore)
-			<tr class="o_score">
-				<th>$r.translate("calcedscore")</th>
-				<td>
-				#if($scoreScore)		
-					$scoreScore
-				#else
-					$r.translate("score.noinfo")
-				#end
-				</td> 
-			</tr> 
-			#end			
-
-			#if ($hasPassed)
-			<tr class="o_state #if ($hasPassedValue && $scorePassed) o_passed #elseif($hasPassedValue && !$scorePassed) o_failed #else o_unknown #end">
-				<th>$r.translate("calcedpassed")</th>
-				<td>
-				#if($hasPassedValue && $scorePassed)	
-					<i class="o_icon o_icon_passed"></i> 
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.yes")
-				#elseif($hasPassedValue && !$scorePassed)		
-					<i class="o_icon o_icon_failed"></i> 
-					$r.translateWithPackage("org.olat.course.nodes.ms", "passed.no")
-				#else
-					<i class="o_icon o_icon_passed_undefined"> </i> $r.translateWithPackage("org.olat.course.nodes.ms", "passed.nopassed")
-				#end
-				</td>
-			</tr>
-			#end
-		</tbody>
-		</table>
-		#if($r.available("certification"))
-			<div class="o_button_group">
-				$r.render("certification")
-			</div>
-		#end
-	</div>
- #end
 	
+#if ($r.available("assessment"))
+	$r.render("assessment")
+#end
+
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end

@@ -106,6 +106,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isUserVisibilityEditable() {
+		return true;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;
 	}

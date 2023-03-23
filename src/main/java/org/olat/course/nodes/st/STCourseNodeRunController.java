@@ -47,16 +47,16 @@ import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.OverviewFactory.CourseNodeFilter;
-import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -83,6 +83,7 @@ public class STCourseNodeRunController extends BasicController {
 	
 	private Link certificationLink;
 	private final VelocityContainer myContent;
+	private AssessmentParticipantViewController assessmentParticipantViewCtrl;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	
@@ -92,7 +93,7 @@ public class STCourseNodeRunController extends BasicController {
 	private NodeAccessService nodeAccessService;
 
 	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			STCourseNode stCourseNode, ScoreEvaluation se, VisibilityFilter visibilityFilter) {
+			STCourseNode stCourseNode, AssessmentEvaluation se, VisibilityFilter visibilityFilter) {
 		super(ureq, wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(stCourseNode));
 		this.userCourseEnv = userCourseEnv;
@@ -104,6 +105,20 @@ public class STCourseNodeRunController extends BasicController {
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode();
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if (se != null && (hasScore || hasPassed)) {
+			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se, assessmentConfig, null, null, null);
+			listenTo(assessmentParticipantViewCtrl);
+			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
+			
+			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
+			if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
+					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
+				VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
+				
+				certificationLink = LinkFactory.createButton("certification", customCont, this);
+				assessmentParticipantViewCtrl.setCustomFields(customCont);
+			}
+			
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -125,38 +140,6 @@ public class STCourseNodeRunController extends BasicController {
 			createChildViews(ureq, userCourseEnv, config, courseTreeNode, rows > 1);
 		}
 		
-		myContent.contextPut("menuTitle", stCourseNode.getShortTitle());
-		myContent.contextPut("displayTitle", stCourseNode.getLongTitle());
-		if(ureq.getUserSession().getRoles().isGuestOnly() || !userCourseEnv.isParticipant()) {
-			myContent.contextPut("hasScore", Boolean.FALSE);
-			myContent.contextPut("hasPassed", Boolean.FALSE);
-		} else {
-			myContent.contextPut("hasScore", Boolean.valueOf(hasScore));
-			myContent.contextPut("hasPassed", Boolean.valueOf(hasPassed));
-
-			if(hasScore|| hasPassed) {
-				CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
-				if((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
-						&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
-					certificationLink = LinkFactory.createButton("certification", myContent, this);
-				}
-			}
-		}
-
-		if (se != null) {
-			Float score = se.getScore();
-			Boolean passed = se.getPassed();
-			if (score != null) {
-				myContent.contextPut("scoreScore", AssessmentHelper.getRoundedScore(score));
-			}
-			if (passed != null) {
-				myContent.contextPut("scorePassed", passed);
-				myContent.contextPut("hasPassedValue", Boolean.TRUE);
-			} else {
-				myContent.contextPut("hasPassedValue", Boolean.FALSE);
-			}
-		}
-
 		putInitialPanel(myContent);
 	}
 

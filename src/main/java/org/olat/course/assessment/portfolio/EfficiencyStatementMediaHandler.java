@@ -153,7 +153,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 			List<Map<String,Object>> assessmentNodes = statement.getAssessmentNodes();
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);
 			SyntheticUserRequest ureq = new SyntheticUserRequest(media.getAuthor(), locale);
-			IdentityAssessmentOverviewController details = new IdentityAssessmentOverviewController(ureq, new WindowControlMocker(), assessmentNodeList);
+			IdentityAssessmentOverviewController details = new IdentityAssessmentOverviewController(ureq, new WindowControlMocker(), assessmentNodeList, null);
 			super.exportContent(media, details.getInitialComponent(), null, mediaArchiveDirectory, locale);
 		}
 	}

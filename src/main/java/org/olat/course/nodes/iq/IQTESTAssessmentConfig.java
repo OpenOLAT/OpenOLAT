@@ -257,6 +257,11 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isUserVisibilityEditable() {
+		return true;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return IQEditController.CONFIG_VALUE_QTI21.equals(courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI))
 				? Mode.setByNode

@@ -472,6 +472,7 @@ public class AssessmentHelper {
 					// (e.g. a st node with no defined rule
 					assessmentNodeData.setSelectable(false);
 				}
+				assessmentNodeData.setUserVisibilityEditable(assessmentConfig.isUserVisibilityEditable());
 				
 				if (!hasDisplayableUserValues && assessmentConfig.hasComment() && !discardComments) {
 				  // comments are invisible in the table but if configured the node must be in the list

@@ -90,6 +90,11 @@ public class LearningPathOnlyAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isUserVisibilityEditable() {
+		return false;
+	}
+	
+	@Override
 	public Mode getCompletionMode() {
 		return Mode.none;
 	}

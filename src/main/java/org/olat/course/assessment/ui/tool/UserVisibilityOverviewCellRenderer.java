@@ -35,11 +35,16 @@ public class UserVisibilityOverviewCellRenderer extends UserVisibilityCellRender
 
 	@Override
 	protected Boolean getUserVisibility(Object val) {
-		if (val instanceof AssessmentNodeData) {
-			AssessmentNodeData nodeData = (AssessmentNodeData)val;
-			return nodeData.getUserVisibility();
-		}
-		return null;
+		return val instanceof AssessmentNodeData nodeData
+				? nodeData.getUserVisibility()
+				: true;
+	}
+
+	@Override
+	protected boolean isShowUserVisibility(Object val) {
+		return val instanceof AssessmentNodeData nodeData
+				? nodeData.isUserVisibilityEditable()
+				: true;
 	}
 	
 }
