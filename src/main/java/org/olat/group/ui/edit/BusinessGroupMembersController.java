@@ -74,7 +74,7 @@ public class BusinessGroupMembersController extends BasicController {
 	
 	private Link invitationLink;
 	private final Link addMemberLink;
-	private final Dropdown addMemberDropdown; 
+	private Dropdown addMemberDropdown; 
 	private final VelocityContainer mainVC;
 
 	private final DisplayMemberSwitchForm dmsForm;
@@ -126,13 +126,6 @@ public class BusinessGroupMembersController extends BasicController {
 
 		mainVC.put("members", membersController.getInitialComponent());
 		
-		addMemberDropdown = new Dropdown("addmore", null, false, getTranslator());
-		addMemberDropdown.setOrientation(DropdownOrientation.right);
-		addMemberDropdown.setEmbbeded(true);
-		addMemberDropdown.setButton(true);
-		addMemberDropdown.setVisible(!managed && !readOnly);
-		mainVC.put("addmore", addMemberDropdown);
-		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setElementCssClass("o_sel_group_add_member");
@@ -140,6 +133,13 @@ public class BusinessGroupMembersController extends BasicController {
 		mainVC.put("addMembers", addMemberLink);
 		
 		if(isAllowedToInvite(ureq)) {
+			addMemberDropdown = new Dropdown("addmore", null, false, getTranslator());
+			addMemberDropdown.setOrientation(DropdownOrientation.right);
+			addMemberDropdown.setEmbbeded(true);
+			addMemberDropdown.setButton(true);
+			addMemberDropdown.setVisible(!managed && !readOnly);
+			mainVC.put("addmore", addMemberDropdown);
+			
 			invitationLink = LinkFactory.createLink("invitation.member", mainVC, this);
 			invitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_mail");
 			invitationLink.setElementCssClass("o_sel_course_invitations");

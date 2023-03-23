@@ -18,6 +18,8 @@
 			$r.render("addMembers")
 			$r.render("addmore")
 		</div>
+		#elseif($r.visible("addMembers"))
+			$r.render("addMembers")
 		#end
 	</div>
 	$r.render("members")
