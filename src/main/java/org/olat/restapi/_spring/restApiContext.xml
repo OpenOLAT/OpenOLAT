@@ -8,6 +8,7 @@
                         http://www.springframework.org/schema/context 
                         http://www.springframework.org/schema/context/spring-context.xsd
                         http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
 	<!-- CXF OpenApiFeature -->  
 	<bean id="openApiFeature" class="org.apache.cxf.jaxrs.openapi.OpenApiFeature">
 		<!-- customize some of the properties -->
