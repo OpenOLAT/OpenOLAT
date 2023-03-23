@@ -2,21 +2,27 @@
 	#if($r.available("topButtons"))
 		$r.render("topButtons")
 	#end
-	#foreach($row in $rows)
-		<div class="o_flex_first_grow">
-			<div>
-				#if($r.available($row.getDisplayNameLinkName()))
-					$r.render($row.getDisplayNameLinkName())
-				#else
-					<i class="o_icon o_icon-fw $row.iconCss"></i> $row.displayName
-				#end
+	#if($r.isEmpty($rows))
+		$r.translate("reference.empty")
+	#else
+		#foreach($row in $rows)
+			<div class="o_proj_reference">
+				<div o_class="o_proj_reference_name">
+					#if($r.available($row.getDisplayNameLinkName()))
+						$r.render($row.getDisplayNameLinkName())
+					#else
+						<i class="o_icon o_icon-fw $row.iconCss"></i> $row.displayName
+					#end
+				</div>
+				<div class="o_proj_reference_open">
+					$r.render($row.getOpenInNewWindowLinkName())
+				</div>
+				<div class="o_proj_reference_delete">
+					#if($r.available($row.getDeleteLinkName()))
+						$r.render($row.getDeleteLinkName())
+					#end
+				</div>
 			</div>
-			<div>
-				$r.render($row.getOpenInNewWindowLinkName())
-				#if($r.available($row.getDisplayNameLinkName()))
-					$r.render($row.getDisplayNameLinkName())
-				#end
-			</div>
-		</div>
+		#end
 	#end
 </div>

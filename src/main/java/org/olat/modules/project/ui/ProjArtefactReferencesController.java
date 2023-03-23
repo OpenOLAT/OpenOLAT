@@ -190,8 +190,9 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	}
 	
 	private void forgeOpenInNewWindowLink(ArtefactRow row) {
-		FormLink link = uifactory.addFormLink("open_" + row.getArtefactKey(), "open", "", null, flc, Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("open_" + row.getArtefactKey(), "open", "", null, flc, Link.BUTTON + Link.NONTRANSLATED);
 		link.setIconLeftCSS("o_icon o_icon-lg o_icon_content_popup");
+		link.setGhost(true);
 		link.setNewWindow(true, true, false);
 		link.setUserObject(row);
 		row.setOpenInNewWindowLink(link);
@@ -200,8 +201,9 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void forgeDeleteLink(ArtefactRow row) {
 		if (readOnly) return;
 		
-		FormLink link = uifactory.addFormLink("del_" + row.getArtefactKey(), "delete", "", null, flc, Link.NONTRANSLATED);
+		FormLink link = uifactory.addFormLink("del_" + row.getArtefactKey(), "delete", "", null, flc, Link.BUTTON + Link.NONTRANSLATED);
 		link.setIconLeftCSS("o_icon o_icon-lg o_icon_proj_project_status_deleted");
+		link.setGhost(true);
 		link.setUserObject(row);
 		row.setDeleteLink(link);
 	}

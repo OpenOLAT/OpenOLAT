@@ -116,16 +116,18 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			createDropdown.addElement(milestoneCreateLink);
 			
 		} else if (secCallback.canCreateAppointments()) {
-			appointmentCreateLink = uifactory.addFormLink("appointment.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+			appointmentCreateLink = uifactory.addFormLink("appointment.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
 			appointmentCreateLink.setElementCssClass("o_link_plain");
 			appointmentCreateLink.setTitle(translate("appointment.create"));
+			appointmentCreateLink.setGhost(true);
 			appointmentCreateLink.setVisible(secCallback.canCreateAppointments());
 		} else if (secCallback.canCreateMilestones()) {
-			milestoneCreateLink = uifactory.addFormLink("milestone.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+			milestoneCreateLink = uifactory.addFormLink("milestone.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 			milestoneCreateLink.setIconLeftCSS("o_icon o_icon_add");
 			milestoneCreateLink.setElementCssClass("o_link_plain");
 			milestoneCreateLink.setTitle(translate("milestone.create"));
+			milestoneCreateLink.setGhost(true);
 			milestoneCreateLink.setVisible(secCallback.canCreateMilestones());
 		}
 		

@@ -1,7 +1,13 @@
-<h2>$displayName</h2>
-$text
-#if($r.isNotEmpty("tags"))
-	<div class="o_block_top">
-		$tags
-	</div>
-#end
+<div class="o_proj_note_content">
+	<h2 class="o_proj_note_name">$displayName</h2>
+	#if($r.isNotEmpty($text))
+		<div class="o_proj_note_text">
+			$text
+		</div>
+	#end
+	#if($r.isNotEmpty($tags))
+		<div class="o_proj_note_tags">
+			$tags
+		</div>
+	#end
+</div>

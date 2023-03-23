@@ -71,10 +71,11 @@ public class ProjNoteWidgetController extends ProjNoteListController {
 		String url = ProjectBCFactory.getNotesUrl(project);
 		titleLink.setUrl(url);
 		
-		createLink = uifactory.addFormLink("note.create", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		createLink = uifactory.addFormLink("note.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		createLink.setElementCssClass("o_link_plain");
 		createLink.setTitle(translate("note.create"));
+		createLink.setGhost(true);
 		createLink.setVisible(secCallback.canCreateNotes());
 		
 		showAllLink = uifactory.addFormLink("note.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);

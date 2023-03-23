@@ -1,9 +1,11 @@
 $r.render("content")
 
 #if($r.available("reference"))
+<fieldset><legend>
 <h4 onclick="jQuery('#collapse_reference_${r.getCId()}').collapse('toggle')">
 	<i id="collapse_reference_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($referenceOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.reference.title")
 </h4>
+</fieldset></legend>
 <div id="collapse_reference_${r.getCId()}" class="collapse #if($referenceOpen) in #end">$r.render("reference")</div>
 <script>
 jQuery(function() {
@@ -20,9 +22,11 @@ jQuery(function() {
 #end
 
 #if($r.available("member"))
+<fieldset><legend>
 <h4 onclick="jQuery('#collapse_member_${r.getCId()}').collapse('toggle')">
 	<i id="collapse_member_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($memberOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.member.title")
 </h4>
+</fieldset></legend>
 <div id="collapse_member_${r.getCId()}" class="collapse #if($memberOpen) in #end">$r.render("member")</div>
 <script>
 jQuery(function() {
@@ -39,9 +43,11 @@ jQuery(function() {
 #end
 
 #if($r.available("metadata"))
+<fieldset><legend>
 <h4 onclick="jQuery('#collapse_metadata_${r.getCId()}').collapse('toggle')">
 	<i id="collapse_metadata_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($metadataOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("edit.metadata.title")
 </h4>
+</fieldset></legend>
 <div id="collapse_metadata_${r.getCId()}" class="collapse #if($metadataOpen) in #end">$r.render("metadata")</div>
 <script>
 jQuery(function() {

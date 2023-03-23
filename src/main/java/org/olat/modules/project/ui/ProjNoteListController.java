@@ -61,6 +61,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -154,6 +155,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			MapperKey avatarMapperKey) {
 		super(ureq, wControl, pageName);
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -286,9 +288,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (secCallback.canCreateNotes() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("note.list.empty.message", null, FlexiTableElement.TABLE_EMPTY_ICON, "note.create", "o_icon_add", false);
+			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note", "note.create", "o_icon_add", false);
 		} else {
-			tableEl.setEmptyTableSettings("note.list.empty.message", null, FlexiTableElement.TABLE_EMPTY_ICON);
+			tableEl.setEmptyTableSettings("note.list.empty.message", null, "o_icon_proj_note");
 		}
 	}
 
@@ -535,6 +537,12 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			if (StringHelper.containsNonWhitespace(key) && StringHelper.isLong(key)) {
 				doSelectNote(ureq, () -> Long.valueOf(key), false);
 			}
+		} else if (source == stackPanel) {
+			if (event instanceof PopEvent) {
+				if (stackPanel.getLastController() == this) {
+					reload(ureq);
+				}
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -571,7 +579,15 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		
 		super.formInnerEvent(ureq, source, event);
 	}
-
+	
+	@Override
+	protected void doDispose() {
+		super.doDispose();
+		if (stackPanel != null) {
+			stackPanel.removeListener(this);
+		}
+	}
+	
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//

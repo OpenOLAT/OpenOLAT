@@ -1,4 +1,5 @@
 .o_proj_projects {
+te
 	.o_proj_project_list {
 		.o_rendertype_custom {
 			.o_proj_project_rows {
@@ -90,7 +91,10 @@
 	.o_proj_widget {
 		.o_proj_widget_title {
 			.o_proj_widget_cmds {
-				font-size: $font-size-h3;
+				.btn-group,
+				.btn {
+					font-size: $font-size-h3;
+				}
 			}
 		}
 	}
@@ -210,6 +214,17 @@
 }
 .o_proj_references {
 	margin-bottom: 15px;
+	padding: 0px 5px;
+	.o_proj_reference {
+		display: flex;
+		align-items: center;
+		.o_proj_reference_open {
+			margin: 0px 10px;
+		}
+		.o_proj_reference_delete {
+			margin-left: auto;
+		}
+	}
 }
 .o_proj_metadata {
 	display: grid;
@@ -231,11 +246,26 @@
 
 .o_proj_note {
 	.o_proj_note_header {
+		align-items: flex-start;
 		.o_proj_note_header_infos {
 			display: flex;
 			flex-wrap: wrap;
 			align-items: center;
 			gap: 30px;
+		}
+	}
+	.panel-body {
+		padding: 30px;
+		.o_proj_note_content {
+			margin-bottom: 50px;
+		
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			
+			.o_proj_note_name {
+				margin: 0px;
+			}
 		}
 	}
 }

@@ -169,7 +169,7 @@ public class ProjectUIFactory {
 						userManager.getUserDisplayName(member.getKey()))));
 		membersSV.sort(SelectionValues.VALUE_ASC);
 		
-		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown("members", "members", formLayout,
+		MultipleSelectionElement membersEl = uifactory.addCheckboxesDropdown("involved", "involved", formLayout,
 				membersSV.keys(), membersSV.values());
 		currentMembers.forEach(member -> membersEl.select(member.getKey().toString(), true));
 		
