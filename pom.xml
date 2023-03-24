@@ -62,6 +62,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>17</targetJdk>
+		<archive>true</archive>
+		<attach.classes>false</attach.classes>
+		
+		<!-- Dependency versions -->
 		<org.springframework.version>6.0.7</org.springframework.version>
 		<org.hibernate.version>6.1.7.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
@@ -85,7 +89,7 @@
 		<activemq.artemis.version>2.28.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
 		<qtiworks.version>1.0.30</qtiworks.version>
-
+		
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
 	    <!-- properties to define the testing environment -->
@@ -1507,10 +1511,8 @@
 					<artifactId>maven-war-plugin</artifactId>
 					<version>3.3.2</version>
 					<configuration>
-						<!--
-						<attachClasses>true</attachClasses>
-						-->
-						<archiveClasses>true</archiveClasses>
+						<attachClasses>${attach.classes}</attachClasses>
+						<archiveClasses>${archive}</archiveClasses>
 						<directory>src/main/java</directory>
 						<archive>
 							<manifest>
