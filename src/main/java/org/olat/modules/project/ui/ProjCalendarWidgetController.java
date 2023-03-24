@@ -46,6 +46,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneSearchParams;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
@@ -145,9 +146,20 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
 		if (!milestones.isEmpty()) {
 			milestones.sort((m1, m2) -> m1.getDueDate().compareTo(m2.getDueDate()));
-			ProjMilestone milestone = milestones.get(0);
-			flc.contextPut("milestone", milestone);
-			flc.contextPut("milestoneStatusIconCss", ProjectUIFactory.getMilestoneStatusIconCss(milestone.getStatus()));
+			List<MilestoneRow> milestoneRows = new ArrayList<>(1);
+			Date now = DateUtils.addDays(new Date(), -1);
+			boolean inFutureFound = false;
+			for (ProjMilestone milestone : milestones) {
+				if (milestone.getStatus() == ProjMilestoneStatus.open && milestone.getDueDate().before(now)) {
+					milestoneRows.add(new MilestoneRow(ProjectUIFactory.getDisplayName(getTranslator(), milestone), milestone.getDueDate(), true));
+				} else if (!inFutureFound && milestone.getDueDate().after(now)) {
+					milestoneRows.add(new MilestoneRow(ProjectUIFactory.getDisplayName(getTranslator(), milestone), milestone.getDueDate(), false));
+					inFutureFound = true;
+				}
+			}
+			if (!milestoneRows.isEmpty()) {
+				flc.contextPut("milestoneRows", milestoneRows);
+			}
 		}
 		
 		
@@ -288,6 +300,32 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		
 		public String getSubject() {
 			return subject;
+		}
+		
+	}
+	
+	public static final class MilestoneRow {
+		
+		private final String displayName;
+		private final Date dueDate;
+		private final boolean warning;
+		
+		public MilestoneRow(String displayName, Date dueDate, boolean warning) {
+			this.displayName = displayName;
+			this.dueDate = dueDate;
+			this.warning = warning;
+		}
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public Date getDueDate() {
+			return dueDate;
+		}
+
+		public boolean isWarning() {
+			return warning;
 		}
 		
 	}

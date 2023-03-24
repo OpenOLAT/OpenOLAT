@@ -32,8 +32,10 @@ import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarEventLink;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,7 +184,7 @@ public class ProjCalendarHelper {
 	}
 	
 	public KalendarEvent toEvent(ProjMilestone milestone) {
-		KalendarEvent event = new KalendarEvent(milestone.getIdentifier(), null, milestone.getSubject(),
+		KalendarEvent event = new KalendarEvent(milestone.getIdentifier(), null, getSubjectIcon(milestone),
 				milestone.getDueDate(), milestone.getDueDate());
 		toEvent(milestone, event);
 		return event;
@@ -195,7 +197,15 @@ public class ProjCalendarHelper {
 		event.setColor(milestone.getColor());
 		event.setAllDayEvent(true);
 	}
-
+	
+	private String getSubjectIcon(ProjMilestone milestone) {
+		String subjectIcon = milestone.getStatus() == ProjMilestoneStatus.achieved? "\u25C6": "\u25C7";
+		if (StringHelper.containsNonWhitespace(milestone.getSubject())) {
+			subjectIcon = subjectIcon + " " + milestone.getSubject();
+		}
+		return subjectIcon;
+	}
+	
 	public void createOrUpdateEvent(ProjMilestone milestone, Collection<Identity> set) {
 		if (milestone.getDueDate() == null) {
 			return;
@@ -203,7 +213,7 @@ public class ProjCalendarHelper {
 		
 		set.forEach(identity -> createOrUpdateEvent(milestone, identity));
 	}
-
+	
 	private void createOrUpdateEvent(ProjMilestone milestone, Identity identity) {
 		Kalendar cal = calendarManager.getCalendar(CalendarManager.TYPE_USER, identity.getName());
 		for (KalendarEvent event : cal.getEvents()) {
@@ -227,12 +237,11 @@ public class ProjCalendarHelper {
 	
 	private void updateEvent(ProjMilestone milestone, KalendarEvent event) {
 		toEvent(milestone, event);
-		event.setSubject(milestone.getSubject());
+		event.setSubject(getSubjectIcon(milestone));
 		event.setBegin(milestone.getDueDate());
 		addKalendarEventLinks(milestone, event);
 		event.setManagedFlags(CAL_MANAGED_FLAGS);
 	}
-	
 	private void addKalendarEventLinks(ProjMilestone milestone, KalendarEvent event) {
 		ProjProject project = milestone.getArtefact().getProject();
 		String id = project.getKey().toString();

@@ -16,25 +16,26 @@
 		</div>
 	</div>
 	<div class="panel-body">
-		#if($milestone && $r.isNotEmpty($milestone.getSubject()))
+		#if($r.isNotEmpty($milestoneRows))
 			<div class="o_proj_milestones">
 				<div class="o_proj_full_row">
 					<h4>
 						$r.translate("calendar.widget.next.milestone")
 					</h4>
 				</div>
-				<div class="o_proj_card">
-					<div class="o_proj_card_meta o_flex_first_grow">
-						<div>
-							<i class="o_icon o_icon-lg $milestoneStatusIconCss"> </i> $milestone.getSubject()
-						</div>
-						<div>
-							$r.formatDate($milestone.getDueDate())
+				#foreach($row in $milestoneRows)
+					<div class="o_proj_card">
+						<div class="o_proj_card_meta o_flex_first_grow">
+							<div>
+								<i class="o_icon o_icon-lg #if($row.warning)o_icon_warn#end"> </i> $row.getDisplayName()
+							</div>
+							<div>
+								$r.formatDate($row.getDueDate())
+							</div>
 						</div>
 					</div>
-				</div>
+				#end
 			</div>
-			
 		#end
 		<div class="o_proj_appointments">
 			<div class="o_proj_full_row">
