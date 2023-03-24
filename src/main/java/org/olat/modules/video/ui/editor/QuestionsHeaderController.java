@@ -116,6 +116,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		previousQuestionButton = uifactory.addFormLink("previousQuestion", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousQuestionButton.setIconRightCSS("o_icon o_icon_back");
+		previousQuestionButton.setForceOwnDirtyFormWarning(true);
 
 		questionsDropdown = uifactory.addDropdownSingleselect("questions", "form.question.title",
 				formLayout, questionsKV.keys(), questionsKV.values());
@@ -125,6 +126,7 @@ public class QuestionsHeaderController extends FormBasicController {
 		nextQuestionButton = uifactory.addFormLink("nextQuestion", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextQuestionButton.setIconRightCSS("o_icon o_icon_start");
+		nextQuestionButton.setForceOwnDirtyFormWarning(true);
 
 		addQuestionButton = uifactory.addFormLink("addQuestion", "form.question.add",
 				"form.question.add", formLayout, Link.BUTTON);
