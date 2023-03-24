@@ -628,6 +628,14 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
+	public void deleteThumbnails(OLATResource videoResource) {
+		VFSContainer thumbnailsContainer = getThumbnailsContainer(videoResource);
+		if (thumbnailsContainer != null) {
+			thumbnailsContainer.delete();
+		}
+	}
+
+	@Override
 	public VFSContainer getCommentMediaContainer(OLATResource videoResource) {
 		VFSContainer baseContainer = FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
 		return VFSManager.resolveOrCreateContainerFromPath(baseContainer, DIRNAME_COMMENT_MEDIA);
