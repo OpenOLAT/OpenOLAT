@@ -120,6 +120,7 @@ public class CommentsHeaderController extends FormBasicController {
 		previousCommentButton = uifactory.addFormLink("previousComment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousCommentButton.setIconRightCSS("o_icon o_icon_back");
+		previousCommentButton.setForceOwnDirtyFormWarning(true);
 
 		commentsDropdown = uifactory.addDropdownSingleselect("comments", "", formLayout,
 				commentsKV.keys(), commentsKV.values());
@@ -129,6 +130,7 @@ public class CommentsHeaderController extends FormBasicController {
 		nextCommentButton = uifactory.addFormLink("nextComment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextCommentButton.setIconRightCSS("o_icon o_icon_start");
+		nextCommentButton.setForceOwnDirtyFormWarning(true);
 
 		addCommentButton = uifactory.addFormLink("addComment", "form.comment.add",
 				"form.comment.add", formLayout, Link.BUTTON);

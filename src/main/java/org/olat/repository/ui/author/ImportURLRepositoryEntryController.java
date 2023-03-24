@@ -166,10 +166,12 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			List<ResourceHandler> handlers = new ArrayList<>(3);
 			for(String type:repositoryHandlerFactory.getSupportedTypes()) {
 				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-				ResourceEvaluation eval = handler.acceptImport(url);
-				if(eval != null && eval.isValid()) {
-					validEvaluation = eval;
-					handlers.add(new ResourceHandler(eval, handler));
+				if (handler.supportImportUrl()) {
+					ResourceEvaluation eval = handler.acceptImport(url);
+					if(eval != null && eval.isValid()) {
+						validEvaluation = eval;
+						handlers.add(new ResourceHandler(eval, handler));
+					}
 				}
 			}
 			

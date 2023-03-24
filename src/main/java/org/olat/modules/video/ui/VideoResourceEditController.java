@@ -137,6 +137,7 @@ public class VideoResourceEditController extends FormBasicController {
 		meta = videoManager.getVideoMetadata(videoResource);
 		if (uploadFileEl.getUploadSize() > 0 && uploadFile.exists()) {
 			video.delete();
+			videoManager.deleteThumbnails(videoResource);
 			VFSLeaf uploadVideo = vfsContainer.createChildLeaf(VIDEO_RESOURCE);
 			VFSManager.copyContent(uploadFile, uploadVideo, getIdentity());
 			//update video dimensions

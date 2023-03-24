@@ -21,12 +21,14 @@ package org.olat.core.commons.services.pdf.manager;
 
 import java.io.OutputStream;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
-import org.olat.core.commons.services.pdf.ui.AthenaPdfSettingsController;
+import org.olat.core.commons.services.pdf.ui.GotenbergSettingsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -39,33 +41,30 @@ import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 6 févr. 2019<br>
+ * Initial date: 24 mars 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class AthenaPdfSPI extends AbstractPdfSPI {
-	
-	private static final Logger log = Tracing.createLoggerFor(AthenaPdfSPI.class);
-	
-	private static final String ATHENAPDF_URL = "athena.pdf.url";
-	private static final String ATHENAPDF_KEY = "athena.pdf.key";
+public class GotenbergSPI extends AbstractPdfSPI {
 
-	@Value("${athena.pdf.url:@null}")
+	private static final Logger log = Tracing.createLoggerFor(GotenbergSPI.class);
+	
+	private static final String GOTENBERG_URL = "gotenberg.url";
+
+	@Value("${gotenberg.url:@null}")
 	private String serviceUrl;
-	@Value("${athena.pdf.key:arachnys-weaver}")
-	private String serviceKey;
-
+	
 	@Autowired
-	public AthenaPdfSPI(CoordinatorManager coordinatorManager) {
+	public GotenbergSPI(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
 	}
 	
 	@Override
 	public String getId() {
-		return "AthenaPDF";
+		return "Gotenberg";
 	}
-
+	
 	@Override
 	public void init() {
 		updateProperties();
@@ -75,10 +74,9 @@ public class AthenaPdfSPI extends AbstractPdfSPI {
 	protected void initFromChangedProperties() {
 		updateProperties();
 	}
-	
+
 	private void updateProperties() {
-		serviceUrl = getStringPropertyValue(ATHENAPDF_URL, serviceUrl);
-		serviceKey = getStringPropertyValue(ATHENAPDF_KEY, serviceKey);
+		serviceUrl = getStringPropertyValue(GOTENBERG_URL, serviceUrl);
 	}
 
 	public String getServiceUrl() {
@@ -87,23 +85,14 @@ public class AthenaPdfSPI extends AbstractPdfSPI {
 
 	public void setServiceUrl(String serviceUrl) {
 		this.serviceUrl = serviceUrl;
-		setStringProperty(ATHENAPDF_URL, serviceUrl, true);
-	}
-
-	public String getServiceKey() {
-		return serviceKey;
-	}
-
-	public void setServiceKey(String serviceKey) {
-		this.serviceKey = serviceKey;
-		setStringProperty(ATHENAPDF_KEY, serviceKey, true);
+		setStringProperty(GOTENBERG_URL, serviceUrl, true);
 	}
 
 	@Override
 	public Controller createAdminController(UserRequest ureq, WindowControl wControl) {
-		return new AthenaPdfSettingsController(ureq, wControl);
+		return new GotenbergSettingsController(ureq, wControl);
 	}
-	
+
 	@Override
 	protected void render(String key, String rootFilename, OutputStream out) {
 		try(CloseableHttpClient httpclient = httpClientService.createHttpClient()) {
@@ -113,26 +102,22 @@ public class AthenaPdfSPI extends AbstractPdfSPI {
 			if(!serviceUrl.endsWith("/")) {
 				sb.append("/");
 			}
-			sb.append("convert?auth=")
-			  .append(serviceKey)
-			  .append("&url=")
-			  .append(Settings.getServerContextPathURI())
-			  .append("/pdfd/")
-			  .append(key)
-			  .append("/")
-			  .append(rootFilename);
-
-			String uri = sb.toString();
-			HttpGet get = new HttpGet(uri);
-	
+			sb.append("forms/chromium/convert/url");
+			HttpPost post = new HttpPost(sb.toString());
+			
 			RequestConfig config = RequestConfig.copy(RequestConfig.DEFAULT)
 				.setCookieSpec(CookieSpecs.DEFAULT)
 				.build();
-			get.setConfig(config);
-			get.addHeader("Accept", "application/pdf");
-			get.addHeader("Accept-Language", "en");
+			post.setConfig(config);
+			post.addHeader("Accept", "application/pdf");
+			post.addHeader("Accept-Language", "en");
 			
-			executeRequest(httpclient, get, out);
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addTextBody("url", Settings.getServerContextPathURI() + "/pdfd/" + key + "/" + rootFilename)
+					.build();
+			post.setEntity(entity);
+
+			executeRequest(httpclient, post, out);
 		} catch(Exception e) {
 			log.error("", e);
 		}

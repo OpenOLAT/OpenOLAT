@@ -98,6 +98,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		previousSegmentButton = uifactory.addFormLink("previousSegment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousSegmentButton.setIconRightCSS("o_icon o_icon_back");
+		previousSegmentButton.setForceOwnDirtyFormWarning(true);
 
 		segmentsDropdown = uifactory.addDropdownSingleselect("segments", "", formLayout,
 				segmentsKV.keys(), segmentsKV.values());
@@ -106,6 +107,7 @@ public class SegmentsHeaderController extends FormBasicController {
 		nextSegmentButton = uifactory.addFormLink("nextSegment", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextSegmentButton.setIconRightCSS("o_icon o_icon_start");
+		nextSegmentButton.setForceOwnDirtyFormWarning(true);
 
 		addSegmentButton = uifactory.addFormLink("addSegment", "form.segment.add",
 				"form.segment.add", formLayout, Link.BUTTON);

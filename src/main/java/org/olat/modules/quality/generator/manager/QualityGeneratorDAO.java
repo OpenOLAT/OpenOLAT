@@ -74,6 +74,7 @@ public class QualityGeneratorDAO {
 		sb.append("select generator");
 		sb.append("  from qualitygenerator as generator");
 		sb.append("       left join fetch generator.formEntry");
+		sb.append("       left join fetch formEntry.olatResource ores");
 		sb.append(" where generator.key = :generatorKey");
 		
 		List<QualityGenerator> generators = dbInstance.getCurrentEntityManager()

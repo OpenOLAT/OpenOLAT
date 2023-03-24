@@ -96,6 +96,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		previousAnnotationButton = uifactory.addFormLink("previousAnnotation", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		previousAnnotationButton.setIconRightCSS("o_icon o_icon_back");
+		previousAnnotationButton.setForceOwnDirtyFormWarning(true);
 
 		annotationsDropdown = uifactory.addDropdownSingleselect("annotations", "form.annotation.title",
 				formLayout, annotationsKV.keys(), annotationsKV.values());
@@ -104,6 +105,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		nextAnnotationButton = uifactory.addFormLink("nextAnnotation", "", "",
 				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
 		nextAnnotationButton.setIconRightCSS("o_icon o_icon_start");
+		nextAnnotationButton.setForceOwnDirtyFormWarning(true);
 
 		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.annotation.add",
 				"form.annotation.add", formLayout, Link.BUTTON);

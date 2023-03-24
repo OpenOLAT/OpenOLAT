@@ -303,7 +303,7 @@ public class ChaptersController extends FormBasicController {
 			VelocityContainer mainVC = createVelocityContainer("table_row_tools");
 			deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
 					Link.LINK);
-			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete");
+			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_delete_item");
 			mainVC.put("delete", deleteLink);
 
 			putInitialPanel(mainVC);
