@@ -291,7 +291,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
-						false, false, false,
+						true, false, false,
 						new NameValuePair("questionId", event.getId())))
 				.append("\">")
 				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
@@ -316,7 +316,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
-						false, false, false,
+						true, false, false,
 						new NameValuePair("commentId", event.getId())))
 				.append("\">")
 				.append("<svg style=\"\" viewBox=\"-64 -64 640 640\">" +
@@ -351,7 +351,7 @@ public class TimelineRenderer extends AbstractFlexiTableRenderer {
 				.append("jQuery('.o_video_selected').removeClass('o_video_selected'); ")
 				.append("jQuery(this).addClass('o_video_selected'); ")
 				.append(FormJSHelper.getXHRFnCallFor(form, ftC.getFormDispatchId(), 1,
-						false, false, false,
+						true, false, false,
 						new NameValuePair(idParameterName, event.getId())))
 				.append(";\"")
 				.append(">").append(event.getText()).append("</div>");
