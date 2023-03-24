@@ -63,6 +63,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
@@ -90,6 +91,12 @@ public class VideoHandler extends FileHandler {
 	@Autowired
 	private RepositoryService repositoryService;
 	
+	@Value("${video.import:true}")
+	private boolean supportImport;
+
+	@Value("${video.import.url:true}")
+	private boolean supportImportUrl;
+	
 	@Override
 	public boolean supportCreate(Identity identity, Roles roles) {
 		return false;
@@ -108,7 +115,7 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public boolean supportImport() {
-		return true;
+		return supportImport;
 	}
 
 	@Override
@@ -127,7 +134,7 @@ public class VideoHandler extends FileHandler {
 	
 	@Override
 	public boolean supportImportUrl() {
-		return true;
+		return supportImportUrl;
 	}
 
 	@Override

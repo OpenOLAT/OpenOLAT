@@ -300,9 +300,11 @@ public class ImportRepositoryEntryController extends FormBasicController {
 			List<ResourceHandler> handlers = new ArrayList<>(3);
 			for(String type:repositoryHandlerFactory.getSupportedTypes()) {
 				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
-				ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
-				if(eval != null && eval.isValid()) {
-					handlers.add(new ResourceHandler(handler, eval));
+				if (handler.supportImport()) {
+					ResourceEvaluation eval = handler.acceptImport(uploadedFile, uploadedFilename);
+					if(eval != null && eval.isValid()) {
+						handlers.add(new ResourceHandler(handler, eval));
+					}
 				}
 			}
 
