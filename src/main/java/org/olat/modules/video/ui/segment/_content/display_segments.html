@@ -43,9 +43,6 @@
 
 			const videoElement = jQuery('#o_so_vid${videoElementId}');
 			const player = videoElement.data('player');
-			if(player.currentSegmentSolution == undefined) {
-				player.currentSegmentSolution = findSolutionSegment(player.media.currentTime);
-			}
 
 			player.media.addEventListener('timeupdate', function() {
 				const segment = findSolutionSegment(player.media.currentTime);
