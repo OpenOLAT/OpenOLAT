@@ -161,7 +161,7 @@ public class CommandFactory {
 			MediaResourceMapper extMRM = new MediaResourceMapper(resource);
 			String mapperId = "cmd-download-" + ureq.getUuid() + "-" + CodeHelper.getForeverUniqueID();
 			MapperKey mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperId, extMRM, 3000);
-			String resUrl = Settings.getServerContextPathURI() + mapperKey.getUrl() + "/" + filename;
+			String resUrl = Settings.createServerURI() + mapperKey.getUrl() + "/" + filename;
 			return new DownloadURLCommand(filename, resUrl);
 		} catch (JSONException e) {
 			throw new AssertException("wrong data put into json object", e);
