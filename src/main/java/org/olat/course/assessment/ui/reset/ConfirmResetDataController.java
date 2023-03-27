@@ -121,7 +121,12 @@ public class ConfirmResetDataController extends FormBasicController {
 				if(numOfParticipants > 1) {
 					message = translate("confirmation.message.course.participants.plural", Long.toString(numOfParticipants));
 				} else if(numOfParticipants == 1) {
-					List<Identity> participants = assessmentToolManager.getAssessedIdentities(ureq.getIdentity(), params);
+					List<Identity> participants;
+					if(dataContext.getResetParticipants() == ResetParticipants.selected) {
+						participants = dataContext.getSelectedParticipants();
+					} else {
+						participants = assessmentToolManager.getAssessedIdentities(ureq.getIdentity(), params);
+					}
 					if(participants.size() == 1) {
 						String fullName = userManager.getUserDisplayName(participants.get(0));
 						message = translate("confirmation.message.course.participant.singular", fullName);
