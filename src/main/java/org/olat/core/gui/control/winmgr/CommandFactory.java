@@ -34,6 +34,7 @@ import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.CodeHelper;
 
@@ -153,6 +154,18 @@ public class CommandFactory {
 		Command c = new Command(5);
 		c.setSubJSON(root);
 		return c;
+	}
+	
+	public static Command createDownloadMediaResourceAsync(UserRequest ureq, String filename, MediaResource resource) {
+		try {
+			MediaResourceMapper extMRM = new MediaResourceMapper(resource);
+			String mapperId = "cmd-download-" + ureq.getUuid() + "-" + CodeHelper.getForeverUniqueID();
+			MapperKey mapperKey = CoreSpringFactory.getImpl(MapperService.class).register(ureq.getUserSession(), mapperId, extMRM, 3000);
+			String resUrl = Settings.getServerContextPathURI() + mapperKey.getUrl() + "/" + filename;
+			return new DownloadURLCommand(filename, resUrl);
+		} catch (JSONException e) {
+			throw new AssertException("wrong data put into json object", e);
+		}
 	}
 	
 	/**

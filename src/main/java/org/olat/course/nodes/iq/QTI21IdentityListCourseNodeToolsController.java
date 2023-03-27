@@ -38,6 +38,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.control.winmgr.ShowInfoCommand;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
@@ -333,6 +336,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	}
 	
 	private void doExportResults(UserRequest ureq) {
+		getWindowControl().getWindowBackOffice().sendCommandTo(new ShowInfoCommand("", translate("info.start.download.pdf")));
+		
 		final File fUnzippedDirRoot = FileResourceManager.getInstance().unzipFileResource(testEntry.getOlatResource());
 		final URI assessmentObjectUri = qtiService.createAssessmentTestUri(fUnzippedDirRoot);
 
@@ -349,7 +354,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		
 		String filename = generateDownloadName(lastSession);
 		MediaResource pdf = pdfService.convert(filename, getIdentity(), creator, getWindowControl());
-		ureq.getDispatchResult().setResultingMediaResource(pdf);
+		Command downloadCmd = CommandFactory.createDownloadMediaResourceAsync(ureq, filename + ".pdf", pdf);
+		getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
 	}
 	
 	private String generateDownloadName(AssessmentTestSession session) {

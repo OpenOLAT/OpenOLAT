@@ -680,6 +680,9 @@ function o_ainvoke(r) {
 					case 11:
 						focusArray.push({ formName: cda.formName, formItemId: cda.formItemId });
 						break;
+					case 12:
+						o_downloadUrl(cda["filename"], cda["rurl"]);
+						break;
 					default:
 						if (o_info.debug) o_log("?: unknown command "+co); 
 						break;
@@ -784,6 +787,24 @@ function setFormDirty(formId) {
 		// set dirty css class
 		if(mySubmit) mySubmit.className ="btn o_button_dirty";
 	}
+}
+
+function o_downloadUrl(filename, url) {
+	// Create a link and set the URL using `createObjectURL`
+	var link = document.createElement("a");
+	link.style.display = "none";
+	link.href = new URL(url);
+	link.download = filename;
+
+	// It needs to be added to the DOM so it can be clicked
+	document.body.appendChild(link);
+	link.click();
+
+	// To make this work on Firefox we need to wait
+	// a little while before removing it.
+	setTimeout(function () {
+		link.parentNode.removeChild(link);
+	}, 1000);
 }
 
 
