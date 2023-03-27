@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.doceditor.Access;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -45,9 +47,12 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	
 	private final VelocityContainer mainVC;
 	private final DocEditorController editorCtrl;
+	private final DocEditorConfigs configs;
 	
 	public DocEditorStandaloneController(UserRequest ureq, WindowControl wControl, Access access, DocEditorConfigs configs) {
 		super(ureq, wControl);
+		this.configs = configs;
+		
 		mainVC = createVelocityContainer("editor_standalone");
 		editorCtrl = new DocEditorController(ureq, wControl, access, configs);
 		listenTo(editorCtrl);
@@ -62,7 +67,12 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		editorCtrl.activate(ureq, entries, state);
-		getWindow().setTitle(getTranslator(), translate("window.title"));
+		String title = translate("window.title");
+		if (configs != null && configs.getVfsLeaf() != null && configs.getVfsLeaf().getMetaInfo() != null) {
+			VFSMetadata metaInfo = configs.getVfsLeaf().getMetaInfo();
+			title = title + " - " + (StringHelper.containsNonWhitespace(metaInfo.getTitle())? metaInfo.getTitle(): metaInfo.getFilename());
+		}
+		getWindow().setTitle(getTranslator(), title);
 	}
 
 	@Override
