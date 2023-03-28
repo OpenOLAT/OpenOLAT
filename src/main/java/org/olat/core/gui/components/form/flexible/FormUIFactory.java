@@ -40,6 +40,7 @@ import org.olat.core.gui.components.form.flexible.elements.AddRemoveElement;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompleter;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection.AutoCompletionSource;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -68,6 +69,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElement
 import org.olat.core.gui.components.form.flexible.impl.elements.AddRemoveElementImpl.AddRemoveMode;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompleterImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.AutoCompletionMultiSelectionImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.ColorPickerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.DownloadLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormCancel;
@@ -341,8 +343,17 @@ public class FormUIFactory {
 		formLayout.add(msfw);
 		return msfw;
 	}
-	
-	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name, 
+
+	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, FormItemContainer formLayout,
+													List<String> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors,
+				formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, colorPickerElement);
+		formLayout.add(colorPickerElement);
+		return colorPickerElement;
+	}
+
+	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name,
 			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
 		return addAutoCompletionMultiSelection(name, name, formLayout, wControl, source);
 	}
