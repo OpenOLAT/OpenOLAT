@@ -331,7 +331,7 @@ public class CommentsHeaderController extends FormBasicController {
 	private void doAddText(UserRequest ureq) {
 		VideoCommentImpl newComment = createBaseComment();
 		newComment.setType(VideoCommentType.text.name());
-		newComment.setText(translate("comment.add.new"));
+		newComment.setText("<p>" + translate("comment.add.new") + "</p>");
 
 		commentId = newComment.getId();
 		comments.getComments().add(newComment);

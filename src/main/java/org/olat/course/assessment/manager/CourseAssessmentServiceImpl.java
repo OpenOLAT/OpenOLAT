@@ -249,9 +249,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 
 	@Override
 	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by) {
-		if (!userCourseEnvironment.isParticipant() || userCourseEnvironment.isGuestOnly())
-			return;
-		
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		am.resetEvaluation(courseNode, userCourseEnvironment, doer, by);
 	}

@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.AutoCompletionMultiSelection;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -48,6 +50,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.UserSession;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -75,6 +78,9 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 	private RichTextElement richTextElement;
 	private FormLayoutContainer subLayout;
+
+	@Autowired
+	private ColorService colorService;
 	
 	public GuiDemoFlexiFormAdvancedController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -98,6 +104,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 
 		// Mandatory and read-only text fields		
 		addTextFields(formLayout);
+
+		addColorPickerElement(formLayout);
 
 		// More form items: Date, link and file selector
 		addDateLinkAndFileItems(formLayout, ureq.getUserSession());
@@ -159,6 +167,13 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		// Read-only text field
 		final TextElement readOnly = uifactory.addTextElement("readOnly", "guidemo.form.readonly", 256, "forever", form);
 		readOnly.setEnabled(false);
+	}
+
+	public void addColorPickerElement(FormItemContainer form) {
+		List<String> colors = colorService.getColors();
+		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("colorPickerElement",
+				"guidemo.form.color", form, colors);
+		colorPickerElement.setColor("orange");
 	}
 
 	/**
@@ -319,6 +334,8 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		} else if (source == file3) {
 			getWindowControl().setInfo("Crazy, you uploaded or deleted a file with the name \"" + file3.getUploadFileName());
 
+		} else if (source instanceof ColorPickerElement colorPickerElement) {
+			showInfo("advanced_form.your_selection_is", colorPickerElement.getColor().getText());
 		}
 	}
 }

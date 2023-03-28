@@ -419,6 +419,8 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 				ZipUtil.addToZip(content, path, archiveStream, new VFSSystemItemFilter(), false);
 			}
 		}
+		
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 	
 	private void addResultsToZip(String entryName, String results, ZipOutputStream zout) {

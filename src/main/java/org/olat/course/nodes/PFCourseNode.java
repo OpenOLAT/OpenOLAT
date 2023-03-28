@@ -358,6 +358,8 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		
 		VFSContainer returnContainer = pfManager.resolveReturnFolder(courseEnv, this, assessedIdentity);
 		ZipUtil.zip(returnContainer, archiveStream, path + "/" + PFManager.FILENAME_RETURNBOX, new VFSSystemItemFilter(), false);
+		
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 
 	@Override

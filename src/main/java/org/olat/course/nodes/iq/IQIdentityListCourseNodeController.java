@@ -51,6 +51,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -62,6 +65,10 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
@@ -71,6 +78,7 @@ import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.iq.QTI21IdentityListCourseNodeToolsController.AssessmentTestSessionDetailsComparator;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -81,7 +89,7 @@ import org.olat.ims.qti21.model.jpa.AssessmentTestSessionStatistics;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.ims.qti21.resultexport.QTI21ExportResultsController;
-import org.olat.ims.qti21.ui.QTI21ResetDataController;
+import org.olat.ims.qti21.ui.QTI21DeleteDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.assessment.CorrectionOverviewController;
 import org.olat.ims.qti21.ui.assessment.ValidationXmlSignatureController;
@@ -124,17 +132,19 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink validateButton;
 	private FormLink correctionButton;
 	private FormLink pullButton;
-	private FormLink resetButton;
+	private FormLink deleteDataButton;
+	private FormLink resetDataButton;
 	
 	private FormLink bulkExportResultsButton;
 	private FormLink bulkStatsButton;
 	private FormLink bulkCorrectionButton;
 
 	private Controller retrieveConfirmationCtr;
-	private QTI21ResetDataController resetDataCtrl;
+	private QTI21DeleteDataController deleteAllDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
 	private QTI21ExportResultsController exportResultsCtrl;
 	private ValidationXmlSignatureController validationCtrl;
+	private ConfirmResetDataController confirmResetDataCtrl;
 	private CorrectionOverviewController correctionIdentitiesCtrl;
 	private ConfirmReopenAssessmentEntriesController reopenForCorrectionCtrl;
 	
@@ -255,9 +265,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 			if(qti21) {
 				if(getAssessmentCallback().isAdmin()) {
-					resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
-					resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
+					deleteDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
+					deleteDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
 				}
+				if(this.getAssessmentCallback().canResetData()) {
+					resetDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
+					resetDataButton.setIconLeftCSS("o_icon o_icon_reset_data");
+				}
+				
 				String correctionMode = courseNode.getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
 				if(!IQEditController.CORRECTION_GRADING.equals(correctionMode) &&
 						(IQEditController.CORRECTION_MANUAL.equals(correctionMode) || qtiService.needManualCorrection(testEntry))) {
@@ -408,8 +423,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if(validationCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-		} else if(retrieveConfirmationCtr == source || resetDataCtrl == source || extraTimeCtrl == source) {
+		} else if(retrieveConfirmationCtr == source || deleteAllDataCtrl == source || extraTimeCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reload(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(confirmResetDataCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				doResetAllData(ureq, confirmResetDataCtrl.getDataContext());
 				reload(ureq);
 			}
 			cmc.deactivate();
@@ -470,8 +492,10 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			doStartBulkCorrection(ureq);
 		} else if(pullButton == source) {
 			doConfirmPull(ureq);
-		} else if(resetButton == source) {
-			doConfirmResetData(ureq);
+		} else if(deleteDataButton == source) {
+			doConfirmDeleteAllData(ureq);
+		} else if(resetDataButton == source) {
+			doConfirmResetAllData(ureq);
 		} else {
 			super.formInnerEvent(ureq, source, event);
 		}
@@ -483,12 +507,14 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		removeAsListenerAndDispose(retrieveConfirmationCtr);
 		removeAsListenerAndDispose(validationCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
-		removeAsListenerAndDispose(resetDataCtrl);
+		removeAsListenerAndDispose(deleteAllDataCtrl);
+		removeAsListenerAndDispose(confirmResetDataCtrl);
 		reopenForCorrectionCtrl = null;
 		retrieveConfirmationCtr = null;
 		validationCtrl = null;
 		extraTimeCtrl = null;
-		resetDataCtrl = null;
+		deleteAllDataCtrl = null;
+		confirmResetDataCtrl = null;
 		super.cleanUp();
 	}
 	
@@ -496,7 +522,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(isTestQTI21()) {
 			return new QTI21IdentityListCourseNodeToolsController(ureq, getWindowControl(), stackPanel,
-					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv);
+					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv, getAssessmentCallback());
 		}
 		return new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
 				courseNode, assessedIdentity, coachCourseEnv);
@@ -695,16 +721,49 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 	}
 	
-	private void doConfirmResetData(UserRequest ureq) {
+	private void doConfirmDeleteAllData(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
 		CourseEnvironment courseEnv = getCourseEnvironment();
-		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), courseEnv, asOptions, (IQTESTCourseNode)courseNode);
-		listenTo(resetDataCtrl);
+		deleteAllDataCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), courseEnv, asOptions, (IQTESTCourseNode)courseNode);
+		listenTo(deleteAllDataCtrl);
 		
-		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+		String title = translate("delete.test.data.title");
+		cmc = new CloseableModalController(getWindowControl(), null, deleteAllDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doConfirmResetAllData(UserRequest ureq) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetCourse(ResetCourse.elements);
+		dataContext.setCourseNodes(List.of(courseNode));
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(getIdentities(true).getIdentities());
+		
+		confirmResetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, getAssessmentCallback());
+		listenTo(confirmResetDataCtrl);
+		
+		String title = translate("reset.test.data.title", courseNode.getShortTitle());
+		cmc = new CloseableModalController(getWindowControl(), null, confirmResetDataCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doResetAllData(UserRequest ureq, ResetDataContext dataContext) {
+		List<Identity> identities;
+		if(dataContext.getResetParticipants() == ResetParticipants.all) {
+			identities = getIdentities(true).getIdentities();
+		} else {
+			identities = dataContext.getSelectedParticipants();
+		}
+		
+		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(getCourseEnvironment());
+		MediaResource archiveResource = resetCourseNodeHelper
+				.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
+		if(archiveResource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
 	private void doLaunchStatistics(UserRequest ureq) {
