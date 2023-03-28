@@ -691,4 +691,69 @@ legend.control-label {
 	}
 }
 
+/* Color Picker */
+
+.o_color_picker_icon {
+	position: absolute;
+	right: 5px;
+	top: 10px;
+}
+
+.o_color_picker_button {
+	width: 100%;
+	text-align: left;
+	position: relative;
+	padding-right: 15px;
+	padding-left: 32px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-height: 34px;
+}
+
+.o_color_picker_colored_area {
+	display: inline-block;
+	position: absolute;
+	top: 6px;
+	left: 6px;
+	width: 20px;
+	height: 20px;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 4px;
+	color: white;
+	font-size: 80%;
+	line-height: 18px;
+	padding-left: 3px;
+}
+
+ul.o_color_picker_dropdown {
+	width: 100%;
+	height: auto;
+	top: unset;
+	overflow-x: hidden;
+	margin-left: 0;
+	margin-right: 0;
+
+	li {
+		cursor: pointer;
+
+		a.o_color_picker_link {
+			width: 100%;
+			text-align: left;
+			position: relative;
+			padding: 6px 15px 6px 32px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		&.o_selected {
+			a, a:hover {
+				background-color: $brand-primary;
+				color: $o-bright-text-and-border;
+			}
+		}
+	}
+}
 
