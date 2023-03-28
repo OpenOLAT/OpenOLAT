@@ -770,6 +770,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setGrade(null);
 		assessmentEntry.setGradeSystemIdent(null);
 		assessmentEntry.setPerformanceClassIdent(null);
+		// comments
+		assessmentEntry.setCoachComment(null);
+		assessmentEntry.setComment(null);
 		
 		if(assessmentEntry instanceof AssessmentEntryImpl entryImpl) {
 			entryImpl.setRun(entryImpl.getRun() + 1);

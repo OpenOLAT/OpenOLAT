@@ -236,7 +236,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		dataContext.setResetParticipants(resetParticipants);
 		dataContext.setSelectedParticipants(identities);
-		resetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, null);
+		resetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, getAssessmentCallback());
 		listenTo(resetDataCtrl);
 		
 		String title = translate("reset.data.title");

@@ -26,6 +26,8 @@
 package org.olat.course.nodes;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -35,8 +37,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -47,10 +52,12 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -90,6 +97,7 @@ import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.manager.NodeRightServiceImpl;
 import org.olat.course.noderight.model.NodeRightImpl;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
@@ -116,6 +124,7 @@ import org.olat.repository.ui.author.copy.wizard.CopyCourseContext;
  */
 public abstract class GenericCourseNode extends GenericNode implements CourseNode {
 	
+	private static final Logger log = Tracing.createLoggerFor(GenericCourseNode.class);
 	private static final long serialVersionUID = -1093400247219150363L;
 	
 	private static final transient String DISPLAY_OPTS_SHORT_TITLE_DESCRIPTION_CONTENT = "shorttitle+desc+content"; // legacy
@@ -427,13 +436,44 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
 			String path, Identity doer, Role by) {
-		// default do nothing
+		AssessmentEvaluation assessmentEval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(this);
+		if(StringHelper.containsNonWhitespace(assessmentEval.getCoachComment())) {
+			addResultsToZip(ZipUtil.concat(path, "assessment_coach_comment.txt"), assessmentEval.getCoachComment(), archiveStream);
+		}
+		if(StringHelper.containsNonWhitespace(assessmentEval.getComment())) {
+			addResultsToZip(ZipUtil.concat(path, "assessment_comment.txt"), assessmentEval.getComment(), archiveStream);
+		}
+
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		List<File> documents = courseAssessmentService.getIndividualAssessmentDocuments(this, assessedUserCourseEnv);
+		if(documents != null && !documents.isEmpty()) {
+			for(File document:documents) {
+				ZipUtil.addFileToZip(ZipUtil.concat(path, document.getName()), document, archiveStream);
+			}
+		}
 	}
 
+	private void addResultsToZip(String entryName, String results, ZipOutputStream zout) {
+		try {
+			zout.putNextEntry(new ZipEntry(entryName));
+			IOUtils.write(results, zout, StandardCharsets.UTF_8);
+			zout.closeEntry();
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
 	@Override
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		courseAssessmentService.resetEvaluation(this, assessedUserCourseEnv, identity, by);
+		
+		List<File> documents = courseAssessmentService.getIndividualAssessmentDocuments(this, assessedUserCourseEnv);
+		if(documents != null && !documents.isEmpty()) {
+			for(File document:documents) {
+				courseAssessmentService.removeIndividualAssessmentDocument(this, document, assessedUserCourseEnv, identity);
+			}
+		}
 	}
 
 	/**

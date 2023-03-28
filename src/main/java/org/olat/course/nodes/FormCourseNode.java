@@ -323,6 +323,8 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		} catch (IOException e) {
 			log.error("", e);
 		}
+		
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 
 	@Override
