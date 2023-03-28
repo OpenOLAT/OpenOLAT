@@ -47,11 +47,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -63,7 +69,6 @@ import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.AssessmentTestSessionComparator;
 import org.olat.ims.qti21.ui.ConfirmReopenAssessmentEntryController;
-import org.olat.ims.qti21.ui.QTI21ResetDataController;
 import org.olat.ims.qti21.ui.QTI21RetrieveTestsController;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.assessment.CorrectionIdentityAssessmentItemListController;
@@ -76,7 +81,9 @@ import org.olat.instantMessaging.model.RosterChannelInfos.RosterStatus;
 import org.olat.instantMessaging.ui.ChatViewConfig;
 import org.olat.instantMessaging.ui.RosterFormDisplay;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.CompleteAssessmentTestSessionEvent;
 import org.olat.modules.bigbluebutton.BigBlueButtonModule;
 import org.olat.modules.dcompensation.DisadvantageCompensation;
@@ -105,7 +112,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private Link pullTestLink;
 	private Link reopenLink;
 	private Link chatLink;
-	private Link deleteDataLink;
+	private Link resetDataLink;
 	private Link exportPdfResultsLink;
 	private Link compensationExtraTimeLink;
 	private Link removeCompensationExtraTimeLink;
@@ -113,8 +120,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private CloseableModalController cmc;
 	private ConfirmReopenController reopenCtrl;
-	private QTI21ResetDataController resetDataCtrl;
 	private ConfirmExtraTimeController extraTimeCtrl;
+	private ConfirmResetDataController confirmResetDataCtrl;
 	private QTI21RetrieveTestsController retrieveConfirmationCtr;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
 	private ConfirmReopenAssessmentEntryController reopenForCorrectionCtrl;
@@ -127,6 +134,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	
 	private final boolean manualCorrections;
 	private AssessmentTestSession lastSession;
+	private final AssessmentToolSecurityCallback secCallback;
 	
 	@Autowired
 	private PdfModule pdfModule;
@@ -146,12 +154,14 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 	private DisadvantageCompensationService disadvantageCompensationService;
 	
 	public QTI21IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			IQTESTCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+			IQTESTCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv,
+			AssessmentToolSecurityCallback secCallback) {
 		super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
 
 		setTranslator(Util.createPackageTranslator(AssessmentTestDisplayController.class, getLocale(), getTranslator()));
 		
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
 		this.testCourseNode = courseNode;
 		testEntry = courseNode.getReferencedRepositoryEntry();
 		
@@ -236,8 +246,8 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		super.initResetAttempts();
 		if(lastSession != null) {
 			addSeparator();
-			//delete data
-			deleteDataLink = addLink("reset.test.data.title", "tool.delete.data", "o_icon o_icon-fw o_icon_delete_item");
+			//reset data
+			resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
 		}
 	}
 
@@ -249,9 +259,9 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		} else if(pullTestLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmPullSession(ureq, lastSession);
-		} else if(deleteDataLink == source) {
+		} else if(resetDataLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
-			doConfirmDeleteData(ureq);
+			doConfirmResetData(ureq);
 		} else if(extraTimeLink == source) {
 			fireEvent(ureq, Event.CLOSE_EVENT);
 			doConfirmExtraTime(ureq);
@@ -290,11 +300,20 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				cleanUp();
 				fireEvent(ureq, event);
 			}
-		} else if(resetDataCtrl == source || extraTimeCtrl == source || reopenCtrl == source
-				|| compensationExtraTimeCtrl == source || removeCompensationExtraTimeCtrl == source) {
+		} else if(extraTimeCtrl == source || reopenCtrl == source || compensationExtraTimeCtrl == source
+				|| removeCompensationExtraTimeCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
 			fireAlteredEvent(ureq, event);
+		} else if(confirmResetDataCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doResetData(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				fireAlteredEvent(ureq, event);
+			}
 		} else if(reopenForCorrectionCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
@@ -322,16 +341,16 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		removeAsListenerAndDispose(removeCompensationExtraTimeCtrl);
 		removeAsListenerAndDispose(compensationExtraTimeCtrl);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);
+		removeAsListenerAndDispose(confirmResetDataCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
 		removeAsListenerAndDispose(extraTimeCtrl);
-		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(cmc);
 		removeCompensationExtraTimeCtrl = null;
 		compensationExtraTimeCtrl = null;
 		reopenForCorrectionCtrl = null;
+		confirmResetDataCtrl = null;
 		correctionCtrl = null;
 		extraTimeCtrl = null;
-		resetDataCtrl = null;
 		cmc = null;
 	}
 	
@@ -442,14 +461,31 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 		cmc.activate();
 	}
 	
-	private void doConfirmDeleteData(UserRequest ureq) {
-		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), courseEntry, (IQTESTCourseNode)courseNode, assessedIdentity);
-		listenTo(resetDataCtrl);
-
-		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+	private void doConfirmResetData(UserRequest ureq) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetCourse(ResetCourse.elements);
+		dataContext.setCourseNodes(List.of(courseNode));
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(List.of(assessedIdentity));
+		
+		confirmResetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, secCallback);
+		listenTo(confirmResetDataCtrl);
+		
+		String title = translate("reset.test.data.title", courseNode.getShortTitle());
+		cmc = new CloseableModalController(getWindowControl(), null, confirmResetDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doResetData(UserRequest ureq) {
+		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(courseEnv);
+		MediaResource archiveResource = resetCourseNodeHelper
+				.resetCourseNodes(List.of(assessedIdentity), List.of(courseNode), false, getIdentity(), Role.coach);
+		if(archiveResource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
 	private void doConfirmExtraTime(UserRequest ureq) {

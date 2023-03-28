@@ -47,6 +47,7 @@ import org.olat.repository.RepositoryService;
 public class FakeParticipantStopController extends BasicController {
 	
 	public static final Event STOP_EVENT = new Event("stop");
+	public static final Event RESET_EVENT = new Event("reset");
 
 	private Link stopButton;
 	private Link resetDataButton;
@@ -82,6 +83,7 @@ public class FakeParticipantStopController extends BasicController {
 			fireEvent(ureq, STOP_EVENT);
 		} else if(source == resetDataButton) {
 			doResetData();
+			fireEvent(ureq, RESET_EVENT);
 		}
 	}
 

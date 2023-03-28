@@ -53,7 +53,7 @@ public class QTI21AssessedIdentityListController extends AssessedIdentityListCon
 	private FormLink resetButton;
 	
 	private CloseableModalController cmc;
-	private QTI21ResetDataController resetDataCtrl;
+	private QTI21DeleteDataController resetDataCtrl;
 	private QTI21RetrieveTestsController pullSessionCtrl;
 	
 	@Autowired
@@ -118,7 +118,7 @@ public class QTI21AssessedIdentityListController extends AssessedIdentityListCon
 		if(guardModalController(resetDataCtrl)) return;
 	
 		AssessmentToolOptions asOptions = getOptions();
-		resetDataCtrl = new QTI21ResetDataController(ureq, getWindowControl(), this.getRepositoryEntry(), asOptions);
+		resetDataCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), this.getRepositoryEntry(), asOptions);
 		listenTo(resetDataCtrl);
 		
 		String title = translate("reset.test.data.title");

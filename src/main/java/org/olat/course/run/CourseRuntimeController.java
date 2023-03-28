@@ -1431,6 +1431,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else if (source == fakeParticipantStopCtrl) {
 			if (event == FakeParticipantStopController.STOP_EVENT) {
 				doSwitchRole(ureq, reSecurity.getPreviousRole());
+			} else if (event == FakeParticipantStopController.RESET_EVENT) {
+				doReloadCurrentCourseNode(ureq);
 			}
 		}
 		

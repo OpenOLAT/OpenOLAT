@@ -155,7 +155,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
-	private QTI21ResetDataController resetToolCtrl;
+	private QTI21DeleteDataController resetToolCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
@@ -588,10 +588,10 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		asOptions.setIdentities(Collections.singletonList(assessedIdentity));
 		
 		if(courseNode != null) {
-			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(),
+			resetToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(),
 					assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
 		} else {
-			resetToolCtrl = new QTI21ResetDataController(ureq, getWindowControl(), entry, asOptions);
+			resetToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), entry, asOptions);
 		}
 		listenTo(resetToolCtrl);
 

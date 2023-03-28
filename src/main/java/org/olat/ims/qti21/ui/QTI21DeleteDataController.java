@@ -75,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QTI21ResetDataController extends FormBasicController {
+public class QTI21DeleteDataController extends FormBasicController {
 
 	private final String[] onKeys = new String[]{ "on" };
 
@@ -99,7 +99,7 @@ public class QTI21ResetDataController extends FormBasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 
-	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, 
+	public QTI21DeleteDataController(UserRequest ureq, WindowControl wControl, 
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;
@@ -120,7 +120,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+	public QTI21DeleteDataController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
 			IQTESTCourseNode courseNode, Identity assessedIdentity) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;
@@ -132,7 +132,7 @@ public class QTI21ResetDataController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, 
+	public QTI21DeleteDataController(UserRequest ureq, WindowControl wControl, 
 			RepositoryEntry assessedEntry, AssessmentToolOptions asOptions) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.assessedEntry = assessedEntry;

@@ -239,7 +239,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			historyOfStatementsDropdown.setOrientation(DropdownOrientation.right);
 			mainVC.put(historyOfStatementsDropdown.getComponentName(), historyOfStatementsDropdown);
 			
-			int counter = 0;
+			int counter = statements.size();
 			Formatter formatter = Formatter.getInstance(getLocale());
 			for(UserEfficiencyStatement statement:statements) {
 				
@@ -247,9 +247,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				if(statement.isLastStatement()) {
 					label = translate("current.version");
 				} else {
-					label = translate("statement.version", formatter.formatDate(statement.getCreationDate()), formatter.formatDate(statement.getLastModified()));
+					label = translate("statement.version",
+							formatter.formatDate(statement.getCreationDate()),
+							formatter.formatDate(statement.getLastModified()),
+							Integer.toString(counter));
 				}
-				Link statementLink = LinkFactory.createCustomLink("statement_" + (++counter), "statement", label, Link.LINK | Link.NONTRANSLATED, mainVC, this);
+				Link statementLink = LinkFactory.createCustomLink("statement_" + (--counter), "statement", label, Link.LINK | Link.NONTRANSLATED, mainVC, this);
 				statementLink.setUserObject(statement.getKey());
 				historyOfStatementsDropdown.addComponent(statementLink);
 			}
