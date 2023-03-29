@@ -153,7 +153,7 @@ public class ResetCourseDataHelper {
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		UserEfficiencyStatementImpl statement = efficiencyStatementMgr.getUserEfficiencyStatementFull(courseEntry, assessedIdentity);
-		Certificate currentCertificate = certificatesManager.getLastCertificate(assessedIdentity, courseEntry.getOlatResource().getKey());
+		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, courseEntry.getOlatResource().getKey());
 
 		// 1) First the archive
 		String vfsName = generateFilename(assessedIdentity);
@@ -180,8 +180,8 @@ public class ResetCourseDataHelper {
 			// Efficiency statement as invalid
 			statement.setLastStatement(false);
 			statement.setArchivePath(archiveZip.getRelPath());
-			if(currentCertificate != null) {
-				statement.setArchiveCertificateKey(currentCertificate.getKey());
+			if(lastCertificate != null) {
+				statement.setArchiveCertificateKey(lastCertificate.getKey());
 			}
 			efficiencyStatementMgr.updateUserEfficiencyStatement(statement);
 			// Make sure there is no last statement to generate a new one
@@ -213,6 +213,10 @@ public class ResetCourseDataHelper {
 				AssessmentNodesLastModified lastModifications = new AssessmentNodesLastModified();
 				List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.getAssessmentNodeDataList(userCourseEnv, lastModifications, true, true, true);
 				efficiencyStatementMgr.updateUserEfficiencyStatement(assessedIdentity, courseEnv, assessmentNodeList, lastModifications, courseEntry);
+			}
+			// Flag the certificate, ready for recertification
+			if(lastCertificate != null) {
+				certificatesManager.archiveCertificate(lastCertificate);
 			}
 			// Increment run of course
 			userCourseInformationsManager

@@ -126,8 +126,7 @@ public class IdentityCertificatesController extends BasicController implements G
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
+		if(event instanceof CertificateEvent ce) {
 			if(ce.getOwnerKey().equals(assessedIdentity.getKey())
 					&& courseEntry.getOlatResource().getKey().equals(ce.getResourceKey())) {
 				loadList();
@@ -171,8 +170,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(generateLink == source) {
 			doConfirmGenerateCertificate(ureq) ;
-		} else if(source instanceof Link) {
-			Link link = (Link)source;
+		} else if(source instanceof Link link) {
 			String cmd = link.getCommand();
 			if("delete".equals(cmd)) {
 				Certificate certificate = (Certificate)link.getUserObject();
@@ -217,7 +215,7 @@ public class IdentityCertificatesController extends BasicController implements G
 		} else {
 			String title = translate("confirm.certificate.title");
 			String fullName = userManager.getUserDisplayName(assessedIdentity);
-			String text = translate("confirm.certificate.description", new String[] { fullName });
+			String text = translate("confirm.certificate.description", fullName);
 			confirmCertificateCtrl = activateYesNoDialog(ureq, title, text, confirmCertificateCtrl);
 		}
 	}

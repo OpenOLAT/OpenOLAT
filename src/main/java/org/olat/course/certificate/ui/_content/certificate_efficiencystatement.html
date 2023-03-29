@@ -7,7 +7,9 @@
 		
 		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive"))
 		<div class="o_button_group_right o_block_bottom">
- 			$r.render("download.archive")
+ 			#if($r.available("download.archive"))
+ 				$r.render("download.archive")
+ 			#end
 			<div class=" btn-group">
 		    	#if($r.available("home.link"))
 				$r.render("home.link")

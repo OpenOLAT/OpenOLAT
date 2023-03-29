@@ -37,6 +37,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import jakarta.annotation.Resource;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -48,8 +49,6 @@ import jakarta.jms.QueueConnection;
 import jakarta.jms.QueueSender;
 import jakarta.jms.QueueSession;
 import jakarta.jms.Session;
-
-import jakarta.annotation.Resource;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -111,6 +110,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
 import org.olat.course.certificate.EmailStatus;
 import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
 import org.olat.course.certificate.model.CertificateInfos;
@@ -397,7 +397,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	
 	@Override
 	public boolean hasCertificate(IdentityRef identity, Long resourceKey) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select cer.key from certificate cer")
 		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
 		  .append(" and cer.identity.key=:identityKey");
@@ -408,7 +408,31 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return certififcates != null && !certififcates.isEmpty();
+		return certififcates != null && !certififcates.isEmpty()
+				&& certififcates.get(0) != null && certififcates.get(0).longValue() > 0;
+	}
+	
+	/**
+	 * The last certificate is valid, if it's status is pending or ok, and if it's the last.
+	 * 
+	 * @param identity The identity which own the certificate
+	 * @param resourceKey The resource key
+	 * @return true if a valid certificate is found
+	 */
+	private boolean hasValidCertificate(IdentityRef identity, Long resourceKey) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select cer.key from certificate cer")
+		  .append(" where (cer.olatResource.key=:resourceKey or cer.archivedResourceKey=:resourceKey)")
+		  .append(" and cer.identity.key=:identityKey and cer.last=true and cer.statusString").in(CertificateStatus.pending, CertificateStatus.ok);
+		List<Number> certififcates = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Number.class)
+				.setParameter("resourceKey", resourceKey)
+				.setParameter("identityKey", identity.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return certififcates != null && !certififcates.isEmpty()
+				&& certififcates.get(0) != null && certififcates.get(0).longValue() > 0;
 	}
 
 	@Override
@@ -606,6 +630,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
+	public Certificate archiveCertificate(Certificate certificate) {
+		if(certificate instanceof AbstractCertificate certificateImpl) {
+			certificateImpl.setLastModified(new Date());
+			certificateImpl.setStatus(CertificateStatus.archived);
+			certificate = dbInstance.getCurrentEntityManager().merge(certificateImpl);
+		}
+		return certificate;
+	}
+
+	@Override
 	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry) {
 		boolean allowed = false;
 		try {
@@ -622,7 +656,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					allowed = (nextCertificationDate != null ? nextCertificationDate.before(now) : false);
 				}
 			} else {
-				allowed = !hasCertificate(identity, entry.getOlatResource().getKey());
+				allowed = !hasValidCertificate(identity, entry.getOlatResource().getKey());
 			}
 		} catch (CorruptedCourseException e) {
 			log.error("", e);

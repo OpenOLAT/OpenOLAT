@@ -171,6 +171,14 @@ public interface CertificatesManager {
 	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry);
 	
 	/**
+	 * Set the status to archive.
+	 * 
+	 * @param certificate The certificate to archive
+	 * @return A merged certificate
+	 */
+	public Certificate archiveCertificate(Certificate certificate);
+	
+	/**
 	 * Get the next re-certification date or NULL if no recertification possible
 	 * @param certificate An exiting certificate
 	 * @param entry The repository entry of the course
