@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -76,7 +77,7 @@ public class QuestionsHeaderController extends FormBasicController {
 	private SelectionValues questionsKV = new SelectionValues();
 	private VideoQuestions questions;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	private final RepositoryEntry repositoryEntry;
 	private String questionId;
 	private String currentTimeCode;
@@ -298,7 +299,7 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	private void doNewQuestion(UserRequest ureq, VideoQuestion newQuestion) {
 		newQuestion.setBegin(new Date(getCurrentTime()));
-		newQuestion.setStyle(videoModule.getMarkerStyles().get(0));
+		newQuestion.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
 		questions.getQuestions().add(newQuestion);
 		questionId = newQuestion.getId();
 		setValues();

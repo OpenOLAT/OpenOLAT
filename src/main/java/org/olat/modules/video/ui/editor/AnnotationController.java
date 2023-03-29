@@ -24,12 +24,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -37,18 +38,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoModule;
-import org.olat.modules.video.ui.VideoSettingsController;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -67,15 +64,14 @@ public class AnnotationController extends FormBasicController {
 	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private RichTextElement textEl;
-	private SingleSelection colorDropdown;
-	private final SelectionValues colorsKV;
+	private ColorPickerElement colorPicker;
 	private final SimpleDateFormat timeFormat;
 	private SliderElement fontSize;
 	private TextElement fontSizeEl;
 	private StaticTextElement positionSizeEl;
 	private FormLink positionSizeEditLink;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	private final long videoDurationInSeconds;
 	private String currentTimeCode;
 	private CloseableCalloutWindowController ccwc;
@@ -90,12 +86,6 @@ public class AnnotationController extends FormBasicController {
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-		colorsKV = new SelectionValues();
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
-		for (String color : videoModule.getMarkerStyles()) {
-			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
-		}
 
 		initForm(ureq);
 		setValues();
@@ -149,8 +139,8 @@ public class AnnotationController extends FormBasicController {
 		textEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 		textEl.setMandatory(true);
 
-		colorDropdown = uifactory.addDropdownSingleselect("color", "form.annotation.color", formLayout,
-				colorsKV.keys(), colorsKV.values());
+		colorPicker = uifactory.addColorPickerElement("color", "form.annotation.color", formLayout,
+				colorService.getColors());
 
 		fontSize = uifactory.addSliderElement("fontSize", "form.annotation.fontSize", formLayout);
 		fontSize.setMinValue(50);
@@ -184,14 +174,7 @@ public class AnnotationController extends FormBasicController {
 		endEl.setValue(timeFormat.format(end));
 		durationEl.setValue(Long.toString(annotation.getDuration()));
 		textEl.setValue(annotation.getText());
-		if (annotation.getStyle() != null) {
-			colorDropdown.select(annotation.getStyle(), true);
-			colorDropdown.getComponent().setDirty(true);
-		}
-		if (!colorDropdown.isOneSelected() && !colorsKV.isEmpty()) {
-			colorDropdown.select(colorsKV.keys()[0], true);
-			colorDropdown.getComponent().setDirty(true);
-		}
+		colorPicker.setColor(VideoModule.getColorFromMarkerStyle(annotation.getStyle()));
 		top = annotation.getTop();
 		left = annotation.getLeft();
 		width = annotation.getWidth();
@@ -369,7 +352,7 @@ public class AnnotationController extends FormBasicController {
 		try {
 			annotation.setBegin(timeFormat.parse(startEl.getValue()));
 			annotation.setDuration(Long.parseLong(durationEl.getValue()));
-			annotation.setStyle(colorDropdown.getSelectedKey());
+			annotation.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().getId()));
 			annotation.setText(textEl.getValue());
 			annotation.setLeft(left);
 			annotation.setTop(top);

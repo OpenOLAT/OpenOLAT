@@ -1253,12 +1253,19 @@ public class VideoManagerImpl implements VideoManager {
 		VFSItem commentsItem = vfsContainer.resolve(FILENAME_COMMENTS_XML);
 		if (commentsItem instanceof VFSLeaf commentsLeaf) {
 			try (InputStream in = commentsLeaf.getInputStream()) {
-				return VideoXStream.fromXml(in, VideoComments.class);
+				return standardizeColors(VideoXStream.fromXml(in, VideoComments.class));
 			} catch (IOException e) {
 				log.error("", e);
 			}
 		}
 		return new VideoCommentsImpl();
+	}
+
+	private VideoComments standardizeColors(VideoComments comments) {
+		for (VideoComment comment : comments.getComments()) {
+			comment.setColor(VideoModule.getColorFromMarkerStyle(comment.getColor()));
+		}
+		return comments;
 	}
 
 	@Override

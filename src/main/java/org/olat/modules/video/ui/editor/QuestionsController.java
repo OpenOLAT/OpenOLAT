@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.emptystate.EmptyStateConfig;
@@ -75,7 +76,7 @@ public class QuestionsController extends BasicController {
 	@Autowired
 	private QTI21Service qtiService;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 
 	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
 								  long videoDurationInSeconds) {
@@ -194,7 +195,7 @@ public class QuestionsController extends BasicController {
 			question.setQuestionFilename(qItem.getRootFilename());
 			question.setBegin(new Date(begin));
 			question.setTimeLimit(-1);
-			question.setStyle(videoModule.getMarkerStyles().get(0));
+			question.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
 
 			File itemDirectory = new File(assessmentDir, itemDir);
 			itemDirectory.mkdir();

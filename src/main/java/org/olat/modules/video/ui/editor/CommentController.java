@@ -24,27 +24,25 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.vfs.VFSTranscodingService;
 import org.olat.core.commons.services.video.ui.VideoAudioPlayerController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -53,8 +51,6 @@ import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoCommentType;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
-import org.olat.modules.video.VideoModule;
-import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,14 +68,13 @@ public class CommentController extends FormBasicController {
 	private TextElement startEl;
 	private FormLink startApplyPositionButton;
 	private String currentTimeCode;
-	private SingleSelection colorDropdown;
-	private final SelectionValues colorsKV;
+	private ColorPickerElement colorPicker;
 	private RichTextElement textEl;
 	private FormLink videoLink;
 
 	private final SimpleDateFormat timeFormat;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	private CloseableModalController cmc;
 	VideoAudioPlayerController videoAudioPlayerController;
 	@Autowired
@@ -95,12 +90,6 @@ public class CommentController extends FormBasicController {
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-		colorsKV = new SelectionValues();
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
-		for (String color : videoModule.getMarkerStyles()) {
-			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
-		}
 
 		initForm(ureq);
 		setValues();
@@ -133,8 +122,8 @@ public class CommentController extends FormBasicController {
 		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
 		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
 
-		colorDropdown = uifactory.addDropdownSingleselect("color", "form.common.color", formLayout,
-				colorsKV.keys(), colorsKV.values());
+		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
+				colorService.getColors());
 
 		videoLink = uifactory.addFormLink("video", "", "form.common.video", formLayout,
 				Link.LINK | Link.NONTRANSLATED);
@@ -181,14 +170,7 @@ public class CommentController extends FormBasicController {
 			textEl.setMandatory(true);
 		}
 
-		if (comment.getColor() != null) {
-			colorDropdown.select(comment.getColor(), true);
-			colorDropdown.getComponent().setDirty(true);
-		}
-		if (!colorDropdown.isOneSelected() && !colorsKV.isEmpty()) {
-			colorDropdown.select(colorsKV.keys()[0], true);
-			colorDropdown.getComponent().setDirty(true);
-		}
+		colorPicker.setColor(comment.getColor());
 	}
 
 	@Override
@@ -267,7 +249,7 @@ public class CommentController extends FormBasicController {
 
 		try {
 			comment.setStart(timeFormat.parse(startEl.getValue()));
-			comment.setColor(colorDropdown.getSelectedKey());
+			comment.setColor(colorPicker.getColor().getId());
 			comment.setText(textEl.getValue());
 			fireEvent(ureq, Event.DONE_EVENT);
 		} catch (ParseException e) {

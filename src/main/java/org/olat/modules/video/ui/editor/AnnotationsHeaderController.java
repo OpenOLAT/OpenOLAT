@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -65,7 +66,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 	@Autowired
 	private VideoManager videoManager;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	private VideoMarkers annotations;
 	private String annotationId;
 	private String currentTimeCode;
@@ -241,7 +242,7 @@ public class AnnotationsHeaderController extends FormBasicController {
 		newAnnotation.setTop(0.25);
 		newAnnotation.setWidth(0.50);
 		newAnnotation.setHeight(0.50);
-		newAnnotation.setStyle(videoModule.getMarkerStyles().get(0));
+		newAnnotation.setStyle(VideoModule.getMarkerStyleFromColor(colorService.getColors().get(0)));
 
 		annotationId = newAnnotation.getId();
 		annotations.getMarkers().add(newAnnotation);

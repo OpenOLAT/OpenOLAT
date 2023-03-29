@@ -25,13 +25,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -51,7 +52,6 @@ import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
-import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,12 +68,11 @@ public class QuestionController extends FormBasicController {
 	private TextElement startEl;
 	private FormLink startApplyPositionButton;
 	private TextElement timeLimitEl;
-	private SingleSelection colorDropdown;
-	private final SelectionValues colorsKV;
+	private ColorPickerElement colorPicker;
 	private MultipleSelectionElement options;
 	private final SelectionValues optionsKV;
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	private final SimpleDateFormat timeFormat;
 	private QuestionTableModel tableModel;
 	private FlexiTableElement questionTable;
@@ -89,12 +88,6 @@ public class QuestionController extends FormBasicController {
 		this.videoDurationInSeconds = videoDurationInSeconds;
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-		colorsKV = new SelectionValues();
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
-		for (String color : videoModule.getMarkerStyles()) {
-			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
-		}
 
 		optionsKV = new SelectionValues();
 		optionsKV.add(SelectionValues.entry("allowSkipping", translate("form.question.allowSkipping")));
@@ -128,8 +121,8 @@ public class QuestionController extends FormBasicController {
 				"", formLayout);
 		timeLimitEl.setExampleKey("form.question.timeLimit.example", null);
 
-		colorDropdown = uifactory.addDropdownSingleselect("color", "form.common.color", formLayout,
-				colorsKV.keys(), colorsKV.values());
+		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
+				colorService.getColors());
 
 		options = uifactory.addCheckboxesVertical("options", "form.question.options", formLayout,
 				optionsKV.keys(), optionsKV.values(), 1);
@@ -172,12 +165,7 @@ public class QuestionController extends FormBasicController {
 			timeLimitEl.setValue(Long.toString(question.getTimeLimit()));
 		}
 		if (question.getStyle() != null) {
-			colorDropdown.select(question.getStyle(), true);
-			colorDropdown.getComponent().setDirty(true);
-		}
-		if (!colorDropdown.isOneSelected() && !colorsKV.isEmpty()) {
-			colorDropdown.select(colorsKV.keys()[0], true);
-			colorDropdown.getComponent().setDirty(true);
+			colorPicker.setColor(VideoModule.getColorFromMarkerStyle(question.getStyle()));
 		}
 		options.select(optionsKV.keys()[0], question.isAllowSkipping());
 		options.select(optionsKV.keys()[1], question.isAllowNewAttempt());
@@ -278,7 +266,7 @@ public class QuestionController extends FormBasicController {
 				}
 			}
 			question.setTimeLimit(timeLimit);
-			question.setStyle(colorDropdown.getSelectedKey());
+			question.setStyle(VideoModule.getMarkerStyleFromColor(colorPicker.getColor().getId()));
 			question.setAllowSkipping(options.isKeySelected(optionsKV.keys()[0]));
 			question.setAllowNewAttempt(options.isKeySelected(optionsKV.keys()[1]));
 			fireEvent(ureq, Event.DONE_EVENT);

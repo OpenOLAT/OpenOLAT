@@ -39,6 +39,7 @@ import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
 import org.olat.modules.video.VideoSegment;
@@ -97,7 +98,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 		VideoComments comments = videoManager.loadComments(olatResource);
 		for (VideoComment comment : comments.getComments()) {
 			rows.add(new TimelineRow(comment.getId(), comment.getStart().getTime(), 1000,
-					TimelineEventType.COMMENT, comment.getDisplayText(translator), comment.getColor()));
+					TimelineEventType.COMMENT, comment.getDisplayText(translator), VideoModule.getMarkerStyleFromColor(comment.getColor())));
 		}
 
 		VideoMarkers videoMarkers = videoManager.loadMarkers(olatResource);
