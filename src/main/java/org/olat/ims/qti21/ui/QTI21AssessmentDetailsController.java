@@ -66,6 +66,8 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.Renderer;
@@ -77,12 +79,17 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
@@ -136,6 +143,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
 public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	private FormLink resetButton;
+	private FormLink deleteButton;
 	private FlexiTableElement tableEl;
 	private final TooledStackedPanel stackPanel;
 	private DefaultFlexiColumnModel correctionCol;
@@ -155,7 +163,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
 	private AssessmentResultController resultCtrl;
-	private QTI21DeleteDataController resetToolCtrl;
+	private QTI21DeleteDataController deleteToolCtrl;
+	private ConfirmResetDataController confirmResetDataCtrl;
 	private DialogBoxController retrieveConfirmationCtr;
 	private CloseableCalloutWindowController calloutCtrl;
 	private CorrectionIdentityAssessmentItemListController correctionCtrl;
@@ -277,8 +286,13 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		tableEl.setCssDelegate(tableModel);
 
 		if(reSecurity.isEntryAdmin() && !readOnly) {
-			resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
-			resetButton.setIconLeftCSS("o_icon o_icon_delete_item"); 	
+			if(courseNode != null) {
+				resetButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
+				resetButton.setIconLeftCSS("o_icon o_icon_reset_data"); 
+			} else {
+				deleteButton = uifactory.addFormLink("menu.reset.title", formLayout, Link.BUTTON);
+				deleteButton.setIconLeftCSS("o_icon o_icon_delete_item"); 
+			}
 		}
 	}
 	
@@ -315,6 +329,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		
 		if(resetButton != null) {
 			resetButton.setVisible(!sessionsStatistics.isEmpty());
+		}
+		if(deleteButton != null) {
+			deleteButton.setVisible(!sessionsStatistics.isEmpty());
 		}
 	}
 	
@@ -389,14 +406,24 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				doPullSession(ureq, (AssessmentTestSession)retrieveConfirmationCtr.getUserObject());
 				updateModel();
 			}
-		} else if(invalidateConfirmationCtr == source || revalidateConfirmationCtr == source || resetToolCtrl == source) {
+		} else if(invalidateConfirmationCtr == source || revalidateConfirmationCtr == source || deleteToolCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				updateModel();
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(reopenForCorrectionCtrl == source) {
+		} else if(confirmResetDataCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doResetCourseNodeData(ureq, confirmResetDataCtrl.getDataContext());
+				updateModel();
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} 
+		
+		else if(reopenForCorrectionCtrl == source) {
 			cmc.deactivate();
 			AssessmentTestSession session = reopenForCorrectionCtrl.getAssessmentTestSession();
 			cleanUp();
@@ -419,8 +446,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		removeAsListenerAndDispose(revalidateConfirmationCtr);
 		removeAsListenerAndDispose(retrieveConfirmationCtr);
 		removeAsListenerAndDispose(reopenForCorrectionCtrl);
+		removeAsListenerAndDispose(confirmResetDataCtrl);
 		removeAsListenerAndDispose(correctionCtrl);
-		removeAsListenerAndDispose(resetToolCtrl);
+		removeAsListenerAndDispose(deleteToolCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(resultCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -429,8 +457,9 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		revalidateConfirmationCtr = null;
 		retrieveConfirmationCtr = null;
 		reopenForCorrectionCtrl = null;
+		confirmResetDataCtrl = null;
 		correctionCtrl = null;
-		resetToolCtrl = null;
+		deleteToolCtrl = null;
 		calloutCtrl = null;
 		resultCtrl = null;
 		toolsCtrl = null;
@@ -439,11 +468,12 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(resetButton == source) {
-			doResetData(ureq);
+		if(deleteButton == source) {
+			doDeleteData(ureq);
+		} else if(resetButton == source) {
+			doConfirmResetCourseNodeData(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				QTI21AssessmentTestSessionDetails row = tableModel.getObject(se.getIndex());
 				AssessmentTestSession testSession = qtiService.getAssessmentTestSession(row.getTestSession().getKey());
@@ -582,23 +612,47 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		qtiService.updateAssessmentEntry(session, true);
 	}
 	
-	private void doResetData(UserRequest ureq) {
+	private void doDeleteData(UserRequest ureq) {
 		AssessmentToolOptions asOptions = new AssessmentToolOptions();
 		asOptions.setAdmin(reSecurity.isEntryAdmin());
 		asOptions.setIdentities(Collections.singletonList(assessedIdentity));
 		
-		if(courseNode != null) {
-			resetToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(),
-					assessedUserCourseEnv.getCourseEnvironment(), asOptions, courseNode);
-		} else {
-			resetToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), entry, asOptions);
-		}
-		listenTo(resetToolCtrl);
+		deleteToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), entry, asOptions);
+		listenTo(deleteToolCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", resetToolCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), "close", deleteToolCtrl.getInitialComponent(),
 				true, translate("table.header.results"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+
+	private void doConfirmResetCourseNodeData(UserRequest ureq) {
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(List.of(assessedIdentity));
+		dataContext.setResetCourse(ResetCourse.elements);
+		dataContext.setCourseNodes(List.of(courseNode));
+		
+		confirmResetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, null);
+		listenTo(confirmResetDataCtrl);
+
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmResetDataCtrl.getInitialComponent(),
+				true, translate("table.header.results"));
+		cmc.activate();
+		listenTo(cmc);
+	}
+
+	private void doResetCourseNodeData(UserRequest ureq, ResetDataContext dataContext) {
+		List<Identity> identities = dataContext.getSelectedParticipants();
+		
+		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(assessedUserCourseEnv.getCourseEnvironment());
+		MediaResource archiveResource = resetCourseNodeHelper
+				.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
+		if(archiveResource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 
 	private void doConfirmPullSession(UserRequest ureq, AssessmentTestSession session) {
