@@ -164,6 +164,31 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 				coachedGroups, participatedGroups, waitingLists, reSecurity);
 	}
 	
+	public static UserCourseEnvironmentImpl load(Identity identity, Roles roles, CourseEnvironment courseEnv, RepositoryEntrySecurity reSecurity) {
+		CourseGroupManager cgm = courseEnv.getCourseGroupManager();
+		List<BusinessGroup> coachedGroups;
+		if(reSecurity.isGroupCoach()) {
+			coachedGroups = cgm.getOwnedBusinessGroups(identity);
+		} else {
+			coachedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> participatedGroups;
+		if(reSecurity.isGroupParticipant()) {
+			participatedGroups = cgm.getParticipatingBusinessGroups(identity);
+		} else {
+			participatedGroups = Collections.emptyList();
+		}
+		List<BusinessGroup> waitingLists;
+		if(reSecurity.isGroupWaiting()) {
+			waitingLists = cgm.getWaitingListGroups(identity);
+		} else {
+			waitingLists = Collections.emptyList();
+		}
+		IdentityEnvironment identityEnv = new IdentityEnvironment(identity, roles);
+		return new UserCourseEnvironmentImpl(identityEnv, courseEnv, null,
+				coachedGroups, participatedGroups, waitingLists, reSecurity);
+	}
+	
 	@Override
 	public CourseEnvironment getCourseEnvironment() {
 		return courseEnvironment;

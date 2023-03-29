@@ -153,6 +153,11 @@ public class SurveyManagerImpl implements SurveyManager {
 		}
 		return loadedParticipation;
 	}
+	
+	@Override
+	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity executor) {
+		return evaluationFormManager.loadParticipationByExecutor(survey, executor);
+	}
 
 	@Override
 	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation) {
@@ -179,6 +184,11 @@ public class SurveyManagerImpl implements SurveyManager {
 	@Override
 	public Long getSessionsCount(SessionFilter filter) {
 		return evaluationFormManager.loadSessionsCount(filter);
+	}
+	
+	@Override
+	public void deleteParticipation(EvaluationFormParticipation participation, boolean withSessions) {
+		evaluationFormManager.deleteParticipation(participation, withSessions);
 	}
 
 	@Override

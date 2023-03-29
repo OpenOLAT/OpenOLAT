@@ -72,7 +72,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
@@ -295,41 +297,57 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
 			String path, Identity doer, Role by) {
+		I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 		FormManager formManager = CoreSpringFactory.getImpl(FormManager.class);
 		UserManager userManager = CoreSpringFactory.getImpl(UserManager.class);
-		
+
 		try {
-			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
 			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
-
+			List<UserPropertyHandler> userPropertyHandlers = userManager
+					.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, true);
+			Translator translator = Util.createPackageTranslator(FormCourseNode.class, locale,
+					Util.createPackageTranslator(FormRunController.class, locale));
+			Translator userPropertyTranslator = userManager.getPropertyHandlerTranslator(translator);
+			UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, userPropertyTranslator);
+			
 			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
 
 			EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
 			EvaluationFormSession session = formManager.getSession(survey, assessedIdentity);
+			SessionFilter sessionFilter;
 			if(session != null) {
-				List<UserPropertyHandler> userPropertyHandlers = userManager
-					.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, true);
-				Translator translator = Util.createPackageTranslator(FormCourseNode.class, locale,
-						Util.createPackageTranslator(FormRunController.class, locale));
-				Translator userPropertyTranslator = userManager.getPropertyHandlerTranslator(translator);
-				
-				UserColumns userColumns = new UserPropertiesColumns(userPropertyHandlers, userPropertyTranslator);
-				SessionFilter sessionFilter = SessionFilterFactory.create(session);
-				EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, sessionFilter, userColumns);
-				excelExport.export(archiveStream, path);
+				sessionFilter = SessionFilterFactory.create(session);
+			} else {
+				sessionFilter = SessionFilterFactory.create(new EvaluationFormSessionRef() {
+					@Override
+					public Long getKey() { 
+						return Long.valueOf(-1l);
+					}
+				});
 			}
+			
+			EvaluationFormExcelExport excelExport = formManager.getExcelExport(this, surveyIdentifier, sessionFilter, userColumns);
+			excelExport.export(archiveStream, path);
 		} catch (IOException e) {
 			log.error("", e);
 		}
-		
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 	
 	@Override
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
-		//TODO reset
+		FormManager formManager = CoreSpringFactory.getImpl(FormManager.class);
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
+		EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
+		EvaluationFormParticipation participation = formManager.loadParticipation(survey, assessedIdentity);
+		if(participation != null) {
+			formManager.deleteParticipation(participation, this, assessedUserCourseEnv.getCourseEnvironment());
+		}
+		
 		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 

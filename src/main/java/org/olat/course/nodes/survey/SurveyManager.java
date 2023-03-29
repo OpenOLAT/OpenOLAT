@@ -63,8 +63,17 @@ public interface SurveyManager {
 
 	public EvaluationFormParticipation loadOrCreateGuestParticipation(EvaluationFormSurvey survey,
 			UserSession userSession);
+	
+	public EvaluationFormParticipation loadParticipation(EvaluationFormSurvey survey, Identity identity);
 
 	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation);
+	
+	/**
+	 * Only delete the participation without the session.
+	 * 
+	 * @param participation The participation to delete
+	 */
+	public void deleteParticipation(EvaluationFormParticipation participation, boolean withSessions);
 
 	public void onQuickSave(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv, Double completion);
 

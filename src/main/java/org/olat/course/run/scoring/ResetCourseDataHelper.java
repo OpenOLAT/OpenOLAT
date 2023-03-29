@@ -33,7 +33,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.logging.Tracing;
@@ -67,6 +66,8 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -88,6 +89,8 @@ public class ResetCourseDataHelper {
 	private DB dbInstance;
 	@Autowired
 	private ReminderService reminderService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -142,11 +145,11 @@ public class ResetCourseDataHelper {
 
 	private String resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes,
 			boolean resetCourse, Identity doer, Role by) {	
-		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, Roles.userRoles());
-		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(assessedIdentity, Roles.userRoles(), courseEntry);
+		UserCourseEnvironment userCourseEnv = UserCourseEnvironmentImpl.load(assessedIdentity, Roles.userRoles(), courseEnv, reSecurity);
 		
 		VFSContainer rootFolder = VFSManager.getOrCreateContainer(courseEnv.getCourseBaseContainer(), ROOT_FOLDER);
-		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
 		UserEfficiencyStatementImpl statement = efficiencyStatementMgr.getUserEfficiencyStatementFull(courseEntry, assessedIdentity);
