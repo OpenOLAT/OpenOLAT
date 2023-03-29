@@ -275,6 +275,7 @@ public class UserEfficiencyStatementImpl implements Persistable, UserEfficiencyS
 		this.lastStatement = lastStatement;
 	}
 
+	@Override
 	public String getArchivePath() {
 		return archivePath;
 	}

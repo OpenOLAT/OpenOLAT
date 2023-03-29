@@ -106,6 +106,8 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 	private boolean lastStatement;
 	@Column(name="statement_xml", nullable=true, insertable=true, updatable=true)
 	private String statementXml;
+	@Column(name="archive_path", nullable=true, insertable=true, updatable=true)
+	private String archivePath;
 	@Column(name="archive_certificate", nullable=true, insertable=true, updatable=true)
 	private Long archiveCertificateKey;
 
@@ -317,6 +319,15 @@ public class UserEfficiencyStatementStandalone implements Persistable, UserEffic
 
 	public void setArchiveCertificateKey(Long archiveCertificateKey) {
 		this.archiveCertificateKey = archiveCertificateKey;
+	}
+	
+	@Override
+	public String getArchivePath() {
+		return archivePath;
+	}
+
+	public void setArchivePath(String archivePath) {
+		this.archivePath = archivePath;
 	}
 
 	@Override

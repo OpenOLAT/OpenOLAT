@@ -72,4 +72,6 @@ public interface UserEfficiencyStatementShort {
 	 * @return The current certificate at the point which this statement was archived.
 	 */
 	public Long getArchiveCertificateKey();
+	
+	public String getArchivePath();
 }

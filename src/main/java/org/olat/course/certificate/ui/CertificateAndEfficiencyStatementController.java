@@ -53,6 +53,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -65,6 +66,9 @@ import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
@@ -94,7 +98,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
- * Displays the users efficiency statement
+ * Displays the users efficiency statement. After a reset of the course's data,
+ * the current efficiency statement doesn't exist.
  * 
  * <P>
  * Initial Date:  11.08.2005 <br>
@@ -112,14 +117,16 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private Link contactLink;
 	private Link certificateLink;
 	private Link courseDetailsLink;
+	private Link downloadArchiveLink;
 	private Dropdown historyOfStatementsDropdown;
-	
+
+	private Boolean learningPath;
 	private Certificate certificate;
 	private final Identity statementOwner;
 	private final BusinessGroup businessGroup;
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
-	private Boolean learningPath;
+	private UserEfficiencyStatement userEfficiencyStatement;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -227,6 +234,10 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			selectCourseInfos(ureq);
 		}
 		
+		downloadArchiveLink = LinkFactory.createLink("download.archive", "download.archive", getTranslator(), mainVC, this, Link.BUTTON);
+		downloadArchiveLink.setIconLeftCSS("o_icon o_icon_download");
+		downloadArchiveLink.setVisible(false);
+		
 		if(efficiencyStatement != null && statementOwner.equals(ureq.getIdentity()) && portfolioV2Module.isEnabled()) {
 			String businessPath = "[RepositoryEntry:" + efficiencyStatement.getCourseRepoEntryKey() + "]";
 			MediaCollectorComponent collectorCmp = new MediaCollectorComponent("collectArtefactLink", getWindowControl(), efficiencyStatement,
@@ -243,7 +254,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	
 	private void loadEfficiencyStatementsHistory() {
 		List<UserEfficiencyStatement> statements = efficiencyStatementManager.getHistoryOfUserEfficiencyStatementsLightByRepositoryEntry(courseRepoEntry, statementOwner);
-		if(statements.size() > 1) {
+		if(!statements.isEmpty()) {
 			historyOfStatementsDropdown = new Dropdown("statements.list", null, false, getTranslator());
 			historyOfStatementsDropdown.setTranslatedLabel(translate("current.version"));
 			historyOfStatementsDropdown.setButton(true);
@@ -253,8 +264,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			
 			int counter = statements.size();
 			Formatter formatter = Formatter.getInstance(getLocale());
+			// After a course reset, the efficiency doesn't exist, it will be created with the first user interaction (participant or coach)
+			if(!statements.get(0).isLastStatement()) {
+				Link statementLink = LinkFactory.createCustomLink("statement_" + (--counter), "statement", "current.version", Link.LINK, mainVC, this);
+				statementLink.setUserObject(Long.valueOf(-1l));
+				historyOfStatementsDropdown.addComponent(statementLink);
+			}
+
 			for(UserEfficiencyStatement statement:statements) {
-				
 				String label;
 				if(statement.isLastStatement()) {
 					label = translate("current.version");
@@ -376,6 +393,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			} else if(courseDetailsLink.getComponentName().equals(sve.getComponentName())) {
 				selectCourseInfos(ureq);
 			}
+		} else if(downloadArchiveLink == source) {
+			doDownloadArchive(ureq);
 		}
 	}
 
@@ -397,7 +416,6 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	}
 	
 	private void doLoadStatement(UserRequest ureq, Link statementLink, Long statementKey) {
-		UserEfficiencyStatement userEfficiencyStatement = null;
 		if(statementKey != null && statementKey.longValue() > 0) {
 			userEfficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByKey(statementKey);
 			efficiencyStatement = efficiencyStatementManager.getEfficiencyStatement(userEfficiencyStatement);
@@ -413,6 +431,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				mainVC.remove("completion");
 			}
 		} else {
+			userEfficiencyStatement = null;
 			efficiencyStatement = null;
 			mainVC.remove("completion");
 		}
@@ -430,12 +449,12 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			} else {
 				certificate = certificatesManager.getLastCertificate(statementOwner, courseRepoEntry.getOlatResource().getKey());
 			}
-			certificateLink.setVisible(certificate != null);
 		} else {
 			certificate = certificatesManager.getLastCertificate(statementOwner, courseRepoEntry.getOlatResource().getKey());
 		}
 		certificateLink.setVisible(certificate != null);
 		courseDetailsLink.setVisible(efficiencyStatement != null);
+		downloadArchiveLink.setVisible(userEfficiencyStatement != null && StringHelper.containsNonWhitespace(userEfficiencyStatement.getArchivePath()));
 
 		if(segmentView.getSelectedComponent() == certificateLink) {
 			if(certificate != null) {
@@ -525,5 +544,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(bc, getWindowControl());
 		NewControllerFactory.getInstance().launch(ureq, bwControl);
 	}
-
+	
+	private void doDownloadArchive(UserRequest ureq) {
+		if(userEfficiencyStatement == null || !StringHelper.containsNonWhitespace(userEfficiencyStatement.getArchivePath())) {
+			return;
+		}
+		String archivePath = userEfficiencyStatement.getArchivePath();
+		VFSLeaf archive = VFSManager.olatRootLeaf(archivePath);
+		MediaResource resource = new VFSMediaResource(archive);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
 }
