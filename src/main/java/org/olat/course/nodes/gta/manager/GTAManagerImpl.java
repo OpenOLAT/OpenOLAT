@@ -1798,9 +1798,19 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 				VFSManager.deleteContainersAndLeaves(correctionContainer, true, false);
 			}
 		}
-		
+
 		// Reset the task
 		TaskImpl taskImpl = (TaskImpl)task;
+		
+		// First extension
+		TaskDueDate dueDates = getDueDatesTask(taskImpl);
+		dueDates.setAssignmentDueDate(null);
+		dueDates.setSubmissionDueDate(null);
+		dueDates.setRevisionsDueDate(null);
+		dueDates.setSolutionDueDate(null);
+		updateTaskDueDate(dueDates);
+		
+		// The rest
 		taskImpl.setTaskName(null);
 		taskImpl.setTaskStatus(TaskProcess.assignment);
 		
@@ -1808,7 +1818,6 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setAllowResetDate(null);
 		taskImpl.setAllowResetIdentity(null);
 		taskImpl.setAssignmentDate(null);
-		taskImpl.setAssignmentDueDate(null);
 		taskImpl.setCollectionDate(null);
 		taskImpl.setCollectionNumOfDocs(null);
 		taskImpl.setCollectionRevisionsDate(null);
@@ -1817,12 +1826,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskImpl.setGraduationDate(null);
 		taskImpl.setLastModified(new Date());
 		taskImpl.setRevisionLoop(0);
-		taskImpl.setRevisionsDueDate(null);
 		taskImpl.setSolutionDate(null);
-		taskImpl.setSolutionDueDate(null);
 		taskImpl.setSubmissionDate(null);
 		taskImpl.setSubmissionDoerRole(null);
-		taskImpl.setSubmissionDueDate(null);
 		taskImpl.setSubmissionNumOfDocs(null);
 		taskImpl.setSubmissionRevisionsDate(null);
 		taskImpl.setSubmissionRevisionsDate(null);
@@ -1834,7 +1840,9 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		taskRevisionDao.deleteTaskRevision(taskImpl);
 		taskRevisionDateDao.deleteTaskRevisionDate(taskImpl);
 
-		return taskImpl;
+		dbInstance.commit();
+
+		return getTask(taskImpl);
 	}
 
 	@Override

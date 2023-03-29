@@ -50,6 +50,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		String buttonGroupId = "o_" + CodeHelper.getRAMUniqueID();
 		String dropdownMenuButtonId = "o_" + CodeHelper.getRAMUniqueID();
+		String colorPickerId = "o_cp" + colorPickerComponent.getDispatchID();
 
 		sb.append("<div class='o_color_picker_wrapper'>");
 
@@ -67,22 +68,39 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			sb.append("<span>").append(selectedColor.getText()).append("</span>");
 			sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
 		}
+
+		// In standard form submission mode, this element needs to act as a regular input element, which we achieve
+		// with a hidden <input> element.
+		if (!colorChooserElement.isAjaxOnlyMode()) {
+			sb.append("<input type='hidden' id='").append(colorPickerId).append("' name='").append(colorPickerId)
+					.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
+		}
+
 		sb.append("</button>");
 
 		sb.append("<ul class='dropdown-menu o_color_picker_dropdown' aria-labelledby='").append(dropdownMenuButtonId).append("'>");
 
 		for (ColorPickerElement.Color color : colors) {
-			sb.append("<li");
+			sb.append("<li data-color='").append(color.getId()).append("'");
 			if (selectedColor != null && color.getId().equals(selectedColor.getId())) {
 				sb.append(" class='o_selected'");
 			}
 			sb.append(">");
 			sb.append("<a class='dropdown-item o_color_picker_link' ");
-			sb.append("onclick=\"");
-			sb.append(FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
-					colorPickerComponent.getFormDispatchId(), 1, false, false,
-					false, new NameValuePair("colorId", color.getId())));
-			sb.append(";\"");
+
+			if (colorChooserElement.isAjaxOnlyMode()) {
+				// In ajax-only mode, selecting sends an event to the server:
+
+				sb.append("onclick=\"");
+				sb.append(FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
+						colorPickerComponent.getFormDispatchId(), 1, false, false,
+						false, new NameValuePair("colorId", color.getId())));
+				sb.append(";\"");
+			} else {
+				// In form submission mode, selecting updates the UI and the hidden input element:
+
+				sb.append("onclick=\"o_cp_set_color('").append(color.getId()).append("', '").append(color.getText()).append("');\"");
+			}
 			sb.append(">");
 
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
@@ -97,5 +115,22 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("</ul>"); // dropdown-menu
 		sb.append("</div>"); // dropdown
 		sb.append("</div>"); // o_color_picker_wrapper
+
+		if (!colorChooserElement.isAjaxOnlyMode()) {
+			sb.append("<script>");
+			sb.append("function o_cp_set_color(colorId, text) {\n");
+			sb.append("  const hiddenInput = jQuery('#").append(colorPickerId).append("');\n");
+			sb.append("  const oldColorId = hiddenInput.val();\n");
+			sb.append("  hiddenInput.val(colorId);\n");
+			sb.append("  const oldClass = 'o_color_' + oldColorId;\n");
+			sb.append("  const newClass = 'o_color_' + colorId;\n");
+			sb.append("  jQuery('#").append(dropdownMenuButtonId).append(" i.' + oldClass).removeClass(oldClass).addClass(newClass);\n");
+			sb.append("  jQuery('#").append(dropdownMenuButtonId).append(" span').text(text);\n");
+			sb.append("  jQuery('#").append(buttonGroupId).append(" li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
+			sb.append("  jQuery('#").append(buttonGroupId).append(" li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
+			sb.append("  setFlexiFormDirty('").append(colorChooserElement.getRootForm().getDispatchFieldId()).append("');\n");
+			sb.append("}\n");
+			sb.append("</script>");
+		}
 	}
 }

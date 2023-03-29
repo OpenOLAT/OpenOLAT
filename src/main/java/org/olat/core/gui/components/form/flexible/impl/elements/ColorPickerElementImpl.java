@@ -38,6 +38,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final ColorPickerComponent component;
 	private Color color;
 	private final List<Color> colors;
+	private boolean ajaxOnlyMode = false;
 
 	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
 		super(name);
@@ -46,6 +47,16 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		component = new ColorPickerComponent(id, this);
 		setTranslator(Util.createPackageTranslator(ColorPickerComponent.class, locale));
 		this.colors = colors.stream().map(this::getColorFromColorId).toList();
+	}
+
+	@Override
+	public boolean isAjaxOnlyMode() {
+		return ajaxOnlyMode;
+	}
+
+	@Override
+	public void setAjaxOnlyMode(boolean ajaxOnlyMode) {
+		this.ajaxOnlyMode = ajaxOnlyMode;
 	}
 
 	public Color getColor() {
@@ -61,9 +72,16 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		Form form = getRootForm();
 
 		if (isEnabled()) {
-			String dispatchuri = form.getRequestParameter("dispatchuri");
-			if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-				String colorId = form.getRequestParameter("colorId");
+			if (isAjaxOnlyMode()) {
+				String dispatchuri = form.getRequestParameter("dispatchuri");
+				if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+					String colorId = form.getRequestParameter("colorId");
+					if (colorId != null) {
+						setColor(colorId);
+					}
+				}
+			} else {
+				String colorId = form.getRequestParameter("o_cp" + component.getDispatchID());
 				if (colorId != null) {
 					setColor(colorId);
 				}

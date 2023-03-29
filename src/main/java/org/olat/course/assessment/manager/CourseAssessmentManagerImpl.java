@@ -750,7 +750,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void resetEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Identity doer, Role by) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		AssessmentEntry assessmentEntry = assessmentService
+		AssessmentEntryImpl assessmentEntry = (AssessmentEntryImpl)assessmentService
 				.loadAssessmentEntry(assessedIdentity, cgm.getCourseEntry(), courseNode.getIdent());
 		if(assessmentEntry == null) {
 			return; //No entry, nothing to reset
@@ -764,8 +764,20 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		// score
 		assessmentEntry.setScore(null);
 		assessmentEntry.setMaxScore(null);
-		assessmentEntry.setPassed(null);
+		assessmentEntry.setPassedOriginal(null);
+		assessmentEntry.setRawPassed(null);
+		assessmentEntry.setPassedOverridable(null);
+		assessmentEntry.setPassedModificationDate(null);
+		assessmentEntry.setPassedModificationIdentity(null);
 		assessmentEntry.setAttempts(0);
+		assessmentEntry.setUserVisibility(null);
+		// end
+		assessmentEntry.setStartDate(null);
+		assessmentEntry.setEndDate((Date)null);
+		assessmentEntry.setEndDate((Overridable<Date>)null);
+		assessmentEntry.setEndDateModificationDate(null);
+		assessmentEntry.setEndDateModificationIdentity(null);
+		assessmentEntry.setEndDateOriginal(null);
 		// grade
 		assessmentEntry.setGrade(null);
 		assessmentEntry.setGradeSystemIdent(null);
@@ -773,10 +785,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		// comments
 		assessmentEntry.setCoachComment(null);
 		assessmentEntry.setComment(null);
-		
-		if(assessmentEntry instanceof AssessmentEntryImpl entryImpl) {
-			entryImpl.setRun(entryImpl.getRun() + 1);
-		}
+		// increment
+		assessmentEntry.setRun(assessmentEntry.getRun() + 1);
 		
 		assessmentService.updateAssessmentEntry(assessmentEntry);
 		

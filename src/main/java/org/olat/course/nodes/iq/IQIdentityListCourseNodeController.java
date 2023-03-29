@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -134,6 +136,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private FormLink pullButton;
 	private FormLink deleteDataButton;
 	private FormLink resetDataButton;
+	private DropdownItem moreDropdown;
 	
 	private FormLink bulkExportResultsButton;
 	private FormLink bulkStatsButton;
@@ -265,8 +268,15 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 			if(qti21) {
 				if(getAssessmentCallback().isAdmin()) {
-					deleteDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
+					moreDropdown = uifactory.addDropdownMenu("more.menu", null, null, formLayout, getTranslator());
+					moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
+					moreDropdown.setOrientation(DropdownOrientation.right);
+					moreDropdown.setEmbbeded(true);
+					moreDropdown.setButton(true);
+					
+					deleteDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.LINK); 
 					deleteDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
+					moreDropdown.addElement(deleteDataButton);
 				}
 				if(this.getAssessmentCallback().canResetData()) {
 					resetDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 

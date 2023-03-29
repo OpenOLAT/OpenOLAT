@@ -174,6 +174,7 @@ public class GuiDemoFlexiFormAdvancedController extends FormBasicController {
 		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("colorPickerElement",
 				"guidemo.form.color", form, colors);
 		colorPickerElement.setColor("orange");
+		colorPickerElement.setAjaxOnlyMode(true);
 	}
 
 	/**

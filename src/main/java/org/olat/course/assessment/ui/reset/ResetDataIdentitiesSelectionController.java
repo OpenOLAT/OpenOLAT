@@ -28,13 +28,17 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
@@ -63,7 +67,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ParticipantType;
-import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.component.ColorizedScoreCellRenderer;
 import org.olat.modules.assessment.ui.component.PassedCellRenderer;
@@ -82,6 +85,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ResetDataIdentitiesSelectionController extends StepFormBasicController {
 
+	public static final String FILTER_GROUPS = "groups";
+	public static final String FILTER_MEMBERS = "members";
+	
 	private FlexiTableElement tableEl;
 	private ResetDataIdentitiesTableModel tableModel;
 	
@@ -180,8 +186,7 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 				membersValues.add(SelectionValues.entry(ParticipantType.fakeParticipant.name(), translate("filter.fake.participants")));
 			}
 			if (membersValues.size() > 1) {
-				FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"),
-						AssessedIdentityListState.FILTER_MEMBERS, membersValues, true);
+				FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.members.label"), FILTER_MEMBERS, membersValues, true);
 				membersFilter.setValues(List.of(ParticipantType.member.name()));
 				filters.add(membersFilter);
 			}
@@ -224,16 +229,54 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 		}
 		
 		if(!groupValues.isEmpty()) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"),
-					AssessedIdentityListState.FILTER_GROUPS, groupValues, true));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.groups"), FILTER_GROUPS, groupValues, true));
 		}
 
 		tableEl.setFilters(true, filters, false, true);
 	}
 	
+	private Set<ParticipantType> getParticipantTypeFilter(List<FlexiTableFilter> filters) {
+		FlexiTableFilter membersFilter = FlexiTableFilter.getFilter(filters, FILTER_MEMBERS);
+		if(membersFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)membersFilter).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				return filterValues.stream()
+						.map(ParticipantType::valueOf)
+						.collect(Collectors.toSet());
+			}
+		}
+		return null;
+	}
+	
 	private void loadModel() {
 		RepositoryEntry courseEntry =  dataContext.getRepositoryEntry();
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(courseEntry, courseNode.getIdent(), null, assessmentCallback);
+		
+		List<Long> businessGroupKeys = null;
+		List<Long> curriculumElementKeys = null;
+		FlexiTableFilter groupsFilter = FlexiTableFilter.getFilter(tableEl.getFilters(), FILTER_GROUPS);
+		if(groupsFilter != null && groupsFilter.isSelected()) {
+			businessGroupKeys = new ArrayList<>();
+			curriculumElementKeys = new ArrayList<>();
+			List<String> filterValues = ((FlexiTableExtendedFilter)groupsFilter).getValues();
+			if(filterValues != null) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					if(index > 0) {
+						Long key = Long.valueOf(filterValue.substring(index + 1));
+						if(filterValue.startsWith("businessgroup-")) {
+							businessGroupKeys.add(key);
+						} else if(filterValue.startsWith("curriculumelement-")) {
+							curriculumElementKeys.add(key);
+						}
+					}
+				}
+			}
+		}
+		params.setBusinessGroupKeys(businessGroupKeys);
+		params.setCurriculumElementKeys(curriculumElementKeys);
+		params.setParticipantTypes(getParticipantTypeFilter(tableEl.getFilters()));
+		
 		List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 		
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(getIdentity(), params, null);
@@ -272,6 +315,16 @@ public class ResetDataIdentitiesSelectionController extends StepFormBasicControl
 		return allOk;
 	}
 	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(tableEl == source) {
+			if(event instanceof FlexiTableSearchEvent) {
+				loadModel();
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
 	@Override
 	protected void formNext(UserRequest ureq) {
 		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
