@@ -128,7 +128,10 @@ public class VideoController extends BasicController {
 				fireEvent(ureq, event);
 			}
 		} else if (commentLayerController == source) {
-			commentLayerController.hideComment();
+			if (event == Event.DONE_EVENT) {
+				commentLayerController.hideComment();
+				videoDisplayController.showHideProgressTooltip(true);
+			}
 		}
 	}
 
@@ -202,6 +205,7 @@ public class VideoController extends BasicController {
 				segmentLayerController.clearSegments();
 				videoDisplayController.clearMarkerLayer();
 				commentLayerController.setComment(ureq, selectedTimelineEvent.getId());
+				videoDisplayController.showHideProgressTooltip(false);
 			}
 			default -> {}
 		}
