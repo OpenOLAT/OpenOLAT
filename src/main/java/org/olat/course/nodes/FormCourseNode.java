@@ -307,7 +307,7 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 			EvaluationFormSurveyIdentifier surveyIdentifier = formManager.getSurveyIdentifier(this, courseEntry);
 
 			EvaluationFormSurvey survey = formManager.loadSurvey(surveyIdentifier);
-			EvaluationFormSession session = formManager.getDoneSession(survey, assessedIdentity);
+			EvaluationFormSession session = formManager.getSession(survey, assessedIdentity);
 			if(session != null) {
 				List<UserPropertyHandler> userPropertyHandlers = userManager
 					.getUserPropertyHandlersFor(FormParticipationTableModel.USAGE_IDENTIFIER, true);
@@ -325,6 +325,12 @@ public class FormCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
+	}
+	
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		//TODO reset
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override
