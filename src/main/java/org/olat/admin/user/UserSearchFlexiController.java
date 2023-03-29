@@ -435,6 +435,8 @@ public class UserSearchFlexiController extends FormBasicController {
 	}
 	
 	private String getAutoCompleterSearchValue() {
+		if(completerEl == null || !completerEl.isVisible()) return null;
+		
 		String searchValue = completerEl.getKey();
 		if(!StringHelper.containsNonWhitespace(searchValue)) {
 			searchValue = completerEl.getValue();
