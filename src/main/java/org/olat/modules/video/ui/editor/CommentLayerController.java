@@ -44,6 +44,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoComment;
 import org.olat.modules.video.VideoComments;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.DisplayPortraitManager;
@@ -110,7 +111,8 @@ public class CommentLayerController extends BasicController {
 	}
 
 	private VideoDisplayController.Marker commentToMarker(VideoComment videoComment) {
-		return new VideoDisplayController.Marker(videoComment.getId(), videoComment.getColor(),
+		return new VideoDisplayController.Marker(videoComment.getId(),
+				VideoModule.getMarkerStyleFromColor(videoComment.getColor()),
 				videoComment.getStart().getTime() / 1000, "start", true, videoComment);
 	}
 
@@ -120,7 +122,7 @@ public class CommentLayerController extends BasicController {
 		}
 		comments.getComments().stream().filter(c -> c.getId().equals(commentId)).findFirst().ifPresent(c -> {
 			mainVC.contextPut("showComment", true);
-			mainVC.contextPut("color", c.getColor());
+			mainVC.contextPut("color", VideoModule.getMarkerStyleFromColor(c.getColor()));
 			BaseSecurity manager = BaseSecurityManager.getInstance();
 			Identity identity = manager.findIdentityByName(c.getAuthor());
 			if (identity != null) {

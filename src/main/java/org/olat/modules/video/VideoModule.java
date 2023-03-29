@@ -60,6 +60,7 @@ public class VideoModule extends AbstractSpringModule {
 	private static final String VIDEOTRANSCODING_LOCAL = "video.transcoding.local";
 	private static final String TRANSCODING_RESOLUTIONS = "video.transcoding.resolutions";
 	private static final String PREFERRED_RESOLUTION = "video.transcoding.resolution.preferred";
+	private static final String MARKER_STYLE_PREFIX = "o_video_marker_";
 
 	@Value("${video.enabled:true}")
 	private boolean enabled;
@@ -183,11 +184,21 @@ public class VideoModule extends AbstractSpringModule {
 		return styleList;
 	}
 
-	public static String getColorClassFromMarkerStyle(String markerStyle) {
+	public static String getColorFromMarkerStyle(String markerStyle) {
 		if (markerStyle == null) {
 			return null;
 		}
-		return markerStyle.replace("o_video_marker_", "o_color_");
+		return markerStyle.replace(MARKER_STYLE_PREFIX, "");
+	}
+
+	public static String getMarkerStyleFromColor(String color) {
+		if (color == null) {
+			return null;
+		}
+		if (color.startsWith(MARKER_STYLE_PREFIX)) {
+			return color;
+		}
+		return MARKER_STYLE_PREFIX + color;
 	}
 
 	/**

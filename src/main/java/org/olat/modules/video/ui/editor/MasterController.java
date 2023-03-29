@@ -22,8 +22,7 @@ package org.olat.modules.video.ui.editor;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
-
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -76,6 +75,8 @@ import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoSettingsController;
 import org.olat.modules.video.ui.component.VideoTimeCellRenderer;
 import org.olat.repository.RepositoryEntry;
+
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,7 +106,7 @@ public class MasterController extends FormBasicController implements FlexiTableC
 	private FormLink zoomPlusButton;
 
 	@Autowired
-	private VideoModule videoModule;
+	private ColorService colorService;
 	@Autowired
 	private VideoManager videoManager;
 	private int availableWidth;
@@ -251,8 +252,9 @@ public class MasterController extends FormBasicController implements FlexiTableC
 
 		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
 		SelectionValues colorKV = new SelectionValues();
-		for (String color : videoModule.getMarkerStyles()) {
-			colorKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
+		for (String color : colorService.getColors()) {
+			String style = VideoModule.getMarkerStyleFromColor(color);
+			colorKV.add(SelectionValues.entry(style, videoTranslator.translate("video.marker.style.".concat(style))));
 		}
 		colorKV.sort(SelectionValues.VALUE_ASC);
 		filters.add(new FlexiTableMultiSelectionFilter(translate(TimelineDataSource.TimelineFilter.COLOR.getI18nKey()),

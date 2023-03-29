@@ -247,7 +247,8 @@ public class EditCategoriesController extends FormBasicController {
 
 			category.getLabel().setValue(translate("form.segment.category.label.new"));
 			category.getTitle().setValue(translate("form.segment.category.title.new"));
-			categories.add(0, category);
+			int index = Integer.min(id + 1, categories.size());
+			categories.add(index, category);
 			initUi();
 			flc.contextPut("categories", categories);
 		} else if (DELETE_CMD.equals(cmd)) {

@@ -256,7 +256,8 @@ public class UserDetailsController extends BasicController implements Activateab
 				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
 			}
 			statementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null, true, true);
+					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null,
+					true, true, true);
 			listenTo(statementCtrl);
 			hasChanged = false;
 		}
