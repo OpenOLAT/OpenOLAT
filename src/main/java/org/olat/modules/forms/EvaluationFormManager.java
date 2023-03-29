@@ -113,6 +113,8 @@ public interface EvaluationFormManager {
 	public void deleteAllData(EvaluationFormSurvey survey);
 	
 	public void deleteSurvey(EvaluationFormSurvey survey);
+	
+	public void deleteParticipation(EvaluationFormParticipation participation, boolean withSessions);
 
 	public EvaluationFormParticipation createParticipation(EvaluationFormSurvey survey);
 

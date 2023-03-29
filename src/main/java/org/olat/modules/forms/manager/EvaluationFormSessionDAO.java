@@ -234,6 +234,16 @@ class EvaluationFormSessionDAO {
 		return session;
 	}
 	
+	int removeParticipationFromSessions(EvaluationFormParticipation participation) {
+		if (participation == null) return 0;
+		
+		String query = "update evaluationformsession session set session.participation.key=null where session.participation.key=:participationKey";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query)
+				.setParameter("participationKey", participation.getKey())
+				.executeUpdate();
+	}
+	
 	void deleteSessions(EvaluationFormSurveyRef surveyRef) {
 		if (surveyRef == null) return;
 		

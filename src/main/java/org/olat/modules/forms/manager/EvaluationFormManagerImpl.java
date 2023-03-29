@@ -223,6 +223,16 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		evaluationFormSurveyDao.reindexSeries(survey.getSeriesKey());
 	}
 	
+	@Override
+	public void deleteParticipation(EvaluationFormParticipation participation, boolean withSessions) {
+		if(withSessions) {
+			deleteParticipations(List.of(participation));
+		} else {
+			evaluationFormSessionDao.removeParticipationFromSessions(participation);
+			evaluationFormParticipationDao.deleteParticipations(List.of(participation));
+		}
+	}
+	
 	private boolean isPartOfSeries(EvaluationFormSurvey survey) {
 		return survey != null && (survey.getSeriesPrevious() != null || evaluationFormSurveyDao.hasSeriesNext(survey));
 	}

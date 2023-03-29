@@ -42,7 +42,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
@@ -58,6 +57,7 @@ import org.olat.course.noderight.NodeRightGrant.NodeRightRole;
 import org.olat.course.noderight.NodeRightService;
 import org.olat.course.noderight.NodeRightType;
 import org.olat.course.noderight.NodeRightTypeBuilder;
+import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.nodes.survey.ui.SurveyEditController;
 import org.olat.course.nodes.survey.ui.SurveyRunController;
@@ -72,6 +72,7 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
@@ -381,34 +382,20 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
-			String path, Identity doer, Role by) {
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+		SurveyManager surveyManager = CoreSpringFactory.getImpl(SurveyManager.class);
 		
-		try {
-			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
-			
-			RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
-			
-			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-			
-			Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
-			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
-			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-			ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
-			
-			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
-					reportHelper.getComparator(), userColumns, getShortName());
-			evaluationFormExport.export(archiveStream, path);
-		} catch (IOException e) {
-			log.error("", e);
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
+		if(survey != null) {
+			EvaluationFormParticipation participation = surveyManager.loadParticipation(survey, assessedIdentity);
+			if(participation != null) {
+				surveyManager.deleteParticipation(participation, false);
+			}
 		}
-		
-		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override

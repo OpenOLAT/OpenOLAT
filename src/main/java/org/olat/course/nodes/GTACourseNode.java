@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -771,7 +772,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 				}
 				
 				for(BusinessGroup businessGroup:selectedGroups) {
-					archiveNodeData(course, businessGroup, taskList, dirName, exportStream);
+					archiveNodeData(course.getCourseEnvironment(), businessGroup, taskList, dirName, exportStream);
 				}
 			} else {
 				if(users == null) {
@@ -872,10 +873,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 	}
 	
-	public void archiveNodeData(ICourse course, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
+	public void archiveNodeData(CourseEnvironment courseEnv, BusinessGroup businessGroup, TaskList taskList, String dirName, ZipOutputStream exportStream) {
 		ModuleConfiguration config = getModuleConfiguration();
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
-		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		
 		int flow = 0;//for beautiful ordering
 		String groupDirName = (StringHelper.containsNonWhitespace(dirName) ? dirName + "/" : "")
@@ -884,7 +885,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		
 		Task task = gtaManager.getTask(businessGroup, taskList);
 		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
-			File taskDirectory = gtaManager.getTasksDirectory(course.getCourseEnvironment(), this);
+			File taskDirectory = gtaManager.getTasksDirectory(courseEnv, this);
 			File taskFile = new File(taskDirectory, task.getTaskName());
 			if(taskFile.exists()) {
 				String path = groupDirName + "/"  + (++flow) + "_task/" + taskFile.getName(); 
@@ -893,7 +894,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		if(config.getBooleanSafe(GTASK_SUBMIT)) {
-			File submitDirectory = gtaManager.getSubmitDirectory(course.getCourseEnvironment(), this, businessGroup);
+			File submitDirectory = gtaManager.getSubmitDirectory(courseEnv, this, businessGroup);
 			String submissionDirName = groupDirName + "/" + (++flow) + "_submissions";
 			int files = ZipUtil.addDirectoryToZip(submitDirectory.toPath(), submissionDirName, exportStream);
 			if(files > 0 && gtaManager.isSubmissionExtended(task, null, businessGroup, this, courseEntry, true)) {
@@ -906,7 +907,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 
 		if(config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
-			File correctionsDir = gtaManager.getCorrectionDirectory(course.getCourseEnvironment(), this, businessGroup);
+			File correctionsDir = gtaManager.getCorrectionDirectory(courseEnv, this, businessGroup);
 			String correctionDirName = groupDirName + "/" + (++flow) + "_corrections";
 			ZipUtil.addDirectoryToZip(correctionsDir.toPath(), correctionDirName, exportStream);
 		}
@@ -914,11 +915,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if(task != null && config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
 			int numOfIteration = task.getRevisionLoop();
 			for(int i=1; i<=numOfIteration; i++) {
-				File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(course.getCourseEnvironment(), this, i, businessGroup);
+				File revisionDirectory = gtaManager.getRevisedDocumentsDirectory(courseEnv, this, i, businessGroup);
 				String revisionDirName = groupDirName + "/" + (++flow) + "_revisions_" + i;
 				ZipUtil.addDirectoryToZip(revisionDirectory.toPath(), revisionDirName, exportStream);
 				
-				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(course.getCourseEnvironment(), this, i, businessGroup);
+				File correctionDirectory = gtaManager.getRevisedDocumentsCorrectionsDirectory(courseEnv, this, i, businessGroup);
 				String correctionDirName = groupDirName + "/" + (++flow) + "_corrections_" + i;
 				ZipUtil.addDirectoryToZip(correctionDirectory.toPath(), correctionDirName, exportStream);
 			}
@@ -930,8 +931,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 					.getMembers(businessGroup, GroupRoles.participant.name());
 			String assessmentDirName = groupDirName + "/"  + (++flow) + "_assessment";
 			for(Identity assessedIdentity:assessedIdentities) {
-				List<File> assessmentDocuments = course.getCourseEnvironment()
-						.getAssessmentManager().getIndividualAssessmentDocuments(this, assessedIdentity);
+				List<File> assessmentDocuments = courseEnv.getAssessmentManager()
+						.getIndividualAssessmentDocuments(this, assessedIdentity);
 				if(assessmentDocuments != null && !assessmentDocuments.isEmpty()) {
 					String name = assessedIdentity.getUser().getLastName()
 							+ "_" + assessedIdentity.getUser().getFirstName()
@@ -1064,7 +1065,20 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		TaskList taskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), this);
-		archiveNodeUserData(courseEnv, assessedIdentity, taskList, archiveStream, path);
+		
+		if(GTAType.group.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			List<BusinessGroup> assessedUserGroups = assessedUserCourseEnv.getParticipatingGroups();
+			if(assessedUserGroups != null && !assessedUserGroups.isEmpty()) {
+				List<BusinessGroup> selectedGroups = gtaManager.getBusinessGroups(this);
+				List<BusinessGroup> taskGroups = new ArrayList<>(assessedUserGroups);
+				taskGroups.retainAll(selectedGroups);
+				for(BusinessGroup businessGroup:taskGroups) {
+					archiveNodeData(courseEnv, businessGroup, taskList, path, archiveStream);
+				}
+			}
+		} else {
+			archiveNodeUserData(courseEnv, assessedIdentity, taskList, archiveStream, path);
+		}
 		
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
