@@ -102,7 +102,8 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 	private Long courseRepoKey;
 	
 	@Column(name="last_statement", nullable=true, insertable=true, updatable=true)
-	private boolean lastStatement;
+	private boolean lastStatement;	@Column(name="archive_path", nullable=true, insertable=true, updatable=true)
+	private String archivePath;
 	@Column(name="archive_certificate", nullable=true, insertable=true, updatable=true)
 	private Long archiveCertificateKey;
 
@@ -304,6 +305,15 @@ public class UserEfficiencyStatementForCoaching implements Persistable, UserEffi
 
 	public void setArchiveCertificateKey(Long archiveCertificateKey) {
 		this.archiveCertificateKey = archiveCertificateKey;
+	}
+
+	@Override
+	public String getArchivePath() {
+		return archivePath;
+	}
+
+	public void setArchivePath(String archivePath) {
+		this.archivePath = archivePath;
 	}
 
 	@Override

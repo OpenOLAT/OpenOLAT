@@ -40,6 +40,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NamedFileMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -193,12 +197,13 @@ public class QTI21DeleteDataController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		File archiveFile = null;
 		if(courseNode instanceof IQTESTCourseNode) {
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			
 			ICourse course = CourseFactory.loadCourse(courseEntry);
-			archiveData(course, options);
+			archiveFile = archiveData(course, options);
 			
 			qtiService.deleteAssessmentTestSession(identities, testEntry, courseEntry, courseNode.getIdent());
 			for(Identity identity:identities) {
@@ -213,14 +218,20 @@ public class QTI21DeleteDataController extends FormBasicController {
 				dbInstance.commitAndCloseSession();
 			}
 		} else if(assessedEntry != null) {
-			archiveData(assessedEntry);
+			archiveFile = archiveData(assessedEntry);
 			qtiService.deleteAssessmentTestSession(identities, assessedEntry, null, null);
 		}
 		
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		if(archiveFile != null) {
+			MediaResource archiveResource = new NamedFileMediaResource(archiveFile, archiveFile.getName(), archiveFile.getName(), false);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
-	private void archiveData(ICourse course, ArchiveOptions archiveOptions) {
+	private File archiveData(ICourse course, ArchiveOptions archiveOptions) {
 		File exportDirectory = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), course.getCourseTitle());
 		String archiveName = courseNode.getType() + "_"
 				+ StringHelper.transformDisplayNameToFileSystemName(courseNode.getShortName())
@@ -229,14 +240,14 @@ public class QTI21DeleteDataController extends FormBasicController {
 		File exportFile = new File(exportDirectory, archiveName);
 		try(FileOutputStream fileStream = new FileOutputStream(exportFile);
 			ZipOutputStream exportStream = new ZipOutputStream(fileStream)) {
-			
 			courseNode.archiveNodeData(getLocale(), course, archiveOptions, exportStream, "", "UTF-8");
 		} catch (IOException e) {
 			logError("", e);
 		}
+		return exportFile;
 	}
 	
-	private void archiveData(RepositoryEntry testEntry) {
+	private File archiveData(RepositoryEntry testEntry) {
 		//backup
 		String archiveName = "qti21test_"
 				+ StringHelper.transformDisplayNameToFileSystemName(testEntry.getDisplayname())
@@ -254,6 +265,6 @@ public class QTI21DeleteDataController extends FormBasicController {
 		} catch (IOException e) {
 			logError("", e);
 		}
-		
+		return exportFile;
 	}
 }
