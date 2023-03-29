@@ -22,6 +22,7 @@ package org.olat.course.nodes.videotask.ui;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -34,8 +35,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
+import org.olat.course.assessment.ui.reset.ResetDataContext;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
+import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
@@ -44,9 +51,11 @@ import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.manager.VideoTaskArchiveFormat;
 import org.olat.course.nodes.videotask.model.VideoTaskArchiveSearchParams;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti21.resultexport.IdentitiesList;
 import org.olat.modules.assessment.AssessmentToolOptions;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.video.VideoAssessmentService;
@@ -63,12 +72,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class VideoTaskParticipantListController extends IdentityListCourseNodeController {
 	
 	private FormLink statsButton;
-	private FormLink resetButton;
 	private FormLink playAllButton;
+	private FormLink resetAllDataButton;
+	private FormLink deleteAllDataButton;
 	private FormLink exportResultsButton;
 	
 	private VideoTaskAssessmentPlayController playCtrl;
-	private VideoTaskResetDataController resetDataCtrl;
+	private VideoTaskDeleteDataController deleteDataCtrl;
+	private ConfirmResetDataController confirmResetDataCtrl;
 	
 	@Autowired
 	private VideoAssessmentService videoAssessmentService;
@@ -97,9 +108,15 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 			playAllButton.setIconLeftCSS("o_icon o_icon_video_play");
 		}
 		
-		if(!coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin()) {
-			resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
-			resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
+		if(!coachCourseEnv.isCourseReadOnly()) {
+			if(getAssessmentCallback().isAdmin()) {
+				deleteAllDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
+				deleteAllDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
+			}
+			if(getAssessmentCallback().canResetData()) {
+				resetAllDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
+				resetAllDataButton.setIconLeftCSS("o_icon o_icon_reset_data");
+			}
 		}
 	}
 	
@@ -117,8 +134,15 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 				stackPanel.popController(playCtrl);
 				cleanUp();
 			}
-		} else if(resetDataCtrl == source) {
+		} else if(deleteDataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reload(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(confirmResetDataCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				doResetData(ureq, confirmResetDataCtrl.getDataContext());
 				reload(ureq);
 			}
 			cmc.deactivate();
@@ -129,17 +153,21 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void cleanUp() {
-		removeAsListenerAndDispose(resetDataCtrl);
+		removeAsListenerAndDispose(confirmResetDataCtrl);
+		removeAsListenerAndDispose(deleteDataCtrl);
 		removeAsListenerAndDispose(playCtrl);
-		resetDataCtrl = null;
+		confirmResetDataCtrl = null;
+		deleteDataCtrl = null;
 		playCtrl = null;
 		super.cleanUp();
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(resetButton == source) {
-			doConfirmResetData(ureq);
+		if(deleteAllDataButton == source) {
+			doConfirmDeleteAllData(ureq);
+		} else if(resetAllDataButton == source) {
+			doConfirmResetAllData(ureq);
 		} else if(exportResultsButton == source) {
 			doExportResults(ureq);
 		} else if(statsButton == source) {
@@ -150,17 +178,61 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doConfirmResetData(UserRequest ureq) {
+	private void doConfirmDeleteAllData(UserRequest ureq) {
 		AssessmentToolOptions asOptions = getOptions();
 		CourseEnvironment courseEnv = getCourseEnvironment();
-		resetDataCtrl = new VideoTaskResetDataController(ureq, getWindowControl(),
+		deleteDataCtrl = new VideoTaskDeleteDataController(ureq, getWindowControl(),
 				courseEnv, asOptions, (VideoTaskCourseNode)courseNode);
-		listenTo(resetDataCtrl);
+		listenTo(deleteDataCtrl);
 		
-		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+		String title = translate("delete.data.title");
+		cmc = new CloseableModalController(getWindowControl(), null, deleteDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doConfirmResetAllData(UserRequest ureq) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(getIdentities(true).getIdentities());
+		doConfirmResetData(ureq, dataContext);
+	}
+	
+	private void doConfirmResetData(UserRequest ureq, Identity assessedIdentity) {
+		ResetDataContext dataContext = new ResetDataContext(courseEntry);
+		dataContext.setResetParticipants(ResetParticipants.selected);
+		dataContext.setSelectedParticipants(List.of(assessedIdentity));
+		doConfirmResetData(ureq, dataContext);
+	}
+	
+	private void doConfirmResetData(UserRequest ureq, ResetDataContext dataContext) {
+		dataContext.setResetCourse(ResetCourse.elements);
+		dataContext.setCourseNodes(List.of(courseNode));
+		
+		confirmResetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, getAssessmentCallback());
+		listenTo(confirmResetDataCtrl);
+		
+		String title = translate("reset.test.data.title", courseNode.getShortTitle());
+		cmc = new CloseableModalController(getWindowControl(), null, confirmResetDataCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doResetData(UserRequest ureq, ResetDataContext dataContext) {
+		List<Identity> identities;
+		if(dataContext.getResetParticipants() == ResetParticipants.all) {
+			identities = getIdentities(true).getIdentities();
+		} else {
+			identities = dataContext.getSelectedParticipants();
+		}
+		
+		ResetCourseDataHelper resetCourseNodeHelper = new ResetCourseDataHelper(getCourseEnvironment());
+		MediaResource archiveResource = resetCourseNodeHelper
+				.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
+		if(archiveResource != null) {
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
 	private void doExportResults(UserRequest ureq) {
@@ -203,12 +275,45 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	@Override
 	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(assessmentConfig.isAssessable()) {
-			return super.createCalloutController(ureq, assessedIdentity);
+			return new VideoAssessableTaskToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
 		}
 		return new VideoTaskToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
 	}
 	
+	private class VideoAssessableTaskToolsController extends AbstractToolsController {
+
+		private Link resetDataLink;
+		
+		public VideoAssessableTaskToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+				Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+			super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
+			
+			initTools();
+		}
+		
+		@Override
+		protected void initResetAttempts() {
+			super.initResetAttempts();
+			
+			if(getAssessmentCallback().canResetData()) {
+				addSeparator();
+				resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
+			}
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(resetDataLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doConfirmResetData(ureq, assessedIdentity);
+			}
+			super.event(ureq, source, event);
+		}
+	}
+	
 	private class VideoTaskToolsController extends AbstractToolsController {
+		
+		private Link resetDataLink;
 		
 		public VideoTaskToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 				Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -219,17 +324,36 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 
 		@Override
 		protected void initDetails() {
-			//;
+			//
 		}
 
 		@Override
 		protected void initApplyGrade() {
-			//;
+			//
 		}
 
 		@Override
 		protected void initStatus() {
-			//;
+			//
+		}
+
+		@Override
+		protected void initResetAttempts() {
+			super.initResetAttempts();
+			
+			if(getAssessmentCallback().canResetData()) {
+				addSeparator();
+				resetDataLink = addLink("reset.test.data.title", "tool.reset.data", "o_icon o_icon-fw o_icon_reset_data");
+			}
+		}
+
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			if(resetDataLink == source) {
+				fireEvent(ureq, Event.CLOSE_EVENT);
+				doConfirmResetData(ureq, assessedIdentity);
+			}
+			super.event(ureq, source, event);
 		}
 	}
 }

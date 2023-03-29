@@ -236,6 +236,15 @@ public class FormManagerImpl implements FormManager {
 	}
 	
 	@Override
+	public EvaluationFormSession getSession(EvaluationFormSurvey survey, Identity identity) {
+		EvaluationFormParticipation participation = loadParticipation(survey, identity);
+		if (participation != null) {
+			return evaluationFormManager.loadSessionByParticipation(participation);
+		}
+		return null;
+	}
+	
+	@Override
 	public EvaluationFormSession getDoneSession(EvaluationFormSurvey survey, Identity identity) {
 		EvaluationFormParticipation participation = loadParticipation(survey, identity);
 		if (participation != null) {

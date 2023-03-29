@@ -28,12 +28,15 @@ package org.olat.course.nodes;
 import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
@@ -49,13 +52,16 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.CourseEntryRef;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -63,6 +69,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.nodes.ms.AuditEnv;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
@@ -83,8 +90,18 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.SessionFilter;
+import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.ui.EvaluationFormExcelExport;
+import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.modules.forms.ui.LegendNameGenerator;
+import org.olat.modules.forms.ui.ReportHelper;
+import org.olat.modules.forms.ui.ReportHelperUserColumns;
+import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
 import org.olat.modules.grade.GradeModule;
 import org.olat.modules.grade.GradeScale;
 import org.olat.modules.grade.GradeScoreRange;
@@ -106,6 +123,7 @@ import org.olat.resource.OLATResource;
  */
 public class MSCourseNode extends AbstractAccessableCourseNode {
 	
+	private static final Logger log = Tracing.createLoggerFor(MSCourseNode.class);
 	private static final long serialVersionUID = -7741172700015384397L;
 	
 	@SuppressWarnings("deprecation")
@@ -376,6 +394,63 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_EVAL_FORM_SOFTKEY);
+	}
+	
+	
+
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
+		
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		try {
+			MSService msService = CoreSpringFactory.getImpl(MSService.class);
+			I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+			EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+
+			RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
+			if(formEntry != null) {
+				EvaluationFormSession session =  msService.getSession(courseEntry, getIdent(), assessedIdentity, null);
+				if(session != null) {
+					SessionFilter filter = SessionFilterFactory.create(session);
+					Form form = evaluationFormManager.loadForm(formEntry);
+					
+					Translator translator = Util.createPackageTranslator(EvaluationFormReportsController.class, locale);
+					LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+					ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
+					ReportHelperUserColumns userColumns = new ReportHelperUserColumns(reportHelper, translator);
+					
+					EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter,
+							reportHelper.getComparator(), userColumns, getShortName());
+					evaluationFormExport.export(archiveStream, path);
+				}
+			}
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
+		if(formEntry != null) {
+			MSService msService = CoreSpringFactory.getImpl(MSService.class);
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			
+			EvaluationFormSession session =  msService.getSession(courseEntry, getIdent(), assessedIdentity, null);
+			if(session != null) {
+				UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
+				AuditEnv auditEnv = AuditEnv.of(auditManager, this, assessedIdentity, identity, by);
+				msService.deleteSession(courseEntry, getIdent(), assessedIdentity, auditEnv);
+			}
+		}
+		
+		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override

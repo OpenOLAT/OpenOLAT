@@ -66,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class VideoTaskResetDataController extends FormBasicController {
+public class VideoTaskDeleteDataController extends FormBasicController {
 	
 	private MultipleSelectionElement acknowledgeEl;
 	
@@ -85,7 +85,7 @@ public class VideoTaskResetDataController extends FormBasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
-	public VideoTaskResetDataController(UserRequest ureq, WindowControl wControl,
+	public VideoTaskDeleteDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, List<Identity> identities, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;
@@ -98,7 +98,7 @@ public class VideoTaskResetDataController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public VideoTaskResetDataController(UserRequest ureq, WindowControl wControl,
+	public VideoTaskDeleteDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl, "confirm_reset_data");
 		this.courseNode = courseNode;

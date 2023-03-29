@@ -68,7 +68,7 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 	private final boolean canReset;
 	private final IdentitiesList assessedIdentities;
 	
-	private VideoTaskResetDataController resetDataCtrl;
+	private VideoTaskDeleteDataController resetDataCtrl;
 
 	public VideoTaskAssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
@@ -187,7 +187,7 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 	
 	private void doConfirmResetData(UserRequest ureq) {
 		List<Identity> identities = getIdentities();
-		resetDataCtrl = new VideoTaskResetDataController(ureq, getWindowControl(),
+		resetDataCtrl = new VideoTaskDeleteDataController(ureq, getWindowControl(),
 				courseEnv, identities, courseNode);
 		listenTo(resetDataCtrl);
 		

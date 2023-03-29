@@ -418,5 +418,20 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		return true;
 	}
 
-	
+	@Override
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+		
+		RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		
+		VideoAssessmentService videoAssessmentService = CoreSpringFactory.getImpl(VideoAssessmentService.class);
+		List<VideoTaskSession> sessions = videoAssessmentService.getTaskSessions(courseEntry, getIdent(), assessedIdentity);
+		for(VideoTaskSession session:sessions) {
+			if(!session.isCancelled()) {
+				session.setCancelled(true);
+				videoAssessmentService.updateTaskSession(session);
+			}
+		}
+	}
 }
