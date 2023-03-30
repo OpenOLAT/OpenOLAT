@@ -22,6 +22,8 @@ package org.olat.course.run.scoring;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +93,7 @@ public class ResetCourseDataHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(ResetCourseDataHelper.class);
 	
+	private static final DateFormat folderFormat = new SimpleDateFormat("yyyy-MM");
 	public static final String ROOT_FOLDER = "archives";
 	
 	private final CourseEnvironment courseEnv;
@@ -171,7 +174,12 @@ public class ResetCourseDataHelper {
 		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, courseEntry.getOlatResource().getKey());
 
 		// 1) First the archive
+		String folder = "";
 		String vfsName = generateFilename(assessedIdentity);
+		synchronized(folderFormat) {
+			folder = folderFormat.format(new Date());
+			rootFolder = VFSManager.getOrCreateContainer(rootFolder, folder);
+		}
 		VFSLeaf archiveZip = rootFolder.createChildLeaf(vfsName);
 		if(archiveZip == null) {
 			vfsName = VFSManager.rename(rootFolder, vfsName);
@@ -265,7 +273,7 @@ public class ResetCourseDataHelper {
 		ResetCourseDataEvent rcde = new ResetCourseDataEvent(assessedIdentity, courseEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(rcde, course);
 		
-		return vfsName;
+		return folder + "/" + vfsName;
 	}
 	
 	/**

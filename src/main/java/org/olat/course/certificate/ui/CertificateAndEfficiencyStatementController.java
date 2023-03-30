@@ -276,6 +276,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				statementLink.setUserObject(statement.getKey());
 				historyOfStatementsDropdown.addComponent(statementLink);
 			}
+			
+			historyOfStatementsDropdown.setVisible(historyOfStatementsDropdown.size() > 1);
 		}
 	}
 
@@ -427,8 +429,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			efficiencyStatement = efficiencyStatementManager.getEfficiencyStatement(userEfficiencyStatement);
 			if(userEfficiencyStatement.isLastStatement()) {
 				historyOfStatementsDropdown.setTranslatedLabel(translate("current.version"));
+				mainVC.contextRemove("version");
+				
 			} else {
 				historyOfStatementsDropdown.setTranslatedLabel(statementLink.getI18n());
+				mainVC.contextPut("version", statementLink.getI18n());
 			}
 			
 			if(userEfficiencyStatement.getCompletion() != null) {
@@ -437,9 +442,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				mainVC.remove("completion");
 			}
 		} else {
+			historyOfStatementsDropdown.setTranslatedLabel(translate("current.version"));
 			userEfficiencyStatement = null;
 			efficiencyStatement = null;
 			mainVC.remove("completion");
+			mainVC.contextRemove("version");
 		}
 		
 		// Reset controllers
