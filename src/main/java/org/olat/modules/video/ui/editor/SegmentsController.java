@@ -55,7 +55,7 @@ public class SegmentsController extends BasicController {
 	private VideoManager videoManager;
 
 	public SegmentsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							  long videoDurationInSeconds) {
+							  long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("segments");
@@ -69,7 +69,8 @@ public class SegmentsController extends BasicController {
 		listenTo(segmentsHeaderController);
 		mainVC.put("header", segmentsHeaderController.getInitialComponent());
 
-		segmentController = new SegmentController(ureq, wControl, segment, segments, videoDurationInSeconds);
+		segmentController = new SegmentController(ureq, wControl, segment, segments, videoDurationInSeconds,
+				videoElementId);
 		listenTo(segmentController);
 		if (segment != null) {
 			mainVC.put("segment", segmentController.getInitialComponent());
@@ -137,7 +138,6 @@ public class SegmentsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		segmentsHeaderController.setCurrentTimeCode(currentTimeCode);
-		segmentController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showSegment(String segmentId) {

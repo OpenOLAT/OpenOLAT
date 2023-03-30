@@ -54,6 +54,7 @@
 		const start = jQuery('.o_video_annotation_start input');
 		const end = jQuery('.o_video_annotation_end input');
 		const duration = jQuery('.o_video_annotation_duration input');
+		const minDuration = 1;
 
 		const parseTimeToSeconds = (timeString) => {
 			const parts = timeString.split(':');
@@ -69,22 +70,32 @@
 
 		const updateDuration = () => {
 			const startInSec = parseTimeToSeconds(start.val());
-			const endInSec = parseTimeToSeconds(end.val());
-
-			if (endInSec - startInSec > 0) {
-				duration.val((endInSec - startInSec));
+			let endInSec = parseTimeToSeconds(end.val());
+			let durationInSec = endInSec - startInSec;
+			const durationDeficit = Math.max(0, minDuration - (endInSec - startInSec));
+			if (durationDeficit > 0) {
+				endInSec += durationDeficit;
+				durationInSec += durationDeficit;
+				end.val(formatTime(endInSec, end.val()));
 			}
+			duration.val(durationInSec);
 			return true;
 		};
 
 		const updateEnd = () => {
 			const startInSec = parseTimeToSeconds(start.val());
-			const durationInSec = parseInt(duration.val());
-			const endTimeString = formatTime(startInSec + durationInSec, end.val());
-			end.val(endTimeString);
+			let durationInSec = parseInt(duration.val());
+			let endInSec = startInSec + durationInSec;
+			const overlap = Math.max(0, endInSec - ${videoDurationInSeconds});
+			if (overlap > 0) {
+				durationInSec -= overlap;
+				endInSec -= overlap;
+				duration.val(durationInSec);
+			}
+			end.val(formatTime(endInSec, end.val()));
 		}
 
-		start.on('keyup', updateDuration);
+		start.on('keyup', updateEnd);
 		end.on('keyup', updateDuration);
 		duration.on('keyup', updateEnd);
 	});

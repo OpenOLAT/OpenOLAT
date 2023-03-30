@@ -21,7 +21,6 @@ package org.olat.modules.video.ui.editor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.olat.core.commons.services.color.ColorService;
@@ -64,10 +63,9 @@ public class CommentController extends FormBasicController {
 	private final long videoDurationInSeconds;
 	private final VideoComments comments;
 	private final RepositoryEntry repositoryEntry;
+	private final String videoElementId;
 	private VideoComment comment;
 	private TextElement startEl;
-	private FormLink startApplyPositionButton;
-	private String currentTimeCode;
 	private ColorPickerElement colorPicker;
 	private RichTextElement textEl;
 	private FormLink videoLink;
@@ -81,12 +79,14 @@ public class CommentController extends FormBasicController {
 	private VideoManager videoManager;
 
 	public CommentController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							 VideoComment comment, VideoComments comments, long videoDurationInSeconds) {
+							 VideoComment comment, VideoComments comments, long videoDurationInSeconds,
+							 String videoElementId) {
 		super(ureq, wControl, "comment");
 		this.repositoryEntry = repositoryEntry;
 		this.comment = comment;
 		this.comments = comments;
 		this.videoDurationInSeconds = videoDurationInSeconds;
+		this.videoElementId = videoElementId;
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -117,10 +117,9 @@ public class CommentController extends FormBasicController {
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
 
-		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
-		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
+		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		colorPicker = uifactory.addColorPickerElement("color", "form.common.color", formLayout,
 				colorService.getColors());
@@ -175,19 +174,9 @@ public class CommentController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (startApplyPositionButton == source) {
-			doApplyStartPosition();
-		} else if (videoLink == source) {
+		if (videoLink == source) {
 			doShowVideo(ureq);
 		}
-	}
-
-	private void doApplyStartPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-		long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-		startEl.setValue(timeFormat.format(new Date(startTimeInSeconds * 1000)));
 	}
 
 	@Override
@@ -306,9 +295,5 @@ public class CommentController extends FormBasicController {
 			listenTo(cmc);
 			cmc.activate();
 		}
-	}
-
-	public void setCurrentTimeCode(String currentTimeCode) {
-		this.currentTimeCode = currentTimeCode;
 	}
 }

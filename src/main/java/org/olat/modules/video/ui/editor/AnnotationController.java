@@ -55,13 +55,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class AnnotationController extends FormBasicController {
-	private final static long MIN_DURATION = 1;
+	private final String videoElementId;
 
 	private VideoMarker annotation;
 	private TextElement startEl;
-	private FormLink startApplyPositionButton;
 	private TextElement endEl;
-	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private RichTextElement textEl;
 	private ColorPickerElement colorPicker;
@@ -73,17 +71,17 @@ public class AnnotationController extends FormBasicController {
 	@Autowired
 	private ColorService colorService;
 	private final long videoDurationInSeconds;
-	private String currentTimeCode;
 	private CloseableCalloutWindowController ccwc;
 	private EditPositionSizeController editPositionSizeController;
 	private double top, left, width, height;
 
 	public AnnotationController(UserRequest ureq, WindowControl wControl, VideoMarker annotation,
-								long videoDurationInSeconds) {
+								long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl, "annotation");
 		this.annotation = annotation;
 		this.videoDurationInSeconds = videoDurationInSeconds;
-
+		this.videoElementId = videoElementId;
+		flc.contextPut("videoDurationInSeconds", videoDurationInSeconds);
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -113,19 +111,17 @@ public class AnnotationController extends FormBasicController {
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
 
-		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
-		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		endEl = uifactory.addTextElement("end", "form.annotation.startEnd", 8,
 				"00:00:00", formLayout);
 		endEl.setMandatory(true);
 
-		endApplyPositionButton = uifactory.addFormLink("endApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
-		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+		ApplyPositionButtonController endApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("endApplyPosition", endApplyPositionButtonController.getInitialComponent());
 
 		durationEl = uifactory.addTextElement("duration", "form.annotation.duration", 10,
 				"00", formLayout);
@@ -214,11 +210,7 @@ public class AnnotationController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (startApplyPositionButton == source) {
-			doApplyStartPosition();
-		} else if (endApplyPositionButton == source) {
-			doApplyEndPosition();
-		} else if (fontSize == source) {
+		if (fontSize == source) {
 			fontSizeEl.setValue(Integer.toString((int)fontSize.getValue()));
 		} else if (fontSizeEl == source) {
 			try {
@@ -254,40 +246,6 @@ public class AnnotationController extends FormBasicController {
 				positionSizeEditLink.getFormDispatchId(), "", true, "");
 		listenTo(ccwc);
 		ccwc.activate();
-	}
-
-	private void doApplyStartPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-
-		try {
-			long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long endTimeInSeconds = timeFormat.parse(endEl.getValue()).getTime() / 1000;
-			long newStartTimeInSeconds = Long.min(endTimeInSeconds - MIN_DURATION, startTimeInSeconds);
-			startEl.setValue(timeFormat.format(new Date(newStartTimeInSeconds * 1000)));
-			long duration = endTimeInSeconds - newStartTimeInSeconds;
-			durationEl.setValue(Long.toString(duration));
-		} catch (ParseException e) {
-			//
-		}
-	}
-
-	private void doApplyEndPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-
-		try {
-			long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long startTimeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
-			long newEndTimeInSeconds = Long.max(startTimeInSeconds + MIN_DURATION, endTimeInSeconds);
-			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
-			long duration = newEndTimeInSeconds - startTimeInSeconds;
-			durationEl.setValue(Long.toString(duration));
-		} catch (ParseException e) {
-			//
-		}
 	}
 
 	@Override
@@ -362,9 +320,5 @@ public class AnnotationController extends FormBasicController {
 		} catch (ParseException e) {
 			logError("", e);
 		}
-	}
-
-	public void setCurrentTimeCode(String currentTimeCode) {
-		this.currentTimeCode = currentTimeCode;
 	}
 }

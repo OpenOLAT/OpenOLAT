@@ -56,7 +56,7 @@ public class AnnotationsController extends BasicController {
 	private VideoManager videoManager;
 
 	public AnnotationsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-								 long videoDurationInSeconds) {
+								 long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("annotations");
@@ -69,7 +69,8 @@ public class AnnotationsController extends BasicController {
 		listenTo(annotationsHeaderController);
 		mainVC.put("header", annotationsHeaderController.getInitialComponent());
 
-		annotationController = new AnnotationController(ureq, wControl, annotation, videoDurationInSeconds);
+		annotationController = new AnnotationController(ureq, wControl, annotation, videoDurationInSeconds,
+				videoElementId);
 		listenTo(annotationController);
 		if (annotation != null) {
 			mainVC.put("annotation", annotationController.getInitialComponent());
@@ -137,7 +138,6 @@ public class AnnotationsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		annotationsHeaderController.setCurrentTimeCode(currentTimeCode);
-		annotationController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showAnnotation(String annotationId) {

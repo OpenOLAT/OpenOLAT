@@ -50,6 +50,7 @@
 		const start = jQuery('.o_video_segment_start input');
 		const end = jQuery('.o_video_segment_end input');
 		const duration = jQuery('.o_video_segment_duration input');
+		const minDuration = 5;
 
 		const parseTimeToSeconds = (timeString) => {
 			const parts = timeString.split(':');
@@ -65,11 +66,16 @@
 
 		const updateDuration = () => {
 			const startInSec = parseTimeToSeconds(start.val());
-			const endInSec = parseTimeToSeconds(end.val());
-
-			if (endInSec - startInSec > 0) {
-				duration.val((endInSec - startInSec));
+			let endInSec = parseTimeToSeconds(end.val());
+			let durationInSec = endInSec - startInSec;
+			const durationDeficit = Math.max(0, minDuration - (endInSec - startInSec));
+			if (durationDeficit > 0) {
+				endInSec += durationDeficit;
+				durationInSec += durationDeficit;
+				end.val(formatTime(endInSec, end.val()));
 			}
+			duration.val(durationInSec);
+			return true;
 		};
 
 		const updateEnd = () => {
