@@ -177,6 +177,7 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents) {
 		RepositoryEntry entry = accessAndProps.getRepositoryEntry();
 
+		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 		
 		entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());

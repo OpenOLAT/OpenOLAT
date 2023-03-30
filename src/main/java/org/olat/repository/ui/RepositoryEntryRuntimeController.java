@@ -927,6 +927,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
 
+		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, updatedStatus);

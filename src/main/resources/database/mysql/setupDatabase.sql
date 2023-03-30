@@ -3795,8 +3795,8 @@ create table o_repositoryentry_audit_log (
    r_action varchar(32) not null,
    r_val_before longtext,
    r_val_after longtext,
-   fk_entry bigint not null,
-   fk_author bigint not null,
+   fk_entry bigint,
+   fk_author bigint,
    primary key (id)
 );
 
