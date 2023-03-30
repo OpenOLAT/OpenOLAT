@@ -1,0 +1,27 @@
+<script>
+	function o_vid_click_handler(videoElementId, targetId, rootFormId) {
+		const player = jQuery('#o_so_vid' + videoElementId).data('player');
+		const target = jQuery('#' + targetId);
+		if (player && player.currentTime && target) {
+			target.val(new Date(player.currentTime * 1000).toISOString().substring(11, 19));
+		} else {
+			target.val("00:00:00");
+		}
+		target.focus();
+		target.keyup();
+		setFlexiFormDirty(rootFormId);
+		target.blur();
+	}
+</script>
+
+<div class="btn-group">
+	<a class="btn btn-default" href="javascript:;"
+	   onclick="o_vid_click_handler('${videoElementId}', '${targetId}', '${rootFormId}');"
+	   style="border-top-left-radius: 0; border-bottom-left-radius: 0;"
+	   role="button" title="$title">
+		<span>
+			<span class="visually-hidden">$title</span>
+		</span>
+		<i class="o_icon o_icon_crosshairs"></i>
+	</a>
+</div>

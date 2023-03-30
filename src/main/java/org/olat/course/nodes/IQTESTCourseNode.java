@@ -65,6 +65,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -865,6 +866,39 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 				&& !testSession.isCancelled()
 				&& !testSession.isExploded()
 				&& (testSession.getFinishTime() != null || testSession.getTerminationTime() != null);
+	}
+
+	@Override
+	public void archiveForResetUserData(UserCourseEnvironment assessedUserCourseEnv, ZipOutputStream archiveStream,
+			String path, Identity doer, Role by) {
+		
+		RepositoryEntry re = getReferencedRepositoryEntry();
+		if(re != null && ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
+			try {
+				I18nManager i18nManager = CoreSpringFactory.getImpl(I18nManager.class);
+				CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
+				RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+				Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+				Locale locale = i18nManager.getLocaleOrDefault(assessedIdentity.getUser().getPreferences().getLanguage());
+
+				List<Identity> assessedIdentitities = new ArrayList<>(1);
+				assessedIdentitities.add(assessedIdentity);
+				
+				//1) create export resource
+				new QTI21ResultsExport(courseEnv, assessedIdentitities, true, false, this, path, locale, doer, null)
+					.exportTestResults(archiveStream);
+				
+				ArchiveOptions options = new ArchiveOptions();
+				options.setIdentities(assessedIdentitities);
+				QTI21StatisticSearchParams searchParams = new QTI21StatisticSearchParams(options, re, courseEntry, getIdent());
+				QTI21ArchiveFormat qaf = new QTI21ArchiveFormat(locale, searchParams);
+				qaf.exportCourseElement(archiveStream, path);
+			} catch (IOException e) {
+				log.error("", e);
+			}
+		}
+
+		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 
 	@Override

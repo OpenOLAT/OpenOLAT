@@ -56,7 +56,7 @@ public class CommentsController extends BasicController {
 
 
 	public CommentsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							  long videoDurationInSeconds) {
+							  long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("comments");
@@ -72,7 +72,7 @@ public class CommentsController extends BasicController {
 		mainVC.put("header", commentsHeaderController.getInitialComponent());
 
 		commentController = new CommentController(ureq, wControl, repositoryEntry, comment, comments,
-				videoDurationInSeconds);
+				videoDurationInSeconds, videoElementId);
 		listenTo(commentController);
 		if (comment != null) {
 			mainVC.put("comment", commentController.getInitialComponent());
@@ -141,7 +141,6 @@ public class CommentsController extends BasicController {
 
 	public void setCurrentTimeCode(String currentTimeCode) {
 		commentsHeaderController.setCurrentTimeCode(currentTimeCode);
-		commentController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showComment(String commentId) {

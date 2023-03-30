@@ -69,7 +69,7 @@ public class VideoEditorController extends BasicController {
 		mainVC.put("video", videoController.getInitialComponent());
 
 		detailsController = new DetailsController(ureq, wControl, repositoryEntry,
-				videoController.getDurationInSeconds());
+				videoController.getDurationInSeconds(), videoController.getVideoElementId());
 		listenTo(detailsController);
 		mainVC.put("detail", detailsController.getInitialComponent());
 

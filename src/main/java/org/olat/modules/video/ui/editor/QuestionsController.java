@@ -79,7 +79,7 @@ public class QuestionsController extends BasicController {
 	private ColorService colorService;
 
 	protected QuestionsController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-								  long videoDurationInSeconds) {
+								  long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl);
 		this.repositoryEntry = repositoryEntry;
 		mainVC = createVelocityContainer("questions");
@@ -92,7 +92,8 @@ public class QuestionsController extends BasicController {
 		listenTo(questionsHeaderController);
 		mainVC.put("header", questionsHeaderController.getInitialComponent());
 
-		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, videoDurationInSeconds);
+		questionController = new QuestionController(ureq, wControl, repositoryEntry, question, videoDurationInSeconds,
+				videoElementId);
 		listenTo(questionController);
 		if (question != null) {
 			mainVC.put("question", questionController.getInitialComponent());
@@ -248,7 +249,6 @@ public class QuestionsController extends BasicController {
 	public void setCurrentTimeCode(String currentTimeCode) {
 		this.currentTimeCode = currentTimeCode;
 		questionsHeaderController.setCurrentTimeCode(currentTimeCode);
-		questionController.setCurrentTimeCode(currentTimeCode);
 	}
 
 	public void showQuestion(String questionId) {

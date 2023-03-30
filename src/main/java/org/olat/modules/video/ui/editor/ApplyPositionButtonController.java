@@ -20,39 +20,28 @@
 package org.olat.modules.video.ui.editor;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.avrecorder.AVConfiguration;
-import org.olat.core.gui.avrecorder.AVCreationController;
-import org.olat.core.gui.avrecorder.AVCreationEvent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.nodes.gta.ui.AVDoneEvent;
 
 /**
- * Initial date: 2023-03-13<br>
+ * Initial date: 2023-03-30<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class RecordCommentController extends BasicController {
-	private final VFSContainer targetContainer;
-	private final AVCreationController creationController;
+public class ApplyPositionButtonController extends BasicController {
 
-	public RecordCommentController(UserRequest ureq, WindowControl wControl, VFSContainer targetContainer) {
+	protected ApplyPositionButtonController(UserRequest ureq, WindowControl wControl, String targetId,
+											String videoElementId, String rootFormId) {
 		super(ureq, wControl);
 
-		this.targetContainer = targetContainer;
-
-		AVConfiguration config = new AVConfiguration();
-		creationController = new AVCreationController(ureq, wControl, config);
-		listenTo(creationController);
-
-		VelocityContainer mainVC = createVelocityContainer("record_comment");
-		mainVC.put("component", creationController.getInitialComponent());
+		VelocityContainer mainVC = createVelocityContainer("apply_position_button");
+		mainVC.contextPut("title", translate("form.common.applyCurrentPosition"));
+		mainVC.contextPut("targetId", targetId);
+		mainVC.contextPut("videoElementId", videoElementId);
+		mainVC.contextPut("rootFormId", rootFormId);
 
 		putInitialPanel(mainVC);
 	}
@@ -60,17 +49,5 @@ public class RecordCommentController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		super.event(ureq, source, event);
-
-		if (creationController == source) {
-			if (event instanceof AVCreationEvent) {
-				VFSLeaf recording = creationController.moveUploadFileTo(targetContainer, creationController.getFileName());
-				fireEvent(ureq, new AVDoneEvent(recording));
-			}
-		}
 	}
 }

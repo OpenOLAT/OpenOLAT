@@ -62,9 +62,7 @@ public class SegmentController extends FormBasicController {
 	private VideoSegment segment;
 	private final VideoSegments segments;
 	private TextElement startEl;
-	private FormLink startApplyPositionButton;
 	private TextElement endEl;
-	private FormLink endApplyPositionButton;
 	private TextElement durationEl;
 	private FormLink categoryButton;
 	private FormLink editCategoriesButton;
@@ -73,16 +71,18 @@ public class SegmentController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	@Autowired
 	private VideoModule videoModule;
-	private String currentTimeCode;
 	private CloseableCalloutWindowController ccwc;
 	private SegmentCategoryController segmentCategoryController;
+	private final String videoElementId;
 
 	public SegmentController(UserRequest ureq, WindowControl wControl, VideoSegment segment,
-							 VideoSegments segments, long videoDurationInSeconds) {
+							 VideoSegments segments, long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl, "segment");
 		this.segment = segment;
 		this.segments = segments;
 		this.videoDurationInSeconds = videoDurationInSeconds;
+		this.videoElementId = videoElementId;
+
 		flc.contextPut("videoDurationInSeconds", videoDurationInSeconds);
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
@@ -124,19 +124,17 @@ public class SegmentController extends FormBasicController {
 				formLayout);
 		startEl.setMandatory(true);
 
-		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
-		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		endEl = uifactory.addTextElement("end", "form.segment.startEnd", 8, "",
 				formLayout);
 		endEl.setMandatory(true);
 
-		endApplyPositionButton = uifactory.addFormLink("endApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		endApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
-		endApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+		ApplyPositionButtonController endApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), endEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("endApplyPosition", endApplyPositionButtonController.getInitialComponent());
 
 		durationEl = uifactory.addTextElement("duration", "form.segment.duration", 10,
 				"", formLayout);
@@ -172,49 +170,10 @@ public class SegmentController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (startApplyPositionButton == source) {
-			doApplyStartPosition();
-		} else if (endApplyPositionButton == source) {
-			doApplyEndPosition();
-		} else if (categoryButton == source) {
+		if (categoryButton == source) {
 			doSelectCategory(ureq);
 		} else if (editCategoriesButton == source) {
 			doEditCategories(ureq);
-		}
-	}
-
-	private void doApplyStartPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-
-		try {
-			long newStartTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long duration = Long.parseLong(durationEl.getValue());
-			long newEndTimeInSeconds = Long.min(newStartTimeInSeconds + duration, videoDurationInSeconds);
-			long newDuration = newEndTimeInSeconds - newStartTimeInSeconds;
-			startEl.setValue(timeFormat.format(new Date(newStartTimeInSeconds * 1000)));
-			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
-			durationEl.setValue(Long.toString(newDuration));
-		} catch (NumberFormatException e) {
-			//
-		}
-	}
-
-	private void doApplyEndPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-
-		try {
-			long endTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-			long startTimeInSeconds = timeFormat.parse(startEl.getValue()).getTime() / 1000;
-			long newEndTimeInSeconds = Long.max(startTimeInSeconds + MIN_DURATION, endTimeInSeconds);
-			endEl.setValue(timeFormat.format(new Date(newEndTimeInSeconds * 1000)));
-			long duration = newEndTimeInSeconds - startTimeInSeconds;
-			durationEl.setValue(Long.toString(duration));
-		} catch (ParseException e) {
-			//
 		}
 	}
 
@@ -359,9 +318,5 @@ public class SegmentController extends FormBasicController {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
-	}
-
-	public void setCurrentTimeCode(String currentTimeCode) {
-		this.currentTimeCode = currentTimeCode;
 	}
 }

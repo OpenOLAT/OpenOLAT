@@ -21,7 +21,6 @@ package org.olat.modules.video.ui.editor;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -31,7 +30,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -40,7 +38,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -66,7 +63,6 @@ public class QuestionController extends FormBasicController {
 	private VideoQuestion question;
 	private final RepositoryEntry repositoryEntry;
 	private TextElement startEl;
-	private FormLink startApplyPositionButton;
 	private TextElement timeLimitEl;
 	private ColorPickerElement colorPicker;
 	private MultipleSelectionElement options;
@@ -76,16 +72,18 @@ public class QuestionController extends FormBasicController {
 	private final SimpleDateFormat timeFormat;
 	private QuestionTableModel tableModel;
 	private FlexiTableElement questionTable;
-	private String currentTimeCode;
 	private final long videoDurationInSeconds;
+	private final String videoElementId;
 
 
 	public QuestionController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry,
-							  VideoQuestion question, long videoDurationInSeconds) {
+							  VideoQuestion question, long videoDurationInSeconds, String videoElementId) {
 		super(ureq, wControl, "question");
 		this.repositoryEntry = repositoryEntry;
 		this.question = question;
 		this.videoDurationInSeconds = videoDurationInSeconds;
+		this.videoElementId = videoElementId;
+
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -112,10 +110,9 @@ public class QuestionController extends FormBasicController {
 				"00:00:00", formLayout);
 		startEl.setMandatory(true);
 
-		startApplyPositionButton = uifactory.addFormLink("startApplyPosition", "", "",
-				formLayout, Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
-		startApplyPositionButton.setIconRightCSS("o_icon o_icon_crosshairs");
-		startApplyPositionButton.setTitle(translate("form.common.applyCurrentPosition"));
+		ApplyPositionButtonController startApplyPositionButtonController = new ApplyPositionButtonController(ureq,
+				getWindowControl(), startEl.getFormDispatchId(), videoElementId, mainForm.getDispatchFieldId());
+		flc.put("startApplyPosition", startApplyPositionButtonController.getInitialComponent());
 
 		timeLimitEl = uifactory.addTextElement("timeLimit", "form.question.timeLimit", 8,
 				"", formLayout);
@@ -180,18 +177,8 @@ public class QuestionController extends FormBasicController {
 			if (EDIT_ACTION.equals(selectionEvent.getCommand())) {
 				doEdit(ureq, question);
 			}
-		} else if (startApplyPositionButton == source) {
-			doApplyStartPosition();
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-
-	private void doApplyStartPosition() {
-		if (currentTimeCode == null) {
-			return;
-		}
-		long startTimeInSeconds = Math.round(Double.parseDouble(currentTimeCode));
-		startEl.setValue(timeFormat.format(new Date(startTimeInSeconds * 1000)));
 	}
 
 	private void doEdit(UserRequest ureq, VideoQuestion question) {
@@ -232,14 +219,14 @@ public class QuestionController extends FormBasicController {
 	private boolean validateTimeLimit() {
 		boolean allOk = true;
 		timeLimitEl.clearError();
-		if (!StringHelper.containsNonWhitespace(timeLimitEl.getValue())) {
-			//
-		} else if (!StringHelper.isLong(timeLimitEl.getValue())) {
-			timeLimitEl.setErrorKey("form.error.nointeger");
-			allOk = false;
-		} else if (Long.parseLong(timeLimitEl.getValue()) <= 0) {
-			timeLimitEl.setErrorKey("form.error.timeNotValid");
-			allOk = false;
+		if (StringHelper.containsNonWhitespace(timeLimitEl.getValue())) {
+			if (!StringHelper.isLong(timeLimitEl.getValue())) {
+				timeLimitEl.setErrorKey("form.error.nointeger");
+				allOk = false;
+			} else if (Long.parseLong(timeLimitEl.getValue()) <= 0) {
+				timeLimitEl.setErrorKey("form.error.timeNotValid");
+				allOk = false;
+			}
 		}
 		return allOk;
 	}
@@ -273,9 +260,5 @@ public class QuestionController extends FormBasicController {
 		} catch (ParseException e) {
 			logError("", e);
 		}
-	}
-
-	public void setCurrentTimeCode(String currentTimeCode) {
-		this.currentTimeCode = currentTimeCode;
 	}
 }

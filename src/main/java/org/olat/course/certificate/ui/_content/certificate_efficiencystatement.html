@@ -3,7 +3,7 @@
 		#if($r.available("collectArtefactLink"))
 			<div class="pull-right">$r.render("collectArtefactLink")</div>
 		#end
-		<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title")</h3>	
+		<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title") #if($r.isNotEmpty($version))<small>$version</small>#end</h3>	
 		
 		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive"))
 		<div class="o_button_group_right o_block_bottom">
