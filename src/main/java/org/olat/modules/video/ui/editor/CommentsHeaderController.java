@@ -299,7 +299,7 @@ public class CommentsHeaderController extends FormBasicController {
 			cleanUp();
 		} else if (importFileController == source) {
 			if (event == Event.DONE_EVENT) {
-				doAddFile(ureq, importFileController.getFileName(), null, false);
+				doAddFile(ureq, importFileController.getFileName(), false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -311,8 +311,7 @@ public class CommentsHeaderController extends FormBasicController {
 			cleanUp();
 		} else if (recordCommentController == source) {
 			if (event instanceof AVDoneEvent avDoneEvent) {
-				doAddFile(ureq, avDoneEvent.getRecording().getName(), wrapInPTag(recordCommentController.getTitle()),
-						true);
+				doAddFile(ureq, avDoneEvent.getRecording().getName(), true);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -331,7 +330,7 @@ public class CommentsHeaderController extends FormBasicController {
 	private void doAddText(UserRequest ureq) {
 		VideoCommentImpl newComment = createBaseComment();
 		newComment.setType(VideoCommentType.text.name());
-		newComment.setText("<p>" + translate("comment.add.new") + "</p>");
+		newComment.setText(wrapInPTag(translate("comment.add.new")));
 
 		commentId = newComment.getId();
 		comments.getComments().add(newComment);
@@ -339,11 +338,11 @@ public class CommentsHeaderController extends FormBasicController {
 		fireEvent(ureq, COMMENT_ADDED_EVENT);
 	}
 
-	private void doAddFile(UserRequest ureq, String fileName, String text, boolean isRecording) {
+	private void doAddFile(UserRequest ureq, String fileName, boolean isRecording) {
 		VideoCommentImpl newComment = createBaseComment();
 		newComment.setType(isRecording ? VideoCommentType.videoRecording.name() : VideoCommentType.videoFile.name());
 		newComment.setFileName(fileName);
-		newComment.setText(text);
+		newComment.setText(null);
 
 		commentId = newComment.getId();
 		comments.getComments().add(newComment);

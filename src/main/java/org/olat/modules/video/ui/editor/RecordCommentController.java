@@ -39,10 +39,8 @@ import org.olat.course.nodes.gta.ui.AVDoneEvent;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RecordCommentController extends BasicController {
-	private final VelocityContainer mainVC;
 	private final VFSContainer targetContainer;
 	private final AVCreationController creationController;
-	private RecordCommentDetailsController recordCommentDetailsController;
 
 	public RecordCommentController(UserRequest ureq, WindowControl wControl, VFSContainer targetContainer) {
 		super(ureq, wControl);
@@ -53,14 +51,10 @@ public class RecordCommentController extends BasicController {
 		creationController = new AVCreationController(ureq, wControl, config);
 		listenTo(creationController);
 
-		mainVC = createVelocityContainer("record_comment");
+		VelocityContainer mainVC = createVelocityContainer("record_comment");
 		mainVC.put("component", creationController.getInitialComponent());
 
 		putInitialPanel(mainVC);
-	}
-
-	public String getTitle() {
-		return recordCommentDetailsController.getTitle();
 	}
 
 	@Override
@@ -74,21 +68,9 @@ public class RecordCommentController extends BasicController {
 
 		if (creationController == source) {
 			if (event instanceof AVCreationEvent) {
-				doSetDetails(ureq);
-			}
-		} else if (recordCommentDetailsController == source) {
-			if (event == Event.DONE_EVENT) {
 				VFSLeaf recording = creationController.moveUploadFileTo(targetContainer, creationController.getFileName());
 				fireEvent(ureq, new AVDoneEvent(recording));
-			} else if (event == Event.CANCELLED_EVENT) {
-				fireEvent(ureq, Event.CANCELLED_EVENT);
 			}
 		}
-	}
-
-	private void doSetDetails(UserRequest ureq) {
-		recordCommentDetailsController = new RecordCommentDetailsController(ureq, getWindowControl());
-		listenTo(recordCommentDetailsController);
-		mainVC.put("component", recordCommentDetailsController.getInitialComponent());
 	}
 }
