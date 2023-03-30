@@ -3847,6 +3847,16 @@ create table o_zoom_config (
     fk_lti_tool_deployment_id number(20) not null,
     primary key (id)
 );
+create table o_repositoryentry_audit_log (
+    id number(20) generated always as identity,
+    creationdate date not null,
+    r_action varchar(32) not null,
+    r_val_before CLOB,
+    r_val_after CLOB,
+    fk_entry number(20) not null,
+    fk_author number(20) not null,
+    primary key (id)
+);
 
 -- Projects
 create table o_proj_project (
