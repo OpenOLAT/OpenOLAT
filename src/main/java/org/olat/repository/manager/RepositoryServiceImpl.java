@@ -468,6 +468,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
+		re = loadByKey(re.getKey());
 		String before = toAuditXml(re);
 
 		// start delete
@@ -675,6 +676,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
+		entry = loadByKey(entry.getKey());
 		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);

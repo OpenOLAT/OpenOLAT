@@ -206,13 +206,13 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		passedTypeEl.clearError();
 		if (passedTypeEl.isVisible() && passedTypeEl.isEnabled() && !passedTypeEl.isOneSelected()) {
-			passedTypeEl.setErrorKey("form.legende.mandatory", null);
+			passedTypeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -223,15 +223,15 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 				try {
 					double val = Double.parseDouble(cutValue);
 					if(val < 0.0) {
-						cutValueEl.setErrorKey("form.error.nointeger", null);
+						cutValueEl.setErrorKey("form.error.nointeger");
 						allOk &= false;
 					}
 				} catch (NumberFormatException e) {
-					cutValueEl.setErrorKey("form.error.nointeger", null);
+					cutValueEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				cutValueEl.setErrorKey("form.legende.mandatory", null);
+				cutValueEl.setErrorKey("form.legende.mandatory");
 			}
 		}
 
@@ -251,11 +251,11 @@ public class AssessmentTestOptionsEditorController extends FormBasicController {
 			try {
 				double val = Long.parseLong(timeEl.getValue());
 				if(val < 0l) {
-					maxTimeCont.setErrorKey("form.error.nointeger", null);
+					maxTimeCont.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				maxTimeCont.setErrorKey("form.error.nointeger", null);
+				maxTimeCont.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}

@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Constants;
@@ -273,13 +274,19 @@ public class MatchEditorController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
 		//clear errors
 		answersCont.clearError();
 		if(sourceWrappers.isEmpty()) {
-			answersCont.setErrorKey("error.atleast.one.source", null);
+			answersCont.setErrorKey("error.atleast.one.source");
 			allOk &= false;
 		} else if(targetWrappers.isEmpty()) {
-			answersCont.setErrorKey("error.atleast.one.target", null);
+			answersCont.setErrorKey("error.atleast.one.target");
 			allOk &= false;
 		}
 		
@@ -291,7 +298,7 @@ public class MatchEditorController extends FormBasicController {
 		if(layoutEl != null) {
 			layoutEl.clearError();
 			if(!layoutEl.isOneSelected()) {
-				layoutEl.setErrorKey("form.legende.mandatory", null);
+				layoutEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

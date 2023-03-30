@@ -781,27 +781,27 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-
+		re = repositoryService.loadByKey(re.getKey());
 		String before = repositoryService.toAuditXml(re);
 
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
-			repositoryService.closeRepositoryEntry(re, null, false);
+			re = repositoryService.closeRepositoryEntry(re, null, false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			repositoryService.uncloseRepositoryEntry(re);
+			re = repositoryService.uncloseRepositoryEntry(re);
 			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.deleted.name().equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(re, identity, true, false);
+			re = repositoryService.deleteSoftly(re, identity, true, false);
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			repositoryService.restoreRepositoryEntry(re);
+			re = repositoryService.restoreRepositoryEntry(re);
 			log.info(Tracing.M_AUDIT, "REST restoring course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));

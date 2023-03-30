@@ -137,13 +137,13 @@ public class TestsExport1OptionsStep extends BasicStep {
 			
 			numOfTestsEl.clearError();
 			if(!StringHelper.containsNonWhitespace(numOfTestsEl.getValue())) {
-				numOfTestsEl.setErrorKey("form.legende.mandatory", null);
+				numOfTestsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
 				try {
 					Integer.parseInt(numOfTestsEl.getValue());
 				} catch(Exception e) {
-					numOfTestsEl.setErrorKey("form.error.nointeger", null);
+					numOfTestsEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			}
@@ -156,7 +156,7 @@ public class TestsExport1OptionsStep extends BasicStep {
 			
 			el.clearError();
 			if(!el.isOneSelected()) {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			
@@ -168,7 +168,7 @@ public class TestsExport1OptionsStep extends BasicStep {
 			
 			el.clearError();
 			if(!StringHelper.containsNonWhitespace(el.getValue())) {
-				el.setErrorKey("form.legende.mandatory", null);
+				el.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			

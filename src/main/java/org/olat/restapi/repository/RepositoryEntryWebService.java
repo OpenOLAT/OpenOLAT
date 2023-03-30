@@ -903,6 +903,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	private void updateStatus(String newStatus, HttpServletRequest request) {
+		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
 			entry = repositoryService.closeRepositoryEntry(entry, null, false);

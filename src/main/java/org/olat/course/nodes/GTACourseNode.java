@@ -32,7 +32,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
@@ -49,7 +48,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -127,7 +125,6 @@ import org.olat.user.UserManager;
  */
 public class GTACourseNode extends AbstractAccessableCourseNode {
 	
-	private static final Logger log = Tracing.createLoggerFor(GTACourseNode.class);
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
 
 	private static final long serialVersionUID = 1L;
@@ -1085,6 +1082,11 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
+		boolean resetTask = GTAType.individual.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+		resetUserData(assessedUserCourseEnv, resetTask, identity, by);
+	}
+
+	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, boolean resetTask, Identity identity, Role by) {
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -1093,10 +1095,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			return; // No task configured, nothing to do
 		}
 		
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		Task task = gtaManager.getTask(assessedIdentity, taskList);
-		if(task != null) {
-			gtaManager.resetCourseNode(task, assessedIdentity, this, courseEnv, identity);
+		if(resetTask) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			Task task = gtaManager.getTask(assessedIdentity, taskList);
+			if(task != null) {
+				gtaManager.resetCourseNode(task, assessedIdentity, this, courseEnv, identity);
+			}
 		}
 		
 		super.resetUserData(assessedUserCourseEnv, identity, by);

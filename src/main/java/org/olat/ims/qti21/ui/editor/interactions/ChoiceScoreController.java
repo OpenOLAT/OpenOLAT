@@ -283,16 +283,16 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				int minChoices = Integer.parseInt(minChoicesEl.getSelectedKey());
 				int maxChoices = Integer.parseInt(maxChoicesEl.getSelectedKey());
 				if(maxChoices > 0 && maxChoices < minChoices) {
-					maxChoicesEl.setErrorKey("error.min.choice.bigger.max", null);
+					maxChoicesEl.setErrorKey("error.min.choice.bigger.max");
 					allOk &= false;
 				}	
 			}
 			if(!maxChoicesEl.isOneSelected()) {
-				maxChoicesEl.setErrorKey("form.legende.mandatory", null);
+				maxChoicesEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			if(!minChoicesEl.isOneSelected()) {
-				minChoicesEl.setErrorKey("form.legende.mandatory", null);
+				minChoicesEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

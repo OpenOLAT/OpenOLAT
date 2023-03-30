@@ -276,7 +276,7 @@ public class InlineChoiceInteractionSettingsController extends FormBasicControll
 		if(choiceWrappers.size() > 1) {
 			choiceWrappers.remove(wrapper);
 		} else if(choiceWrappers.size() == 1) {
-			choiceWrappers.get(0).getTextEl().setErrorKey("error.atleast.one.choice", null);
+			choiceWrappers.get(0).getTextEl().setErrorKey("error.atleast.one.choice");
 		}
 		flc.setDirty(true);
 	}

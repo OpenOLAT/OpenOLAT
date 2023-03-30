@@ -184,19 +184,19 @@ public class EssayEditorController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		copyPasteEl.clearError();
 		if(!copyPasteEl.isOneSelected()) {
-			copyPasteEl.setErrorKey("form.legende.mandatory", null);
+			copyPasteEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		textFormattingEl.clearError();
 		if(!textFormattingEl.isOneSelected()) {
-			textFormattingEl.setErrorKey("form.legende.mandatory", null);
+			textFormattingEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 
@@ -213,10 +213,10 @@ public class EssayEditorController extends FormBasicController {
 		integerEl.clearError();
 		if(StringHelper.containsNonWhitespace(integerEl.getValue())) {
 			if(!StringHelper.isLong(integerEl.getValue())) {
-				integerEl.setErrorKey("form.error.nointeger", null);
+				integerEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			} else if(!isInteger(integerEl.getValue())) {
-				integerEl.setErrorKey("error.integer.positive", null);
+				integerEl.setErrorKey("error.integer.positive");
 				allOk &= false;
 			}
 		}

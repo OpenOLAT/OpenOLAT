@@ -96,7 +96,7 @@ public class FIBTextEntryAlternativesController extends FormBasicController {
 		boolean allOk = true;
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

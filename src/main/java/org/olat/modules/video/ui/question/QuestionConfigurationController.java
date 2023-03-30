@@ -139,7 +139,7 @@ public class QuestionConfigurationController extends FormBasicController {
 
 		styleEl.clearError();
 		if(!styleEl.isOneSelected()) {
-			styleEl.setErrorKey("form.legende.mandatory", null);
+			styleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -152,17 +152,17 @@ public class QuestionConfigurationController extends FormBasicController {
 		boolean allOk = true;
 		beginEl.clearError();
 		if(!StringHelper.containsNonWhitespace(beginEl.getValue())) {
-			beginEl.setErrorKey("form.legende.mandatory", null);
+			beginEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			try {
 				Date val = displayDateFormat.parse(beginEl.getValue());
 				if(videoDurationInSecs != null && (val.getTime() > (videoDurationInSecs.longValue() * 1000l))) {
-					beginEl.setErrorKey("chapter.error.out.of.range", null);
+					beginEl.setErrorKey("chapter.error.out.of.range");
 					allOk &= false;
 				}
 			} catch(Exception e) {
-				beginEl.setErrorKey("chapter.error.format", null);
+				beginEl.setErrorKey("chapter.error.format");
 				allOk &= false;
 			}
 		}
@@ -173,7 +173,7 @@ public class QuestionConfigurationController extends FormBasicController {
 		boolean allOk = true;
 		timeLimitEl.clearError();
 		if(StringHelper.containsNonWhitespace(timeLimitEl.getValue()) && !StringHelper.isLong(timeLimitEl.getValue())) {
-			timeLimitEl.setErrorKey("form.error.nointeger", null);
+			timeLimitEl.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		return allOk;
@@ -200,7 +200,7 @@ public class QuestionConfigurationController extends FormBasicController {
 			question.setAllowNewAttempt(skippingEl.isSelected(1));
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		} catch (ParseException e) {
-			beginEl.setErrorKey("form.legende.mandatory", null);
+			beginEl.setErrorKey("form.legende.mandatory");
 			logError("", e);
 		}
 	}

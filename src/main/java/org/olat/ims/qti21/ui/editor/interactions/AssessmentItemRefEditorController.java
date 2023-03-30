@@ -95,7 +95,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 				try {
 					Integer.parseInt(maxAttemptsEl.getValue());
 				} catch(NumberFormatException e) {
-					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					maxAttemptsEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			}
@@ -114,13 +114,13 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 		String value = el.getValue();
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(value)) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			try {
 				Double.parseDouble(value);
 			} catch (NumberFormatException e) {
-				el.setErrorKey("error.double", null);
+				el.setErrorKey("error.double");
 				allOk &= false;
 			}
 		}
@@ -136,7 +136,7 @@ public abstract class AssessmentItemRefEditorController extends FormBasicControl
 			double minScore =Double.parseDouble(minScoreEl.getValue());
 			double maxScore = Double.parseDouble(maxScoreEl.getValue());
 			if(minScore > maxScore) {
-				minScoreEl.setErrorKey("error.min.score.bigger.max", null);
+				minScoreEl.setErrorKey("error.min.score.bigger.max");
 				allOk &= false;
 			}
 		}

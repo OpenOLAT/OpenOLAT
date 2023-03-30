@@ -132,13 +132,13 @@ public class UploadEditorController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		numOfUploadsEl.clearError();
 		if(!numOfUploadsEl.isOneSelected()) {
-			numOfUploadsEl.setErrorKey("form.legende.mandatory", null);
+			numOfUploadsEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

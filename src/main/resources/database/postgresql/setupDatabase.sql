@@ -3934,8 +3934,8 @@ create table o_repositoryentry_audit_log (
    r_action varchar(32) not null,
    r_val_before text,
    r_val_after text,
-   fk_entry int8 not null,
-   fk_author int8 not null,
+   fk_entry int8,
+   fk_author int8,
    primary key (id)
 );
 

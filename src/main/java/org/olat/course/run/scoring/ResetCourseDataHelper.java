@@ -24,7 +24,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -60,9 +64,15 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.GTACourseNode;
+import org.olat.course.nodes.gta.GTAManager;
+import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
+import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.reminder.ReminderService;
 import org.olat.repository.RepositoryEntry;
@@ -84,15 +94,20 @@ public class ResetCourseDataHelper {
 	public static final String ROOT_FOLDER = "archives";
 	
 	private final CourseEnvironment courseEnv;
+	private final Map<GTACourseNode,Set<Long>> gtaNodeToFullGroupsMembers = new HashMap<>();
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GTAManager gtaManager;
 	@Autowired
 	private ReminderService reminderService;
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementMgr;
 	@Autowired
@@ -132,7 +147,7 @@ public class ResetCourseDataHelper {
 	public MediaResource resetCourseNodes(List<Identity> identities, List<CourseNode> courseNodes, boolean resetCourse, Identity doer, Role by) {
 		List<String> archiveNames = new ArrayList<>();
 		for(Identity identity:identities) {
-			String archiveName =resetCourseNodes(identity, courseNodes, resetCourse, doer, by);
+			String archiveName = resetCourseNodes(identity, courseNodes, resetCourse, identities, doer, by);
 			if(archiveName != null) {
 				archiveNames.add(archiveName);
 			}
@@ -144,7 +159,7 @@ public class ResetCourseDataHelper {
 	}
 
 	private String resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes,
-			boolean resetCourse, Identity doer, Role by) {	
+			boolean resetCourse, List<Identity> identitiesToReset, Identity doer, Role by) {	
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(assessedIdentity, Roles.userRoles(), courseEntry);
 		UserCourseEnvironment userCourseEnv = UserCourseEnvironmentImpl.load(assessedIdentity, Roles.userRoles(), courseEnv, reSecurity);
@@ -192,7 +207,14 @@ public class ResetCourseDataHelper {
 		// 3) Reset the data (eventually a course node can produce a new efficiency statement)
 		try {
 			for(CourseNode courseNode:courseNodes) {
-				courseNode.resetUserData(userCourseEnv, doer, by);
+				if(courseNode instanceof GTACourseNode gtaNode
+						&& GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+					Set<Long> fullBusinessGroupMembers = membersOfFullBusinessGroups(gtaNode, identitiesToReset);
+					boolean resetTask = fullBusinessGroupMembers.contains(assessedIdentity.getKey());
+					gtaNode.resetUserData(userCourseEnv, resetTask, doer, by);
+				} else {
+					courseNode.resetUserData(userCourseEnv, doer, by);
+				}
 			}
 		} catch(Exception e) {
 			log.error("", e);
@@ -244,6 +266,46 @@ public class ResetCourseDataHelper {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(rcde, course);
 		
 		return vfsName;
+	}
+	
+	/**
+	 * From the list of identities to reset, find the ones which are all referenced in a business
+	 * groups to reset the task of GTA course element.
+	 * 
+	 * @param gtaNode The course element
+	 * @param identities The whole list of identities to reset
+	 * @return
+	 */
+	private Set<Long> membersOfFullBusinessGroups(GTACourseNode gtaNode, List<Identity> identities) {
+		if(gtaNodeToFullGroupsMembers.containsKey(gtaNode)) {
+			return gtaNodeToFullGroupsMembers.get(gtaNode);
+		}
+
+		List<BusinessGroup> businessGroups = gtaManager.getBusinessGroups(gtaNode);
+		List<BusinessGroupMembership> businessGroupMemberships = businessGroupService.getBusinessGroupsMembership(businessGroups);
+		
+		Map<Long,List<Long>> groupKeysToMembers = new HashMap<>();
+		for(BusinessGroupMembership businessGroupMembership:businessGroupMemberships) {
+			List<Long> members = groupKeysToMembers
+					.computeIfAbsent(businessGroupMembership.getGroupKey(), key -> new ArrayList<>());
+			if(businessGroupMembership.isParticipant()) {
+				members.add(businessGroupMembership.getIdentityKey());
+			}
+		}
+		
+		List<Long> identitiesKeys = identities.stream()
+				.map(Identity::getKey)
+				.toList();
+		
+		Set<Long> fullGroupMembers = new HashSet<>();
+		for(Map.Entry<Long, List<Long>> entry:groupKeysToMembers.entrySet()) {
+			List<Long> membersKeys = entry.getValue();
+			if(identitiesKeys.containsAll(membersKeys)) {
+				fullGroupMembers.addAll(membersKeys);
+			}
+		}
+		gtaNodeToFullGroupsMembers.put(gtaNode, fullGroupMembers);
+		return fullGroupMembers;
 	}
 	
 	private void archiveStatement(UserEfficiencyStatementImpl statement, UserCourseEnvironment userCourseEnv, ZipOutputStream zout) throws IOException {

@@ -156,10 +156,10 @@ public class QTI21AdminController extends FormBasicController {
 			String password = certificatePasswordEl.getValue();
 			X509CertificatePrivateKeyPair kp = CryptoUtil.getX509CertificatePrivateKeyPairPfx(file, password);
 			if(kp.getX509Cert() == null) {
-				certificateEl.setErrorKey("error.digital.certificate.noX509", null);
+				certificateEl.setErrorKey("error.digital.certificate.noX509");
 				allOk &= false;
 			} else if(kp.getPrivateKey() == null) {
-				certificateEl.setErrorKey("error.digital.certificate.noPrivateKey", null);
+				certificateEl.setErrorKey("error.digital.certificate.noPrivateKey");
 				allOk &= false;
 			}
 		} catch (Exception e) {

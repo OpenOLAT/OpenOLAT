@@ -255,13 +255,13 @@ public class InlineChoiceEditorController extends FormBasicController implements
 
 		String questionText = textEl.getRawValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
-			textEl.setErrorKey("form.legende.mandatory", null);
+			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!questionText.contains("<inlinechoiceinteraction")) {
-			textEl.setErrorKey("error.missing.inlinechoice", null);
+			textEl.setErrorKey("error.missing.inlinechoice");
 			allOk &= false;
 		} else if(!validateCorrectResponses()) {
-			textEl.setErrorKey("error.missing.inlinechoice.missing.correct", null);
+			textEl.setErrorKey("error.missing.inlinechoice.missing.correct");
 			allOk &= false;
 		}
 

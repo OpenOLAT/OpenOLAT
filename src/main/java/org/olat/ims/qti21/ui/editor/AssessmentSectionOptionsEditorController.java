@@ -209,13 +209,13 @@ public class AssessmentSectionOptionsEditorController extends FormBasicControlle
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		randomSelectedEl.clearError();
 		if(!randomSelectedEl.isOneSelected()) {
-			randomSelectedEl.setErrorKey("form.legende.mandatory", null);
+			randomSelectedEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

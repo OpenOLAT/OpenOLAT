@@ -88,7 +88,7 @@ public class QTI21CorrectionAdminController extends FormBasicController {
 		
 		resultsVisibilityAfterCorrectionEl.clearError();
 		if(!resultsVisibilityAfterCorrectionEl.isOneSelected()) {
-			resultsVisibilityAfterCorrectionEl.setErrorKey("form.legende.mandatory", null);
+			resultsVisibilityAfterCorrectionEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

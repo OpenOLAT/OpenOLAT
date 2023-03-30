@@ -3853,8 +3853,8 @@ create table o_repositoryentry_audit_log (
     r_action varchar(32) not null,
     r_val_before CLOB,
     r_val_after CLOB,
-    fk_entry number(20) not null,
-    fk_author number(20) not null,
+    fk_entry number(20),
+    fk_author number(20),
     primary key (id)
 );
 

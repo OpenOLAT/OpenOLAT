@@ -25,6 +25,7 @@ import java.util.List;
 import com.thoughtworks.xstream.XStream;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -33,6 +34,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.model.RepositoryEntryAuditLogImpl;
+import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
+import org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +58,9 @@ public class RepositoryEntryAuditLogDAO {
 		repositoryEntryXStream.ignoreUnknownElements();
 
 		repositoryEntryXStream.alias("repositoryEntry", RepositoryEntry.class);
+		repositoryEntryXStream.omitField(GroupImpl.class, "members");
+		repositoryEntryXStream.omitField(RepositoryEntryToTaxonomyLevelImpl.class, "taxonomyLevel");
+		repositoryEntryXStream.omitField(RepositoryEntryToOrganisationImpl.class, "organisation");
 	}
 
 	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,

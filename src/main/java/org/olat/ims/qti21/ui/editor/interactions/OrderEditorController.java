@@ -227,13 +227,13 @@ public class OrderEditorController extends FormBasicController implements SyncAs
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		answersCont.clearError();
 		if(choiceWrappers.isEmpty()) {
-			answersCont.setErrorKey("error.atleast.one.choice", null);
+			answersCont.setErrorKey("error.atleast.one.choice");
 			allOk &= false;
 		}
 		

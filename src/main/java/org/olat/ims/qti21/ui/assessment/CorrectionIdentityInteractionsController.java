@@ -610,14 +610,13 @@ public class CorrectionIdentityInteractionsController extends FormBasicControlle
 				}
 				
 				if(!boundariesOk) {
-					el.setErrorKey("correction.min.max.score", new String[]{
-						AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore)
-					});
+					el.setErrorKey("correction.min.max.score",
+						AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore));
 				}
 				allOk &= boundariesOk;
 			} catch (NumberFormatException e) {
 				logWarn("Cannot parse the score: " + el.getValue(), null);
-				el.setErrorKey("error.double.format", null);
+				el.setErrorKey("error.double.format");
 				allOk &= false;
 			}
 		}
