@@ -77,8 +77,10 @@ public class CheckboxEditController extends FormBasicController {
 	
 	private FormLink deleteLink;
 	private FormLink downloadFileLink;
-	private TextElement titleEl, pointsEl;
-	private SingleSelection releaseEl, labelEl;
+	private TextElement titleEl;
+	private TextElement pointsEl;
+	private SingleSelection labelEl;
+	private SingleSelection releaseEl;
 	private MultipleSelectionElement awardPointEl;
 	private RichTextElement descriptionEl;
 	private FileElement fileEl;
@@ -154,6 +156,7 @@ public class CheckboxEditController extends FormBasicController {
 		pointsEl = uifactory.addTextElement("numofpoints", null, 10, points, formLayout);
 		pointsEl.setElementCssClass("o_sel_cl_checkbox_points");
 		pointsEl.setVisible(withScore && awardPointEl.isAtLeastSelected(1));
+		pointsEl.setMandatory(true);
 		pointsEl.setDisplaySize(5);
 		
 		String desc = checkbox.getDescription();
@@ -196,7 +199,18 @@ public class CheckboxEditController extends FormBasicController {
 		pointsEl.clearError();
 		if(awardPointEl.isAtLeastSelected(1)) {
 			try {
-				Float.parseFloat(pointsEl.getValue());
+				String val = pointsEl.getValue();
+				if(StringHelper.containsNonWhitespace(val)) {
+					Float.parseFloat(val);
+					int index = val.indexOf('.');
+					if(index >= 0 && (val.length() - index) > 4) {
+						pointsEl.setErrorKey("form.error.max.numbers.after", "3");
+						allOk &= false;
+					}
+				} else {
+					pointsEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}	
 			} catch (NumberFormatException e) {
 				pointsEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
