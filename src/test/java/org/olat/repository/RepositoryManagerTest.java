@@ -39,11 +39,15 @@ import java.util.UUID;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -52,6 +56,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -83,6 +88,8 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	NotificationsManager notificationsManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -371,6 +378,25 @@ public class RepositoryManagerTest extends OlatTestCase {
 				Assert.assertTrue(entry.getEntryStatus().ordinal() >= RepositoryEntryStatusEnum.published.ordinal());
 			}
 		}
+	}
+
+	@Test
+	public void addNewOwnerReturnsOwnerIsSubscribedToRepoEntryChangeStatus() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-la-");
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		SubscriptionContext subscriptionContext = repositoryService.getSubscriptionContext();
+
+		Assert.assertFalse(repositoryEntryRelationDao.hasRole(id, re, GroupRoles.owner.name()));
+
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(id);
+		repositoryManager.addOwners(id, iae, re, new MailPackage(false));
+
+		sleep(2000);
+
+		Subscriber subscriber = notificationsManager.getSubscriber(id, subscriptionContext);
+		Assert.assertTrue(repositoryEntryRelationDao.hasRole(id, re, GroupRoles.owner.name()));
+		Assert.assertNotNull(subscriber);
+		Assert.assertTrue(subscriber.isEnabled());
 	}
 	
 	@Test

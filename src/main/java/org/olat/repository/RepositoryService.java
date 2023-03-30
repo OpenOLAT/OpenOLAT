@@ -27,6 +27,8 @@ import java.util.Map;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -413,6 +415,49 @@ public interface RepositoryService {
 	 * @param organisation An organization
 	 * @return A list of repository entries
 	 */
-	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);	
+	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);
+
+	/**
+	 * @return
+	 */
+	PublisherData getPublisherData();
+
+	/**
+	 *
+	 * @return
+	 */
+	SubscriptionContext getSubscriptionContext();
+
+	/**
+	 *
+	 * @param repositoryEntry
+	 * @return
+	 */
+	String toAuditXml(RepositoryEntry repositoryEntry);
+
+	/**
+	 *
+	 * @param xml
+	 * @return
+	 */
+	RepositoryEntry toAuditRepositoryEntry(String xml);
+
+	/**
+	 *
+	 * @param action
+	 * @param before
+	 * @param after
+	 * @param entry
+	 * @param author
+	 */
+	void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,
+				  RepositoryEntry entry, Identity author);
+
+	/**
+	 *
+	 * @param authorIdentity
+	 * @return
+	 */
+	List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity);
 	
 }

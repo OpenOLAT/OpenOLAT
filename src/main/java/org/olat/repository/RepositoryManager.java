@@ -1482,6 +1482,11 @@ public class RepositoryManager {
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.addOwner, mailing);
 				log.info(Tracing.M_AUDIT, "Identity(.key):{} added identity '{}' to repoentry with key ({})",
 						ureqIdentity.getKey(), identity.getKey(), re.getKey());
+
+				dbInstance.commit();
+				RepositoryEntryMembershipModifiedEvent event = RepositoryEntryMembershipModifiedEvent.roleOwnerAdded(identity, re);
+				sendDeferredEvent(event, re);
+
 			}//else silently ignore already owner identities
 		}
 		iae.setIdentitiesAddedEvent(reallyAddedId);

@@ -33,6 +33,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
@@ -152,10 +153,8 @@ public class AppointmentsNotificationsHandler implements NotificationsHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		String title;
 		try {
-			Long resId = subscriber.getPublisher().getResId();
-			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
 			Translator trans = Util.createPackageTranslator(AppointmentsMainController.class, locale);
-			title = trans.translate("notifications.title", new String[]{ displayName });
+			title = trans.translate("notifications.title", getDisplayName(subscriber.getPublisher()));
 		} catch (Exception e) {
 			log.error("Error while creating appointments notifications for subscriber: " + subscriber.getKey(), e);
 			title = "-";
@@ -166,6 +165,21 @@ public class AppointmentsNotificationsHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(AppointmentsCourseNode.ICON_CSS);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 
 }

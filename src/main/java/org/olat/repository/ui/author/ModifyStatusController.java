@@ -34,6 +34,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -56,6 +57,8 @@ public class ModifyStatusController extends FormBasicController {
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 
 	public ModifyStatusController(UserRequest ureq, WindowControl wControl, List<RepositoryEntry> entries) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
@@ -102,6 +105,8 @@ public class ModifyStatusController extends FormBasicController {
 	}
 	
 	private void doChangeStatus(UserRequest ureq, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		String before = repositoryService.toAuditXml(entry);
+
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, status);
 		
 		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.modifiedAccess, "authoring");
@@ -110,6 +115,9 @@ public class ModifyStatusController extends FormBasicController {
 		getLogger().info("Change status of {} to {}", reloadedEntry, status);
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(status), getClass(),
 				LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
+
+		String after = repositoryService.toAuditXml(reloadedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
 	}
 
 }

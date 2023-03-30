@@ -40,6 +40,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
@@ -199,7 +200,7 @@ public class ForumNotificationsHandler implements NotificationsHandler {
 				BusinessGroup bg = businessGroupService.loadBusinessGroup(resId);
 				title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 			} else if ("CourseModule".equals(type)) {
-				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+				String displayName = getDisplayName(p);
 				title = translator.translate("notifications.header.course", new String[]{displayName});
 			} else {
 				title = translator.translate("notifications.header");
@@ -215,5 +216,20 @@ public class ForumNotificationsHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return "Forum";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(ForumUIFactory.CSS_ICON_CLASS_FORUM);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

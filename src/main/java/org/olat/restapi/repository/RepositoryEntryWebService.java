@@ -76,6 +76,7 @@ import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -902,6 +903,7 @@ public class RepositoryEntryWebService {
 	}
 	
 	private void updateStatus(String newStatus, HttpServletRequest request) {
+		String before = repositoryService.toAuditXml(entry);
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
 			entry = repositoryService.closeRepositoryEntry(entry, null, false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", entry.getDisplayname(), entry.getKey());
@@ -930,6 +932,8 @@ public class RepositoryEntryWebService {
 			ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(nStatus), getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		}
+		String after = repositoryService.toAuditXml(entry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, getIdentity(request));
 	}
 	
 	@PUT

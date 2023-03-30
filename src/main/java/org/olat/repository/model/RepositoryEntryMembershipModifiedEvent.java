@@ -39,6 +39,8 @@ public class RepositoryEntryMembershipModifiedEvent extends MultiUserEvent {
 	public static final String ROLE_PARTICIPANT_ADDED = "identity.role.participant.added";
 	/** event: an identity has been added to the group but needs a user confirmation */
 	public static final String ROLE_PARTICIPANT_ADD_PENDING = "identity.role.participant.add.pending";
+	public static final String ROLE_OWNER_ADDED = "identity.role.owner.added";
+
 	private Long identityKey;
 	private Long repositoryEntryKey;
 
@@ -72,5 +74,9 @@ public class RepositoryEntryMembershipModifiedEvent extends MultiUserEvent {
 	
 	public static RepositoryEntryMembershipModifiedEvent roleParticipantAddPending(Identity identity, RepositoryEntry re) {
 		return new RepositoryEntryMembershipModifiedEvent(ROLE_PARTICIPANT_ADD_PENDING, identity.getKey(), re.getKey());
+	}
+
+	public static RepositoryEntryMembershipModifiedEvent roleOwnerAdded(Identity identity, RepositoryEntry re) {
+		return new RepositoryEntryMembershipModifiedEvent(ROLE_OWNER_ADDED, identity.getKey(), re.getKey());
 	}
 }

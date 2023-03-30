@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -64,6 +65,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
@@ -75,6 +77,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -923,6 +926,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
+
+		String before = repositoryService.toAuditXml(entry);
+
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, updatedStatus);
 		refreshRepositoryEntry(reloadedEntry);
 		reloadSecurity(ureq);
@@ -933,6 +939,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		getLogger().info("Change status of {} to {}", reloadedEntry, updatedStatus);
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
+
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(getIdentity());
+		repositoryManager.addOwners(ureq.getIdentity(), iae, entry, new MailPackage(false));
+
+		String after = repositoryService.toAuditXml(reloadedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
 	}
 
 	protected void doSwitchRole(UserRequest ureq, Role role) {

@@ -26,13 +26,18 @@
 package org.olat.course.nodes.ta;
 
 
+import java.util.Locale;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.repository.RepositoryManager;
 import org.springframework.stereotype.Service;
 
 /**
@@ -79,6 +84,21 @@ public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificat
 	@Override
 	public String getType() {
 		return "SolutionController";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(getCssClassIcon());
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 
 }

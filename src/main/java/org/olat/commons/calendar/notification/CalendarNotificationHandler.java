@@ -38,6 +38,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
@@ -223,8 +224,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 			Long id = subscriber.getPublisher().getResId();
 			String type = subscriber.getPublisher().getSubidentifier();
 			if (type.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
-				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(id);
-				title = translator.translate("cal.notifications.header.course", new String[]{displayName});
+				title = translator.translate("cal.notifications.header.course", getDisplayName(subscriber.getPublisher()));
 			} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
 				BusinessGroup group = businessGroupDao.load(id);
 				title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
@@ -240,6 +240,21 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return "CalendarManager";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSS_CLASS_CALENDAR_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 
 }

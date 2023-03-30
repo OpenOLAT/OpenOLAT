@@ -32,6 +32,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -120,5 +121,21 @@ public class MailNotificationsHandler implements NotificationsHandler  {
 	@Override
 	public String getType() {
 		return "Inbox";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return "-";
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_MAIL);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		Translator translator = Util.createPackageTranslator(MailModule.class, locale);
+		return translator.translate("notification.additional.desc");
 	}
 }

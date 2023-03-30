@@ -73,6 +73,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String COMMENT_ENABLED = "repo.comment.enabled";
 	private static final String RATING_ENABLED = "repo.rating.enabled";
 	private static final String REQUEST_MEMBERSHIP_ENABLED = "repo.request.membership";
+	private static final String NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED = "notification.repository.status.changed";
 	
 	private static final String ALLOW_TO_LEAVE_DEFAULT_OPTION = "repo.allow.to.leave";
 	
@@ -111,6 +112,8 @@ public class RepositoryModule extends AbstractSpringModule {
 
 	@Value("${repo.request.membership:true}")
 	private boolean requestMembershipEnabled;
+	@Value("${notification.repository.status.changed}")
+	private boolean notificationRepoStatusChanged;
 
 	@Value("${repo.lifecycle.auto.close:}")
 	private String lifecycleAutoClose;
@@ -223,6 +226,11 @@ public class RepositoryModule extends AbstractSpringModule {
 		String membership = getStringPropertyValue(REQUEST_MEMBERSHIP_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(membership)) {
 			requestMembershipEnabled = "true".equals(membership);
+		}
+
+		String notificationStatusChanged = getStringPropertyValue(NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(notificationStatusChanged)) {
+			notificationRepoStatusChanged = "true".equals(notificationStatusChanged);
 		}
 		
 		String leaveOption = getStringPropertyValue(ALLOW_TO_LEAVE_DEFAULT_OPTION, true);
@@ -391,6 +399,15 @@ public class RepositoryModule extends AbstractSpringModule {
 	public void setRequestMembershipEnabled(boolean enabled) {
 		requestMembershipEnabled = enabled;
 		setStringProperty(REQUEST_MEMBERSHIP_ENABLED, Boolean.toString(enabled), true);
+	}
+
+	public boolean isNotificationRepoStatusChanged() {
+		return notificationRepoStatusChanged;
+	}
+
+	public void setNotificationRepoStatusChanged(boolean notificationRepoStatusChanged) {
+		this.notificationRepoStatusChanged = notificationRepoStatusChanged;
+		setStringProperty(NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED, Boolean.toString(notificationRepoStatusChanged), true);
 	}
 	
 	public RepositoryEntryAllowToLeaveOptions getAllowToLeaveDefaultOption() {

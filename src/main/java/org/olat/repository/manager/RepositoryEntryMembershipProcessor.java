@@ -29,6 +29,9 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.fullWebApp.NotificationEvent;
 import org.olat.core.commons.fullWebApp.NotificationsCenter;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -49,6 +52,7 @@ import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -92,6 +96,8 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private RepositoryModule repositoryModule;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -101,18 +107,20 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof RepositoryEntryMembershipModifiedEvent) {
-			RepositoryEntryMembershipModifiedEvent e = (RepositoryEntryMembershipModifiedEvent)event;
+		if(event instanceof RepositoryEntryMembershipModifiedEvent e) {
 			if(RepositoryEntryMembershipModifiedEvent.IDENTITY_REMOVED.equals(e.getCommand())) {
 				processIdentityRemoved(e.getRepositoryEntryKey(), e.getIdentityKey());
 			} else if(RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADD_PENDING.equals(e.getCommand())) {
 				sendNotificationsToIdentities(e.getIdentityKey());
 			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_PARTICIPANT_ADDED.equals(e.getCommand())) {
 				processIdentityAddedToRepositoryEntry(e.getIdentityKey(), e.getRepositoryEntryKey());
+			} else if (RepositoryEntryMembershipModifiedEvent.ROLE_OWNER_ADDED.equals(e.getCommand())) {
+				processIdentityRepoEntryChangeSubscription(e.getIdentityKey());
 			}
-		} else if (event instanceof CurriculumElementMembershipEvent) {
-			CurriculumElementMembershipEvent e = (CurriculumElementMembershipEvent)event;
-			if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
+		} else if (event instanceof CurriculumElementMembershipEvent e) {
+			if (CurriculumElementMembershipEvent.MEMBER_ADDED.equals(e.getCommand())) {
+				processIdentityRepoEntryChangeSubscription(e.getIdentityKey());
+			} else if (CurriculumElementMembershipEvent.MEMBER_REMOVED.equals(e.getCommand())) {
 				processIdentityRemovedFromCurriculumElement(e.getIdentityKey(), e.getCurriculumElementKey());
 			}
 		}
@@ -175,6 +183,20 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 		} catch (Exception e) {
 			log.warn("Error when processing Identity {} added to RepositoryEntry {}",
 					identityKey, courseEntryKey);
+		}
+	}
+
+	private void processIdentityRepoEntryChangeSubscription(Long identityKey) {
+		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		SubscriptionContext subscriptionContext = repositoryService.getSubscriptionContext();
+		PublisherData publisherData = repositoryService.getPublisherData();
+
+		if (subscriptionContext != null
+				&& notificationsManager.getSubscriber(identity, subscriptionContext) == null) {
+			Subscriber sub = notificationsManager.subscribe(identity, subscriptionContext, publisherData);
+			if (!repositoryModule.isNotificationRepoStatusChanged()) {
+				sub.setEnabled(false);
+			}
 		}
 	}
 }

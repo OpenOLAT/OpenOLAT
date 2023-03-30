@@ -42,7 +42,8 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
+ import org.olat.core.gui.util.CSSHelper;
+ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -57,7 +58,8 @@ import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
+ import org.olat.repository.RepositoryManager;
+ import org.olat.repository.RepositoryService;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -136,7 +138,22 @@ public class PortfolioNotificationsHandler implements NotificationsHandler {
 	public String getType() {
 		return TYPE_NAME;
 	}
-	
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor("o_icon_pf_binder");
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
+	}
+
 	public List<SubscriptionListItem> getAllItems(Binder binder, BinderSecurityCallback secCallback, Date compareDate, Locale locale) {
 		String rootBusinessPath = "[Binder:" + binder.getKey() + "]";
 		if(binder.getOlatResource() != null) {

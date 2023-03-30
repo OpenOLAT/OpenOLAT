@@ -19,8 +19,13 @@
  */
 package org.olat.modules.webFeed.manager;
 
+import java.util.Locale;
+
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.fileresource.types.BlogFileResource;
+import org.olat.repository.RepositoryManager;
 import org.springframework.stereotype.Service;
 /**
 *
@@ -48,5 +53,20 @@ public class BlogNotificationsHandler extends FeedNotificationsHandler {
 	@Override
 	public String getType() {
 		return BlogFileResource.TYPE_NAME;// FileResource.BLOG
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(getCssClassIcon());
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

@@ -35,6 +35,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -134,12 +135,26 @@ public class InfoMessageNotificationHandler implements NotificationsHandler {
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
-		String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
-		return translator.translate("notification.title", new String[]{displayName});
+		return translator.translate("notification.title", getDisplayName(subscriber.getPublisher()));
 	}
 	
 	@Override
 	public String getType() {
 		return "InfoMessage";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSS_CLASS_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

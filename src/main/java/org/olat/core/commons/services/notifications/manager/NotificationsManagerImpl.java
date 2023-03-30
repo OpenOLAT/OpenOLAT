@@ -696,6 +696,22 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 	}
 
+	@Override
+	public void updateAllSubscribers(Publisher publisher, boolean subscriptionStatus) {
+		Date lastMod = new Date();
+		String updateQuery = "update notisub set " +
+				"enabled=:subscriptionStatus," +
+				"lastModified=:lastMod " +
+				"where publisher=:publisher";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(updateQuery)
+				.setParameter("subscriptionStatus", subscriptionStatus)
+				.setParameter("lastMod", lastMod)
+				.setParameter("publisher", publisher)
+				.executeUpdate();
+		dbInstance.commit();
+	}
+
 	private Publisher getPublisherForUpdate(SubscriptionContext subsContext) {
 		Publisher pub = getPublisher(subsContext);
 		return getPublisherForUpdate(pub);
@@ -920,7 +936,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	 * @param publisherData
 	 */
 	@Override
-	public void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData) {
+	public Subscriber subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData) {
 		//need to sync as opt-in is sometimes implemented
 		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
 		if(toUpdate == null) {
@@ -935,12 +951,13 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			// no subscriber -> create.
 			// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
 			// news after subscription time
-			doCreateAndPersistSubscriber(toUpdate, identity);
+			s = doCreateAndPersistSubscriber(toUpdate, identity);
 		} else if(!s.isEnabled()) {
 			s.setEnabled(true);
 			dbInstance.getCurrentEntityManager().merge(s);
 		}
 		dbInstance.commit();
+		return s;
 	}
 	
 	@Override

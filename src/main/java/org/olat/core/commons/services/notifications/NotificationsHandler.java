@@ -67,5 +67,25 @@ public interface NotificationsHandler {
    * @return
    */
 	public String getType();
+
+	/**
+	 * get displayname of a publisher resource
+	 * @param publisher
+	 * @return Display name of a publisher resource
+	 */
+	String getDisplayName(Publisher publisher);
+
+	/**
+	 * get icon css class
+	 * @return Icon Css
+	 */
+	String getIconCss();
+
+	/**
+	 * get additional description of a handler, can be null
+	 * @param locale
+	 * @return Additional Description for a Notifications handler
+	 */
+	String getAdditionalDescriptionI18nKey(Locale locale);
 }
 

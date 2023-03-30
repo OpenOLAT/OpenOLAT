@@ -43,6 +43,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -254,8 +255,7 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 			BusinessGroup bg = businessGroupService.loadBusinessGroup(resId);
 			title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 		} else if (CourseModule.getCourseTypeName().equals(type)) {
-			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			title = translator.translate("notifications.header.course", new String[]{displayName});
+			title = translator.translate("notifications.header.course", getDisplayName(p));
 		} else {
 			title = translator.translate("notifications.header");
 		}
@@ -279,5 +279,20 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 	@Override
 	public String getType() {
 		return "WikiPage";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSS_CLASS_WIKI_PAGE_CHANGED_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

@@ -40,6 +40,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -85,6 +88,7 @@ import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -179,6 +183,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
+	@Autowired
+	private RepositoryEntryAuditLogDAO repositoryEntryAuditLogDAO;
+	@Autowired
+	private NotificationsManager notificationsManager;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -460,6 +468,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
+		String before = toAuditXml(re);
+
 		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
@@ -502,6 +512,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		
 		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
+
+
+		String after = toAuditXml(reloadedRe);
+		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, deletedBy);
 		return reloadedRe;
 	}
 	
@@ -661,6 +675,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
+		String before = toAuditXml(entry);
+
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
@@ -672,6 +688,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		
 		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedEntry.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(entry));
+
+		String after = toAuditXml(reloadedEntry);
+		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, closedBy);
 		return reloadedEntry;
 	}
 
@@ -858,6 +877,41 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation) {
 		return reToGroupDao.getRepositoryEntries(organisation);
+	}
+
+	@Override
+	public PublisherData getPublisherData() {
+		// businesspath is authoring environment
+		return new PublisherData(RepositoryEntryChangeNotificationHandler.TYPE, "", "[RepositorySite:0]");
+	}
+
+	@Override
+	public SubscriptionContext getSubscriptionContext() {
+		return new SubscriptionContext(RepositoryEntryChangeNotificationHandler.TYPE, 0L, "");
+	}
+
+	@Override
+	public String toAuditXml(RepositoryEntry repositoryEntry) {
+		return repositoryEntryAuditLogDAO.toXml(repositoryEntry);
+	}
+
+	@Override
+	public RepositoryEntry toAuditRepositoryEntry(String xml) {
+		return repositoryEntryAuditLogDAO.repositoryEntryFromXml(xml);
+	}
+
+	@Override
+	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,
+						 RepositoryEntry entry, Identity author) {
+		repositoryEntryAuditLogDAO.auditLog(action, before, after, entry, author);
+		if (repositoryModule.isNotificationRepoStatusChanged()) {
+			notificationsManager.markPublisherNews(getSubscriptionContext(), author, true);
+		}
+	}
+
+	@Override
+	public List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity) {
+		return repositoryEntryAuditLogDAO.getAuditLogs(authorIdentity);
 	}
 
 	@Override

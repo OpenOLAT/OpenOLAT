@@ -110,6 +110,42 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertNotNull(reloadedPublisher);
 		Assert.assertEquals(publisher, reloadedPublisher);
 	}
+
+	@Test
+	public void testUpdateAllSubscribers() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("PS2", Long.valueOf(124), identifier);
+		PublisherData publisherData = new PublisherData("testUpdateAllSubscribers", "e.g. forumdata=keyofforum", null);
+
+		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
+
+		//subscribe
+		notificationManager.subscribe(id, context, publisherData);
+		//load the subscriber
+		Subscriber subscriber = notificationManager.getSubscriber(id, publisher);
+		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(publisher);
+		Assert.assertNotNull(publisher.getKey());
+		Assert.assertNotNull(publisher.getCreationDate());
+		Assert.assertNotNull(publisher.getLatestNewsDate());
+		Assert.assertEquals("PS2", publisher.getResName());
+		Assert.assertEquals(Long.valueOf(124), publisher.getResId());
+		Assert.assertNotNull(subscriber);
+
+		sleep(2000);
+
+		notificationManager.updateAllSubscribers(publisher, false);
+
+		//check enabled status
+		Subscriber reloadedSubscriber = notificationManager.getSubscriber(subscriber.getKey());
+		Assert.assertNotNull(reloadedSubscriber);
+		Assert.assertEquals(subscriber, reloadedSubscriber);
+		Assert.assertTrue(subscriber.isEnabled());
+		Assert.assertFalse(reloadedSubscriber.isEnabled());
+	}
 	
 	@Test
 	public void testCreateUpdatePublisher() {
