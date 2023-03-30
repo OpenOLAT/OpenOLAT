@@ -111,11 +111,13 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 
 			// TODO: log also finally deleted entries, so repositoryEntry can't be null
 			if (repositoryEntry != null) {
+				RepositoryEntry auditBeforeRe = repositoryService.toAuditRepositoryEntry(auditLog.getBefore());
+				RepositoryEntry auditAfterRe = repositoryService.toAuditRepositoryEntry(auditLog.getAfter());
 				String desc = translator.translate("notification.new.status.change",
 						repositoryEntry.getDisplayname(),
 						userManager.getUserDisplayName(auditLog.getAuthorKey()),
-						translator.translate("cif.status." + repositoryService.toAuditRepositoryEntry(auditLog.getBefore()).getStatus()),
-						translator.translate("cif.status." + repositoryService.toAuditRepositoryEntry(auditLog.getAfter()).getStatus()));
+						auditBeforeRe == null ? "unknown" : translator.translate("cif.status." + auditBeforeRe.getStatus()),
+						auditAfterRe == null ? "unknown" : translator.translate("cif.status." + auditAfterRe.getStatus()));
 
 				String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);

@@ -59,6 +59,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -210,8 +211,11 @@ public class NotificationSubscriptionController extends FormBasicController {
 			}
 		}
 
-		courseGroup.setI18nKey(title);
-		if (!title.equals("-")) {
+		if(title != null) {
+			title = StringHelper.escapeHtml(title);
+			courseGroup.setI18nKey(title);
+		}
+		if (!"-".equals(title)) {
 			courseGroup.setIconLeftCSS(CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName())));
 		}
 
