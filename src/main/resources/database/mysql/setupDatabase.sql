@@ -3789,6 +3789,16 @@ create table o_zoom_config (
     fk_lti_tool_deployment_id bigint not null,
     primary key (id)
 );
+create table o_repositoryentry_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   r_action varchar(32) not null,
+   r_val_before longtext,
+   r_val_after longtext,
+   fk_entry bigint not null,
+   fk_author bigint not null,
+   primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
