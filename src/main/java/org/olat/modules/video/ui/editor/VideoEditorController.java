@@ -140,6 +140,8 @@ public class VideoEditorController extends BasicController {
 			} else if (event instanceof CommentSelectedEvent commentSelectedEvent) {
 				videoController.processTimelineEvent(ureq, commentSelectedEvent, TimelineEventType.COMMENT, isYoutube);
 				masterController.select(commentSelectedEvent.getId());
+			} else if (event instanceof SetTypeEvent setTypeEvent) {
+				masterController.setTypeOnly(setTypeEvent.getType());
 			}
 		} else if (masterController == source) {
 			if (event instanceof AnnotationSelectedEvent annotationSelectedEvent) {

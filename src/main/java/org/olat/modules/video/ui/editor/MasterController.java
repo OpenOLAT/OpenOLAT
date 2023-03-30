@@ -480,6 +480,21 @@ public class MasterController extends FormBasicController implements FlexiTableC
 		}
 	}
 
+	public void setTypeOnly(TimelineEventType type) {
+		timelineModel.setActiveType(type);
+		String typeClass = timelineModel.getActiveTypeAsClass();
+		JSCommand command = new JSCommand(
+				"try {" +
+						"  jQuery('.o_video_timeline_box').removeClass('o_video_active');" +
+						(typeClass != null ? "  jQuery('.o_video_timeline_box." + typeClass + "').addClass('o_video_active');" : "") +
+						"  jQuery('.o_video_selected').removeClass('o_video_selected');" +
+						"} catch(e) {" +
+						"  if (window.console) console.log(e);" +
+						"}"
+		);
+		getWindowControl().getWindowBackOffice().sendCommandTo(command);
+	}
+
 	private class ThumbnailMapper implements Mapper {
 		@Override
 		public MediaResource handle(String relPath, HttpServletRequest request) {

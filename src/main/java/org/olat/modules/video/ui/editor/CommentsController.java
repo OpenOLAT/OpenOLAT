@@ -165,6 +165,8 @@ public class CommentsController extends BasicController {
 	public void sendSelectionEvent(UserRequest ureq) {
 		if (comment != null) {
 			fireEvent(ureq, new CommentSelectedEvent(comment.getId(), comment.getStart().getTime()));
+		} else {
+			fireEvent(ureq, new SetTypeEvent(TimelineEventType.COMMENT));
 		}
 	}
 }
