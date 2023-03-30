@@ -125,6 +125,8 @@ public class AnnotationsController extends BasicController {
 				if (annotation != null) {
 					fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
 							annotation.getDuration()));
+				} else {
+					fireEvent(ureq, new SetTypeEvent(TimelineEventType.ANNOTATION));
 				}
 			}
 		}
@@ -186,6 +188,8 @@ public class AnnotationsController extends BasicController {
 		if (annotation != null) {
 			fireEvent(ureq, new AnnotationSelectedEvent(annotation.getId(), annotation.getBegin().getTime(),
 					annotation.getDuration()));
+		} else {
+			fireEvent(ureq, new SetTypeEvent(TimelineEventType.ANNOTATION));
 		}
 	}
 }

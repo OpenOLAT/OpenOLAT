@@ -125,6 +125,8 @@ public class SegmentsController extends BasicController {
 				if (segment != null) {
 					fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime(),
 							segment.getDuration()));
+				} else {
+					fireEvent(ureq, new SetTypeEvent(TimelineEventType.SEGMENT));
 				}
 			}
 		}
@@ -163,6 +165,8 @@ public class SegmentsController extends BasicController {
 		if (segment != null) {
 			fireEvent(ureq, new SegmentSelectedEvent(segment.getId(), segment.getBegin().getTime(),
 					segment.getDuration()));
+		} else {
+			fireEvent(ureq, new SetTypeEvent(TimelineEventType.SEGMENT));
 		}
 	}
 }

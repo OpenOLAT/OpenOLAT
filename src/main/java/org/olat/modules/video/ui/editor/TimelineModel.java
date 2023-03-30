@@ -263,6 +263,10 @@ public class TimelineModel extends DefaultFlexiTableDataSourceModel<TimelineRow>
 		return activeType;
 	}
 
+	public void setActiveType(TimelineEventType activeType) {
+		this.activeType = activeType;
+	}
+
 	public String getActiveTypeAsClass() {
 		return getActiveType() != null ? "o_video_timeline_type_" + getActiveType().toString().toLowerCase() : null;
 	}

@@ -152,6 +152,8 @@ public class QuestionsController extends BasicController {
 					if (event == QuestionsHeaderController.QUESTION_ADDED_EVENT) {
 						fireEvent(ureq, new EditQuestionEvent(question.getId(), repositoryEntry));
 					}
+				} else {
+					fireEvent(ureq, new SetTypeEvent(TimelineEventType.QUIZ));
 				}
 			} else if (event instanceof QuestionsHeaderController.QuestionsImportedEvent questionsImportedEvent) {
 				importQuestions(ureq, questionsImportedEvent.getItemList());
@@ -286,6 +288,8 @@ public class QuestionsController extends BasicController {
 	public void sendSelectionEvent(UserRequest ureq) {
 		if (question != null) {
 			fireEvent(ureq, new QuestionSelectedEvent(question.getId(), question.getBegin().getTime()));
+		} else {
+			fireEvent(ureq, new SetTypeEvent(TimelineEventType.QUIZ));
 		}
 	}
 }

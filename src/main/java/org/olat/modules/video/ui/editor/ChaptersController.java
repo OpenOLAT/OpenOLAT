@@ -215,7 +215,11 @@ public class ChaptersController extends FormBasicController {
 			if (i < chapters.size()) {
 				chapters.get(i - 1).setEnd(chapters.get(i).getBegin());
 			} else {
-				chapters.get(i - 1).setEnd(new Date(durationInSeconds * 1000));
+				if (durationInSeconds > 0) {
+					chapters.get(i - 1).setEnd(new Date(durationInSeconds * 1000));
+				} else {
+					chapters.get(i - 1).setEnd(new Date(chapters.get(i - 1).getBegin().getTime() + 1000));
+				}
 			}
 		}
 	}
@@ -288,6 +292,14 @@ public class ChaptersController extends FormBasicController {
 
 	public void handleDeleted() {
 		loadTableModel();
+	}
+
+	public void sendSelectionEvent(UserRequest ureq) {
+		if (!tableModel.getObjects().isEmpty()) {
+			doSelect(ureq, tableModel.getObject(0));
+		} else {
+			fireEvent(ureq, new SetTypeEvent(TimelineEventType.CHAPTER));
+		}
 	}
 
 	private static class ToolsController extends BasicController {

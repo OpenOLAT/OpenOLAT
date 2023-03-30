@@ -983,6 +983,12 @@ public class I18nModule extends AbstractSpringModule {
 	 */
 	private void doReInitialize() {		
 		synchronized (enabledLanguagesKeys) {
+			// Start by disabling caching to support continuous translation during
+			// re-initialization and to prevent caching of unproperly calculated
+			// translations (e.g. not properly initialized gender strategy). This can result
+			// in temporarily wrong translations until initialization is finished.
+			boolean isCaching = cachingEnabled;
+			cachingEnabled = false;
 			// Clear everything
 			availableLanguages.clear();
 			translatableLanguages.clear();
@@ -996,6 +1002,8 @@ public class I18nModule extends AbstractSpringModule {
 			I18nManager.getInstance().clearCaches();
 			// Now rebuild everything from scratch
 			doInit();
+			// End with enabling caching again if needed
+			cachingEnabled = isCaching;
 		}
 	}
 

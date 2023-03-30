@@ -24,29 +24,22 @@ import java.io.Serial;
 import org.olat.core.gui.control.Event;
 
 /**
- * Initial date: 2023-01-17<br>
+ * Initial date: 2023-03-30<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class TimelineEventDeletedEvent extends Event {
+public class SetTypeEvent extends Event {
 	@Serial
-	private static final long serialVersionUID = 4961252184480445728L;
-
-	private static final String COMMAND = "timeline.event.deleted";
+	private static final long serialVersionUID = -1206755612518381051L;
+	private static final String COMMAND = "set.type";
 	private final TimelineEventType type;
-	private final String id;
 
-	public TimelineEventDeletedEvent(TimelineEventType type, String id) {
+	public SetTypeEvent(TimelineEventType type) {
 		super(COMMAND);
 		this.type = type;
-		this.id = id;
 	}
 
 	public TimelineEventType getType() {
 		return type;
-	}
-
-	public String getId() {
-		return id;
 	}
 }

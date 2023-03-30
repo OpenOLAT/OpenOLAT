@@ -91,6 +91,8 @@ public class DetailsController extends BasicController {
 					segmentsController.sendSelectionEvent(ureq);
 				} else if (commentsController == tabbedPaneChangedEvent.getNewController()) {
 					commentsController.sendSelectionEvent(ureq);
+				} else if (chaptersController == tabbedPaneChangedEvent.getNewController()) {
+					chaptersController.sendSelectionEvent(ureq);
 				}
 			}
 		}
