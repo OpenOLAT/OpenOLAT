@@ -36,6 +36,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.repository.manager.RepositoryEntryChangeNotificationHandler;
 
 /**
  * Initial Date: 22.12.2009 <br>
@@ -106,7 +107,10 @@ public class NotificationUIFactory {
 			windowControl.setError(trans.translate("error.publisherdeleted"));
 			return;
 		}
-		if("Inbox".equals(pub.getResName())) {
+		if (RepositoryEntryChangeNotificationHandler.TYPE.equals(pub.getResName())) {
+			String businessPath = "[RepositorySite:0]";
+			NewControllerFactory.getInstance().launch(businessPath, ureq, windowControl);
+		} else if("Inbox".equals(pub.getResName())) {
 			String businessPath = "[HomeSite:" + ureq.getIdentity().getKey() + "][Inbox:0]";
 			NewControllerFactory.getInstance().launch(businessPath, ureq, windowControl);
 		} else if(StringHelper.containsNonWhitespace(pub.getBusinessPath())) {

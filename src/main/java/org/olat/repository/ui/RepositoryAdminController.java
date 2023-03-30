@@ -173,10 +173,9 @@ public class RepositoryAdminController extends FormBasicController {
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		notificationCont.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
+		uifactory.addStaticTextElement("maintButtonLabel", getTranslator().translate("repository.admin.subscribers"), buttonsCont);
 		enableAllSubscribersLink = uifactory.addFormLink("repository.admin.enable.all.subscribers", buttonsCont, Link.BUTTON);
 		disableAllSubscribersLink = uifactory.addFormLink("repository.admin.disable.all.subscribers", buttonsCont, Link.BUTTON);
-		// Button was not available before, redundant?
-		//uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override

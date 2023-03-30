@@ -58,7 +58,6 @@ import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
-import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +89,7 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String getDisplayName(Publisher publisher) {
-		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+		return "-";
 	}
 
 	@Override
