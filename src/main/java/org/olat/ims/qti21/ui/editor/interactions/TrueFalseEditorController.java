@@ -43,6 +43,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Constants;
@@ -246,10 +247,16 @@ public class TrueFalseEditorController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
 
 		commitTemporaryAssociations(ureq);
 		if(sourceWrappers.isEmpty()) {
-			answersCont.setErrorKey("error.atleast.one.answer", null);
+			answersCont.setErrorKey("error.atleast.one.answer");
 			allOk &= false;
 		} else if(!restrictedEdit) {
 			for(SourceWrapper sourceWrapper:sourceWrappers) {
@@ -265,7 +272,7 @@ public class TrueFalseEditorController extends FormBasicController {
 		if(layoutEl != null) {
 			layoutEl.clearError();
 			if(!layoutEl.isOneSelected()) {
-				layoutEl.setErrorKey("form.legende.mandatory", null);
+				layoutEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -279,8 +286,7 @@ public class TrueFalseEditorController extends FormBasicController {
 			commitTemporaryAssociations(ureq);
 			doAddSourceRow(ureq);
 			recalculateDeleteButtons();
-		} else if(source instanceof FormLink) {
-			FormLink button = (FormLink)source;
+		} else if(source instanceof FormLink button) {
 			if("delete".equals(button.getCmd())) {
 				commitTemporaryAssociations(ureq);
 				SourceWrapper associationWrapper = (SourceWrapper)button.getUserObject();

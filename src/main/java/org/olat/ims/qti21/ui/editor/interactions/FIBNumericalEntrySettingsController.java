@@ -207,11 +207,11 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			try {
 				Double.parseDouble(solutionEl.getValue());
 			} catch (NumberFormatException e) {
-				solutionEl.setErrorKey("error.double", null);
+				solutionEl.setErrorKey("error.double");
 				allOk &= false;
 			}
 		} else {
-			solutionEl.setErrorKey("form.legende.mandatory", null);
+			solutionEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -221,11 +221,11 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 				try {
 					Integer.parseInt(expectedLengthEl.getValue());
 				} catch(NumberFormatException e) {
-					expectedLengthEl.setErrorKey("form.error.nointeger", null);
+					expectedLengthEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				expectedLengthEl.setErrorKey("form.error.nointeger", null);
+				expectedLengthEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
@@ -234,7 +234,7 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 		lowerToleranceEl.clearError();
 		upperToleranceEl.clearError();
 		if(!toleranceModeEl.isOneSelected()) {
-			toleranceModeEl.setErrorKey("form.legende.mandatory", null);
+			toleranceModeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			String selectedKey = toleranceModeEl.getSelectedKey();
@@ -248,11 +248,11 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 					BigDecimal upperBound = new BigDecimal(upperToleranceEl.getValue());
 					BigDecimal lowerBound = new BigDecimal(lowerToleranceEl.getValue());
 					if(upperBound.subtract(solution).compareTo(new BigDecimal("0.0")) < 0) {
-						upperToleranceEl.setErrorKey("error.upper.tolerance", null);
+						upperToleranceEl.setErrorKey("error.upper.tolerance");
 						allOk &= false;
 					}
 					if(solution.subtract(lowerBound).compareTo(new BigDecimal("0.0")) < 0) {
-						lowerToleranceEl.setErrorKey("error.lower.tolerance", null);
+						lowerToleranceEl.setErrorKey("error.lower.tolerance");
 						allOk &= false;
 					}
 				}
@@ -279,15 +279,15 @@ public class FIBNumericalEntrySettingsController extends FormBasicController {
 			try {
 				double val = Double.parseDouble(element.getValue());
 				if(val < 0.0d && onlyPositive) {
-					element.setErrorKey("error.positive.double", null);
+					element.setErrorKey("error.positive.double");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				element.setErrorKey("error.double", null);
+				element.setErrorKey("error.double");
 				allOk &= false;
 			}
 		} else {
-			element.setErrorKey("form.legende.mandatory", null);
+			element.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

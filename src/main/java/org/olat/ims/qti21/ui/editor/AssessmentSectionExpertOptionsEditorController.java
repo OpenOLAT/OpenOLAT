@@ -97,7 +97,7 @@ public class AssessmentSectionExpertOptionsEditorController extends ItemSessionC
 		
 		visibleEl.clearError();
 		if(!visibleEl.isOneSelected()) {
-			visibleEl.setErrorKey("form.legende.mandatory", null);
+			visibleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

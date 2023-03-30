@@ -125,16 +125,16 @@ public class BulkScoreController extends FormBasicController {
 				double score = Double.parseDouble(pointsEl.getValue());
 				if(mode == Mode.ADD && score < 0.000001d) {
 					allOk &= false;
-					pointsEl.setErrorKey("correction.min.max.score.zero", null);
+					pointsEl.setErrorKey("correction.min.max.score.zero");
 				} else if((minScore != null && score < minScore.doubleValue())
 						|| (maxScore != null && score > maxScore.doubleValue())) {
 					allOk &= false;
 					pointsEl.setErrorKey("correction.min.max.score",
-							new String[] { AssessmentHelper.getRoundedScore(minScore),  AssessmentHelper.getRoundedScore(maxScore) });
+							AssessmentHelper.getRoundedScore(minScore), AssessmentHelper.getRoundedScore(maxScore));
 				}
 			} catch (NumberFormatException e) {
 				logWarn("Cannot parse the score: " + pointsEl.getValue(), null);
-				pointsEl.setErrorKey("error.double.format", null);
+				pointsEl.setErrorKey("error.double.format");
 				allOk &= false;
 			}
 		}

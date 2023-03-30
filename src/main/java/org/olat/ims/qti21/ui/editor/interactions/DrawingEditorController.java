@@ -182,13 +182,13 @@ public class DrawingEditorController extends FormBasicController {
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		backgroundEl.clearError();
 		if(backgroundImage == null && initialBackgroundImage == null) {
-			backgroundEl.setErrorKey("form.legende.mandatory", null);
+			backgroundEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			allOk &= backgroundEl.validate();

@@ -303,9 +303,15 @@ public class HotspotEditorController extends FormBasicController {
 		
 		updateHotspots(ureq);
 		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
 		backgroundEl.clearError();
 		if(backgroundImage == null && initialBackgroundImage == null) {
-			backgroundEl.setErrorKey("form.legende.mandatory", null);
+			backgroundEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			allOk &= backgroundEl.validate();
@@ -314,14 +320,14 @@ public class HotspotEditorController extends FormBasicController {
 		correctHotspotsEl.clearError();
 		if(!restrictedEdit && !readOnly) {
 			if(correctHotspotsEl.getSelectedKeys().isEmpty()) {
-				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
+				correctHotspotsEl.setErrorKey("error.need.correct.answer");
 				allOk &= false;
 			}
 		}
 		
 		cardinalityEl.clearError();
 		if(cardinalityEl.isSelected(0) && correctHotspotsEl.getSelectedKeys().size() > 1) {
-			cardinalityEl.setErrorKey("error.cardinality.answer", null);
+			cardinalityEl.setErrorKey("error.cardinality.answer");
 			allOk &= false;
 		}
 		

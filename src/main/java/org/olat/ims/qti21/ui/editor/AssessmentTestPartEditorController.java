@@ -88,7 +88,7 @@ public class AssessmentTestPartEditorController extends ItemSessionControlContro
 		
 		navigationModeEl.clearError();
 		if(!navigationModeEl.isOneSelected()) {
-			navigationModeEl.setErrorKey("form.legende.mandatory", null);
+			navigationModeEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

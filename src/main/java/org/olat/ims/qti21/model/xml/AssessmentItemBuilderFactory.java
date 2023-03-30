@@ -59,8 +59,8 @@ public class AssessmentItemBuilderFactory {
 			case mc: itemBuilder = new MultipleChoiceAssessmentItemBuilder(translator.translate("new.mc"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
 			case kprim: itemBuilder = new KPrimAssessmentItemBuilder(translator.translate("new.kprim"), translator.translate("new.answer"), qtiService.qtiSerializer()); break;
 			case match: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_MATRIX, qtiService.qtiSerializer()); break;
-			case matchdraganddrop: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()); break;
-			case matchtruefalse: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.match"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
+			case matchdraganddrop: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.matchdraganddrop"), QTI21Constants.CSS_MATCH_DRAG_AND_DROP, qtiService.qtiSerializer()); break;
+			case matchtruefalse: itemBuilder = new MatchAssessmentItemBuilder(translator.translate("new.matchtruefalse"), QTI21Constants.CSS_MATCH_TRUE_FALSE,
 					translator.translate("match.unanswered"), translator.translate("match.true"), translator.translate("match.false"), qtiService.qtiSerializer()); break;
 			case fib: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib"), EntryType.text, qtiService.qtiSerializer()); break;
 			case numerical: itemBuilder = new FIBAssessmentItemBuilder(translator.translate("new.fib.numerical"), EntryType.numerical, qtiService.qtiSerializer()); break;

@@ -248,7 +248,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -256,10 +256,10 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 		if(!restrictedEdit && !readOnly) {
 			String[] correctAnswers = ureq.getHttpReq().getParameterValues("correct");
 			if(choiceWrappers.isEmpty()) {
-				answersCont.setErrorKey("error.atleast.one.answer", null);
+				answersCont.setErrorKey("error.atleast.one.answer");
 				allOk &= false;
 			} else if(correctAnswers == null || correctAnswers.length == 0) {
-				answersCont.setErrorKey("error.need.correct.answer", null);
+				answersCont.setErrorKey("error.need.correct.answer");
 				allOk &= false;
 			}
 		}

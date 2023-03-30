@@ -137,10 +137,10 @@ public class HottextEditorController extends FormBasicController {
 
 		String questionText = textEl.getRawValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
-			textEl.setErrorKey("form.legende.mandatory", null);
+			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!questionText.contains("<hottext")) {
-			textEl.setErrorKey("error.missing.hottext", null);
+			textEl.setErrorKey("error.missing.hottext");
 			allOk &= false;
 		}
 

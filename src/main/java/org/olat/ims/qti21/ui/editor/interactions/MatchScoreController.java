@@ -231,11 +231,11 @@ public class MatchScoreController extends AssessmentItemRefEditorController impl
 					try {
 						Double.parseDouble(val);
 					} catch (NumberFormatException e) {
-						scoreEl.setErrorKey("error.double", null);
+						scoreEl.setErrorKey("error.double");
 						allOk &= false;
 					}
 				} else {
-					scoreEl.setErrorKey("form.legende.mandatory", null);
+					scoreEl.setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 			}

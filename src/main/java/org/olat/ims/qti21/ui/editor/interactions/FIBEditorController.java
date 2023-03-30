@@ -210,13 +210,19 @@ public class FIBEditorController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
+		
+		titleEl.clearError();
+		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
+			titleEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
 
 		String questionText = textEl.getRawValue();
 		if(!StringHelper.containsNonWhitespace(questionText)) {
-			textEl.setErrorKey("form.legende.mandatory", null);
+			textEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!questionText.contains("<textentryinteraction")) {
-			textEl.setErrorKey("error.missing.fib", null);
+			textEl.setErrorKey("error.missing.fib");
 			allOk &= false;
 		}
 

@@ -248,7 +248,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -257,10 +257,10 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			String correctAnswer = ureq.getParameter("correct");
 			if(choiceWrappers.isEmpty()) {
 				allOk &= false;
-				answersCont.setErrorKey("error.atleast.one.answer", null);
+				answersCont.setErrorKey("error.atleast.one.answer");
 			} else if(!StringHelper.containsNonWhitespace(correctAnswer)) {
 				allOk &= false;
-				answersCont.setErrorKey("error.need.correct.answer", null);
+				answersCont.setErrorKey("error.need.correct.answer");
 			}
 		}
 		validateScoreOfCorrectAnswer();// the validation is not mandatory, issue onnly a warning

@@ -230,11 +230,11 @@ public abstract class ItemSessionControlController extends FormBasicController {
 			try {
 				int maxAttempts = Integer.parseInt(maxAttemptsEl.getValue());
 				if(maxAttempts < 0) {
-					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					maxAttemptsEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
-				maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+				maxAttemptsEl.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
@@ -246,7 +246,7 @@ public abstract class ItemSessionControlController extends FormBasicController {
 		boolean allOk = true;
 		selectionEl.clearError();
 		if(!selectionEl.isOneSelected()) {
-			selectionEl.setErrorKey("form.legende.mandatory", null);
+			selectionEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

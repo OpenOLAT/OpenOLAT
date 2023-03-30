@@ -306,11 +306,11 @@ public class QTI21DeliveryOptionsController extends FormBasicController implemen
 				try {
 					Integer.parseInt(maxAttemptsEl.getValue());
 				} catch(NumberFormatException e) {
-					maxAttemptsEl.setErrorKey("form.error.nointeger", null);
+					maxAttemptsEl.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				maxAttemptsEl.setErrorKey("form.legende.mandatory", null);
+				maxAttemptsEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
