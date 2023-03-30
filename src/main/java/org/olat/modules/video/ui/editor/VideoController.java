@@ -212,4 +212,10 @@ public class VideoController extends BasicController {
 
 		selectTime(selectedTimelineEvent.getStartTimeInMillis() / 1000, isYoutube);
 	}
+
+	public void setTypeOnly(TimelineEventType type) {
+		commentLayerController.hideComment();
+		segmentLayerController.clearSegments();
+		videoDisplayController.clearMarkerLayer();
+	}
 }

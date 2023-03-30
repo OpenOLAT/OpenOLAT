@@ -128,6 +128,8 @@ public class CommentsController extends BasicController {
 				reloadComments(ureq);
 				if (comment != null) {
 					fireEvent(ureq, new CommentSelectedEvent(comment.getId(), comment.getStart().getTime()));
+				} else {
+					fireEvent(ureq, new SetTypeEvent(TimelineEventType.COMMENT));
 				}
 			}
 		}

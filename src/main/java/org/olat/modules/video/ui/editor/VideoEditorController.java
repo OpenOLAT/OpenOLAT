@@ -141,6 +141,7 @@ public class VideoEditorController extends BasicController {
 				videoController.processTimelineEvent(ureq, commentSelectedEvent, TimelineEventType.COMMENT, isYoutube);
 				masterController.select(commentSelectedEvent.getId());
 			} else if (event instanceof SetTypeEvent setTypeEvent) {
+				videoController.setTypeOnly(setTypeEvent.getType());
 				masterController.setTypeOnly(setTypeEvent.getType());
 			}
 		} else if (masterController == source) {
