@@ -334,15 +334,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 			if (cmd.equals(FORMLINK_COURSE_GROUP) || cmd.equals(FORMLINK_SUB_RES) || cmd.equals(FORMLINK_DELETE)) {
 				Long subscriptionKey = Long.parseLong(link.getComponent().getComponentName().replaceAll(".+?_", ""));
 				Subscriber subscriber = notificationsManager.getSubscriber(subscriptionKey);
-				if (FORMLINK_COURSE_GROUP.equals(cmd)) {
+				if (FORMLINK_COURSE_GROUP.equals(cmd) || FORMLINK_SUB_RES.equals(cmd)) {
 					doLaunchSubscriptionResource(ureq, subscriber);
-				}
-				if (FORMLINK_SUB_RES.equals(cmd)) {
-					if (subscriber.getPublisher().getType().equals("LearningRes")) {
-						// TODO do nothing?
-					} else {
-						doLaunchSubscriptionResource(ureq, subscriber);
-					}
 				}
 				if (FORMLINK_DELETE.equals(cmd)) {
 					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete"), delYesNoC);
