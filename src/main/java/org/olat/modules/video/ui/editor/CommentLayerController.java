@@ -19,7 +19,10 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
@@ -116,58 +119,65 @@ public class CommentLayerController extends BasicController {
 				videoComment.getStart().getTime() / 1000, "start", true, videoComment);
 	}
 
-	public void setComment(UserRequest ureq, String commentId) {
+	public void setComment(UserRequest ureq, String markerIdString) {
 		if (comments == null) {
 			return;
 		}
-		comments.getComments().stream().filter(c -> c.getId().equals(commentId)).findFirst().ifPresent(c -> {
-			mainVC.contextPut("showComment", true);
-			mainVC.contextPut("color", VideoModule.getMarkerStyleFromColor(c.getColor()));
-			BaseSecurity manager = BaseSecurityManager.getInstance();
-			Identity identity = manager.findIdentityByName(c.getAuthor());
-			if (identity != null) {
-				Long identityKey = identity.getKey();
-				String displayName = userManager.getUserDisplayName(identity);
-				mainVC.contextPut("name", displayName);
-				if (portraitManager.getSmallPortraitResource(identityKey) != null) {
-					mainVC.contextPut("avatarKey", identityKey);
-				} else {
-					mainVC.contextRemove("avatarKey");
-				}
+		if (!StringHelper.containsNonWhitespace(markerIdString)) {
+			return;
+		}
+		Set<String> markerIds = Arrays.stream(markerIdString.split(",")).collect(Collectors.toSet());
+		comments.getComments().stream().filter(c -> markerIds.contains(c.getId())).findFirst()
+				.ifPresent(c -> setComment(ureq, c));
+	}
+
+	private void setComment(UserRequest ureq, VideoComment comment) {
+		mainVC.contextPut("showComment", true);
+		mainVC.contextPut("color", VideoModule.getMarkerStyleFromColor(comment.getColor()));
+		BaseSecurity manager = BaseSecurityManager.getInstance();
+		Identity identity = manager.findIdentityByName(comment.getAuthor());
+		if (identity != null) {
+			Long identityKey = identity.getKey();
+			String displayName = userManager.getUserDisplayName(identity);
+			mainVC.contextPut("name", displayName);
+			if (portraitManager.getSmallPortraitResource(identityKey) != null) {
+				mainVC.contextPut("avatarKey", identityKey);
 			} else {
-				mainVC.contextRemove("name");
 				mainVC.contextRemove("avatarKey");
 			}
-			if (StringHelper.containsNonWhitespace(c.getText())) {
-				mainVC.contextPut("text", c.getText());
-			} else {
-				mainVC.contextRemove("text");
-			}
-			mainVC.remove("video");
-			if (StringHelper.containsNonWhitespace(c.getFileName())) {
-				VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
-				VFSItem item = masterContainer.resolve(c.getFileName());
-				if (item instanceof VFSLeaf vfsLeaf) {
-					boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
-							item.getMetaInfo().isInTranscoding();
-					if (inTranscoding) {
-						item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + c.getFileName());
-						if (item instanceof VFSLeaf) {
-							vfsLeaf = (VFSLeaf) item;
-						}
+		} else {
+			mainVC.contextRemove("name");
+			mainVC.contextRemove("avatarKey");
+		}
+		if (StringHelper.containsNonWhitespace(comment.getText())) {
+			mainVC.contextPut("text", comment.getText());
+		} else {
+			mainVC.contextRemove("text");
+		}
+		mainVC.remove("video");
+		if (StringHelper.containsNonWhitespace(comment.getFileName())) {
+			VFSContainer masterContainer = videoManager.getCommentMediaContainer(repositoryEntry.getOlatResource());
+			VFSItem item = masterContainer.resolve(comment.getFileName());
+			if (item instanceof VFSLeaf vfsLeaf) {
+				boolean inTranscoding = item.canMeta() == VFSConstants.YES && item.getMetaInfo() != null &&
+						item.getMetaInfo().isInTranscoding();
+				if (inTranscoding) {
+					item = masterContainer.resolve(VFSTranscodingService.masterFilePrefix + comment.getFileName());
+					if (item instanceof VFSLeaf) {
+						vfsLeaf = (VFSLeaf) item;
 					}
-					VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-							getWindowControl(), vfsLeaf, null, true, false);
-					listenTo(videoAudioPlayerController);
-					mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 				}
-			} else if (StringHelper.containsNonWhitespace(c.getUrl())) {
 				VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
-						getWindowControl(), null, c.getUrl(), true, false);
+						getWindowControl(), vfsLeaf, null, true, false);
 				listenTo(videoAudioPlayerController);
 				mainVC.put("video", videoAudioPlayerController.getInitialComponent());
 			}
-		});
+		} else if (StringHelper.containsNonWhitespace(comment.getUrl())) {
+			VideoAudioPlayerController videoAudioPlayerController = new VideoAudioPlayerController(ureq,
+					getWindowControl(), null, comment.getUrl(), true, false);
+			listenTo(videoAudioPlayerController);
+			mainVC.put("video", videoAudioPlayerController.getInitialComponent());
+		}
 	}
 
 	public void hideComment() {

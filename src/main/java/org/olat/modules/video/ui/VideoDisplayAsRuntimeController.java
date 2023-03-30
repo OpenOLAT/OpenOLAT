@@ -67,6 +67,7 @@ public class VideoDisplayAsRuntimeController extends VideoDisplayController {
 
 		commentLayerController.loadComments();
 		addMarkers(commentLayerController.getCommentsAsMarkers());
+		commentLayerController.hideComment();
 
 		segmentsController.loadSegments();
 	}
