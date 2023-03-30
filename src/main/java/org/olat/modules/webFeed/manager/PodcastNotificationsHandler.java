@@ -19,8 +19,13 @@
  */
 package org.olat.modules.webFeed.manager;
 
+import java.util.Locale;
+
+import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.fileresource.types.PodcastFileResource;
+import org.olat.repository.RepositoryManager;
 import org.springframework.stereotype.Service;
 /**
 *
@@ -47,5 +52,20 @@ public class PodcastNotificationsHandler extends FeedNotificationsHandler {
 	@Override
 	public String getType() {
 		return PodcastFileResource.TYPE_NAME;// FileResource.PODCAST
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(getCssClassIcon());
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

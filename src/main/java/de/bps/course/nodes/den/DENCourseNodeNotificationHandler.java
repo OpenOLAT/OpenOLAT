@@ -34,6 +34,7 @@ import org.olat.core.commons.services.notifications.manager.NotificationsUpgrade
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -167,10 +168,8 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
-			Long resId = subscriber.getPublisher().getResId();
-			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
 			Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
-			return trans.translate("notifications.header", new String[]{displayName});
+			return trans.translate("notifications.header", getDisplayName(subscriber.getPublisher()));
 		} catch (Exception e) {
 			log.error("Error while creating assessment notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
@@ -180,5 +179,20 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 
 	public String getType() {
 		return "DENCourseNode";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(new DENCourseNodeConfiguration().getIconCSSClass());
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

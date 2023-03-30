@@ -32,6 +32,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.ui.GTARunController;
@@ -89,9 +90,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 		String title;
 		try {
 			Translator translator = Util.createPackageTranslator(GTARunController.class, locale);
-			Long resId = subscriber.getPublisher().getResId();
-			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(resId);
-			title = translator.translate("notifications.header", displayName);
+			title = translator.translate("notifications.header", getDisplayName(subscriber.getPublisher()));
 		} catch (Exception e) {
 			log.error("Error while creating task notifications for subscriber: {}", subscriber.getKey(), e);
 			title = "-";
@@ -102,5 +101,20 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 	@Override
 	public String getType() {
 		return "GroupTask";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSS_CLASS_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

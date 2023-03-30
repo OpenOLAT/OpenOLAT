@@ -33,6 +33,7 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Util;
@@ -124,5 +125,20 @@ public class LibraryNotificationHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return "LibrarySite";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return "-";
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(LibraryMainController.ICON_CSS_CLASS);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

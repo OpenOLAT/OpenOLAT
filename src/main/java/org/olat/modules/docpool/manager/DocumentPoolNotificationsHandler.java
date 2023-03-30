@@ -40,6 +40,7 @@ import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -57,6 +58,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyTreeBuilder;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNode;
 import org.olat.modules.taxonomy.model.TaxonomyTreeNodeType;
+import org.olat.repository.RepositoryManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +87,22 @@ public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 	public String getType() {
 		return TYPE_NAME;
 	}
-	
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor("o_icon_taxonomy");
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
+	}
+
 	public PublisherData getTaxonomyDocumentsLibraryPublisherData() {
 		String businessPath = "[DocumentPool:0]";
 		return new PublisherData(DocumentPoolNotificationsHandler.TYPE_NAME, "", businessPath);

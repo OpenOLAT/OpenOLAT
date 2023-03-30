@@ -297,8 +297,9 @@ public interface NotificationsManager {
 	 * @param identity
 	 * @param subscriptionContext
 	 * @param publisherData
+	 * @return subscriber object, either a newly created or an already existing one
 	 */
-	public void subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	Subscriber subscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
 	/**
 	 * The method is equivalent to the method above but is done through the JMS server.
@@ -348,4 +349,12 @@ public interface NotificationsManager {
 	 * @param publisherData new data to write
 	 */
 	public void updatePublisherData(SubscriptionContext subscriptionContext, PublisherData publisherData);
+
+	/**
+	 * update all subscribers regarding their enabled status for the given publisher
+	 *
+	 * @param publisher
+	 * @param subscriptionStatus enabled/disabled
+	 */
+	void updateAllSubscribers(Publisher publisher, boolean subscriptionStatus);
 }

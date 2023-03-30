@@ -118,4 +118,19 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 	public String getType() {
 		return "User";
 	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return "-";
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
+	}
 }

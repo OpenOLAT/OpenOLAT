@@ -62,6 +62,7 @@ import org.olat.course.wizard.IQTESTCourseNodeDefaults;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -89,6 +90,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 
 	@Override
@@ -98,11 +101,16 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 
 	@Override
 	public void updateEntryStatus(Identity executor, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		String before = repositoryService.toAuditXml(entry);
+
 		RepositoryEntry updatedEntry = repositoryManager.setStatus(entry, status);
 		
 		MultiUserEvent modifiedEvent = new EntryChangedEvent(updatedEntry, executor, Change.modifiedAtPublish, "coursewizard");
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, updatedEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
+
+		String after = repositoryService.toAuditXml(updatedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, updatedEntry, executor);
 		log.debug("Status of RepositoryEntry changed to '{}'.", status);
 	}
 	

@@ -216,4 +216,19 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 	public String getType() {
 		return "FolderModule";
 	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_FILETYPE_FOLDER);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
+	}
 }

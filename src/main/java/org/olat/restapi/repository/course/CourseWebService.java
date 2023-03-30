@@ -97,6 +97,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -780,6 +781,9 @@ public class CourseWebService {
 		}
 		
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+
+		String before = repositoryService.toAuditXml(re);
+
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
 			repositoryService.closeRepositoryEntry(re, null, false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
@@ -803,11 +807,13 @@ public class CourseWebService {
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.isValid(newStatus)) {
 			RepositoryEntryStatusEnum nStatus = RepositoryEntryStatusEnum.valueOf(newStatus);
-			repositoryManager.setStatus(re, nStatus);
+			re = repositoryManager.setStatus(re, nStatus);
 			log.info("Change status of {} to {}", re, newStatus);
 			ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(nStatus), getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		}
+		String after = repositoryService.toAuditXml(re);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, re, getIdentity(request));
 		return Response.ok().build();
 	}
 	

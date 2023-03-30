@@ -40,6 +40,7 @@ import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryEducationalType;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
@@ -72,6 +73,8 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private TaxonomyService taxonomyService;
 	@Autowired
@@ -173,6 +176,8 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 	@Override
 	public void changeAccessAndProperties(Identity executor, AccessAndProperties accessAndProps, boolean fireEvents) {
 		RepositoryEntry entry = accessAndProps.getRepositoryEntry();
+
+		String before = repositoryService.toAuditXml(entry);
 		
 		entry = repositoryManager.setStatus(entry, accessAndProps.getStatus());
 		entry = repositoryManager.setAccess(entry, accessAndProps.isPublicVisible(), accessAndProps.getSetting(),
@@ -192,6 +197,9 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 				acService.save(accessAndProps.getGuestOffer());
 			}
 		}
+
+		String after = repositoryService.toAuditXml(entry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, executor);
 		
 		if (fireEvents) {
 			MultiUserEvent modifiedEvent = new EntryChangedEvent(entry, executor, Change.modifiedAtPublish, "publish");

@@ -132,8 +132,7 @@ public class PFNotificationsHandler implements NotificationsHandler {
 				BusinessGroup bg = businessGroupService.loadBusinessGroup(p.getResId());
 				title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 			} else if("CourseModule".equals(resName)) {
-				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
-				title = translator.translate("notifications.header.course", new String[]{displayName});
+				title = translator.translate("notifications.header.course", getDisplayName(p));
 			} else {
 				title = translator.translate("notifications.header");
 			}
@@ -155,6 +154,21 @@ public class PFNotificationsHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return "PFCourseNode";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSS_CLASS_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return "notification.additional.desc";
 	}
 
 }

@@ -49,6 +49,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -328,6 +329,8 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	}
 	
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
+		String before = repositoryService.toAuditXml(entry);
+
 		entry = repositoryManager.setStatus(entry, updatedStatus);
 		initStatus(status);
 		fireEvent(ureq, new ReloadSettingsEvent(true, true, false, false));
@@ -335,6 +338,9 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		
 		EntryChangedEvent e = new EntryChangedEvent(entry, getIdentity(), Change.modifiedAccess, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+
+		String after = repositoryService.toAuditXml(entry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, entry, ureq.getIdentity());
 		
 		getLogger().info("Change status of {} to {}", entry, updatedStatus);
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),

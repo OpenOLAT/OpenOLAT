@@ -35,6 +35,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -78,6 +79,21 @@ public class VideoNotificationsHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return VideoFileResource.TYPE_NAME;
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor("o_video_icon");
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 
 	@Override
@@ -164,8 +180,7 @@ public class VideoNotificationsHandler implements NotificationsHandler {
 	protected TitleItem getTitleItem(Publisher p, Translator translator) {
 		String title = "";
 		try {
-			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(p.getResId());
-			title = translator.translate(NOTIFICATIONS_HEADER, new String[] { displayName });
+			title = translator.translate(NOTIFICATIONS_HEADER, getDisplayName(p));
 		} catch (Exception e) {
 			log.error("", e);
 		}

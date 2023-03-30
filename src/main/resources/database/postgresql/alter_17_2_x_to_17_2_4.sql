@@ -9,3 +9,15 @@ alter table o_as_eff_statement drop constraint o_as_eff_statement_fk_identity_fk
 alter table o_as_entry add column a_run int8 default 1 not null;
 
 alter table o_as_user_course_infos add column run int8 default 1 not null;
+
+-- repoEntry AuditLogs for status changes
+create table o_repositoryentry_audit_log (
+    id bigserial,
+    creationdate timestamp not null,
+    r_action varchar(32) not null,
+    r_val_before text,
+    r_val_after text,
+    fk_entry int8 not null,
+    fk_author int8 not null,
+    primary key (id)
+);

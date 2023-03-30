@@ -134,7 +134,7 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
 			Translator translator = Util.createPackageTranslator(DialogCourseNodeRunController.class, locale);
-			String displayname = repositoryManager.lookupDisplayNameByOLATResourceableId(subscriber.getPublisher().getResId());
+			String displayname = getDisplayName(subscriber.getPublisher());
 			if(displayname == null) {
 				checkPublisher(subscriber.getPublisher());
 			}
@@ -164,5 +164,20 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 	@Override
 	public String getType() {
 		return "DialogElement";
+	}
+
+	@Override
+	public String getDisplayName(Publisher publisher) {
+		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+	}
+
+	@Override
+	public String getIconCss() {
+		return CSSHelper.getIconCssClassFor(CSSS_CLASS_UPLOAD_ICON);
+	}
+
+	@Override
+	public String getAdditionalDescriptionI18nKey(Locale locale) {
+		return null;
 	}
 }

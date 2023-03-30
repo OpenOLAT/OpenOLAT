@@ -24,14 +24,20 @@ import static org.olat.core.gui.components.util.SelectionValues.entry;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -52,25 +58,32 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryAdminController extends FormBasicController {
 
+	private static final String NOTIFICATION_REPOSITORY_STATUS_CHANGED = "notification.repository.status.changed";
 	private static final String[] keys = {"on"};
 	private static final String[] leaveKeys = {
 			RepositoryEntryAllowToLeaveOptions.atAnyTime.name(),
 			RepositoryEntryAllowToLeaveOptions.afterEndDate.name(),
 			RepositoryEntryAllowToLeaveOptions.never.name()
 	};
-	
+
+	private FormLink enableAllSubscribersLink;
+	private FormLink disableAllSubscribersLink;
 	private SingleSelection leaveEl;
 	private MultipleSelectionElement ratingEl;
 	private MultipleSelectionElement membershipEl;
 	private MultipleSelectionElement commentEl;
 	private MultipleSelectionElement myCourseSearchEl;
 	private MultipleSelectionElement taxonomyEl;
-	
-	
+	private MultipleSelectionElement notificationEl;
+
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private NotificationsManager notificationsManager;
 	
 	public RepositoryAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
@@ -135,10 +148,35 @@ public class RepositoryAdminController extends FormBasicController {
 		} else {
 			leaveEl.select(RepositoryEntryAllowToLeaveOptions.atAnyTime.name(), true);
 		}
-		
+
+		FormLayoutContainer notificationCont = FormLayoutContainer.createDefaultFormLayout("notification", getTranslator());
+		notificationCont.setFormTitle(translate("repository.admin.notification.title"));
+		notificationCont.setFormInfo(translate("repository.admin.notification.desc"));
+		formLayout.add(notificationCont);
+		notificationCont.setRootForm(mainForm);
+
+		String[] notiKeys = new String[]{
+				NOTIFICATION_REPOSITORY_STATUS_CHANGED
+		};
+
+		String[] notiValues = new String[]{
+				translate("repository.admin.notification")
+		};
+
+		boolean statusChangedNotificationEnabled = repositoryModule.isNotificationRepoStatusChanged();
+		notificationEl = uifactory.addCheckboxesVertical("repository.admin.notification.label", notificationCont, notiKeys, notiValues, 1);
+		notificationEl.addActionListener(FormEvent.ONCHANGE);
+		notificationEl.select(NOTIFICATION_REPOSITORY_STATUS_CHANGED, statusChangedNotificationEnabled);
+
+		// TODO Darstellung inaktiver abos
+
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		notificationCont.add(buttonsCont);
 		buttonsCont.setRootForm(mainForm);
-		uifactory.addFormSubmitButton("save", buttonsCont);
+		enableAllSubscribersLink = uifactory.addFormLink("repository.admin.enable.all.subscribers", buttonsCont, Link.BUTTON);
+		disableAllSubscribersLink = uifactory.addFormLink("repository.admin.disable.all.subscribers", buttonsCont, Link.BUTTON);
+		// Button was not available before, redundant?
+		//uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override
@@ -159,7 +197,10 @@ public class RepositoryAdminController extends FormBasicController {
 			boolean on = !membershipEl.getSelectedKeys().isEmpty();
 			repositoryModule.setRequestMembershipEnabled(on);
 			getWindowControl().setInfo("saved");
-		}  else if(taxonomyEl == source) {
+		} else if (notificationEl == source) {
+			repositoryModule.setNotificationRepoStatusChanged(notificationEl.isKeySelected(NOTIFICATION_REPOSITORY_STATUS_CHANGED));
+			getWindowControl().setInfo("saved");
+		} else if (taxonomyEl == source) {
 			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()
 					.map(Long::valueOf)
 					.map(TaxonomyRefImpl::new).
@@ -170,6 +211,13 @@ public class RepositoryAdminController extends FormBasicController {
 			String selectedOption = leaveEl.getSelectedKey();
 			RepositoryEntryAllowToLeaveOptions option = RepositoryEntryAllowToLeaveOptions.valueOf(selectedOption);
 			repositoryModule.setAllowToLeaveDefaultOption(option);
+			getWindowControl().setInfo("saved");
+		} else if (enableAllSubscribersLink == source
+				|| disableAllSubscribersLink == source) {
+			SubscriptionContext subContext = repositoryService.getSubscriptionContext();
+			PublisherData publisherData = repositoryService.getPublisherData();
+			Publisher publisher = notificationsManager.getOrCreatePublisher(subContext, publisherData);
+			notificationsManager.updateAllSubscribers(publisher, enableAllSubscribersLink == source);
 			getWindowControl().setInfo("saved");
 		}
 	}
