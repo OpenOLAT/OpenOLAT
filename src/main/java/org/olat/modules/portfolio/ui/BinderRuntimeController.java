@@ -97,8 +97,16 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 		}
 		
 		Controller runner = getRuntimeController();
-		if(runner instanceof BinderController) {
-			((BinderController)runner).setSegmentButtonsVisible(true);
+		if(runner instanceof BinderController binderCtrl) {
+			binderCtrl.setSegmentButtonsVisible(true);
+		}
+	}
+	
+	@Override
+	protected void postInitToolbar() {
+		Controller runner = getRuntimeController();
+		if(runner instanceof BinderController binderCtrl) {
+			binderCtrl.initTools();
 		}
 	}
 

@@ -365,7 +365,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.addTool(status, Align.left, false);
 		}
 		
+		postInitToolbar();
+		
 		toolbarPanel.setDirty(true);
+	}
+	
+	/**
+	 * To add something last
+	 */
+	protected void postInitToolbar() {
+		// Standard implementation does nothing
 	}
 
 	protected void reloadStatus() {
@@ -577,7 +586,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	/**
 	 * Specialized controllers can override this to add a menu item with 'replace' semantics.
 	 */
-	protected void initToolsMenuReplaceItem(Dropdown toolsDropdown) {
+	protected void initToolsMenuReplaceItem(@SuppressWarnings("unused") Dropdown toolsDropdown) {
 		// default implementation does nothing
 	}
 
