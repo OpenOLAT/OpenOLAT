@@ -298,7 +298,7 @@ public class VideoRunController extends BasicController {
 		}
 		
 		public String getCategoryColor() {
-			return category.getColor();
+			return category.getStyle();
 		}
 	}
 }

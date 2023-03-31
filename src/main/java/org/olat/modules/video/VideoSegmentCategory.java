@@ -36,4 +36,5 @@ public interface VideoSegmentCategory {
 	void setColor(String color);
 	int getSortOrder();
 	void setSortOrder(int sortOrder);
+	String getStyle();
 }

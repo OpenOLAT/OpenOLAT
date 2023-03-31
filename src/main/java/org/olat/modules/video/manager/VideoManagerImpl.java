@@ -1177,20 +1177,23 @@ public class VideoManagerImpl implements VideoManager {
 
 	private VideoMarkers replaceMissingStyles(VideoMarkers markers) {
 		for (VideoMarker marker : markers.getMarkers()) {
-			marker.setStyle(replaceMissingStyle(marker.getStyle()));
+			marker.setStyle(replaceMissingColor(marker.getStyle()));
 		}
 		return markers;
 	}
 
-	private String replaceMissingStyle(String style) {
-		if ("o_video_marker_gray".equals(style)) {
-			return "o_video_marker_lightgray";
-		} else if ("o_video_marker_blue".equals(style)) {
-			return "o_video_marker_lightblue";
-		} else if ("o_video_marker_green".equals(style)) {
-			return "o_video_marker_lightgreen";
+	private String replaceMissingColor(String color) {
+		if (color == null) {
+			return null;
 		}
-		return style;
+		if (color.endsWith("_gray") && !color.endsWith("_lightgray")) {
+			return color.replace("_gray", "_lightgray");
+		} else if (color.endsWith("_blue") && !color.endsWith("_lightblue")) {
+			return color.replace("_blue", "_lightblue");
+		} else if (color.endsWith("_green") && !color.endsWith("_lightgreen")) {
+			return color.replace("_green", "_lightgreen");
+		}
+		return color;
 	}
 
 	@Override
@@ -1216,7 +1219,7 @@ public class VideoManagerImpl implements VideoManager {
 		VFSItem segmentsItem = vfsContainer.resolve(FILENAME_SEGMENTS_XML);
 		if (segmentsItem instanceof VFSLeaf segmentsLeaf) {
 			try (InputStream in = segmentsLeaf.getInputStream()) {
-				return replaceMissingStyles(VideoXStream.fromXml(in, VideoSegments.class));
+				return replaceMissingColorsAndStandardize(VideoXStream.fromXml(in, VideoSegments.class));
 			} catch (IOException e) {
 				log.error("", e);
 			}
@@ -1224,9 +1227,9 @@ public class VideoManagerImpl implements VideoManager {
 		return new VideoSegmentsImpl();
 	}
 
-	private VideoSegments replaceMissingStyles(VideoSegments segments) {
+	private VideoSegments replaceMissingColorsAndStandardize(VideoSegments segments) {
 		for (VideoSegmentCategory category : segments.getCategories()) {
-			category.setColor(replaceMissingStyle(category.getColor()));
+			category.setColor(VideoModule.getColorFromMarkerStyle(replaceMissingColor(category.getColor())));
 		}
 		return segments;
 	}
@@ -1321,7 +1324,7 @@ public class VideoManagerImpl implements VideoManager {
 
 	private VideoQuestions replaceMissingStyles(VideoQuestions questions) {
 		for (VideoQuestion question : questions.getQuestions()) {
-			question.setStyle(replaceMissingStyle(question.getStyle()));
+			question.setStyle(replaceMissingColor(question.getStyle()));
 		}
 		return questions;
 	}
