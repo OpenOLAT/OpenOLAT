@@ -206,7 +206,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 			iconCss = handler.getIconCss();
 			// If resId is 0L that means, publisher is of subType global
 			if (pub.getResId().equals(0L)) {
-				addDesc = handler.getAdditionalDescriptionI18nKey(getLocale());
+				addDesc = handler.getAdditionalDescriptionI18nKey(getLocale()) != null
+						? handler.getAdditionalDescriptionI18nKey(getLocale()) : "";
 			}
 		}
 
@@ -313,16 +314,13 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 	private boolean isExcludedBySearchString(String searchString, NotificationSubscriptionRow row) {
 		boolean excluded = true;
-		// try catch to prevent npe from malicious data, e.g. row.getAddDesc() being null (even if that should not be possible)
-		try {
-			if (row.getSubType().toLowerCase().contains(searchString.toLowerCase())) {
-				excluded = false;
-			} else if (row.getCourseGroup().getI18nKey().contains(searchString)) excluded = false;
-			else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;
-			else if (row.getAddDesc().contains(searchString)) excluded = false;
-		} catch (Exception e) {
-			return true;
-		}
+
+		if (row.getSubType().toLowerCase().contains(searchString.toLowerCase())) {
+			excluded = false;
+		} else if (row.getCourseGroup().getI18nKey().contains(searchString)) excluded = false;
+		else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;
+		else if (row.getAddDesc().contains(searchString)) excluded = false;
+
 		return excluded;
 	}
 
