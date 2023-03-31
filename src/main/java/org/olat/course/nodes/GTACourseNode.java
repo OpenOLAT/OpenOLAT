@@ -876,9 +876,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 		
 		int flow = 0;//for beautiful ordering
-		String groupDirName = (StringHelper.containsNonWhitespace(dirName) ? dirName + "/" : "")
-				+ StringHelper.transformDisplayNameToFileSystemName(businessGroup.getName())
-				+ "_" + businessGroup.getKey();
+		String groupDirName = ZipUtil.concat(dirName, StringHelper.transformDisplayNameToFileSystemName(businessGroup.getName())
+				+ "_" + businessGroup.getKey());
 		
 		Task task = gtaManager.getTask(businessGroup, taskList);
 		if(task != null && task.getTaskName() != null && config.getBooleanSafe(GTASK_ASSIGNMENT)) {
@@ -1082,11 +1081,28 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, Identity identity, Role by) {
-		boolean resetTask = GTAType.individual.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
-		resetUserData(assessedUserCourseEnv, resetTask, identity, by);
+		boolean resetTaskData = GTAType.individual.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+		if(resetTaskData) {
+			resetUserTaskData(assessedUserCourseEnv, identity);
+		}
+		super.resetUserData(assessedUserCourseEnv, identity, by);
+	}
+	
+	public void resetGroupTaskData(BusinessGroup businessGroup, CourseEnvironment courseEnv, Identity doer) {
+		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
+		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		TaskList taskList = gtaManager.getTaskList(courseEntry, this);
+		if(taskList == null) {
+			return; // No task configured, nothing to do
+		}
+		
+		Task task = gtaManager.getTask(businessGroup, taskList);
+		if(task != null) {
+			gtaManager.resetCourseNode(task, null, businessGroup, this, courseEnv, doer);
+		}
 	}
 
-	public void resetUserData(UserCourseEnvironment assessedUserCourseEnv, boolean resetTask, Identity identity, Role by) {
+	private void resetUserTaskData(UserCourseEnvironment assessedUserCourseEnv,  Identity identity) {
 		GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
 		CourseEnvironment courseEnv = assessedUserCourseEnv.getCourseEnvironment();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
@@ -1094,16 +1110,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		if(taskList == null) {
 			return; // No task configured, nothing to do
 		}
-		
-		if(resetTask) {
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			Task task = gtaManager.getTask(assessedIdentity, taskList);
-			if(task != null) {
-				gtaManager.resetCourseNode(task, assessedIdentity, this, courseEnv, identity);
-			}
+
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		Task task = gtaManager.getTask(assessedIdentity, taskList);
+		if(task != null) {
+			gtaManager.resetCourseNode(task, assessedIdentity, null, this, courseEnv, identity);
 		}
-		
-		super.resetUserData(assessedUserCourseEnv, identity, by);
 	}
 
 	@Override

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -98,17 +99,19 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 											  Identity identity) {
 		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(identity);
 		for (RepositoryEntryAuditLog auditLog : auditLogs) {
-			SubscriptionListItem item = createNewRepositoryEntryStatusChangeItem(translator, auditLog);
-			if (item != null) {
-				items.add(item);
+			RepositoryEntry repositoryEntry = repositoryService.loadByKey(auditLog.getEntryKey());
+			if (repositoryService.hasRole(identity, repositoryEntry, GroupRoles.owner.name())) {
+				SubscriptionListItem item = createNewRepositoryEntryStatusChangeItem(translator, auditLog, repositoryEntry);
+				if (item != null) {
+					items.add(item);
+				}
 			}
 		}
 	}
 
-	private SubscriptionListItem createNewRepositoryEntryStatusChangeItem(Translator translator, RepositoryEntryAuditLog auditLog) {
+	private SubscriptionListItem createNewRepositoryEntryStatusChangeItem(
+			Translator translator, RepositoryEntryAuditLog auditLog, RepositoryEntry repositoryEntry) {
 		try {
-			RepositoryEntry repositoryEntry = repositoryService.loadByKey(auditLog.getEntryKey());
-
 			// TODO: log also finally deleted entries, so repositoryEntry can't be null
 			if (repositoryEntry != null) {
 				RepositoryEntry auditBeforeRe = repositoryService.toAuditRepositoryEntry(auditLog.getBefore());
