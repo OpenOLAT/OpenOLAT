@@ -72,4 +72,8 @@ public class HeaderCommandsController extends BasicController {
 			fireEvent(ureq, IMPORT_EVENT);
 		}
 	}
+
+	public void setCanDelete(boolean canDelete) {
+		deleteLink.setEnabled(canDelete);
+	}
 }

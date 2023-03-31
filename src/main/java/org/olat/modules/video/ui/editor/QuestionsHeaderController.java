@@ -178,8 +178,6 @@ public class QuestionsHeaderController extends FormBasicController {
 			previousQuestionButton.setEnabled(selectedIndex > 0);
 			nextQuestionButton.setEnabled(selectedIndex < (questionsKV.size() - 1));
 		}
-
-		commandsButton.setEnabled(!questionsKV.isEmpty());
 	}
 
 	@Override
@@ -253,6 +251,7 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	private void doCommands(UserRequest ureq) {
 		commandsController = new HeaderCommandsController(ureq, getWindowControl(), true);
+		commandsController.setCanDelete(!questionsKV.isEmpty());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -308,6 +307,10 @@ public class QuestionsHeaderController extends FormBasicController {
 
 	private void doDeleteQuestion(UserRequest ureq) {
 		if (questionId == null) {
+			return;
+		}
+
+		if (questionsKV.isEmpty()) {
 			return;
 		}
 

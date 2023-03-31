@@ -39,6 +39,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.olat.core.util.StringHelper;
 import org.olat.restapi.RestConnection;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.RepositoryEntryVO;
@@ -72,6 +73,22 @@ public class RepositoryRestClient {
 		this.deploymentUrl = deploymentUrl;
 		this.username = username;
 		this.password = password;
+	}
+	
+	public static final Long extractRepositoryEntryKey(String url) {
+		final String repoMarker = "RepositoryEntry";
+		int index = url.indexOf(repoMarker);
+		if(index >= 0) {
+			url = url.substring(index + repoMarker.length() + 1);
+			int endIndex = url.indexOf('/');
+			if(endIndex > 0) {
+				url = url.substring(0, endIndex);
+			}
+			if(StringHelper.isLong(url)) {
+				return Long.valueOf(url);
+			}
+		}
+		return null;
 	}
 	
 	public CourseVO deployDemoCourse()
