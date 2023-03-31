@@ -48,6 +48,8 @@ class EnhancedXStream extends XStream {
 	EnhancedXStream(boolean export) {
 		super();
 
+        registerConverter(new HibernateProxyConverter());
+
 		if (export) {
 			addDefaultImplementation(PersistentList.class, List.class);
 			addDefaultImplementation(PersistentBag.class, List.class);
