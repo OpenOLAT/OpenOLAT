@@ -85,7 +85,6 @@ public class NotificationSubscriptionController extends FormBasicController {
 	private static final String FORMLINK_COURSE_GROUP = "courseGroup";
 	private static final String FORMLINK_SUB_RES = "subRes";
 	private static final String FORMLINK_DELETE = "delete";
-	private static final String PUB_RES_NAME_GLOBAL = "Global";
 	private final List<NotificationSubscriptionRow> subscriptionRows = new ArrayList<>();
 	private final Identity subscriberIdentity;
 	private boolean adminColumns;
@@ -180,7 +179,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		Publisher pub = sub.getPublisher();
 		String subType = !pub.getResId().equals(0L)
 				? NewControllerFactory.translateResourceableTypeName(pub.getResName(), getLocale())
-				: NewControllerFactory.translateResourceableTypeName(PUB_RES_NAME_GLOBAL, getLocale());
+				: NewControllerFactory.translateResourceableTypeName("Global", getLocale());
 		FormLink courseGroup = uifactory.addFormLink("courseGroup_" + sub.getKey().toString(), FORMLINK_COURSE_GROUP, "", null, flc, Link.NONTRANSLATED);
 		FormLink subRes = uifactory.addFormLink("subRes_" + sub.getKey().toString(), FORMLINK_SUB_RES, "", null, flc, Link.NONTRANSLATED);
 		String addDesc = "";
@@ -188,7 +187,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		statusToggle.addActionListener(FormEvent.ONCHANGE);
 		FormLink deleteLink = null;
 
-		if (!pub.getResName().equals(PUB_RES_NAME_GLOBAL)) {
+		if (!pub.getResId().equals(0L)) {
 			deleteLink = uifactory.addFormLink("delete_" + sub.getKey().toString(), FORMLINK_DELETE, "table.column.delete.action", null, flc, Link.LINK);
 		}
 
@@ -211,12 +210,21 @@ public class NotificationSubscriptionController extends FormBasicController {
 			}
 		}
 
-		if(title != null) {
+		if (title != null) {
 			title = StringHelper.escapeHtml(title);
 			courseGroup.setI18nKey(title);
 		}
 		if (!"-".equals(title)) {
-			courseGroup.setIconLeftCSS(CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName())));
+			String iconCssClass;
+			// TODO: Elaborate a more elegant solution
+			if ("CalendarManager.course".equals(pub.getResName())) {
+				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass("CourseModule"));
+			} else if ("CalendarManager.group".equals(pub.getResName())) {
+				iconCssClass = CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);
+			} else {
+				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName()));
+			}
+			courseGroup.setIconLeftCSS(iconCssClass);
 		}
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
@@ -305,12 +313,16 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 	private boolean isExcludedBySearchString(String searchString, NotificationSubscriptionRow row) {
 		boolean excluded = true;
-		if (row.getSubType().contains(searchString)) {
-			excluded = false;
-		} else if (row.getCourseGroup().getI18nKey().contains(searchString)) excluded = false;
-		else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;
-		else if (row.getAddDesc().contains(searchString)) excluded = false;
-
+		// try catch to prevent npe from malicious data, e.g. row.getAddDesc() being null (even if that should not be possible)
+		try {
+			if (row.getSubType().toLowerCase().contains(searchString.toLowerCase())) {
+				excluded = false;
+			} else if (row.getCourseGroup().getI18nKey().contains(searchString)) excluded = false;
+			else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;
+			else if (row.getAddDesc().contains(searchString)) excluded = false;
+		} catch (Exception e) {
+			return true;
+		}
 		return excluded;
 	}
 

@@ -100,7 +100,8 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(identity);
 		for (RepositoryEntryAuditLog auditLog : auditLogs) {
 			RepositoryEntry repositoryEntry = repositoryService.loadByKey(auditLog.getEntryKey());
-			if (repositoryService.hasRole(identity, repositoryEntry, GroupRoles.owner.name())) {
+			if (repositoryEntry != null
+					&& repositoryService.hasRole(identity, repositoryEntry, GroupRoles.owner.name())) {
 				SubscriptionListItem item = createNewRepositoryEntryStatusChangeItem(translator, auditLog, repositoryEntry);
 				if (item != null) {
 					items.add(item);
@@ -113,25 +114,22 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 			Translator translator, RepositoryEntryAuditLog auditLog, RepositoryEntry repositoryEntry) {
 		try {
 			// TODO: log also finally deleted entries, so repositoryEntry can't be null
-			if (repositoryEntry != null) {
-				RepositoryEntry auditBeforeRe = repositoryService.toAuditRepositoryEntry(auditLog.getBefore());
-				RepositoryEntry auditAfterRe = repositoryService.toAuditRepositoryEntry(auditLog.getAfter());
-				String desc = translator.translate("notification.new.status.change",
-						repositoryEntry.getDisplayname(),
-						userManager.getUserDisplayName(auditLog.getAuthorKey()),
-						auditBeforeRe == null ? "unknown" : translator.translate("cif.status." + auditBeforeRe.getStatus()),
-						auditAfterRe == null ? "unknown" : translator.translate("cif.status." + auditAfterRe.getStatus()));
+			RepositoryEntry auditBeforeRe = repositoryService.toAuditRepositoryEntry(auditLog.getBefore());
+			RepositoryEntry auditAfterRe = repositoryService.toAuditRepositoryEntry(auditLog.getAfter());
+			String desc = translator.translate("notification.new.status.change",
+					repositoryEntry.getDisplayname(),
+					userManager.getUserDisplayName(auditLog.getAuthorKey()),
+					auditBeforeRe == null ? "unknown" : translator.translate("cif.status." + auditBeforeRe.getStatus()),
+					auditAfterRe == null ? "unknown" : translator.translate("cif.status." + auditAfterRe.getStatus()));
 
-				String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
-				String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-				Date dateInfo = auditLog.getCreationDate();
-				return new SubscriptionListItem(desc, url, businessPath, dateInfo, RepositoyUIFactory.getIconCssClass(repositoryEntry));
-			}
+			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
+			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+			Date dateInfo = auditLog.getCreationDate();
+			return new SubscriptionListItem(desc, url, businessPath, dateInfo, RepositoyUIFactory.getIconCssClass(repositoryEntry));
 		} catch (Exception e) {
 			log.error("Error while creating repositoryEntryStatusChange notifications", e);
 			return null;
 		}
-		return null;
 	}
 
 	@Override
