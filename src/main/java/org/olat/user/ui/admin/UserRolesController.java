@@ -341,7 +341,7 @@ public class UserRolesController extends FormBasicController {
 			}
 			
 			if(numOfRoles == 0) {
-				rolesEls.get(0).setErrorKey("error.roles.atleastone", null);
+				rolesEls.get(0).setErrorKey("error.roles.atleastone");
 				allOk &= false;
 			} else if(!allSelectedRoles.contains(OrganisationRoles.invitee.name()) && !allSelectedRoles.contains(OrganisationRoles.user.name())) {
 				Roles currentRoles = securityManager.getRoles(editedIdentity, false);
@@ -359,7 +359,7 @@ public class UserRolesController extends FormBasicController {
 				}
 				
 				if(allOrgRefs.isEmpty()) {
-					rolesEls.get(0).setErrorKey("error.roles.atleastone.userorinvitee", null);
+					rolesEls.get(0).setErrorKey("error.roles.atleastone.userorinvitee");
 					allOk &= false;
 				}
 			}

@@ -350,15 +350,15 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 				try {
 					int value = Integer.parseInt(element.getValue());
 					if(value < 1) {
-						element.setErrorKey("form.error.nointeger", null);
+						element.setErrorKey("form.error.nointeger");
 						allOk &= false;
 					}
 				} catch (NumberFormatException e) {
-					element.setErrorKey("form.error.nointeger", null);
+					element.setErrorKey("form.error.nointeger");
 					allOk &= false;
 				}
 			} else {
-				element.setErrorKey("form.legende.mandatory", null);
+				element.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}
@@ -372,7 +372,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		element.clearError();
 		if (element.isVisible() && formatAndCheckMails(element.getValue()) == null) {
 			allOk &= false;
-			element.setErrorKey("form.error.nomail", null);
+			element.setErrorKey("form.error.nomail");
 		}
 		
 		return allOk;

@@ -134,13 +134,13 @@ public class ChooseRolesController extends StepFormBasicController {
 		
 		targetOrganisationEl.clearError();
 		if(!targetOrganisationEl.isOneSelected()) {
-			targetOrganisationEl.setErrorKey("form.legende.mandatory", null);
+			targetOrganisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		rolesEl.clearError();
 		if(rolesEl.getSelectedKeys().isEmpty()) {
-			rolesEl.setErrorKey("form.legende.mandatory", null);
+			rolesEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

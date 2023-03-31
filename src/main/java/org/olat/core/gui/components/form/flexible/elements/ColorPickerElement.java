@@ -50,6 +50,8 @@ public interface ColorPickerElement extends FormItem {
 	 */
 	void setAjaxOnlyMode(boolean ajaxOnlyMode);
 
+	void setNonSelectedText(String text);
+
 	Color getColor();
 
 	class Color {

@@ -139,7 +139,7 @@ public class ToccoAuthManager implements AuthenticationSPI {
 	}
 
 	@Override
-	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
 		return new AllOkValidationResult();
 	}
 

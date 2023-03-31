@@ -189,8 +189,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, AuthenticationPro
 	}
 
 	@Override
-	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
-
+	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
 		LdapContext ctx = bindSystem();
 		if(ctx != null) {
 			String userDN = ldapDao.searchUserForLogin(name, ctx);

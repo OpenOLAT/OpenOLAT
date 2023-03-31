@@ -39,6 +39,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private Color color;
 	private final List<Color> colors;
 	private boolean ajaxOnlyMode = false;
+	private String nonSelectedText;
 
 	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
 		super(name);
@@ -57,6 +58,15 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	@Override
 	public void setAjaxOnlyMode(boolean ajaxOnlyMode) {
 		this.ajaxOnlyMode = ajaxOnlyMode;
+	}
+
+	public String getNonSelectedText() {
+		return nonSelectedText;
+	}
+
+	@Override
+	public void setNonSelectedText(String nonSelectedText) {
+		this.nonSelectedText = nonSelectedText;
 	}
 
 	public Color getColor() {

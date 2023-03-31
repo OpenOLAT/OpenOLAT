@@ -103,7 +103,7 @@ public class UserNickNameEditController extends FormBasicController {
 		
 		nickNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(nickNameEl.getValue())) {
-			nickNameEl.setErrorKey("form.legende.mandatory", null);
+			nickNameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!isNickNameUnique(nickNameEl.getValue())) {
 			Identity identity = securityManager.findIdentityByNickName(nickNameEl.getValue());
@@ -111,16 +111,16 @@ public class UserNickNameEditController extends FormBasicController {
 			if(identity != null) {
 				val = userManager.getUserDisplayName(identity);
 			}
-			nickNameEl.setErrorKey("general.error.unique", new String[] { val } );
+			nickNameEl.setErrorKey("general.error.unique", val);
 			allOk &= false;
 		} else if(changeProvidersEl.isVisible() && changeProvidersEl.isSelected(0)){
 			for(UserAuthenticationRow auth:manageableAuthentications) {
 				AuthenticationProviderSPI provider = auth.getProvider();
-				ValidationResult result = provider.validateAuthenticationUsername(nickNameEl.getValue(), changeableIdentity);
+				ValidationResult result = provider.validateAuthenticationUsername(nickNameEl.getValue(), auth.getAuthentication().getProvider(), changeableIdentity);
 				if(!result.isValid()) {
 					ValidationDescription descr = result.getInvalidDescriptions().get(0);
 					String text = descr.getText(getLocale());
-					nickNameEl.setErrorKey("error.username.invalid", new String[] { text });
+					nickNameEl.setErrorKey("error.username.invalid", text);
 					allOk &= false;
 				}
 			}

@@ -140,7 +140,7 @@ public class UserAuthenticationAddController extends FormBasicController {
 			return false;
 		}
 		
-		ValidationResult result = providerSpi.validateAuthenticationUsername(login, changeableIdentity);
+		ValidationResult result = providerSpi.validateAuthenticationUsername(login, provider, changeableIdentity);
 		if(!result.isValid()) {
 			ValidationDescription descr = result.getInvalidDescriptions().get(0);
 			String text = descr.getText(getLocale());

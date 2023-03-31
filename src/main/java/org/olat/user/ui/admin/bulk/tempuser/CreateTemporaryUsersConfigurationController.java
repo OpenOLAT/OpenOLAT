@@ -128,7 +128,7 @@ public class CreateTemporaryUsersConfigurationController extends StepFormBasicCo
 		el.clearError();
 		String val = el.getValue();
 		if(!StringHelper.containsNonWhitespace(val)) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 		
@@ -144,15 +144,15 @@ public class CreateTemporaryUsersConfigurationController extends StepFormBasicCo
 			try {
 				int value = Integer.parseInt(val);
 				if(value < 1) {
-					el.setErrorKey("form.error.nointeger", null);
+					el.setErrorKey("form.error.nointeger");
 					allOk = false;
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk = false;
 			}
 		} else {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		}
 

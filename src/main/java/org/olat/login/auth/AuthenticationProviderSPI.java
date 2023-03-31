@@ -42,6 +42,6 @@ public interface AuthenticationProviderSPI {
 	
 	public boolean changeAuthenticationUsername(Authentication authentication, String newUsername);
 	
-	public ValidationResult validateAuthenticationUsername(String name, Identity identity);
+	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity);
 
 }

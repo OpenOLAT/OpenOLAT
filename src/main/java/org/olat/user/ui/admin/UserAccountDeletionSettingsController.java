@@ -87,10 +87,10 @@ public class UserAccountDeletionSettingsController extends FormBasicController {
 		requestDeleteEl.clearError();
 		if(requestDeleteEl.isAtLeastSelected(1)) {
 			if(!StringHelper.containsNonWhitespace(emailEl.getValue())) {
-				emailEl.setErrorKey("form.legende.mandatory", null);
+				emailEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(!MailHelper.isValidEmailAddress(emailEl.getValue())) {
-				emailEl.setErrorKey("error.mail.not.valid", null);
+				emailEl.setErrorKey("error.mail.not.valid");
 				allOk &= false;
 			}
 		}
