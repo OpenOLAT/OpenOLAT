@@ -510,7 +510,7 @@ public interface GTAManager {
 	 * @param doerIdentity
 	 * @return
 	 */
-	public Task resetCourseNode(Task task, Identity assessedIdentity, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
+	public Task resetCourseNode(Task task, Identity assessedIdentity, BusinessGroup businessGroup, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity);
 	
 	public boolean toggleMark(RepositoryEntry entry, GTACourseNode gtaNode, Identity marker, Identity participant);
 

@@ -31,10 +31,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.media.MediaResource;
@@ -47,6 +49,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.vfs.VFSContainer;
@@ -97,12 +100,16 @@ public class ResetCourseDataHelper {
 	public static final String ROOT_FOLDER = "archives";
 	
 	private final CourseEnvironment courseEnv;
+	private final Set<ResetBusinessGroupTask> queueResetGTACourseNode = new HashSet<>();
+	private final Map<GTACourseNode,List<GroupMembersSet>> gtaNodeToFGroupSets = new HashMap<>();
 	private final Map<GTACourseNode,Set<Long>> gtaNodeToFullGroupsMembers = new HashMap<>();
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private BaseSecurity securityManager;
 	@Autowired
 	private ReminderService reminderService;
 	@Autowired
@@ -148,25 +155,35 @@ public class ResetCourseDataHelper {
 	}
 
 	public MediaResource resetCourseNodes(List<Identity> identities, List<CourseNode> courseNodes, boolean resetCourse, Identity doer, Role by) {
-		List<String> archiveNames = new ArrayList<>();
+		List<VFSLeaf> archiveNames = new ArrayList<>(identities.size());
 		for(Identity identity:identities) {
-			String archiveName = resetCourseNodes(identity, courseNodes, resetCourse, identities, doer, by);
+			VFSLeaf archiveName = resetCourseNodes(identity, courseNodes, resetCourse, identities, doer, by);
 			if(archiveName != null) {
 				archiveNames.add(archiveName);
 			}
 		}
+		
+		// Check archive is only a sanity check, no archive -> something is wrong
+		if(!archiveNames.isEmpty() && !queueResetGTACourseNode.isEmpty()) {
+			for(ResetBusinessGroupTask resteGTANodeForGroup:queueResetGTACourseNode) {
+				GTACourseNode gtaNode = resteGTANodeForGroup.courseNode();
+				BusinessGroup businessGroup = resteGTANodeForGroup.businessGroup();
+				gtaNode.resetGroupTaskData(businessGroup, courseEnv, doer);
+			}
+		}
+		
 		if(archiveNames.isEmpty()) {
 			return null;
 		}
 		return new ResetCourseDataMediaResource(archiveNames, courseEnv);
 	}
 
-	private String resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes,
+	private VFSLeaf resetCourseNodes(Identity assessedIdentity, List<CourseNode> courseNodes,
 			boolean resetCourse, List<Identity> identitiesToReset, Identity doer, Role by) {	
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(assessedIdentity, Roles.userRoles(), courseEntry);
-		UserCourseEnvironment userCourseEnv = UserCourseEnvironmentImpl.load(assessedIdentity, Roles.userRoles(), courseEnv, reSecurity);
-		
+		Roles roles = securityManager.getRoles(assessedIdentity);
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(assessedIdentity, roles, courseEntry);
+		UserCourseEnvironment userCourseEnv = UserCourseEnvironmentImpl.load(assessedIdentity, roles, courseEnv, reSecurity);
 		VFSContainer rootFolder = VFSManager.getOrCreateContainer(courseEnv.getCourseBaseContainer(), ROOT_FOLDER);
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		
@@ -187,9 +204,9 @@ public class ResetCourseDataHelper {
 		}
 		try(OutputStream out=archiveZip.getOutputStream(true);
 				ZipOutputStream zout = new ZipOutputStream(out)) {
-			archiveStatement(statement, userCourseEnv, zout);
+			archiveStatement(statement, vfsName, userCourseEnv, zout);
 			for(CourseNode courseNode:courseNodes) {
-				String path = generatePath(courseNode);
+				String path = generatePath(vfsName, courseNode);
 				courseNode.archiveForResetUserData(userCourseEnv, zout, path, doer, by);
 			}
 			zout.flush();
@@ -215,13 +232,14 @@ public class ResetCourseDataHelper {
 		// 3) Reset the data (eventually a course node can produce a new efficiency statement)
 		try {
 			for(CourseNode courseNode:courseNodes) {
+				courseNode.resetUserData(userCourseEnv, doer, by);
 				if(courseNode instanceof GTACourseNode gtaNode
 						&& GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 					Set<Long> fullBusinessGroupMembers = membersOfFullBusinessGroups(gtaNode, identitiesToReset);
 					boolean resetTask = fullBusinessGroupMembers.contains(assessedIdentity.getKey());
-					gtaNode.resetUserData(userCourseEnv, resetTask, doer, by);
-				} else {
-					courseNode.resetUserData(userCourseEnv, doer, by);
+					if(resetTask) { //queue reset group task
+						queueResetGTATask(gtaNode, assessedIdentity);
+					}
 				}
 			}
 		} catch(Exception e) {
@@ -273,7 +291,7 @@ public class ResetCourseDataHelper {
 		ResetCourseDataEvent rcde = new ResetCourseDataEvent(assessedIdentity, courseEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(rcde, course);
 		
-		return folder + "/" + vfsName;
+		return archiveZip;
 	}
 	
 	/**
@@ -290,6 +308,9 @@ public class ResetCourseDataHelper {
 		}
 
 		List<BusinessGroup> businessGroups = gtaManager.getBusinessGroups(gtaNode);
+		Map<Long,BusinessGroup> businessGroupsMap = businessGroups.stream()
+				.collect(Collectors.toMap(BusinessGroup::getKey, group -> group, (u, v) -> u));
+		
 		List<BusinessGroupMembership> businessGroupMemberships = businessGroupService.getBusinessGroupsMembership(businessGroups);
 		
 		Map<Long,List<Long>> groupKeysToMembers = new HashMap<>();
@@ -306,17 +327,33 @@ public class ResetCourseDataHelper {
 				.toList();
 		
 		Set<Long> fullGroupMembers = new HashSet<>();
+		List<GroupMembersSet> groupSets = new ArrayList<>();
 		for(Map.Entry<Long, List<Long>> entry:groupKeysToMembers.entrySet()) {
 			List<Long> membersKeys = entry.getValue();
 			if(identitiesKeys.containsAll(membersKeys)) {
 				fullGroupMembers.addAll(membersKeys);
-			}
+				
+				BusinessGroup businessGroup = businessGroupsMap.get(entry.getKey());
+				groupSets.add(new GroupMembersSet(businessGroup, Set.copyOf(membersKeys)));
+			}	
 		}
+		gtaNodeToFGroupSets.put(gtaNode, groupSets);
 		gtaNodeToFullGroupsMembers.put(gtaNode, fullGroupMembers);
 		return fullGroupMembers;
 	}
 	
-	private void archiveStatement(UserEfficiencyStatementImpl statement, UserCourseEnvironment userCourseEnv, ZipOutputStream zout) throws IOException {
+	private void queueResetGTATask(GTACourseNode gtaNode, Identity identity) {
+		List<GroupMembersSet> groupSets = gtaNodeToFGroupSets.get(gtaNode);
+		if(groupSets != null && !groupSets.isEmpty()) {
+			for(GroupMembersSet groupSet:groupSets) {
+				if(groupSet.participantsKeys().contains(identity.getKey())) {
+					queueResetGTACourseNode.add(new ResetBusinessGroupTask(gtaNode, groupSet.businessGroup()));
+				}
+			}
+		}
+	}
+	
+	private void archiveStatement(UserEfficiencyStatementImpl statement, String vfsName, UserCourseEnvironment userCourseEnv, ZipOutputStream zout) throws IOException {
 		if(statement != null && StringHelper.containsNonWhitespace(statement.getStatementXml())) {
 			zout.putNextEntry(new ZipEntry("EfficiencyStatement.xml"));
 			zout.write(statement.getStatementXml().getBytes(StandardCharsets.UTF_8));
@@ -328,19 +365,19 @@ public class ResetCourseDataHelper {
 			EfficiencyStatement effStatement = efficiencyStatementMgr.createEfficiencyStatement(assessedIdentity, courseEnv,
 					assessmentNodeList, lastModifications, courseEnv.getCourseGroupManager().getCourseEntry());
 			String xml = EfficiencyStatementManager.toXML(effStatement); 
-			zout.putNextEntry(new ZipEntry("EfficiencyStatement.xml"));
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat("/" + vfsName, "EfficiencyStatement.xml")));
 			zout.write(xml.getBytes(StandardCharsets.UTF_8));
 			zout.closeEntry();
 		}
 	}
 
-	private String generatePath(CourseNode courseNode) {
+	private String generatePath(String vfsName, CourseNode courseNode) {
 		String shortTitle = courseNode.getShortTitle();
 		shortTitle = FileUtils.normalizeFilename(shortTitle);
 		if(shortTitle.length() > 25) {
 			shortTitle = shortTitle.substring(0, 25);
 		}
-		return shortTitle + "_" + courseNode.getIdent();
+		return "/" + vfsName + "/" + shortTitle + "_" + courseNode.getIdent();
 	}
 	
 	private String generateFilename(Identity identity) {
@@ -351,5 +388,29 @@ public class ResetCourseDataHelper {
 				+ "_" + (StringHelper.containsNonWhitespace(user.getNickName()) ? user.getNickName() : identity.getName());
 		String filename = date + "_" + name +"_data"; 
 		return  FileUtils.normalizeFilename(filename) + ".zip";
+	}
+	
+	private record GroupMembersSet(BusinessGroup businessGroup, Set<Long> participantsKeys) {
+
+	}
+	
+	private record ResetBusinessGroupTask(GTACourseNode courseNode, BusinessGroup businessGroup) {
+
+		@Override
+		public int hashCode() {
+			return courseNode.getIdent().hashCode() + businessGroup.getKey().hashCode();
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(this == obj) {
+				return true;
+			}
+			if(obj instanceof ResetBusinessGroupTask resetNode) {
+				return courseNode.getIdent().equals(resetNode.courseNode().getIdent())
+						&& businessGroup.equals(resetNode.businessGroup());
+			}
+			return false;
+		}
 	}
 }

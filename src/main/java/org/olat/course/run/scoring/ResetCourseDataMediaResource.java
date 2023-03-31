@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -33,10 +34,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
-import org.olat.core.util.vfs.VFSContainer;
-import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSAllItemsFilter;
 import org.olat.course.run.environment.CourseEnvironment;
 
 
@@ -50,10 +49,10 @@ public class ResetCourseDataMediaResource implements MediaResource {
 	
 	private static final Logger log = Tracing.createLoggerFor(ResetCourseDataMediaResource.class);
 	
-	private final List<String> archiveNames;
+	private final List<VFSLeaf> archiveNames;
 	private final CourseEnvironment courseEnv;
 	
-	public ResetCourseDataMediaResource(List<String> archiveNames, CourseEnvironment courseEnv) {
+	public ResetCourseDataMediaResource(List<VFSLeaf> archiveNames, CourseEnvironment courseEnv) {
 		this.archiveNames = archiveNames;
 		this.courseEnv = courseEnv;
 	}
@@ -90,20 +89,16 @@ public class ResetCourseDataMediaResource implements MediaResource {
 	
 	@Override
 	public void prepare(HttpServletResponse hres) {
-		VFSContainer archiveFolder = VFSManager.getOrCreateContainer(courseEnv.getCourseBaseContainer(), ResetCourseDataHelper.ROOT_FOLDER);
 		if(archiveNames.size() == 1) {
-			String name = archiveNames.get(0);
-			String urlEncodedLabel = StringHelper.urlEncodeUTF8(name);
+			VFSLeaf archive = archiveNames.get(0);
+			String urlEncodedLabel = StringHelper.urlEncodeUTF8(archive.getName());
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 			hres.setHeader("Content-Description", urlEncodedLabel);
-			VFSItem item = archiveFolder.resolve(name);
-			if(item instanceof VFSLeaf archive) {
-				try(OutputStream out=hres.getOutputStream();
-						InputStream in=archive.getInputStream()) {
-					FileUtils.cpio(in, out, "Archive download");
-				} catch (IOException e) {
-					log.error("", e);
-				}
+			try(OutputStream out=hres.getOutputStream();
+					InputStream in=archive.getInputStream()) {
+				FileUtils.cpio(in, out, "Archive download");
+			} catch (IOException e) {
+				log.error("", e);
 			}
 		} else {
 			String courseName = courseEnv.getCourseTitle();
@@ -113,10 +108,11 @@ public class ResetCourseDataMediaResource implements MediaResource {
 			hres.setHeader("Content-Disposition","attachment; filename*=UTF-8''" + urlEncodedLabel);			
 			hres.setHeader("Content-Description", urlEncodedLabel);
 			
-			try(OutputStream out=hres.getOutputStream()) {
-				ZipUtil.zip(archiveFolder, out,
-						item -> archiveNames.contains(item.getName()),
-						false);
+			try(OutputStream out=hres.getOutputStream();
+					ZipOutputStream zout = new ZipOutputStream(out)) {
+				for(VFSLeaf archive:archiveNames) {
+					ZipUtil.addToZip(archive, "", zout, VFSAllItemsFilter.ACCEPT_ALL, false);
+				}
 			} catch (IOException e) {
 				log.error("", e);
 			}

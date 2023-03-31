@@ -1776,27 +1776,14 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 	}
 	
 	@Override
-	public Task resetCourseNode(Task task, Identity assessedIdentity, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity) {
-		// Delete the files
-		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
-			VFSContainer submitDirectory = getSubmitContainer(courseEnv, cNode, assessedIdentity);
-			VFSManager.deleteContainersAndLeaves(submitDirectory, true, false);
-		}
-
-		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
-			VFSContainer correctionsContainer = getCorrectionContainer(courseEnv, cNode, assessedIdentity);
-			VFSManager.deleteContainersAndLeaves(correctionsContainer, true, false);
-		}
-		
-		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			int numOfIteration = task.getRevisionLoop();
-			for(int i=1; i<=numOfIteration; i++) {
-				VFSContainer revisionContainer = getRevisedDocumentsContainer(courseEnv, cNode, i, assessedIdentity);
-				VFSManager.deleteContainersAndLeaves(revisionContainer, true, false);
-				
-				VFSContainer correctionContainer = getRevisedDocumentsCorrectionsContainer(courseEnv, cNode, i, assessedIdentity);
-				VFSManager.deleteContainersAndLeaves(correctionContainer, true, false);
-			}
+	public Task resetCourseNode(Task task, Identity assessedIdentity, BusinessGroup businessGroup, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity) {
+		if(assessedIdentity != null && GTAType.individual.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			resetCourseNodeFile(task, assessedIdentity, cNode, courseEnv);
+		} else if(businessGroup != null && GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
+			resetCourseNodeFile(task, businessGroup, cNode, courseEnv);
+		} else {
+			log.error("Try to reset a group task with an individual or reverse.");
+			return task;
 		}
 
 		// Reset the task
@@ -1812,7 +1799,7 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		
 		// The rest
 		taskImpl.setTaskName(null);
-		taskImpl.setTaskStatus(TaskProcess.assignment);
+		taskImpl.setTaskStatus(firstStep(cNode));
 		
 		taskImpl.setAcceptationDate(null);
 		taskImpl.setAllowResetDate(null);
@@ -1843,6 +1830,52 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		dbInstance.commit();
 
 		return getTask(taskImpl);
+	}
+	
+	private void resetCourseNodeFile(Task task, Identity assessedIdentity, GTACourseNode cNode, CourseEnvironment courseEnv) {
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			VFSContainer submitDirectory = getSubmitContainer(courseEnv, cNode, assessedIdentity);
+			VFSManager.deleteContainersAndLeaves(submitDirectory, true, false);
+		}
+
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			VFSContainer correctionsContainer = getCorrectionContainer(courseEnv, cNode, assessedIdentity);
+			VFSManager.deleteContainersAndLeaves(correctionsContainer, true, false);
+		}
+		
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			int numOfIteration = task.getRevisionLoop();
+			for(int i=1; i<=numOfIteration; i++) {
+				VFSContainer revisionContainer = getRevisedDocumentsContainer(courseEnv, cNode, i, assessedIdentity);
+				VFSManager.deleteContainersAndLeaves(revisionContainer, true, false);
+				
+				VFSContainer correctionContainer = getRevisedDocumentsCorrectionsContainer(courseEnv, cNode, i, assessedIdentity);
+				VFSManager.deleteContainersAndLeaves(correctionContainer, true, false);
+			}
+		}
+	}
+	
+	private void resetCourseNodeFile(Task task, BusinessGroup businessGroup, GTACourseNode cNode, CourseEnvironment courseEnv) {
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_SUBMIT)) {
+			VFSContainer submitDirectory = getSubmitContainer(courseEnv, cNode, businessGroup);
+			VFSManager.deleteContainersAndLeaves(submitDirectory, true, false);
+		}
+
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)) {
+			VFSContainer correctionsContainer = getCorrectionContainer(courseEnv, cNode, businessGroup);
+			VFSManager.deleteContainersAndLeaves(correctionsContainer, true, false);
+		}
+		
+		if(cNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
+			int numOfIteration = task.getRevisionLoop();
+			for(int i=1; i<=numOfIteration; i++) {
+				VFSContainer revisionContainer = getRevisedDocumentsContainer(courseEnv, cNode, i, businessGroup);
+				VFSManager.deleteContainersAndLeaves(revisionContainer, true, false);
+				
+				VFSContainer correctionContainer = getRevisedDocumentsCorrectionsContainer(courseEnv, cNode, i, businessGroup);
+				VFSManager.deleteContainersAndLeaves(correctionContainer, true, false);
+			}
+		}
 	}
 
 	@Override

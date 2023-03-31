@@ -354,11 +354,13 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
 		
 		VFSContainer dropContainer = pfManager.resolveDropFolder(courseEnv, this, assessedIdentity);
-		ZipUtil.zip(dropContainer, archiveStream, path + "/" + PFManager.FILENAME_DROPBOX, new VFSSystemItemFilter(), false);
-		
+		if(dropContainer != null) {
+			ZipUtil.zip(dropContainer, archiveStream, path + "/" + PFManager.FILENAME_DROPBOX, new VFSSystemItemFilter(), false);
+		}
 		VFSContainer returnContainer = pfManager.resolveReturnFolder(courseEnv, this, assessedIdentity);
-		ZipUtil.zip(returnContainer, archiveStream, path + "/" + PFManager.FILENAME_RETURNBOX, new VFSSystemItemFilter(), false);
-		
+		if(returnContainer != null) {
+			ZipUtil.zip(returnContainer, archiveStream, path + "/" + PFManager.FILENAME_RETURNBOX, new VFSSystemItemFilter(), false);
+		}
 		super.archiveForResetUserData(assessedUserCourseEnv, archiveStream, path, doer, by);
 	}
 
