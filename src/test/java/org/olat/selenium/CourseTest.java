@@ -37,6 +37,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
+import org.olat.modules.invitation.restapi.InvitationVO;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
@@ -61,6 +63,8 @@ import org.olat.selenium.page.course.RemindersPage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.graphene.OOGraphene;
+import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
+import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.CPPage;
@@ -69,6 +73,7 @@ import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.user.UserToolsPage;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -1951,6 +1956,113 @@ public class CourseTest extends Deployments {
 		CoursePageFragment invitationCourse = new CoursePageFragment(browser);
 		invitationCourse
 			.assertOnLearnPathNodeDone(infosNodeTitle);
+	}
+	
+
+	/**
+	 * Simulate specific customer process: an author create a course with 
+	 * a QTI test. An external user is create per REST API which allow to
+	 * by pass the registration process with the parameter registrationRequired=false.
+	 * The external user follows the link directly to the test, pass the test
+	 * successfully and the author checks the results too.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseInvitationRestExternalUser(@Drone @User WebDriver externalUserBrowser)
+	throws IOException, URISyntaxException {
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		//upload a test
+		String qtiTestTitle = "With parts QTI 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/test_without_feedbacks.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+		
+		//create a course
+		String courseTitle = "Course QTI-ext " + UUID.randomUUID();
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle)
+			.clickToolbarBack();
+		
+		//create a course element of type Test with the test that we imported above
+		String nodeTitle = "Test invitation";
+		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
+			.edit();
+		courseEditor
+			.createNode("iqtest")
+			.nodeTitle(nodeTitle);
+		
+		QTI21ConfigurationCEPage configPage = new QTI21ConfigurationCEPage(browser);
+		configPage
+			.selectLearnContent()
+			.chooseTest(qtiTestTitle);
+		configPage
+			.selectConfiguration()
+			.showScoreOnHomepage(true)
+			.showResultsOnHomepage(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
+			.saveConfiguration();
+		
+		//publish the course
+		CoursePageFragment course = courseEditor
+			.autoPublish()
+			.publish();
+		
+		Long repositoryEntryKey = RepositoryRestClient.extractRepositoryEntryKey(browser.getCurrentUrl());
+		String email = "jane." + UUID.randomUUID().toString().replace("-", "") + "@openolat.org";
+
+		InvitationVO invitation = new UserRestClient(deploymentUrl)
+			.createExternalUser(repositoryEntryKey, "Jane", "Smith", email, false, 12);
+		Assert.assertNotNull(invitation);
+		
+		String invitationUrl = invitation.getUrl();
+		externalUserBrowser.navigate().to(invitationUrl);
+		
+		QTI21Page
+			.getQTI21Page(externalUserBrowser)
+			.assertOnStart()
+			.start()
+			.assertOnAssessmentItem()
+			.answerSingleChoiceWithParagraph("Incorrect response")
+			.saveAnswer()
+			.assertOnAssessmentItem("Second question")
+			.selectItem("First question")
+			.assertOnAssessmentItem("First question")
+			.answerSingleChoiceWithParagraph("Correct response")
+			.saveAnswer()
+			.answerMultipleChoice("Correct response")
+			.saveAnswer()
+			.endTest()//auto close because 1 part, no feedbacks
+			.assertOnAssessmentResults()
+			.assertOnAssessmentTestMaxScore(2)
+			.assertOnAssessmentTestScore(2)
+			.assertOnAssessmentTestPassed()
+			.closeAssessmentResults()
+			//check the result on the start page
+			.assertOnCourseAssessmentTestScore(2)
+			.assertOnCourseAttempts(1);
+
+		// Administrator check the results
+		UserVO externalUser = new UserVO();
+		externalUser.setKey(invitation.getIdentityKey());
+		externalUser.setFirstName(invitation.getFirstName());
+		externalUser.setLastName(invitation.getLastName());
+		externalUser.setEmail(invitation.getEmail());
+		course
+			.assessmentTool()
+			.users()
+			.assertOnUsers(externalUser)
+			.selectUser(externalUser)
+			.assertPassed(externalUser);
 	}
 	
 	/**

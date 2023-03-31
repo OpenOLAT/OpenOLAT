@@ -29,17 +29,18 @@ import java.net.URL;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
+import org.olat.modules.invitation.restapi.InvitationVO;
 import org.olat.restapi.RestConnection;
 import org.olat.user.restapi.RolesVO;
 import org.olat.user.restapi.UserVO;
+
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * REST client for the user webservice.
@@ -176,15 +177,40 @@ public class UserRestClient {
 		EntityUtils.consume(response.getEntity());
 	}
 	
+	public InvitationVO createExternalUser(Long repositoryEntryKey, String firstName, String lastName,
+			String email, boolean registrationRequired, int expiration)
+	throws URISyntaxException, IOException {
+		RestConnection restConnection = new RestConnection(deploymentUrl);
+		assertTrue(restConnection.login(username, password));
+		
+		URI request = getRestURIBuilder()
+				.path("repo").path("entries")
+				.path(repositoryEntryKey.toString()).path("invitations")
+				.queryParam("firstName", firstName)
+				.queryParam("lastName", lastName)
+				.queryParam("email", email)
+				.queryParam("registrationRequired", Boolean.toString(registrationRequired))
+				.queryParam("expiration", Integer.toString(expiration))
+				.build();
+		
+		HttpPut method = restConnection.createPut(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = restConnection.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		return restConnection.parse(response.getEntity(), InvitationVO.class);
+	}
+	
 	public URL getRestURI()
 	throws URISyntaxException, MalformedURLException {
-		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").build().toURL();
+		return getRestURIBuilder().build().toURL();
 	}
 	
 	private UriBuilder getUsersURIBuilder()
-	throws URISyntaxException {
-		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi").path("users");
+	throws URISyntaxException, MalformedURLException {
+		return getRestURIBuilder().path("users");
 	}
-
 	
+	public UriBuilder getRestURIBuilder()
+	throws URISyntaxException, MalformedURLException {
+		return UriBuilder.fromUri(deploymentUrl.toURI()).path("restapi");
+	}
 }
