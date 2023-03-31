@@ -91,7 +91,7 @@ public class UserAuthenticationEditController extends FormBasicController {
 			loginEl.setErrorKey("form.legende.mandatory");
 			allOk = false;
 		} else {
-			ValidationResult result = provider.validateAuthenticationUsername(loginEl.getValue(), authentication.getIdentity());
+			ValidationResult result = provider.validateAuthenticationUsername(loginEl.getValue(), authentication.getProvider(), authentication.getIdentity());
 			if(!result.isValid()) {
 				ValidationDescription descr = result.getInvalidDescriptions().get(0);
 				String text = descr.getText(getLocale());

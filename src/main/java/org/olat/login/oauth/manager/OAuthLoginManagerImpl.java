@@ -46,8 +46,8 @@ import org.olat.login.oauth.OAuthLoginManager;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.model.OAuthUser;
+import org.olat.login.oauth.model.OAuthValidationResult;
 import org.olat.login.oauth.ui.OAuthRegistrationController;
-import org.olat.login.validation.AllOkValidationResult;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
@@ -78,7 +78,6 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private HttpClientService httpClientService;
-	
 
 	@Override
 	public List<String> getProviderNames() {
@@ -112,8 +111,12 @@ public class OAuthLoginManagerImpl implements OAuthLoginManager, AuthenticationP
 	}
 
 	@Override
-	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
-		return new AllOkValidationResult();
+	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
+		Authentication authentication = authenticationDao.getAuthentication(name, provider, BaseSecurity.DEFAULT_ISSUER);
+		if(authentication == null || authentication.getIdentity().equals(identity)) {
+			return OAuthValidationResult.allOk();
+		}
+		return OAuthValidationResult.error("username.rule.in.use");
 	}
 
 	@Override

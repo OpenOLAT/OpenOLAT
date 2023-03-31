@@ -126,7 +126,7 @@ public class TemporaryUsersOverviewController extends StepFormBasicController {
 		tableEl.clearError();
 		List<TransientIdentity> validIdentities = getValidIdentities();
 		if(validIdentities.isEmpty()) {
-			tableEl.setErrorKey("error.no.user.to.create", null);
+			tableEl.setErrorKey("error.no.user.to.create");
 			allOk &= false;
 		}
 		

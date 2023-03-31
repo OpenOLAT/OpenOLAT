@@ -95,7 +95,7 @@ public class ShibbolethManagerImpl implements ShibbolethManager, AuthenticationP
 	}
 
 	@Override
-	public ValidationResult validateAuthenticationUsername(String name, Identity identity) {
+	public ValidationResult validateAuthenticationUsername(String name, String provider, Identity identity) {
 		return new AllOkValidationResult();
 	}
 
