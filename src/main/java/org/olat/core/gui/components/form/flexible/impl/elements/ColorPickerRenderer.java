@@ -32,6 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial date: 2023-03-23<br>
@@ -48,37 +49,46 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		List<ColorPickerElement.Color> colors = colorChooserElement.getColors();
 		ColorPickerElement.Color selectedColor = colorChooserElement.getColor();
 
-		String buttonGroupId = "o_" + CodeHelper.getRAMUniqueID();
-		String dropdownMenuButtonId = "o_" + CodeHelper.getRAMUniqueID();
-		String colorPickerId = "o_cp" + colorPickerComponent.getDispatchID();
+		String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
+		String buttonId = "o_" + CodeHelper.getRAMUniqueID();
+		String inputId = "o_cp" + colorPickerComponent.getDispatchID();
 
 		sb.append("<div class='o_color_picker_wrapper'>");
 
-		sb.append("<div id='").append(buttonGroupId).append("'");
+		sb.append("<div id='").append(dropdownId).append("'");
 		sb.append(" class='button-group dropdown");
 		sb.append("'>");
 
-		sb.append("<button class='btn btn-default dropdown-toggle o_color_picker_button' type='button' ")
-				.append("id='").append(dropdownMenuButtonId).append("' data-toggle='dropdown' ")
+		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
+				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button' type='button' ")
+				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
 				.append("aria-haspopup='true' aria-expanded='true'>");
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
 					.append("o_color_background o_color_contrast_border o_color_text_on_background o_color_")
 					.append(selectedColor.getId()).append("'></i>");
 			sb.append("<span>").append(selectedColor.getText()).append("</span>");
-			sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
+		} else {
+			sb.append("<i class='o_icon o_icon_lg ")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background'></i>");
+			if (StringHelper.containsNonWhitespace(colorChooserElement.getNonSelectedText())) {
+				sb.append("<span>").append(colorChooserElement.getNonSelectedText()).append("</span>");
+			} else {
+				sb.append("<span></span>");
+			}
 		}
+		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
 
 		// In standard form submission mode, this element needs to act as a regular input element, which we achieve
 		// with a hidden <input> element.
 		if (!colorChooserElement.isAjaxOnlyMode()) {
-			sb.append("<input type='hidden' id='").append(colorPickerId).append("' name='").append(colorPickerId)
+			sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
 					.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
 		}
 
 		sb.append("</button>");
 
-		sb.append("<ul class='dropdown-menu o_color_picker_dropdown' aria-labelledby='").append(dropdownMenuButtonId).append("'>");
+		sb.append("<ul class='dropdown-menu o_color_picker_dropdown' aria-labelledby='").append(buttonId).append("'>");
 
 		for (ColorPickerElement.Color color : colors) {
 			sb.append("<li data-color='").append(color.getId()).append("'");
@@ -99,7 +109,13 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			} else {
 				// In form submission mode, selecting updates the UI and the hidden input element:
 
-				sb.append("onclick=\"o_cp_set_color('").append(color.getId()).append("', '").append(color.getText()).append("');\"");
+				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId);
+				sb.append("onclick=\"o_cp_set_color('").append(color.getId()).append("', '");
+				sb.append(color.getText()).append("', '");
+				sb.append(buttonId).append("', '");
+				sb.append(inputId).append("', '");
+				sb.append(dropdownId).append("', '");
+				sb.append(colorChooserElement.getRootForm().getDispatchFieldId()).append("');\"");
 			}
 			sb.append(">");
 
@@ -118,17 +134,16 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		if (!colorChooserElement.isAjaxOnlyMode()) {
 			sb.append("<script>");
-			sb.append("function o_cp_set_color(colorId, text) {\n");
-			sb.append("  const hiddenInput = jQuery('#").append(colorPickerId).append("');\n");
+			sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId) {\n");
+			sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
 			sb.append("  const oldColorId = hiddenInput.val();\n");
 			sb.append("  hiddenInput.val(colorId);\n");
-			sb.append("  const oldClass = 'o_color_' + oldColorId;\n");
-			sb.append("  const newClass = 'o_color_' + colorId;\n");
-			sb.append("  jQuery('#").append(dropdownMenuButtonId).append(" i.' + oldClass).removeClass(oldClass).addClass(newClass);\n");
-			sb.append("  jQuery('#").append(dropdownMenuButtonId).append(" span').text(text);\n");
-			sb.append("  jQuery('#").append(buttonGroupId).append(" li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
-			sb.append("  jQuery('#").append(buttonGroupId).append(" li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
-			sb.append("  setFlexiFormDirty('").append(colorChooserElement.getRootForm().getDispatchFieldId()).append("');\n");
+			sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
+			sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass('o_color_' + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a o_color_' + colorId);\n");
+			sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
+			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
+			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
+			sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
 			sb.append("}\n");
 			sb.append("</script>");
 		}
