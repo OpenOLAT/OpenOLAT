@@ -5,7 +5,7 @@
 			#foreach ($category in $categories)
 			#set ( $selectedClass = "#if ($category.getId() == $categoryId) o_selected#{else} #end" )
 			<li class="o_category_list_item $selectedClass" onclick="$f.ffXHREvent('categoryId', $category.getId())">
-				<div class="o_video_colored_area o_color_cube ${category.getColor()}"></div>
+				<div class="o_video_colored_area o_color_cube ${category.style}"></div>
 				<div class="o_category_text">${category.getLabelAndTitle()} (${categoryUsedCounts.get($category.getId())})</div>
 			</li>
 			#end

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.video.model;
 
+import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegmentCategory;
 
 /**
@@ -85,5 +86,10 @@ public class VideoSegmentCategoryImpl implements VideoSegmentCategory {
 	@Override
 	public void setSortOrder(int sortOrder) {
 		this.sortOrder = sortOrder;
+	}
+
+	@Override
+	public String getStyle() {
+		return VideoModule.getMarkerStyleFromColor(color);
 	}
 }

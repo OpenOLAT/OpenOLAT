@@ -32,23 +32,16 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.Util;
-import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoSegment;
 import org.olat.modules.video.VideoSegments;
-import org.olat.modules.video.ui.VideoSettingsController;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2022-12-19<br>
@@ -69,8 +62,6 @@ public class SegmentController extends FormBasicController {
 	private CloseableModalController cmc;
 	private EditCategoriesController editCategoriesController;
 	private final SimpleDateFormat timeFormat;
-	@Autowired
-	private VideoModule videoModule;
 	private CloseableCalloutWindowController ccwc;
 	private SegmentCategoryController segmentCategoryController;
 	private final String videoElementId;
@@ -87,12 +78,6 @@ public class SegmentController extends FormBasicController {
 
 		timeFormat = new SimpleDateFormat("HH:mm:ss");
 		timeFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-		SelectionValues colorsKV = new SelectionValues();
-		Translator videoTranslator = Util.createPackageTranslator(VideoSettingsController.class, ureq.getLocale());
-		for (String color : videoModule.getMarkerStyles()) {
-			colorsKV.add(SelectionValues.entry(color, videoTranslator.translate("video.marker.style.".concat(color))));
-		}
 
 		initForm(ureq);
 		setValues();

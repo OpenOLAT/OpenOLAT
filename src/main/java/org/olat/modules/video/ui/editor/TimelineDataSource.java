@@ -91,7 +91,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 			videoSegments.getCategory(videoSegment.getCategoryId()).ifPresent(c -> rows.add(
 					new TimelineRow(videoSegment.getId(), videoSegment.getBegin().getTime(),
 					videoSegment.getDuration() * 1000, TimelineEventType.SEGMENT, c.getLabelAndTitle(),
-					c.getColor(), c.getId())
+					c.getStyle(), c.getId())
 			));
 		}
 
@@ -126,7 +126,7 @@ public class TimelineDataSource implements FlexiTableDataSourceDelegate<Timeline
 				TimelineRow row = new TimelineRow("selection-" + sel.getKey(), sel.getTime(), 1000L, type, categoryTitle, color);
 				if(category != null) {
 					row.setCategoryId(category.getId());
-					row.setColor(row.getColor() + " " + category.getColor());
+					row.setColor(row.getColor() + " " + category.getStyle());
 				}
 				rows.add(row);
 			});

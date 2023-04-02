@@ -546,7 +546,7 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 		
 		public String getColor() {
-			return segmentCategory.getColor();
+			return segmentCategory.getStyle();
 		}
 		
 		public String getTitle() {
@@ -602,7 +602,7 @@ public class VideoTaskDisplayController extends BasicController {
 		}
 		
 		public String getCategoryColor() {
-			return category.getColor();
+			return category.getStyle();
 		}
 	}
 	
@@ -622,7 +622,7 @@ public class VideoTaskDisplayController extends BasicController {
 			double dleft = (double) videoSegment.getBegin().getTime() / totalDurationInMillis;
 			double startInSeconds = videoSegment.getBegin().getTime() / 1000d;
 			return new Segment(String.format("%.2f%%", dwidth * 100), String.format("%.2f%%", dleft * 100),
-					startInSeconds, durationInSeconds, category.getColor(), category.getLabel(), category.getLabelAndTitle(), "");
+					startInSeconds, durationInSeconds, category.getStyle(), category.getLabel(), category.getLabelAndTitle(), "");
 		}
 		
 		public static Segment fullWidth() {
