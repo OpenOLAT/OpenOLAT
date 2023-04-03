@@ -193,7 +193,7 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		
 		//TODO organisation: move memberships to default organisation or a lost+found???
 		Group organisationGroup = reloadedOrganisation.getGroup();
-		List<GroupMembership> users = groupDao.getMemberships(organisationGroup, OrganisationRoles.user.name());
+		List<GroupMembership> users = groupDao.getMemberships(organisationGroup, OrganisationRoles.user.name(), false);
 		List<OrganisationMembershipEvent> events = new ArrayList<>(users.size());
 		for(GroupMembership user:users) {
 			addMember(user.getIdentity(), OrganisationRoles.user);

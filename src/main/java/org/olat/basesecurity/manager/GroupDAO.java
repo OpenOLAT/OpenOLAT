@@ -269,11 +269,11 @@ public class GroupDAO {
 		return query.getResultList();
 	}
 	
-	public List<GroupMembership> getMemberships(Group group, String role) {
+	public List<GroupMembership> getMemberships(Group group, String role, boolean fetchIdentity) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select membership from bgroupmember as membership")
-		  .append(" inner join membership.identity as ident")
-		  .append(" inner join ident.user as identUser")
+		  .append(" inner join ").append("fetch", fetchIdentity).append(" membership.identity as ident")
+		  .append(" inner join ").append("fetch", fetchIdentity).append(" ident.user as identUser")
 		  .where().append(" membership.group.key=:groupKey and membership.role=:role");
 		
 		return dbInstance.getCurrentEntityManager()

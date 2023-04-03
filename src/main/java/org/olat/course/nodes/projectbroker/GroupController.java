@@ -649,7 +649,7 @@ public class GroupController extends BasicController {
 
 	public void reloadData() {
 		// refresh view		
-		List<GroupMembership> combo = groupDao.getMemberships(group, role);
+		List<GroupMembership> combo = groupDao.getMemberships(group, role, true);
 		List<GroupMemberView> views = new ArrayList<>(combo.size());
 		Map<Long,GroupMemberView> idToViews = new HashMap<>();
 
