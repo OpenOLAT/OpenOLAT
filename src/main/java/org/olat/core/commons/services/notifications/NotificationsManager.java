@@ -357,4 +357,11 @@ public interface NotificationsManager {
 	 * @param subscriptionStatus enabled/disabled
 	 */
 	void updateAllSubscribers(Publisher publisher, boolean subscriptionStatus);
+
+	/**
+	 * Merge the state of the given entity into the current persistence context.
+	 *
+	 * @return Subscriber object
+	 */
+	Subscriber mergeSubscriber(Subscriber subscriber);
 }

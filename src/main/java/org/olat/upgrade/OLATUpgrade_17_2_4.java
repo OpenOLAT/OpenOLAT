@@ -126,6 +126,7 @@ public class OLATUpgrade_17_2_4 extends OLATUpgrade {
 		SubscriptionContext subscriptionContext = repositoryService.getSubscriptionContext();
 
 		if (subscriptionContext != null) {
+			int counter = 0;
 			for (Identity identity : courseOwnerIdentities) {
 				Subscriber sub;
 				if (notificationsManager.getSubscriber(identity, subscriptionContext) != null) {
@@ -134,7 +135,12 @@ public class OLATUpgrade_17_2_4 extends OLATUpgrade {
 					sub = notificationsManager.subscribe(identity, subscriptionContext, publisherData);
 				}
 				if (sub != null && !repositoryModule.isNotificationRepoStatusChanged()) {
+					counter++;
+					notificationsManager.mergeSubscriber(sub);
 					sub.setEnabled(false);
+					if ((counter % 10) == 0) {
+						dbInstance.commitAndCloseSession();
+					}
 				}
 			}
 		}
