@@ -954,7 +954,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		repositoryManager.addOwners(ureq.getIdentity(), iae, entry, new MailPackage(false));
 
 		String after = repositoryService.toAuditXml(reloadedEntry);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+		if (!entry.getStatus().equals(reloadedEntry.getStatus())) {
+			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+		}
 	}
 
 	protected void doSwitchRole(UserRequest ureq, Role role) {

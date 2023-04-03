@@ -439,7 +439,15 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String getDisplayName(Publisher publisher) {
-		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+		String displayName;
+
+		if (repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId()) != null) {
+			displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+		} else {
+			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()).getName();
+		}
+
+		return displayName;
 	}
 
 	@Override
