@@ -218,8 +218,7 @@ public class DialogElementListController extends FormBasicController implements 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				DialogElementRow row = tableModel.getObject(se.getIndex());
 				if("forum".equals(se.getCommand())) {
 					fireEvent(ureq, new SelectRowEvent(row));
@@ -227,8 +226,7 @@ public class DialogElementListController extends FormBasicController implements 
 					doConfirmDelete(ureq, row);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("download".equals(cmd)) {
 				doFileDelivery(ureq, (DialogElement)link.getUserObject());
@@ -245,14 +243,18 @@ public class DialogElementListController extends FormBasicController implements 
 	
 	private void doDelete(DialogElementRow rowToDelete) {
 		DialogElement elementToDelete = dialogElementsManager.getDialogElementByKey(rowToDelete.getDialogElementKey());
-		// archive data to personal folder
-		File exportDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseNode.getShortTitle());
-		courseNode.doArchiveElement(elementToDelete, exportDir, getLocale(), getIdentity());
-
-		dialogElementsManager.deleteDialogElement(elementToDelete);
-		//do logging
-		ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DELETED, getClass(),
-				LoggingResourceable.wrapUploadFile(elementToDelete.getFilename()));
+		if(elementToDelete == null) {
+			loadModel();
+		} else {
+			// archive data to personal folder
+			File exportDir = CourseFactory.getOrCreateDataExportDirectory(getIdentity(), courseNode.getShortTitle());
+			courseNode.doArchiveElement(elementToDelete, exportDir, getLocale(), getIdentity());
+	
+			dialogElementsManager.deleteDialogElement(elementToDelete);
+			//do logging
+			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DELETED, getClass(),
+					LoggingResourceable.wrapUploadFile(elementToDelete.getFilename()));
+		}
 	}
 	
 	/**
@@ -264,13 +266,12 @@ public class DialogElementListController extends FormBasicController implements 
 	private void doFileDelivery(UserRequest ureq, DialogElement element) {
 		VFSContainer forumContainer = dialogElementsManager.getDialogContainer(element);
 		List<VFSItem> items = forumContainer.getItems(new VFSLeafFilter());
-		if(items.size() > 0 && items.get(0) instanceof VFSLeaf) {
-			VFSLeaf vl = (VFSLeaf)items.get(0);
+		if(items.size() > 0 && items.get(0) instanceof VFSLeaf vl) {
 			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(vl));
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
 					LoggingResourceable.wrapBCFile(vl.getName()));
 		} else {
-			logError("No file to discuss: " + forumContainer, null);
+			logError("No file to discuss: {}" + forumContainer, null);
 		}
 	}
 }

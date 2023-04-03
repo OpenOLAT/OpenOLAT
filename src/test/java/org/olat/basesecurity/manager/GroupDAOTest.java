@@ -132,7 +132,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.getCurrentEntityManager().detach(group);
 		dbInstance.commitAndCloseSession();
 		
-		List<GroupMembership> members = groupDao.getMemberships(group, "author");
+		List<GroupMembership> members = groupDao.getMemberships(group, "author", false);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 	}
@@ -144,7 +144,7 @@ public class GroupDAOTest extends OlatTestCase {
 		groupDao.addMembershipOneWay(group, id, "author");
 		dbInstance.commitAndCloseSession();
 		
-		List<GroupMembership> members = groupDao.getMemberships(group, "author");
+		List<GroupMembership> members = groupDao.getMemberships(group, "author", false);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
 	}
@@ -305,7 +305,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot", true);
 		Assert.assertEquals(2, memberships.size());
 		
 		//remove
@@ -313,7 +313,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check 
-		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot", false);
 		Assert.assertEquals(1, deletedMemberships.size());
 		Identity stayingMember = deletedMemberships.get(0).getIdentity();
 		Assert.assertNotNull(stayingMember);
@@ -334,9 +334,9 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot", true);
 		Assert.assertEquals(2, memberships.size());
-		List<GroupMembership> membershipsAlt = groupDao.getMemberships(group, "commander");
+		List<GroupMembership> membershipsAlt = groupDao.getMemberships(group, "commander", true);
 		Assert.assertEquals(1, membershipsAlt.size());
 
 		//remove
@@ -344,13 +344,13 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check pilots
-		List<GroupMembership> stayingMemberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> stayingMemberships = groupDao.getMemberships(group, "pilot", true);
 		Assert.assertEquals(1, stayingMemberships.size());
 		Identity stayingMember = stayingMemberships.get(0).getIdentity();
 		Assert.assertNotNull(stayingMember);
 		Assert.assertEquals(id1, stayingMember);
 		//check commanders
-		List<GroupMembership> stayingMembershipsAlt = groupDao.getMemberships(group, "commander");
+		List<GroupMembership> stayingMembershipsAlt = groupDao.getMemberships(group, "commander", true);
 		Assert.assertEquals(1, stayingMembershipsAlt.size());
 		Identity stayingMemberAlt = stayingMembershipsAlt.get(0).getIdentity();
 		Assert.assertNotNull(stayingMemberAlt);
@@ -390,7 +390,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> memberships = groupDao.getMemberships(group, "pilot", false);
 		Assert.assertEquals(2, memberships.size());
 		
 		//remove
@@ -398,7 +398,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check 
-		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot", false);
 		Assert.assertTrue(deletedMemberships.isEmpty());
 	}
 	
@@ -423,9 +423,9 @@ public class GroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, numOfDeletedRows);
 		
 		//check
-		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot");
+		List<GroupMembership> deletedMemberships = groupDao.getMemberships(group, "pilot", false);
 		Assert.assertTrue(deletedMemberships.isEmpty());
-		List<GroupMembership> lastMemberships = groupDao.getMemberships(group, "copilot");
+		List<GroupMembership> lastMemberships = groupDao.getMemberships(group, "copilot", false);
 		Assert.assertEquals(1, lastMemberships.size());
 	}
 	
@@ -448,7 +448,7 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check
-		List<GroupMembership> memberships = groupDao.getMemberships(group1, "pilot");
+		List<GroupMembership> memberships = groupDao.getMemberships(group1, "pilot", true);
 		Assert.assertEquals(2, memberships.size());
 		
 		//remove
@@ -456,11 +456,11 @@ public class GroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check 
-		List<GroupMembership> deletedMemberships1 = groupDao.getMemberships(group1, "pilot");
+		List<GroupMembership> deletedMemberships1 = groupDao.getMemberships(group1, "pilot", true);
 		Assert.assertEquals(1, deletedMemberships1.size());
 		Assert.assertEquals(membership2, deletedMemberships1.get(0));
 		
-		List<GroupMembership> deletedMemberships2 = groupDao.getMemberships(group2, "passanger");
+		List<GroupMembership> deletedMemberships2 = groupDao.getMemberships(group2, "passanger", true);
 		Assert.assertEquals(1, deletedMemberships2.size());
 		Assert.assertEquals(membership4, deletedMemberships2.get(0));
 	}
