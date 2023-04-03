@@ -312,6 +312,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
 		enableMetadataIndexingEl.addActionListener(FormEvent.ONCHANGE);
+		enableMetadataIndexingEl.setVisible(oaiPmhModule.isEnabled());
 
 		boolean isEntryPublished = entry.getEntryStatus() == RepositoryEntryStatusEnum.published;
 		List<String> licenseRestrictions = oaiPmhModule.getLicenseSelectedRestrictions();
@@ -477,7 +478,9 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 	}
 
 	private void updateIndexMetadataWarningUI() {
-		oaiCont.setVisible(enableMetadataIndexingEl.isSelected(0)
+		oaiCont.setVisible(
+				oaiPmhModule.isEnabled()
+				&& enableMetadataIndexingEl.isSelected(0)
 				&& (entry.getEntryStatus() != RepositoryEntryStatusEnum.published ||
 				!isEntryLicenseAllowedForIndexing()));
 	}

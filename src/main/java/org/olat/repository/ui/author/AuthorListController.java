@@ -137,6 +137,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementWithParents;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.quality.QualityDataCollectionLight;
@@ -282,6 +283,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private TaxonomyService taxonomyService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private OAIPmhModule oaiPmhModule;
 
 	public AuthorListController(UserRequest ureq, WindowControl wControl, SearchAuthorRepositoryEntryViewParams searchParams, AuthorListConfiguration configuration) {
 		super(ureq, wControl, "entries");
@@ -526,7 +529,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.references.i18nKey(), Cols.references.ordinal(),
 					true, OrderBy.references.name()));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.oerPub.i18nKey(), Cols.oerPub.ordinal(),
 				true, OrderBy.oer.name(), FlexiColumnModel.ALIGNMENT_LEFT,
 				new OerPubRenderer(getLocale())));
 		if(lectureModule.isEnabled()) {
@@ -2150,9 +2153,10 @@ public class AuthorListController extends FormBasicController implements Activat
 					links.add("-");
 				}
 
-				addLink("details.index.metadata", "indexMetadata", "o_icon o_icon-fw o_icon_share", null, links);
-
-				links.add("-");
+				if (oaiPmhModule.isEnabled()) {
+					addLink("details.index.metadata", "indexMetadata", "o_icon o_icon-fw o_icon_share", null, links);
+					links.add("-");
+				}
 				
 				boolean closed = entry.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				if(closed && "CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
