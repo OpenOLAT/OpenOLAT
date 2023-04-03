@@ -712,6 +712,11 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		dbInstance.commit();
 	}
 
+	@Override
+	public Subscriber mergeSubscriber(Subscriber subscriber) {
+		return dbInstance.getCurrentEntityManager().merge(subscriber);
+	}
+
 	private Publisher getPublisherForUpdate(SubscriptionContext subsContext) {
 		Publisher pub = getPublisher(subsContext);
 		return getPublisherForUpdate(pub);
@@ -954,7 +959,7 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 			s = doCreateAndPersistSubscriber(toUpdate, identity);
 		} else if(!s.isEnabled()) {
 			s.setEnabled(true);
-			dbInstance.getCurrentEntityManager().merge(s);
+			mergeSubscriber(s);
 		}
 		dbInstance.commit();
 		return s;

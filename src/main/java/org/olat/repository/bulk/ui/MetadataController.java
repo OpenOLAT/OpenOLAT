@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.Util;
+import org.olat.modules.oaipmh.OAIPmhModule;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.bulk.SettingsBulkEditable;
@@ -89,6 +90,8 @@ public class MetadataController extends StepFormBasicController {
 	private LicenseService licenseService;
 	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private OAIPmhModule oaiPmhModule;
 	
 	public MetadataController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_BAREBONE, null);
@@ -164,8 +167,11 @@ public class MetadataController extends StepFormBasicController {
 		oerPubElSV.add(entry("on", translate("on")));
 		oerPubElSV.add(entry("off", translate("off")));
 		oerPubEl = uifactory.addRadiosHorizontal("settings.bulk.oer", metadataCont, oerPubElSV.keys(), oerPubElSV.values());
-		decorate(oerPubEl, metadataCont, SettingsBulkEditable.oerPub);
-
+		if (oaiPmhModule.isEnabled()) {
+			decorate(oerPubEl, metadataCont, SettingsBulkEditable.oerPub);
+		} else {
+			oerPubEl.setVisible(false);
+		}
 	}
 	
 	private MultipleSelectionElement decorate(FormItem item, FormLayoutContainer formLayout, SettingsBulkEditable editable) {

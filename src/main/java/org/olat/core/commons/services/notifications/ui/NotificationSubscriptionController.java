@@ -362,7 +362,12 @@ public class NotificationSubscriptionController extends FormBasicController {
 	}
 
 	private void doLaunchSubscriptionResource(UserRequest ureq, Subscriber subscriber) {
-		NotificationUIFactory.launchSubscriptionResource(ureq, getWindowControl(), subscriber);
+		if (subscriber != null) {
+			NotificationUIFactory.launchSubscriptionResource(ureq, getWindowControl(), subscriber);
+		} else {
+			updateSubscriptionsDataModel();
+			showInfo("info.notification.deleted");
+		}
 	}
 
 	@Override

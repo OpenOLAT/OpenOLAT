@@ -96,26 +96,32 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 				sb.append(" class='o_selected'");
 			}
 			sb.append(">");
-			sb.append("<a class='dropdown-item o_color_picker_link' ");
+			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
 
 			if (colorChooserElement.isAjaxOnlyMode()) {
 				// In ajax-only mode, selecting sends an event to the server:
 
-				sb.append("onclick=\"");
-				sb.append(FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
+				String functionCall = FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
 						colorPickerComponent.getFormDispatchId(), 1, false, false,
-						false, new NameValuePair("colorId", color.getId())));
-				sb.append(";\"");
+						false, new NameValuePair("colorId", color.getId()));
+				sb.append("onclick=\"").append(functionCall).append(";\" ");
+				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall).append("; ")
+						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
+				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append(";\"");
 			} else {
 				// In form submission mode, selecting updates the UI and the hidden input element:
 
 				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId);
-				sb.append("onclick=\"o_cp_set_color('").append(color.getId()).append("', '");
-				sb.append(color.getText()).append("', '");
-				sb.append(buttonId).append("', '");
-				sb.append(inputId).append("', '");
-				sb.append(dropdownId).append("', '");
-				sb.append(colorChooserElement.getRootForm().getDispatchFieldId()).append("');\"");
+				String functionCall = "o_cp_set_color('" + color.getId() + "', '" +
+						color.getText() + "', '" +
+						buttonId + "', '" +
+						inputId + "', '" +
+						dropdownId + "', '" +
+						colorChooserElement.getRootForm().getDispatchFieldId() + "')";
+				sb.append("onclick=\"").append(functionCall).append(";\" ");
+				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall).append("; ")
+						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
+				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append(";\"");
 			}
 			sb.append(">");
 
