@@ -109,7 +109,7 @@ public class AutomaticLifecycleService {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 					if(!deleteManaged) {
 						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) {}: {} [{}]", entry.getResourceableTypeName(), entry.getDisplayname(), entry.getKey() );
-						repositoryService.deleteSoftly(entry, null, true, false);
+						repositoryService.deleteSoftly(entry, null, false, false);
 						dbInstance.commit();
 					}
 				} catch (Exception e) {

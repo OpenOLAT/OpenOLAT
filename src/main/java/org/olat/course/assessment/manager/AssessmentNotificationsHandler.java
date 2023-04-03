@@ -452,7 +452,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String getIconCss() {
-		return CSSHelper.getIconCssClassFor(CSS_CLASS_USER_ICON);
+		return CSSHelper.getIconCssClassFor("o_icon_status_in_review");
 	}
 
 	@Override

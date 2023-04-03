@@ -917,7 +917,7 @@ public class RepositoryEntryWebService {
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if(RepositoryEntryStatusEnum.deleted.name().equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			entry = repositoryService.deleteSoftly(entry, identity, true, false);
+			entry = repositoryService.deleteSoftly(entry, identity, false, false);
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: {} [{}]", entry.getDisplayname(), entry.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));

@@ -121,9 +121,9 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 
 			String desc = auditLog.getAuthorKey() != null ? translator.translate("notification.new.status.change",
 					repositoryEntry.getDisplayname(),
-					userManager.getUserDisplayName(auditLog.getAuthorKey()),
 					preStatus,
-					postStatus)
+					postStatus,
+					userManager.getUserDisplayName(auditLog.getAuthorKey()))
 					: translator.translate("notification.new.status.change.automatically",
 					repositoryEntry.getDisplayname(),
 					preStatus,
