@@ -43,6 +43,11 @@ public interface CalendarController extends Controller {
 	public static final String CALLER_PROFILE = "profile";
 	public static final String CALLER_HOME = "home";
 
+	String[] colors = new String[] {
+			"green", "lime", "blue", "orange", "fuchsia", "yellow", "red", "rebeccapurple", "navy", "olive", "maroon",
+			"grey"
+	};
+
 	/**
 	 * Set the focus for this calendar.
 	 * 
