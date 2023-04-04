@@ -39,6 +39,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -107,7 +108,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		this.allowImport = allowImport;
 		this.alwaysVisibleKalendars = alwaysVisibleKalendars;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
-		
+
+		// Leave some space for the color dropdown plus padding plus shadow:
+		flc.contextPut("marginBottomInPixels", 32 * CalendarController.colors.length + 12 + 10);
+
 		initForm(ureq);
 	}
 
@@ -124,6 +128,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.type, new CalendarTypeClassRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.color));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
@@ -148,6 +153,14 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void initLinks(CalendarPersonalConfigurationRow row) {
+		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("color_picker_" + (++counter),
+				null, getLocale(), List.of(CalendarController.colors));
+		colorPickerElement.setColor(row.getColor());
+		colorPickerElement.setCssPrefix("o_cal");
+		colorPickerElement.setAjaxOnlyMode(true);
+		colorPickerElement.setUserObject(row);
+		row.setColorPickerElement(colorPickerElement);
+
 		FormLink colorLink = uifactory.addFormLink("col_" + (++counter), "color", "", null, null, Link.NONTRANSLATED);
 		colorLink.setIconLeftCSS("o_circle ".concat(row.getCssClass()));
 		colorLink.setUserObject(row);
@@ -319,6 +332,9 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 					doChooseColor(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
 				}
 			}
+		} else if (source instanceof ColorPickerElement colorPickerElement) {
+			doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
+					CalendarController.colorClassFromColor(colorPickerElement.getColor().getId()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

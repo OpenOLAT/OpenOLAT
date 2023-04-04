@@ -48,6 +48,7 @@ public class CalendarPersonalConfigurationTableSort extends SortableFlexiTableMo
 		switch(column) {
 			case type: Collections.sort(rows, new TypeComparator()); break;
 			case cssClass: Collections.sort(rows, new CssClassComparator()); break;
+			case color: Collections.sort(rows, new ColorComparator()); break;
 			case visible: Collections.sort(rows, new VisibleComparator()); break;
 			case aggregated: Collections.sort(rows, new AggregatedComparator()); break;
 			default: super.sort(rows);
@@ -90,7 +91,23 @@ public class CalendarPersonalConfigurationTableSort extends SortableFlexiTableMo
 			return c;
 		}
 	}
-	
+
+	private class ColorComparator implements Comparator<CalendarPersonalConfigurationRow> {
+
+		@Override
+		public int compare(CalendarPersonalConfigurationRow r1, CalendarPersonalConfigurationRow r2) {
+			String c1 = r1.getColor();
+			String c2 = r2.getColor();
+			int c = compareString(c1, c2);
+			if (c == 0) {
+				String d1 = r1.getDisplayName();
+				String d2 = r2.getDisplayName();
+				c = compareString(d1, d2);
+			}
+			return c;
+		}
+	}
+
 	private class VisibleComparator implements Comparator<CalendarPersonalConfigurationRow> {
 		
 		@Override
