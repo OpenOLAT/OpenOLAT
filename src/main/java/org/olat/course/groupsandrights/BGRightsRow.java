@@ -33,22 +33,42 @@ import org.olat.group.right.BGRightsRole;
  *
  */
 public class BGRightsRow {
+	
+	private final Long key;
 	private final String name;
+	private final String externalId;
+	private final String managedFlags;
 	private final Group baseGroup;
 	private final BGRightsRole role;
 	private final BGRightsResourceType resourceType;
 	
 	private List<BGRight> rightsEl;
 	
-	public BGRightsRow(Group baseGroup, String name, BGRightsRole role, BGRightsResourceType resourceType) {
+	public BGRightsRow(Group baseGroup, Long key, String name, String externalId, String managedFlags,
+			BGRightsRole role, BGRightsResourceType resourceType) {
+		this.key = key;
 		this.name = name;
+		this.externalId = externalId;
+		this.managedFlags = managedFlags;
 		this.role = role;
 		this.baseGroup = baseGroup;
 		this.resourceType = resourceType;
 	}
 	
+	public Long getKey() {
+		return key;
+	}
+	
 	public String getName() {
 		return name;
+	}
+	
+	public String getExternalId() {
+		return externalId;
+	}
+	
+	public String getManagedFlags() {
+		return managedFlags;
 	}
 	
 	public Group getBaseGroup() {

@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -39,14 +40,16 @@ public class BGRightsResourceNameRenderer implements FlexiCellRenderer {
 			int row, FlexiTableComponent source, URLBuilder ubu,
 			Translator translator) {
 		
-		if(cellValue instanceof String) {
-			target.append((String)cellValue);
-		} else if(cellValue instanceof BGRightsRow) {
-			BGRightsRow rights = (BGRightsRow)cellValue;
+		if(cellValue instanceof String stringValue) {
+			target.append(stringValue);
+		} else if(cellValue instanceof BGRightsRow rights) {
 			if(rights.getResourceType() == BGRightsResourceType.businessGroup) {
 				target.append("<i class='o_icon o_icon-fw o_icon_group'> </i> ");
 			} else if(rights.getResourceType() == BGRightsResourceType.repositoryEntry) {
 				target.append("<i class='o_icon o_icon-fw o_CourseModule_icon'> </i> ");
+			}
+			if(StringHelper.containsNonWhitespace(rights.getManagedFlags())) {
+				target.append("<i class='o_icon o_icon-fw o_icon_managed'> </i> ");
 			}
 			target.append(rights.getName());
 		}
