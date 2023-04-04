@@ -22,6 +22,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.color.ColorServiceImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
@@ -40,13 +41,14 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final List<Color> colors;
 	private boolean ajaxOnlyMode = false;
 	private String nonSelectedText;
+	private String cssPrefix;
 
 	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
 		super(name);
 
 		String id = getFormItemId() == null ? null : getFormItemId() + "_COLOR_PICKER";
 		component = new ColorPickerComponent(id, this);
-		setTranslator(Util.createPackageTranslator(ColorPickerComponent.class, locale));
+		setTranslator(Util.createPackageTranslator(ColorServiceImpl.class, locale));
 		this.colors = colors.stream().map(this::getColorFromColorId).toList();
 	}
 
@@ -75,6 +77,21 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 
 	public void setColor(Color color) {
 		this.color = color;
+	}
+
+	@Override
+	public void setCssPrefix(String cssPrefix) {
+		this.cssPrefix = cssPrefix;
+	}
+
+	public String getCssPrefix() {
+		if (cssPrefix == null) {
+			return null;
+		}
+		if (cssPrefix.endsWith("_")) {
+			return cssPrefix;
+		}
+		return cssPrefix.concat("_");
 	}
 
 	@Override

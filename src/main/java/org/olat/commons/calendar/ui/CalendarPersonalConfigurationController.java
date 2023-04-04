@@ -39,6 +39,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUISettingEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -84,7 +85,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private ImportCalendarByUrlController calendarUrlImportCtrl;
 	private InjectCalendarFileController injectCalendarFileCtrl;
 	private SynchronizedCalendarUrlController synchronizedCalendarUrlCtrl;
-	private CalendarColorChooserController colorChooserCtrl;
 	private ConfirmCalendarResetController confirmResetCalendarDialog;
 	private ConfirmDeleteImportedToCalendarController confirmDeleteImportedToCalendarDialog;
 
@@ -107,7 +107,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		this.allowImport = allowImport;
 		this.alwaysVisibleKalendars = alwaysVisibleKalendars;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
-		
+
+		// Leave some space for the color dropdown plus padding plus shadow:
+		flc.contextPut("marginBottomInPixels", 32 * CalendarColors.getColors().length + 12 + 10);
+
 		initForm(ureq);
 	}
 
@@ -123,7 +126,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.type, new CalendarTypeClassRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.cssClass));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.color));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.identifier));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigCols.visible));
@@ -148,11 +151,14 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void initLinks(CalendarPersonalConfigurationRow row) {
-		FormLink colorLink = uifactory.addFormLink("col_" + (++counter), "color", "", null, null, Link.NONTRANSLATED);
-		colorLink.setIconLeftCSS("o_circle ".concat(row.getCssClass()));
-		colorLink.setUserObject(row);
-		row.setColorLink(colorLink);
-		
+		ColorPickerElement colorPickerElement = uifactory.addColorPickerElement("color_picker_" + (++counter),
+				null, getLocale(), CalendarColors.getColorsList());
+		colorPickerElement.setColor(row.getColor());
+		colorPickerElement.setCssPrefix("o_cal");
+		colorPickerElement.setAjaxOnlyMode(true);
+		colorPickerElement.setUserObject(row);
+		row.setColorPickerElement(colorPickerElement);
+
 		FormLink visibleLink = uifactory.addFormLink("vis_" + (++counter), "visible", "", null, null, Link.NONTRANSLATED);
 		if(isAlwaysVisible(row)) {
 			enableDisableIcons(visibleLink, true);
@@ -268,12 +274,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		} else if(injectCalendarFileCtrl == source || synchronizedCalendarUrlCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-		} else if(colorChooserCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doSetColor(ureq, colorChooserCtrl.getRow(), colorChooserCtrl.getChoosenColor());
-			}
-			calloutCtrl.deactivate();
-			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -283,7 +283,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		removeAsListenerAndDispose(calendarFileUploadCtrl);
 		removeAsListenerAndDispose(calendarUrlImportCtrl);
 		removeAsListenerAndDispose(calendarToolsCtrl);
-		removeAsListenerAndDispose(colorChooserCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(feedUrlCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -291,7 +290,6 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		calendarFileUploadCtrl = null;
 		calendarUrlImportCtrl = null;
 		calendarToolsCtrl = null;
-		colorChooserCtrl = null;
 		calloutCtrl = null;
 		feedUrlCtrl = null;
 		cmc = null;
@@ -315,10 +313,11 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 					doShowFeedURL(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
 				} else if("tools".equals(cmd)) {
 					doTools(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
-				} else if("color".equals(cmd)) {
-					doChooseColor(ureq, link, (CalendarPersonalConfigurationRow)link.getUserObject());
 				}
 			}
+		} else if (source instanceof ColorPickerElement colorPickerElement) {
+			doSetColor(ureq, (CalendarPersonalConfigurationRow) colorPickerElement.getUserObject(),
+					CalendarColors.colorClassFromColor(colorPickerElement.getColor().getId()));
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -503,24 +502,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		listenTo(cmc);
 	}
 	
-	private void doChooseColor(UserRequest ureq, FormLink link, CalendarPersonalConfigurationRow row) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(colorChooserCtrl);
-		
-		colorChooserCtrl = new CalendarColorChooserController(ureq, getWindowControl(), row);
-		listenTo(colorChooserCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				colorChooserCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
 	private void doSetColor(UserRequest ureq, CalendarPersonalConfigurationRow row, String cssColor) {
 		KalendarRenderWrapper calendarWrapper = row.getWrapper();
 		calendarWrapper.setCssClass(cssColor);
 		calendarManager.saveCalendarConfigForIdentity(calendarWrapper, getIdentity());
-		row.getColorLink().setIconLeftCSS("o_circle ".concat(row.getCssClass()));
 		fireEvent(ureq, new CalendarGUISettingEvent(calendarWrapper));
 	}
 }

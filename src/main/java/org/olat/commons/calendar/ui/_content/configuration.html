@@ -1,3 +1,15 @@
+<style>
+	#o_cal_config_table_wrapper table {
+		margin-bottom: ${marginBottomInPixels}px;
+	}
+	#o_cal_config_table_wrapper table td {
+		vertical-align: middle;
+	}
+	#o_cal_config_table_wrapper table td .o_color_picker_wrapper {
+		margin-top: -2px;
+		margin-bottom: -2px;
+	}
+</style>
 <div class="o_button_group_right">
 	#if($r.available("cal.import.type.file") || $r.available("cal.synchronize.type.url"))
 	<div class="btn-group">
@@ -11,4 +23,7 @@
 	#end
 	$r.contextHelpWithWrapper("manual_user/personal/Calendar/")
 </div>
-$r.render("table")
+
+<div id="o_cal_config_table_wrapper">
+	$r.render("table")
+</div>

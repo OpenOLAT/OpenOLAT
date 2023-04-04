@@ -128,13 +128,7 @@ $o-cal-sec-border-width: 5px;
 .o_cal_event_color {
 	display: flex;
 	align-items: center;
-	margin-top: 3px;
-	margin-bottom: -3px;
-
-	:first-child {
-		padding-top: 4px;
-		margin-right: 5px;
-	}
+	gap: 5px;
 }
 
 .o_cal_wv_event_tooltip_content {

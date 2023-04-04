@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +42,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -58,7 +58,6 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -69,15 +68,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CalendarEntryForm extends FormBasicController {
 
-	public static final String SUBMIT_MULTI = "multi";
 	public static final String SUBMIT_SINGLE = "single";
 
 	public static final String RECURRENCE_NONE = "NONE";
 
-	private StaticTextElement calendarName;
 	private SingleSelection chooseCalendar;
 	private TextElement subjectEl, descriptionEl, locationEl, liveStreamUrlEl;
-	private FormLink colorLink;
 	private FormLink colorResetLink;
 	private MultipleSelectionElement liveStreamUrlTypeEl;
 	private SingleSelection liveStreamUrlTemplateEl;
@@ -89,51 +85,46 @@ public class CalendarEntryForm extends FormBasicController {
 	private DateChooser recurrenceEnd;
 	private FormLink deleteEventButton;
 	
-	private CloseableCalloutWindowController calloutCtrl;
-	private CalendarColorChooserController colorChooserCtrl;
-	
-	private KalendarEvent event;
-	private KalendarRenderWrapper choosenWrapper;
-	private List<KalendarRenderWrapper> writeableCalendars;
+	private final KalendarEvent event;
+	private final KalendarRenderWrapper chosenWrapper;
+	private final List<KalendarRenderWrapper> writeableCalendars;
 	private String colorCssClass;
 	private final boolean readOnly, isNew;
 	private final String caller;
 	
-	private String[] calendarKeys, calendarValues;
-	private String[] keysRecurrence, valuesRecurrence;
-	private String[] classKeys, classValues;
+	private final String[] calendarKeys;
+	private final String[] calendarValues;
+	private final String[] keysRecurrence;
+	private final String[] valuesRecurrence;
+	private final String[] classKeys;
+	private final String[] classValues;
 	
 	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
 	private LiveStreamService liveStreamService;
-	
+	private ColorPickerElement colorPicker;
+
 	/**
 	 * Display an event for modification or to add a new event.
 	 * 
-	 * @param name
-	 * @param event
-	 * @param choosenWrapper
-	 * @param availableCalendars	At least one calendar must be editable if this is a new event.
-	 * @param isNew		If it is a new event, display a list of calendars to choose from.
-	 * @param caller 
-	 * @param locale
+	 * @param event Event to use in entry form.
+	 * @param availableCalendars At least one calendar must be editable if this is a new event.
+	 * @param isNew	If it is a new event, display a list of calendars to choose from.
 	 */
-	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper choosenWrapper,
+	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper chosenWrapper,
 			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller) {
 		super(ureq, wControl);
 		this.caller = caller;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		this.event = event;
-		this.choosenWrapper = choosenWrapper;
-		readOnly = choosenWrapper == null
-				? false : choosenWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
+		this.chosenWrapper = chosenWrapper;
+		readOnly = chosenWrapper != null && chosenWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 		this.isNew = isNew;
 		
 		writeableCalendars = new ArrayList<>();
-		for (Iterator<KalendarRenderWrapper> iter = availableCalendars.iterator(); iter.hasNext();) {
-			KalendarRenderWrapper calendarRenderWrapper = iter.next();
+		for (KalendarRenderWrapper calendarRenderWrapper : availableCalendars) {
 			if (calendarRenderWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
 				writeableCalendars.add(calendarRenderWrapper);
 			}
@@ -199,14 +190,9 @@ public class CalendarEntryForm extends FormBasicController {
 		allDayEvent.select("xx", allDay);
 		end.setDateChooserTimeEnabled(!allDay);
 		begin.setDateChooserTimeEnabled(!allDay);
-		
-		switch (kalendarEvent.getClassification()) {
-			case KalendarEvent.CLASS_PRIVATE: classification.select("0", true); break;
-			case KalendarEvent.CLASS_X_FREEBUSY: classification.select("1", true); break;
-			case KalendarEvent.CLASS_PUBLIC: classification.select("2", true); break;
-			default: classification.select("0", true);
-		}
-		
+
+		setClassification(kalendarEvent);
+
 		if(StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
 			chooseRecurrence.setVisible(false);
 		} else {
@@ -266,7 +252,6 @@ public class CalendarEntryForm extends FormBasicController {
 
 	/**
 	 * Get event with updated values.
-	 * @return
 	 */
 	public KalendarEvent getUpdatedKalendarEvent() {
 		// subject
@@ -276,10 +261,7 @@ public class CalendarEntryForm extends FormBasicController {
 		// location
 		event.setLocation(locationEl.getValue());
 		// color
-		String color = StringHelper.containsNonWhitespace(colorCssClass)
-				? colorCssClass.substring(6, colorCssClass.length())
-				: null;
-		event.setColor(color);
+		event.setColor(colorPicker.getColor() != null ? colorPicker.getColor().getId() : null);
 
 		// date / time
 		event.setBegin(begin.getDate());
@@ -294,10 +276,11 @@ public class CalendarEntryForm extends FormBasicController {
 
 		// classification
 		switch (classification.getSelected()) {
-			case 0: event.setClassification(KalendarEvent.CLASS_PRIVATE); break;
-			case 1: event.setClassification(KalendarEvent.CLASS_X_FREEBUSY); break;
-			case 2: event.setClassification(KalendarEvent.CLASS_PUBLIC); break;
-			default: throw new OLATRuntimeException("getSelected() in KalendarEntryForm.classification returned weitrd value", null);
+			case 0 -> event.setClassification(KalendarEvent.CLASS_PRIVATE);
+			case 1 -> event.setClassification(KalendarEvent.CLASS_X_FREEBUSY);
+			case 2 -> event.setClassification(KalendarEvent.CLASS_PUBLIC);
+			default ->
+					throw new OLATRuntimeException("getSelected() in KalendarEntryForm.classification returned weird value", null);
 		}
 
 		// recurrence
@@ -327,7 +310,7 @@ public class CalendarEntryForm extends FormBasicController {
 
 	public String getChoosenKalendarID() {
 		if (chooseCalendar == null) {
-			return choosenWrapper.getKalendar().getCalendarID();
+			return chosenWrapper.getKalendar().getCalendarID();
 		}
 		return chooseCalendar.getSelectedKey();
 	}
@@ -350,8 +333,8 @@ public class CalendarEntryForm extends FormBasicController {
 		setFormContextHelp("manual_user/personal/Calendar/");
 		
 		chooseCalendar = uifactory.addDropdownSingleselect("cal.form.chooseCalendar", formLayout, calendarKeys, calendarValues, null);
-		if(choosenWrapper != null) {
-			chooseCalendar.select(choosenWrapper.getKalendar().getCalendarID(), true);
+		if(chosenWrapper != null) {
+			chooseCalendar.select(chosenWrapper.getKalendar().getCalendarID(), true);
 		} else {
 			chooseCalendar.select(calendarKeys[0], true);
 		}
@@ -361,8 +344,8 @@ public class CalendarEntryForm extends FormBasicController {
 			chooseCalendar.setEnabled(false);
 		}
 		
-		String calName = choosenWrapper == null ? "" : StringHelper.escapeHtml(choosenWrapper.getDisplayName());
-		calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
+		String calName = chosenWrapper == null ? "" : StringHelper.escapeHtml(chosenWrapper.getDisplayName());
+		StaticTextElement calendarName = uifactory.addStaticTextElement("calendarname", "cal.form.calendarname", calName, formLayout);
 		calendarName.setVisible(!isNew);
 		
 		boolean fb = readOnly && event.getClassification() == KalendarEvent.CLASS_X_FREEBUSY;
@@ -396,12 +379,14 @@ public class CalendarEntryForm extends FormBasicController {
 		colorLinks.setLabel("cal.form.event.color", null);
 		formLayout.add(colorLinks);
 		
-		colorLink = uifactory.addFormLink("color", "color", "", "", colorLinks, Link.NONTRANSLATED);
-		colorLink.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
-		
-		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON_XSMALL);
+		colorPicker = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
+				CalendarColors.getColorsList());
+		colorPicker.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
+		colorPicker.setCssPrefix("o_cal");
+
+		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON);
 		doUpdateColor(event);
-		
+
 		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
 		allDayEvent = uifactory.addCheckboxesHorizontal("allday", "cal.form.allday", formLayout, new String[]{"xx"}, new String[]{null});
 		allDayEvent.select("xx", event.isAllDayEvent());
@@ -460,12 +445,7 @@ public class CalendarEntryForm extends FormBasicController {
 		classification.setHelpUrlForManualPage("manual_user/personal/Calendar/#visibility");
 		//classification.setHelpTextKey("cal.form.class.hover", null);
 		classification.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.classification));
-		switch (event.getClassification()) {
-			case KalendarEvent.CLASS_PRIVATE: classification.select("0", true); break;
-			case KalendarEvent.CLASS_X_FREEBUSY: classification.select("1", true); break;
-			case KalendarEvent.CLASS_PUBLIC: classification.select("2", true); break;
-			default: classification.select("0", true);
-		}
+		setClassification(event);
 
 		StringBuilder buf = new StringBuilder();
 		if (event.getCreated() != 0) {
@@ -480,7 +460,7 @@ public class CalendarEntryForm extends FormBasicController {
 			buf.append("-");
 		}
 		uifactory.addStaticTextElement("cal.form.created.label", buf.toString(), formLayout);
-		
+
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("button_layout", getTranslator());
 		formLayout.add(buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
@@ -491,6 +471,14 @@ public class CalendarEntryForm extends FormBasicController {
 		}  else if(!isNew) {
 			deleteEventButton = uifactory.addFormLink("delete", "cal.edit.delete", null, buttonLayout, Link.BUTTON);
 			deleteEventButton.setElementCssClass("o_sel_cal_delete");
+		}
+	}
+
+	private void setClassification(KalendarEvent event) {
+		switch (event.getClassification()) {
+			case KalendarEvent.CLASS_X_FREEBUSY -> classification.select("1", true);
+			case KalendarEvent.CLASS_PUBLIC -> classification.select("2", true);
+			default -> classification.select("0", true);
 		}
 	}
 
@@ -544,9 +532,7 @@ public class CalendarEntryForm extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent e) {
-		if (source == colorLink) {
-			doChooseColor(ureq);
-		} else if (source == colorResetLink) {
+		if (source == colorResetLink) {
 			doSetColor(null);
 		} else if (source == chooseCalendar) {
 			doSetColor(this.colorCssClass);
@@ -567,25 +553,6 @@ public class CalendarEntryForm extends FormBasicController {
 		}
 	}
 
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(colorChooserCtrl == source) {
-			if(event == Event.DONE_EVENT) {
-				doSetColor(colorChooserCtrl.getChoosenColor());
-			}
-			calloutCtrl.deactivate();
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(colorChooserCtrl);
-		removeAsListenerAndDispose(calloutCtrl);
-		colorChooserCtrl = null;
-		calloutCtrl = null;
-	}
-
 	private void doSyncLiveStreamUrl() {
 		String liveStreamUrl = getLiveStreamUrlFromSelection();
 		liveStreamUrlEl.setValue(liveStreamUrl);
@@ -598,49 +565,33 @@ public class CalendarEntryForm extends FormBasicController {
 		return StringHelper.containsNonWhitespace(url) ? url : null;
 	}
 	
-	private void doChooseColor(UserRequest ureq) {
-		removeAsListenerAndDispose(calloutCtrl);
-		removeAsListenerAndDispose(colorChooserCtrl);
-		
-		colorChooserCtrl = new CalendarColorChooserController(ureq, getWindowControl(), colorCssClass);
-		listenTo(colorChooserCtrl);
-		
-		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
-				colorChooserCtrl.getInitialComponent(), colorLink.getFormDispatchId(), "", true, "");
-		listenTo(calloutCtrl);
-		calloutCtrl.activate();
-	}
-	
 	private void doUpdateColor(KalendarEvent kalendarEvent) {
-		String color = StringHelper.containsNonWhitespace(kalendarEvent.getColor())
-				? "o_cal_".concat(kalendarEvent.getColor())
-				: null;
-		doSetColor(color);
+		String colorCssClass = StringHelper.containsNonWhitespace(kalendarEvent.getColor())
+				? "o_cal_".concat(kalendarEvent.getColor()) : null;
+		doSetColor(colorCssClass);
 	}
 	
-	private void doSetColor(String choosenColor) {
-		this.colorCssClass = choosenColor;
-		
+	private void doSetColor(String colorCssClass) {
+		this.colorCssClass = colorCssClass;
+
 		boolean canReset = !CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color)
-				&& StringHelper.containsNonWhitespace(choosenColor);
+				&& StringHelper.containsNonWhitespace(colorCssClass);
 		colorResetLink.setVisible(canReset);
 		
-		String colorIcon = null;
-		if (CalendarColorChooserController.colorExists(choosenColor)) {
-			colorIcon = "o_cal_color_element ".concat(choosenColor);
-		} else if (choosenWrapper != null) {
-			colorIcon = "o_cal_color_element ".concat(choosenWrapper.getCssClass());
+		String color = null;
+		if (StringHelper.containsNonWhitespace(colorCssClass)) {
+			color = CalendarColors.colorFromColorClass(colorCssClass);
+		} else if (chosenWrapper != null) {
+			color = CalendarColors.colorFromColorClass(chosenWrapper.getCssClass());
 		} else {
 			String kalendarID = getChoosenKalendarID();
 			Optional<KalendarRenderWrapper> selectedWrapper = writeableCalendars.stream()
 					.filter(cal -> cal.getKalendar().getCalendarID().equals(kalendarID))
 					.findFirst();
 			if (selectedWrapper.isPresent()) {
-				colorIcon = "o_cal_color_element ".concat(selectedWrapper.get().getCssClass());
+				color = CalendarColors.colorFromColorClass(selectedWrapper.get().getCssClass());
 			}
 		}
-		
-		colorLink.setIconLeftCSS(colorIcon);
+		colorPicker.setColor(color);
 	}
-
 }

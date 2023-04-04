@@ -20,6 +20,7 @@
 package org.olat.commons.calendar.ui;
 
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.Identity;
 
@@ -35,12 +36,12 @@ public class CalendarPersonalConfigurationRow {
 	
 	private final KalendarRenderWrapper wrapper;
 	
-	private FormLink colorLink;
 	private FormLink visibleLink;
 	private FormLink aggregatedLink;
 	private FormLink feedLink;
 	private FormLink toolsLink;
-	
+	private ColorPickerElement colorPickerElement;
+
 	public CalendarPersonalConfigurationRow(KalendarRenderWrapper wrapper) {
 		this.wrapper = wrapper;
 	}
@@ -72,6 +73,10 @@ public class CalendarPersonalConfigurationRow {
 	public String getCssClass() {
 		return wrapper.getCssClass();
 	}
+
+	public String getColor() {
+		return CalendarColors.colorFromColorClass(wrapper.getCssClass());
+	}
 	
 	public boolean isVisible() {
 		return wrapper.isVisible();
@@ -91,14 +96,6 @@ public class CalendarPersonalConfigurationRow {
 
 	public String getFeedUrl(Identity identity) {
 		return wrapper.getFeedUrl(identity);
-	}
-
-	public FormLink getColorLink() {
-		return colorLink;
-	}
-
-	public void setColorLink(FormLink colorLink) {
-		this.colorLink = colorLink;
 	}
 
 	public FormLink getVisibleLink() {
@@ -131,5 +128,13 @@ public class CalendarPersonalConfigurationRow {
 
 	public void setToolsLink(FormLink toolsLink) {
 		this.toolsLink = toolsLink;
+	}
+
+	public void setColorPickerElement(ColorPickerElement colorPickerElement) {
+		this.colorPickerElement = colorPickerElement;
+	}
+
+	public ColorPickerElement getColorPickerElement() {
+		return colorPickerElement;
 	}
 }

@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
-import org.olat.commons.calendar.ui.CalendarColorChooserController;
+import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
@@ -110,7 +110,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		colorEl.setElementCssClass("o_proj_color");
 		colorEl.setOrientation(DropdownOrientation.normal);
 		colorEl.addActionListener(FormEvent.ONCHANGE);
-		for (String color : CalendarColorChooserController.colors) {
+		for (String color : CalendarColors.getColorClasses()) {
 			FormLink colorLink = uifactory.addFormLink(color, CMD_COLOR, "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
 			if (color.equals(milestone.getColor())){
 				colorLink.setIconLeftCSS("o_cal_color_element o_cal_colorchooser_selected " + color);
@@ -141,7 +141,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	}
 	
 	private void updateColorUI(String colorCss) {
-		if (CalendarColorChooserController.colorExists(colorCss)) {
+		if (CalendarColors.colorClassExists(colorCss)) {
 			colorEl.setIconCSS("o_cal_color_element " + colorCss);
 			colorEl.setUserObject(colorCss);
 		} else {

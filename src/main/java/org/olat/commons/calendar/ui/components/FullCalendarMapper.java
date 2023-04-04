@@ -35,7 +35,7 @@ import org.json.JSONObject;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.commons.calendar.ui.CalendarColorChooserController;
+import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
@@ -210,7 +210,7 @@ public class FullCalendarMapper implements Mapper {
 	private String getCssClass(KalendarEvent event, KalendarRenderWrapper cal) {
 		if (StringHelper.containsNonWhitespace(event.getColor())) {
 			String eventColor = "o_cal_".concat(event.getColor());
-			if (CalendarColorChooserController.colorExists(eventColor)) {
+			if (CalendarColors.colorClassExists(eventColor)) {
 				StringBuilder sb = new StringBuilder();
 				sb.append(eventColor);
 				String calCssClass = cal.getCssClass();

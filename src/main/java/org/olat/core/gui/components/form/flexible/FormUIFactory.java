@@ -358,6 +358,12 @@ public class FormUIFactory {
 		return colorPickerElement;
 	}
 
+	public ColorPickerElement addColorPickerElement(String name, String i18nLabel, Locale locale, List<String> colors) {
+		ColorPickerElement colorPickerElement = new ColorPickerElementImpl(name, colors, locale);
+		setLabelIfNotNull(i18nLabel, colorPickerElement);
+		return colorPickerElement;
+	}
+
 	public AutoCompletionMultiSelection addAutoCompletionMultiSelection(String name,
 			FormItemContainer formLayout, WindowControl wControl, AutoCompletionSource source) {
 		return addAutoCompletionMultiSelection(name, name, formLayout, wControl, source);
