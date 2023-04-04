@@ -48,8 +48,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		ColorPickerElementImpl colorChooserElement = colorPickerComponent.getFormItem();
 		List<ColorPickerElement.Color> colors = colorChooserElement.getColors();
 		ColorPickerElement.Color selectedColor = colorChooserElement.getColor();
+		String cssPrefix = colorChooserElement.getCssPrefix() == null ? "o_color_" : colorChooserElement.getCssPrefix();
 
-		String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
+				String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
 		String buttonId = "o_" + CodeHelper.getRAMUniqueID();
 		String inputId = "o_cp" + colorPickerComponent.getDispatchID();
 
@@ -62,10 +63,11 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
 				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
-				.append("aria-haspopup='true' aria-expanded='true'>");
+				.append("aria-haspopup='true' aria-expanded='true'")
+				.append(!colorChooserElement.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background o_color_")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(cssPrefix)
 					.append(selectedColor.getId()).append("'></i>");
 			sb.append("<span>").append(selectedColor.getText()).append("</span>");
 		} else {
@@ -111,13 +113,14 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			} else {
 				// In form submission mode, selecting updates the UI and the hidden input element:
 
-				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId);
+				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix);
 				String functionCall = "o_cp_set_color('" + color.getId() + "', '" +
 						color.getText() + "', '" +
 						buttonId + "', '" +
 						inputId + "', '" +
 						dropdownId + "', '" +
-						colorChooserElement.getRootForm().getDispatchFieldId() + "')";
+						colorChooserElement.getRootForm().getDispatchFieldId() + "', '" +
+						cssPrefix + "')";
 				sb.append("onclick=\"").append(functionCall).append(";\" ");
 				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall).append("; ")
 						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
@@ -126,7 +129,7 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			sb.append(">");
 
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
-					.append("o_color_background o_color_contrast_border o_color_text_on_background o_color_")
+					.append("o_color_background o_color_contrast_border o_color_text_on_background ").append(cssPrefix)
 					.append(color.getId()).append("'>").append("</i>");
 			sb.append("<span>").append(color.getText()).append("</span>");
 
@@ -140,12 +143,12 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 
 		if (!colorChooserElement.isAjaxOnlyMode()) {
 			sb.append("<script>");
-			sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId) {\n");
+			sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix) {\n");
 			sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
 			sb.append("  const oldColorId = hiddenInput.val();\n");
 			sb.append("  hiddenInput.val(colorId);\n");
 			sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
-			sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass('o_color_' + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a o_color_' + colorId);\n");
+			sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(cssPrefix + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a ' + cssPrefix + colorId);\n");
 			sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
 			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
 			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
