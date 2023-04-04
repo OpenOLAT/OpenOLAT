@@ -86,6 +86,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		if (!colorChooserElement.isAjaxOnlyMode()) {
 			sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
 					.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
+		} else {
+			sb.append("<div id='").append(inputId).append("' data-color='")
+					.append(selectedColor != null ? selectedColor.getId() : "").append("'></div>");
 		}
 
 		sb.append("</button>");
@@ -100,31 +103,33 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 			sb.append(">");
 			sb.append("<a tabindex='0' role='button' aria-pressed='false' class='dropdown-item o_color_picker_link' ");
 
+			String updateFunctionCall = "o_cp_set_color('" + color.getId() + "', '" +
+					color.getText() + "', '" +
+					buttonId + "', '" +
+					inputId + "', '" +
+					dropdownId + "', '" +
+					colorChooserElement.getRootForm().getDispatchFieldId() + "', '" +
+					cssPrefix + "', " +
+					(colorChooserElement.isAjaxOnlyMode() ? "true" : "false") + "); ";
+
 			if (colorChooserElement.isAjaxOnlyMode()) {
 				// In ajax-only mode, selecting sends an event to the server:
-
-				String functionCall = FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
+				String functionCall = updateFunctionCall +
+						FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
 						colorPickerComponent.getFormDispatchId(), 1, false, false,
-						false, new NameValuePair("colorId", color.getId()));
-				sb.append("onclick=\"").append(functionCall).append(";\" ");
-				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall).append("; ")
+						false, new NameValuePair("colorId", color.getId())) + "; ";
+				sb.append("onclick=\"").append(functionCall).append("\" ");
+				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall)
 						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append(";\"");
+				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
 			} else {
 				// In form submission mode, selecting updates the UI and the hidden input element:
 
 				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix);
-				String functionCall = "o_cp_set_color('" + color.getId() + "', '" +
-						color.getText() + "', '" +
-						buttonId + "', '" +
-						inputId + "', '" +
-						dropdownId + "', '" +
-						colorChooserElement.getRootForm().getDispatchFieldId() + "', '" +
-						cssPrefix + "')";
-				sb.append("onclick=\"").append(functionCall).append(";\" ");
-				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(functionCall).append("; ")
+				sb.append("onclick=\"").append(updateFunctionCall).append(";\" ");
+				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(updateFunctionCall).append("; ")
 						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
-				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append(";\"");
+				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(updateFunctionCall).append(";\"");
 			}
 			sb.append(">");
 
@@ -141,20 +146,25 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("</div>"); // dropdown
 		sb.append("</div>"); // o_color_picker_wrapper
 
-		if (!colorChooserElement.isAjaxOnlyMode()) {
-			sb.append("<script>");
-			sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix) {\n");
-			sb.append("  const hiddenInput = jQuery('#' + inputId);\n");
-			sb.append("  const oldColorId = hiddenInput.val();\n");
-			sb.append("  hiddenInput.val(colorId);\n");
-			sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
-			sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(cssPrefix + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a ' + cssPrefix + colorId);\n");
-			sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
-			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
-			sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
-			sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
-			sb.append("}\n");
-			sb.append("</script>");
-		}
+		sb.append("<script>");
+		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix, ajaxOnly) {\n");
+		sb.append("  let oldColorId = null;\n");
+		sb.append("  if (ajaxOnly) {\n");
+		sb.append("    const dataDiv = jQuery('#' + inputId);\n");
+		sb.append("    oldColorId = dataDiv.data('color');\n");
+		sb.append("    dataDiv.data('color', colorId);\n");
+		sb.append("  } else {\n");
+		sb.append("    const hiddenInput = jQuery('#' + inputId);\n");
+		sb.append("    oldColorId = hiddenInput.val();\n");
+		sb.append("    hiddenInput.val(colorId);\n");
+		sb.append("  }\n");
+		sb.append("  jQuery('#' + buttonId).css('padding-left', '32px');\n");
+		sb.append("  jQuery('#' + buttonId + ' i.o_color_background').removeClass(cssPrefix + oldColorId).addClass('o_color_picker_colored_area o_icon_fa6_a ' + cssPrefix + colorId);\n");
+		sb.append("  jQuery('#' + buttonId + ' span').text(text);\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + oldColorId + '\"]').removeClass('o_selected');\n");
+		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
+		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
+		sb.append("}\n");
+		sb.append("</script>");
 	}
 }
