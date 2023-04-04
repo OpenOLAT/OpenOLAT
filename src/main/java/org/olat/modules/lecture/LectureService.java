@@ -200,8 +200,9 @@ public interface LectureService {
 	public List<LectureBlockAuditLog> getAuditLog(RepositoryEntryRef entry);
 	
 	/**
-	 * Reload the lecture block.
-	 * @param block
+	 * Reload the lecture block and the list of taxonomy levels.
+	 * 
+	 * @param block The reference to the lecture block.
 	 * @return A fresh lecture block
 	 */
 	public LectureBlock getLectureBlock(LectureBlockRef block);
