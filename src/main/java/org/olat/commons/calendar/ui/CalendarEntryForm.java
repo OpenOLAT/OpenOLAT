@@ -553,16 +553,6 @@ public class CalendarEntryForm extends FormBasicController {
 		}
 	}
 
-	private String colorFromColorClass(String colorCssClass) {
-		if (!StringHelper.containsNonWhitespace(colorCssClass)) {
-			return null;
-		}
-		if (!colorCssClass.startsWith("o_cal_")) {
-			return colorCssClass;
-		}
-		return colorCssClass.substring(6);
-	}
-
 	private void doSyncLiveStreamUrl() {
 		String liveStreamUrl = getLiveStreamUrlFromSelection();
 		liveStreamUrlEl.setValue(liveStreamUrl);
@@ -590,16 +580,16 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		String color = null;
 		if (StringHelper.containsNonWhitespace(colorCssClass)) {
-			color = colorFromColorClass(colorCssClass);
+			color = CalendarController.colorFromColorClass(colorCssClass);
 		} else if (chosenWrapper != null) {
-			color = colorFromColorClass(chosenWrapper.getCssClass());
+			color = CalendarController.colorFromColorClass(chosenWrapper.getCssClass());
 		} else {
 			String kalendarID = getChoosenKalendarID();
 			Optional<KalendarRenderWrapper> selectedWrapper = writeableCalendars.stream()
 					.filter(cal -> cal.getKalendar().getCalendarID().equals(kalendarID))
 					.findFirst();
 			if (selectedWrapper.isPresent()) {
-				color = colorFromColorClass(selectedWrapper.get().getCssClass());
+				color = CalendarController.colorFromColorClass(selectedWrapper.get().getCssClass());
 			}
 		}
 		colorPicker.setColor(color);
