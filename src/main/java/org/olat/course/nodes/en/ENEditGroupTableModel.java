@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 
 /**
@@ -38,6 +39,7 @@ import org.olat.core.util.filter.FilterFactory;
  */
 public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGroupTableContentRow> {
 
+	private static final ENEditGroupTableColumns[] COLS = ENEditGroupTableColumns.values();
 	private final Translator translator;
 
 	public ENEditGroupTableModel(FlexiTableColumnModel columnModel, Translator translator) {
@@ -48,41 +50,44 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 	@Override
 	public Object getValueAt(int row, int col) {
 		ENEditGroupTableContentRow group = getObject(row);
-		switch (ENEditGroupTableColumns.values()[col]) {
-		case up:
-			return row == 0 ? Boolean.FALSE : Boolean.TRUE;
-		case down:
-			return row >= (getRowCount() - 1) ? Boolean.FALSE : Boolean.TRUE;
-		default:
+		switch (COLS[col]) {
+			case up:
+				return row == 0 ? Boolean.FALSE : Boolean.TRUE;
+			case down:
+				return row >= (getRowCount() - 1) ? Boolean.FALSE : Boolean.TRUE;
+			default:
 		}
 		return getValueAt(group, col);
 	}
 
 	public Object getValueAt(ENEditGroupTableContentRow row, int col) {
-		switch (ENEditGroupTableColumns.values()[col]) {
-		case key:
-			return row.getKey();
-		case groupName:
-			return row.getGroupName();
-		case remove:
-			return translator.translate(ENEditGroupTableColumns.remove.i18nHeaderKey);
-		case minParticipants: 
-			return row.getMinParticipants();
-		case maxParticipants: 
-			return row.getMaxParticipants();
-		case description: 
-			return Formatter.truncate(FilterFactory.getHtmlTagAndDescapingFilter().filter(row.getDescription()), 250);
-		case waitinglistEnabled: 
-			return row.isWaitinglistEnabled();
-		case onWaitinglist: 
-			return row.getOnWaitinglist();
-		case coaches:
-			return row.getCoaches();
-		case participants: 
-			return row.getParticipants();
-
-		default:
-			return "ERROR";
+		switch (COLS[col]) {
+			case key:
+				return row.getKey();
+			case groupName:
+				return row.getGroupName();
+			case externalId:
+				return row.getExternalId();
+			case managed:
+				return StringHelper.containsNonWhitespace(row.getManagedFlags());
+			case remove:
+				return translator.translate(ENEditGroupTableColumns.remove.i18nHeaderKey);
+			case minParticipants: 
+				return row.getMinParticipants();
+			case maxParticipants: 
+				return row.getMaxParticipants();
+			case description: 
+				return Formatter.truncate(FilterFactory.getHtmlTagAndDescapingFilter().filter(row.getDescription()), 250);
+			case waitinglistEnabled: 
+				return row.isWaitinglistEnabled();
+			case onWaitinglist: 
+				return row.getOnWaitinglist();
+			case coaches:
+				return row.getCoaches();
+			case participants: 
+				return row.getParticipants();
+			default:
+				return "ERROR";
 		}
 	}
 
@@ -119,7 +124,9 @@ public class ENEditGroupTableModel extends DefaultFlexiTableDataModel<ENEditGrou
 		participants("engroupedit.table.enrolled"),
 		waitinglistEnabled("engroupedit.table.waitinglist"),
 		onWaitinglist("engroupedit.table.waitinglistParticipants"),
-		isProtected("engroupedit.table.isProteced");
+		isProtected("engroupedit.table.isProteced"),
+		externalId("engroupedit.table.externalid"),
+		managed("engroupedit.table.managed");
 
 		private final String i18nHeaderKey;
 

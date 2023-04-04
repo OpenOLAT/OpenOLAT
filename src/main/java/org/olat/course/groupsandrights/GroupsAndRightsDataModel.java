@@ -20,6 +20,7 @@
 package org.olat.course.groupsandrights;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.translator.Translator;
 import org.olat.group.right.BGRightsRole;
@@ -31,6 +32,8 @@ import org.olat.group.right.BGRightsRole;
  *
  */
  public class GroupsAndRightsDataModel extends DefaultFlexiTableDataModel<BGRightsRow> {
+	 
+	 private static final GroupRightCols[] COLS = GroupRightCols.values();
 	
 	private final Translator translator;
 
@@ -42,21 +45,58 @@ import org.olat.group.right.BGRightsRole;
 	@Override
 	public Object getValueAt(int row, int col) {
 		BGRightsRow rightsRow = getObject(row);
-		if(col == 0) {
-			return rightsRow;
-		} else if (col == 1) {
-			BGRightsRole role = rightsRow.getRole();
-			switch(role) {
-				case tutor: return  rightsRow.getResourceType() == BGRightsResourceType.businessGroup
-						? translator.translate("tutor") : translator.translate("repo.tutor");
-				case participant: return  rightsRow.getResourceType() == BGRightsResourceType.businessGroup
-						? translator.translate("participant") : translator.translate("repo.participant");
+		if(col >= 0 && col < COLS.length) {
+			switch(COLS[col]) {
+				case key: return rightsRow.getKey();
+				case title: return rightsRow;
+				case externalId: return rightsRow.getExternalId();
+				case role: return getRole(rightsRow);
+				default: return "ERROR";
 			}
-			return "";
+		}
+		if(col >= GroupsAndRightsController.PERMISSIONS_OFFSET) {
+			int rightPos = col - GroupsAndRightsController.PERMISSIONS_OFFSET;
+			return rightsRow.getRightsEl().get(rightPos).getSelection();
+		}
+		return null;
+	}
+	
+	private String getRole(BGRightsRow rightsRow) {
+		BGRightsRole role = rightsRow.getRole();
+		switch(role) {
+			case tutor: return rightsRow.getResourceType() == BGRightsResourceType.businessGroup
+					? translator.translate("tutor") : translator.translate("repo.tutor");
+			case participant: return rightsRow.getResourceType() == BGRightsResourceType.businessGroup
+					? translator.translate("participant") : translator.translate("repo.participant");
+			default: return "ERROR";
+		}
+	}
+	
+	public enum GroupRightCols implements FlexiSortableColumnDef {
+		key("table.header.id"),
+		title("table.header.groups"),
+		externalId("table.header.externalid"),
+		role("table.header.role");
+		
+		private final String i18nKey;
+		
+		private GroupRightCols(String i18nKey) {
+			this.i18nKey = i18nKey;
 		}
 		
-		//rights
-		int rightPos = col - 2;
-		return rightsRow.getRightsEl().get(rightPos).getSelection();
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return false;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
+		}
 	}
 }

@@ -33,6 +33,9 @@ public class ENEditGroupTableContentRow {
 	private final Long key;
 	private final String groupName;
 	private final String description;
+	private final String externalId;
+	private final String managedFlags;
+	
 	private final int minParticipants;
 	private final int maxParticipants;
 	private final int coaches;
@@ -44,6 +47,8 @@ public class ENEditGroupTableContentRow {
 		key = null;
 		groupName = null;
 		description = null;
+		externalId = null;
+		managedFlags = null;
 		minParticipants = 0;
 		maxParticipants = 0;
 		participants = 0;
@@ -55,6 +60,8 @@ public class ENEditGroupTableContentRow {
 	public ENEditGroupTableContentRow(BusinessGroup group, EnrollmentRow enrollment) {
 		this.key = group.getKey();
 		this.groupName = group.getName();
+		this.externalId = group.getExternalId();
+		this.managedFlags = group.getManagedFlagsString();
 		this.description = group.getDescription() != null ? group.getDescription() : "";
 		this.maxParticipants = group.getMaxParticipants() != null ? group.getMaxParticipants() : -1;
 		this.minParticipants = group.getMinParticipants() != null ? group.getMinParticipants() : -1;
@@ -67,6 +74,8 @@ public class ENEditGroupTableContentRow {
 	public ENEditGroupTableContentRow(BusinessGroup group, StatisticsBusinessGroupRow stats) {
 		this.key = group.getKey();
 		this.groupName = group.getName();
+		this.externalId = group.getExternalId();
+		this.managedFlags = group.getManagedFlagsString();
 		this.description = group.getDescription() != null ? group.getDescription() : "";
 		this.maxParticipants = group.getMaxParticipants() != null ? group.getMaxParticipants() : -1;
 		this.minParticipants = group.getMinParticipants() != null ? group.getMinParticipants() : -1;
@@ -83,6 +92,14 @@ public class ENEditGroupTableContentRow {
 	
 	public String getGroupName() {
 		return groupName;
+	}
+	
+	public String getExternalId() {
+		return externalId;
+	}
+	
+	public String getManagedFlags() {
+		return managedFlags;
 	}
 	
 	public String getDescription() {

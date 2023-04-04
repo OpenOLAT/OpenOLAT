@@ -99,7 +99,7 @@ public class RepositoryEntryAuditLogDAO {
 
 	public List<RepositoryEntryAuditLog> getAuditLogs(IdentityRef identity) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("select log from repositoryentryauditlog log where log.authorKey!=:authorKey order by creationDate asc");
+		sb.append("select log from repositoryentryauditlog log where log.authorKey!=:authorKey or log.authorKey is null order by creationDate asc");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryAuditLog.class)
 				.setParameter("authorKey", identity.getKey())

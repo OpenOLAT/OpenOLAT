@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.groupsandrights.BGRightsRow.BGRight;
+import org.olat.course.groupsandrights.GroupsAndRightsDataModel.GroupRightCols;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.right.BGRightManager;
@@ -56,6 +57,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class GroupsAndRightsController extends FormBasicController {
+	
+	protected static final int PERMISSIONS_OFFSET = 500;
 
 	private FormLink removeAllLink;
 	private FlexiTableElement tableEl;
@@ -87,16 +90,19 @@ public class GroupsAndRightsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		//group rights
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GroupRightCols.key));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupRightCols.title, new BGRightsResourceNameRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, GroupRightCols.externalId));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GroupRightCols.role));
 		
-		int colIndex = 0;
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.groups", colIndex++, new BGRightsResourceNameRenderer()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.role", colIndex++));
+		int colIndex = PERMISSIONS_OFFSET;
 		for(String right : CourseRights.getAvailableRights()) {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(right, colIndex++));
 		}
 
 		tableDataModel = new GroupsAndRightsDataModel(tableColumnModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "rightList", tableDataModel, getTranslator(), formLayout);
+		tableEl.setAndLoadPersistedPreferences(ureq, "groups-rights-v1");
 		
 		FormLayoutContainer buttonsLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsLayout.setRootForm(mainForm);
@@ -126,20 +132,25 @@ public class GroupsAndRightsController extends FormBasicController {
 		List<BGRightsRow> options = new ArrayList<>();
 		String courseName = courseEntry.getDisplayname();
 		Group defGroup = repositoryService.getDefaultGroup(courseEntry);
-		options.add(getRightsOption(defGroup, courseName, tutorToRightsMap.get(defGroup), BGRightsRole.tutor, BGRightsResourceType.repositoryEntry));
-		options.add(getRightsOption(defGroup, courseName, participantToRightsMap.get(defGroup), BGRightsRole.participant, BGRightsResourceType.repositoryEntry));
+		options.add(getRightsOption(defGroup, courseEntry.getKey(), courseName, courseEntry.getExternalId(), courseEntry.getManagedFlagsString(),
+				tutorToRightsMap.get(defGroup), BGRightsRole.tutor, BGRightsResourceType.repositoryEntry));
+		options.add(getRightsOption(defGroup, courseEntry.getKey(), courseName, courseEntry.getExternalId(), courseEntry.getManagedFlagsString(),
+				participantToRightsMap.get(defGroup), BGRightsRole.participant, BGRightsResourceType.repositoryEntry));
 
 		for(BusinessGroup group:groups) {
 			String name = group.getName();
 			Group bGroup = group.getBaseGroup();
-			options.add(getRightsOption(bGroup, name, tutorToRightsMap.get(bGroup), BGRightsRole.tutor, BGRightsResourceType.businessGroup));
-			options.add(getRightsOption(bGroup, name, participantToRightsMap.get(bGroup), BGRightsRole.participant, BGRightsResourceType.businessGroup));
+			options.add(getRightsOption(bGroup, group.getKey(), name, group.getExternalId(), group.getManagedFlagsString(),
+					tutorToRightsMap.get(bGroup), BGRightsRole.tutor, BGRightsResourceType.businessGroup));
+			options.add(getRightsOption(bGroup, group.getKey(), name, group.getExternalId(), group.getManagedFlagsString(),
+					participantToRightsMap.get(bGroup), BGRightsRole.participant, BGRightsResourceType.businessGroup));
 		}
 		tableDataModel.setObjects(options);
 	}
 	
-	private BGRightsRow getRightsOption(Group group, String name, BGRights r, BGRightsRole role, BGRightsResourceType type) {
-		BGRightsRow options = new BGRightsRow(group, name, role, type);
+	private BGRightsRow getRightsOption(Group group, Long key, String name, String externalId, String managedFlags,
+			BGRights r, BGRightsRole role, BGRightsResourceType type) {
+		BGRightsRow options = new BGRightsRow(group, key, name, externalId, managedFlags, role, type);
 		fillCheckbox(options, r == null ? null : r.getRights());
 		FormLink rmLink = uifactory.addFormLink("remove_" + (++counter), "table.header.remove", "table.header.remove", flc, Link.LINK);
 		rmLink.setUserObject(options);

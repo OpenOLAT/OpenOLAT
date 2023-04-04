@@ -218,7 +218,9 @@ public class NotificationSubscriptionController extends FormBasicController {
 		if (!"-".equals(title)) {
 			String iconCssClass;
 			// TODO: Elaborate a more elegant solution
-			if ("CalendarManager.course".equals(pub.getResName())) {
+			if ("CalendarManager.course".equals(pub.getResName())
+					|| "RepositoryEntry".equals(pub.getResName())
+					|| "AssessmentManager".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass("CourseModule"));
 			} else if ("CalendarManager.group".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);

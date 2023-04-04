@@ -205,6 +205,8 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 		return new TitleItem(title, CSSHelper.CSS_CLASS_FILETYPE_FOLDER);
 	}
 
+
+
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		Translator translator = Util.createPackageTranslator(FolderNotificationsHandler.class, locale);
@@ -219,7 +221,18 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String getDisplayName(Publisher publisher) {
-		return repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+		String displayName;
+
+		if("CourseModule".equals(publisher.getResName())) {
+			displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
+		} else if("RepositoryEntry".equals(publisher.getResName())
+				&& CourseDocumentsFactory.SUBSCRIPTION_SUBIDENTIFIER.equals(publisher.getSubidentifier())) {
+			displayName = repositoryManager.lookupDisplayName(publisher.getResId());
+		} else {
+			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()).getName();
+		}
+
+		return displayName;
 	}
 
 	@Override

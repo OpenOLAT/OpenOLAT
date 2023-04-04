@@ -38,7 +38,10 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
@@ -206,11 +209,24 @@ public class GroupSelectionController extends FormBasicController {
 		keyColumn.setDefaultVisible(true);
 		keyColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(keyColumn);
+		
+		DefaultFlexiColumnModel managedColumn = new DefaultFlexiColumnModel(true, ENEditGroupTableColumns.managed.i18nHeaderKey(), ENEditGroupTableColumns.managed.ordinal(),
+				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon o_icon_managed"), null));
+		managedColumn.setIconHeader("o_icon o_icon_managed");
+		managedColumn.setDefaultVisible(true);
+		managedColumn.setAlwaysVisible(true);
+		columnsModel.addFlexiColumnModel(managedColumn);
 
 		DefaultFlexiColumnModel groupColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.groupName);
 		groupColumn.setDefaultVisible(true);
 		groupColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(groupColumn);
+		
+		DefaultFlexiColumnModel externalIdColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.externalId);
+		externalIdColumn.setDefaultVisible(false);
+		externalIdColumn.setAlwaysVisible(false);
+		columnsModel.addFlexiColumnModel(externalIdColumn);
 		
 		DefaultFlexiColumnModel descriptionColumn = new DefaultFlexiColumnModel(ENEditGroupTableColumns.description);
 		descriptionColumn.setDefaultVisible(true);
@@ -242,7 +258,7 @@ public class GroupSelectionController extends FormBasicController {
 		groupTableElement.setEmptyTableSettings("groupselection.noentries", null, "o_icon_group");
 		groupTableElement.setMultiSelect(true);		
 		groupTableElement.setSelectAllEnable(true);
-		groupTableElement.setCustomizeColumns(false);
+		groupTableElement.setCustomizeColumns(true);
 		
 		if (showSave) {
 			uifactory.addFormSubmitButton("subm", "apply", formLayout);
