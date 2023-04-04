@@ -380,7 +380,7 @@ public class CalendarEntryForm extends FormBasicController {
 		formLayout.add(colorLinks);
 		
 		colorPicker = uifactory.addColorPickerElement("color", "cal.form.event.color", colorLinks,
-				List.of(CalendarController.colors));
+				CalendarColors.getColorsList());
 		colorPicker.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.color));
 		colorPicker.setCssPrefix("o_cal");
 
@@ -580,16 +580,16 @@ public class CalendarEntryForm extends FormBasicController {
 		
 		String color = null;
 		if (StringHelper.containsNonWhitespace(colorCssClass)) {
-			color = CalendarController.colorFromColorClass(colorCssClass);
+			color = CalendarColors.colorFromColorClass(colorCssClass);
 		} else if (chosenWrapper != null) {
-			color = CalendarController.colorFromColorClass(chosenWrapper.getCssClass());
+			color = CalendarColors.colorFromColorClass(chosenWrapper.getCssClass());
 		} else {
 			String kalendarID = getChoosenKalendarID();
 			Optional<KalendarRenderWrapper> selectedWrapper = writeableCalendars.stream()
 					.filter(cal -> cal.getKalendar().getCalendarID().equals(kalendarID))
 					.findFirst();
 			if (selectedWrapper.isPresent()) {
-				color = CalendarController.colorFromColorClass(selectedWrapper.get().getCssClass());
+				color = CalendarColors.colorFromColorClass(selectedWrapper.get().getCssClass());
 			}
 		}
 		colorPicker.setColor(color);

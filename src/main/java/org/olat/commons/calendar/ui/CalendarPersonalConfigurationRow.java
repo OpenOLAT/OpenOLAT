@@ -36,7 +36,6 @@ public class CalendarPersonalConfigurationRow {
 	
 	private final KalendarRenderWrapper wrapper;
 	
-	private FormLink colorLink;
 	private FormLink visibleLink;
 	private FormLink aggregatedLink;
 	private FormLink feedLink;
@@ -76,7 +75,7 @@ public class CalendarPersonalConfigurationRow {
 	}
 
 	public String getColor() {
-		return CalendarController.colorFromColorClass(wrapper.getCssClass());
+		return CalendarColors.colorFromColorClass(wrapper.getCssClass());
 	}
 	
 	public boolean isVisible() {
@@ -97,14 +96,6 @@ public class CalendarPersonalConfigurationRow {
 
 	public String getFeedUrl(Identity identity) {
 		return wrapper.getFeedUrl(identity);
-	}
-
-	public FormLink getColorLink() {
-		return colorLink;
-	}
-
-	public void setColorLink(FormLink colorLink) {
-		this.colorLink = colorLink;
 	}
 
 	public FormLink getVisibleLink() {

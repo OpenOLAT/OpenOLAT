@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.util.StringHelper;
 
 public interface CalendarController extends Controller {
 
@@ -43,31 +42,6 @@ public interface CalendarController extends Controller {
 	public static final String CALLER_COLLAB = "collab";
 	public static final String CALLER_PROFILE = "profile";
 	public static final String CALLER_HOME = "home";
-
-	String[] colors = new String[] {
-			"green", "lime", "blue", "orange", "fuchsia", "yellow", "red", "rebeccapurple", "navy", "olive", "maroon",
-			"grey"
-	};
-
-	static String colorFromColorClass(String colorCssClass) {
-		if (!StringHelper.containsNonWhitespace(colorCssClass)) {
-			return null;
-		}
-		if (!colorCssClass.startsWith("o_cal_")) {
-			return colorCssClass;
-		}
-		return colorCssClass.substring(6);
-	}
-
-	static String colorClassFromColor(String color) {
-		if (!StringHelper.containsNonWhitespace(color)) {
-			return null;
-		}
-		if (color.startsWith("o_cal_")) {
-			return color;
-		}
-		return "o_cal_" + color;
-	}
 
 	/**
 	 * Set the focus for this calendar.
