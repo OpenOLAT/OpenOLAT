@@ -1,0 +1,154 @@
+<repositoryEntry>
+  <key>1368162304</key>
+  <version>22</version>
+  <creationDate class="sql-timestamp">2018-06-08 11:46:13.131</creationDate>
+  <lastModified>2023-04-04 06:43:31.133 UTC</lastModified>
+  <softkey>sropenpg_1_97821328364689</softkey>
+  <olatResource class="org.olat.resource.OLATResourceImpl">
+    <key>1368031232</key>
+    <version>0</version>
+    <creationDate class="sql-timestamp">2018-06-08 11:46:13.133</creationDate>
+    <resName>CourseModule</resName>
+    <resId>97821328364688</resId>
+  </olatResource>
+  <groups>
+    <org.olat.repository.model.RepositoryEntryToGroupRelation>
+      <key>3366387712</key>
+      <creationDate class="sql-timestamp">2023-03-30 13:29:59.555</creationDate>
+      <defaultGroup>false</defaultGroup>
+      <group class="org.olat.basesecurity.model.GroupImpl$HibernateProxy$7lTjWuqg" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.basesecurity.model.GroupImpl</entityName>
+        <id class="long">3366256640</id>
+        <readOnly>false</readOnly>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.basesecurity.model.GroupImpl</persistentClass>
+        <interfaces>
+          <java-class>org.hibernate.proxy.HibernateProxy</java-class>
+        </interfaces>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierGetterMethodClass>
+        <identifierSetterMethodName>setKey</identifierSetterMethodName>
+        <identifierSetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierSetterMethodClass>
+        <identifierSetterMethodParams>
+          <java-class>java.lang.Long</java-class>
+        </identifierSetterMethodParams>
+      </group>
+    </org.olat.repository.model.RepositoryEntryToGroupRelation>
+    <org.olat.repository.model.RepositoryEntryToGroupRelation>
+      <key>1405157800</key>
+      <creationDate class="sql-timestamp">2018-07-11 15:20:49.001</creationDate>
+      <defaultGroup>false</defaultGroup>
+      <group class="org.olat.basesecurity.model.GroupImpl$HibernateProxy$7lTjWuqg" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.basesecurity.model.GroupImpl</entityName>
+        <id class="long">1230340096</id>
+        <readOnly>false</readOnly>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.basesecurity.model.GroupImpl</persistentClass>
+        <interfaces reference="../../../org.olat.repository.model.RepositoryEntryToGroupRelation/group/interfaces"/>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierGetterMethodClass>
+        <identifierSetterMethodName>setKey</identifierSetterMethodName>
+        <identifierSetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierSetterMethodClass>
+        <identifierSetterMethodParams>
+          <java-class>java.lang.Long</java-class>
+        </identifierSetterMethodParams>
+      </group>
+    </org.olat.repository.model.RepositoryEntryToGroupRelation>
+    <org.olat.repository.model.RepositoryEntryToGroupRelation>
+      <key>1368195072</key>
+      <creationDate class="sql-timestamp">2018-06-08 11:46:13.135</creationDate>
+      <defaultGroup>true</defaultGroup>
+      <group class="org.olat.basesecurity.model.GroupImpl$HibernateProxy$7lTjWuqg" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.basesecurity.model.GroupImpl</entityName>
+        <id class="long">1368096768</id>
+        <readOnly>false</readOnly>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.basesecurity.model.GroupImpl</persistentClass>
+        <interfaces reference="../../../org.olat.repository.model.RepositoryEntryToGroupRelation/group/interfaces"/>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierGetterMethodClass>
+        <identifierSetterMethodName>setKey</identifierSetterMethodName>
+        <identifierSetterMethodClass>org.olat.basesecurity.model.GroupImpl</identifierSetterMethodClass>
+        <identifierSetterMethodParams>
+          <java-class>java.lang.Long</java-class>
+        </identifierSetterMethodParams>
+      </group>
+    </org.olat.repository.model.RepositoryEntryToGroupRelation>
+  </groups>
+  <organisations>
+    <org.olat.repository.model.RepositoryEntryToOrganisationImpl>
+      <key>46876</key>
+      <creationDate class="sql-timestamp">2018-07-11 15:20:49.001</creationDate>
+      <lastModified class="sql-timestamp">2018-07-11 15:20:49.001</lastModified>
+      <master>false</master>
+      <organisation class="org.olat.basesecurity.model.OrganisationImpl$HibernateProxy$k2VgHzOO" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.basesecurity.model.OrganisationImpl</entityName>
+        <id class="long">1</id>
+        <readOnly>false</readOnly>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.basesecurity.model.OrganisationImpl</persistentClass>
+        <interfaces>
+          <java-class>org.hibernate.proxy.HibernateProxy</java-class>
+        </interfaces>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.basesecurity.model.OrganisationImpl</identifierGetterMethodClass>
+        <identifierSetterMethodName>setKey</identifierSetterMethodName>
+        <identifierSetterMethodClass>org.olat.basesecurity.model.OrganisationImpl</identifierSetterMethodClass>
+        <identifierSetterMethodParams>
+          <java-class>java.lang.Long</java-class>
+        </identifierSetterMethodParams>
+      </organisation>
+    </org.olat.repository.model.RepositoryEntryToOrganisationImpl>
+  </organisations>
+  <taxonomyLevels>
+    <org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl>
+      <key>20</key>
+      <creationDate class="sql-timestamp">2023-03-30 13:30:34.539</creationDate>
+      <taxonomyLevel class="org.olat.modules.taxonomy.model.TaxonomyLevelImpl$HibernateProxy$RbsAvdcp" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</entityName>
+        <id class="long">306</id>
+        <readOnly>false</readOnly>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</persistentClass>
+        <interfaces>
+          <java-class>org.hibernate.proxy.HibernateProxy</java-class>
+        </interfaces>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</identifierGetterMethodClass>
+      </taxonomyLevel>
+    </org.olat.repository.model.RepositoryEntryToTaxonomyLevelImpl>
+  </taxonomyLevels>
+  <technicalType>condition</technicalType>
+  <educationalType class="org.olat.repository.model.RepositoryEntryEducationalTypeImpl">
+    <key>6</key>
+    <creationDate class="sql-timestamp">2021-08-25 05:01:27.751</creationDate>
+    <lastModified class="sql-timestamp">2021-08-25 05:01:27.751</lastModified>
+    <identifier>blendedlearning.course</identifier>
+    <predefined>false</predefined>
+    <cssClass>o_blendedlearning_course</cssClass>
+    <presetMyCourses>false</presetMyCourses>
+  </educationalType>
+  <resourcename>-</resourcename>
+  <displayname>XML Course</displayname>
+  <description></description>
+  <initialAuthor>kanu</initialAuthor>
+  <authors></authors>
+  <location></location>
+  <objectives></objectives>
+  <requirements></requirements>
+  <credits></credits>
+  <expenditureOfWork></expenditureOfWork>
+  <externalRef></externalRef>
+  <status>coachpublished</status>
+  <publicVisible>false</publicVisible>
+  <allUsers>false</allUsers>
+  <guests>false</guests>
+  <bookable>false</bookable>
+  <canCopy>false</canCopy>
+  <canReference>false</canReference>
+  <canDownload>false</canDownload>
+  <canIndexMetadata>false</canIndexMetadata>
+  <allowToLeave>atAnyTime</allowToLeave>
+  <invitationByOwnerWithAuthorRightsEnabled>false</invitationByOwnerWithAuthorRightsEnabled>
+  <lti13DeploymentByOwnerWithAuthorRightsEnabled>false</lti13DeploymentByOwnerWithAuthorRightsEnabled>
+</repositoryEntry>

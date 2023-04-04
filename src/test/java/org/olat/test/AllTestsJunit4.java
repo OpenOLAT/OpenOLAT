@@ -177,6 +177,7 @@ import org.junit.runners.Suite;
 	org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAOTest.class,
 	org.olat.repository.manager.RepositoryEntryEducationalTypeDAOTest.class,
 	org.olat.repository.manager.RepositoryEntryQueriesTest.class,
+	org.olat.repository.manager.RepositoryEntryAuditLogDAOXStreamTest.class,
 	org.olat.repository.RepositoryManagerTest.class,
 	org.olat.repository.RepositoryEntryImportExportTest.class,
 	org.olat.repository.wizard.RepositoryWizardServiceTest.class,

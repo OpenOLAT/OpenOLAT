@@ -1,0 +1,62 @@
+<lectureBlock>
+  <key>231</key>
+  <creationDate class="sql-timestamp">2023-04-04 06:23:49.807</creationDate>
+  <title>115. Lectures</title>
+  <description></description>
+  <preparation></preparation>
+  <location></location>
+  <startDate class="sql-timestamp">2023-04-04 06:00:00</startDate>
+  <endDate class="sql-timestamp">2023-04-04 06:30:00</endDate>
+  <compulsory>true</compulsory>
+  <plannedLecturesNumber>2</plannedLecturesNumber>
+  <effectiveLecturesNumber>0</effectiveLecturesNumber>
+  <statusString>active</statusString>
+  <rollCallStatusString>open</rollCallStatusString>
+  <taxonomyLevels>
+    <org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl>
+      <key>2</key>
+      <creationDate class="sql-timestamp">2022-06-21 16:18:48</creationDate>
+      <lectureBlock class="org.olat.modules.lecture.model.LectureBlockImpl$HibernateProxy$J4pHAOT6" resolves-to="lectureBlock">
+        <key>231</key>
+        <creationDate class="sql-timestamp" reference="../../../../creationDate"/>
+        <title>115. Lectures</title>
+        <description></description>
+        <preparation></preparation>
+        <location></location>
+        <startDate class="sql-timestamp" reference="../../../../startDate"/>
+        <endDate class="sql-timestamp" reference="../../../../endDate"/>
+        <compulsory>true</compulsory>
+        <plannedLecturesNumber>2</plannedLecturesNumber>
+        <effectiveLecturesNumber>0</effectiveLecturesNumber>
+        <statusString>active</statusString>
+        <rollCallStatusString>open</rollCallStatusString>
+        <taxonomyLevels reference="../../.."/>
+      </lectureBlock>
+      <taxonomyLevel class="org.olat.modules.taxonomy.model.TaxonomyLevelImpl$HibernateProxy$vAHIIi2T" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</entityName>
+        <id class="long">323</id>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</persistentClass>
+        <interfaces>
+          <java-class>org.hibernate.proxy.HibernateProxy</java-class>
+        </interfaces>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</identifierGetterMethodClass>
+      </taxonomyLevel>
+    </org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl>
+    <org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl>
+      <key>3</key>
+      <creationDate class="sql-timestamp">2022-06-21 16:18:48</creationDate>
+      <lectureBlock class="org.olat.modules.lecture.model.LectureBlockImpl$HibernateProxy$J4pHAOT6" reference="../../org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl/lectureBlock"/>
+      <taxonomyLevel class="org.olat.modules.taxonomy.model.TaxonomyLevelImpl$HibernateProxy$vAHIIi2T" resolves-to="org.hibernate.proxy.pojo.bytebuddy.SerializableProxy">
+        <entityName>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</entityName>
+        <id class="long">314</id>
+        <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        <persistentClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</persistentClass>
+        <interfaces reference="../../../org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl/taxonomyLevel/interfaces"/>
+        <identifierGetterMethodName>getKey</identifierGetterMethodName>
+        <identifierGetterMethodClass>org.olat.modules.taxonomy.model.TaxonomyLevelImpl</identifierGetterMethodClass>
+      </taxonomyLevel>
+    </org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl>
+  </taxonomyLevels>
+</lectureBlock>

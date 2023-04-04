@@ -106,6 +106,13 @@ public class RepositoryEntryAuditLogDAO {
 				.getResultList();
 	}
 
+	/**
+	 * The repository entry need to be connected to the hibernate session
+	 * to be properly serialized (without lazy loading exceptions).
+	 * 
+	 * @param repositoryEntry The repository entry to serialize
+	 * @return The serialized XML 
+	 */
 	public String toXml(RepositoryEntry repositoryEntry) {
 		if (repositoryEntry == null) return null;
 		return repositoryEntryXStream.toXML(repositoryEntry);

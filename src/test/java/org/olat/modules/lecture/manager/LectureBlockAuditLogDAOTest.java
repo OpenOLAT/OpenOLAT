@@ -19,21 +19,35 @@
  */
 package org.olat.modules.lecture.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockStatus;
+import org.olat.modules.lecture.LectureRollCallStatus;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -47,8 +61,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 	
+	private static final Logger log = Tracing.createLoggerFor(LectureBlockAuditLogDAOTest.class);
+	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private TaxonomyDAO taxonomyDao;
+	@Autowired
+	private LectureService lectureService;
+	@Autowired
+	private TaxonomyLevelDAO taxonomyLevelDao;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
@@ -57,6 +79,9 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 	private AbsenceCategoryDAO absenceCategoryDao;
 	@Autowired
 	private LectureBlockAuditLogDAO lectureBlockAuditLogDao;
+
+	@Autowired
+	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	
 	@Test
 	public void createAuditLog() {
@@ -150,6 +175,88 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 		Assert.assertNotNull(xml);
 	}
 	
+	/**
+	 * OO-6907
+	 */
+	@Test
+	public void xmlAuditLogWithTaxonomy() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello audit");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-199", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		lectureBlockToTaxonomyLevelDao.createRelation(lectureBlock, level);
+		dbInstance.commitAndCloseSession();
+		
+		LectureBlock realodedBlock = lectureService.getLectureBlock(lectureBlock);
+		dbInstance.commitAndCloseSession();
+		String xml = lectureBlockAuditLogDao.toXml(realodedBlock);
+		Assert.assertNotNull(xml);
+		
+		// Read again the XML
+		LectureBlock xmlBlock = lectureBlockAuditLogDao.lectureBlockFromXml(xml);
+		Assert.assertNotNull(xmlBlock);
+		Assert.assertEquals("Hello audit", lectureBlock.getTitle());
+	}
+	
+	/**
+	 * OO-6907
+	 */
+	@Test
+	public void xmlAuditLogSaveRollCall() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		
+		// With taxonomy
+		Taxonomy taxonomy = taxonomyDao.createTaxonomy("ID-199", "Leveled taxonomy", null, null);
+		TaxonomyLevel level = taxonomyLevelDao.createTaxonomyLevel("ID-Level-0", random(), "My first taxonomy level", "A basic level", null, null, null, null, taxonomy);
+		lectureBlockToTaxonomyLevelDao.createRelation(lectureBlock, level);
+		dbInstance.commitAndCloseSession();
+
+		lectureBlock = lectureService.getLectureBlock(lectureBlock);
+		
+		// Like TeacherRollCallController
+		lectureBlock.setStatus(LectureBlockStatus.done);
+		lectureBlock.setRollCallStatus(LectureRollCallStatus.closed);
+		lectureBlock = lectureService.save(lectureBlock, null);
+		// Recalculate can eventually commit and close
+		lectureService.recalculateSummary(lectureBlock.getEntry());
+		dbInstance.commitAndCloseSession();
+
+		// Save as XML
+		String xml = lectureBlockAuditLogDao.toXml(lectureBlock);
+		Assert.assertNotNull(xml);
+		
+		// Read again the XML
+		LectureBlock xmlBlock = lectureBlockAuditLogDao.lectureBlockFromXml(xml);
+		Assert.assertNotNull(xmlBlock);
+		Assert.assertEquals("Hello lecturers", lectureBlock.getTitle());
+		Assert.assertEquals(LectureBlockStatus.done, lectureBlock.getStatus());
+		Assert.assertEquals(LectureRollCallStatus.closed, lectureBlock.getRollCallStatus());
+	}
+	
+	/**
+	 * OO-6907
+	 */
+	@Test
+	public void xmlAuditLogLectureBlockV1723() {
+		String xml = readXml("lectureblock_auditlog_1723.xml");
+		LectureBlock lectureBlock = lectureBlockAuditLogDao.lectureBlockFromXml(xml);
+		Assert.assertNotNull(lectureBlock);
+		Assert.assertEquals("115. Lectures", lectureBlock.getTitle());
+		Assert.assertEquals(LectureBlockStatus.active, lectureBlock.getStatus());
+		Assert.assertEquals(2, lectureBlock.getPlannedLecturesNumber());
+		Assert.assertEquals(0, lectureBlock.getEffectiveLecturesNumber());
+	}
+	
 	@Test
 	public void xmlAuditLog_absenceNotice() {
 		String title = UUID.randomUUID().toString();
@@ -171,5 +278,14 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 		String xml = lectureBlockAuditLogDao.toXml(notice);
 		System.out.println(xml);
 		Assert.assertNotNull(xml);
+	}
+	
+	private String readXml(String filename) {
+		try(InputStream inStream = LectureBlockAuditLogDAOTest.class.getResourceAsStream(filename)) {
+			return IOUtils.toString(inStream, StandardCharsets.UTF_8);
+		} catch (Exception e) {
+			log.error("Cannot read xml", e);
+			return null;
+		}
 	}
 }

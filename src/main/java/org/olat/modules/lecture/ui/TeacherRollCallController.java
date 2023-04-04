@@ -663,6 +663,7 @@ public class TeacherRollCallController extends FormBasicController {
 			lectureBlock.setStatus(LectureBlockStatus.active);
 		}
 		lectureBlock = lectureService.save(lectureBlock, null);
+		// Recalculate can eventually commit and close
 		lectureService.recalculateSummary(lectureBlock.getEntry());
 		
 		String after = lectureService.toAuditXml(lectureBlock);

@@ -429,9 +429,11 @@ public interface RepositoryService {
 	SubscriptionContext getSubscriptionContext();
 
 	/**
-	 *
-	 * @param repositoryEntry
-	 * @return
+	 * The repository entry need to be connected to the hibernate session
+	 * to be properly serialized (without lazy loading exceptions).
+	 * 
+	 * @param repositoryEntry The repository entry to serialize
+	 * @return The serialized XML 
 	 */
 	String toAuditXml(RepositoryEntry repositoryEntry);
 
