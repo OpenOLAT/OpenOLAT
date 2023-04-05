@@ -85,6 +85,7 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		displayOptions.setClickToPlayPause(false);
 		displayOptions.setAuthorMode(true);
 		videoDisplayController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null, null, displayOptions);
+		mainVC.contextPut("videoElementId", videoDisplayController.getVideoElementId());
 		listenTo(videoDisplayController);
 		mainVC.put("video", videoDisplayController.getInitialComponent());
 

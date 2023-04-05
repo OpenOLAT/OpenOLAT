@@ -16,6 +16,34 @@ $r.render("backLink")
 <script>
 	var globalVideoEditor = jQuery('#o_video_editor');
 
+	function findBetterAspectRatio(aspectRatio, videoElementId) {
+		const html5ElementId = 'o_so_vid' + videoElementId + '_html5';
+		const html5Element = jQuery('#' + html5ElementId);
+		if (html5Element.length === 1) {
+			if (html5Element.width && html5Element.height) {
+				return html5Element.width / html5Element.height;
+			}
+		}
+
+		const youtubeFrameId = 'o_so_vid' + videoElementId + '_youtube_iframe';
+		const youtubeFrame = jQuery('#' + youtubeFrameId);
+		if (youtubeFrame.length === 1) {
+			if (youtubeFrame.width && youtubeFrame.height) {
+				return youtubeFrame.width / youtubeFrame.height;
+			}
+		}
+
+		const vimeoFrameId = 'o_so_vid' + videoElementId + '_vimeo_iframe';
+		const vimeoFrame = jQuery('#' + vimeoFrameId);
+		if (vimeoFrame.length === 1) {
+			if (vimeoFrame.width && vimeoFrame.height) {
+				return vimeoFrame.width / vimeoFrame.height;
+			}
+		}
+
+		return aspectRatio;
+	}
+
 	function resize() {
 		#if ($r.isNotEmpty($videoWidth) && $r.isNotEmpty($videoHeight))
 		var videoWidth = $videoWidth;
@@ -24,6 +52,8 @@ $r.render("backLink")
 		#else
 		var aspectRatio = 1.778;
 		#end
+
+		aspectRatio = findBetterAspectRatio(aspectRatio, '${videoElementId}');
 
 		var videoEditor = jQuery('#o_video_editor');
 		var toolbar = jQuery('#o_main_toolbar');
@@ -42,7 +72,6 @@ $r.render("backLink")
 		video.height(videoViewHeight);
 		window.dispatchEvent(new Event('resize'));
 
-		console.log('Send resize', videoEditor.width(), availableWidth, videoViewWidth, videoViewHeight);
 		${r.openJavaScriptCommand("TimelineAvailableWidthEvent")}, 'ignore-validating-error', 'oo-ignore-validating-error', 'availableWidth', availableWidth);
 	}
 
