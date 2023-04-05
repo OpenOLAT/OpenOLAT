@@ -112,7 +112,9 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		commentLayerLifecycleHelper.handleEvent(ureq, source, event);
+		if (commentLayerLifecycleHelper != null) {
+			commentLayerLifecycleHelper.handleEvent(ureq, source, event);
+		}
 	}
 
 	@Override
