@@ -391,7 +391,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		removeAsListenerAndDispose(playCtrl);
 		
 		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(),
-				videoEntry, List.of(row.getTaskSession()), row.getAssessedIdentity());
+				videoEntry, List.of(row.getTaskSession()), row.getAssessedIdentity(), courseNode);
 		listenTo(playCtrl);
 		stackPanel.pushController(translate("play"), playCtrl);
 	}
@@ -403,7 +403,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 				.map(VideoTaskSessionRow::getTaskSession)
 				.toList();
 		playCtrl = new VideoTaskAssessmentPlayController(ureq, getWindowControl(),
-				videoEntry, taskSessions, null);
+				videoEntry, taskSessions, null, courseNode);
 		listenTo(playCtrl);
 
 		stackPanel.pushController(translate("play"), playCtrl);

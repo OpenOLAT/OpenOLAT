@@ -488,6 +488,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 				.forEach(offer -> acService.deleteOffer(offer));
 		
 		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
+		List<Identity> coachParticipantWaitingList =
+				reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums,
+						GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		// first stop assessment mode if needed
 		assessmentModeCoordinationService.processRepositoryEntryChangedStatus(reloadedRe);
 		//remove from catalog
@@ -496,6 +499,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(owners) {
 			removeMembers(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		} else {
+			OLATResource resource = loadRepositoryEntryResource(re.getKey());
+			for (Identity identityToUnsubscribe : coachParticipantWaitingList) {
+				if (!hasRole(identityToUnsubscribe, re, GroupRoles.owner.name())) {
+					notificationsManager.unsubscribeAllForIdentityAndResId(identityToUnsubscribe, resource.getResourceableId());
+				}
+			}
 			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		}
 		//remove relation to business groups
@@ -912,8 +921,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity) {
-		return repositoryEntryAuditLogDAO.getAuditLogs(authorIdentity);
+	public List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity, Date sinceDate) {
+		return repositoryEntryAuditLogDAO.getAuditLogs(authorIdentity, sinceDate);
 	}
 
 	@Override

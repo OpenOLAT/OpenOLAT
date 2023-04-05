@@ -64,6 +64,8 @@ public class RepositoryEntryAuditLogDAO {
 		repositoryEntryXStream.alias("repositoryEntry", RepositoryEntry.class);
 		repositoryEntryXStream.omitField(GroupImpl.class, "members");
 		repositoryEntryXStream.omitField(RepositoryEntry.class, "statistics");
+		repositoryEntryXStream.omitField(RepositoryEntry.class, "deletionDate");
+		repositoryEntryXStream.omitField(RepositoryEntry.class, "deletedBy");
 		repositoryEntryXStream.omitField(RepositoryEntryToGroupRelation.class, "entry");
 		// Write up-to organisation but only organisation and not further
 		repositoryEntryXStream.omitField(RepositoryEntryToOrganisationImpl.class, "entry");
@@ -97,12 +99,13 @@ public class RepositoryEntryAuditLogDAO {
 		dbInstance.getCurrentEntityManager().persist(auditLog);
 	}
 
-	public List<RepositoryEntryAuditLog> getAuditLogs(IdentityRef identity) {
+	public List<RepositoryEntryAuditLog> getAuditLogs(IdentityRef identity, Date sinceDate) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("select log from repositoryentryauditlog log where log.authorKey!=:authorKey or log.authorKey is null order by creationDate asc");
+		sb.append("select log from repositoryentryauditlog log where (log.authorKey!=:authorKey or log.authorKey is null) and log.creationDate>=:sinceDate order by creationDate asc");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), RepositoryEntryAuditLog.class)
 				.setParameter("authorKey", identity.getKey())
+				.setParameter("sinceDate", sinceDate)
 				.getResultList();
 	}
 

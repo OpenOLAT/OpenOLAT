@@ -123,7 +123,7 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_ANNOTATIONS, false));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_SEGMENTS, true);
 		videoElements.setEnabled(VideoTaskEditController.CONFIG_KEY_SEGMENTS, false);
-		videoElements.select(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true);
+		videoElements.select(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_OVERLAY_COMMENTS, true));
 		videoElements.select(VideoTaskEditController.CONFIG_KEY_QUESTIONS, config.getBooleanSafe(VideoTaskEditController.CONFIG_KEY_QUESTIONS, false));
 
 		SelectionValues categoriesValues = getCategoriesSelectionValues();

@@ -66,6 +66,7 @@ public class VideoEditorController extends BasicController {
 		videoController = new VideoController(ureq, wControl, repositoryEntry, !isYoutube);
 		listenTo(videoController);
 		String videoElementId = videoController.getVideoElementId();
+		mainVC.contextPut("videoElementId", videoElementId);
 		mainVC.put("video", videoController.getInitialComponent());
 
 		detailsController = new DetailsController(ureq, wControl, repositoryEntry,

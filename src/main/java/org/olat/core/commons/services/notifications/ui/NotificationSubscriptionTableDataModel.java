@@ -19,8 +19,13 @@
  */
 package org.olat.core.commons.services.notifications.ui;
 
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 
 /**
  * Description:<br>
@@ -31,44 +36,60 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
  *
  * @author gnaegi
  */
-class NotificationSubscriptionTableDataModel extends DefaultFlexiTableDataModel<NotificationSubscriptionRow> {
+class NotificationSubscriptionTableDataModel extends DefaultFlexiTableDataModel<NotificationSubscriptionRow>
+		implements SortableFlexiTableDataModel<NotificationSubscriptionRow> {
 
-	NotificationSubscriptionTableDataModel(FlexiTableColumnModel tableColumnModel) {
+	private static final NotificationSubscriptionCols[] COLS = NotificationSubscriptionCols.values();
+	private final Locale locale;
+
+	NotificationSubscriptionTableDataModel(FlexiTableColumnModel tableColumnModel, Locale locale) {
 		super(tableColumnModel);
+		this.locale = locale;
 	}
 
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		NotificationSubscriptionRow call = getObject(row);
+		return getValueAt(getObject(row), col);
+	}
 
-		switch (NotificationSubscriptionCols.values()[col]) {
+	@Override
+	public void sort(SortKey orderBy) {
+		if (orderBy != null) {
+			List<NotificationSubscriptionRow> rows = new NotificationSubscriptionSortableDelegate(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
+	}
+
+	@Override
+	public Object getValueAt(NotificationSubscriptionRow row, int col) {
+		switch (COLS[col]) {
 			case key -> {
-				return call.getKey();
+				return row.getKey();
 			}
 			case subType -> {
-				return call.getSubType();
+				return row.getSubType();
 			}
-			case courseGroup -> {
-				return call.getCourseGroup();
+			case learningResource -> {
+				return row.getLearningResource();
 			}
 			case subRes -> {
-				return call.getSubRes();
+				return row.getSubRes();
 			}
 			case addDesc -> {
-				return call.getAddDesc();
+				return row.getAddDesc();
 			}
 			case statusToggle -> {
-				return call.getStatusToggle();
+				return row.getStatusToggle();
 			}
 			case creationDate -> {
-				return call.getCreationDate();
+				return row.getCreationDate();
 			}
 			case lastEmail -> {
-				return call.getLastEmail();
+				return row.getLastEmail();
 			}
 			case deleteLink -> {
-				return call.getDeleteLink();
+				return row.getDeleteLink();
 			}
 			default -> {
 				return "ERROR";
