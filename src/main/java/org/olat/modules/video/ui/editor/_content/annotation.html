@@ -74,9 +74,7 @@
 			let durationInSec = endInSec - startInSec;
 			const durationDeficit = Math.max(0, minDuration - (endInSec - startInSec));
 			if (durationDeficit > 0) {
-				endInSec += durationDeficit;
 				durationInSec += durationDeficit;
-				end.val(formatTime(endInSec, end.val()));
 			}
 			duration.val(durationInSec);
 			return true;
