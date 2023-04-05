@@ -26,18 +26,22 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoTaskSession;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoDisplayOptions;
 import org.olat.modules.video.ui.VideoHelper;
+import org.olat.modules.video.ui.editor.CommentLayerController;
 import org.olat.modules.video.ui.editor.MasterController;
 import org.olat.modules.video.ui.editor.TimelineEventType;
+import org.olat.modules.video.ui.event.CommentLayerLifecycleHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +53,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class VideoTaskAssessmentPlayController extends BasicController {
-	
+
+	private CommentLayerController commentLayerController;
+	CommentLayerLifecycleHelper commentLayerLifecycleHelper;
 	private Link backButton;
 	private VelocityContainer mainVC;
 	
@@ -62,7 +68,8 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 	private VideoManager videoManager;
 	
 	public VideoTaskAssessmentPlayController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions, Identity assessedIdentity) {
+											 RepositoryEntry videoEntry, List<VideoTaskSession> taskSessions,
+											 Identity assessedIdentity, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl);
 		
 		mainVC = createVelocityContainer("play");
@@ -77,16 +84,19 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		mainVC.contextPut("videoWidth", videoMetadata.getWidth());
 		mainVC.contextPut("videoHeight", videoMetadata.getHeight());
 
-		VideoDisplayOptions displayOptions = VideoDisplayOptions.disabled();
-		displayOptions.setDragAnnotations(true);
-		displayOptions.setShowAnnotations(true);
-		displayOptions.setSnapMarkerSizeToGrid(false);
-		displayOptions.setAlwaysShowControls(true);
-		displayOptions.setClickToPlayPause(false);
-		displayOptions.setAuthorMode(true);
-		videoDisplayController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null, null, displayOptions);
-		mainVC.contextPut("videoElementId", videoDisplayController.getVideoElementId());
+		VideoDisplayOptions videoDisplayOptions = courseNode.getVideoDisplay(false, false);
+		videoDisplayController = new VideoDisplayController(ureq, getWindowControl(), videoEntry, null,
+				null, videoDisplayOptions);
 		listenTo(videoDisplayController);
+
+		if (videoDisplayOptions.isShowOverlayComments()) {
+			commentLayerController = new CommentLayerController(ureq, wControl, videoEntry, videoDisplayController.getVideoElementId());
+			listenTo(commentLayerController);
+			commentLayerLifecycleHelper = new CommentLayerLifecycleHelper(videoDisplayController, commentLayerController, this::getWindowControl);
+			commentLayerLifecycleHelper.init();
+		}
+
+		mainVC.contextPut("videoElementId", videoDisplayController.getVideoElementId());
 		mainVC.put("video", videoDisplayController.getInitialComponent());
 
 		String videoElementId = videoDisplayController.getVideoElementId();
@@ -98,6 +108,11 @@ public class VideoTaskAssessmentPlayController extends BasicController {
 		mainVC.put("timeline", timelineCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		commentLayerLifecycleHelper.handleEvent(ureq, source, event);
 	}
 
 	@Override
