@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.notifications.NotificationUIFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -162,10 +163,11 @@ public class NotificationSubscriptionController extends FormBasicController {
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(adminColumns, NotificationSubscriptionCols.lastEmail));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.deleteLink));
 
-		subscriptionsTableDataModel = new NotificationSubscriptionTableDataModel(tableColumnModel);
+		subscriptionsTableDataModel = new NotificationSubscriptionTableDataModel(tableColumnModel, getLocale());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "NotificationSubscriptionTable", subscriptionsTableDataModel, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
+		tableEl.sort(new SortKey(NotificationSubscriptionCols.subType.sortKey(), true));
 
 		updateSubscriptionsDataModel();
 		initFiltersPresets(ureq);

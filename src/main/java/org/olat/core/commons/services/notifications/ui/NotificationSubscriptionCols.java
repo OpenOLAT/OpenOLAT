@@ -50,7 +50,7 @@ public enum NotificationSubscriptionCols implements FlexiSortableColumnDef {
 
 	@Override
 	public boolean sortable() {
-		return false;
+		return true;
 	}
 
 	@Override
