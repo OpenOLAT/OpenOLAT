@@ -29,7 +29,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 public enum NotificationSubscriptionCols implements FlexiSortableColumnDef {
 	key("table.column.key"),
 	subType("table.column.sub.type"),
-	courseGroup("table.column.course.group"),
+	learningResource("table.column.learning.resource"),
 	subRes("table.column.sub.res"),
 	addDesc("table.column.add.desc"),
 	statusToggle("table.column.status"),

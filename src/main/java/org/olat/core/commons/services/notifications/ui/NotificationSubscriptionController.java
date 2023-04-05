@@ -82,7 +82,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 	public static final String ALL_TAB_ID = "All";
 
-	private static final String FORMLINK_COURSE_GROUP = "courseGroup";
+	private static final String FORMLINK_LEARNING_RESOURCE = "learningResource";
 	private static final String FORMLINK_SUB_RES = "subRes";
 	private static final String FORMLINK_DELETE = "delete";
 	private final List<NotificationSubscriptionRow> subscriptionRows = new ArrayList<>();
@@ -154,7 +154,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NotificationSubscriptionCols.key));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.subType));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.courseGroup));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.learningResource));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.subRes));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.addDesc));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.statusToggle));
@@ -180,10 +180,10 @@ public class NotificationSubscriptionController extends FormBasicController {
 		String subType = !pub.getResId().equals(0L)
 				? NewControllerFactory.translateResourceableTypeName(pub.getResName(), getLocale())
 				: NewControllerFactory.translateResourceableTypeName("Global", getLocale());
-		FormLink courseGroup = uifactory.addFormLink("courseGroup_" + sub.getKey().toString(), FORMLINK_COURSE_GROUP, "", null, flc, Link.NONTRANSLATED);
+		FormLink learningResource = uifactory.addFormLink("learningResource_" + sub.getKey().toString(), FORMLINK_LEARNING_RESOURCE, "", null, flc, Link.NONTRANSLATED);
 		FormLink subRes = uifactory.addFormLink("subRes_" + sub.getKey().toString(), FORMLINK_SUB_RES, "", null, flc, Link.NONTRANSLATED);
 		String addDesc = "";
-		FormToggle statusToggle = uifactory.addToggleButton("subscription_" + sub.getKey().toString(), "", "&nbsp;&nbsp;", flc, null, null);
+		FormToggle statusToggle = uifactory.addToggleButton("subscription_" + sub.getKey().toString(), "", sub.isEnabled() ? translate("on") : translate("off"), flc, null, null);
 		statusToggle.addActionListener(FormEvent.ONCHANGE);
 		FormLink deleteLink = null;
 
@@ -213,30 +213,30 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		if (title != null) {
 			title = StringHelper.escapeHtml(title);
-			courseGroup.setI18nKey(title);
+			learningResource.setI18nKey(title);
 		}
 		if (!"-".equals(title)) {
 			String iconCssClass;
-			// TODO: Elaborate a more elegant solution
 			if ("CalendarManager.course".equals(pub.getResName())
 					|| "RepositoryEntry".equals(pub.getResName())
-					|| "AssessmentManager".equals(pub.getResName())) {
+					|| "AssessmentManager".equals(pub.getResName())
+					|| "CertificatesManager".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass("CourseModule"));
 			} else if ("CalendarManager.group".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);
 			} else {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName()));
 			}
-			courseGroup.setIconLeftCSS(iconCssClass);
+			learningResource.setIconLeftCSS(iconCssClass);
 		}
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
 		subRes.setI18nKey(resourceType);
 		subRes.setIconLeftCSS(iconCss);
 
-		NotificationSubscriptionRow row = new NotificationSubscriptionRow(subType, courseGroup, subRes, addDesc, statusToggle,
+		NotificationSubscriptionRow row = new NotificationSubscriptionRow(subType, learningResource, subRes, addDesc, statusToggle,
 				sub.getCreationDate(), sub.getLatestEmailed(), deleteLink, sub.getKey());
-		courseGroup.setUserObject(row);
+		learningResource.setUserObject(row);
 		subRes.setUserObject(row);
 		statusToggle.setUserObject(row);
 		if (deleteLink != null) {
@@ -246,7 +246,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		return row;
 	}
 
-	private List<String> getSubscriptionDistincTypes() {
+	private List<String> getDistinctSubscriptionTypes() {
 		return subscriptionRows.stream()
 				.map(NotificationSubscriptionRow::getSubType)
 				.distinct()
@@ -261,7 +261,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		for (String subType : getSubscriptionDistincTypes()) {
+		for (String subType : getDistinctSubscriptionTypes()) {
 			FlexiFiltersTab filterType = FlexiFiltersTabFactory.tabWithFilters(subType, subType,
 					TabSelectionBehavior.clear, List.of());
 			tabs.add(filterType);
@@ -277,7 +277,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		if (!subscriptionRows.isEmpty()) {
 			SelectionValues subTypeValues = new SelectionValues();
 
-			for (String subType : getSubscriptionDistincTypes()) {
+			for (String subType : getDistinctSubscriptionTypes()) {
 				subTypeValues.add(SelectionValues.entry(subType, subType));
 			}
 
@@ -319,7 +319,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		if (row.getSubType().toLowerCase().contains(searchString.toLowerCase())) {
 			excluded = false;
-		} else if (row.getCourseGroup().getI18nKey().contains(searchString)) excluded = false;
+		} else if (row.getLearningResource().getI18nKey().contains(searchString)) excluded = false;
 		else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;
 		else if (row.getAddDesc().contains(searchString)) excluded = false;
 
@@ -344,13 +344,14 @@ public class NotificationSubscriptionController extends FormBasicController {
 			Subscriber subscriber = notificationsManager.getSubscriber(subscriptionKey);
 			subscriber.setLastModified(new Date());
 			subscriber.setEnabled(toggle.isOn());
+			toggle.setI18nKey(toggle.isOn() ? translate("on") : translate("off"));
 		}
 		if (source instanceof FormLink link) {
 			String cmd = link.getCmd();
-			if (cmd.equals(FORMLINK_COURSE_GROUP) || cmd.equals(FORMLINK_SUB_RES) || cmd.equals(FORMLINK_DELETE)) {
+			if (cmd.equals(FORMLINK_LEARNING_RESOURCE) || cmd.equals(FORMLINK_SUB_RES) || cmd.equals(FORMLINK_DELETE)) {
 				Long subscriptionKey = Long.parseLong(link.getComponent().getComponentName().replaceAll(".+?_", ""));
 				Subscriber subscriber = notificationsManager.getSubscriber(subscriptionKey);
-				if (FORMLINK_COURSE_GROUP.equals(cmd) || FORMLINK_SUB_RES.equals(cmd)) {
+				if (FORMLINK_LEARNING_RESOURCE.equals(cmd) || FORMLINK_SUB_RES.equals(cmd)) {
 					doLaunchSubscriptionResource(ureq, subscriber);
 				}
 				if (FORMLINK_DELETE.equals(cmd)) {

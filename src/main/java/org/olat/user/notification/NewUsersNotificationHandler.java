@@ -131,6 +131,7 @@ public class NewUsersNotificationHandler implements NotificationsHandler {
 
 	@Override
 	public String getAdditionalDescriptionI18nKey(Locale locale) {
-		return null;
+		Translator translator = Util.createPackageTranslator(this.getClass(), locale);
+		return translator.translate("notification.additional.desc");
 	}
 }

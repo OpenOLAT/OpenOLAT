@@ -418,7 +418,7 @@ public interface RepositoryService {
 	public List<RepositoryEntry> getRepositoryEntryByOrganisation(OrganisationRef organisation);
 
 	/**
-	 * @return
+	 * @return publisherData which is necessary for subscribing
 	 */
 	PublisherData getPublisherData();
 
@@ -438,6 +438,7 @@ public interface RepositoryService {
 	String toAuditXml(RepositoryEntry repositoryEntry);
 
 	/**
+	 * retrieve a repositoryEntry object by passing serialized data
 	 *
 	 * @param xml
 	 * @return
@@ -445,6 +446,7 @@ public interface RepositoryService {
 	RepositoryEntry toAuditRepositoryEntry(String xml);
 
 	/**
+	 * log repositoryEntry changes
 	 *
 	 * @param action
 	 * @param before
@@ -456,10 +458,12 @@ public interface RepositoryService {
 				  RepositoryEntry entry, Identity author);
 
 	/**
+	 * retrieve auditLogs for repositoryEntries
 	 *
-	 * @param authorIdentity
+	 * @param authorIdentity user Identity to filter out own auditLogs
+	 * @param sinceDate compareDate, passed initially by user in gui
 	 * @return
 	 */
-	List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity);
+	List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity, Date sinceDate);
 	
 }

@@ -35,18 +35,18 @@ public class NotificationSubscriptionRow {
 	private String subType;
 	private String addDesc;
 	private FormToggle statusToggle;
-	private FormLink courseGroup;
+	private FormLink learningResource;
 	private FormLink subRes;
 	private Date creationDate;
 	private Date lastEmail;
 	private FormLink deleteLink;
 
-	public NotificationSubscriptionRow(String subType, FormLink courseGroup, FormLink subRes,
+	public NotificationSubscriptionRow(String subType, FormLink learningResource, FormLink subRes,
 									   String addDesc, FormToggle statusToggle, Date creationDate,
 									   Date lastEmail, FormLink deleteLink, Long subKey) {
 		this.key = subKey;
 		this.subType = subType;
-		this.courseGroup = courseGroup;
+		this.learningResource = learningResource;
 		this.subRes = subRes;
 		this.addDesc = addDesc;
 		this.statusToggle = statusToggle;
@@ -63,8 +63,8 @@ public class NotificationSubscriptionRow {
 		return subType;
 	}
 
-	public FormLink getCourseGroup() {
-		return courseGroup;
+	public FormLink getLearningResource() {
+		return learningResource;
 	}
 
 	public FormLink getSubRes() {

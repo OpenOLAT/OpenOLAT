@@ -34,6 +34,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
@@ -75,7 +76,7 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 
 			if (notificationsManager.isPublisherValid(publisher) && compareDate.before(latestNews)) {
 				List<SubscriptionListItem> items = new ArrayList<>();
-				addNewRepoEntryStatusChanges(items, translator, identity);
+				addNewRepoEntryStatusChanges(items, translator, identity, compareDate);
 
 				if (items.isEmpty()) {
 					si = notificationsManager.getNoSubscriptionInfo();
@@ -96,8 +97,9 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 
 	private void addNewRepoEntryStatusChanges(List<SubscriptionListItem> items,
 											  Translator translator,
-											  Identity identity) {
-		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(identity);
+											  Identity identity,
+											  Date sinceDate) {
+		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(identity, sinceDate);
 		for (RepositoryEntryAuditLog auditLog : auditLogs) {
 			RepositoryEntry repositoryEntry = repositoryService.loadByKey(auditLog.getEntryKey());
 			if (repositoryEntry != null
@@ -113,11 +115,10 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 	private SubscriptionListItem createNewRepositoryEntryStatusChangeItem(
 			Translator translator, RepositoryEntryAuditLog auditLog, RepositoryEntry repositoryEntry) {
 		try {
-			// TODO: log also finally deleted entries, so repositoryEntry can't be null
 			RepositoryEntry auditBeforeRe = repositoryService.toAuditRepositoryEntry(auditLog.getBefore());
 			RepositoryEntry auditAfterRe = repositoryService.toAuditRepositoryEntry(auditLog.getAfter());
-			String preStatus = auditBeforeRe == null ? "unknown" : translator.translate("cif.status." + auditBeforeRe.getStatus());
-			String postStatus = auditAfterRe == null ? "unknown" : translator.translate("cif.status." + auditAfterRe.getStatus());
+			String preStatus = translator.translate("cif.status." + auditBeforeRe.getStatus());
+			String postStatus = translator.translate("cif.status." + auditAfterRe.getStatus());
 
 			String desc = auditLog.getAuthorKey() != null ? translator.translate("notification.new.status.change",
 					repositoryEntry.getDisplayname(),
@@ -134,7 +135,7 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 			Date dateInfo = auditLog.getCreationDate();
 			return new SubscriptionListItem(desc, url, businessPath, dateInfo, RepositoyUIFactory.getIconCssClass(repositoryEntry));
 		} catch (Exception e) {
-			log.error("Error while creating repositoryEntryStatusChange notifications", e);
+			log.error("Error while creating repositoryEntryStatusChange notifications: {} caused by auditLog with creationDate: {}", e.getMessage(), auditLog.getCreationDate());
 			return null;
 		}
 	}
@@ -156,8 +157,7 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 
 	@Override
 	public String getIconCss() {
-		// No icon desired for learning resource
-		return null;
+		return CSSHelper.getIconCssClassFor("o_CourseModule_icon");
 	}
 
 	@Override

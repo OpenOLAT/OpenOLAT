@@ -49,8 +49,8 @@ class NotificationSubscriptionTableDataModel extends DefaultFlexiTableDataModel<
 			case subType -> {
 				return call.getSubType();
 			}
-			case courseGroup -> {
-				return call.getCourseGroup();
+			case learningResource -> {
+				return call.getLearningResource();
 			}
 			case subRes -> {
 				return call.getSubRes();
