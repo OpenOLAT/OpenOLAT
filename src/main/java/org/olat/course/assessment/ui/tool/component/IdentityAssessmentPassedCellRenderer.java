@@ -45,11 +45,15 @@ public class IdentityAssessmentPassedCellRenderer extends PassedCellRenderer {
 	protected boolean isShowNull(Object cellValue) {
 		if (cellValue instanceof AssessmentNodeData) {
 			AssessmentNodeData nodeData = (AssessmentNodeData)cellValue;
-			if (isNotVisible(nodeData)) {
+			if (isNoPassedMode(nodeData) || isNotVisible(nodeData)) {
 				return false;
 			}
 		}
 		return super.isShowNull(cellValue);
+	}
+	
+	private boolean isNoPassedMode(AssessmentNodeData nodeData) {
+		return nodeData.getPassedMode() == null || Mode.none == nodeData.getPassedMode();
 	}
 
 	@Override
