@@ -320,7 +320,7 @@ class UserPrefsResetForm extends FormBasicController {
 		
 		resetElements.clearError();
 		if(!resetElements.isAtLeastSelected(1)) {
-			resetElements.setErrorKey("form.legende.mandatory", null);
+			resetElements.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
