@@ -19,6 +19,10 @@
  */
 package org.olat.course.nodes.videotask.ui;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -26,7 +30,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.video.VideoAssessmentService;
+import org.olat.modules.video.VideoTaskSession;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,18 +54,26 @@ public class ConfirmChangeModeController extends FormBasicController {
 	private final String currentMode;
 	private final RepositoryEntry entry;
 	private final long numOfParticipants;
-	
+	private final CourseNode courseNode;
+	private final CourseEnvironment courseEnv;
+
 	@Autowired
 	private VideoAssessmentService videoAssessmentService;
-	
+
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+
 	public ConfirmChangeModeController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry entry, String subIdent, String currentMode,
-			long numOfParticipants) {
+									   RepositoryEntry entry, String subIdent, String currentMode,
+									   long numOfParticipants, CourseNode courseNode,
+									   CourseEnvironment courseEnv) {
 		super(ureq, wControl, "confirm_change_mode");
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.currentMode = currentMode;
 		this.numOfParticipants = numOfParticipants;
+		this.courseNode = courseNode;
+		this.courseEnv = courseEnv;
 		initForm(ureq);
 	}
 	
@@ -74,8 +94,18 @@ public class ConfirmChangeModeController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		resetAttempts();
 		videoAssessmentService.deleteTaskSessions(entry, subIdent);
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+
+	private void resetAttempts() {
+		List<VideoTaskSession> taskSessions = videoAssessmentService.getTaskSessions(entry, subIdent);
+		Set<Identity> identities = taskSessions.stream().map(VideoTaskSession::getIdentity).collect(Collectors.toSet());
+		for (Identity identity : identities) {
+			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, courseEnv);
+			courseAssessmentService.updateAttempts(courseNode, 0, null, userCourseEnv, getIdentity(), Role.coach);
+		}
 	}
 
 	@Override
