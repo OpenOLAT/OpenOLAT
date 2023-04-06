@@ -112,33 +112,32 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 		int numOfRows = dataModel.getRowCount();
 		int numOfChecked = ftE.getMultiSelectedIndex().size();
 		// Everything is checked - uncheck all
-		target.append("<a id='").append(dispatchId).append("_dsa' href=\"javascript:o_table_toggleCheck('")
+		target.append("<a id='").append(dispatchId).append("_dsa' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 			.append(formName).append("', false);")
-			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 					new NameValuePair("select", "uncheckall")))
-			.append("\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
+			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked < numOfRows || numOfChecked == 0))
 			.append("><i class='o_icon o_icon-lg o_icon_check_on' aria-hidden='true'> </i></a>");
 
 		// Some are checked (mixed) - uncheck all
-		target.append("<a id='").append(dispatchId).append("_dsm' href=\"javascript:o_table_toggleCheck('")
+		target.append("<a id='").append(dispatchId).append("_dsm' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 			.append(formName).append("', false);")
-			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+			.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 					new NameValuePair("select", "uncheckall")))
-			.append("\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
+			.append("; return false;\" title=\"").append(translator.translate("form.uncheckall")).append("\"")
 			.append(" style='display:none'", (numOfChecked == numOfRows || numOfChecked == 0))
 			.append("><i class='o_icon o_icon-lg o_icon_check_mixed' aria-hidden='true'> </i></a>");
 
 		// Nothing is checked - check all
 		if (ftE.getPageSize() == -1 || numOfRows <= ftE.getPageSize()) {
 			// Nothing is checked - check all
-			target.append("<a id='").append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('")
+			target.append("<a id='").append(dispatchId).append("_sa' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
-				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkall")))
-				.append("\" title=\"")
-				.append(translator.translate("form.checkall.numbered",
-						new String[] { Integer.toString(numOfRows) })).append("\"")
+				.append("; return false;\" title=\"")
+				.append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows))).append("\"")
 				.append(" style='display:none'", numOfChecked > 0)
 				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>");
 								
@@ -146,26 +145,25 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			// Show menu to opt for all or just current page check
 			target.append("<div id='").append(dispatchId).append("_sm' style='position: relative; ")
 				.append("display:none;", numOfChecked > 0)
-				.append("'><a class='dropdown-toggle' data-toggle='dropdown' href='#' ")
+				.append("'><a class='dropdown-toggle' data-toggle='dropdown' href='javascript:;' ")
 				.append(" title=\"").append(translator.translate("form.checkall")).append("\"")
 				.append("><i class='o_icon o_icon-lg o_icon_check_off' aria-hidden='true'> </i></a>")					
 				.append("<ul class='dropdown-menu dropdown-menu-left'>")
 				// page
-				.append("<li><a id='").append(dispatchId).append("_sp' href=\"javascript:o_table_toggleCheck('")
+				.append("<li><a id='").append(dispatchId).append("_sp' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
-				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkpage")))
-				.append("\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_mixed' aria-hidden='true'> </i> <span>")
+				.append("; return false;\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_mixed' aria-hidden='true'> </i> <span>")
 				.append(translator.translate("form.checkpage"))
 				.append("</span></a></li>")
 				// all 
-				.append("<li><a id='").append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('")
+				.append("<li><a id='").append(dispatchId).append("_sa' href=\"javascript:;\" onclick=\"o_table_toggleCheck('")
 				.append(formName).append("', true);")
-				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+				.append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, false, false, true,
 						new NameValuePair("select", "checkall")))
-				.append("\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_on' aria-hidden='true'> </i> <span>")
-				.append(translator.translate("form.checkall.numbered",
-						new String[] { Integer.toString(numOfRows) }))
+				.append("; return false;\"><i class='o_icon o_icon-lg o_icon-fw o_icon_check_on' aria-hidden='true'> </i> <span>")
+				.append(translator.translate("form.checkall.numbered", Integer.toString(numOfRows)))
 				.append("</span></a></li>")
 				.append("</ul></div>");
 		}
