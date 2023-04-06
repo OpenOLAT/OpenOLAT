@@ -364,6 +364,9 @@ public class UserAdminController extends BasicController implements Activateable
 		if(userProfileCtr != null) {
 			userProfileCtr.resetForm(ureq, editedIdentity);
 		}
+		if(prefsCtr instanceof ChangePrefsController changePrefsCtrl) {
+			changePrefsCtrl.initPanels(ureq, getWindowControl(), editedIdentity);
+		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
