@@ -133,7 +133,7 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 			Date dateInfo = auditLog.getCreationDate();
-			return new SubscriptionListItem(desc, url, businessPath, dateInfo, RepositoyUIFactory.getIconCssClass(repositoryEntry));
+			return new SubscriptionListItem(desc, url, businessPath, dateInfo, getIconCss());
 		} catch (Exception e) {
 			log.error("Error while creating repositoryEntryStatusChange notifications: {} caused by auditLog with creationDate: {}", e.getMessage(), auditLog.getCreationDate());
 			return null;

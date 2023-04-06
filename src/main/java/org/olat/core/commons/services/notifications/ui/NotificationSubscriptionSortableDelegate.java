@@ -19,7 +19,6 @@
  */
 package org.olat.core.commons.services.notifications.ui;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +43,7 @@ public class NotificationSubscriptionSortableDelegate extends SortableFlexiTable
 
 	@Override
 	protected void sort(List<NotificationSubscriptionRow> rows) {
-		Collections.sort(rows, new NotificationSubscriptionComparator());
+		rows.sort(new NotificationSubscriptionComparator());
 	}
 
 	private class NotificationSubscriptionComparator implements Comparator<NotificationSubscriptionRow> {
