@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.notifications.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -122,7 +123,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 	private void updateSubscriptionsDataModel() {
 		subscriptionRows.clear();
 
-		List<String> filterSubTypes = getFilterSubTypes();
+		List<String> filterSections = getFilteredSections();
 		String searchString = tableEl.getQuickSearchString();
 
 		// Load subscriptions from DB. Don't use the ureq.getIdentity() but the
@@ -138,7 +139,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		for (Subscriber sub : subs) {
 			NotificationSubscriptionRow row = forgeRow(sub);
-			if (isExcludedBySubType(filterSubTypes, row)
+			if (isExcludedBySection(filterSections, row)
 					|| (!searchString.isBlank() && isExcludedBySearchString(searchString, row))) {
 				continue;
 			}
@@ -154,7 +155,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NotificationSubscriptionCols.key));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.subType));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.section));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.learningResource));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.subRes));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NotificationSubscriptionCols.addDesc));
@@ -167,7 +168,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "NotificationSubscriptionTable", subscriptionsTableDataModel, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(true);
-		tableEl.sort(new SortKey(NotificationSubscriptionCols.subType.sortKey(), true));
+		tableEl.sort(new SortKey(NotificationSubscriptionCols.learningResource.sortKey(), true));
 
 		updateSubscriptionsDataModel();
 		initFiltersPresets(ureq);
@@ -179,7 +180,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 	private NotificationSubscriptionRow forgeRow(Subscriber sub) {
 		Publisher pub = sub.getPublisher();
-		String subType = !pub.getResId().equals(0L)
+		String section = !pub.getResId().equals(0L)
 				? NewControllerFactory.translateResourceableTypeName(pub.getResName(), getLocale())
 				: NewControllerFactory.translateResourceableTypeName("Global", getLocale());
 		FormLink learningResource = uifactory.addFormLink("learningResource_" + sub.getKey().toString(), FORMLINK_LEARNING_RESOURCE, "", null, flc, Link.NONTRANSLATED);
@@ -206,7 +207,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		if (handler != null) {
 			title = handler.getDisplayName(pub);
 			iconCss = handler.getIconCss();
-			// If resId is 0L that means, publisher is of subType global
+			// If resId is 0L that means, publisher is of section global
 			if (pub.getResId().equals(0L)) {
 				addDesc = handler.getAdditionalDescriptionI18nKey(getLocale()) != null
 						? handler.getAdditionalDescriptionI18nKey(getLocale()) : "";
@@ -236,7 +237,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 		subRes.setI18nKey(resourceType);
 		subRes.setIconLeftCSS(iconCss);
 
-		NotificationSubscriptionRow row = new NotificationSubscriptionRow(subType, learningResource, subRes, addDesc, statusToggle,
+		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, learningResource, subRes, addDesc, statusToggle,
 				sub.getCreationDate(), sub.getLatestEmailed(), deleteLink, sub.getKey());
 		learningResource.setUserObject(row);
 		subRes.setUserObject(row);
@@ -250,7 +251,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 	private List<String> getDistinctSubscriptionTypes() {
 		return subscriptionRows.stream()
-				.map(NotificationSubscriptionRow::getSubType)
+				.map(NotificationSubscriptionRow::getSection)
 				.distinct()
 				.toList();
 	}
@@ -263,8 +264,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 
-		for (String subType : getDistinctSubscriptionTypes()) {
-			FlexiFiltersTab filterType = FlexiFiltersTabFactory.tabWithFilters(subType, subType,
+		for (String section : getDistinctSubscriptionTypes()) {
+			FlexiFiltersTab filterType = FlexiFiltersTabFactory.tabWithFilters(section, section,
 					TabSelectionBehavior.clear, List.of());
 			tabs.add(filterType);
 		}
@@ -277,40 +278,40 @@ public class NotificationSubscriptionController extends FormBasicController {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(1);
 
 		if (!subscriptionRows.isEmpty()) {
-			SelectionValues subTypeValues = new SelectionValues();
+			SelectionValues sectionValues = new SelectionValues();
 
-			for (String subType : getDistinctSubscriptionTypes()) {
-				subTypeValues.add(SelectionValues.entry(subType, subType));
+			for (String section : getDistinctSubscriptionTypes()) {
+				sectionValues.add(SelectionValues.entry(section, section));
 			}
 
-			FlexiTableMultiSelectionFilter subTypeFilter = new FlexiTableMultiSelectionFilter(translate("table.column.sub.type"),
-					"subType", subTypeValues, true);
-			filters.add(subTypeFilter);
+			FlexiTableMultiSelectionFilter sectionFilter = new FlexiTableMultiSelectionFilter(translate("table.column.section"),
+					"section", sectionValues, true);
+			filters.add(sectionFilter);
 		}
 
 		tableEl.setFilters(true, filters, false, false);
 		tableEl.expandFilters(true);
 	}
 
-	private List<String> getFilterSubTypes() {
+	private List<String> getFilteredSections() {
 		List<FlexiTableFilter> filters = tableEl.getFilters();
-		FlexiTableFilter subTypeFilter = FlexiTableFilter.getFilter(filters, "subType");
-		if (subTypeFilter != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter) subTypeFilter).getValues();
+		FlexiTableFilter sectionFilter = FlexiTableFilter.getFilter(filters, "section");
+		if (sectionFilter != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter) sectionFilter).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
 				return filterValues;
 			}
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
-	private boolean isExcludedBySubType(List<String> filterSubTypes, NotificationSubscriptionRow row) {
-		if (filterSubTypes != null && !filterSubTypes.contains(row.getSubType())) {
+	private boolean isExcludedBySection(List<String> filterSections, NotificationSubscriptionRow row) {
+		if (!filterSections.isEmpty() && !filterSections.contains(row.getSection())) {
 			return true;
 		}
 		if ((tableEl.getSelectedFilterTab() != null
 				&& !tableEl.getSelectedFilterTab().getId().equals(ALL_TAB_ID)
-				&& !tableEl.getSelectedFilterTab().getId().equals(row.getSubType()))) {
+				&& !tableEl.getSelectedFilterTab().getId().equals(row.getSection()))) {
 			return true;
 		}
 		return false;
@@ -319,7 +320,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 	private boolean isExcludedBySearchString(String searchString, NotificationSubscriptionRow row) {
 		boolean excluded = true;
 
-		if (row.getSubType().toLowerCase().contains(searchString.toLowerCase())) {
+		if (row.getSection().toLowerCase().contains(searchString.toLowerCase())) {
 			excluded = false;
 		} else if (row.getLearningResource().getI18nKey().contains(searchString)) excluded = false;
 		else if (row.getSubRes().getI18nKey().contains(searchString)) excluded = false;

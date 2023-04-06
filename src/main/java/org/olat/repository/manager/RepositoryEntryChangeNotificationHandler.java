@@ -42,7 +42,6 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -133,7 +132,7 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 			String businessPath = "[RepositoryEntry:" + repositoryEntry.getKey() + "]";
 			String url = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
 			Date dateInfo = auditLog.getCreationDate();
-			return new SubscriptionListItem(desc, url, businessPath, dateInfo, RepositoyUIFactory.getIconCssClass(repositoryEntry));
+			return new SubscriptionListItem(desc, url, businessPath, dateInfo, getIconCss());
 		} catch (Exception e) {
 			log.error("Error while creating repositoryEntryStatusChange notifications: {} caused by auditLog with creationDate: {}", e.getMessage(), auditLog.getCreationDate());
 			return null;

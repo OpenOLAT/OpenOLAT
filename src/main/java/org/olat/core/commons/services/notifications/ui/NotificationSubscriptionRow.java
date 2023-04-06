@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 public class NotificationSubscriptionRow {
 
 	private Long key;
-	private String subType;
+	private String section;
 	private String addDesc;
 	private FormToggle statusToggle;
 	private FormLink learningResource;
@@ -41,11 +41,11 @@ public class NotificationSubscriptionRow {
 	private Date lastEmail;
 	private FormLink deleteLink;
 
-	public NotificationSubscriptionRow(String subType, FormLink learningResource, FormLink subRes,
+	public NotificationSubscriptionRow(String section, FormLink learningResource, FormLink subRes,
 									   String addDesc, FormToggle statusToggle, Date creationDate,
 									   Date lastEmail, FormLink deleteLink, Long subKey) {
 		this.key = subKey;
-		this.subType = subType;
+		this.section = section;
 		this.learningResource = learningResource;
 		this.subRes = subRes;
 		this.addDesc = addDesc;
@@ -59,8 +59,8 @@ public class NotificationSubscriptionRow {
 		return key;
 	}
 
-	public String getSubType() {
-		return subType;
+	public String getSection() {
+		return section;
 	}
 
 	public FormLink getLearningResource() {
