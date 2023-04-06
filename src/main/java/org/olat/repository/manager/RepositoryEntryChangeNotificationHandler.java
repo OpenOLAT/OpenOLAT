@@ -42,7 +42,6 @@ import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
