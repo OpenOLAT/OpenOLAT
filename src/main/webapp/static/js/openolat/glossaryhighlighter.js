@@ -190,6 +190,7 @@ function o_tm_addExtToolTip(glossaryMainTerm, highlightString, occurrence){
 					//bootstrap tooltip
 					html: true,
 					container:'body',
+					sanitize: false,
 					placement: function() {
 						var inIframe = (window.self !== window.top);
 						if(inIframe) {

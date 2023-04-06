@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class ChangePrefsController extends BasicController {
 	
-	private VelocityContainer myContent;
+	private final VelocityContainer myContent;
 	private Controller generalPrefsCtr;
 	private Controller specialPrefsCtr;
 	private Controller toolsPrefsCtr;
@@ -89,16 +89,24 @@ public class ChangePrefsController extends BasicController {
 		super(ureq, wControl);
 
 		myContent = createVelocityContainer("prefs");
-
+		initPanels(ureq, wControl, changeableIdentity);
+		putInitialPanel(myContent);
+	}
+	
+	public void initPanels(UserRequest ureq, WindowControl wControl, Identity changeableIdentity) {
+		removeAsListenerAndDispose(generalPrefsCtr);
 		generalPrefsCtr = new PreferencesFormController(ureq, wControl, changeableIdentity);
 		listenTo(generalPrefsCtr);
 		
+		removeAsListenerAndDispose(specialPrefsCtr);
 		specialPrefsCtr = new SpecialPrefsForm(ureq, wControl, changeableIdentity);
 		listenTo(specialPrefsCtr);
 		
+		removeAsListenerAndDispose(resetCtr);
 		resetCtr = new UserPrefsResetForm(ureq, wControl, changeableIdentity);
 		listenTo(resetCtr);
 		
+		removeAsListenerAndDispose(toolsPrefsCtr);
 		toolsPrefsCtr = new ToolsPrefsController(ureq, wControl, changeableIdentity);
 		listenTo(toolsPrefsCtr);
 		
@@ -106,15 +114,8 @@ public class ChangePrefsController extends BasicController {
 		myContent.put("special", specialPrefsCtr.getInitialComponent());
 		myContent.put("tools", toolsPrefsCtr.getInitialComponent());
 		myContent.put("reset", resetCtr.getInitialComponent());
-		
-		putInitialPanel(myContent);
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == myContent) {
@@ -320,7 +321,7 @@ class UserPrefsResetForm extends FormBasicController {
 		
 		resetElements.clearError();
 		if(!resetElements.isAtLeastSelected(1)) {
-			resetElements.setErrorKey("form.legende.mandatory", null);
+			resetElements.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

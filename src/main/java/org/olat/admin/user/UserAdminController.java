@@ -88,6 +88,7 @@ import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
+import org.olat.user.UserModule;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
@@ -178,6 +179,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
+	@Autowired
+	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -360,6 +363,9 @@ public class UserAdminController extends BasicController implements Activateable
 		exposeUserDataToVC(ureq, editedIdentity, editedRoles);
 		if(userProfileCtr != null) {
 			userProfileCtr.resetForm(ureq, editedIdentity);
+		}
+		if(prefsCtr instanceof ChangePrefsController changePrefsCtrl) {
+			changePrefsCtrl.initPanels(ureq, getWindowControl(), editedIdentity);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
@@ -681,7 +687,7 @@ public class UserAdminController extends BasicController implements Activateable
 		removeAsListenerAndDispose(userShortDescrCtr);
 		
 		Builder rowsBuilder = Rows.builder();
-		if(identity.getExpirationDate() != null) {
+		if(userModule.isUserAutomaticDeactivation() && identity.getExpirationDate() != null) {
 			String inactivationDate = Formatter.getInstance(getLocale()).formatDate(identity.getExpirationDate());
 			rowsBuilder.addRow(translate("user.expiration.date"), inactivationDate);
 		}

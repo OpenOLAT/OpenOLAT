@@ -152,6 +152,7 @@
 						|| jTarget.closest(".mce-content-body").length > 0
 						// MathLive
 						|| jTarget.closest(".ML__keyboard").length > 0
+						|| jTarget.closest(".o_mathlive_editor").length > 0
 						// Mediaelement.js
 						|| jTarget.closest(".mejs__overlay-button").length > 0
 						|| jTarget.closest(".mejs__controls").length > 0

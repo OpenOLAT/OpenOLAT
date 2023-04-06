@@ -154,6 +154,21 @@ public class ModuleConfiguration implements Serializable {
 		}
 		return floatValue;
 	}
+	
+	public Double getDoubleEntry(String configKey) {
+		Object val = get(configKey);
+		Double doubleValue = null;
+		if(val instanceof Double dVal) {
+			doubleValue = dVal;
+		} else if(val instanceof String sVal) {
+			try {
+				doubleValue = Double.valueOf(sVal);
+			} catch(NumberFormatException e) {
+				//
+			}
+		}
+		return doubleValue;
+	}
 
 	/**
 	 * 

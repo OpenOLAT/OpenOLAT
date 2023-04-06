@@ -265,7 +265,7 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 
 	@Override
 	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories,
-			Float maxScore, Float cutValue, int rounding, List<VideoTaskSegmentSelection> selectionList) {
+			Float maxScore, Float cutValue, Double weightWrongAnswers, int rounding, List<VideoTaskSegmentSelection> selectionList) {
 		
 		int correct = 0;
 		int notCorrect = 0;
@@ -299,7 +299,8 @@ public class VideoAssessmentServiceImpl implements VideoAssessmentService {
 		double numOfSegments = segmentIds.size();
 		double results = 0.0d;
 		if(numOfSegments > 0) {
-			results = (correct / numOfSegments) - (0.25d * (notCorrect / numOfSegments));
+			double weight = weightWrongAnswers == null ? 0.25d : weightWrongAnswers.doubleValue();
+			results = (correct / numOfSegments) - (weight * (notCorrect / numOfSegments));
 		}
 		return calculateScore(results, maxScore, cutValue, rounding, segmentIds.size());
 	}

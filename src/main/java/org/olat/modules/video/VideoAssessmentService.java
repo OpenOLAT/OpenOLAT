@@ -96,7 +96,7 @@ public interface VideoAssessmentService {
 			List<VideoTaskSegmentSelection> selection);
 	
 	public VideoTaskScore calculateScore(VideoSegments videoSegments, List<String> selectedCategories,
-			Float maxScore, Float cutValue, int rounding, List<VideoTaskSegmentSelection> selection);
+			Float maxScore, Float cutValue, Double weightWrongAnswers, int rounding, List<VideoTaskSegmentSelection> selection);
 	
 	public VideoTaskScore calculateScore(VideoTaskSession session, Float maxScore, Float cutValue, int rounding);
 	
