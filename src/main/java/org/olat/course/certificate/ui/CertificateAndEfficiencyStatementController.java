@@ -244,6 +244,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	}
 	
 	private void loadEfficiencyStatementsHistory() {
+		if(courseRepoEntry == null) return;
+		
 		List<UserEfficiencyStatement> statements = efficiencyStatementManager.getHistoryOfUserEfficiencyStatementsLightByRepositoryEntry(courseRepoEntry, statementOwner);
 		if(!statements.isEmpty()) {
 			historyOfStatementsDropdown = new Dropdown("statements.list", null, false, getTranslator());
