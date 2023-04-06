@@ -898,7 +898,7 @@ create table o_todo_task (
    t_origin_id bigint,
    t_origin_subpath varchar(100),
    t_origin_title varchar(500),
-   t_origin_deleted bool default false not null
+   t_origin_deleted bool default false not null,
    fk_group bigint not null,
    primary key (id)
 );

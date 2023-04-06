@@ -820,6 +820,13 @@ create table o_todo_task (
    fk_group int8 not null,
    primary key (id)
 );
+create table o_todo_task_tag (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_todo_task int8 not null,
+   fk_tag int8,
+   primary key (id)
+);
 
 -- mail
 create table o_mail (
@@ -4539,6 +4546,10 @@ create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
 alter table o_todo_task add constraint todo_to_group_idx foreign key (fk_group) references o_bs_group (id);
 create index idx_todo_group_idx on o_todo_task (fk_group);
 create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
+alter table o_todo_task_tag add constraint todo_task_tag_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
+create index idx_todo_task_tag_todo_idx on o_todo_task_tag (fk_todo_task);
+alter table o_todo_task_tag add constraint tag_tag_idx foreign key (fk_tag) references o_tag_tag(id);
+create index idx_todo_task_tag_tag_idx on o_todo_task_tag (fk_tag);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
