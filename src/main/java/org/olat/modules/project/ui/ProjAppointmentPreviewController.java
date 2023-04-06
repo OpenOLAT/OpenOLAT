@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -94,7 +95,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 		mainVC.contextPut("members", userNames);
 		
 		
-		mainVC.contextPut("formattedTags", ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
+		mainVC.contextPut("formattedTags", TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 		
 		String recurrenceRule = CalendarUtils.getRecurrence(appointment.getRecurrenceRule());
 		if (StringHelper.containsNonWhitespace(recurrenceRule)) {

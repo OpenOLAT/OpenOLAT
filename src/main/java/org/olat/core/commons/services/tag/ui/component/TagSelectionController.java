@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.commons.services.tag.ui.TaggingUIFactory;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -74,7 +74,7 @@ public class TagSelectionController extends FormBasicController {
 
 	public TagSelectionController(UserRequest ureq, WindowControl wControl, List<? extends TagInfo> allTags,
 			Set<Long> initialSelectedKeys, Set<Long> currentSelectionKeys, Set<String> initialNewTags) {
-		super(ureq, wControl, "tag_selection", Util.createPackageTranslator(TaggingUIFactory.class, ureq.getLocale()));
+		super(ureq, wControl, "tag_selection", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
 		this.allTags = allTags;
 		this.initialSelectedKeys = initialSelectedKeys;
 		this.initialNewTags = initialNewTags;

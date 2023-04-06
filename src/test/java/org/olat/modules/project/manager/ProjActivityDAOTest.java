@@ -36,12 +36,12 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateRange;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjActivity.ActionTarget;
 import org.olat.modules.project.ProjActivitySearchParams;
 import org.olat.modules.project.ProjArtefact;
-import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjProject;
 import org.olat.test.JunitTestHelper;
@@ -272,8 +272,8 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProject(project);
 		searchParams.setCreatedDateRanges(List.of(
-				new ProjDateRange(addHours(addDays(dueDate, 2), -1), addHours(addDays(dueDate, 3), 1)),
-				new ProjDateRange(addHours(addDays(dueDate, 6), -1), addHours(addDays(dueDate, 8), 1))));
+				new DateRange(addHours(addDays(dueDate, 2), -1), addHours(addDays(dueDate, 3), 1)),
+				new DateRange(addHours(addDays(dueDate, 6), -1), addHours(addDays(dueDate, 8), 1))));
 		List<ProjActivity> activities = sut.loadActivities(searchParams, 0, -1);
 		
 		assertThat(activities).containsExactlyInAnyOrder(activity2, activity3, activity6, activity7, activity8);

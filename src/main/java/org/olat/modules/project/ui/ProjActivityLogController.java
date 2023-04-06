@@ -58,6 +58,7 @@ import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -68,14 +69,18 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
-import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.manager.ProjectXStream;
 import org.olat.modules.project.ui.ProjActivityLogTableModel.ActivityLogCols;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,11 +121,14 @@ public class ProjActivityLogController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private ToDoService toDoService;
 
 	public ProjActivityLogController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjArtefact artefact) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "activity_log", mainForm);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
 		this.artefact = artefact;
 		this.members = projectService.getMembers(artefact.getProject(), ProjectRole.PROJECT_ROLES);
 		this.formatter = Formatter.getInstance(getLocale());
@@ -237,15 +245,15 @@ public class ProjActivityLogController extends FormBasicController {
 			if (tableEl.getSelectedFilterTab() == tabLast7Days) {
 				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
 				searchParams.setCreatedDateRanges(
-						List.of(new ProjDateRange(DateUtils.addDays(today, -7), DateUtils.addDays(today, 1))));
+						List.of(new DateRange(DateUtils.addDays(today, -7), DateUtils.addDays(today, 1))));
 			} else if (tableEl.getSelectedFilterTab() == tabLast4Weeks) {
 				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
 				searchParams.setCreatedDateRanges(
-						List.of(new ProjDateRange(DateUtils.addDays(today, -28), DateUtils.addDays(today, 1))));
+						List.of(new DateRange(DateUtils.addDays(today, -28), DateUtils.addDays(today, 1))));
 			} else if (tableEl.getSelectedFilterTab() == tabLast12Month) {
 				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
 				searchParams.setCreatedDateRanges(
-						List.of(new ProjDateRange(DateUtils.addMonth(today, -12), DateUtils.addDays(today, 1))));
+						List.of(new DateRange(DateUtils.addMonth(today, -12), DateUtils.addDays(today, 1))));
 			}
 		}
 		
@@ -291,6 +299,7 @@ public class ProjActivityLogController extends FormBasicController {
 	private SelectionValuesSupplier getActivityFilterValues() {
 		return switch (artefact.getType()) {
 				case ProjFile.TYPE -> getActivityFilterFileValues();
+				case ProjToDo.TYPE -> getActivityFilterToDoValues();
 				case ProjNote.TYPE -> getActivityFilterNoteValues();
 				case ProjAppointment.TYPE -> getActivityFilterAppointmentValues();
 				case ProjMilestone.TYPE -> getActivityFilterMilestoneValues();
@@ -305,6 +314,7 @@ public class ProjActivityLogController extends FormBasicController {
 	private void addActivityRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getActionTarget()) {
 		case file: addActivityFileRows(rows, activity, artefactReferenceItems);
+		case toDo: addActivityToDoRows(rows, activity, artefactReferenceItems);
 		case note: addActivityNoteRows(rows, activity, artefactReferenceItems);
 		case appointment: addActivityAppointmentRows(rows, activity, artefactReferenceItems);
 		case milestone: addActivityMilestoneRows(rows, activity);
@@ -359,6 +369,76 @@ public class ProjActivityLogController extends FormBasicController {
 				}
 				if (!Objects.equals(beforeMetadata.getFilename(), afterMetadata.getFilename())) {
 					addRow(rows, activity, "activity.log.message.edit.filename", beforeMetadata.getFilename(), afterMetadata.getFilename());
+				}
+			}
+			break;
+		}
+		default: //
+		}
+	}
+	
+	private SelectionValues getActivityFilterToDoValues() {
+		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.create");
+		addActivityFilterValue(filterSV, "activity.log.message.delete");
+		addActivityFilterValue(filterSV, "activity.log.message.member.add");
+		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.title");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.text");
+		return filterSV;
+	}
+	
+	private void addActivityToDoRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+		switch (activity.getAction()) {
+		case toDoCreate: addRow(rows, activity, "activity.log.message.create"); break;
+		case toDoStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
+		case toDoMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
+		case toDoMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
+		case toDoReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case toDoReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case toDoTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
+		case toDoContentUpdate: {
+			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
+				ToDoTask before = ProjectXStream.fromXml(activity.getBefore(), ProjToDo.class).getToDoTask();
+				ToDoTask after = ProjectXStream.fromXml(activity.getAfter(), ProjToDo.class).getToDoTask();
+				if (!Objects.equals(before.getTitle(), after.getTitle())) {
+					addRow(rows, activity, "activity.log.message.edit.title", before.getTitle(), after.getTitle());
+				}
+				if (!Objects.equals(before.getDescription(), after.getDescription())) {
+					addRow(rows, activity, "activity.log.message.edit.description", before.getDescription(), after.getDescription());
+				}
+				if (!Objects.equals(before.getStatus(), after.getStatus()) && after.getStatus() != ToDoStatus.deleted) {
+					addRow(rows, activity, "activity.log.message.edit.status",
+							ToDoUIFactory.getDisplayName(getTranslator(), before.getStatus()),
+							ToDoUIFactory.getDisplayName(getTranslator(), after.getStatus()));
+				}
+				if (!Objects.equals(before.getPriority(), after.getPriority())) {
+					addRow(rows, activity, "activity.log.message.edit.priority",
+							ToDoUIFactory.getDisplayName(getTranslator(), before.getPriority()),
+							ToDoUIFactory.getDisplayName(getTranslator(), after.getPriority()));
+				}
+				if (!Objects.equals(before.getExpenditureOfWork(), after.getExpenditureOfWork())) {
+					addRow(rows, activity, "activity.log.message.edit.expenditure.of.work",
+							ToDoUIFactory.format(toDoService.getExpenditureOfWork(before.getExpenditureOfWork())),
+							ToDoUIFactory.format(toDoService.getExpenditureOfWork(after.getExpenditureOfWork())));
+				}
+				Date beforeStartDate = before.getStartDate() != null? new Date(before.getStartDate().getTime()): null;
+				Date afterStartDate = after.getStartDate() != null? new Date(after.getStartDate().getTime()): null;
+				if (!Objects.equals(beforeStartDate, afterStartDate)) {
+					addRow(rows, activity, "activity.log.message.edit.start.date",
+							formatter.formatDateAndTime(beforeStartDate),
+							formatter.formatDateAndTime(afterStartDate));
+				}
+				Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
+				Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
+				if (!Objects.equals(beforeDueDate, afterDueDate)) {
+					addRow(rows, activity, "activity.log.message.edit.due.date",
+							formatter.formatDateAndTime(beforeDueDate),
+							formatter.formatDateAndTime(afterDueDate));
 				}
 			}
 			break;

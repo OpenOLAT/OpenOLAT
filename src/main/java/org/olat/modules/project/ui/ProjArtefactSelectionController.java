@@ -41,12 +41,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,6 +65,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	
 	private FormLayoutContainer listsCont;
 	private MultipleSelectionElement fileEl;
+	private MultipleSelectionElement toDoEl;
 	private MultipleSelectionElement noteEl;
 	private MultipleSelectionElement appointmentEl;
 	private StaticTextElement noValuesAvailableEl;
@@ -71,6 +74,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private final ProjArtefactItems artefactItems;
 	private final SelectionValues fileSV;
 	private final Set<String> fileSelectedKeys = new HashSet<>();
+	private final SelectionValues toDoSV;
+	private final Set<String> toDoSelectedKeys = new HashSet<>();
 	private final SelectionValues noteSV;
 	private final Set<String> noteSelectedKeys = new HashSet<>();
 	private final SelectionValues appointmentSV;
@@ -81,6 +86,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	
 	public ProjArtefactSelectionController(UserRequest ureq, WindowControl wControl, ProjArtefact artefact) {
 		super(ureq, wControl, "artefact_selection");
+		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
 		this.artefact = artefact;
 		
 		List<ProjArtefact> linkedArtefacts = projectService.getLinkedArtefacts(artefact);
@@ -100,6 +106,13 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					file.getArtefact(),
 					ProjectUIFactory.getDisplayName(file),
 					"o_icon_proj_file")));
+		}
+		toDoSV = new SelectionValues();
+		if (artefactItems.getToDos() != null) {
+			artefactItems.getToDos().forEach(toDo -> toDoSV.add(createSVEntry(
+					toDo.getArtefact(),
+					ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()),
+					"o_icon_todo_task")));
 		}
 		noteSV = new SelectionValues();
 		if (artefactItems.getNotes() != null) {
@@ -142,6 +155,10 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		fileEl.setEscapeHtml(false);
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
+		toDoEl = uifactory.addCheckboxesVertical("reference.todos", listsCont, toDoSV.keys(), toDoSV.values(), toDoSV.icons(), 1);
+		toDoEl.setEscapeHtml(false);
+		toDoEl.addActionListener(FormEvent.ONCHANGE);
+		
 		noteEl = uifactory.addCheckboxesVertical("reference.notes", listsCont, noteSV.keys(), noteSV.values(), noteSV.icons(), 1);
 		noteEl.setEscapeHtml(false);
 		noteEl.addActionListener(FormEvent.ONCHANGE);
@@ -166,6 +183,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	
 	private void updateUI() {
 		fileEl.setVisible(!fileEl.getKeys().isEmpty());
+		toDoEl.setVisible(!toDoEl.getKeys().isEmpty());
 		noteEl.setVisible(!noteEl.getKeys().isEmpty());
 		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
 		noValuesAvailableEl.setVisible(!fileEl.isVisible() && !noteEl.isVisible() && !appointmentEl.isVisible());
@@ -183,6 +201,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (fileEl == source) {
 			doSelectItem(fileEl, fileSelectedKeys);
+		} else if (toDoEl == source) {
+			doSelectItem(toDoEl, toDoSelectedKeys);
 		} else if (noteEl == source) {
 			doSelectItem(noteEl, noteSelectedKeys);
 		} else if (appointmentEl == source) {
@@ -208,7 +228,12 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					.filter(file -> fileSelectedKeys.contains(file.getArtefact().getKey().toString()))
 					.forEach(file -> projectService.linkArtefacts(getIdentity(), artefact, file.getArtefact()));
 		}
-		if (artefactItems.getNotes() != null) {
+		if (artefactItems.getToDos() != null) {
+			artefactItems.getToDos().stream()
+					.filter(toDo -> toDoSelectedKeys.contains(toDo.getArtefact().getKey().toString()))
+					.forEach(toDo -> projectService.linkArtefacts(getIdentity(), artefact, toDo.getArtefact()));
+		}
+		if (artefactItems.getToDos() != null) {
 			artefactItems.getNotes().stream()
 					.filter(note -> noteSelectedKeys.contains(note.getArtefact().getKey().toString()))
 					.forEach(note -> projectService.linkArtefacts(getIdentity(), artefact, note.getArtefact()));

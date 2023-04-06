@@ -20,6 +20,7 @@
 package org.olat.modules.project;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.todo.ToDoTaskSecurityCallback;
 
 /**
  * 
@@ -27,7 +28,7 @@ import org.olat.core.id.Identity;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjProjectSecurityCallback {
+public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canViewProjectMetadata();
 	
@@ -52,6 +53,16 @@ public interface ProjProjectSecurityCallback {
 	boolean canEditFile(ProjFile file, Identity identity);
 
 	boolean canDeleteFile(ProjFile file, Identity identity);
+	
+	boolean canViewToDos();
+
+	boolean canCreateToDos();
+
+	boolean canEditToDos();
+
+	boolean canEditToDo(ProjToDo toDo, boolean participant);
+
+	boolean canDeleteToDo(ProjToDo toDo, boolean participant);
 
 	boolean canViewNotes();
 

@@ -17,14 +17,42 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.tag.ui;
+package org.olat.modules.todo.model;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.olat.core.id.Identity;
+import org.olat.modules.todo.ToDoRole;
+import org.olat.modules.todo.ToDoTaskMembers;
 
 /**
  * 
- * Initial date: 6 Mar 2023<br>
+ * Initial date: 29 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TaggingUIFactory {
+public class ToDoTaskMembersImpl implements ToDoTaskMembers {
+	
+	private Map<String, Set<Identity>> roleNameToIdentity;
+
+	@Override
+	public Set<Identity> getMembers(ToDoRole role) {
+		return getRoleNameToIdentity().getOrDefault(role.name(), Set.of());
+	}
+	
+	public void add(String role, Identity identity) {
+		Set<Identity> identities = getRoleNameToIdentity().computeIfAbsent(role, a -> new HashSet<>(1));
+		identities.add(identity);
+	}
+	
+	private Map<String, Set<Identity>> getRoleNameToIdentity() {
+		if (roleNameToIdentity == null) {
+			roleNameToIdentity  = new HashMap<>(2);
+		}
+		return roleNameToIdentity;
+	}
 
 }

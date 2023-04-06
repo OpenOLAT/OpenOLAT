@@ -30,8 +30,11 @@ import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
 
 /**
  * 
@@ -119,6 +122,54 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 				&& ProjectStatus.deleted != file.getArtefact().getStatus()
 				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && file.getVfsMetadata().getFileInitializedBy().getKey().equals(identity.getKey()))
 			);
+	}
+	
+	@Override
+	public boolean canViewToDos() {
+		return !roles.isEmpty();
+	}
+	
+	@Override
+	public boolean canCreateToDos() {
+		return !projectReadOnly && hasRole(OWN_OBJECTS);
+	}
+	
+	@Override
+	public boolean canCreateToDoTasks() {
+		return canCreateToDos();
+	}
+
+	@Override
+	public boolean canEditToDos() {
+		return !projectReadOnly && hasRole(OTHER_OBJECTS);
+	}
+
+	@Override
+	public boolean canEditToDo(ProjToDo toDo, boolean participant) {
+		return !projectReadOnly
+				&& ProjectStatus.deleted != toDo.getArtefact().getStatus() 
+				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && participant));
+	}
+
+	@Override
+	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		return !projectReadOnly
+				&& ToDoStatus.deleted != toDoTask.getStatus() 
+				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && (assignee || delegatee)));
+	}
+
+	@Override
+	public boolean canDeleteToDo(ProjToDo toDo, boolean participant) {
+		return !projectReadOnly 
+				&& ProjectStatus.deleted != toDo.getArtefact().getStatus() 
+				&& (hasRole(of(ProjectRole.owner)) || (hasRole(OWN_OBJECTS) && participant));
+	}
+
+	@Override
+	public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		return !projectReadOnly 
+				&& ToDoStatus.deleted != toDoTask.getStatus() 
+				&& (hasRole(OTHER_OBJECTS) || (hasRole(OWN_OBJECTS) && (assignee || delegatee)));
 	}
 	
 	@Override

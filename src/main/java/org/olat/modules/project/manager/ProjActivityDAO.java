@@ -31,12 +31,12 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.DateRange;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjActivitySearchParams;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactRef;
-import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.model.ProjActivityImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,7 +248,7 @@ public class ProjActivityDAO {
 		if (searchParams.getCreatedDateRanges() != null) {
 			if (!searchParams.getCreatedDateRanges().isEmpty()) {
 				for (int i = 0; i < searchParams.getCreatedDateRanges().size(); i++) {
-					ProjDateRange dateRange = searchParams.getCreatedDateRanges().get(i);
+					DateRange dateRange = searchParams.getCreatedDateRanges().get(i);
 					query.setParameter("createdAfter" + i, dateRange.getFrom());
 					query.setParameter("createdBefore" + i, dateRange.getTo());
 				}

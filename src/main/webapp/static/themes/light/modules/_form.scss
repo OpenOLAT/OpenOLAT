@@ -208,6 +208,14 @@
 		text-align: left;
 		margin-right: 0.2em;
 	}
+	
+	.o_form_two_cols {
+		@media (min-width: $screen-sm-max) {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+	}
 
 	
 /* Card Radio Buttons */

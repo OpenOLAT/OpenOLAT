@@ -27,24 +27,22 @@ package org.olat.modules.project;
  */
 public class ProjArtefactInfoParams {
 	
-	public static final ProjArtefactInfoParams ALL = of(true, true, false, true);
-	public static final ProjArtefactInfoParams MEMBERS = of(true, false, false, false);
-	public static final ProjArtefactInfoParams TAG_DISPLAY_NAMES = of(false, false, false, true);
+	public static final ProjArtefactInfoParams ALL = of(true, true, false);
+	public static final ProjArtefactInfoParams MEMBERS = of(true, false, false);
+	public static final ProjArtefactInfoParams TAG_DISPLAY_NAMES = of(false, false, false);
 	
 	private final boolean members;
 	private final boolean numReferences;
 	private final boolean tags;
-	private final boolean tagDisplayNames;
 	
-	public static ProjArtefactInfoParams of(boolean members, boolean numReferences, boolean tags, boolean tagDisplayNames) {
-		return new ProjArtefactInfoParams(members, numReferences, tags, tagDisplayNames);
+	public static ProjArtefactInfoParams of(boolean members, boolean numReferences, boolean tags) {
+		return new ProjArtefactInfoParams(members, numReferences, tags);
 	}
 	
-	private ProjArtefactInfoParams(boolean members, boolean numReferences, boolean tags, boolean tagDisplayNames) {
+	private ProjArtefactInfoParams(boolean members, boolean numReferences, boolean tags) {
 		this.members = members;
 		this.numReferences = numReferences;
 		this.tags = tags;
-		this.tagDisplayNames = tagDisplayNames;
 	}
 
 	public boolean isMembers() {
@@ -57,10 +55,6 @@ public class ProjArtefactInfoParams {
 	
 	public boolean isTags() {
 		return tags;
-	}
-
-	public boolean isTagDisplayNames() {
-		return tagDisplayNames;
 	}
 
 }

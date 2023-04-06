@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
-import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -36,7 +35,6 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjMemberInfoSearchParameters;
-import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -167,24 +165,6 @@ public class ProjMemberQueries {
 				query.setParameter(entry.getKey() + "_value", value);
 			}
 		}
-	}
-
-	public List<GroupMembership> getProjMemberships(Collection<ProjProject> projects, Collection<ProjectRole> roles) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select membership");
-		sb.append("  from bgroupmember membership");
-		sb.append(" inner join fetch membership.identity ident");
-		sb.append(" inner join fetch ident.user user");
-		sb.and().append(" membership.group.key in :groupKeys");
-		sb.and().append(" membership.role in :roles");
-		
-		Collection<Long> groupKeys = projects.stream().map(ProjProject::getBaseGroup).map(Group::getKey).collect(Collectors.toSet());
-		Collection<String> roleNames = roles.stream().map(ProjectRole::name).collect(Collectors.toSet());
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), GroupMembership.class)
-				.setParameter("groupKeys", groupKeys)
-				.setParameter("roles", roleNames)
-				.getResultList();
 	}
 
 	public Map<Long, Set<Identity>> getGroupKeyToIdentities(Collection<Long> groupKeys) {

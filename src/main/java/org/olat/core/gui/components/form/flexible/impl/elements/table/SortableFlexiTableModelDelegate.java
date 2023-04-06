@@ -149,8 +149,12 @@ public class SortableFlexiTableModelDelegate<T> {
 	}
 	
 	protected final int compareDateAndTimestamps(Date a, Date b) {
+		return compareDateAndTimestamps(a, b, true);
+	}
+	
+	protected final int compareDateAndTimestamps(Date a, Date b, boolean nullLast) {
 		if (a == null || b == null) {
-			return compareNullObjects(a, b);
+			return nullLast? compareNullObjects(a, b): compareNullObjects(b, a);
 		}
 		
 		if (a instanceof Timestamp) { // a timestamp (a) cannot compare a date (b), but vice versa is ok.

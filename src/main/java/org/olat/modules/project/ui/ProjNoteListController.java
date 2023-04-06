@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -92,7 +93,6 @@ import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjNoteDataModel.NoteCols;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
-import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
@@ -301,7 +301,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjNoteSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams, ProjArtefactInfoParams.of(true, false, true, true));
+		List<ProjNoteInfo> noteInfos = projectService.getNoteInfos(searchParams, ProjArtefactInfoParams.of(true, false, true));
 		List<ProjNoteRow> rows = new ArrayList<>(noteInfos.size());
 		
 		for (ProjNoteInfo info : noteInfos) {
@@ -317,7 +317,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			row.setModified(modified);
 			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
-			row.setFormattedTags(ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
+			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 			
 			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeSelectLink(row);
@@ -458,10 +458,6 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 					activate(ureq, key, false);
 				}
 			}
-		} else if (state instanceof OpenNoteEvent) {
-			OpenNoteEvent onEvent = (OpenNoteEvent)state;
-			selectFilterTab(ureq, tabAll);
-			activate(ureq, onEvent.getNote().getKey(), onEvent.isEdit());
 		}
 	}
 	

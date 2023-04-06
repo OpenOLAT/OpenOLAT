@@ -186,6 +186,20 @@
 						</property>
 					</bean>
 				</entry>
+				
+				
+				<entry key="org.olat.user.UsersAvatarController">
+					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
+						<property name="description" value="Avatar view of several users" />
+						<property name="propertyHandlers">
+							<list>
+								<ref bean="userPropertyFirstName" />
+								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyEmail" />
+							</list>
+						</property>
+					</bean>
+				</entry>
 
 				<!--
 					Indexed for fulltext search (only the fields that a user selects to publish are indexed)
@@ -1987,19 +2001,6 @@
 							<set>
 								<ref bean="userPropertyUserNickName" />
 							</set>
-						</property>
-					</bean>
-				</entry>
-				
-				<entry key="org.olat.modules.project.ui.ProjMembersAvatarController">
-					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="Avatar view in projects" />
-						<property name="propertyHandlers">
-							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
-								<ref bean="userPropertyEmail" />
-							</list>
 						</property>
 					</bean>
 				</entry>

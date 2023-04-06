@@ -33,6 +33,10 @@ public interface ProjArtefactItems {
 	
 	public ProjFile getFile(ProjArtefactRef artefact);
 	
+	public List<ProjToDo> getToDos();
+
+	public ProjToDo getToDo(ProjArtefactRef artefact);
+
 	public List<ProjNote> getNotes();
 
 	public ProjNote getNote(ProjArtefactRef artefact);

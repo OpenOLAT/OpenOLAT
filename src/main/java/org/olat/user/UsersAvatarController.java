@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.user;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,24 +41,20 @@ import org.olat.core.util.session.UserSessionManager;
 import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.model.Presence;
-import org.olat.user.DisplayPortraitManager;
-import org.olat.user.UserAvatarMapper;
-import org.olat.user.UserManager;
-import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 12 Jan 2022<br>
+ * Initial date: 12 Jan 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjMembersAvatarController extends FormBasicController {
+public class UsersAvatarController extends FormBasicController {
 	
-	private static final String USER_PROPS_LIST_ID = ProjMembersAvatarController.class.getName();
+	private static final String USER_PROPS_LIST_ID = UsersAvatarController.class.getName();
 
-	private final Set<Identity> members;
+	private final Set<Identity> identities;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private final String avatarBaseURL;
 	private final boolean chatEnabled;
@@ -76,15 +72,29 @@ public class ProjMembersAvatarController extends FormBasicController {
 	@Autowired
 	private InstantMessagingService imService;
 
-	public ProjMembersAvatarController(UserRequest ureq, WindowControl wControl, Form mainForm, Set<Identity> members) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "members_avatars", mainForm);
-		this.members = members;
+	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Set<Identity> identities) {
+		super(ureq, wControl, "users_avatars");
+		this.identities = identities;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(ProjMembersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
 		
-		avatarBaseURL = registerCacheableMapper(ureq, "avatars-members", new UserAvatarMapper(true));
+		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
+		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
+		
+		initForm(ureq);
+	}
+
+	public UsersAvatarController(UserRequest ureq, WindowControl wControl, Form mainForm, Set<Identity> identities) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "users_avatars", mainForm);
+		this.identities = identities;
+		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		userPropertyHandlers = userManager.getUserPropertyHandlersFor(UsersAvatarController.USER_PROPS_LIST_ID, isAdministrativeUser);
+		
+		avatarBaseURL = registerCacheableMapper(ureq, "users-avatars", new UserAvatarMapper(true));
 		chatEnabled = imModule.isEnabled() && imModule.isPrivateEnabled();
 		
 		initForm(ureq);
@@ -92,9 +102,9 @@ public class ProjMembersAvatarController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<MemberItem> memberItems = members.stream().map(this::createMemberView).collect(Collectors.toList());
-		appendOnlineStatus(memberItems);
-		flc.contextPut("members", memberItems);
+		List<IdentityItem> identityItems = identities.stream().map(this::createMemberView).collect(Collectors.toList());
+		appendOnlineStatus(identityItems);
+		flc.contextPut("identities", identityItems);
 		flc.contextPut("avatarBaseURL", avatarBaseURL);
 		
 		flc.contextPut("userPropertyHandlers", userPropertyHandlers);
@@ -106,8 +116,8 @@ public class ProjMembersAvatarController extends FormBasicController {
 		flc.contextPut("handlerLookupMap", handlerLookupMap);
 	}
 
-	private MemberItem createMemberView(Identity identity) {
-		MemberItem item = new MemberItem(identity, userPropertyHandlers, getLocale());
+	private IdentityItem createMemberView(Identity identity) {
+		IdentityItem item = new IdentityItem(identity, userPropertyHandlers, getLocale());
 		item.setDisplayName(userManager.getUserDisplayName(identity.getKey()));
 		
 		boolean portraitAvailable = portraitManager.hasPortrait(identity);
@@ -127,13 +137,13 @@ public class ProjMembersAvatarController extends FormBasicController {
 		return item;
 	}
 	
-	private void appendOnlineStatus(List<MemberItem> members) {
+	private void appendOnlineStatus(List<IdentityItem> members) {
 		if (chatEnabled) {
 			Long me = getIdentity().getKey();
 			if (imModule.isOnlineStatusEnabled()) {
-				Map<Long, MemberItem> loadStatus = new HashMap<>();
+				Map<Long, IdentityItem> loadStatus = new HashMap<>();
 				
-				for (MemberItem member : members) {
+				for (IdentityItem member : members) {
 					if (member.getIdentityKey().equals(me)) {
 						// No icon for my self
 					} else if (sessionManager.isOnline(member.getIdentityKey())) {
@@ -148,7 +158,7 @@ public class ProjMembersAvatarController extends FormBasicController {
 					Map<Long,String> statusMap = imService.getBuddyStatus(statusToLoadList);
 					for(Long toLoad : statusToLoadList) {
 						String status = statusMap.get(toLoad);
-						MemberItem member = loadStatus.get(toLoad);
+						IdentityItem member = loadStatus.get(toLoad);
 						if(status == null || Presence.available.name().equals(status)) {
 							member.setOnlineIconCss("o_icon o_icon_status_available");
 						} else if(Presence.dnd.name().equals(status)) {
@@ -159,7 +169,7 @@ public class ProjMembersAvatarController extends FormBasicController {
 					}
 				}
 			} else {
-				for (MemberItem member:members) {
+				for (IdentityItem member:members) {
 					if(member.getIdentityKey().equals(me)) {
 						// No icon for my self
 					} else {
@@ -175,9 +185,9 @@ public class ProjMembersAvatarController extends FormBasicController {
 		//
 	}
 	
-	public static final class MemberItem extends UserPropertiesRow {
+	public static final class IdentityItem extends UserPropertiesRow {
 		
-		public MemberItem(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+		public IdentityItem(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 			super(identity, userPropertyHandlers, locale);
 		}
 		

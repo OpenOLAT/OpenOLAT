@@ -37,7 +37,6 @@ public class ProjArtefactInfoImpl implements ProjArtefactInfo {
 	private Set<Identity> members;
 	private int numReferences;
 	private List<Tag> tags;
-	private List<String> tagDisplayNames;
 	
 	public ProjArtefactInfoImpl() {
 		//
@@ -47,7 +46,6 @@ public class ProjArtefactInfoImpl implements ProjArtefactInfo {
 		this.members = info.getMembers();
 		this.numReferences = info.getNumReferences();
 		this.tags = info.getTags();
-		this.tagDisplayNames = info.getTagDisplayNames();
 	}
 
 	@Override
@@ -75,15 +73,6 @@ public class ProjArtefactInfoImpl implements ProjArtefactInfo {
 
 	public void setTags(List<Tag> tags) {
 		this.tags = tags;
-	}
-
-	@Override
-	public List<String> getTagDisplayNames() {
-		return tagDisplayNames;
-	}
-
-	public void setTagDisplayNames(List<String> tagDisplayNames) {
-		this.tagDisplayNames = tagDisplayNames;
 	}
 
 }

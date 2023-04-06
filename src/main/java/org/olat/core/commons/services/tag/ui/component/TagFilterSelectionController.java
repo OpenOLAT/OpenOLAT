@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.commons.services.tag.ui.TaggingUIFactory;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -72,7 +72,7 @@ public class TagFilterSelectionController extends FormBasicController {
 
 	public TagFilterSelectionController(UserRequest ureq, WindowControl wControl, FlexiTableTagFilter filter,
 			Collection<String> preselectedKeys) {
-		super(ureq, wControl, "tag_filter", Util.createPackageTranslator(TaggingUIFactory.class, ureq.getLocale()));
+		super(ureq, wControl, "tag_filter", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
 		this.filter = filter;
 		setTranslator(Util.createPackageTranslator(FlexiTableElementImpl.class, getLocale(), getTranslator()));
 		this.selectedKeys = preselectedKeys != null

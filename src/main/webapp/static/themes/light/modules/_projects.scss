@@ -285,13 +285,6 @@
 }
 .o_proj_milestone_edit,
 .o_proj_appointment_edit {
-	.o_proj_two_cols {
-		@media (min-width: $screen-sm-max) {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 10px;
-		}
-	}
 	.o_proj_all_day {
 		div {
 			display: inline-block;
@@ -399,34 +392,6 @@
 	grid-template-columns: 50% 50%;
 	@media (max-width: $screen-xs-max) {
 		grid-template-columns: 100%;
-	}
-}
-
-.o_proj_members_avatar {
-	display: grid;
-	gap: 20px;
-	grid-template-columns: calc(100% / 3) calc(100% / 3) calc(100% / 3);
-	@media (max-width: $screen-md-max) {
-		grid-template-columns: 50% 50%;
-	}
-	@media (max-width: $screen-xs-max) {
-		grid-template-columns: 100%;
-	}
-	.o_proj_member {
-		display: grid;
-		gap: 10px;
-		grid-template-columns: 50px auto;
-		.o_portrait {
-			img {
-				width: 50px;
-				height: 50px;
-			}
-		}
-		.o_properties {
-			:not(.o_name) {
-				color: $text-muted;
-			}
-		}
 	}
 }
 

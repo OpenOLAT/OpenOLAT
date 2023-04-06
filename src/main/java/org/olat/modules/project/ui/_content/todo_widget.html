@@ -1,0 +1,22 @@
+<div class="o_proj_widget o_proj_todo_widget panel panel-default">
+	<div class="o_proj_title o_proj_widget_title panel-heading">
+		<div>
+			<h3>
+				$r.render("todo.widget.title")
+			</h3>
+		</div>
+		<div class="o_proj_widget_cmds">
+			#if($r.available("todo.create") && $r.visible("todo.create"))
+				$r.render("todo.create")
+			#end
+		</div>
+	</div>
+	<div class="panel-body">
+		$r.render("table")
+		<div class="o_button_group">
+			#if($r.available("todo.show.all") && $r.visible("todo.show.all"))
+				$r.render("todo.show.all")
+			#end
+		</div>
+	</div>
+</div>

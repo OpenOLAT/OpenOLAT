@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.util.DateRange;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjActivity.ActionTarget;
 
@@ -40,7 +41,7 @@ public class ProjActivitySearchParams {
 	private Collection<Long> doerKeys;
 	private Collection<Long> projectKeys;
 	private Collection<Long> artefactKeys;
-	private List<ProjDateRange> createdDateRanges;
+	private List<DateRange> createdDateRanges;
 	private boolean fetchDoer;
 
 	public Collection<Action> getActions() {
@@ -95,11 +96,11 @@ public class ProjActivitySearchParams {
 		this.artefactKeys = artefacts.stream().map(ProjArtefactRef::getKey).collect(Collectors.toList());
 	}
 
-	public List<ProjDateRange> getCreatedDateRanges() {
+	public List<DateRange> getCreatedDateRanges() {
 		return createdDateRanges;
 	}
 
-	public void setCreatedDateRanges(List<ProjDateRange> createdDateRanges) {
+	public void setCreatedDateRanges(List<DateRange> createdDateRanges) {
 		this.createdDateRanges = createdDateRanges;
 	}
 

@@ -943,6 +943,17 @@ i.o_lp_done:before { content: $fa-var-check-circle;}
 .o_icon_proj_project_status_done:before { content: $fa-var-ban; }
 .o_icon_proj_project_status_deleted:before { content: $fa-var-trash-o;}
 
+/* To-dos */
+.o_icon_todo_task:before { content: $fa-var-check-square-o ; }
+.o_icon_todo_status_open:before { content: $fa-var-circle-o; }
+.o_icon_todo_status_in_progress{ @include fa-icon-rotate(90deg, 1); &:before { content: $fa-var-adjust; }}
+.o_icon_todo_status_done:before { content: $fa-var-check-circle; color: $brand-success; }
+.o_icon_todo_status_deleted:before { content: $fa-var-trash-o; }
+.o_icon_todo_priority_urgent:before { content: $fa-var-bell; color: $brand-danger; }
+.o_icon_todo_priority_high:before { content: $fa-var-exclamation; color: $brand-danger; }
+.o_icon_todo_priority_medium:before { content: $fa-var-circle; color: $brand-success;}
+.o_icon_todo_priority_low:before { content: $fa-var-angle-double-down; color: $brand-primary; }
+.o_icon_todo_date_range:before { content: $fa-var-long-arrow-right ; }
 
 /* do not move link icons */
 a.o_icon {

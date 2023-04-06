@@ -95,6 +95,10 @@ import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjTag;
 import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjTagSearchParams;
+import org.olat.modules.project.ProjToDo;
+import org.olat.modules.project.ProjToDoInfo;
+import org.olat.modules.project.ProjToDoRef;
+import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -106,6 +110,12 @@ import org.olat.modules.project.model.ProjMemberInfoImpl;
 import org.olat.modules.project.model.ProjMilestoneInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
+import org.olat.modules.project.model.ProjToDoInfoImpl;
+import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRole;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -138,6 +148,10 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjFileStorage fileStorage;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private ProjToDoDAO toDoDao;
+	@Autowired
+	private ToDoService toDoService;
 	@Autowired
 	private ProjNoteDAO noteDao;
 	@Autowired
@@ -204,6 +218,8 @@ public class ProjectServiceImpl implements ProjectService {
 				searchParams.setStatus(List.of(ProjectStatus.active));
 				getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
 						.forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
+				
+				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, project.getTitle());
 			}
 		}
 		
@@ -270,6 +286,9 @@ public class ProjectServiceImpl implements ProjectService {
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusDelete, before, after, doer, reloadedProject);
+			
+			// Update to-dos
+			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, true);
 		}
 		return reloadedProject;
 	}
@@ -398,7 +417,7 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public List<Identity> getMembers(ProjProject project, Collection<ProjectRole> roles) {
-		return memberQueries.getProjMemberships(List.of(project), roles).stream()
+		return getProjMemberships(List.of(project), roles).stream()
 				.map(GroupMembership::getIdentity)
 				.distinct()
 				.collect(Collectors.toList());
@@ -406,7 +425,7 @@ public class ProjectServiceImpl implements ProjectService {
 	
 	@Override
 	public Map<Long, List<Identity>> getProjectGroupKeyToMembers(Collection<ProjProject> projects, Collection<ProjectRole> roles) {
-		return memberQueries.getProjMemberships(projects, roles).stream()
+		return getProjMemberships(projects, roles).stream()
 				.collect(Collectors.groupingBy(
 						membership -> membership.getGroup().getKey(),
 						Collectors.collectingAndThen(
@@ -416,7 +435,13 @@ public class ProjectServiceImpl implements ProjectService {
 										.distinct()
 										.collect(Collectors.toList()))));
 	}
-
+	
+	private List<GroupMembership> getProjMemberships(Collection<ProjProject> projects, Collection<ProjectRole> roles) {
+		Collection<Long> groupKeys = projects.stream().map(ProjProject::getBaseGroup).map(Group::getKey).collect(Collectors.toSet());
+		Collection<String> roleNames = roles.stream().map(ProjectRole::name).collect(Collectors.toSet());
+		return groupDao.getMemberships(groupKeys, roleNames);
+	}
+	
 	@Override
 	public int countMembers(ProjProject project) {
 		return groupDao.countMembers(project.getBaseGroup());
@@ -561,6 +586,14 @@ public class ProjectServiceImpl implements ProjectService {
 			artefacts.setFiles(files);
 		}
 		
+		List<ProjArtefact> toDoArtefacts = typeToArtefacts.get(ProjToDo.TYPE);
+		if (toDoArtefacts != null) {
+			ProjToDoSearchParams searchParams = new ProjToDoSearchParams();
+			searchParams.setArtefacts(toDoArtefacts);
+			List<ProjToDo> toDos = toDoDao.loadToDos(searchParams);
+			artefacts.setToDos(toDos);
+		}
+		
 		List<ProjArtefact> noteArtefacts = typeToArtefacts.get(ProjNote.TYPE);
 		if (noteArtefacts != null) {
 			ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
@@ -609,16 +642,12 @@ public class ProjectServiceImpl implements ProjectService {
 				? getArtefactToLinkedArtefacts(artefacts)
 				: Collections.emptyMap();
 		
-		List<ProjTag> projTags = params.isTags() || params.isTagDisplayNames()
+		List<ProjTag> projTags = params.isTags()
 				? getProjTags(artefacts)
 				: Collections.emptyList();
 		
 		Map<Long, List<Tag>> artefactKeyToTags = params.isTags()
 				? getArtefactKeyToTag(projTags)
-				: Collections.emptyMap();
-		
-		Map<Long, List<String>> artefactKeyToTagDisplayName = params.isTagDisplayNames()
-				? getArtefactKeyToTagDisplayName(projTags)
 				: Collections.emptyMap();
 		
 		Map<ProjArtefact, ProjArtefactInfo> infos = new HashMap<>(artefacts.size());
@@ -628,8 +657,6 @@ public class ProjectServiceImpl implements ProjectService {
 			info.setNumReferences(artefactToLinkedArtefacts.getOrDefault(artefact, Set.of()).size());
 			info.setTags(artefactKeyToTags.getOrDefault(artefact.getKey(), 
 					params.isTags()? new ArrayList<>(0): List.of()));
-			info.setTagDisplayNames(artefactKeyToTagDisplayName.getOrDefault(artefact.getKey(), 
-					params.isTagDisplayNames()? new ArrayList<>(0): List.of()));
 			infos.put(artefact, info);
 		}
 		
@@ -650,37 +677,77 @@ public class ProjectServiceImpl implements ProjectService {
 		Group group = artefact.getBaseGroup();
 		List<Identity> currentMembers = groupDao.getMembers(group, DEFAULT_ROLE_NAME);
 		
-		List<Identity> membersAdded = new ArrayList<>();
-		boolean contentChange = false;
-		for (Identity member : members) {
-			if (!currentMembers.contains(member)) {
-				membersAdded.add(member);
-				groupDao.addMembershipOneWay(group, member, DEFAULT_ROLE_NAME);
-				activityDao.create(Action.addMember(artefact.getType()), null, null, doer, artefact, member);
-				String rolesAfterXml = ProjectXStream.rolesToXml(List.of(DEFAULT_ROLE_NAME));
-				activityDao.create(Action.updateRoles(artefact.getType()), null, rolesAfterXml, doer, artefact, member);
-				contentChange = true;
+		List<Identity> toAdd = new ArrayList<>(members);
+		toAdd.removeAll(currentMembers);
+		toAdd.forEach(identity -> updateMember2(doer, artefact, identity, Set.of(DEFAULT_ROLE_NAME)));
+		
+		List<Identity> toRemove = new ArrayList<>(currentMembers);
+		toRemove.removeAll(members);
+		toRemove.forEach(identity -> updateMember2(doer, artefact, identity, Set.of()));
+		
+		onUpdateMembers(artefact, toAdd, toRemove);
+		
+		if (!toAdd.isEmpty() || !toRemove.isEmpty()) {
+			updateContentModified(artefact, doer);
+		}
+	}
+	
+	private void updateMember2(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles) {
+		updateMember2(doer, artefact, identity, roles, null, null);
+	}
+	
+	private void updateMember2(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles, List<Identity> addedIdentities, List<Identity> removedIdentities) {
+		Group group = artefact.getBaseGroup();
+		
+		List<String> currentRoles = groupDao.getMemberships(group, identity).stream()
+				.map(GroupMembership::getRole)
+				.collect(Collectors.toList());
+		if (currentRoles.isEmpty() && roles.isEmpty()) {
+			return;
+		}
+		
+		String rolesBeforeXml = !currentRoles.isEmpty()
+				? ProjectXStream.rolesToXml(currentRoles.stream().collect(Collectors.toList()))
+				: null;
+		
+		boolean rolesChanged = false;
+		if (roles.isEmpty()) {
+			groupDao.removeMembership(group, identity);
+			activityDao.create(Action.updateRoles(artefact.getType()), rolesBeforeXml, null, doer, artefact, identity);
+			activityDao.create(Action.removeMember(artefact.getType()), null, null, doer, artefact, identity);
+			if (removedIdentities != null) {
+				removedIdentities.add(identity);
+			}
+			rolesChanged = true;
+		} else {
+			// Create membership for new roles
+			for (String role : roles) {
+				if (!currentRoles.contains(role)) {
+					groupDao.addMembershipOneWay(group, identity, role);
+					rolesChanged = true;
+				}
 				
 			}
-		}
-		
-		List<Identity> membersRemoved = new ArrayList<>();
-		for (Identity currentMember : currentMembers) {
-			if (!members.contains(currentMember)) {
-				membersRemoved.add(currentMember);
-				groupDao.removeMembership(group, currentMember);
-				activityDao.create(Action.removeMember(artefact.getType()), null, null, doer, artefact, currentMember);
-				// Load from DB if more than one role possible.
-				String rolesBeforeXml = ProjectXStream.rolesToXml(List.of(DEFAULT_ROLE_NAME));
-				activityDao.create(Action.updateRoles(artefact.getType()), rolesBeforeXml, null, doer, artefact, currentMember);
-				contentChange = true;
+			
+			// Delete membership of old roles.
+			for (String currentRole: currentRoles) {
+				if (!roles.contains(currentRole)) {
+					groupDao.removeMembership(group, identity, currentRole);
+					rolesChanged = true;
+				}
 			}
 		}
 		
-		onUpdateMembers(artefact, membersAdded, membersRemoved);
+		if (rolesChanged) {
+			String rolesAfterXml = ProjectXStream.rolesToXml(roles.stream().collect(Collectors.toList()));
+			activityDao.create(Action.updateRoles(artefact.getType()), rolesBeforeXml, rolesAfterXml, doer, artefact, identity);
+		}
 		
-		if (contentChange) {
-			updateContentModified(artefact, doer);
+		if (currentRoles.isEmpty()) {
+			activityDao.create(Action.addMember(artefact.getType()), null, null, doer, artefact, identity);
+			if (addedIdentities != null) {
+				addedIdentities.add(identity);
+			}
 		}
 	}
 	
@@ -742,7 +809,6 @@ public class ProjectServiceImpl implements ProjectService {
 			String tagsAfterXml = ProjectXStream.tagsToXml(displayNames);
 			activityDao.create(Action.updateTags(reloadedArtefact.getType()), tagsBeforeXml, tagsAfterXml, doer, reloadedArtefact);
 		}
-		
 	}
 
 	@Override
@@ -765,18 +831,6 @@ public class ProjectServiceImpl implements ProjectService {
 								Collectors.toList(),
 								projTag -> projTag.stream()
 										.map(ProjTag::getTag)
-										.collect(Collectors.toList()))));
-	}
-	
-	private Map<Long, List<String>> getArtefactKeyToTagDisplayName(List<ProjTag> projTags) {
-		return projTags.stream().collect(
-				Collectors.groupingBy
-						(projTag -> projTag.getArtefact().getKey(),
-						Collectors.collectingAndThen(
-								Collectors.toList(),
-								projTag -> projTag.stream()
-										.map(ProjTag::getTag)
-										.map(Tag::getDisplayName)
 										.collect(Collectors.toList()))));
 	}
 	
@@ -908,7 +962,220 @@ public class ProjectServiceImpl implements ProjectService {
 				.map(file -> new ProjFileInfoImpl(file, artefactToInfo.get(file.getArtefact())))
 				.collect(Collectors.toList());
 	}
+	
+	
+	/*
+	 * ToDos
+	 */
+	
+	@Override
+	public ProjToDo createToDo(Identity doer, ProjProject project) {
+		String identifier = UUID.randomUUID().toString();
+		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier);
+		ProjToDo toDo = toDoDao.create(artefact, toDoTask, identifier);
+		String after = ProjectXStream.toXml(toDo);
+		activityDao.create(Action.toDoCreate, null, after, null, doer, artefact);
+		return toDo;
+	}
 
+	@Override
+	public void updateToDo(Identity doer, ProjToDoRef toDo, String title, ToDoStatus status, ToDoPriority priority,
+			Date startDate, Date dueDate, Long expenditureOfWork, String description) {
+		ProjToDo reloadedToDo = getToDo(toDo, true);
+		if (reloadedToDo == null) {
+			return;
+		}
+		updateReloadedToDo(doer, reloadedToDo, title, status, priority, startDate, dueDate, expenditureOfWork,
+				description);
+	}
+	
+	@Override
+	public void updateToDoStatus(Identity doer, String identifier, ToDoStatus status) {
+		// This method should not be used to set status deleted. Use deleteToDoSoftly();
+		ProjToDo reloadedToDo = getToDo(identifier, true);
+		if (reloadedToDo == null) {
+			return;
+		}
+		ToDoTask toDoTask = reloadedToDo.getToDoTask();
+		updateReloadedToDo(doer, reloadedToDo, toDoTask.getTitle(), status, toDoTask.getPriority(),
+				toDoTask.getStartDate(), toDoTask.getDueDate(), toDoTask.getExpenditureOfWork(),
+				toDoTask.getDescription());
+	}
+
+	private void updateReloadedToDo(Identity doer, ProjToDo reloadedToDo, String title, ToDoStatus status,
+			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
+		String before = ProjectXStream.toXml(reloadedToDo);
+		
+		boolean changed = false;
+		ToDoTask toDoTask = reloadedToDo.getToDoTask();
+		if (!Objects.equals(toDoTask.getTitle(), title)) {
+			toDoTask.setTitle(title);
+			changed = true;
+		}
+		if (!Objects.equals(toDoTask.getStatus(), status)) {
+			toDoTask.setStatus(status);
+			changed = true;
+		}
+		if (!Objects.equals(toDoTask.getPriority(), priority)) {
+			toDoTask.setPriority(priority);
+			changed = true;
+		}
+		if (!DateUtils.isSameDay(toDoTask.getStartDate(), startDate)) {
+			toDoTask.setStartDate(startDate);
+			changed = true;
+		}
+		if (!DateUtils.isSameDay(toDoTask.getDueDate(), dueDate)) {
+			toDoTask.setDueDate(dueDate);
+			changed = true;
+		}
+		if (!Objects.equals(toDoTask.getExpenditureOfWork(), expenditureOfWork)) {
+			toDoTask.setExpenditureOfWork(expenditureOfWork);
+			changed = true;
+		}
+		if (!Objects.equals(toDoTask.getDescription(), description)) {
+			toDoTask.setDescription(description);
+			changed = true;
+		}
+		if (changed) {
+			toDoTask.setContentModifiedDate(new Date());
+			toDoService.update(doer, toDoTask);
+			updateContentModified(reloadedToDo.getArtefact(), doer);
+			String after = ProjectXStream.toXml(getToDo(reloadedToDo, false));
+			activityDao.create(Action.toDoContentUpdate, before, after, doer, reloadedToDo.getArtefact());
+		}
+	}
+	
+	@Override
+	public void updateMembers(Identity doer, ProjToDoRef toDo, Collection<? extends IdentityRef> assignees,
+			Collection<? extends IdentityRef> delegatees) {
+		ProjToDo reloadedToDo = getToDo(toDo, true);
+		if (reloadedToDo == null) {
+			return;
+		}
+		
+		Map<Long, Set<String>> identityKeyToRoles = new HashMap<>();
+		
+		for (IdentityRef identityRef : assignees) {
+			Set<String> roles = identityKeyToRoles.computeIfAbsent(identityRef.getKey(), key -> new HashSet<>(1));
+			roles.add(ToDoRole.assignee.name());
+		}
+		for (IdentityRef identityRef : delegatees) {
+			Set<String> roles = identityKeyToRoles.computeIfAbsent(identityRef.getKey(), key -> new HashSet<>(1));
+			roles.add(ToDoRole.delegatee.name());
+		}
+		
+		Group group = reloadedToDo.getArtefact().getBaseGroup();
+		List<Identity> currentMembers = groupDao.getMembers(group, DEFAULT_ROLE_NAME);
+		for (Identity currentMember : currentMembers) {
+			identityKeyToRoles.computeIfAbsent(currentMember.getKey(), key -> Set.of());
+		}
+		
+		Map<Long, Identity> identityKeyToIdentity = securityManager.loadIdentityByKeys(identityKeyToRoles.keySet())
+				.stream().collect(Collectors.toMap(Identity::getKey, Function.identity()));
+		
+		List<Identity> addedIdentities = new ArrayList<>(identityKeyToRoles.size());
+		List<Identity> revedIdentities = new ArrayList<>(identityKeyToRoles.size());
+		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember2(doer, reloadedToDo.getArtefact(),
+				identityKeyToIdentity.get(identityToRole.getKey()), identityToRole.getValue(), addedIdentities, revedIdentities));
+		
+		if (!addedIdentities.isEmpty() || !revedIdentities.isEmpty()) {
+			updateContentModified(reloadedToDo.getArtefact(), doer);
+		}
+		
+		toDoService.updateMember(reloadedToDo.getToDoTask(), assignees, delegatees);
+	}
+	
+	@Override
+	public void updateTags(Identity doer, ProjToDoRef toDo, List<String> displayNames) {
+		ProjToDo reloadedToDo = getToDo(toDo, true);
+		if (reloadedToDo == null) {
+			return;
+		}
+		updateTags(doer, reloadedToDo.getArtefact(), displayNames);
+		toDoService.updateTags(reloadedToDo.getToDoTask(), displayNames);
+	}
+	
+	@Override
+	public void deleteToDoSoftly(Identity doer, ProjToDoRef toDo) {
+		ProjToDo reloadedToDo = getToDo(toDo, true);
+		if (reloadedToDo == null) {
+			return;
+		}
+		String before = ProjectXStream.toXml(reloadedToDo);
+		
+		ToDoTask toDoTask = reloadedToDo.getToDoTask();
+		toDoTask.setStatus(ToDoStatus.deleted);
+		toDoTask.setContentModifiedDate(new Date());
+		toDoService.update(doer, toDoTask);
+		
+		deleteArtefactSoftly(reloadedToDo.getArtefact());
+		
+		reloadedToDo = getToDo(toDo, false);
+		String after = ProjectXStream.toXml(reloadedToDo);
+		activityDao.create(Action.toDoStatusDelete, before, after, null, doer, reloadedToDo.getArtefact());
+	}
+	
+	@Override
+	public void deleteToDoPermanent(ProjToDoRef toDo) {
+		ProjToDo reloadedToDo = getToDo(toDo, false);
+		if (reloadedToDo == null) {
+			return;
+		}
+		
+		ProjArtefact artefact = reloadedToDo.getArtefact();
+		ToDoTask toDoTask = toDoService.getToDoTask(ProjToDoProvider.TYPE, reloadedToDo.getKey(), null);
+		toDoService.deleteToDoTaskPermanently(toDoTask);
+		toDoDao.delete(reloadedToDo);
+		deleteArtefactPermanent(artefact);
+	}
+	
+	public ProjToDo getToDo(ProjToDoRef toDo, boolean active) {
+		ProjToDoSearchParams searchParams = new ProjToDoSearchParams();
+		searchParams.setToDos(List.of(toDo));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
+		List<ProjToDo> toDos = toDoDao.loadToDos(searchParams);
+		return toDos != null && !toDos.isEmpty()? toDos.get(0): null;
+	}
+	
+	@Override
+	public ProjToDo getToDo(String identifier) {
+		return getToDo(identifier, false);
+	}
+
+	private ProjToDo getToDo(String identifier, boolean active) {
+		ProjToDoSearchParams searchParams = new ProjToDoSearchParams();
+		searchParams.setIdentifiers(List.of(identifier));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
+		List<ProjToDo> toDos = toDoDao.loadToDos(searchParams);
+		return toDos != null && !toDos.isEmpty()? toDos.get(0): null;
+	}
+	
+	@Override
+	public long getToDosCount(ProjToDoSearchParams searchParams) {
+		return toDoDao.loadToDosCount(searchParams);
+	}
+
+	@Override
+	public List<ProjToDo> getToDos(ProjToDoSearchParams searchParams) {
+		return toDoDao.loadToDos(searchParams);
+	}
+	
+	@Override
+	public List<ProjToDoInfo> getToDoInfos(ProjToDoSearchParams searchParams, ProjArtefactInfoParams infoParams) {
+		List<ProjToDo> toDos = getToDos(searchParams);
+		List<ProjArtefact> artefacts = toDos.stream().map(ProjToDo::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
+		
+		return toDos.stream()
+				.map(toDo -> new ProjToDoInfoImpl(toDo, artefactToInfo.get(toDo.getArtefact())))
+				.collect(Collectors.toList());
+	}
+	
 	
 	/*
 	 * Files

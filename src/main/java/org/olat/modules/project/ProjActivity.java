@@ -74,6 +74,9 @@ public interface ProjActivity extends CreateInfo {
 			Action.fileEdit,
 			Action.fileContentUpdate,
 			Action.fileStatusDelete,
+			Action.toDoCreate,
+			Action.toDoContentUpdate,
+			Action.toDoStatusDelete,
 			Action.noteCreate,
 			Action.noteContentUpdate,
 			Action.noteStatusDelete,
@@ -109,6 +112,15 @@ public interface ProjActivity extends CreateInfo {
 		fileRead(ActionTarget.file),
 		fileDownload(ActionTarget.file),
 		fileEdit(ActionTarget.file),
+		toDoCreate(ActionTarget.toDo),
+		toDoContentUpdate(ActionTarget.toDo),
+		toDoTagsUpdate(ActionTarget.toDo),
+		toDoMemberAdd(ActionTarget.toDo),
+		toDoMemberRemove(ActionTarget.toDo),
+		toDoRolesUpdate(ActionTarget.toDo),
+		toDoReferenceAdd(ActionTarget.toDo),
+		toDoReferenceRemove(ActionTarget.toDo),
+		toDoStatusDelete(ActionTarget.toDo),
 		noteCreate(ActionTarget.note),
 		noteContentUpdate(ActionTarget.note),
 		noteTagsUpdate(ActionTarget.note),
@@ -148,6 +160,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action updateTags(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileTagsUpdate;
+			case ProjToDo.TYPE: return toDoTagsUpdate;
 			case ProjNote.TYPE: return noteTagsUpdate;
 			case ProjAppointment.TYPE: return appointmentTagsUpdate;
 			case ProjMilestone.TYPE: return milestoneTagsUpdate;
@@ -159,6 +172,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action addMember(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberAdd;
+			case ProjToDo.TYPE: return toDoMemberAdd;
 			case ProjNote.TYPE: return noteMemberAdd;
 			case ProjAppointment.TYPE: return appointmentMemberAdd;
 			default:
@@ -169,6 +183,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action removeMember(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberRemove;
+			case ProjToDo.TYPE: return toDoMemberRemove;
 			case ProjNote.TYPE: return noteMemberRemove;
 			case ProjAppointment.TYPE: return appointmentMemberRemove;
 			default:
@@ -179,6 +194,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action updateRoles(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileRolesUpdate;
+			case ProjToDo.TYPE: return toDoRolesUpdate;
 			case ProjNote.TYPE: return noteRolesUpdate;
 			case ProjAppointment.TYPE: return appointmentRolesUpdate;
 			default:
@@ -189,6 +205,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action addReference(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceAdd;
+			case ProjToDo.TYPE: return toDoReferenceAdd;
 			case ProjNote.TYPE: return noteReferenceAdd;
 			case ProjAppointment.TYPE: return appointmentReferenceAdd;
 			default:
@@ -199,6 +216,7 @@ public interface ProjActivity extends CreateInfo {
 		public static Action removeReference(String type) {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceRemove;
+			case ProjToDo.TYPE: return toDoReferenceRemove;
 			case ProjNote.TYPE: return noteReferenceRemove;
 			case ProjAppointment.TYPE: return appointmentReferenceRemove;
 			default:
@@ -229,6 +247,7 @@ public interface ProjActivity extends CreateInfo {
 	public enum ActionTarget {
 		project,
 		file,
+		toDo,
 		note,
 		appointment,
 		milestone;

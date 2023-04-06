@@ -851,6 +851,36 @@ create table o_tag_tag (
    primary key (id)
 );
 
+-- ToDo
+create table o_todo_task (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   t_content_modified_date date not null,
+   t_title varchar(128),
+   t_description CLOB,
+   t_status varchar(16),
+   t_priority varchar(16),
+   t_expenditure_of_work number(20),
+   t_start_date date,
+   t_due_date date,
+   t_done_date date,
+   t_type varchar(50),
+   t_origin_id number(20),
+   t_origin_subpath varchar(100),
+   t_origin_title varchar(500),
+   t_origin_deleted number default 0 not null,
+   fk_group  number(20) not null,
+   primary key (id)
+);
+create table o_todo_task_tag (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_todo_task number(20) not null,
+   fk_tag number(20),
+   primary key (id)
+);
+
 -- mail
 create table o_mail (
   mail_id number(20) not null,
@@ -3926,6 +3956,15 @@ create table o_proj_file (
    fk_artefact number(20) not null,
    primary key (id)
 );
+create table o_proj_todo (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_identifier varchar(64) not null,
+   fk_todo_task number(20) not null,
+   fk_artefact number(20) not null,
+   primary key (id)
+);
 create table o_proj_note (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -4594,6 +4633,15 @@ create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
+
+-- ToDo
+alter table o_todo_task add constraint todo_to_group_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_todo_group_idx on o_todo_task (fk_group);
+create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
+alter table o_todo_task_tag add constraint todo_task_tag_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
+create index idx_todo_task_tag_idx on o_todo_task_tag (fk_todo_task);
+alter table o_todo_task_tag add constraint todo_task_tag_tag_idx foreign key (fk_tag) references o_tag_tag(id);
+create index idx_todo_task_tag_tag_idx on o_todo_task_tag (fk_tag);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
@@ -5370,15 +5418,21 @@ create index idx_file_artefact_idx on o_proj_file (fk_artefact);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_file_metadata_idx on o_proj_file (fk_metadata);
 
+alter table o_proj_todo add constraint todo_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_todo_artefact_idx on o_proj_todo (fk_artefact);
+alter table o_proj_todo add constraint todo_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
+create index idx_todo_todo_idx on o_proj_todo (fk_todo_task);
+create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
+
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_note_artefact_idx on o_proj_file (fk_artefact);
+create index idx_note_artefact_idx on o_proj_note (fk_artefact);
 
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_appointment_artefact_idx on o_proj_file (fk_artefact);
+create index idx_appointment_artefact_idx on o_proj_appointment (fk_artefact);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);
 
 alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
-create index idx_milestone_artefact_idx on o_proj_file (fk_artefact);
+create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);

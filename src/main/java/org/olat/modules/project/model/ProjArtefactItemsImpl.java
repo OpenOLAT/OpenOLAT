@@ -30,6 +30,7 @@ import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjToDo;
 
 /**
  * 
@@ -41,6 +42,8 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	
 	private List<ProjFile> files;
 	private Map<Long, ProjFile> artefactKeyToFile;
+	private List<ProjToDo> toDos;
+	private Map<Long, ProjToDo> artefactKeyToToDo;
 	private List<ProjNote> notes;
 	private Map<Long, ProjNote> artefactKeyToNote;
 	private List<ProjAppointment> appointments;
@@ -65,6 +68,25 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 			}
 		}
 		return artefactKeyToFile != null? artefactKeyToFile.get(artefact.getKey()): null;
+	}
+	
+	@Override
+	public List<ProjToDo> getToDos() {
+		return toDos;
+	}
+	
+	public void setToDos(List<ProjToDo> toDos) {
+		this.toDos = toDos;
+	}
+	
+	@Override
+	public ProjToDo getToDo(ProjArtefactRef artefact) {
+		if (artefactKeyToToDo == null) {
+			if (toDos != null) {
+				artefactKeyToToDo = toDos.stream().collect(Collectors.toMap(toDo -> toDo.getArtefact().getKey(), Function.identity()));
+			}
+		}
+		return artefactKeyToToDo != null? artefactKeyToToDo.get(artefact.getKey()): null;
 	}
 	
 	@Override

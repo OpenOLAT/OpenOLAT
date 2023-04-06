@@ -62,6 +62,10 @@
 	@extend %o_block_inline_right;
 }
 
+.o_no_margin, %o_no_margin {
+	margin: 0;
+}
+
 /* vertical and horizontal centered block: add wrappern and place content in wrapper */
 .o_block_centered_wrapper {
 	display: table; 

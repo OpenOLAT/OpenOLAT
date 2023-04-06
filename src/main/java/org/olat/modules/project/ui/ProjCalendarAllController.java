@@ -414,7 +414,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
 		searchParams.setStatus(List.of(ProjectStatus.active));
 		List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams,
-				ProjArtefactInfoParams.of(true, false, false, true));
+				ProjArtefactInfoParams.of(true, false, false));
 		if (appointmentInfos.isEmpty()) {
 			return;
 		}

@@ -26,6 +26,9 @@
 			#if($r.available("files"))
 				$r.render("files")
 			#end
+			#if($r.available("toDos"))
+				$r.render("toDos")
+			#end
 			#if($r.available("notes"))
 				$r.render("notes")
 			#end

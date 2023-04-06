@@ -1,0 +1,26 @@
+<div class="o_todo_task_edit">
+	<div class="o_todo_task_do_row">
+		$r.render("task.do", "vertical", "form")
+		$r.render("task.title", "vertical", "form")
+	</div>
+	$r.render("tags", "vertical", "form")
+	$r.render("task.assigned", "vertical", "form")
+	$r.render("task.delegated", "vertical", "form")
+	<div class="o_form_two_cols">
+		$r.render("task.status", "horizontal", "form")
+		$r.render("task.priority", "horizontal", "form")
+	</div>
+	<div class="o_form_two_cols">
+		$r.render("task.start.date", "horizontal", "form")
+		$r.render("task.due.date", "horizontal", "form")
+	</div>
+	<div class="form-group clearfix">
+		<label class="control-label" for="$eowId">$r.translate("task.expenditure.of.work")</label>
+		<div class="input-group">
+			<span class="input-group-addon">$r.translate("task.weeks.days.hours")</span>
+			$r.render("task.expenditure.of.work", "barebone", "form")
+		</div>
+		<div class="o_form_example help-block">$r.translate("task.expenditure.of.work.help")</div>
+	</div>
+	$r.render("task.description", "vertical", "form")
+</div>

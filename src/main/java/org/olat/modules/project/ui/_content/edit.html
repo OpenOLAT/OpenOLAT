@@ -11,11 +11,11 @@ $r.render("content")
 jQuery(function() {
 	jQuery('#collapse_reference_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, false), "referenceOpen","false");
+		$f.openFfXHREvent(false, false, true), "referenceOpen","false");
 	})
 	jQuery('#collapse_reference_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_reference_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, false), "referenceOpen","true");
+		$f.openFfXHREvent(false, false, true), "referenceOpen","true");
 	})
 });
 </script>
@@ -32,11 +32,11 @@ jQuery(function() {
 jQuery(function() {
 	jQuery('#collapse_member_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, false), "memberOpen","false");
+		$f.openFfXHREvent(false, false, true), "memberOpen","false");
 	})
 	jQuery('#collapse_member_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_member_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, false), "memberOpen","true");
+		$f.openFfXHREvent(false, false, true), "memberOpen","true");
 	})
 });
 </script>
@@ -53,11 +53,11 @@ jQuery(function() {
 jQuery(function() {
 	jQuery('#collapse_metadata_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$f.openFfXHREvent(false, false, false), "metadataOpen","false");
+		$f.openFfXHREvent(false, false, true), "metadataOpen","false");
 	})
 	jQuery('#collapse_metadata_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_metadata_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$f.openFfXHREvent(false, false, false), "metadataOpen","true");
+		$f.openFfXHREvent(false, false, true), "metadataOpen","true");
 	})
 });
 </script>

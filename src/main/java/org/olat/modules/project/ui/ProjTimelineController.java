@@ -68,9 +68,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivity.ActionTarget;
 import org.olat.modules.project.ProjActivitySearchParams;
@@ -79,17 +81,21 @@ import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
-import org.olat.modules.project.ProjDateRange;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneSearchParams;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjToDo;
+import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.manager.ProjectXStream;
 import org.olat.modules.project.ui.ProjTimelineDataModel.TimelineCols;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
@@ -123,7 +129,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private final List<ProjTimelineRow> artefactRows = new ArrayList<>();
 	private final List<ProjTimelineRow> activityTodayRows = new ArrayList<>();
 	private final List<ProjTimelineRow> activityEarlierRows = new ArrayList<>();
-	private final ProjDateRange todayDateRange;
+	private final DateRange todayDateRange;
 	private Date offsetDate;
 
 	private final ProjProject project;
@@ -141,13 +147,14 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 
 	public ProjTimelineController(UserRequest ureq, WindowControl wControl, ProjProject project, List<Identity> members, MapperKey avatarMapperKey) {
 		super(ureq, wControl, "timeline");
+		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
 		this.project = project;
 		this.members = members;
 		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		Date today = DateUtils.setTime(new Date(), 0, 0, 1);
-		this.todayDateRange = new ProjDateRange(today, DateUtils.addDays(today, 1));
+		this.todayDateRange = new DateRange(today, DateUtils.addDays(today, 1));
 		
 		initForm(ureq);
 		loadModel(ureq, true);
@@ -202,6 +209,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		SelectionValues typeValues = new SelectionValues();
 		typeValues.add(SelectionValues.entry(ActionTarget.project.name(), translate("timeline.filter.type.project")));
 		typeValues.add(SelectionValues.entry(ActionTarget.file.name(), translate("timeline.filter.type.file")));
+		typeValues.add(SelectionValues.entry(ActionTarget.toDo.name(), translate("timeline.filter.type.todo")));
 		typeValues.add(SelectionValues.entry(ActionTarget.note.name(), translate("timeline.filter.type.note")));
 		typeValues.add(SelectionValues.entry(ActionTarget.appointment.name(), translate("timeline.filter.type.appointment")));
 		typeValues.add(SelectionValues.entry(ActionTarget.milestone.name(), translate("timeline.filter.type.milestone")));
@@ -322,8 +330,45 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 
 	private void loadArtefactRows() {
 		artefactRows.clear();
+		loadToDoRows();
 		loadAppointmentRows();
 		loadMilestoneRows();
+	}
+	
+	private void loadToDoRows() {
+		ProjToDoSearchParams searchParams = new ProjToDoSearchParams();
+		searchParams.setProject(project);
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setToDoStatus(List.of(ToDoStatus.open, ToDoStatus.inProgress));
+		searchParams.setDueDateNull(Boolean.FALSE);
+		List<ProjToDo> toDos = projectService.getToDos(searchParams);
+		
+		for (ProjToDo toDo : toDos) {
+			ProjTimelineRow row = createToDoRow(toDo);
+			artefactRows.add(row);
+		}
+	}
+
+	private ProjTimelineRow createToDoRow(ProjToDo toDo) {
+		ProjTimelineRow row = new ProjTimelineRow();
+		
+		String icon = "<i class=\"o_icon o_icon-lg o_icon_todo_task\"> </i>";
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		iconItem.setDomWrapperElement(DomWrapperElement.span);
+		row.setIconItem(iconItem);
+		
+		String message = ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask());
+		row.setMessage(message);
+		FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
+		String url = ProjectBCFactory.getToDoUrl(toDo);
+		link.setUrl(url);
+		link.setUserObject(toDo.getArtefact());
+		row.setMessageItem(link);
+		
+		row.setDate(DateUtils.addSeconds(toDo.getToDoTask().getDueDate(), 4));
+		row.setFormattedDate(getFormattedDate(row.getDate(), false));
+		row.setActionTarget(ActionTarget.toDo);
+		return row;
 	}
 
 	private void loadAppointmentRows() {
@@ -459,7 +504,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		}
 	}
 
-	private List<ProjActivity> loadActivites(UserRequest ureq, List<ProjTimelineRow> rows, ProjDateRange dateRange) {
+	private List<ProjActivity> loadActivites(UserRequest ureq, List<ProjTimelineRow> rows, DateRange dateRange) {
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProject(project);
 		searchParams.setActions(ProjActivity.TIMELINE_ACTIONS);
@@ -517,6 +562,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		switch (activityRowData.lastActivity().getActionTarget()) {
 		case project: addActivityProjectRows(ureq, rows, activityRowData);
 		case file: addActivityFileRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
+		case toDo: addActivityToDoRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case note: addActivityNoteRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case appointment: addActivityAppointmentRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case milestone: addActivityMilestoneRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
@@ -618,6 +664,40 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 			if (!changedActivities.isEmpty()) {
 				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.file.update.filename", displayName), iconCSS);
 				
+			}
+			break;
+		}
+		default: //
+		}
+	}
+	
+	private void addActivityToDoRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
+			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
+		ProjActivity activity = activityRowData.lastActivity();
+		if (activity.getArtefact() == null) {
+			return;
+		}
+		ProjToDo toDo = artefactItems.getToDo(activity.getArtefact());
+		if (toDo == null) {
+			return;
+		}
+		
+		String displayName = ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask());
+		switch (activity.getAction()) {
+		case toDoCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.todo.create", displayName)); break;
+		case toDoStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.todo.delete", displayName)); break;
+		case toDoContentUpdate: {
+			List<ProjActivity> changedActivities = activityRowData.activities().stream()
+					.filter(a -> {
+						ToDoTask before = ProjectXStream.fromXml(activity.getBefore(), ProjToDo.class).getToDoTask();
+						ToDoTask after = ProjectXStream.fromXml(activity.getAfter(), ProjToDo.class).getToDoTask();
+						Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
+						Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
+						return !Objects.equals(afterDueDate, beforeDueDate);
+					})
+					.collect(Collectors.toList());
+			if (!changedActivities.isEmpty()) {
+				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.todo.edit.due.date", displayName));
 			}
 			break;
 		}
@@ -929,20 +1009,20 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private final static class RangeUserObject {
 		
 		private final Range range;
-		private final ProjDateRange dateRange;
+		private final DateRange dateRange;
 		private boolean rowsAvailable;
 		private boolean show;
 		
 		public RangeUserObject(Range range, Date from, Date to) {
 			this.range = range;
-			this.dateRange = new ProjDateRange(from, to);
+			this.dateRange = new DateRange(from, to);
 		}
 		
 		public Range getRange() {
 			return range;
 		}
 
-		public ProjDateRange getDateRange() {
+		public DateRange getDateRange() {
 			return dateRange;
 		}
 

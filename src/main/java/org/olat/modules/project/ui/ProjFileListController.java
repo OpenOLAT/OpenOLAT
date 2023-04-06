@@ -28,10 +28,11 @@ import java.util.stream.Collectors;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.tag.Tag;
-import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
@@ -314,7 +315,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjFileSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(false, false, true, true));
+		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(false, false, true));
 		List<ProjFileRow> rows = new ArrayList<>(infos.size());
 		
 		for (ProjFileInfo info : infos) {
@@ -327,7 +328,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			row.setModified(modified);
 			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
-			row.setFormattedTags(ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
+			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 			
 			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 			if (vfsItem instanceof VFSLeaf) {

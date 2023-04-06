@@ -36,6 +36,10 @@ import org.olat.modules.project.model.ProjFileImpl;
 import org.olat.modules.project.model.ProjMilestoneImpl;
 import org.olat.modules.project.model.ProjNoteImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
+import org.olat.modules.project.model.ProjToDoImpl;
+import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.model.ToDoTaskImpl;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.ExplicitTypePermission;
@@ -56,12 +60,16 @@ public class ProjectXStream {
 				ProjectStatus.class,
 				ProjArtefactImpl.class,
 				ProjFileImpl.class,
+				ProjToDoImpl.class,
 				ProjNoteImpl.class,
 				ProjAppointmentImpl.class,
 				ProjMilestoneImpl.class,
 				ProjMilestoneStatus.class,
 				IdentityImpl.class,
-				VFSMetadataImpl.class
+				VFSMetadataImpl.class,
+				ToDoTaskImpl.class,
+				ToDoStatus.class,
+				ToDoPriority.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("Project", ProjProjectImpl.class);
@@ -72,6 +80,7 @@ public class ProjectXStream {
 		xstream.omitField(ProjArtefactImpl.class, "baseGroup");
 		
 		xstream.alias("File", ProjFileImpl.class);
+		xstream.alias("ToDo", ProjToDoImpl.class);
 		xstream.alias("Note", ProjNoteImpl.class);
 		xstream.alias("Appointment", ProjAppointmentImpl.class);
 		xstream.alias("Milestone", ProjMilestoneImpl.class);
@@ -85,6 +94,9 @@ public class ProjectXStream {
 		
 		xstream.alias("VFSMetadata", VFSMetadataImpl.class);
 		xstream.omitField(VFSMetadataImpl.class, "parent");
+		
+		xstream.alias("ToDoTask", ToDoTaskImpl.class);
+		xstream.omitField(ToDoTaskImpl.class, "baseGroup");
 	}
 	
 	public static String toXml(Object obj) {

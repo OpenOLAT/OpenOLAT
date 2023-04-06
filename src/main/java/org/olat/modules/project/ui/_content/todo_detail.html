@@ -1,0 +1,8 @@
+$r.render("toToTask")
+
+#if($hasReferences)
+	<fieldset><legend>
+		<h4>$r.translate("edit.reference.title")</h4>
+	</fieldset></legend>
+	$r.render("references")
+#end

@@ -46,6 +46,8 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -61,6 +63,7 @@ import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
+import org.olat.modules.project.ui.event.OpenToDoEvent;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -100,6 +103,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjMembersManagementController membersManagementCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
 	private ProjFileAllController fileAllCtrl;
+	private ProjToDoWidgetController toDoWidgetCtrl;
+	private ProjToDoAllController toDoAllCtrl;
 	private ProjNoteWidgetController noteWidgetCtrl;
 	private ProjNoteAllController noteAllCtrl;
 	private ProjCalendarWidgetController calendarWidgetCtrl;
@@ -174,6 +179,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 			mainVC.put("files", fileWidgetCtrl.getInitialComponent());
 		}
 		
+		if (secCallback.canViewToDos()) {
+			toDoWidgetCtrl = new ProjToDoWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			listenTo(toDoWidgetCtrl);
+			mainVC.put("toDos", toDoWidgetCtrl.getInitialComponent());
+		}
+		
 		if (secCallback.canViewNotes()) {
 			noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(noteWidgetCtrl);
@@ -204,6 +215,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		if (exceptCtrl != fileWidgetCtrl) {
 			fileWidgetCtrl.reload(ureq);
+		}
+		if (exceptCtrl != toDoWidgetCtrl) {
+			toDoWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != noteWidgetCtrl) {
 			noteWidgetCtrl.reload(ureq);
@@ -251,6 +265,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenFiles(ureq);
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				fileAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
+		} else if (ProjectBCFactory.TYPE_TODOS.equalsIgnoreCase(typeName)) {
+			if (secCallback.canViewToDos()) {
+				doOpenToDos(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				toDoAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
 		} else if (ProjectBCFactory.TYPE_NOTES.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewNotes()) {
@@ -302,6 +322,14 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenFiles(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, fileWidgetCtrl);
+			}
+		} else if (source == toDoWidgetCtrl) {
+			if (event == SHOW_ALL) {
+				doOpenToDos(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				reload(ureq, toDoWidgetCtrl);
+			} else if (event instanceof OpenToDoEvent) {
+				doOpenToDo(ureq, (OpenToDoEvent)event);
 			}
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
@@ -466,6 +494,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 		stackPanel.pushController(translate("file.all.title"), fileAllCtrl);
 	}
 	
+	private void doOpenToDos(UserRequest ureq) {
+		removeAsListenerAndDispose(toDoAllCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_TODOS), null);
+		toDoAllCtrl = new ProjToDoAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		listenTo(toDoAllCtrl);
+		stackPanel.pushController(translate("todo.all.title"), toDoAllCtrl);
+	}
+	
 	private void doOpenNotes(UserRequest ureq) {
 		removeAsListenerAndDispose(noteAllCtrl);
 		
@@ -495,6 +532,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenFiles(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createFileCe(artefacts.getFiles().get(0)));
 			fileAllCtrl.activate(ureq, contextEntries, null);
+		} else if (artefacts.getToDos() != null && !artefacts.getToDos().isEmpty()) {
+			doOpenToDos(ureq);
+			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createToDoCe(artefacts.getToDos().get(0)));
+			toDoAllCtrl.activate(ureq, contextEntries, null);
 		} else if (artefacts.getNotes() != null && !artefacts.getNotes().isEmpty()) {
 			doOpenNotes(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createNoteCe(artefacts.getNotes().get(0)));
@@ -510,9 +551,18 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 	}
 	
+	private void doOpenToDo(UserRequest ureq, OpenToDoEvent event) {
+		doOpenToDos(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjectBCFactory.TYPE_TODO, event.getToDo().getKey());
+		List<ContextEntry> ces = List.of(BusinessControlFactory.getInstance().createContextEntry(ores));
+		toDoAllCtrl.activate(ureq, ces, null);
+	}
+	
 	private void doOpenNote(UserRequest ureq, OpenNoteEvent event) {
 		doOpenNotes(ureq);
-		noteAllCtrl.activate(ureq, null, event);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjectBCFactory.TYPE_NOTE, event.getNote().getKey());
+		List<ContextEntry> ces = List.of(BusinessControlFactory.getInstance().createContextEntry(ores));
+		noteAllCtrl.activate(ureq, ces, null);
 	}
 
 }

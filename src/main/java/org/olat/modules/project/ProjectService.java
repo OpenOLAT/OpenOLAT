@@ -32,6 +32,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoStatus;
 
 /**
  * 
@@ -127,6 +129,34 @@ public interface ProjectService {
 	
 	public List<ProjFileInfo> getFileInfos(ProjFileSearchParams searchParams, ProjArtefactInfoParams infoParams);
 	
+
+	/*
+	 * ToDos
+	 */
+	
+	public ProjToDo createToDo(Identity doer, ProjProject project);
+
+	public void updateToDo(Identity doer, ProjToDoRef toDo, String title, ToDoStatus status, ToDoPriority priority,
+			Date startDate, Date dueDate, Long expenditureOfWork, String description);
+	
+	public void updateToDoStatus(Identity doer, String identifier, ToDoStatus status);
+	
+	public void updateMembers(Identity doer, ProjToDoRef toDo, Collection<? extends IdentityRef> assignees,
+			Collection<? extends IdentityRef> delegatees);
+	
+	public void updateTags(Identity doer, ProjToDoRef toDo, List<String> displayNames);
+
+	public void deleteToDoSoftly(Identity doer, ProjToDoRef toDo);
+	
+	public void deleteToDoPermanent(ProjToDoRef toDo);
+	
+	public ProjToDo getToDo(String identifier);
+
+	public long getToDosCount(ProjToDoSearchParams searchParams);
+	
+	public List<ProjToDo> getToDos(ProjToDoSearchParams searchParams);
+	
+	public List<ProjToDoInfo> getToDoInfos(ProjToDoSearchParams searchParams, ProjArtefactInfoParams infoParams);
 	
 	/*
 	 * Notes

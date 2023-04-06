@@ -20,7 +20,6 @@
 package org.olat.modules.project.ui.event;
 
 import org.olat.core.gui.control.Event;
-import org.olat.core.id.context.StateEntry;
 import org.olat.modules.project.ProjNoteRef;
 
 /**
@@ -29,7 +28,7 @@ import org.olat.modules.project.ProjNoteRef;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class OpenNoteEvent extends Event implements StateEntry {
+public class OpenNoteEvent extends Event {
 	
 	private static final long serialVersionUID = -8208642119130539941L;
 
@@ -48,11 +47,6 @@ public class OpenNoteEvent extends Event implements StateEntry {
 
 	public boolean isEdit() {
 		return edit;
-	}
-	
-	@Override
-	public OpenNoteEvent clone() {
-		return new OpenNoteEvent(note, edit);
 	}
 
 }

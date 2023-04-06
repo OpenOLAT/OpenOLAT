@@ -3,7 +3,7 @@
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
- * you may not use this file except in compliance with the License.<br>
+ * you may not use this toDo except in compliance with the License.<br>
  * You may obtain a copy of the License at the
  * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
  * <p>
@@ -17,32 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.project.model;
 
-import java.util.Date;
+import org.olat.modules.project.ProjArtefactInfo;
+import org.olat.modules.project.ProjToDo;
+import org.olat.modules.project.ProjToDoInfo;
 
 /**
  * 
- * Initial date: 19 Jan 2023<br>
+ * Initial date: 27 Mar 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjDateRange {
+public class ProjToDoInfoImpl extends ProjArtefactInfoImpl implements ProjToDoInfo {
 	
-	private final Date from;
-	private final Date to;
-	
-	public ProjDateRange(Date from, Date to) {
-		this.from = from;
-		this.to = to;
+	private final ProjToDo toDo;
+
+	public ProjToDoInfoImpl(ProjToDo toDo, ProjArtefactInfo artefactInfo) {
+		super(artefactInfo);
+		this.toDo = toDo;
 	}
-	
-	public Date getFrom() {
-		return from;
-	}
-	
-	public Date getTo() {
-		return to;
+
+	@Override
+	public ProjToDo getToDo() {
+		return toDo;
 	}
 
 }

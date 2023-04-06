@@ -798,6 +798,29 @@ create table o_tag_tag (
    primary key (id)
 );
 
+-- ToDo
+create table o_todo_task (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   t_content_modified_date timestamp not null,
+   t_title varchar(128),
+   t_description text,
+   t_status varchar(16),
+   t_priority varchar(16),
+   t_expenditure_of_work int8,
+   t_start_date timestamp,
+   t_due_date timestamp,
+   t_done_date timestamp,
+   t_type varchar(50),
+   t_origin_id int8,
+   t_origin_subpath varchar(100),
+   t_origin_title varchar(500),
+   t_origin_deleted bool default false not null,
+   fk_group int8 not null,
+   primary key (id)
+);
+
 -- mail
 create table o_mail (
   mail_id int8 not null,
@@ -3869,6 +3892,15 @@ create table o_proj_file (
    fk_artefact int8 not null,
    primary key (id)
 );
+create table o_proj_todo (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_identifier varchar(64) not null,
+   fk_todo_task int8 not null,
+   fk_artefact int8 not null,
+   primary key (id)
+);
 create table o_proj_note (
    id bigserial,
    creationdate timestamp not null,
@@ -4502,6 +4534,11 @@ create index idx_teams_att_meet_idx on o_teams_attendee(fk_meeting_id);
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
+
+-- ToDo
+alter table o_todo_task add constraint todo_to_group_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_todo_group_idx on o_todo_task (fk_group);
+create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
@@ -5279,6 +5316,12 @@ alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefac
 create index idx_file_artefact_idx on o_proj_file (fk_artefact);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
 create index idx_file_metadata_idx on o_proj_file (fk_metadata);
+
+alter table o_proj_todo add constraint todo_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_todo_artefact_idx on o_proj_todo (fk_artefact);
+alter table o_proj_todo add constraint todo_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
+create index idx_todo_todo_idx on o_proj_todo (fk_todo_task);
+create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
 
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_note_artefact_idx on o_proj_file (fk_artefact);

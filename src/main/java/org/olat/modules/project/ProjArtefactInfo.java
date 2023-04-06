@@ -39,6 +39,4 @@ public interface ProjArtefactInfo {
 	
 	List<Tag> getTags();
 
-	List<String> getTagDisplayNames();
-
 }

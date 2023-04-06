@@ -323,6 +323,22 @@ public class GroupDAO {
 		return memberships == null || memberships.isEmpty() ? null : memberships.get(0);
 	}
 	
+	public List<GroupMembership> getMemberships(Collection<Long> groupKeys, Collection<String> roles) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select membership");
+		sb.append("  from bgroupmember membership");
+		sb.append(" inner join fetch membership.identity ident");
+		sb.append(" inner join fetch ident.user user");
+		sb.and().append(" membership.group.key in :groupKeys");
+		sb.and().append(" membership.role in :roles");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), GroupMembership.class)
+				.setParameter("groupKeys", groupKeys)
+				.setParameter("roles", roles)
+				.getResultList();
+	}
+	
 	public boolean hasGrant(IdentityRef identity, String permission, OLATResource resource, String currentRole) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select count(grant) from bgrant as grant")

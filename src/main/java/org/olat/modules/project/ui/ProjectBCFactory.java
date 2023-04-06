@@ -35,6 +35,9 @@ import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
+import org.olat.modules.project.ProjToDo;
+import org.olat.modules.project.ProjToDoRef;
+import org.olat.modules.todo.ui.ToDoTaskListController;
 
 /**
  * 
@@ -48,6 +51,8 @@ public class ProjectBCFactory {
 	public static final String TYPE_MEMBERS_MANAGEMENT = "MembersMgmt";
 	public static final String TYPE_FILES = "Files";
 	public static final String TYPE_FILE = "Projectfile";
+	public static final String TYPE_TODOS = "ToDos";
+	public static final String TYPE_TODO = ToDoTaskListController.TYPE_TODO;
 	public static final String TYPE_NOTES = "Notes";
 	public static final String TYPE_NOTE = "Note";
 	public static final String TYPE_CALENDAR = "Calendar";
@@ -80,6 +85,22 @@ public class ProjectBCFactory {
 	
 	public static ContextEntry createFileCe(ProjFileRef fileRef) {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_FILE, fileRef.getKey()));
+	}
+	
+	private static List<ContextEntry> createToDosCes(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createProjectCes(projectRef);
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_TODOS)));
+		return ces;
+	}
+	
+	private static List<ContextEntry> createToDoCes(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
+		List<ContextEntry> ces = createToDosCes(projectRef);
+		ces.add(createToDoCe(toDoRef));
+		return ces;
+	}
+	
+	public static ContextEntry createToDoCe(ProjToDoRef toDoRef) {
+		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_TODO, toDoRef.getKey()));
 	}
 	
 	private static List<ContextEntry> createNotesCes(ProjProjectRef projectRef) {
@@ -143,6 +164,15 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
+	public static String getToDoUrl(ProjToDo toDo) {
+		return getToDoUrl(toDo.getArtefact().getProject(), toDo);
+	}
+	
+	public static String getToDoUrl(ProjProjectRef projectRef, ProjToDoRef toDoRef) {
+		List<ContextEntry> ces = createToDoCes(projectRef, toDoRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
 	public static String getNotesUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createNotesCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
@@ -183,6 +213,7 @@ public class ProjectBCFactory {
 	public static String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
 		switch (artefactType) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
+		case ProjToDo.TYPE: return getToDoUrl(project, () -> key);
 		case ProjNote.TYPE: return getNoteUrl(project, () -> key);
 		case ProjAppointment.TYPE: return getAppointmentUrl(project, () -> key);
 		case ProjMilestone.TYPE: return getMilestoneUrl(project, () -> key);

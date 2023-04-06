@@ -880,6 +880,37 @@ create table o_tag_tag (
    primary key (id)
 );
 
+-- ToDo
+create table o_todo_task (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   t_content_modified_date datetime not null,
+   t_title varchar(128),
+   t_description longtext,
+   t_status varchar(16),
+   t_priority varchar(16),
+   t_expenditure_of_work integer,
+   t_start_date datetime,
+   t_due_date datetime,
+   t_done_date datetime,
+   t_type varchar(50),
+   t_origin_id bigint,
+   t_origin_subpath varchar(100),
+   t_origin_title varchar(500),
+   t_origin_deleted bool default false not null
+   fk_group bigint not null,
+   primary key (id)
+);
+create table o_todo_task_tag (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_todo_task bigint not null,
+   fk_tag bigint not null,
+   primary key (id)
+);
+
+
 -- mail
 create table if not exists o_mail (
   mail_id bigint NOT NULL,
@@ -3859,6 +3890,15 @@ create table o_proj_file (
    fk_artefact bigint not null,
    primary key (id)
 );
+create table o_proj_todo (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_identifier varchar(64) not null,
+   fk_todo_task bigint not null,
+   fk_artefact bigint not null,
+   primary key (id)
+);
 create table o_proj_note (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4100,6 +4140,8 @@ alter table o_userrating ENGINE = InnoDB;
 alter table o_mark ENGINE = InnoDB;
 alter table o_info_message ENGINE = InnoDB;
 alter table o_tag_tag ENGINE = InnoDB;
+alter table o_todo_task ENGINE = InnoDB;
+alter table o_todo_task_tag ENGINE = InnoDB;
 alter table o_bs_invitation ENGINE = InnoDB;
 alter table o_co_db_entry ENGINE = InnoDB;
 alter table o_mail ENGINE = InnoDB;
@@ -4285,6 +4327,7 @@ alter table o_proj_artefact ENGINE = InnoDB;
 alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
 alter table o_proj_tag ENGINE = InnoDB;
 alter table o_proj_file ENGINE = InnoDB;
+alter table o_proj_todo ENGINE = InnoDB;
 alter table o_proj_note ENGINE = InnoDB;
 alter table o_proj_appointment ENGINE = InnoDB;
 alter table o_proj_milestone ENGINE = InnoDB;
@@ -4620,6 +4663,11 @@ alter table o_teams_attendee add constraint teams_att_meet_idx foreign key (fk_m
 
 -- tag
 create unique index idx_tag_name_idx on o_tag_tag (t_display_name);
+
+-- ToDo
+create index idx_todo_origin_id_idx on o_todo_task (t_origin_id);
+create index idx_todo_tag_todo_idx on o_todo_task_tag (fk_todo_task);
+create index idx_todo_tag_tag_idx on o_todo_task_tag (fk_tag);
 
 -- mail
 alter table o_mail add constraint FKF86663165A4FA5DC foreign key (fk_from_id) references o_mail_recipient (recipient_id);
@@ -5157,6 +5205,9 @@ alter table o_proj_tag add constraint tag_tag_idx foreign key (fk_tag) reference
 
 alter table o_proj_file add constraint file_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_file add constraint file_metadata_idx foreign key (fk_metadata) references o_vfs_metadata(id);
+alter table o_proj_todo add constraint todo_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
+alter table o_proj_todo add constraint todo_todo_idx foreign key (fk_todo_task) references o_todo_task(id);
+create unique index idx_todo_ident_idx on o_proj_todo (p_identifier);
 alter table o_proj_note add constraint note_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 alter table o_proj_appointment add constraint appointment_artefact_idx foreign key (fk_artefact) references o_proj_artefact (id);
 create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifier);

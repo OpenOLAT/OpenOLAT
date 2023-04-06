@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjNoteInfo;
+import org.olat.user.UsersAvatarController;
 
 /**
  * 
@@ -40,7 +41,7 @@ public class ProjNoteViewController extends FormBasicController {
 	
 	private ProjNoteContentViewController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
-	private ProjMembersAvatarController memberCtrl;
+	private UsersAvatarController memberCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
 	private final ProjNoteInfo noteInfo;
@@ -59,7 +60,7 @@ public class ProjNoteViewController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjNoteContentViewController(ureq, getWindowControl(), noteInfo.getNote(), noteInfo.getTagDisplayNames());
+		contentCtrl = new ProjNoteContentViewController(ureq, getWindowControl(), noteInfo.getNote(), noteInfo.getTags());
 		listenTo(contentCtrl);
 		formLayout.add("content", new ComponentWrapperElement("contentView", contentCtrl.getInitialComponent()));
 		
@@ -69,7 +70,7 @@ public class ProjNoteViewController extends FormBasicController {
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		memberCtrl = new ProjMembersAvatarController(ureq, getWindowControl(), mainForm, noteInfo.getMembers());
+		memberCtrl = new UsersAvatarController(ureq, getWindowControl(), mainForm, noteInfo.getMembers());
 		listenTo(memberCtrl);
 		formLayout.add("member", memberCtrl.getInitialFormItem());
 		flc.contextPut("memberOpen", memberOpen);

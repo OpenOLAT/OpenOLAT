@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -67,7 +68,7 @@ public class ProjMilestonePreviewController extends BasicController {
 		mainVC.contextPut("subject", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
 		mainVC.contextPut("description", milestone.getDescription());
 		
-		mainVC.contextPut("formattedTags", ProjectUIFactory.getFormattedTags(getLocale(), info.getTagDisplayNames()));
+		mainVC.contextPut("formattedTags", TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 		
 		if (secCallback.canEditMilestone(milestone)) {
 			if (ProjMilestoneStatus.open == milestone.getStatus()) {
