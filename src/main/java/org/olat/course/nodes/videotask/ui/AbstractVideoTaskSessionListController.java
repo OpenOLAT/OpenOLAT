@@ -101,6 +101,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	protected final int rounding;
 	protected final Float maxScore;
 	protected final Float cutValue;
+	protected final Double weightWrongAnswers;
 	protected final RepositoryEntry entry;
 	protected final VideoSegments segments;
 	protected final RepositoryEntry videoEntry;
@@ -136,6 +137,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
+		weightWrongAnswers = courseNode.getModuleConfiguration().getDoubleEntry(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS);
 		
 		videoEntry = courseNode.getReferencedRepositoryEntry();
 		segments = videoManager.loadSegments(videoEntry.getOlatResource());
@@ -310,7 +312,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		
 		List<VideoTaskSegmentSelection> taskSelections = mapSelections.get(taskSession);
 		VideoTaskScore scoring = videoAssessmentService
-				.calculateScore(segments, selectedCategoriesIds, maxScore, cutValue, rounding, taskSelections);
+				.calculateScore(segments, selectedCategoriesIds, maxScore, cutValue, weightWrongAnswers, rounding, taskSelections);
 		VideoTaskCategoryScore[] categoryScoring = videoAssessmentService.calculateScorePerCategory(categories, taskSelections);
 		String fullName = userManager.getUserDisplayName(taskSession.getIdentity());
 		VideoTaskSessionRow row = new VideoTaskSessionRow(taskSession, taskSession.getIdentity(), fullName, scoring, categoryScoring);

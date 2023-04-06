@@ -100,6 +100,7 @@ public class VideoTaskDisplayController extends BasicController {
 	private final Float cutValue;
 	private final int rounding;
 	private final int maxAttemptsPerSegments;
+	private final Double weightWrongAnswers;
 
 	private CloseableModalController cmc;
 	private Controller confirmEndTaskCtrl;
@@ -142,6 +143,8 @@ public class VideoTaskDisplayController extends BasicController {
 		cutValue = (Float) courseNode.getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		rounding = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
+		weightWrongAnswers = courseNode.getModuleConfiguration().getDoubleEntry(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS);
+	
 		if(VideoTaskEditController.CONFIG_KEY_MODE_PRACTICE_ASSIGN_TERMS.equals(mode)) {
 			maxAttemptsPerSegments = courseNode.getModuleConfiguration().getIntegerSafe(VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT,
 					VideoTaskEditController.CONFIG_KEY_ATTEMPTS_PER_SEGMENT_DEFAULT);
@@ -449,7 +452,7 @@ public class VideoTaskDisplayController extends BasicController {
 		
 		if(maxScore != null) {
 			VideoTaskScore score = videoAssessmentService
-					.calculateScore(segments, categoriesIds, maxScore, cutValue, rounding, getResults());
+					.calculateScore(segments, categoriesIds, maxScore, cutValue, weightWrongAnswers, rounding, getResults());
 			taskSession.setScore(score.score());
 			taskSession.setPassed(score.passed());
 			taskSession.setMaxScore(BigDecimal.valueOf(maxScore.doubleValue()));
