@@ -82,13 +82,13 @@ import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAllowToLeaveOptions;
+import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryAuthorViewResults;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
-import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryEntryToOrganisation;
 import org.olat.repository.RepositoryEntryToTaxonomyLevel;
@@ -914,6 +914,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,
 						 RepositoryEntry entry, Identity author) {
+		if (before == null ? after == null : before.equals(after)) {
+			// do not log actions when there are no changes
+			return;
+		}		
 		repositoryEntryAuditLogDAO.auditLog(action, before, after, entry, author);
 		if (repositoryModule.isNotificationRepoStatusChanged()) {
 			notificationsManager.markPublisherNews(getSubscriptionContext(), author, true);
