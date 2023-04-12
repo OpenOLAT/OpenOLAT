@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoAssessmentService;
 import org.olat.modules.video.VideoManager;
@@ -61,7 +62,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 
 	private static final String ATTEMPTS_ENABLED = "true";
 	private static final String ATTEMPTS_DISABLED = "false";
-	
+	private final CourseNode courseNode;
+
 	private TextElement attemptsEl;
 	private SingleSelection modeEl;
 	private SingleSelection enableAttemptsEl;
@@ -84,11 +86,15 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 	private VideoManager videoManager;
 	@Autowired
 	private VideoAssessmentService videoAssessmentService;
-	
+	private final CourseEnvironment courseEnv;
+
 	public VideoTaskConfigurationEditController(UserRequest ureq, WindowControl wControl,
-			RepositoryEntry videoEntry, RepositoryEntry entry, CourseNode courseNode) {
+												RepositoryEntry videoEntry, RepositoryEntry entry, CourseNode courseNode,
+												CourseEnvironment courseEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.entry = entry;
+		this.courseNode = courseNode;
+		this.courseEnv = courseEnv;
 		subIdent = courseNode.getIdent();
 		config = courseNode.getModuleConfiguration();
 		currentMode = config.getStringValue(VideoTaskEditController.CONFIG_KEY_MODE);
@@ -351,7 +357,8 @@ public class VideoTaskConfigurationEditController extends FormBasicController {
 	
 	private void doConfirmChangeMode(UserRequest ureq) {
 		long sessions = videoAssessmentService.countTaskSessions(entry, subIdent);
-		confirmChangeModeCtrl = new ConfirmChangeModeController(ureq, getWindowControl(), entry, subIdent, currentMode, sessions);
+		confirmChangeModeCtrl = new ConfirmChangeModeController(ureq, getWindowControl(), entry, subIdent, currentMode,
+				sessions, courseNode, courseEnv);
 		listenTo(confirmChangeModeCtrl);
 		
 		String title = translate("change.mode.title");

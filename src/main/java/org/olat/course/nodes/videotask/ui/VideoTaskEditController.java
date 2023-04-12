@@ -40,6 +40,7 @@ import org.olat.course.editor.CourseNodeReferenceProvider;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.VideoTaskCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.video.VideoManager;
@@ -116,13 +117,15 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 	private VideoManager videoManager;
 	@Autowired
 	private RepositoryService repositoryService;
-	
+	private final CourseEnvironment courseEnv;
+
 	public VideoTaskEditController(UserRequest ureq, WindowControl wControl, ICourse course, VideoTaskCourseNode videoTaskNode) {
 		super(ureq, wControl);
 		
 		this.videoTaskNode = videoTaskNode;
 		config = videoTaskNode.getModuleConfiguration();
 		entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		courseEnv = course.getCourseEnvironment();
 
 		configurationVC = createVelocityContainer("edit");
 		
@@ -288,7 +291,8 @@ public class VideoTaskEditController extends ActivateableTabbableDefaultControll
 		} else {
 			updateReferenceContentUI(videoEntry);
 			
-			configCtrl = new VideoTaskConfigurationEditController(ureq, getWindowControl(), videoEntry, entry, videoTaskNode);
+			configCtrl = new VideoTaskConfigurationEditController(ureq, getWindowControl(), videoEntry, entry,
+					videoTaskNode, courseEnv);
 			listenTo(configCtrl);
 			configurationVC.put("configform", configCtrl.getInitialComponent());
 		}
