@@ -86,6 +86,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private SingleSelection passedTypeEl;
 	private TextElement cutEl;
 	private SingleSelection weightingEl;
+	private SpacerElement ignoreSpacer;
 
 	private GradeScale gradeScale;
 	private final String nodeIdent;
@@ -139,7 +140,21 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		
 		initFormPassed(formLayout);
 		passedSpacer = uifactory.addSpacerElement("passed-spacer", formLayout, false);
-		initWeighting(formLayout);
+
+		// Negative form: label is ignore course assessment
+		SelectionValues assessmentValues = new SelectionValues();
+		assessmentValues.add(SelectionValues.entry("true", translate("yes")));
+		assessmentValues.add(SelectionValues.entry("false", translate("no")));
+		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
+				assessmentValues.keys(), assessmentValues.values());
+		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true));
+		if(assessmentValues.containsKey(courseAssessment)) {
+			ignoreInCourseAssessmentEl.select(courseAssessment, true);
+		} else {
+			ignoreInCourseAssessmentEl.select("false", true);
+		}
+
+		ignoreSpacer = uifactory.addSpacerElement("ignore-spacer", formLayout, false);
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
@@ -175,18 +190,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			roundingEl.select("2", true);
 		}
 
-		// Negative form: label is ignore course assessment
-		SelectionValues assessmentValues = new SelectionValues();
-		assessmentValues.add(SelectionValues.entry("true", translate("yes")));
-		assessmentValues.add(SelectionValues.entry("false", translate("no")));
-		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
-				assessmentValues.keys(), assessmentValues.values());
-		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true));
-		if(assessmentValues.containsKey(courseAssessment)) {
-			ignoreInCourseAssessmentEl.select(courseAssessment, true);
-		} else {
-			ignoreInCourseAssessmentEl.select("false", true);
-		}
+		initWeighting(formLayout);
 	}
 	
 	private void initFormGrading(FormItemContainer formLayout) {
@@ -294,12 +298,10 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 		
-		boolean gradeDisabled = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
-		
 		// passed
-		passedSpacer.setVisible(gradeDisabled);
-		passedEl.setVisible(gradeDisabled);
-		boolean passedTypeVisible = gradeDisabled && passedEl.isOn();
+		passedSpacer.setVisible(true);
+		passedEl.setVisible(true);
+		boolean passedTypeVisible = passedEl.isOn();
 		passedTypeEl.setVisible(passedTypeVisible);
 		if (passedTypeVisible) {
 			if (!scoreEnabled && passedEl.isOn()) {
@@ -318,7 +320,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		boolean ignoreInScoreVisible = ignoreInCourseAssessmentAvailable
 				&& (scoreEnabled || passedEl.isOn());
 		ignoreInCourseAssessmentEl.setVisible(ignoreInScoreVisible);
-		
+		ignoreSpacer.setVisible(ignoreInScoreVisible);
+
 		weightingEl.setVisible(scoreEnabled);
 	}
 
@@ -438,6 +441,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, max);
 			int rounding = Integer.parseInt(roundingEl.getSelectedKey());
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING, rounding);
+			String weight = weightingEl.getSelectedKey();
+			config.setStringValue(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS, weight);
 			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
 			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 			
@@ -463,9 +468,6 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			} else {
 				config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			}
-			
-			String weight = weightingEl.getSelectedKey();
-			config.setStringValue(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS, weight);
 		} else {
 			resetConfiguration(config);
 		}
