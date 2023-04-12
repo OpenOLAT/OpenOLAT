@@ -193,8 +193,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", translate("node.grade.enabled"), "&nbsp;&nbsp;", formLayout, null, null);
 		gradeEnabledEl.setElementCssClass("o_sel_course_video_grade");
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
-		String scoreEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
-		if("true".equals(scoreEnabled)) {
+		String gradeEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
+		if("true".equals(gradeEnabled)) {
 			gradeEnabledEl.toggleOn();
 		} else {
 			gradeEnabledEl.toggleOff();
@@ -294,13 +294,21 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			gradePassedEl.setValue(GradeUIFactory.translateMinPassed(getTranslator(), minRange));
 		}
 		
-		boolean gradeDisable = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
+		boolean gradeDisabled = gradeEnabledEl == null || !gradeEnabledEl.isVisible() || !gradeEnabledEl.isOn();
 		
 		// passed
-		passedSpacer.setVisible(scoreEnabled && gradeDisable);
-		passedEl.setVisible(scoreEnabled && gradeDisable);
-		boolean passedTypeVisible = scoreEnabled && gradeDisable && passedEl.isOn();
+		passedSpacer.setVisible(gradeDisabled);
+		passedEl.setVisible(gradeDisabled);
+		boolean passedTypeVisible = gradeDisabled && passedEl.isOn();
 		passedTypeEl.setVisible(passedTypeVisible);
+		if (passedTypeVisible) {
+			if (!scoreEnabled && passedEl.isOn()) {
+				passedTypeEl.select(passedTypeEl.getKeys()[1], true);
+				passedTypeEl.setEnabled(0, false);
+			} else {
+				passedTypeEl.setEnabled(0, true);
+			}
+		}
 
 		// cut value
 		boolean cutVisible = passedTypeVisible && passedTypeEl.isOneSelected() && passedTypeEl.getSelected() == 0;
