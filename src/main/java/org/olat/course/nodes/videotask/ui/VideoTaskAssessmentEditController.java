@@ -278,7 +278,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		minEl.setVisible(scoreEnabled);
 		maxEl.setVisible(scoreEnabled);
 		roundingEl.setVisible(scoreEnabled);
-		scoreSpacer.setVisible(scoreEnabled);
+		scoreSpacer.setVisible(true);
 		if(gradeEnabledEl != null) {
 			gradingSpacer.setVisible(scoreEnabled);
 			gradeEnabledEl.setVisible(scoreEnabled);
