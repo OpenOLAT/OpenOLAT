@@ -430,8 +430,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MAX, max);
 			int rounding = Integer.parseInt(roundingEl.getSelectedKey());
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING, rounding);
-			boolean courseAssessment = Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
-			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, courseAssessment);
+			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
+			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 			
 			// Grade
 			if (gradeEnabledEl != null) {
