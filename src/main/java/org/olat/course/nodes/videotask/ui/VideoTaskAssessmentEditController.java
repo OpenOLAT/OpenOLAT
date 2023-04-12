@@ -147,7 +147,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		assessmentValues.add(SelectionValues.entry("false", translate("no")));
 		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
 				assessmentValues.keys(), assessmentValues.values());
-		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true));
+		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false));
 		if(assessmentValues.containsKey(courseAssessment)) {
 			ignoreInCourseAssessmentEl.select(courseAssessment, true);
 		} else {
@@ -477,7 +477,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		configuration.remove(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING);
-		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true);
+		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false);
 		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
 		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
