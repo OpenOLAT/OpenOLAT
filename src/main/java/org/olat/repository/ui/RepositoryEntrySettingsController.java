@@ -235,13 +235,17 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		} else if(catalogLink == source) {
 			cleanUp();
 			doOpenCatalog(ureq);
-		} else if(preparationLink == source) {
+		} else if(preparationLink == source
+				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.preparation.name())) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
-		} else if(reviewLink == source) {
+		} else if(reviewLink == source
+				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.review.name())) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.review);
-		} else if(coachPublishLink == source) {
+		} else if(coachPublishLink == source
+				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.coachpublished.name())) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.coachpublished);
-		} else if(publishLink == source) {
+		} else if(publishLink == source
+				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.published.name())) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.published);
 		} else if(closeLink == source) {
 			doConfirmCloseResource(ureq);

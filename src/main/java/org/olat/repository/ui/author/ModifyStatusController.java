@@ -117,8 +117,10 @@ public class ModifyStatusController extends FormBasicController {
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(status), getClass(),
 				LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 
-		String after = repositoryService.toAuditXml(reloadedEntry);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+		if (!entry.getStatus().equals(reloadedEntry.getStatus())) {
+			String after = repositoryService.toAuditXml(reloadedEntry);
+			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+		}
 	}
 
 }

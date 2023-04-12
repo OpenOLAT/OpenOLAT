@@ -194,7 +194,7 @@ public class RepositoryEntryMembershipProcessor implements InitializingBean, Gen
 		if (subscriptionContext != null
 				&& notificationsManager.getSubscriber(identity, subscriptionContext) == null) {
 			Subscriber sub = notificationsManager.subscribe(identity, subscriptionContext, publisherData);
-			if (!repositoryModule.isNotificationRepoStatusChanged()) {
+			if (!repositoryModule.isRepoStatusChangedNotificationsEnabled()) {
 				sub.setEnabled(false);
 			}
 		}

@@ -17,30 +17,44 @@
  * frentix GmbH, https://www.frentix.com
  * <p>
  */
-package org.olat.repository;
+package org.olat.repository.manager;
 
 import java.util.Date;
 
+import org.olat.core.id.Identity;
+
 /**
- * Initial date: Mär 15, 2023
+ * Initial date: Apr 12, 2023
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface RepositoryEntryAuditLog {
+public class RepositoryEntryAuditLogSearchParams {
 
-	Date getCreationDate();
+	private Identity exlcudedAuthor;
+	private Identity owner;
+	private Date untilCreationDate;
 
-	String getAction();
+	public Identity getExlcudedAuthor() {
+		return exlcudedAuthor;
+	}
 
-	String getBefore();
+	public void setExlcudedAuthor(Identity exlcudedAuthor) {
+		this.exlcudedAuthor = exlcudedAuthor;
+	}
 
-	String getAfter();
+	public Date getUntilCreationDate() {
+		return untilCreationDate;
+	}
 
-	RepositoryEntry getRepositoryEntry();
+	public void setUntilCreationDate(Date untilCreationDate) {
+		this.untilCreationDate = untilCreationDate;
+	}
 
-	Long getAuthorKey();
+	public Identity getOwner() {
+		return owner;
+	}
 
-	enum Action {
-		statusChange
+	public void setOwner(Identity owner) {
+		this.owner = owner;
 	}
 }

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -469,6 +470,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
 		re = loadByKey(re.getKey());
+		// for rest-service, if already deleted course gets deleted again
+		if (re.getStatus().equals(RepositoryEntryStatusEnum.trash.name())) {
+			return re;
+		}
 		String before = toAuditXml(re);
 
 		// start delete
@@ -479,6 +484,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			// don't write the name of an admin which make a restore -> delete operation
 			reloadedRe.setDeletedBy(deletedBy);
 			reloadedRe.setDeletionDate(new Date());
+			reloadedRe.setLastModified(reloadedRe.getDeletionDate());
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
@@ -523,9 +529,9 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		RepositoryEntryStatusChangedEvent statusChangedEvent = new RepositoryEntryStatusChangedEvent(reloadedRe.getKey());
 		coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(statusChangedEvent, OresHelper.clone(reloadedRe));
 
-
 		String after = toAuditXml(reloadedRe);
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, deletedBy);
+
 		return reloadedRe;
 	}
 	
@@ -539,7 +545,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy) {
+		entry = loadByKey(entry.getKey());
+		String before = toAuditXml(entry);
+
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
 		acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
@@ -550,8 +559,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		} else {
 			reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.preparation);
 		}
+		reloadedRe.setLastModified(new Date());
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+
+		if (!entry.getStatus().equals(reloadedRe.getStatus())) {
+			String after = toAuditXml(reloadedRe);
+			auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, restoredBy);
+		}
+
 		return reloadedRe;
 	}
 
@@ -686,10 +702,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
 		entry = loadByKey(entry.getKey());
+		if (entry.getStatus().equals(RepositoryEntryStatusEnum.closed.name())) {
+			return entry;
+		}
 		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
+		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		List<Identity> ownerList = reToGroupDao.getMembers(reloadedEntry, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
 		dbInstance.commit();
@@ -702,15 +722,28 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		String after = toAuditXml(reloadedEntry);
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, closedBy);
+
 		return reloadedEntry;
 	}
 
 	@Override
-	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry) {
+	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry, Identity unclosedBy) {
+		entry = loadByKey(entry.getKey());
+		if (entry.getStatus().equals(RepositoryEntryStatusEnum.published.name())) {
+			return entry;
+		}
+		String before = toAuditXml(entry);
+
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.published);
+		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
 		dbInstance.commit();
+
+		String after = toAuditXml(reloadedEntry);
+		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, unclosedBy);
+
+
 		return reloadedEntry;
 	}
 
@@ -914,19 +947,17 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	@Override
 	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,
 						 RepositoryEntry entry, Identity author) {
-		if (before == null ? after == null : before.equals(after)) {
+		if (Objects.equals(before, after)) {
 			// do not log actions when there are no changes
 			return;
-		}		
-		repositoryEntryAuditLogDAO.auditLog(action, before, after, entry, author);
-		if (repositoryModule.isNotificationRepoStatusChanged()) {
-			notificationsManager.markPublisherNews(getSubscriptionContext(), author, true);
 		}
+		repositoryEntryAuditLogDAO.auditLog(action, before, after, entry, author);
+		notificationsManager.markPublisherNews(getSubscriptionContext(), author, true);
 	}
 
 	@Override
-	public List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity, Date sinceDate) {
-		return repositoryEntryAuditLogDAO.getAuditLogs(authorIdentity, sinceDate);
+	public List<RepositoryEntryAuditLog> getAuditLogs(RepositoryEntryAuditLogSearchParams searchParams) {
+		return repositoryEntryAuditLogDAO.getAuditLogs(searchParams);
 	}
 
 	@Override

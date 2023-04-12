@@ -950,11 +950,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 
-		IdentitiesAddEvent iae = new IdentitiesAddEvent(getIdentity());
-		repositoryManager.addOwners(ureq.getIdentity(), iae, entry, new MailPackage(false));
-
-		String after = repositoryService.toAuditXml(reloadedEntry);
 		if (!entry.getStatus().equals(reloadedEntry.getStatus())) {
+			String after = repositoryService.toAuditXml(reloadedEntry);
 			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
 		}
 	}

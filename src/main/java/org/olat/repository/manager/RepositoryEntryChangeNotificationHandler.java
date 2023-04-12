@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -98,15 +97,16 @@ public class RepositoryEntryChangeNotificationHandler implements NotificationsHa
 											  Translator translator,
 											  Identity identity,
 											  Date sinceDate) {
-		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(identity, sinceDate);
+		RepositoryEntryAuditLogSearchParams searchParams = new RepositoryEntryAuditLogSearchParams();
+		searchParams.setUntilCreationDate(sinceDate);
+		searchParams.setExlcudedAuthor(identity);
+		searchParams.setOwner(identity);
+
+		List<RepositoryEntryAuditLog> auditLogs = repositoryService.getAuditLogs(searchParams);
 		for (RepositoryEntryAuditLog auditLog : auditLogs) {
-			RepositoryEntry repositoryEntry = repositoryService.loadByKey(auditLog.getEntryKey());
-			if (repositoryEntry != null
-					&& repositoryService.hasRole(identity, repositoryEntry, GroupRoles.owner.name())) {
-				SubscriptionListItem item = createNewRepositoryEntryStatusChangeItem(translator, auditLog, repositoryEntry);
-				if (item != null) {
-					items.add(item);
-				}
+			SubscriptionListItem item = createNewRepositoryEntryStatusChangeItem(translator, auditLog, auditLog.getRepositoryEntry());
+			if (item != null) {
+				items.add(item);
 			}
 		}
 	}

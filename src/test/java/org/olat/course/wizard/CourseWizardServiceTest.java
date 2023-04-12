@@ -25,15 +25,25 @@ import static org.olat.test.JunitTestHelper.random;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
+import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.notifications.NotificationsHandler;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.Publisher;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.ICourse;
@@ -50,6 +60,7 @@ import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -73,6 +84,10 @@ public class CourseWizardServiceTest extends OlatTestCase {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private NotificationsManager notificationManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	@Autowired
 	private CourseWizardService sut;
@@ -259,6 +274,52 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		
 		List<AssessmentMode> assessmentModes = assessmentModeManager.getAssessmentModeFor(entry);
 		assertThat(assessmentModes).isEmpty();
+	}
+
+	@Test
+	public void changeRepoEntryStatusReturnsNewSubscriptionInfo() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(true);
+		Identity excludedAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-la-");
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("re-stud-la2-");
+		SubscriptionContext subscriptionContext = repositoryService.getSubscriptionContext();
+		PublisherData publisherData = repositoryService.getPublisherData();
+		Publisher publisher = notificationManager.getOrCreatePublisher(subscriptionContext, publisherData);
+		Locale locale = new Locale(excludedAuthor.getUser().getPreferences().getLanguage());
+
+		// Date in past, for retrieving subscriptionInfos
+		Calendar calNow = Calendar.getInstance();
+		calNow.add(Calendar.DAY_OF_MONTH, -1);
+		Date date = calNow.getTime();
+
+		// assert that default status is published
+		assertThat(re.getStatus()).isEqualTo(RepositoryEntryStatusEnum.published.name());
+
+		// make both authors to a learning resource owner and thus subscribe id
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(excludedAuthor);
+		repositoryManager.addOwners(excludedAuthor, iae, re, new MailPackage(false));
+		iae = new IdentitiesAddEvent(author);
+		repositoryManager.addOwners(author, iae, re, new MailPackage(false));
+
+		// wait until subscribers is available
+		waitForCondition(() -> notificationManager.getSubscriber(author, subscriptionContext) != null, 5000);
+		waitForCondition(() -> notificationManager.getSubscriber(excludedAuthor, subscriptionContext) != null, 5000);
+
+		Subscriber subscriberAuthor = notificationManager.getSubscriber(author, subscriptionContext);
+		Subscriber subscriberExcludedAuthor = notificationManager.getSubscriber(excludedAuthor, subscriptionContext);
+		NotificationsHandler notifHandler = notificationManager.getNotificationsHandler(publisher);
+
+		// update repoEntry status from default "published" to "preparation" with excludedAuthor
+		sut.updateEntryStatus(excludedAuthor, re, RepositoryEntryStatusEnum.preparation);
+		dbInstance.commitAndCloseSession();
+
+		// reload updated repoEntry and assert that status was changed
+		RepositoryEntry updatedEntry = repositoryService.loadByKey(re.getKey());
+		assertThat(updatedEntry.getStatus()).isEqualTo(RepositoryEntryStatusEnum.preparation.name());
+
+		// empty because excludedAuthor did the change - own changes won't be retrieved
+		assertThat(notifHandler.createSubscriptionInfo(subscriberExcludedAuthor, locale, date)).isEqualTo(notificationManager.getNoSubscriptionInfo());
+		// hasNews, means new SubscriptionInfoListItem was added, because status was changed and author was subscribed
+		assertThat(notifHandler.createSubscriptionInfo(subscriberAuthor, locale, date).hasNews()).isTrue();
 	}
 
 }

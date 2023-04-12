@@ -110,8 +110,11 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, updatedEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 
-		String after = repositoryService.toAuditXml(updatedEntry);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, updatedEntry, executor);
+		if (!entry.getStatus().equals(updatedEntry.getStatus())) {
+			String after = repositoryService.toAuditXml(updatedEntry);
+			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, updatedEntry, executor);
+		}
+
 		log.debug("Status of RepositoryEntry changed to '{}'.", status);
 	}
 	
