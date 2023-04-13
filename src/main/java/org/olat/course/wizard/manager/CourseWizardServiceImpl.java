@@ -101,11 +101,11 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 
 	@Override
 	public void updateEntryStatus(Identity executor, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		entry = repositoryService.loadByKey(entry.getKey());
 		if (entry.getEntryStatus() == status) {
 			return;
 		}
 
-		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
 		RepositoryEntry updatedEntry = repositoryManager.setStatus(entry, status);

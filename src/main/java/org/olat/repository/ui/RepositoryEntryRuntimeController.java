@@ -934,12 +934,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
 
+		entry = repositoryService.loadByKey(entry.getKey());
 		// don't trigger change to an already active status
 		if (entry.getEntryStatus() == updatedStatus) {
 			return;
 		}
 
-		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, updatedStatus);

@@ -105,10 +105,11 @@ public class ModifyStatusController extends FormBasicController {
 	}
 	
 	private void doChangeStatus(UserRequest ureq, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		entry = repositoryService.loadByKey(entry.getKey());
 		if (entry.getEntryStatus() == status) {
 			return;
 		}
-		entry = repositoryService.loadByKey(entry.getKey());
+
 		String before = repositoryService.toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, status);

@@ -469,14 +469,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
+		re = loadByKey(re.getKey());
 		// for rest-service, if already deleted course gets deleted again
 		if (re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
 			return re;
 		}
+		String before = toAuditXml(re);
 
 		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
-		String before = toAuditXml(re);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
 		
 		if(reloadedRe.getDeletionDate() == null) {
@@ -493,9 +494,18 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 				.forEach(offer -> acService.deleteOffer(offer));
 		
 		List<Identity> ownerList = reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.owner.name());
+
+		// unsubscribe everyone except owners
 		List<Identity> coachParticipantWaitingList =
 				reToGroupDao.getMembers(reloadedRe, RepositoryEntryRelationType.entryAndCurriculums,
 						GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
+		OLATResource resource = loadRepositoryEntryResource(reloadedRe.getKey());
+		for (Identity identityToUnsubscribe : coachParticipantWaitingList) {
+			if (!hasRole(identityToUnsubscribe, reloadedRe, GroupRoles.owner.name())) {
+				notificationsManager.unsubscribeAllForIdentityAndResId(identityToUnsubscribe, resource.getResourceableId());
+			}
+		}
+
 		// first stop assessment mode if needed
 		assessmentModeCoordinationService.processRepositoryEntryChangedStatus(reloadedRe);
 		//remove from catalog
@@ -504,12 +514,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(owners) {
 			removeMembers(reloadedRe, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		} else {
-			OLATResource resource = loadRepositoryEntryResource(re.getKey());
-			for (Identity identityToUnsubscribe : coachParticipantWaitingList) {
-				if (!hasRole(identityToUnsubscribe, re, GroupRoles.owner.name())) {
-					notificationsManager.unsubscribeAllForIdentityAndResId(identityToUnsubscribe, resource.getResourceableId());
-				}
-			}
 			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		}
 		//remove relation to business groups
@@ -545,13 +549,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy) {
+		entry = loadByKey(entry.getKey());
 		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
 				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.preparation) {
 			return entry;
 		}
+		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
-		String before = toAuditXml(reloadedRe);
 		acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
@@ -701,12 +706,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
+		entry = loadByKey(entry.getKey());
 		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			return entry;
 		}
+		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		String before = toAuditXml(reloadedEntry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
@@ -727,12 +733,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry, Identity unclosedBy) {
+		entry = loadByKey(entry.getKey());
 		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
 			return entry;
 		}
+		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
-		String before = toAuditXml(reloadedEntry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.published);
 		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
