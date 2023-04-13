@@ -24,14 +24,19 @@ import java.util.Date;
 import org.olat.core.id.Identity;
 
 /**
+ * Search parameters for repositoryEntryAuditLog filtering
+ *
  * Initial date: Apr 12, 2023
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RepositoryEntryAuditLogSearchParams {
 
+	// author which should be exluced from the search - for action statusChange ignore own changes
 	private Identity exlcudedAuthor;
+	// retrieve learning resources where the identity is the owner
 	private Identity owner;
+	// retrieve learning resources from this date to current date
 	private Date untilCreationDate;
 
 	public Identity getExlcudedAuthor() {

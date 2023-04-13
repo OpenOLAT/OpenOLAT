@@ -3819,6 +3819,7 @@ create table o_repositoryentry_audit_log (
    fk_author int8,
    primary key (id)
 );
+create index idx_re_audit_log_to_re_entry_idx on o_repositoryentry_audit_log (fk_entry);
 
 -- user view
 create view o_bs_identity_short_v as (

@@ -469,15 +469,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
-		re = loadByKey(re.getKey());
 		// for rest-service, if already deleted course gets deleted again
-		if (re.getStatus().equals(RepositoryEntryStatusEnum.trash.name())) {
+		if (re.getEntryStatus() == RepositoryEntryStatusEnum.trash) {
 			return re;
 		}
-		String before = toAuditXml(re);
 
 		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
+		String before = toAuditXml(re);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
 		
 		if(reloadedRe.getDeletionDate() == null) {
@@ -546,10 +545,13 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy) {
-		entry = loadByKey(entry.getKey());
-		String before = toAuditXml(entry);
+		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.closed
+				|| entry.getEntryStatus() == RepositoryEntryStatusEnum.preparation) {
+			return entry;
+		}
 
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
+		String before = toAuditXml(reloadedRe);
 		acService.getOffers(entry, true, false, null, false, null).stream()
 				.filter(offer -> offer.isGuestAccess() || offer.isOpenAccess())
 				.forEach(offer -> acService.deleteOffer(offer));
@@ -563,10 +565,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 
-		if (!entry.getStatus().equals(reloadedRe.getStatus())) {
-			String after = toAuditXml(reloadedRe);
-			auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, restoredBy);
-		}
+		String after = toAuditXml(reloadedRe);
+		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedRe, restoredBy);
 
 		return reloadedRe;
 	}
@@ -701,13 +701,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications) {
-		entry = loadByKey(entry.getKey());
-		if (entry.getStatus().equals(RepositoryEntryStatusEnum.closed.name())) {
+		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			return entry;
 		}
-		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
+		String before = toAuditXml(reloadedEntry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.closed);
 		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
@@ -728,13 +727,12 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 	@Override
 	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry, Identity unclosedBy) {
-		entry = loadByKey(entry.getKey());
-		if (entry.getStatus().equals(RepositoryEntryStatusEnum.published.name())) {
+		if (entry.getEntryStatus() == RepositoryEntryStatusEnum.published) {
 			return entry;
 		}
-		String before = toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryEntryDAO.loadForUpdate(entry);
+		String before = toAuditXml(reloadedEntry);
 		reloadedEntry.setEntryStatus(RepositoryEntryStatusEnum.published);
 		reloadedEntry.setLastModified(new Date());
 		reloadedEntry = dbInstance.getCurrentEntityManager().merge(reloadedEntry);
@@ -742,7 +740,6 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 
 		String after = toAuditXml(reloadedEntry);
 		auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, unclosedBy);
-
 
 		return reloadedEntry;
 	}

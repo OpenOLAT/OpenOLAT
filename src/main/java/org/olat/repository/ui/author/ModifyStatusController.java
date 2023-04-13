@@ -105,6 +105,9 @@ public class ModifyStatusController extends FormBasicController {
 	}
 	
 	private void doChangeStatus(UserRequest ureq, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		if (entry.getEntryStatus() == status) {
+			return;
+		}
 		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
@@ -117,10 +120,9 @@ public class ModifyStatusController extends FormBasicController {
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(status), getClass(),
 				LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 
-		if (!entry.getStatus().equals(reloadedEntry.getStatus())) {
-			String after = repositoryService.toAuditXml(reloadedEntry);
-			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
-		}
+		String after = repositoryService.toAuditXml(reloadedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, getIdentity());
+
 	}
 
 }

@@ -70,6 +70,7 @@ public interface NotificationsHandler {
 
 	/**
 	 * get displayname of a publisher resource
+	 *
 	 * @param publisher
 	 * @return Display name of a publisher resource
 	 */
@@ -77,12 +78,14 @@ public interface NotificationsHandler {
 
 	/**
 	 * get icon css class
+	 *
 	 * @return Icon Css
 	 */
 	String getIconCss();
 
 	/**
 	 * get additional description of a handler, can be null
+	 *
 	 * @param locale
 	 * @return Additional Description for a Notifications handler
 	 */

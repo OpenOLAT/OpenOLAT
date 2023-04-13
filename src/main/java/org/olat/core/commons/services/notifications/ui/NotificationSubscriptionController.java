@@ -196,7 +196,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		NotificationsHandler handler = notificationsManager.getNotificationsHandler(pub);
 		String title = "";
-		String iconCss = "";
+		String iconCssFromHandler = "";
 
 		if (sub.isEnabled()) {
 			statusToggle.toggleOn();
@@ -206,7 +206,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		if (handler != null) {
 			title = handler.getDisplayName(pub);
-			iconCss = handler.getIconCss();
+			iconCssFromHandler = handler.getIconCss();
 			// If resId is 0L that means, publisher is of section global
 			if (pub.getResId().equals(0L)) {
 				addDesc = handler.getAdditionalDescriptionI18nKey(getLocale()) != null
@@ -218,6 +218,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 			title = StringHelper.escapeHtml(title);
 			learningResource.setI18nKey(title);
 		}
+		// if current row is not a global one then check for pub.getResName and set fitting cssIcon
+		// because global entries don't have any icons for learning resource
 		if (!"-".equals(title)) {
 			String iconCssClass;
 			if ("CalendarManager.course".equals(pub.getResName())
@@ -235,7 +237,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 
 		String resourceType = NewControllerFactory.translateResourceableTypeName(pub.getType(), getLocale());
 		subRes.setI18nKey(resourceType);
-		subRes.setIconLeftCSS(iconCss);
+		subRes.setIconLeftCSS(iconCssFromHandler);
 
 		NotificationSubscriptionRow row = new NotificationSubscriptionRow(section, learningResource, subRes, addDesc, statusToggle,
 				sub.getCreationDate(), sub.getLatestEmailed(), deleteLink, sub.getKey());

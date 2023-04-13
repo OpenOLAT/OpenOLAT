@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
@@ -65,7 +64,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentMode;
@@ -936,6 +934,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		RepositoryEntry entry = getRepositoryEntry();
 
+		// don't trigger change to an already active status
+		if (entry.getEntryStatus() == updatedStatus) {
+			return;
+		}
+
 		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
@@ -950,10 +953,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(updatedStatus), getClass(),
 				LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 
-		if (!entry.getStatus().equals(reloadedEntry.getStatus())) {
-			String after = repositoryService.toAuditXml(reloadedEntry);
-			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
-		}
+		String after = repositoryService.toAuditXml(reloadedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+
 	}
 
 	protected void doSwitchRole(UserRequest ureq, Role role) {

@@ -229,7 +229,8 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 				&& CourseDocumentsFactory.SUBSCRIPTION_SUBIDENTIFIER.equals(publisher.getSubidentifier())) {
 			displayName = repositoryManager.lookupDisplayName(publisher.getResId());
 		} else {
-			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()).getName();
+			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()) != null
+					? businessGroupService.loadBusinessGroup(publisher.getResId()).getName() : "";
 		}
 
 		return displayName;

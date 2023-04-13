@@ -300,7 +300,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		iae = new IdentitiesAddEvent(author);
 		repositoryManager.addOwners(author, iae, re, new MailPackage(false));
 
-		// wait until subscribers is available
+		// wait until subscribers is available, because id is getting subscribed async
 		waitForCondition(() -> notificationManager.getSubscriber(author, subscriptionContext) != null, 5000);
 		waitForCondition(() -> notificationManager.getSubscriber(excludedAuthor, subscriptionContext) != null, 5000);
 

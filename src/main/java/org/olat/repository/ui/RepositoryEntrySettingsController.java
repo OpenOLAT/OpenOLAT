@@ -235,17 +235,13 @@ public class RepositoryEntrySettingsController extends BasicController implement
 		} else if(catalogLink == source) {
 			cleanUp();
 			doOpenCatalog(ureq);
-		} else if(preparationLink == source
-				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.preparation.name())) {
+		} else if(preparationLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
-		} else if(reviewLink == source
-				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.review.name())) {
+		} else if(reviewLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.review);
-		} else if(coachPublishLink == source
-				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.coachpublished.name())) {
+		} else if(coachPublishLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.coachpublished);
-		} else if(publishLink == source
-				&& !entry.getStatus().equals(RepositoryEntryStatusEnum.published.name())) {
+		} else if(publishLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.published);
 		} else if(closeLink == source) {
 			doConfirmCloseResource(ureq);
@@ -333,6 +329,11 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	}
 	
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
+		// don't trigger change to an already active status
+		if (entry.getEntryStatus() == updatedStatus) {
+			return;
+		}
+
 		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 

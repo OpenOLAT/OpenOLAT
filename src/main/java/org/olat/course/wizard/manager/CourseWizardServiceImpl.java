@@ -101,6 +101,10 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 
 	@Override
 	public void updateEntryStatus(Identity executor, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
+		if (entry.getEntryStatus() == status) {
+			return;
+		}
+
 		entry = repositoryService.loadByKey(entry.getKey());
 		String before = repositoryService.toAuditXml(entry);
 
@@ -110,10 +114,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, updatedEntry);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, RepositoryService.REPOSITORY_EVENT_ORES);
 
-		if (!entry.getStatus().equals(updatedEntry.getStatus())) {
-			String after = repositoryService.toAuditXml(updatedEntry);
-			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, updatedEntry, executor);
-		}
+		String after = repositoryService.toAuditXml(updatedEntry);
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, updatedEntry, executor);
 
 		log.debug("Status of RepositoryEntry changed to '{}'.", status);
 	}

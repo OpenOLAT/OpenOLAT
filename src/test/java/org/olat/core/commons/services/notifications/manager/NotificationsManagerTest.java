@@ -121,9 +121,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Publisher publisher = notificationManager.getOrCreatePublisher(context, publisherData);
 
 		//subscribe
-		notificationManager.subscribe(id, context, publisherData);
-		//load the subscriber
-		Subscriber subscriber = notificationManager.getSubscriber(id, publisher);
+		Subscriber subscriber = notificationManager.subscribe(id, context, publisherData);
 		dbInstance.commit();
 		dbInstance.commitAndCloseSession();
 
@@ -135,9 +133,31 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertEquals(Long.valueOf(124), publisher.getResId());
 		Assert.assertNotNull(subscriber);
 
-		sleep(2000);
-
 		notificationManager.updateAllSubscribers(publisher, false);
+
+		//check enabled status
+		Subscriber reloadedSubscriber = notificationManager.getSubscriber(subscriber.getKey());
+		Assert.assertNotNull(reloadedSubscriber);
+		Assert.assertEquals(subscriber, reloadedSubscriber);
+		Assert.assertTrue(subscriber.isEnabled());
+		Assert.assertFalse(reloadedSubscriber.isEnabled());
+	}
+
+	@Test
+	public void testUpdateSubscriber() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("subs-" + UUID.randomUUID());
+		String identifier = UUID.randomUUID().toString().replace("-", "");
+		SubscriptionContext context = new SubscriptionContext("PS2", Long.valueOf(124), identifier);
+		PublisherData publisherData = new PublisherData("testUpdateSubscriber", "e.g. forumdata=keyofforum", null);
+
+		//subscribe
+		Subscriber subscriber = notificationManager.subscribe(id, context, publisherData);
+		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(subscriber);
+
+		notificationManager.updateSubscriber(subscriber, false);
 
 		//check enabled status
 		Subscriber reloadedSubscriber = notificationManager.getSubscriber(subscriber.getKey());

@@ -713,6 +713,21 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	}
 
 	@Override
+	public void updateSubscriber(Subscriber subscriber, boolean subscriptionStatus) {
+		Date lastMod = new Date();
+		String updateQuery = "update notisub set " +
+				"enabled=:subscriptionStatus," +
+				"lastModified=:lastMod " +
+				"where key=:subscriberKey";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(updateQuery)
+				.setParameter("subscriptionStatus", subscriptionStatus)
+				.setParameter("lastMod", lastMod)
+				.setParameter("subscriberKey", subscriber.getKey())
+				.executeUpdate();
+	}
+
+	@Override
 	public Subscriber mergeSubscriber(Subscriber subscriber) {
 		return dbInstance.getCurrentEntityManager().merge(subscriber);
 	}

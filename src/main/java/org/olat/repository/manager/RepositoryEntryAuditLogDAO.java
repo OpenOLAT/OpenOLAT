@@ -91,10 +91,8 @@ public class RepositoryEntryAuditLogDAO {
 		auditLog.setAction(action.name());
 		auditLog.setBefore(before);
 		auditLog.setAfter(after);
+		auditLog.setRepositoryEntry(entry);
 
-		if (entry != null) {
-			auditLog.setRepositoryEntry(entry);
-		}
 		if (author != null) {
 			auditLog.setAuthorKey(author.getKey());
 		}
