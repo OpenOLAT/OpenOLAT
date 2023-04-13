@@ -22,18 +22,21 @@ package org.olat.repository.manager;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
-import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryAuditLogImpl;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.RepositoryEntryToOrganisationImpl;
@@ -82,16 +85,14 @@ public class RepositoryEntryAuditLogDAO {
 	}
 
 	public void auditLog(RepositoryEntryAuditLog.Action action, String before, String after,
-						 RepositoryEntryRef entry, IdentityRef author) {
+						 RepositoryEntry entry, IdentityRef author) {
 		RepositoryEntryAuditLogImpl auditLog = new RepositoryEntryAuditLogImpl();
 		auditLog.setCreationDate(new Date());
 		auditLog.setAction(action.name());
 		auditLog.setBefore(before);
 		auditLog.setAfter(after);
+		auditLog.setRepositoryEntry(entry);
 
-		if (entry != null) {
-			auditLog.setEntryKey(entry.getKey());
-		}
 		if (author != null) {
 			auditLog.setAuthorKey(author.getKey());
 		}
@@ -99,22 +100,50 @@ public class RepositoryEntryAuditLogDAO {
 		dbInstance.getCurrentEntityManager().persist(auditLog);
 	}
 
-	public List<RepositoryEntryAuditLog> getAuditLogs(IdentityRef identity, Date sinceDate) {
-		StringBuilder sb = new StringBuilder(128);
-		sb.append("select log from repositoryentryauditlog log where (log.authorKey!=:authorKey or log.authorKey is null) and log.creationDate>=:sinceDate order by creationDate asc");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), RepositoryEntryAuditLog.class)
-				.setParameter("authorKey", identity.getKey())
-				.setParameter("sinceDate", sinceDate)
-				.getResultList();
+	public List<RepositoryEntryAuditLog> getAuditLogs(RepositoryEntryAuditLogSearchParams searchParams) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select log from repositoryentryauditlog log");
+		qb.append(" inner join fetch log.repositoryEntry as re");
+
+		if (searchParams.getOwner() != null) {
+			qb.append(" inner join re.groups as relGroup")
+					.append(" inner join relGroup.group as baseGroup")
+					.append(" inner join baseGroup.members as membership");
+			qb.and().append("membership.identity.key=:ownerKey");
+			qb.and().append("membership.role='").append(GroupRoles.owner).append("'");
+		}
+
+		if (searchParams.getExlcudedAuthor() != null) {
+			qb.and().append("(log.authorKey!=:authorKey");
+			qb.append(" or log.authorKey is null)");
+		}
+		if (searchParams.getUntilCreationDate() != null) {
+			qb.and().append("log.creationDate>=:untilCreationDate");
+		}
+		qb.orderBy().append("log.creationDate asc");
+
+		TypedQuery<RepositoryEntryAuditLog> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), RepositoryEntryAuditLog.class);
+
+		if (searchParams.getOwner() != null) {
+			query.setParameter("ownerKey", searchParams.getOwner().getKey());
+		}
+		if (searchParams.getExlcudedAuthor() != null) {
+			query.setParameter("authorKey", searchParams.getExlcudedAuthor().getKey());
+		}
+		if (searchParams.getUntilCreationDate() != null) {
+			query.setParameter("untilCreationDate", searchParams.getUntilCreationDate());
+		}
+
+		return query.getResultList();
 	}
 
 	/**
 	 * The repository entry need to be connected to the hibernate session
 	 * to be properly serialized (without lazy loading exceptions).
-	 * 
+	 *
 	 * @param repositoryEntry The repository entry to serialize
-	 * @return The serialized XML 
+	 * @return The serialized XML
 	 */
 	public String toXml(RepositoryEntry repositoryEntry) {
 		if (repositoryEntry == null) return null;

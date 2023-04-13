@@ -3887,6 +3887,7 @@ create table o_repositoryentry_audit_log (
     fk_author number(20),
     primary key (id)
 );
+create index idx_re_audit_log_to_re_entry_idx on o_repositoryentry_audit_log (fk_entry);
 
 -- Projects
 create table o_proj_project (

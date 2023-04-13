@@ -73,7 +73,7 @@ public class RepositoryModule extends AbstractSpringModule {
 	private static final String COMMENT_ENABLED = "repo.comment.enabled";
 	private static final String RATING_ENABLED = "repo.rating.enabled";
 	private static final String REQUEST_MEMBERSHIP_ENABLED = "repo.request.membership";
-	private static final String NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED = "notification.repository.status.changed";
+	private static final String REPOSITORY_STATUS_CHANGED_NOTIFICATIONS_ENABLED = "notification.repository.status.changed";
 	
 	private static final String ALLOW_TO_LEAVE_DEFAULT_OPTION = "repo.allow.to.leave";
 	
@@ -112,8 +112,8 @@ public class RepositoryModule extends AbstractSpringModule {
 
 	@Value("${repo.request.membership:true}")
 	private boolean requestMembershipEnabled;
-	@Value("${notification.repository.status.changed}")
-	private boolean notificationRepoStatusChanged;
+	@Value("${repo.status.changed.notification.enabled.default}")
+	private boolean repoStatusChangedNotificationEnabledDefault;
 
 	@Value("${repo.lifecycle.auto.close:}")
 	private String lifecycleAutoClose;
@@ -228,9 +228,9 @@ public class RepositoryModule extends AbstractSpringModule {
 			requestMembershipEnabled = "true".equals(membership);
 		}
 
-		String notificationStatusChanged = getStringPropertyValue(NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED, true);
+		String notificationStatusChanged = getStringPropertyValue(REPOSITORY_STATUS_CHANGED_NOTIFICATIONS_ENABLED, true);
 		if (StringHelper.containsNonWhitespace(notificationStatusChanged)) {
-			notificationRepoStatusChanged = "true".equals(notificationStatusChanged);
+			repoStatusChangedNotificationEnabledDefault = "true".equals(notificationStatusChanged);
 		}
 		
 		String leaveOption = getStringPropertyValue(ALLOW_TO_LEAVE_DEFAULT_OPTION, true);
@@ -401,13 +401,19 @@ public class RepositoryModule extends AbstractSpringModule {
 		setStringProperty(REQUEST_MEMBERSHIP_ENABLED, Boolean.toString(enabled), true);
 	}
 
-	public boolean isNotificationRepoStatusChanged() {
-		return notificationRepoStatusChanged;
+	/**
+	 * repoStatusChangedNotificationEnabledDefault represents the default value
+	 * for upcoming subscriptions
+	 *
+	 * @return true if activated, false if deactivated
+	 */
+	public boolean isRepoStatusChangedNotificationEnabledDefault() {
+		return repoStatusChangedNotificationEnabledDefault;
 	}
 
-	public void setNotificationRepoStatusChanged(boolean notificationRepoStatusChanged) {
-		this.notificationRepoStatusChanged = notificationRepoStatusChanged;
-		setStringProperty(NOTIFICATION_REPOSITORY_STATUS_CHANGED_ENABLED, Boolean.toString(notificationRepoStatusChanged), true);
+	public void setRepoStatusChangedNotificationEnabledDefault(boolean repoStatusChangedNotificationEnabledDefault) {
+		this.repoStatusChangedNotificationEnabledDefault = repoStatusChangedNotificationEnabledDefault;
+		setStringProperty(REPOSITORY_STATUS_CHANGED_NOTIFICATIONS_ENABLED, Boolean.toString(repoStatusChangedNotificationEnabledDefault), true);
 	}
 	
 	public RepositoryEntryAllowToLeaveOptions getAllowToLeaveDefaultOption() {

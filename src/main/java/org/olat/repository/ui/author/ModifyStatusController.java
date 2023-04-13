@@ -106,6 +106,10 @@ public class ModifyStatusController extends FormBasicController {
 	
 	private void doChangeStatus(UserRequest ureq, RepositoryEntry entry, RepositoryEntryStatusEnum status) {
 		entry = repositoryService.loadByKey(entry.getKey());
+		if (entry.getEntryStatus() == status) {
+			return;
+		}
+
 		String before = repositoryService.toAuditXml(entry);
 
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, status);
@@ -118,7 +122,8 @@ public class ModifyStatusController extends FormBasicController {
 				LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 
 		String after = repositoryService.toAuditXml(reloadedEntry);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, ureq.getIdentity());
+		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, reloadedEntry, getIdentity());
+
 	}
 
 }

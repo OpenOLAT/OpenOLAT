@@ -288,7 +288,8 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 		if (repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId()) != null) {
 			displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
 		} else {
-			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()).getName();
+			displayName = businessGroupService.loadBusinessGroup(publisher.getResId()) != null
+					? businessGroupService.loadBusinessGroup(publisher.getResId()).getName() : "";
 		}
 
 		return displayName;

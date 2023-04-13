@@ -249,7 +249,8 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 		if (repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId()) != null) {
 			displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(publisher.getResId());
 		} else {
-			displayName = businessGroupDao.load(publisher.getResId()).getName();
+			displayName = businessGroupDao.load(publisher.getResId()) != null
+					? businessGroupDao.load(publisher.getResId()).getName() : "";
 		}
 
 		return displayName;

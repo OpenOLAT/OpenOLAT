@@ -75,6 +75,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryAuditLogDAO;
+import org.olat.repository.manager.RepositoryEntryAuditLogSearchParams;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.accesscontrol.ACService;
@@ -117,6 +119,8 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private RepositoryEntryAuditLogDAO repositoryEntryAuditLogDAO;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	
@@ -657,7 +661,12 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 	@Test
 	public void updateStatus() throws IOException, URISyntaxException {
 		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-2-");
 		dbInstance.commitAndCloseSession();
+
+		// make owner to a learning resource owner
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(owner);
+		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
 
 		//remove the owner
 		RestConnection conn = new RestConnection();
@@ -678,6 +687,51 @@ public class RepositoryEntryWebServiceTest extends OlatRestTestCase {
 		// Check database value
 		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
 		Assert.assertEquals(RepositoryEntryStatusEnum.coachpublished, updatedRe.getEntryStatus());
+
+		RepositoryEntryAuditLogSearchParams repositoryEntryAuditLogSearchParams = new RepositoryEntryAuditLogSearchParams();
+		repositoryEntryAuditLogSearchParams.setOwner(owner);
+
+		// assert that size is 1 because an auditLog is expected if the Status was changed to a different status
+		Assert.assertEquals(1, repositoryEntryAuditLogDAO.getAuditLogs(repositoryEntryAuditLogSearchParams).size());
+	}
+
+	@Test
+	public void updateStatusToSameStatus() throws IOException, URISyntaxException {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry(false);
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-2-");
+		dbInstance.commitAndCloseSession();
+
+		// make ID to a learning resource owner
+		IdentitiesAddEvent iae = new IdentitiesAddEvent(owner);
+		repositoryManager.addOwners(owner, iae, re, new MailPackage(false));
+
+		//remove the owner
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, re.getEntryStatus());
+
+		// Changed the status
+		URI request = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(re.getKey().toString())
+				.path("status")
+				.queryParam("newStatus", RepositoryEntryStatusEnum.published.name())
+				.build();
+
+		HttpPost method = conn.createPost(request, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		conn.shutdown();
+
+		// Check database value
+		RepositoryEntry updatedRe = repositoryService.loadByKey(re.getKey());
+		Assert.assertEquals(RepositoryEntryStatusEnum.published, updatedRe.getEntryStatus());
+
+		RepositoryEntryAuditLogSearchParams repositoryEntryAuditLogSearchParams = new RepositoryEntryAuditLogSearchParams();
+		repositoryEntryAuditLogSearchParams.setOwner(owner);
+
+		// assert that size is 0 because no auditLogs are expected if the Status was changed to same status as before
+		Assert.assertEquals(0, repositoryEntryAuditLogDAO.getAuditLogs(repositoryEntryAuditLogSearchParams).size());
 	}
 	
 	@Test

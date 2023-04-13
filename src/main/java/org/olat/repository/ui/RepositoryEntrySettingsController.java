@@ -330,6 +330,11 @@ public class RepositoryEntrySettingsController extends BasicController implement
 	
 	protected final void doChangeStatus(UserRequest ureq, RepositoryEntryStatusEnum updatedStatus) {
 		entry = repositoryService.loadByKey(entry.getKey());
+		// don't trigger change to an already active status
+		if (entry.getEntryStatus() == updatedStatus) {
+			return;
+		}
+
 		String before = repositoryService.toAuditXml(entry);
 
 		entry = repositoryManager.setStatus(entry, updatedStatus);

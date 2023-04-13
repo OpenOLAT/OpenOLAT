@@ -782,15 +782,14 @@ public class CourseWebService {
 		
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		re = repositoryService.loadByKey(re.getKey());
-		String before = repositoryService.toAuditXml(re);
 
 		if(RepositoryEntryStatusEnum.closed.name().equals(newStatus)) {
-			re = repositoryService.closeRepositoryEntry(re, null, false);
+			re = repositoryService.closeRepositoryEntry(re, getIdentity(request), false);
 			log.info(Tracing.M_AUDIT, "REST closing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
-			re = repositoryService.uncloseRepositoryEntry(re);
+			re = repositoryService.uncloseRepositoryEntry(re, getIdentity(request));
 			log.info(Tracing.M_AUDIT, "REST unclosing course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
@@ -801,19 +800,23 @@ public class CourseWebService {
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			re = repositoryService.restoreRepositoryEntry(re);
+			re = repositoryService.restoreRepositoryEntry(re, getIdentity(request));
 			log.info(Tracing.M_AUDIT, "REST restoring course: {} [{}]", re.getDisplayname(), re.getKey());
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
-		} else if(RepositoryEntryStatusEnum.isValid(newStatus)) {
+		} else if(RepositoryEntryStatusEnum.isValid(newStatus)
+				&& !re.getStatus().equals(newStatus)) {
+			String before = repositoryService.toAuditXml(re);
+
 			RepositoryEntryStatusEnum nStatus = RepositoryEntryStatusEnum.valueOf(newStatus);
 			re = repositoryManager.setStatus(re, nStatus);
+
+			String after = repositoryService.toAuditXml(re);
+			repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, re, getIdentity(request));
 			log.info("Change status of {} to {}", re, newStatus);
 			ThreadLocalUserActivityLogger.log(RepositoryEntryStatusEnum.loggingAction(nStatus), getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		}
-		String after = repositoryService.toAuditXml(re);
-		repositoryService.auditLog(RepositoryEntryAuditLog.Action.statusChange, before, after, re, getIdentity(request));
 		return Response.ok().build();
 	}
 	

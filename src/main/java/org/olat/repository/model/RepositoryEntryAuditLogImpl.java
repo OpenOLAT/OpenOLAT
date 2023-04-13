@@ -23,14 +23,18 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 
 /**
@@ -56,8 +60,9 @@ public class RepositoryEntryAuditLogImpl implements RepositoryEntryAuditLog, Per
 	@Column(name = "r_val_after", updatable = false)
 	private String after;
 
-	@Column(name = "fk_entry", updatable = false)
-	private Long entryKey;
+	@ManyToOne(targetEntity = RepositoryEntry.class, optional = false, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fk_entry", updatable = false)
+	private RepositoryEntry repositoryEntry;
 	@Column(name = "fk_author", updatable = false)
 	private Long authorKey;
 
@@ -103,12 +108,12 @@ public class RepositoryEntryAuditLogImpl implements RepositoryEntryAuditLog, Per
 	}
 
 	@Override
-	public Long getEntryKey() {
-		return entryKey;
+	public RepositoryEntry getRepositoryEntry() {
+		return repositoryEntry;
 	}
 
-	public void setEntryKey(Long entryKey) {
-		this.entryKey = entryKey;
+	public void setRepositoryEntry(RepositoryEntry repositoryEntry) {
+		this.repositoryEntry = repositoryEntry;
 	}
 
 	@Override

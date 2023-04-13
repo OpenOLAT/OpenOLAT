@@ -134,7 +134,7 @@ public class OLATUpgrade_17_2_4 extends OLATUpgrade {
 				} else {
 					sub = notificationsManager.subscribe(identity, subscriptionContext, publisherData);
 				}
-				if (sub != null && !repositoryModule.isNotificationRepoStatusChanged()) {
+				if (sub != null && !repositoryModule.isRepoStatusChangedNotificationEnabledDefault()) {
 					counter++;
 					notificationsManager.mergeSubscriber(sub);
 					sub.setEnabled(false);

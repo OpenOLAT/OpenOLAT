@@ -163,7 +163,7 @@ public class RepositoryAdminController extends FormBasicController {
 				translate("repository.admin.notification")
 		};
 
-		boolean statusChangedNotificationEnabled = repositoryModule.isNotificationRepoStatusChanged();
+		boolean statusChangedNotificationEnabled = repositoryModule.isRepoStatusChangedNotificationEnabledDefault();
 		notificationEl = uifactory.addCheckboxesVertical("repository.admin.notification.label", notificationCont, notiKeys, notiValues, 1);
 		notificationEl.addActionListener(FormEvent.ONCHANGE);
 		notificationEl.select(NOTIFICATION_REPOSITORY_STATUS_CHANGED, statusChangedNotificationEnabled);
@@ -197,7 +197,7 @@ public class RepositoryAdminController extends FormBasicController {
 			repositoryModule.setRequestMembershipEnabled(on);
 			getWindowControl().setInfo("saved");
 		} else if (notificationEl == source) {
-			repositoryModule.setNotificationRepoStatusChanged(notificationEl.isKeySelected(NOTIFICATION_REPOSITORY_STATUS_CHANGED));
+			repositoryModule.setRepoStatusChangedNotificationEnabledDefault(notificationEl.isKeySelected(NOTIFICATION_REPOSITORY_STATUS_CHANGED));
 			getWindowControl().setInfo("saved");
 		} else if (taxonomyEl == source) {
 			List<TaxonomyRef> taxonomyRefs = taxonomyEl.getSelectedKeys().stream()

@@ -38,6 +38,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.manager.RepositoryEntryAuditLogSearchParams;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.resource.OLATResource;
@@ -118,9 +119,10 @@ public interface RepositoryService {
 	/**
 	 * The access is set to B.
 	 * @param entry
+	 * @param restoredBy
 	 * @return
 	 */
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry);
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy);
 
 
 	/**
@@ -151,7 +153,14 @@ public interface RepositoryService {
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications);
 
 
-	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry);
+	/**
+	 * This will unclose a repositoryEntry (status change from closed to published)
+	 *
+	 * @param entry
+	 * @param unclosedBy
+	 * @return
+	 */
+	public RepositoryEntry uncloseRepositoryEntry(RepositoryEntry entry, Identity unclosedBy);
 
 
 	/**
@@ -460,10 +469,9 @@ public interface RepositoryService {
 	/**
 	 * retrieve auditLogs for repositoryEntries
 	 *
-	 * @param authorIdentity user Identity to filter out own auditLogs
-	 * @param sinceDate compareDate, passed initially by user in gui
-	 * @return
+	 * @param searchParams
+	 * @return auditLogs List
 	 */
-	List<RepositoryEntryAuditLog> getAuditLogs(Identity authorIdentity, Date sinceDate);
+	List<RepositoryEntryAuditLog> getAuditLogs(RepositoryEntryAuditLogSearchParams searchParams);
 	
 }

@@ -36,7 +36,7 @@ public interface RepositoryEntryAuditLog {
 
 	String getAfter();
 
-	Long getEntryKey();
+	RepositoryEntry getRepositoryEntry();
 
 	Long getAuthorKey();
 

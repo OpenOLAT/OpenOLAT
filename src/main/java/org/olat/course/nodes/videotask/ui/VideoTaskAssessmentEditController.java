@@ -147,7 +147,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		assessmentValues.add(SelectionValues.entry("false", translate("no")));
 		ignoreInCourseAssessmentEl = uifactory.addRadiosHorizontal("form.ignore.course.assessment", formLayout,
 				assessmentValues.keys(), assessmentValues.values());
-		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true));
+		String courseAssessment = Boolean.toString(config.getBooleanSafe(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false));
 		if(assessmentValues.containsKey(courseAssessment)) {
 			ignoreInCourseAssessmentEl.select(courseAssessment, true);
 		} else {
@@ -432,9 +432,11 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 	
 	private void updateConfig() {
+		resetConfiguration(config);
+
 		boolean scoreEnabled = scoreEl.isOn();
 		config.setStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, Boolean.toString(scoreEnabled));
-		if(scoreEnabled) {
+		if (scoreEnabled) {
 			Float min = Float.valueOf(minEl.getValue());
 			config.set(MSCourseNode.CONFIG_KEY_SCORE_MIN, min);
 			Float max = Float.valueOf(maxEl.getValue());
@@ -443,10 +445,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 			config.setIntValue(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING, rounding);
 			String weight = weightingEl.getSelectedKey();
 			config.setStringValue(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS, weight);
-			boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
-			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
-			
-			// Grade
+
 			if (gradeEnabledEl != null) {
 				config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_ENABLED, gradeEnabledEl.isOn());
 				config.setBooleanEntry(MSCourseNode.CONFIG_KEY_GRADE_AUTO, Boolean.parseBoolean(gradeAutoEl.getSelectedKey()));
@@ -454,30 +453,30 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 				config.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 				config.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
 			}
-			
-			boolean showPassed = passedEl.isOn();
-			config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, showPassed);
-			if (showPassed) {
-				// do cut value
-				boolean cutAutomatically = ASSESSMENT_AUTO.equals(passedTypeEl.getSelectedKey());
-				if (cutAutomatically && cutEl.isVisible()) {
-					config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutEl.getValue()));
-				} else {
-					config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-				}
+		}
+
+		boolean showPassed = passedEl.isOn();
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, showPassed);
+		if (showPassed) {
+			boolean cutAutomatically = ASSESSMENT_AUTO.equals(passedTypeEl.getSelectedKey());
+			if (cutAutomatically && cutEl.isVisible()) {
+				config.set(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, Float.valueOf(cutEl.getValue()));
 			} else {
 				config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			}
 		} else {
-			resetConfiguration(config);
+			config.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		}
+
+		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
 	}
 	
 	protected static void resetConfiguration(ModuleConfiguration configuration) {
 		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		configuration.remove(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		configuration.remove(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING);
-		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, true);
+		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, false);
 		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
 		configuration.remove(MSCourseNode.CONFIG_KEY_GRADE_AUTO);
 		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);

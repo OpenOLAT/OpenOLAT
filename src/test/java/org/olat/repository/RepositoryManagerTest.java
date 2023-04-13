@@ -388,13 +388,16 @@ public class RepositoryManagerTest extends OlatTestCase {
 
 		Assert.assertFalse(repositoryEntryRelationDao.hasRole(id, re, GroupRoles.owner.name()));
 
+		// make id to a learning resource owner and thus subscribe id
 		IdentitiesAddEvent iae = new IdentitiesAddEvent(id);
 		repositoryManager.addOwners(id, iae, re, new MailPackage(false));
 
-		sleep(2000);
+		// wait until subscribers is available, because id is getting subscribed async
+		waitForCondition(() -> notificationsManager.getSubscriber(id, subscriptionContext) != null, 5000);
 
 		Subscriber subscriber = notificationsManager.getSubscriber(id, subscriptionContext);
 		Assert.assertTrue(repositoryEntryRelationDao.hasRole(id, re, GroupRoles.owner.name()));
+		// assert that subscriber is available and enabled
 		Assert.assertNotNull(subscriber);
 		Assert.assertTrue(subscriber.isEnabled());
 	}
