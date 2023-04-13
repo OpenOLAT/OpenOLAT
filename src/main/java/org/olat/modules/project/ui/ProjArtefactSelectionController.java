@@ -233,7 +233,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					.filter(toDo -> toDoSelectedKeys.contains(toDo.getArtefact().getKey().toString()))
 					.forEach(toDo -> projectService.linkArtefacts(getIdentity(), artefact, toDo.getArtefact()));
 		}
-		if (artefactItems.getToDos() != null) {
+		if (artefactItems.getNotes() != null) {
 			artefactItems.getNotes().stream()
 					.filter(note -> noteSelectedKeys.contains(note.getArtefact().getKey().toString()))
 					.forEach(note -> projectService.linkArtefacts(getIdentity(), artefact, note.getArtefact()));
