@@ -442,7 +442,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	}
 	
 	private void forgeMarkLink(CurriculumElementWithViewsRow row) {
-		if(!guestOnly) {
+		if(!guestOnly && assessedIdentity.equals(getIdentity())) {
 			FormLink markLink = uifactory.addFormLink("mark_" + (++counter), "mark", "", null, null, Link.NONTRANSLATED);
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
