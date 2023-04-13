@@ -437,17 +437,18 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 	}
 	
 	private void submit(VideoTaskSession taskSession) {
+		AssessmentEntryStatus assessmentEntryStatus = AssessmentEntryStatus.done;
+
 		// Session only in test / assessment mode, not in practice
 		if(assessmentType) {
-			submitAssessedTask(taskSession);
+			assessmentEntryStatus = submitAssessedTask(taskSession);
 		} else {
 			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 		}
-		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
-				AssessmentEntryStatus.done, Role.user);
+		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, 1.0, assessmentEntryStatus, Role.user);
 	}
 	
-	private void submitAssessedTask(VideoTaskSession taskSession) {
+	private AssessmentEntryStatus submitAssessedTask(VideoTaskSession taskSession) {
 		String grade = null;
 		String gradeSystemIdent = null;
 		String performanceClassIdent = null;
@@ -493,6 +494,8 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 		
 		courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
 				true, Role.user);
+
+		return assessmentStatus;
 	}
 	
 	private boolean isAssessmentWithGrade() {
