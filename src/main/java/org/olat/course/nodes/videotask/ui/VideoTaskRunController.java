@@ -475,16 +475,13 @@ public class VideoTaskRunController extends BasicController implements GenericEv
 				updatePassed = null;
 				assessmentStatus = AssessmentEntryStatus.inReview;
 			}
-		} else if(score != null) {
+		} else {
 			updatePassed = taskSession.getPassed();
 			if(courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false) && cutValue == null) {
 				assessmentStatus = AssessmentEntryStatus.inReview;
 			} else {
 				assessmentStatus = AssessmentEntryStatus.done;
 			}
-		} else {
-			updatePassed = taskSession.getPassed();
-			assessmentStatus = AssessmentEntryStatus.done;
 		}
 		
 		Boolean visibility = (assessmentStatus == AssessmentEntryStatus.done); 
