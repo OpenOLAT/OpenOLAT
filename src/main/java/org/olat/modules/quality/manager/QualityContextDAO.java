@@ -169,6 +169,26 @@ class QualityContextDAO {
 				.setParameter("sessionKey", sessionRef.getKey())
 				.getResultList();
 	}
+	
+	public List<QualityContext> loadBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		if (sessionRefs == null || sessionRefs.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select context");
+		sb.append("  from qualitycontext as context");
+		sb.append("       inner join fetch context.dataCollection dataCollection");
+		sb.append("       left join fetch dataCollection.topicRepositoryEntry topicRepositoryEntry");
+		sb.append("       left join fetch dataCollection.topicIdentity topicIdentity");
+		sb.append("       left join fetch topicIdentity.user topicUser");
+		sb.and().append("context.evaluationFormSession.key in :sessionKeys");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), QualityContext.class)
+				.setParameter("sessionKeys", sessionRefs.stream().map(EvaluationFormSessionRef::getKey).toList())
+				.getResultList();
+	}
 
 	/**
 	 * Load the context by participation and no audience.

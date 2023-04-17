@@ -83,7 +83,7 @@ public class EvaluationFormExcelExport {
 	private final UserColumns userColumns;
 	private final List<AbstractElement> elements;
 	private final EvaluationFormResponses responses;
-	private final List<EvaluationFormSession> sessions;
+	protected final List<EvaluationFormSession> sessions;
 	private final List<String> mergedElementIds = new ArrayList<>();
 	
 	@Autowired
@@ -192,6 +192,18 @@ public class EvaluationFormExcelExport {
 				break;
 			}
 		}
+		addCustomHeader(workbook, headerRow, col);
+	}
+
+	/**
+	 * 
+	 *
+	 * @param workbook
+	 * @param headerRow
+	 * @param col
+	 */
+	protected void addCustomHeader(OpenXMLWorkbook workbook, Row headerRow, AtomicInteger col) {
+		//
 	}
 
 	private void mergeColumn(AbstractElement element, AtomicInteger col) {
@@ -263,6 +275,18 @@ public class EvaluationFormExcelExport {
 				break;
 			}
 		}
+		addCustomColumns(workbook, session, row, col);
+	}
+
+	/**
+	 *
+	 * @param workbook 
+	 * @param session
+	 * @param row
+	 * @param col
+	 */
+	protected void addCustomColumns(OpenXMLWorkbook workbook, EvaluationFormSession session, Row row, AtomicInteger col) {
+		//
 	}
 
 	private void addTitleHeader(OpenXMLWorkbook workbook, Row row, AtomicInteger col, Title title) {
