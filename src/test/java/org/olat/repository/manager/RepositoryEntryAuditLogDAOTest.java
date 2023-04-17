@@ -20,6 +20,7 @@
 package org.olat.repository.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -28,10 +29,10 @@ import java.util.Objects;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.util.mail.MailPackage;
+import org.olat.core.util.DateUtils;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryAuditLog;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -52,6 +53,8 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
 	private RepositoryEntryAuditLogDAO repositoryEntryAuditLogDAO;
 
 	@Test
@@ -60,8 +63,7 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-2-");
 
 		// make ID to a learning resource owner and thus subscribe id
-		IdentitiesAddEvent iae = new IdentitiesAddEvent(identity);
-		repositoryManager.addOwners(identity, iae, entry, new MailPackage(false));
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.owner.name());
 
 		String before = repositoryEntryAuditLogDAO.toXml(entry);
 
@@ -114,7 +116,8 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 	@Test
 	public void getAuditLogs_byAfterCreationDate() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-2-");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.owner.name());
 
 		String before = repositoryEntryAuditLogDAO.toXml(entry);
 
@@ -129,7 +132,8 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		RepositoryEntryAuditLogSearchParams repositoryEntryAuditLogSearchParams = new RepositoryEntryAuditLogSearchParams();
-		repositoryEntryAuditLogSearchParams.setUntilCreationDate(new Date());
+		repositoryEntryAuditLogSearchParams.setOwner(identity);
+		repositoryEntryAuditLogSearchParams.setUntilCreationDate(DateUtils.addHours(new Date(), 1));
 
 		// load the audit log
 		List<RepositoryEntryAuditLog> auditLogs = repositoryEntryAuditLogDAO.getAuditLogs(repositoryEntryAuditLogSearchParams);
@@ -137,11 +141,7 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 		Assert.assertTrue(auditLogs.isEmpty());
 
 		// Date in past, for retrieving auditLogs
-		Calendar calNow = Calendar.getInstance();
-		calNow.add(Calendar.SECOND, -1);
-		Date date = calNow.getTime();
-
-		repositoryEntryAuditLogSearchParams.setUntilCreationDate(date);
+		repositoryEntryAuditLogSearchParams.setUntilCreationDate(DateUtils.addHours(new Date(), -1));
 		// load the audit log
 		auditLogs = repositoryEntryAuditLogDAO.getAuditLogs(repositoryEntryAuditLogSearchParams);
 		// should not be empty because untilCreationDate is set to a date before the logged creationDate
@@ -155,8 +155,7 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-3-");
 
 		// make ID to a learning resource owner and thus subscribe id
-		IdentitiesAddEvent iae = new IdentitiesAddEvent(author);
-		repositoryManager.addOwners(author, iae, entry, new MailPackage(false));
+		repositoryEntryRelationDao.addRole(author, entry, GroupRoles.owner.name());
 
 		String before = repositoryEntryAuditLogDAO.toXml(entry);
 
@@ -194,8 +193,7 @@ public class RepositoryEntryAuditLogDAOTest extends OlatTestCase {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("audit-3-");
 
 		// make ID to a learning resource owner and thus subscribe id
-		IdentitiesAddEvent iae = new IdentitiesAddEvent(author);
-		repositoryManager.addOwners(author, iae, entry, new MailPackage(false));
+		repositoryEntryRelationDao.addRole(author, entry, GroupRoles.owner.name());
 
 		String before = repositoryEntryAuditLogDAO.toXml(entry);
 
