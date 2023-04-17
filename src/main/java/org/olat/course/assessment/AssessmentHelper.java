@@ -287,11 +287,19 @@ public class AssessmentHelper {
 	 */
 	public static String getMinMax(Translator translator, Float minScore, Float maxScore) {
 		if (minScore != null || maxScore != null) {
-			String min = minScore != null? getRoundedScore(minScore): translator.translate("assessment.value.not.visible");
-			String max = maxScore != null? getRoundedScore(maxScore): translator.translate("assessment.value.not.visible");
+			String min = getRoundedOrNA(translator, minScore);
+			String max = getRoundedOrNA(translator, maxScore);
 			return translator.translate("score.min.max.value", min, max);
 		}
 		return null;
+	}
+	
+	public static String getRoundedOrNA(Translator translator, Float score) {
+		return score != null? getRoundedScore(score): translator.translate("assessment.value.not.visible");
+	}
+	
+	public static String getRoundedOrNA(Translator translator, Double score) {
+		return score != null? getRoundedScore(score): translator.translate("assessment.value.not.visible");
 	}
 	
 	public static TreeModel assessmentTreeModel(ICourse course, Locale locale) {

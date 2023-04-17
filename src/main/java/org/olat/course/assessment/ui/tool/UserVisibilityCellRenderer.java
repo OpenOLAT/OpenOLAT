@@ -42,6 +42,11 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 		render(target, translator, userVisibility);
 		return target.toString();
 	}
+	
+	@Override
+	protected boolean isNullRendered() {
+		return true;
+	}
 
 	@Override
 	protected String getCellValue(Object val, Translator translator) {
@@ -96,6 +101,7 @@ public class UserVisibilityCellRenderer extends LabelCellRenderer {
 		if (val instanceof Boolean) {
 			return (Boolean) val;
 		}
-		return null;
+		// We initially display the user visibility as false.
+		return Boolean.FALSE;
 	}
 }
