@@ -29,6 +29,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.iq.QTI21EditForm;
+import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21DeliveryOptions.PassedType;
@@ -56,6 +57,7 @@ public class QTI21Figures implements MoreFigures {
 		
 		QTI21Service qti21Service = CoreSpringFactory.getImpl(QTI21Service.class);
 		Translator translator = Util.createPackageTranslator(QTI21EditForm.class, locale);
+		translator = Util.createPackageTranslator(MSIdentityListCourseNodeController.class, locale, translator);
 		
 		Double minValue = null;
 		Double maxValue = null;
