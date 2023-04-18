@@ -311,6 +311,8 @@ public interface NotificationsManager {
 	public void asyncSubscribe(Identity identity, SubscriptionContext subscriptionContext, PublisherData publisherData);
 	
 	public void subscribe(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
+	
+	public void initialSubscription(List<Identity> identities, SubscriptionContext subscriptionContext, PublisherData publisherData);
 
 	public void unsubscribe(Subscriber s);
 	

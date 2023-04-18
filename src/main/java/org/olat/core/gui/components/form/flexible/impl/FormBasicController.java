@@ -480,7 +480,8 @@ public abstract class FormBasicController extends BasicController {
 	protected void markDirtinessToContainer(FormItem source, FormEvent event) {
 		if((source instanceof MultipleSelectionElement || source instanceof SingleSelection || source instanceof FormToggle)
 				&& (event.wasTriggerdBy(FormEvent.ONCLICK) || event.wasTriggerdBy(FormEvent.ONCHANGE))
-				&& flc.getRootForm().hasExplicitSubmit()) {
+				&& flc.getRootForm().hasExplicitSubmit()
+				&& !flc.getRootForm().isHideDirtyMarkingMessage()) {
 			markDirty();
 		}
 	}

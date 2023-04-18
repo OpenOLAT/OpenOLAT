@@ -159,7 +159,7 @@ public class QTI21DeleteDataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			String msg = translate("reset.test.data.text", Integer.toString(identities.size()));
+			String msg = translate("delete.all.data.text", Integer.toString(identities.size()));
 			layoutCont.contextPut("msg", msg);
 		}
 		
@@ -167,14 +167,14 @@ public class QTI21DeleteDataController extends FormBasicController {
 		formLayout.add("confirm", confirmCont);
 		confirmCont.setRootForm(mainForm);
 		
-		String[] onValues = new String[]{ translate("reset.test.data.acknowledge") };
+		String[] onValues = new String[]{ translate("delete.all.data.confirmation") };
 		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation", confirmCont, onKeys, onValues);
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
 		confirmCont.add(buttonsCont);
+		uifactory.addFormSubmitButton("delete.all.data", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		uifactory.addFormSubmitButton("reset.data", buttonsCont);
 	}
 	
 	@Override

@@ -223,6 +223,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		doneLink = uifactory.addFormSubmitButton("save.as.done", labelKey, formLayout);
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		showHideButtons();
+		if(!doneLink.isVisible() && !saveLink.isVisible()) {
+			flc.getRootForm().setHideDirtyMarkingMessage(true);
+		}
 	}
 
 	private void ajustFromSession() {
@@ -320,7 +323,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				Double progress = doCalculateProgress();
 				fireEvent(ureq, new ProgressEvent(progress));
 			}
-		} else if(doneLink != source) {
+		} else if(doneLink != source && !flc.getRootForm().isHideDirtyMarkingMessage()) {
 			markDirty();
 		}
 		super.formInnerEvent(ureq, source, event);
