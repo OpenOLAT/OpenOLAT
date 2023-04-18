@@ -1029,6 +1029,32 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		}
 		dbInstance.commit();	
 	}
+	
+	@Override
+	public void initialSubscription(List<Identity> identities, SubscriptionContext subscriptionContext,
+			PublisherData publisherData) {
+		if(identities == null || identities.isEmpty()) return;
+		
+		Publisher toUpdate = getPublisherForUpdate(subscriptionContext);
+		if(toUpdate == null) {
+			//create the publisher
+			findOrCreatePublisher(subscriptionContext, publisherData);
+			//lock the publisher
+			toUpdate = getPublisherForUpdate(subscriptionContext);
+		}
+
+		for(Identity identity:identities) {
+			Subscriber s = getSubscriber(identity, toUpdate);
+			// if the subscriber exists, do nothing
+			if (s == null) {
+				// no subscriber -> create.
+				// s.latestReadDate >= p.latestNewsDate == no news for subscriber when no
+				// news after subscription time
+				doCreateAndPersistSubscriber(toUpdate, identity);
+			}
+		}
+		dbInstance.commit();	
+	}
 
 	/**
 	 * call this method to indicate that there is news for the given
@@ -1189,9 +1215,11 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	public void unsubscribe(Subscriber s) {
 		Subscriber foundSub = getSubscriber(s.getKey());
 		if (foundSub != null) {
-			deleteSubscriber(foundSub);
+			foundSub.setEnabled(false);
+			dbInstance.getCurrentEntityManager().merge(foundSub);
 		} else {
-			log.warn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier());
+			log.debug("could not unsubscribe {} from publisher: {},{},{} ", s.getIdentity().getKey(), s.getPublisher().getResName(),
+					s.getPublisher().getResId(), s.getPublisher().getSubidentifier());
 		}
 	}
 

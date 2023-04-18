@@ -193,6 +193,34 @@ public class NotificationsWebService {
 		return Response.ok().build();
 	}
 	
+	@PUT
+	@Path("subscribers/initial")
+	@Operation(summary = "Make the initial subscription but don't force subscription if the user already unsubscribe it",
+		description = "Make the initial subscription but don't force subscription if the user already unsubscribe it")
+	@ApiResponse(responseCode = "200", description = "Ok")
+	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
+	@ApiResponse(responseCode = "404", description = "The author or message not found")
+	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
+	public Response initialSubscribe(PublisherVO publisherVO, @Context HttpServletRequest request) {
+		if(!isAdmin(request)) {
+			return Response.serverError().status(Status.FORBIDDEN).build();
+		}
+
+		SubscriptionContext subscriptionContext
+			= new SubscriptionContext(publisherVO.getResName(), publisherVO.getResId(), publisherVO.getSubidentifier());
+		PublisherData publisherData
+			= new PublisherData(publisherVO.getType(), publisherVO.getData(), publisherVO.getBusinessPath());
+		
+		List<UserVO> userVoes = publisherVO.getUsers();
+		List<Long> identityKeys = new ArrayList<>();
+		for(UserVO userVo:userVoes) {
+			identityKeys.add(userVo.getKey());
+		}
+		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
+		notificationsMgr.subscribe(identities, subscriptionContext, publisherData);
+		return Response.ok().build();
+	}
+	
 	@DELETE
 	@Path("subscribers/{subscriberKey}")
 	@Operation(summary = "Delete subscribers", description = "Delete the subscribers by id")
