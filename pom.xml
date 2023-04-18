@@ -66,7 +66,7 @@
 		<attach.classes>false</attach.classes>
 		
 		<!-- Dependency versions -->
-		<org.springframework.version>6.0.7</org.springframework.version>
+		<org.springframework.version>6.0.8</org.springframework.version>
 		<org.hibernate.version>6.1.7.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.2</org.glassfish.jaxb.runtime>
@@ -77,14 +77,14 @@
 		<org.slf4j>2.0.7</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.3.4.Final</io.undertow>
+		<io.undertow>2.3.5.Final</io.undertow>
 		<jackson.version>2.14.2</jackson.version>
-		<swagger.ui.version>4.18.1</swagger.ui.version>
+		<swagger.ui.version>4.18.2</swagger.ui.version>
 		<com.mysql.version>8.0.32</com.mysql.version>
 		<org.postgresql.version>42.5.4</org.postgresql.version>
 		<org.infinispan.version>14.0.7.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
-		<version.selenium>4.8.1</version.selenium>
+		<version.selenium>4.8.3</version.selenium>
 		<version.drone>3.0.0-alpha.7</version.drone>
 		<activemq.artemis.version>2.28.0</activemq.artemis.version>
 		<jakarta.jms.api>3.1.0</jakarta.jms.api>
@@ -113,9 +113,9 @@
 	    <test.env.msgraph.teams.producer></test.env.msgraph.teams.producer>
 	    <test.env.instance.id>myolat</test.env.instance.id>
 	    <test.env.webdriver.browser>chrome</test.env.webdriver.browser>
-	    <test.env.webdriver.browserVersion>110.0.5481.77</test.env.webdriver.browserVersion>
+	    <test.env.webdriver.browserVersion>112.0.5615.49</test.env.webdriver.browserVersion>
 	    <test.env.webdriver.firefox.version>v0.31.0</test.env.webdriver.firefox.version>
-	    <test.env.webdriver.chrome.version>110.0.5481.77</test.env.webdriver.chrome.version>
+	    <test.env.webdriver.chrome.version>112.0.5615.49</test.env.webdriver.chrome.version>
 	    <test.env.webdriver.chrome.arguments></test.env.webdriver.chrome.arguments>
 	    <skipTests>true</skipTests>
 		<skipSeleniumTests>false</skipSeleniumTests>
