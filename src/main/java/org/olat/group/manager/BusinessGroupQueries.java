@@ -285,7 +285,7 @@ public class BusinessGroupQueries {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select bgi, ")
 		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
-		  .append("  where nParticipants.group.key=bgi.baseGroup and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" ) as numOfParticipants,")
 		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
 		  .append("  where reservation.resource.key=bgi.resource.key")
