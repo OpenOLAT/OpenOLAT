@@ -105,6 +105,7 @@ import org.olat.course.editor.importnodes.ImportCourseNodesFinishStepCallback;
 import org.olat.course.editor.overview.OverviewController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -272,7 +273,10 @@ public class EditorMainController extends MainLayoutBasicController implements G
 				menuTree.setDropEnabled(true);
 				menuTree.setDropSiblingEnabled(true);	
 				menuTree.setDndAcceptJSMethod("treeAcceptDrop_notWithChildren");	
-				menuTree.setElementCssClass("o_editor_menu");
+				String menuTreeCss = LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())
+						? "o_editor_menu o_lp_edit"
+						: "o_editor_menu";
+				menuTree.setElementCssClass(menuTreeCss);
 	
 				/*
 				 * create editor user course environment for enhanced syntax/semantic

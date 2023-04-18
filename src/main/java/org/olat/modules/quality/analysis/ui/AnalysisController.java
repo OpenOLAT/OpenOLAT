@@ -62,7 +62,6 @@ import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.SingleChoice;
-import org.olat.modules.forms.ui.EvaluationFormExcelExport;
 import org.olat.modules.forms.ui.EvaluationFormOverviewController;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController;
 import org.olat.modules.forms.ui.EvaluationFormPrintSelectionController.Target;
@@ -653,7 +652,7 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void doExport(UserRequest ureq) {
 		String surveyName = "survey";
-		EvaluationFormExcelExport export = new EvaluationFormExcelExport(form, getReportSessionFilter(),
+		AnalysisExcelExport export = new AnalysisExcelExport(form, getReportSessionFilter(),
 				getReportHelper().getComparator(), new ReportHelperUserColumns(getReportHelper(), getTranslator()), surveyName);
 		ureq.getDispatchResult().setResultingMediaResource(export.createMediaResource());
 	}

@@ -33,6 +33,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
@@ -178,6 +179,8 @@ public interface QualityService {
 	public List<QualityContext> loadContextByParticipation(EvaluationFormParticipationRef participationRef);
 
 	public List<QualityContext> loadContextByDataCollection(QualityDataCollectionRef dataCollectionRef);
+	
+	public List<QualityContext> loadContextBySessions(List<? extends EvaluationFormSessionRef> sessionRefs);
 	
 	public void deleteContext(QualityContextRef contextRef);
 

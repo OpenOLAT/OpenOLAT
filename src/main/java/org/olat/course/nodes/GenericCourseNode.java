@@ -647,8 +647,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	protected void postImportCourseNodeConditions(CourseNode sourceCourseNode, CourseEnvironmentMapper envMapper) {
 		if(envMapper.isLearningPathNodeAccess() || envMapper.isSourceCourseLearningPathNodeAccess()) {
 			// Precondition access / visibility are no longer used in the learning path node access course type 
-			removeCourseNodeCondition(preConditionAccess);
-			removeCourseNodeCondition(preConditionVisibility);
+			deleteGenericConditions();
 		} else {
 			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionAccess, preConditionAccess, envMapper);
 			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionVisibility, preConditionVisibility, envMapper);
@@ -691,6 +690,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
 		learningPathConfigs.setExceptionalObligations(null);
 		learningPathConfigs.setObligation(null);
+	}
+	
+	public void deleteGenericConditions() {
+		preConditionAccess = null;
+		preConditionVisibility = null;
 	}
 
 	protected final void removeCourseNodeCondition(Condition condition) {

@@ -353,13 +353,20 @@ public class AssessmentForm extends FormBasicController {
 			}
 			
 			if(fscore != null) {
-				if ((min != null && fscore < min.floatValue()) 
-						|| fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
+				if (min != null && fscore < min.floatValue()) {
+					score.setErrorKey("form.error.score.out.min.max",
+							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
+							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
+					allOk &= false;
+				} else if (max != null && fscore > max.floatValue()) {
+					score.setErrorKey("form.error.score.out.min.max",
+							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
+							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
+					allOk &= false;
+				} else if (fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
 					score.setErrorKey("form.error.scoreOutOfRange");
 					allOk &= false;
-				}
-				if ((max != null && fscore > max.floatValue())
-						|| fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
+				} else if (fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
 					score.setErrorKey("form.error.scoreOutOfRange");
 					allOk &= false;
 				}
@@ -619,8 +626,6 @@ public class AssessmentForm extends FormBasicController {
 			if (scoreValue != null) {
 				score.setValue(AssessmentHelper.getRoundedScore(scoreValue));
 			} 
-			// assessment overview with max score
-			score.setRegexMatchCheck("(\\d+)||(\\d+\\.\\d{1,3})||(\\d+\\,\\d{1,3})", "form.error.wrongFloat");
 			if (hasGrade) {
 				score.addActionListener(FormEvent.ONCHANGE);
 			}
@@ -761,7 +766,6 @@ public class AssessmentForm extends FormBasicController {
 		if (canChangeUserVisibility) {
 			saveAndDoneDropdown = uifactory.addDropdownMenu("save.done.more", null, buttonGroupLayout, getTranslator());
 			saveAndDoneDropdown.setOrientation(DropdownOrientation.right);
-			saveAndDoneDropdown.setPrimary(true);
 			
 			saveAndDoneAdditionalLink = uifactory.addFormLink("save.done.add", doneAddCmd, doneAddName, null, buttonGroupLayout, Link.LINK);
 			saveAndDoneAdditionalLink.setIconLeftCSS(donAddIconCSS);

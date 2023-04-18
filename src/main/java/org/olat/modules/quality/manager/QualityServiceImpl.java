@@ -59,6 +59,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
+import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
@@ -527,6 +528,11 @@ public class QualityServiceImpl
 	@Override
 	public List<QualityContext> loadContextByDataCollection(QualityDataCollectionRef dataCollectionRef) {
 		return contextDao.loadByDataCollectionFetched(dataCollectionRef);
+	}
+	
+	@Override
+	public List<QualityContext> loadContextBySessions(List<? extends EvaluationFormSessionRef> sessionRefs) {
+		return contextDao.loadBySessions(sessionRefs);
 	}
 	
 	@Override

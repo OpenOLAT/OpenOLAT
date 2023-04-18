@@ -208,6 +208,9 @@ public class OverviewListController extends FormBasicController implements Flexi
 		dataModel = new OverviewDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
 		tableEl.setElementCssClass("o_course_edit_overview_table o_course_editor_legend");
+		if (learningPath) {
+			tableEl.setElementCssClass(tableEl.getElementCssClass() + " o_lp_edit");
+		}
 		tableEl.setCssDelegate(this);
 		tableEl.setAndLoadPersistedPreferences(ureq, "course-editor-overview");
 		tableEl.setEmptyTableMessageKey("table.empty");

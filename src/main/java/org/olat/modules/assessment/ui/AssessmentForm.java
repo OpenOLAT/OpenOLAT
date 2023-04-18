@@ -137,8 +137,6 @@ public class AssessmentForm extends FormBasicController {
 			if (assessmentEntry != null && assessmentEntry.getScore() != null) {
 				score.setValue(AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
 			} 
-			// assessment overview with max score
-			score.setRegexMatchCheck("(\\d+)||(\\d+\\.\\d{1,3})||(\\d+\\,\\d{1,3})", "form.error.wrongFloat");
 		}
 
 		if (assessableElement.hasPassedConfigured()) {
@@ -196,7 +194,6 @@ public class AssessmentForm extends FormBasicController {
 		
 		saveAndDoneButton = uifactory.addFormLink("assessment.set.status.done", buttonGroupLayout, Link.BUTTON);
 		saveAndDoneButton.setIconLeftCSS("o_icon o_icon-fw o_icon_status_done");
-		saveAndDoneButton.setPrimary(true);
 		
 		reopenLink = uifactory.addFormLink("reopen", buttonGroupLayout, Link.BUTTON);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
@@ -273,15 +270,24 @@ public class AssessmentForm extends FormBasicController {
 			}
 			
 			Float fscore = parseFloat(score);
-			if ((min != null && fscore < min.floatValue()) 
-					|| fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
-				score.setErrorKey("form.error.scoreOutOfRange");
-				return false;
-			}
-			if ((max != null && fscore > max.floatValue())
-					|| fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
-				score.setErrorKey("form.error.scoreOutOfRange");
-				return false;
+			if(fscore != null) {
+				if (min != null && fscore < min.floatValue()) {
+					score.setErrorKey("form.error.score.out.min.max",
+							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
+							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
+					return false;
+				} else if (max != null && fscore > max.floatValue()) {
+					score.setErrorKey("form.error.score.out.min.max",
+							AssessmentHelper.getRoundedOrNA(getTranslator(), min),
+							AssessmentHelper.getRoundedOrNA(getTranslator(), max));
+					return false;
+				} else if (fscore < AssessmentHelper.MIN_SCORE_SUPPORTED) {
+					score.setErrorKey("form.error.scoreOutOfRange");
+					return false;
+				} else if (fscore > AssessmentHelper.MAX_SCORE_SUPPORTED) {
+					score.setErrorKey("form.error.scoreOutOfRange");
+					return false;
+				}
 			}
 		}	
 		return true;

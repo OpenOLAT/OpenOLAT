@@ -140,6 +140,36 @@ public class QualityContextDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadBySessions() {
+		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();
+		EvaluationFormSession session1 = qualityTestHelper.createSession(evaluationFormParticipation);
+		QualityContext context11 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		QualityContext context12 = sut.createContext(dataCollection, evaluationFormParticipation, null, null, null, null);
+		sut.finish(evaluationFormParticipation, session1);
+		EvaluationFormParticipation evaluationFormParticipation2 = qualityTestHelper.createParticipation();
+		EvaluationFormSession session2 = qualityTestHelper.createSession(evaluationFormParticipation2);
+		QualityContext context21 = sut.createContext(dataCollection, evaluationFormParticipation2, null, null, null, null);
+		sut.finish(evaluationFormParticipation2, session2);
+		EvaluationFormParticipation evaluationFormParticipation3 = qualityTestHelper.createParticipation();
+		EvaluationFormSession session3 = qualityTestHelper.createSession(evaluationFormParticipation3);
+		QualityContext context31 = sut.createContext(dataCollection, evaluationFormParticipation3, null, null, null, null);
+		sut.finish(evaluationFormParticipation3, session3);
+		QualityDataCollection otherDataCollection = qualityTestHelper.createDataCollection();
+		EvaluationFormParticipation otherParticpation = qualityTestHelper.createParticipation();
+		EvaluationFormSession itherSession = qualityTestHelper.createSession(otherParticpation);
+		QualityContext otherContext = sut.createContext(otherDataCollection, otherParticpation, null, null, null, null);
+		sut.finish(otherParticpation, itherSession);
+		dbInstance.commitAndCloseSession();
+		
+		List<QualityContext> reloadedContext = sut.loadBySessions(List.of(session1, session2));
+		
+		assertThat(reloadedContext)
+				.containsExactlyInAnyOrder(context11, context12, context21)
+				.doesNotContain(context31, otherContext);
+	}
+	
+	@Test
 	public void shouldLoadByParticipation() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
 		EvaluationFormParticipation evaluationFormParticipation = qualityTestHelper.createParticipation();

@@ -34,6 +34,10 @@ import org.olat.core.util.StringHelper;
  *
  */
 public abstract class LabelCellRenderer implements FlexiCellRenderer {
+	
+	protected boolean isNullRendered() {
+		return false;
+	}
 
 	protected abstract String getCellValue(Object val, Translator translator);
 
@@ -61,7 +65,7 @@ public abstract class LabelCellRenderer implements FlexiCellRenderer {
 	}
 
 	protected void render(StringOutput target, Translator translator, Object cellValue) {
-		if (cellValue == null) {
+		if (cellValue == null && !isNullRendered()) {
 			return;
 		}
 		
