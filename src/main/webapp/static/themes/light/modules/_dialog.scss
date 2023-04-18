@@ -30,6 +30,15 @@
 .o_hint, %o_hint {
 	margin: $o-box-margin 0;
 }
+.o_error_with_icon {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 32px auto;
+	
+	p:last-child {
+		margin-bottom: 0;
+	}
+}
 
 /* Callout window (implemented with bootstrap popover, see CloseableCalloutWindowController for JS part */
 div.o_callout_overlay { 

@@ -31,14 +31,19 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.media.FileMediaResource;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NamedFileMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -76,10 +81,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ConfirmChangeResourceController extends FormBasicController {
 	
 	private FormLink replaceButton;
-	private FormLink downloadButton;
+	
+	private MultipleSelectionElement acknowledgeEl;
 	
 	private final ICourse course;
-	private final File downloadArchiveFile;
 	private final QTICourseNode courseNode;
 	private final RepositoryEntry newTestEntry;
 	private final RepositoryEntry currentTestEntry;
@@ -104,7 +109,6 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		this.currentTestEntry = currentTestEntry;
 		this.assessedIdentities = assessedIdentities;
 		this.numOfAssessedIdentities = numOfAssessedIdentities;
-		downloadArchiveFile = prepareArchive(ureq);
 		initForm(ureq);
 	}
 	
@@ -118,22 +122,24 @@ public class ConfirmChangeResourceController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			if(numOfAssessedIdentities == 1) {
 				layoutCont.contextPut("infos1", translate("confirmation.change.warning.1", Integer.toString(numOfAssessedIdentities)));
 			} else {
 				layoutCont.contextPut("infos1", translate("confirmation.change.warning.1.plural", Integer.toString(numOfAssessedIdentities)));
 			}
-			String[] archiveArgs = new String[] { downloadArchiveFile.getParentFile().getName(), downloadArchiveFile.getName() };
-			layoutCont.contextPut("infos3", translate("confirmation.change.warning.3", archiveArgs));
 		}
 		
-		downloadButton = uifactory.addFormLink("download", downloadArchiveFile.getName(), null, formLayout, Link.LINK | Link.NONTRANSLATED);
-		downloadButton.setIconLeftCSS("o_icon o_icon_downloads");
-		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
-		replaceButton = uifactory.addFormLink("reset.replace.file", formLayout, Link.BUTTON);
+		FormLayoutContainer confirmCont = uifactory.addDefaultFormLayout("confirm", null, formLayout);
+		
+		SelectionValues onKV = new SelectionValues();
+		onKV.add(SelectionValues.entry("on", translate("confirmation.change.acknowledge")));
+		acknowledgeEl = uifactory.addCheckboxesHorizontal("acknowledge", "confirmation.change", confirmCont, onKV.keys(), onKV.values());
+		
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, confirmCont);
+		replaceButton = uifactory.addFormLink("reset.replace.file", buttonsCont, Link.BUTTON);
 		replaceButton.setElementCssClass("btn btn-default btn-danger");
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
 	private File prepareArchive(UserRequest ureq) {
@@ -152,6 +158,19 @@ public class ConfirmChangeResourceController extends FormBasicController {
 			return null;
 		}
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		acknowledgeEl.clearError();
+		if(!acknowledgeEl.isAtLeastSelected(1)) {
+			acknowledgeEl.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+		
+		return allOk;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -160,10 +179,10 @@ public class ConfirmChangeResourceController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(downloadButton == source) {
-			doDownload(ureq);
-		} else if(replaceButton == source) {
-			doReplace(ureq);
+		if(replaceButton == source) {
+			if(validateFormLogic(ureq)) {
+				doReplace(ureq);
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -173,15 +192,11 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
-	private void doDownload(UserRequest ureq) {
-		ureq.getDispatchResult()
-			.setResultingMediaResource(new FileMediaResource(downloadArchiveFile, true));
-	}
-	
 	private void doReplace(UserRequest ureq) {
 		// reset the data
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+		File downloadArchiveFile = prepareArchive(ureq);
 		
 		for(Identity assessedIdentity:assessedIdentities) {
 			IdentityEnvironment ienv = new IdentityEnvironment(assessedIdentity, Roles.userRoles());
@@ -189,7 +204,7 @@ public class ConfirmChangeResourceController extends FormBasicController {
 			
 			// Cancel test sessions and grading assignment
 			List<AssessmentTestSession> sessions = qtiService.getAssessmentTestSessions(courseEntry, courseNode.getIdent(), assessedIdentity, true);
-			if(sessions.isEmpty()) {
+			if(!sessions.isEmpty()) {
 				AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, uce);
 				for (AssessmentTestSession session:sessions) {
 					if (!newTestEntry.equals(session.getTestEntry())
@@ -214,6 +229,12 @@ public class ConfirmChangeResourceController extends FormBasicController {
 		
 		// replacement is done by the parent controller
 		fireEvent(ureq, Event.DONE_EVENT);
+
+		if(downloadArchiveFile != null) {
+			MediaResource archiveResource = new NamedFileMediaResource(downloadArchiveFile, downloadArchiveFile.getName(), downloadArchiveFile.getName(), false);
+			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
+			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+		}
 	}
 	
 	private void deactivateGradingAssignment(AssessmentEntry assessmentEntry, AssessmentTestSession session) {
