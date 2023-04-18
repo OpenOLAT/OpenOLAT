@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>6.0.8</org.springframework.version>
-		<org.hibernate.version>6.2.1.Final</org.hibernate.version>
+		<org.hibernate.version>6.1.7.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.2</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.0</apache.cxf>
