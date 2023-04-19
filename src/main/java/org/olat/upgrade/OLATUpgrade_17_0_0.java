@@ -165,7 +165,7 @@ public class OLATUpgrade_17_0_0 extends OLATUpgrade {
 		for (RepositoryEntry entry : entries) {
 			if (entry.isBookable() || RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {
 				entry.setPublicVisible(true);
-				dbInstance.getCurrentEntityManager().merge(entry);
+				entry = dbInstance.getCurrentEntityManager().merge(entry);
 				if (RepositoryEntryStatusEnum.isInArray(entry.getEntryStatus(), RepositoryEntryStatusEnum.preparationToClosed())) {
 					if (entry.isAllUsers()) {
 						initOpenAccess(entry, rootOrganisations);
