@@ -217,7 +217,7 @@ public class NotificationsWebService {
 			identityKeys.add(userVo.getKey());
 		}
 		List<Identity> identities = securityManager.loadIdentityByKeys(identityKeys);
-		notificationsMgr.subscribe(identities, subscriptionContext, publisherData);
+		notificationsMgr.initialSubscription(identities, subscriptionContext, publisherData);
 		return Response.ok().build();
 	}
 	
