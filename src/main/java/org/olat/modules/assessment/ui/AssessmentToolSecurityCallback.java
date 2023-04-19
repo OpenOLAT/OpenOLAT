@@ -34,6 +34,7 @@ import org.olat.group.BusinessGroup;
 public class AssessmentToolSecurityCallback {
 	
 	private final boolean admin;
+	private final boolean onlyPrincipal;
 	private final boolean nonMembers;
 	private final boolean repositoryEntryMembers;
 	private final boolean businessGoupMembers;
@@ -42,10 +43,12 @@ public class AssessmentToolSecurityCallback {
 	private final List<BusinessGroup> coachedGroups;
 	private final Set<IdentityRef> fakeParticipants;
 	
-	public AssessmentToolSecurityCallback(boolean admin, boolean nonMembers, boolean repositoryEntryMembers,
+	public AssessmentToolSecurityCallback(boolean admin, boolean onlyPrincipal,
+			boolean nonMembers, boolean repositoryEntryMembers,
 			boolean businessGoupMembers, boolean curriculumMembers, List<BusinessGroup> coachedGroups,
 			Set<IdentityRef> fakeParticipants) {
 		this.admin = admin;
+		this.onlyPrincipal = onlyPrincipal;
 		this.nonMembers = nonMembers;
 		this.repositoryEntryMembers = repositoryEntryMembers;
 		this.businessGoupMembers = businessGoupMembers;
@@ -55,11 +58,15 @@ public class AssessmentToolSecurityCallback {
 	}
 	
 	public static AssessmentToolSecurityCallback nothing() {
-		return new AssessmentToolSecurityCallback(false, false, false, false, false, List.of(), Set.of());
+		return new AssessmentToolSecurityCallback(false, false, false, false, false, false, List.of(), Set.of());
 	}
 
 	public boolean isAdmin() {
 		return admin;
+	}
+	
+	public boolean isOnlyPrincipal() {
+		return onlyPrincipal;
 	}
 
 	public boolean canAssessNonMembers() {
@@ -91,8 +98,15 @@ public class AssessmentToolSecurityCallback {
 	}
 	
 	public boolean canResetData() {
-		
-		return admin;
+		return admin && !onlyPrincipal;
+	}
+	
+	public boolean canDeleteData() {
+		return admin && !onlyPrincipal;
+	}
+	
+	public boolean canRecalculateData() {
+		return admin && !onlyPrincipal;
 	}
 
 	public List<BusinessGroup> getCoachedGroups() {

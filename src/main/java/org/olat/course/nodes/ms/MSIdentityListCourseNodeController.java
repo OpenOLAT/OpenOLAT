@@ -99,7 +99,7 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
 			
-			if (getAssessmentCallback().isAdmin()) {
+			if (getAssessmentCallback().canResetData()) {
 				resetButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
 				resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
 			}

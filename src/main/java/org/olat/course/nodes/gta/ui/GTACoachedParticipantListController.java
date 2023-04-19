@@ -256,7 +256,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(courseEntry,
 				coachCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
-		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyMasterCoach(), nonMembers, reSecurity.isCourseCoach(),
 				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 	

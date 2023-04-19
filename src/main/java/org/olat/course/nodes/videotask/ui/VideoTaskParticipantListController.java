@@ -109,7 +109,7 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
-			if(getAssessmentCallback().isAdmin()) {
+			if(getAssessmentCallback().canDeleteData()) {
 				deleteAllDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
 				deleteAllDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
 			}
@@ -273,7 +273,7 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	}
 
 	@Override
-	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(assessmentConfig.isAssessable()) {
 			return new VideoAssessableTaskToolsController(ureq, getWindowControl(), courseNode, assessedIdentity, coachCourseEnv);
 		}

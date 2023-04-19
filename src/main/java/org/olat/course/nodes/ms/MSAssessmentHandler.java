@@ -66,8 +66,8 @@ public class MSAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public AssessmentConfig getAssessmentConfig(RepositoryEntryRef courseEntry, CourseNode courseNode) {
-		if (courseNode instanceof MSCourseNode) {
-			((MSCourseNode)courseNode).updateModuleDefaults(courseNode.getModuleConfiguration());
+		if (courseNode instanceof MSCourseNode msCourseNode) {
+			msCourseNode.updateModuleDefaults(courseNode.getModuleConfiguration());
 		}
 		return new MSAssessmentConfig(courseEntry, courseNode);
 	}
@@ -96,7 +96,8 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return new MSEvaluationFormExecutionController(ureq, wControl, (TooledStackedPanel)stackPanel, assessedUserCourseEnv, courseNode);
+		return new MSEvaluationFormExecutionController(ureq, wControl, (TooledStackedPanel)stackPanel,
+				coachCourseEnv, assessedUserCourseEnv, courseNode);
 	}
 
 	@Override

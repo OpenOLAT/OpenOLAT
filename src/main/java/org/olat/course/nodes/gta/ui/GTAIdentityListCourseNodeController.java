@@ -45,6 +45,7 @@ import org.olat.course.archiver.ArchiveResource;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
+import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -236,7 +237,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	}
 	
 	@Override
-	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		return new GTAIdentityListCourseNodeToolsController(ureq, getWindowControl(), courseNode, assessedIdentity,
 				coachCourseEnv, getAssessmentCallback());
 	}

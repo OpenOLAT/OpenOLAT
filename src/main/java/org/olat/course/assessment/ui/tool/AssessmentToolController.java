@@ -124,14 +124,16 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			stackPanel.addTool(resetDataLink, Align.right);
 		}
 		
-		recalculateLink = LinkFactory.createToolLink("recalculate", translate("menu.recalculate"), this,
-				"o_icon_recalculate");
-		stackPanel.addTool(recalculateLink, Align.right);
-
-		bulkAssessmentLink = LinkFactory.createToolLink("bulkAssessment", translate("menu.bulkfocus"), this,
-				"o_icon_group");
-		bulkAssessmentLink.setElementCssClass("o_sel_assessment_tool_bulk");
-		stackPanel.addTool(bulkAssessmentLink, Align.right);
+		if(!assessmentCallback.isOnlyPrincipal()) {
+			recalculateLink = LinkFactory.createToolLink("recalculate", translate("menu.recalculate"), this,
+					"o_icon_recalculate");
+			stackPanel.addTool(recalculateLink, Align.right);
+			
+			bulkAssessmentLink = LinkFactory.createToolLink("bulkAssessment", translate("menu.bulkfocus"), this,
+					"o_icon_group");
+			bulkAssessmentLink.setElementCssClass("o_sel_assessment_tool_bulk");
+			stackPanel.addTool(bulkAssessmentLink, Align.right);
+		}
 	}
 
 	@Override
