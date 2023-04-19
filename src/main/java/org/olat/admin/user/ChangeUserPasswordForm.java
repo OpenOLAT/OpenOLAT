@@ -87,13 +87,13 @@ public class ChangeUserPasswordForm extends FormBasicController {
 		ValidationResult validationResult = syntaxValidator.validate(newPassword, userIdentity);
 		if (!validationResult.isValid()) {
 			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-			pass1.setErrorKey("error.password.invalid", new String[] { descriptions });
+			pass1.setErrorKey("error.password.invalid", descriptions);
 			allOk &= false;
 		}
 
 		pass2.clearError();
 		if (!pass1.getValue().equals(pass2.getValue())) {
-			pass2.setErrorKey("error.password.nomatch", null);
+			pass2.setErrorKey("error.password.nomatch");
 			allOk &= false;
 		}
 		

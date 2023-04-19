@@ -649,7 +649,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			// Precondition access / visibility are no longer used in the learning path node access course type 
 			deleteGenericConditions();
 		} else {
-			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionAccess, preConditionAccess, envMapper);
+			if(sourceCourseNode instanceof AbstractAccessableCourseNode sourceAccessableCourseNode) {
+				configureOnlyGeneralAccess(sourceAccessableCourseNode.getPreConditionAccess(), getPreConditionAccess(), envMapper);
+			} else {
+				configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionAccess, preConditionAccess, envMapper);
+			}
 			configureOnlyGeneralAccess(((GenericCourseNode)sourceCourseNode).preConditionVisibility, preConditionVisibility, envMapper);
 		}
 		
@@ -719,6 +723,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			// remove also begin and end dates as they don't make sense anymore in the new course time frame
 			targetCondition.setEasyModeBeginDate(null);
 			targetCondition.setEasyModeEndDate(null);
+			// new node id
+			targetCondition.setEasyModeAssessmentModeNodeId(getIdent());
 			// recalculate the new condition expression
 			targetCondition.setConditionExpression(targetCondition.getConditionFromEasyModeConfiguration());			
 		}

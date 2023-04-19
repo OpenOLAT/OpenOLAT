@@ -224,7 +224,6 @@ public class ImportCourseNodesFinishStepCallback implements StepRunnerCallback {
 	private CourseNode createCopy(CourseNode courseNode) {
 		CourseNode copyInstance = (CourseNode) XStreamHelper.xstreamClone(courseNode);
 		copyInstance.setIdent(String.valueOf(CodeHelper.getForeverUniqueID()));
-		copyInstance.setPreConditionVisibility(null);
 		if (CourseNodeHelper.isCustomShortTitle(courseNode.getLongTitle(), courseNode.getShortTitle())) {
 			copyInstance.setShortTitle(Formatter.truncateOnly(courseNode.getShortTitle(), NodeConfigController.SHORT_TITLE_MAX_LENGTH));
 		} else {

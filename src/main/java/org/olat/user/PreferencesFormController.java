@@ -186,8 +186,7 @@ public class PreferencesFormController extends FormBasicController {
 		username.setEnabled(false);
 		
 		// Expiration
-		boolean expirationDateVisible = (tobeChangedIdentity.getExpirationDate() != null
-				|| tobeChangedIdentity.getInactivationDate() != null || tobeChangedIdentity.getReactivationDate() != null)
+		boolean expirationDateVisible = (tobeChangedIdentity.getExpirationDate() != null || tobeChangedIdentity.getReactivationDate() != null)
 				&& !tobeChangedIdentity.getStatus().equals(Identity.STATUS_INACTIVE)
 				&& userModule.isUserAutomaticDeactivation();
 
