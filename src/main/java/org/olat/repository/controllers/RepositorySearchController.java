@@ -260,7 +260,7 @@ public class RepositorySearchController extends BasicController implements Activ
 	 * 
 	 * @param ureq
 	 */
-	private void doSearchAllReferencables(UserRequest ureq, String limitType, boolean updateFilters) {
+	public void doSearchAllReferencables(UserRequest ureq, String limitType, boolean updateFilters) {
 		searchType = SearchType.searchForm;
 		List<String> restrictedTypes;
 		if (limitType != null) {
@@ -276,7 +276,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		String idAndRefs = searchForm.getId();
 		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(), identityRoles,
 				organisationWildCard, restrictedTypes, name, author, desc, idAndRefs, asParticipant,
-				enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
+				enableSearchforAllInSearchForm == Can.referenceable || enableSearchforAllInSearchForm == Can.all,
+				enableSearchforAllInSearchForm == Can.copyable || enableSearchforAllInSearchForm == Can.all);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if (updateFilters) {
@@ -399,6 +400,27 @@ public class RepositorySearchController extends BasicController implements Activ
 		params.setAsParticipant(asParticipant);
 		params.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
 		params.setOfferValidAt(new Date());
+		
+		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
+		filterRepositoryEntries(entries);
+		repoTableModel.setObjects(entries);
+		tableCtr.setFilters(null, null);
+		tableCtr.modelChanged();
+		displaySearchResults(ureq);
+	}
+	
+	public void doSearchByTypeLimitAccess(String[] restrictedTypes,
+			boolean checkCanReferenceForAuthor, boolean checkCanCopyForAuthor, UserRequest ureq) {
+		searchType = null;
+
+		SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(getIdentity(), identityRoles,
+				restrictedTypes);
+		params.setAsParticipant(asParticipant);
+		params.setOfferOrganisations(acService.getOfferOrganisations(getIdentity()));
+		params.setOfferValidAt(new Date());
+		params.setCanReferenceForAuthor(checkCanReferenceForAuthor);
+		params.setCanCopyForAuthor(checkCanCopyForAuthor);
+		
 		List<RepositoryEntry> entries = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);

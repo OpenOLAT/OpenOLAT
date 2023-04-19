@@ -95,7 +95,9 @@ public class RepositoryEntryQueries {
 			     .append(" left join fetch v.lifecycle as lifecycle");
 		}
 
-		AddParams addParams = appendAccessSubSelects(query, params.getRoles(), params.isOnlyExplicitMember(), params.getOfferValidAt(), params.getOfferOrganisations());
+		AddParams addParams = appendAccessSubSelects(query, params.getRoles(), params.isOnlyExplicitMember(),
+				params.isCanReferenceForAuthor(), params.isCanCopyForAuthor(),
+				params.getOfferValidAt(), params.getOfferOrganisations());
 
 		if(params.getParentEntry() != null) {
 			query.append(" and parentCei.key=:parentCeiKey");
@@ -249,7 +251,9 @@ public class RepositoryEntryQueries {
 	 * @param roles
 	 * @return
 	 */
-	private AddParams appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember, Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
+	private AddParams appendAccessSubSelects(QueryBuilder sb, Roles roles, boolean onlyExplicitMember,
+			boolean checkCanReferenceForAuthor, boolean checkCanCopyForAuthor,
+			Date offerValidAt, List<? extends OrganisationRef> offerOrganisations) {
 		if(roles.isGuestOnly()) {
 			sb.append(" where v.publicVisible=true and v.status ").in(ACService.RESTATUS_ACTIVE_GUEST);
 			sb.append(" and res.key in (");
@@ -288,7 +292,9 @@ public class RepositoryEntryQueries {
 			if(roles.isAuthor()) {
 				// as author
 				sb.append(") or (")
-				  .append(" membership.role ").in(OrganisationRoles.author).append("  and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed());
+				  .append(" membership.role ").in(OrganisationRoles.author).append("  and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
+				  .append(" and v.canReference=true", checkCanReferenceForAuthor)
+				  .append(" and v.canCopy=true", checkCanCopyForAuthor);
 			}
 			sb.append("))");
 			sb.append(")");

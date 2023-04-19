@@ -56,6 +56,8 @@ public class SearchRepositoryEntryParameters {
 	private IdentityRef asParticipant;
 	private List<? extends OrganisationRef> offerOrganisations;
 	private Date offerValidAt;
+	private boolean canCopyForAuthor;
+	private boolean canReferenceForAuthor;
 	
 	public SearchRepositoryEntryParameters() {
 		//
@@ -236,5 +238,20 @@ public class SearchRepositoryEntryParameters {
 	public void setOfferValidAt(Date offerValidAt) {
 		this.offerValidAt = offerValidAt;
 	}
-	
+
+	public boolean isCanCopyForAuthor() {
+		return canCopyForAuthor;
+	}
+
+	public void setCanCopyForAuthor(boolean canCopyForAuthor) {
+		this.canCopyForAuthor = canCopyForAuthor;
+	}
+
+	public boolean isCanReferenceForAuthor() {
+		return canReferenceForAuthor;
+	}
+
+	public void setCanReferenceForAuthor(boolean canReferenceForAuthor) {
+		this.canReferenceForAuthor = canReferenceForAuthor;
+	}
 }

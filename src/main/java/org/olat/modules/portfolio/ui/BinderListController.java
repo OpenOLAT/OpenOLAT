@@ -101,7 +101,6 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositorySearchController;
-import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -584,8 +583,7 @@ public class BinderListController extends FormBasicController
 		removeAsListenerAndDispose(searchTemplateCtrl);
 		searchTemplateCtrl = new RepositorySearchController(commandLabel, ureq, getWindowControl(),
 				false, false, new String[]{ BinderTemplateResource.TYPE_NAME }, false, null, null);
-		searchTemplateCtrl.enableSearchforAllXXAbleInSearchForm(Can.all);
-		searchTemplateCtrl.doSearchByTypeLimitAccess(new String[]{ BinderTemplateResource.TYPE_NAME }, ureq);
+		searchTemplateCtrl.doSearchByTypeLimitAccess(new String[]{ BinderTemplateResource.TYPE_NAME }, true, true, ureq);
 		listenTo(searchTemplateCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), title, searchTemplateCtrl.getInitialComponent(), true, title);
