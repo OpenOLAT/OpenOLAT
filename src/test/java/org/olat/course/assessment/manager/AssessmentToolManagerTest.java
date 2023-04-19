@@ -202,7 +202,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		
 		// coach of group 1 with id 1 and id2
 		List<BusinessGroup> coachedGroups = Collections.singletonList(group1);
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false,
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(false, false, false, false,
 				true, false, coachedGroups, singleton(coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 		params.setAssessmentObligations(AssessmentObligation.NOT_EXCLUDED);
@@ -366,7 +366,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// administrator with full access
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Set.of(admin, coach));
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, Set.of(admin, coach));
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 		params.setParticipantTypes(Set.of(ParticipantType.member, ParticipantType.nonMember));
 		
@@ -472,7 +472,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		Assert.assertEquals(0, participantStatistics.getNumOfFakeParticipants());
 		
 		// Check the participant filter: Non member, no fake participants
-		assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Collections.emptySet());
+		assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, Collections.emptySet());
 		params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 		params.setParticipantTypes(Set.of(ParticipantType.nonMember));
 		assessedIdentities = assessmentToolManager.getAssessedIdentities(admin, params);
@@ -545,7 +545,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// statistics as admin
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, Collections.emptySet());
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, Collections.emptySet());
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, refEntry, assessmentCallback);
 
 		AssessmentMembersStatistics statisticsAsAdmin = assessmentToolManager.getNumberOfParticipants(admin, params, true);
@@ -595,7 +595,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setAssessmentObligations(List.of(AssessmentObligation.mandatory, AssessmentObligation.optional));
 		AssessmentStatistics statistics = assessmentToolManager.getStatistics(admin, params);
@@ -634,7 +634,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentScoreStatistic> scoreStatistics = assessmentToolManager.getScoreStatistics(admin, params);
 		assertThat(scoreStatistics).hasSize(2);
@@ -671,7 +671,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3);
@@ -714,7 +714,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setScoreNull(Boolean.FALSE);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
@@ -754,7 +754,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		assessmentEntryDao.updateAssessmentEntry(ae3);
 		dbInstance.commitAndCloseSession();
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		params.setGradeNull(Boolean.FALSE);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(coach, params, null);
@@ -795,7 +795,7 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		ae4.setObligation(ObligationOverridable.of(AssessmentObligation.excluded));
 		assessmentEntryDao.updateAssessmentEntry(ae4);
 		
-		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, true, true, true, true, null, null);
+		AssessmentToolSecurityCallback assessmentCallback = new AssessmentToolSecurityCallback(true, false, true, true, true, true, null, null);
 		SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(entry, subIdent, null, assessmentCallback);
 		List<AssessmentEntry> assessmentEntries = assessmentToolManager.getAssessmentEntries(admin, params, null);
 		assertThat(assessmentEntries).containsExactlyInAnyOrder(ae1, ae2, ae3, ae4);

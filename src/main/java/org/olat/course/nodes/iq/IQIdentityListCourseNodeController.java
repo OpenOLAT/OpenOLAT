@@ -74,6 +74,7 @@ import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
+import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -267,7 +268,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			pullButton.setIconLeftCSS("o_icon o_icon_pull");
 
 			if(qti21) {
-				if(getAssessmentCallback().isAdmin()) {
+				if(getAssessmentCallback().canDeleteData()) {
 					moreDropdown = uifactory.addDropdownMenu("more.menu", null, null, formLayout, getTranslator());
 					moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
 					moreDropdown.setOrientation(DropdownOrientation.right);
@@ -278,7 +279,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					deleteDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
 					moreDropdown.addElement(deleteDataButton);
 				}
-				if(this.getAssessmentCallback().canResetData()) {
+				if(getAssessmentCallback().canResetData()) {
 					resetDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
 					resetDataButton.setIconLeftCSS("o_icon o_icon_reset_data");
 				}
@@ -529,7 +530,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 	
 	@Override
-	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		if(isTestQTI21()) {
 			return new QTI21IdentityListCourseNodeToolsController(ureq, getWindowControl(), stackPanel,
 					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv, getAssessmentCallback());

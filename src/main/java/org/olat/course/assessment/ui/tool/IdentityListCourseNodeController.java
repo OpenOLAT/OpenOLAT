@@ -110,6 +110,7 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams.Passed;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
+import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -1254,7 +1255,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		toolsCalloutCtrl.activate();
 	}
 	
-	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
+	protected AbstractToolsController createCalloutController(UserRequest ureq, Identity assessedIdentity) {
 		return new IdentityListCourseNodeToolsController(ureq, getWindowControl(), courseNode, assessedIdentity,
 				coachCourseEnv);
 	}

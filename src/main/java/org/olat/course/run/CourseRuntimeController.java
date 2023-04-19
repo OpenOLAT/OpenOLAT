@@ -2266,7 +2266,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		Set<IdentityRef> fakeParticipants = assessmentToolManager.getFakeParticipants(getRepositoryEntry(),
 				userCourseEnv.getIdentityEnvironment().getIdentity(), nonMembers, !nonMembers);
-		return new AssessmentToolSecurityCallback(admin, nonMembers, reSecurity.isCourseCoach(),
+		return new AssessmentToolSecurityCallback(admin, reSecurity.isOnlyPrincipal(), nonMembers, reSecurity.isCourseCoach(),
 				reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), coachedGroups, fakeParticipants);
 	}
 	

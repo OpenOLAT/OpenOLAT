@@ -147,7 +147,7 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 		
 		if (reSecurity.isEntryAdmin() || reSecurity.isCoach()) {
 			AssessmentToolSecurityCallback secCallback
-				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isEntryAdmin(),
+				= new AssessmentToolSecurityCallback(reSecurity.isEntryAdmin(), reSecurity.isOnlyPrincipal(), reSecurity.isEntryAdmin(),
 						reSecurity.isCourseCoach(), reSecurity.isGroupCoach(), reSecurity.isCurriculumCoach(), null, null);
 
 			AssessableResource el = getAssessableElement();

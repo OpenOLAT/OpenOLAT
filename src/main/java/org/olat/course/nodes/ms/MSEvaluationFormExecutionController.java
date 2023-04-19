@@ -64,6 +64,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private EvaluationFormExecutionController executionCtrl;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
+	private final UserCourseEnvironment coachCourseEnv;
 	private final ModuleConfiguration config;
 	private final CourseNode courseNode;
 
@@ -75,9 +76,10 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private MSService msService;
 
 	public MSEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode) {
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode) {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
+		this.coachCourseEnv = coachCourseEnv;
 		this.courseNode = msCourseNode;
 		this.config = msCourseNode.getModuleConfiguration();
 		this.stackPanel = stackPanel;
@@ -130,9 +132,9 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	}
 
 	private void updateUIReopenAndEdit() {
-		boolean reopenVisible = !assessmentDone && isSessionClosed();
+		boolean reopenVisible = !assessmentDone && isSessionClosed() && !coachCourseEnv.isCourseReadOnly();
 		reopenLink.setVisible(reopenVisible);
-		boolean editVisible = !assessmentDone && !isSessionClosed();
+		boolean editVisible = !assessmentDone && !isSessionClosed() && !coachCourseEnv.isCourseReadOnly();
 		editLink.setVisible(editVisible);
 		mainVC.setDirty(true);
 	}
