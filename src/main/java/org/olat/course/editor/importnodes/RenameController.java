@@ -77,14 +77,14 @@ public class RenameController extends FormBasicController {
 		
 		filenameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(filenameEl.getValue())) {
-			filenameEl.setErrorKey("form.legende.mandatory", null);
+			filenameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			VFSContainer parent = fileRow.getItem().getParentContainer();
 			String newRelPath = VFSManager.getRelativeItemPath(parent, sourceContainer, "/");
 			newRelPath = newRelPath + "/" + filenameEl.getValue();
 			if(targetContainer.resolve(newRelPath) != null) {
-				filenameEl.setErrorKey("error.file.exists", null);
+				filenameEl.setErrorKey("error.file.exists");
 				allOk &= false;
 			}
 		}
