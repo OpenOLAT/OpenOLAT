@@ -87,7 +87,7 @@ public class SelectOrganisationController extends FormBasicController {
 		
 		organisationEl.clearError();
 		if(!organisationEl.isOneSelected()) {
-			organisationEl.setErrorKey("form.legende.mandatory", null);
+			organisationEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

@@ -687,7 +687,8 @@ public class UserAdminController extends BasicController implements Activateable
 		removeAsListenerAndDispose(userShortDescrCtr);
 		
 		Builder rowsBuilder = Rows.builder();
-		if(userModule.isUserAutomaticDeactivation() && identity.getExpirationDate() != null) {
+		if(userModule.isUserAutomaticDeactivation() && identity.getExpirationDate() != null
+				&& !Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 			String inactivationDate = Formatter.getInstance(getLocale()).formatDate(identity.getExpirationDate());
 			rowsBuilder.addRow(translate("user.expiration.date"), inactivationDate);
 		}

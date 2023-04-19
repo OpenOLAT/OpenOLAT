@@ -134,16 +134,16 @@ public class UserSearchForm extends FormBasicController {
 
 		if (!filled || onlyStar) {
 			// set the error message
-			lastFormElement.setErrorKey("error.search.form.notempty", null);
+			lastFormElement.setErrorKey("error.search.form.notempty");
 			return false;
 		}
 		if ( fullString.contains("**") ) {
-			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates", null);
+			lastFormElement.setErrorKey("error.search.form.no.wildcard.dublicates");
 			return false;
 		}		
 		int minLength = 4;
 		if ( fullString.length() < minLength ) {
-			lastFormElement.setErrorKey("error.search.form.to.short", null);
+			lastFormElement.setErrorKey("error.search.form.to.short");
 			return false;
 		}
 		

@@ -114,12 +114,12 @@ public class UsermanagerUserBulkSearchForm extends FormBasicController {
 		
 		searchEl.clearError();
 		if(!StringHelper.containsNonWhitespace(searchEl.getValue())) {
-			searchEl.setErrorKey("form.legende.mandatory", null);
+			searchEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			List<String> lines =  getLines(searchEl.getValue());
 			if(lines.size() > 16000) {
-				searchEl.setErrorKey("error.search.too.much.lines", null);
+				searchEl.setErrorKey("error.search.too.much.lines");
 				allOk &= false;
 			}
 		}
