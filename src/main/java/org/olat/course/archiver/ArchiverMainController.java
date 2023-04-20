@@ -355,7 +355,7 @@ public class ArchiverMainController extends MainLayoutBasicController implements
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new ProjectBrokerCourseNode());
 				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_FORUMS)) {
-				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new FOCourseNode());
+				contentCtr = new ForumArchiveController(ureq, getWindowControl(), ores, false, new FOCourseNode());
 				setContent(contentCtr);
 			} else if (menuCommand.equals(CMD_DIALOGS)) {
 				contentCtr = new GenericArchiveController(ureq, getWindowControl(), ores, false, new DialogCourseNode());

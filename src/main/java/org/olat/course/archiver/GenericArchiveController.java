@@ -71,8 +71,8 @@ import org.olat.group.BusinessGroup;
 public class GenericArchiveController extends FormBasicController {
 	
 	private FormLink selectButton;
-	private FlexiTableElement tableEl;
-	private NodeTableDataModel nodeTableModel;
+	protected FlexiTableElement tableEl;
+	protected NodeTableDataModel nodeTableModel;
 	private FormLink downloadOptionsButton;
 	
 	private CloseableModalController cmc;
@@ -81,7 +81,7 @@ public class GenericArchiveController extends FormBasicController {
 	
 	private final ArchiveOptions options;
 	private final boolean withOptions;
-	private final OLATResourceable ores;
+	protected final OLATResourceable ores;
 	private final CourseNode[] nodeTypes;
 
 	/**
@@ -232,7 +232,7 @@ public class GenericArchiveController extends FormBasicController {
 		return new ArrayList<>();
 	}
 	
-	private boolean matchTypes(CourseNode courseNode) {
+	protected boolean matchTypes(CourseNode courseNode) {
 		boolean match = false;
 		for(CourseNode nodeType:nodeTypes) {
 			match |= courseNode.getType().equals(nodeType.getType());

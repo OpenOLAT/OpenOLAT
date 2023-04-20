@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.util.DateUtils;
 import org.olat.modules.fo.manager.ForumManager;
 import org.olat.modules.fo.model.ForumThread;
 import org.olat.modules.fo.model.ForumUserStatistics;
@@ -1632,5 +1633,95 @@ public class ForumManagerTest extends OlatTestCase {
 		List<PseudonymStatistics> emptyStats = forumManager.getPseudonymStatistics("This string is never a pseudo");
 		Assert.assertNotNull(emptyStats);
 		Assert.assertTrue(emptyStats.isEmpty());
+	}
+
+	@Test
+	public void getMessagesByForumIDWithoutDateRange() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commitAndCloseSession();
+
+		Message message = forumManager.createMessage(forum, id, false);
+		message.setTitle("Get message by ForumID and DateRange");
+		message.setBody("Get message by ForumID and DateRange");
+		forumManager.addTopMessage(message);
+
+		Message message2 = forumManager.createMessage(forum, id, false);
+		message2.setTitle("Get message by ForumID and DateRange");
+		message2.setBody("Get message by ForumID and DateRange");
+		forumManager.addTopMessage(message2);
+		dbInstance.commitAndCloseSession();
+
+		List<Message> messages = forumManager.getMessagesByForumAndDateRange(forum, null, null);
+		// size should be 2, because no dateRange filter was applied
+		Assert.assertEquals(2, messages.size());
+	}
+
+	@Test
+	public void getMessagesByForumIDAndDateRange() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commitAndCloseSession();
+
+		Message message = forumManager.createMessage(forum, id, false);
+		message.setTitle("Get message by ForumID and DateRange");
+		message.setBody("Get message by ForumID and DateRange");
+		forumManager.addTopMessage(message);
+		dbInstance.commitAndCloseSession();
+
+		Date afterCreationDate = DateUtils.addDays(new Date(), 1);
+		Date beforeCreationDate = DateUtils.addDays(new Date(), -1);
+
+		List<Message> messages = forumManager.getMessagesByForumAndDateRange(forum, beforeCreationDate, afterCreationDate);
+		// size should be 1, because creationDate is between two filtered dates
+		Assert.assertEquals(1, messages.size());
+	}
+
+	@Test
+	public void getMessagesByForumIDAndBeginDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commitAndCloseSession();
+
+		Message message = forumManager.createMessage(forum, id, false);
+		message.setTitle("Get message by ForumID and DateRange");
+		message.setBody("Get message by ForumID and DateRange");
+		forumManager.addTopMessage(message);
+		dbInstance.commitAndCloseSession();
+
+		Date afterCreationDate = DateUtils.addDays(new Date(), 1);
+		Date beforeCreationDate = DateUtils.addDays(new Date(), -1);
+
+		List<Message> messages = forumManager.getMessagesByForumAndDateRange(forum, afterCreationDate, null);
+		// assert that no message is retrieved because beginDate is after creationDate of message
+		Assert.assertTrue(messages.isEmpty());
+
+		messages = forumManager.getMessagesByForumAndDateRange(forum, beforeCreationDate, null);
+		// assert that 1 message is retrieved because beginDate is before creationDate of message
+		Assert.assertEquals(1, messages.size());
+	}
+
+	@Test
+	public void getMessagesByForumIDAndEndDate() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-1");
+		Forum forum = forumManager.addAForum();
+		dbInstance.commitAndCloseSession();
+
+		Message message = forumManager.createMessage(forum, id, false);
+		message.setTitle("Get message by ForumID and DateRange");
+		message.setBody("Get message by ForumID and DateRange");
+		forumManager.addTopMessage(message);
+		dbInstance.commitAndCloseSession();
+
+		Date afterCreationDate = DateUtils.addDays(new Date(), 1);
+		Date beforeCreationDate = DateUtils.addDays(new Date(), -1);
+
+		List<Message> messages = forumManager.getMessagesByForumAndDateRange(forum, null, beforeCreationDate);
+		// assert that no message is retrieved because endDate is before creationDate of message
+		Assert.assertTrue(messages.isEmpty());
+
+		messages = forumManager.getMessagesByForumAndDateRange(forum, null, afterCreationDate);
+		// assert that 1 message is retrieved because endDate is after creationDate of message
+		Assert.assertEquals(1, messages.size());
 	}
 }

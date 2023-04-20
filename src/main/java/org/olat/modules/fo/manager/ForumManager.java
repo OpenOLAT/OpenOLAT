@@ -170,6 +170,19 @@ public class ForumManager {
 		if (forum == null) return new ArrayList<>(0); //while indexing it can somehow occur, that forum is null!
 		return getMessagesByForumID(forum.getKey(),  0, -1, false, null, true);
 	}
+
+	/**
+	 * get List of messages between zero, one or two date ranges
+	 *
+	 * @param forum respective forum
+	 * @param beginDate from date
+	 * @param endDate inclusive date
+	 * @return list of messages from forum
+	 */
+	public List<Message> getMessagesByForumAndDateRange(Forum forum, Date beginDate, Date endDate) {
+		if (forum == null) return new ArrayList<>(0); //while indexing it can somehow occur, that forum is null!
+		return getMessagesByForumIDAndDateRangeFilter(forum.getKey(), beginDate, endDate);
+	}
 	
 	/**
 	 * 
@@ -200,6 +213,44 @@ public class ForumManager {
 		if(maxResults > 0) {
 			dbQuery.setMaxResults(maxResults);
 		}
+		return dbQuery.getResultList();
+	}
+
+	/**
+	 * get List of messages between zero, one or two date ranges
+	 *
+	 * @param forumKey key of forum
+	 * @param beginDate from date
+	 * @param endDate inclusive date
+	 * @return list of messages from forum
+	 */
+	private List<Message> getMessagesByForumIDAndDateRangeFilter(Long forumKey, Date beginDate, Date endDate) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select msg from fomessage as msg")
+				.append(" left join fetch msg.creator as creator")
+				.and().append("msg.forum.key=:forumKey");
+
+		if (beginDate != null && endDate != null) {
+			qb.and().append("msg.creationDate BETWEEN :beginDate AND :endDate");
+		} else if (beginDate != null) {
+			qb.and().append("msg.creationDate>=:beginDate");
+		} else if (endDate != null) {
+			qb.and().append("msg.creationDate<=:endDate");
+		}
+
+		TypedQuery<Message> dbQuery = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), Message.class)
+				.setParameter("forumKey", forumKey);
+
+		if (beginDate != null && endDate != null) {
+			dbQuery.setParameter("beginDate", beginDate)
+					.setParameter("endDate", endDate);
+		} else if (beginDate != null) {
+			dbQuery.setParameter("beginDate", beginDate);
+		} else if (endDate != null) {
+			dbQuery.setParameter("endDate", endDate);
+		}
+
 		return dbQuery.getResultList();
 	}
 	

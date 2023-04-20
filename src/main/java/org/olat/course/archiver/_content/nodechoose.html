@@ -6,10 +6,15 @@
 </div>
 #if($hasNodes)
 	#if (!$hideTitle)
-	<p class="o_hint">$r.translate("nodechoose.intro.$nodeType")</p>
+		<p class="o_hint">$r.translate("nodechoose.intro.$nodeType")</p>
 	#end
 	$r.render("nodeTable")
-	<div class="o_button_group">$r.render("archive")</div>
+	<div class="o_button_group">
+		$r.render("archive")
+		#if ($r.available("fo.report"))
+			$r.render("fo.report")
+		#end
+	</div>
 #else
 	<p class="o_warning">$r.translate("overview.nonodes.$nodeType")</p>
 #end
