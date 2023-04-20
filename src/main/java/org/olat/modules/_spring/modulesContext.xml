@@ -31,6 +31,7 @@
 	<import resource="classpath:/org/olat/modules/zoom/_spring/zoomContext.xml"/>
 	<import resource="classpath:/org/olat/modules/audiovideorecording/_spring/audioVideoRecordingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/oaipmh/_spring/oaipmhContext.xml"/>
+	<import resource="classpath:/org/olat/modules/jupyterhub/_spring/jupyterHubContext.xml"/>
 
 	<!-- Forum admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
