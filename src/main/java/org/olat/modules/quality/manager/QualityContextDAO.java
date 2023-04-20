@@ -182,6 +182,7 @@ class QualityContextDAO {
 		sb.append("       left join fetch dataCollection.topicRepositoryEntry topicRepositoryEntry");
 		sb.append("       left join fetch dataCollection.topicIdentity topicIdentity");
 		sb.append("       left join fetch topicIdentity.user topicUser");
+		sb.append("       left join fetch context.audienceRepositoryEntry audienceRepositoryEntry");
 		sb.and().append("context.evaluationFormSession.key in :sessionKeys");
 		
 		return dbInstance.getCurrentEntityManager()

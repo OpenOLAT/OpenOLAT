@@ -133,17 +133,37 @@ public class EvaluationFormExcelExport {
 	}
 
 	private void createWorkbook(OutputStream out) {
-		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
+		List<String> sheetNames = getWorksheetNames();
+		try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, sheetNames.size(), sheetNames)) {
 			OpenXMLWorksheet exportSheet = workbook.nextWorksheet();
 			
 			mergedElementIds.clear();
 			addHeader(workbook, exportSheet);
 			addContent(workbook, exportSheet);
+			if (sheetNames.size() > 1) {
+				for (int i = 1; i < sheetNames.size(); i++) {
+					exportSheet = workbook.nextWorksheet();
+					addCustomWorksheet(workbook, exportSheet, i);
+				}
+			}
 		} catch (IOException e) {
 			log.error("", e);
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+	
+	protected List<String> getWorksheetNames() {
+		return List.of("response");
+	}
+	
+	/**
+	 * @param workbook
+	 * @param exportSheet
+	 * @param sheetNum first custom sheet has num 1
+	 */
+	protected void addCustomWorksheet(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, int sheetNum) {
+		//
 	}
 	
 	private void addHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
