@@ -33,8 +33,10 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
+import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -59,6 +61,7 @@ import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
+import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 
@@ -73,11 +76,19 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 	private static final String PACKAGE_PRACTICE = Util.getPackageName(PracticeParticipantController.class);
 	
 	public static final String TYPE = "practice";
-	
-	private static final int CURRENT_CONFIG_VERSION = 1;
 
 	public PracticeCourseNode() {
 		super(TYPE);
+	}
+	
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+
+		ModuleConfiguration config = getModuleConfiguration();
+		if(isNewNode) {
+			config.setBooleanEntry(PracticeEditController.CONFIG_KEY_FILTER_INCLUDE_WO_TAXONOMY_LEVELS, Boolean.TRUE);
+		}
 	}
 
 	@Override
@@ -113,26 +124,31 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 
 	private List<StatusDescription> validateInternalConfiguration(CourseEditorEnv cev) {
 		List<StatusDescription> sdList = new ArrayList<>(5);
-		
+
 		if(cev != null) {
+			PracticeService practiceService = CoreSpringFactory.getImpl(PracticeService.class);
 			RepositoryEntry courseEntry = cev.getCourseGroupManager().getCourseEntry();
-			NodeAccessType accessType = NodeAccessType.of(courseEntry.getTechnicalType());
-			if(LearningPathNodeAccessProvider.TYPE.equals(accessType.getType())) {
-				PracticeService practiceService = CoreSpringFactory.getImpl(PracticeService.class);
-				LearningPathConfigs configs = CoreSpringFactory.getImpl(LearningPathService.class).getConfigs(this);
-				FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
-				if(trigger == FullyAssessedTrigger.statusDone) {
-					List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
-					SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
-					Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
-					if(locale == null) {
-						locale = I18nModule.getDefaultLocale();
-					}
-					List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, locale);
-	
-					int questionsPerSerie = getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
-					if(items.size() < questionsPerSerie) {
-						addStatusWarningDescription("warning.practice.num.questions", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+			List<PracticeResource> resourceInfos = practiceService.getResources(courseEntry, getIdent());
+			if(resourceInfos == null || resourceInfos.isEmpty()) {
+				addStatusErrorDescription("error.practice.no.resources", "error.practice.no.resources.long", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+			} else {
+				NodeAccessType accessType = NodeAccessType.of(courseEntry.getTechnicalType());
+				if(LearningPathNodeAccessProvider.TYPE.equals(accessType.getType())) {
+					LearningPathConfigs configs = CoreSpringFactory.getImpl(LearningPathService.class).getConfigs(this);
+					FullyAssessedTrigger trigger = configs.getFullyAssessedTrigger();
+					if(trigger == FullyAssessedTrigger.statusDone) {
+						List<PracticeResource> resources = practiceService.getResources(courseEntry, getIdent());
+						SearchPracticeItemParameters searchParams = SearchPracticeItemParameters.valueOf(null, courseEntry, this);
+						Locale locale = CoreSpringFactory.getImpl(I18nManager.class).getCurrentThreadLocale();
+						if(locale == null) {
+							locale = I18nModule.getDefaultLocale();
+						}
+						List<PracticeItem> items = practiceService.generateItems(resources, searchParams, -1, locale);
+		
+						int questionsPerSerie = getModuleConfiguration().getIntegerSafe(PracticeEditController.CONFIG_KEY_QUESTIONS_PER_SERIE, 10);
+						if(items.size() < questionsPerSerie) {
+							addStatusWarningDescription("warning.practice.num.questions", PracticeEditController.PANE_TAB_CONFIGURATION, sdList);
+						}
 					}
 				}
 			}
@@ -143,7 +159,15 @@ public class PracticeCourseNode extends AbstractAccessableCourseNode implements 
 	
 	private void addStatusWarningDescription(String key, String pane, List<StatusDescription> status) {
 		String[] params = new String[] { getShortTitle() };
-		StatusDescription sd = new StatusDescription(StatusDescription.WARNING, key, key, params, PACKAGE_PRACTICE);
+		StatusDescription sd = new StatusDescription(ValidationStatus.WARNING, key, key, params, PACKAGE_PRACTICE);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
+	}
+	
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane, List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(ValidationStatus.ERROR, shortDescKey, longDescKey, params, PACKAGE_PRACTICE);
 		sd.setDescriptionForUnit(getIdent());
 		sd.setActivateableViewIdentifier(pane);
 		status.add(sd);

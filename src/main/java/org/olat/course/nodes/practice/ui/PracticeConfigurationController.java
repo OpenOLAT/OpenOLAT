@@ -20,10 +20,11 @@
 package org.olat.course.nodes.practice.ui;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -77,12 +78,13 @@ import org.olat.modules.qpool.ui.metadata.MetaUIFactory;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
-import org.olat.repository.ui.RepositoyUIFactory;
 import org.olat.repository.ui.author.AuthorListConfiguration;
 import org.olat.repository.ui.author.AuthorListController;
 import org.olat.repository.ui.author.AuthoringEntryRow;
@@ -100,7 +102,7 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private FormLink addTestButton;
 	private FormLink addPoolButton;
-	private MultipleSelectionElement taxonomyEl;
+	private TaxonomyLevelSelection taxonomyEl;
 	private MultipleSelectionElement withoutTaxonomyEl;
 	private SingleSelection levelEl;
 	private TextElement challengeToCompleteEl;
@@ -212,15 +214,15 @@ public class PracticeConfigurationController extends FormBasicController {
 		formLayout.setFormTitle(translate("criteria"));
 		
 		Taxonomy taxonomy = qpoolService.getQPoolTaxonomy();
-		SelectionValues levelKeys;
+		Set<TaxonomyLevel> allTaxonomyLevels;
 		if(taxonomy != null) {
-			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-			levelKeys = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
+			allTaxonomyLevels = new HashSet<>(taxonomyService.getTaxonomyLevels(taxonomy));
 		} else {
-			levelKeys = new SelectionValues();
+			allTaxonomyLevels = new HashSet<>(1);
 		}
-		taxonomyEl = uifactory.addCheckboxesDropdown("taxonomy.levels", "taxonomy.levels", formLayout,
-				levelKeys.keys(), levelKeys.values());
+		taxonomyEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), allTaxonomyLevels);
+		taxonomyEl.setDisplayNameHeader(translate("taxonomy.levels"));
 		
 		SelectionValues woKeys = new SelectionValues();
 		woKeys.add(SelectionValues.entry("wo", translate("wo.taxonomy.levels")));
@@ -231,14 +233,12 @@ public class PracticeConfigurationController extends FormBasicController {
 			withoutTaxonomyEl.select("wo", true);
 		}
 		
-		List<Long> selectedLevels = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
-		if(selectedLevels != null) {
-			for(Long selectedLevel:selectedLevels) {
-				String selectedLevelKey = selectedLevel.toString();
-				if(levelKeys.containsKey(selectedLevelKey)) {
-					taxonomyEl.select(selectedLevelKey, true);
-				}
-			}
+		List<Long> selectedLevelsKeys = config.getList(PracticeEditController.CONFIG_KEY_FILTER_TAXONOMY_LEVELS, Long.class);
+		if(selectedLevelsKeys != null) {
+			List<TaxonomyLevel> selectedLevels = allTaxonomyLevels.stream()
+					.filter(level -> selectedLevelsKeys.contains(level.getKey()))
+					.collect(Collectors.toList());
+			taxonomyEl.setSelection(selectedLevels);
 		}
 
 		SelectionValues additionalTypeKeys = getRuleTypes();
@@ -482,11 +482,9 @@ public class PracticeConfigurationController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(testResourcesListCtrl == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent) {
-				AuthoringEntryRowSelectionEvent se = (AuthoringEntryRowSelectionEvent)event;
+			if(event instanceof AuthoringEntryRowSelectionEvent se) {
 				doAddTest(se.getRow());
-			} else if(event instanceof AuthoringEntryRowsListSelectionEvent) {
-				AuthoringEntryRowsListSelectionEvent se = (AuthoringEntryRowsListSelectionEvent)event;
+			} else if(event instanceof AuthoringEntryRowsListSelectionEvent se) {
 				doAddTest(se.getRows());
 			}
 			cmc.deactivate();
@@ -531,16 +529,17 @@ public class PracticeConfigurationController extends FormBasicController {
 			doAddRule(addRuleEl.getSelectedKey());
 			addRuleEl.select(SingleSelection.NO_SELECTION_KEY, true);
 		} else if(resourcesTableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("remove".equals(se.getCommand())) {
 					doConfirmRemoveResource(ureq, resourcesModel.getObject(se.getIndex()));
 				}
 			}
-		} else if(source instanceof FormLink && ((FormLink)source).getUserObject() instanceof RuleElement) {
-			doRemoveRule((RuleElement)((FormLink)source).getUserObject());
-		} else if(source instanceof SingleSelection && ((SingleSelection)source).getUserObject() instanceof RuleElement) {
-			doChangeRuleType((RuleElement)((SingleSelection)source).getUserObject());
+		} else if(source instanceof FormLink ruleLink
+				&& ruleLink.getUserObject() instanceof RuleElement ruleEl) {
+			doRemoveRule(ruleEl);
+		} else if(source instanceof SingleSelection ruleSelection
+				&& ruleSelection.getUserObject() instanceof RuleElement ruleEl) {
+			doChangeRuleType(ruleEl);
 		}
 		
 		super.formInnerEvent(ureq, source, event);
@@ -622,14 +621,9 @@ public class PracticeConfigurationController extends FormBasicController {
 	}
 	
 	private List<Long> getSelectedTaxonomyLevels() {
-		List<Long> selectedLevelKeys = new ArrayList<>();
-		Collection<String> selectedTaxonomyLevelKeys = taxonomyEl.getSelectedKeys();
-		for(String key:selectedTaxonomyLevelKeys) {
-			if(StringHelper.containsNonWhitespace(key)) {
-				selectedLevelKeys.add(Long.valueOf(key));
-			}
-		}
-		return selectedLevelKeys;
+		return taxonomyEl.getSelection().stream()
+				.map(TaxonomyLevelRef::getKey)
+				.collect(Collectors.toList());
 	}
 	
 	private List<PracticeResource> getSelectedResources() {
@@ -769,11 +763,11 @@ public class PracticeConfigurationController extends FormBasicController {
 		}
 		
 		public String getValue() {
-			if(valueItem instanceof TextElement) {
-				return ((TextElement)valueItem).getValue();
+			if(valueItem instanceof TextElement textEl) {
+				return textEl.getValue();
 			}
-			if(valueItem instanceof SingleSelection && ((SingleSelection)valueItem).isOneSelected()) {
-				return ((SingleSelection)valueItem).getSelectedKey();
+			if(valueItem instanceof SingleSelection selectionEl && selectionEl.isOneSelected()) {
+				return selectionEl.getSelectedKey();
 			}
 			return null;	
 		}

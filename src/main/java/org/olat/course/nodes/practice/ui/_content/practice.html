@@ -7,6 +7,11 @@
 		<div class="o_progress_numbers"><strong>$progressNumbers</strong></div>
 		$r.render("close")
 	</div>
+	#if($r.isTrue($repetition))
+	<div class="o_practice_repetition_warning o_warning">
+		<i class="o_icon o_icon-fw o_icon_refresh"> </i> $r.translate("warning.repetition")
+	</div>
+	#end
 	
 	#if($r.visible("feedbackCmp"))
 		$r.render("feedbackCmp")

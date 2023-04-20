@@ -104,6 +104,14 @@ svg {
 	}
 }
 
+.o_practice_repetition_warning {
+	margin: 0 0 15px 0;
+	padding: 0.5em;
+	.o_icon_refresh:before {
+		color: $brand-warning;
+	}
+}
+
 .o_practice_correct {
 	margin: 0;
 	padding: $o-box-padding;
@@ -339,8 +347,14 @@ svg {
 	}
 }
 
-.o_practice_configuration .o_note .table-striped > tbody > tr:nth-child(odd) {
-	background-color: transparent;
+.o_practice_configuration_statistics {
+	.panel-title {
+		color: $text-color;
+		
+		.text-muted {
+			color: $text-muted;
+		}
+	}
 }
 
 .o_assessmentitem_level>i {

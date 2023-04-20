@@ -1,5 +1,9 @@
-<div class="o_note">
-	<p>$numOfQuestions</p>
-
-	$r.render("statistics.taxonomy.level")
+<div class="panel panel-info o_practice_configuration_statistics">
+	<div class="panel-heading">
+		<h3 class="panel-title">$r.translate("stats.title") <small class="text-muted">$r.translate("stats.title.hint")</small></h3>
+	</div>
+	<div class="panel-body">
+		<p>$numOfQuestions</p>
+		$r.render("statistics.taxonomy.level")
+	</div>
 </div>

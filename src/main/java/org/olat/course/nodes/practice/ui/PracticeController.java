@@ -218,8 +218,8 @@ public class PracticeController extends BasicController implements OutcomesAsses
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(assessmentItemCtrl == source) {
-			if(event instanceof ResponseEvent) {
-				doFeedback(ureq, (ResponseEvent)event);
+			if(event instanceof ResponseEvent re) {
+				doFeedback(ureq, re);
 			} else if(event instanceof SkipEvent) {
 				doNextQuestion(ureq);
 			}
@@ -441,6 +441,9 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		final File fUnzippedDirRoot;
 		final ResolvedAssessmentItem resolvedAssessmentItem;
 		
+		int attempts = runningItem.getAttempts();
+		mainVC.contextPut("repetition", Boolean.valueOf(attempts > 0));
+		
 		PracticeItem item = runningItem.getItem();
 		if(item.getRepositoryEntry() != null) {
 			Identifier itemRefIdentifier = item.getItemRef().getIdentifier();
@@ -563,8 +566,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			if(formLayout instanceof FormLayoutContainer) {
-				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
 				if(playMode == PlayMode.freeShuffle) {
 					layoutCont.contextPut("msg", translate("serie.completed"));
 				} else {
@@ -713,8 +715,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			if(formLayout instanceof FormLayoutContainer) {
-				FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+			if(formLayout instanceof FormLayoutContainer layoutCont) {
 				layoutCont.contextPut("passed", passed);
 				
 				String itemTitle = resolvedAssessmentItem.getItemLookup().extractIfSuccessful().getTitle();

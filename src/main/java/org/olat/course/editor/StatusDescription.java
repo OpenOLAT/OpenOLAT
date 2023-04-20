@@ -40,7 +40,7 @@ import org.olat.course.condition.ConditionEditController;
  * @author patrick
  */
 public class StatusDescription implements ValidationStatus {
-	public final static StatusDescription NOERROR = new StatusDescription();
+	public static final StatusDescription NOERROR = new StatusDescription();
 
 	private Level theLevel;
 	private String shortDesc;
