@@ -20,12 +20,14 @@
 package org.olat.modules.quality.analysis.ui;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
+import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.SessionFilter;
@@ -45,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AnalysisExcelExport extends EvaluationFormExcelExport {
 	
+	private final List<QualityContext> contexts;
 	private final Map<EvaluationFormSession, QualityDataCollection> sessionToDataCollection;
 
 	@Autowired
@@ -54,13 +57,19 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 			UserColumns userColumns, String fileName) {
 		super(form, filter, comparator, userColumns, fileName);
 		
-		sessionToDataCollection = qualityService.loadContextBySessions(sessions).stream()
+		contexts = qualityService.loadContextBySessions(sessions);
+		sessionToDataCollection = contexts.stream()
 				.collect(Collectors.toMap(
 						QualityContext::getEvaluationFormSession,
 						QualityContext::getDataCollection,
 						(u, v) -> u));
 	}
-
+	
+	@Override
+	protected List<String> getWorksheetNames() {
+		return List.of(super.getWorksheetNames().get(0), "context");
+	}
+	
 	@Override
 	protected void addCustomHeader(OpenXMLWorkbook workbook, Row headerRow, AtomicInteger col) {
 		headerRow.addCell(col.getAndIncrement(), "oo_session_id", workbook.getStyles().getBottomAlignStyle());
@@ -107,6 +116,43 @@ public class AnalysisExcelExport extends EvaluationFormExcelExport {
 			row.addCell(col.getAndIncrement(), identity.getExternalId(), workbook.getStyles().getTopAlignStyle());
 			row.addCell(col.getAndIncrement(), identity.getUser().getFirstName(), workbook.getStyles().getTopAlignStyle());
 			row.addCell(col.getAndIncrement(), identity.getUser().getLastName(), workbook.getStyles().getTopAlignStyle());
+		}
+	}
+	
+	@Override
+	protected void addCustomWorksheet(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet, int sheetNum) {
+		if (sheetNum == 1) {
+			addContextHeader(workbook, exportSheet);
+			addContentContent(workbook, exportSheet);
+		}
+	}
+
+	private void addContextHeader(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		exportSheet.setHeaderRows(1);
+		Row headerRow = exportSheet.newRow();
+		
+		AtomicInteger col = new AtomicInteger();
+		headerRow.addCell(col.getAndIncrement(), "oo_session_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_context_repo_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_context_repo_external_ref", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_context_repo_external_id", workbook.getStyles().getBottomAlignStyle());
+		headerRow.addCell(col.getAndIncrement(), "oo_context_repo_title", workbook.getStyles().getBottomAlignStyle());
+	}
+
+	private void addContentContent(OpenXMLWorkbook workbook, OpenXMLWorksheet exportSheet) {
+		for (QualityContext context : contexts) {
+			if (context.getEvaluationFormSession() != null) {
+				if (context.getAudienceRepositoryEntry() != null) {
+					RepositoryEntry repositoryEntry = context.getAudienceRepositoryEntry();
+					Row row = exportSheet.newRow();
+					AtomicInteger col = new AtomicInteger();
+					row.addCell(col.getAndIncrement(), context.getEvaluationFormSession().getKey(), workbook.getStyles().getTopAlignStyle());
+					row.addCell(col.getAndIncrement(), repositoryEntry.getKey(), workbook.getStyles().getTopAlignStyle());
+					row.addCell(col.getAndIncrement(), repositoryEntry.getExternalRef(), workbook.getStyles().getTopAlignStyle());
+					row.addCell(col.getAndIncrement(), repositoryEntry.getExternalId(), workbook.getStyles().getTopAlignStyle());
+					row.addCell(col.getAndIncrement(), repositoryEntry.getDisplayname(), workbook.getStyles().getTopAlignStyle());
+				}
+			}
 		}
 	}
 
