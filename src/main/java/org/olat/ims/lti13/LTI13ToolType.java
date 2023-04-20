@@ -40,6 +40,10 @@ public enum LTI13ToolType {
 	 */
 	ZOOM,
 	/**
+	 * JupyterHub tool
+	 */
+	JUPYTER_HUB,
+	/**
 	 * Not used (backwards compatibility)
 	 */
 	SHARED
