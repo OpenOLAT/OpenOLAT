@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -108,8 +109,10 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// </OLATCE-91>
+		Condition accessCondition = getPreConditionAccess();
+		validateEasyCondition(accessCondition);
 		// for this node: only one role: accessing the node
-		boolean accessible = getPreConditionAccess().getConditionExpression() == null || ci.evaluateCondition(getPreConditionAccess());
+		boolean accessible = accessCondition.getConditionExpression() == null || ci.evaluateCondition(accessCondition);
 		// <OLATCE-91>
 		if(accessible){
 			Long courseId = ci.getUserCourseEnvironment().getCourseEnvironment().getCourseResourceableId();
@@ -120,16 +123,26 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		}
 		// </OLATCE-91>
 		nodeEval.putAccessStatus("access", accessible);
-		boolean visible = getPreConditionVisibility().getConditionExpression() == null
-				|| ci.evaluateCondition(getPreConditionVisibility());
+
+		Condition visibilityCondition = getPreConditionVisibility();
+		validateEasyCondition(visibilityCondition);
+		boolean visible = visibilityCondition.getConditionExpression() == null
+				|| ci.evaluateCondition(visibilityCondition);
 		nodeEval.setVisible(visible);
+	}
+	
+	private synchronized void validateEasyCondition(Condition condition) {
+		if(!condition.isExpertMode() && StringHelper.containsNonWhitespace(condition.getEasyModeAssessmentModeNodeId())
+				&& !getIdent().equals(condition.getEasyModeAssessmentModeNodeId())) {
+			condition.setEasyModeAssessmentModeNodeId(getIdent());
+			condition.setConditionExpression(condition.getConditionFromEasyModeConfiguration());
+		}
 	}
 
 	@Override
 	public void copyConfigurationTo(CourseNode courseNode, ICourse course, Identity savedBy) {
 		super.copyConfigurationTo(courseNode, course, savedBy);
-		if(courseNode instanceof AbstractAccessableCourseNode) {
-			AbstractAccessableCourseNode accessableNode = (AbstractAccessableCourseNode)courseNode;
+		if(courseNode instanceof AbstractAccessableCourseNode accessableNode) {
 			if(preConditionAccess != null) {
 				accessableNode.setPreConditionAccess(preConditionAccess.clone());
 			}
