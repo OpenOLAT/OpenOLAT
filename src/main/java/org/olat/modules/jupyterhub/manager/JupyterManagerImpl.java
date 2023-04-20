@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
@@ -184,8 +185,8 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		LTI13ToolDeployment toolDeployment = createLtiToolDeployment(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
 				jupyterHub, image);
 		String description = repositoryEntry.getKey().toString() + "-" + subIdent;
-		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, description, image,
-				suppressDataTransmissionAgreement);
+		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, description,
+				StringHelper.blankIfNull(image), suppressDataTransmissionAgreement);
 	}
 
 	@Override
@@ -220,7 +221,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	private void setCustomAttributes(LTI13ToolDeployment toolDeployment, JupyterHub jupyterHub, String image) {
 		CustomAttributesBuilder builder = new CustomAttributesBuilder();
 		builder
-				.add("singleuser_image", image != null ? image : "")
+				.add("singleuser_image", StringHelper.blankIfNull(image))
 				.add("memory_guaranteed", "128MB")
 				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1GB")
 				.add("56567cpu_guaranteed", "1")
