@@ -170,7 +170,8 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public void initializeJupyterHubDeployment(RepositoryEntry repositoryEntry, String subIdent, String clientId) {
+	public void initializeJupyterHubDeployment(RepositoryEntry repositoryEntry, String subIdent, String clientId,
+											   String image, Boolean suppressDataTransmissionAgreement) {
 		if (jupyterDeploymentDAO.exists(repositoryEntry, subIdent)) {
 			return;
 		}
@@ -181,9 +182,10 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		}
 
 		LTI13ToolDeployment toolDeployment = createLtiToolDeployment(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
-				jupyterHub, null);
+				jupyterHub, image);
 		String description = repositoryEntry.getKey().toString() + "-" + subIdent;
-		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, description, "");
+		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, description, image,
+				suppressDataTransmissionAgreement);
 	}
 
 	@Override
@@ -247,7 +249,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		LTI13ToolDeployment toolDeployment = createLtiToolDeployment(jupyterHub.getLtiTool(), repositoryEntry, subIdent,
 				jupyterHub, jupyterDeployment.getImage());
 		jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment, jupyterDeployment.getDescription(),
-				jupyterDeployment.getImage());
+				jupyterDeployment.getImage(), jupyterDeployment.getSuppressDataTransmissionAgreement());
 		lti13ToolDeploymentDAO.deleteToolDeployment(existingToolDeployment);
 	}
 

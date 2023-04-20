@@ -64,7 +64,8 @@ public class JupyterDeploymentDAO {
 	}
 
 	public JupyterDeployment createJupyterHubDeployment(JupyterHub jupyterHub, LTI13ToolDeployment toolDeployment,
-														String description, String image) {
+														String description, String image,
+														Boolean suppressDataTransmissionAgreement) {
 		JupyterDeploymentImpl jupyterDeployment = new JupyterDeploymentImpl();
 		jupyterDeployment.setCreationDate(new Date());
 		jupyterDeployment.setLastModified(jupyterDeployment.getCreationDate());
@@ -72,6 +73,9 @@ public class JupyterDeploymentDAO {
 		jupyterDeployment.setImage(image);
 		jupyterDeployment.setJupyterHub(jupyterHub);
 		jupyterDeployment.setLtiToolDeployment(toolDeployment);
+		if (suppressDataTransmissionAgreement != null) {
+			jupyterDeployment.setSuppressDataTransmissionAgreement(suppressDataTransmissionAgreement);
+		}
 		dbInstance.getCurrentEntityManager().persist(jupyterDeployment);
 		return jupyterDeployment;
 	}

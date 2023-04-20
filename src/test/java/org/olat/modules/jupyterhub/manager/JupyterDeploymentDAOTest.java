@@ -62,7 +62,7 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		LTI13ToolDeployment toolDeployment = jupyterManager.createLtiToolDeployment(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, image);
 		JupyterDeployment jupyterDeployment = jupyterDeploymentDAO.createJupyterHubDeployment(jupyterHub, toolDeployment,
-				"Test deployment", image);
+				"Test deployment", image, true);
 
 		Assert.assertNotNull(jupyterDeployment);
 		Assert.assertEquals(entry, jupyterDeployment.getLtiToolDeployment().getEntry());
@@ -70,7 +70,7 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		Assert.assertEquals(clientId, jupyterDeployment.getJupyterHub().getLtiTool().getClientId());
 		Assert.assertEquals(jupyterDeployment.getLtiToolDeployment().getTool(), jupyterDeployment.getJupyterHub().getLtiTool());
 		Assert.assertEquals(JupyterHub.AgreementSetting.configurableByAuthor, jupyterDeployment.getJupyterHub().getAgreementSetting());
-
+		Assert.assertTrue(jupyterDeployment.getSuppressDataTransmissionAgreement());
 		String customAttributes = jupyterDeployment.getLtiToolDeployment().getSendCustomAttributes();
 		Assert.assertNotNull(customAttributes);
 		String[] params = customAttributes.split("[\n;]");

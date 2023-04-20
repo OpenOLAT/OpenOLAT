@@ -117,8 +117,10 @@ public class JupyterHubDAOTest extends OlatTestCase {
 		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Used JupyterHub", "16GB", 16, JupyterHub.AgreementSetting.configurableByAuthor);
 		String subIdent1 = "1234";
 		String subIdent2 = "2345";
-		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent1, clientId);
-		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent2, clientId);
+		String image1 = "images/image1";
+		String image2 = "images/image2";
+		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent1, clientId, image1, true);
+		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent2, clientId, image2, false);
 
 		List<JupyterHubDAO.JupyterHubApplication> applications = jupyterManager.getJupyterHubApplications(jupyterHub.getKey());
 

@@ -56,12 +56,14 @@ public interface JupyterManager {
 
 	JupyterDeployment getJupyterDeployment(RepositoryEntry repositoryEntry, String subIdent);
 
-	void initializeJupyterHubDeployment(RepositoryEntry repositoryEntry, String subIdent, String clientId);
+	void initializeJupyterHubDeployment(RepositoryEntry repositoryEntry, String subIdent, String clientId, String image,
+										Boolean suppressDataTransmissionAgreement);
 
 	LTI13ToolDeployment createLtiToolDeployment(LTI13Tool ltiTool, RepositoryEntry repositoryEntry,
 												String subIdent, JupyterHub jupyterHub, String image);
 
-	void recreateJupyterHubDeployment(JupyterDeployment jupyterDeployment, RepositoryEntry courseEntry, String subIdent, JupyterHub jupyterHub);
+	void recreateJupyterHubDeployment(JupyterDeployment jupyterDeployment, RepositoryEntry courseEntry, String subIdent,
+									  JupyterHub jupyterHub);
 
 	void deleteJupyterHub(RepositoryEntry repositoryEntry, String subIdent);
 

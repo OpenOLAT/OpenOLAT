@@ -1,0 +1,15 @@
+<div id="o_jupyter_hub_run_panel">
+	#if ($r.available("disclaimer"))
+	$r.render("disclaimer")
+	#end
+	#if ($r.available("runButton"))
+	<div class="o_button_group">
+		$r.render("runButton")
+	</div>
+	#end
+	#if ($r.available("lti"))
+	<div class="o_lti_panel">
+		$r.render("lti")
+	</div>
+	#end
+</div>
