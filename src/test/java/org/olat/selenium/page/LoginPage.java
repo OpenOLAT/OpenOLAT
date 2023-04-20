@@ -226,6 +226,7 @@ public class LoginPage {
 		if(resumes.size() > 0 && resumes.get(0).isDisplayed()) {
 			resumes.get(0).click();
 			OOGraphene.waitModalDialogDisappears(browser);
+			OOGraphene.waitElementAbsence(By.xpath("//div[contains(@class,'modal-backdrop')]"), 5, browser);
 		}
 		return this;
 	}
