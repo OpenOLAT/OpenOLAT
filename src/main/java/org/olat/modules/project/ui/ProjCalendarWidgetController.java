@@ -42,6 +42,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjMilestone;
@@ -51,7 +52,6 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.model.ProjFormattedDateRange;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,6 +73,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
+	private final Formatter formatter;
 	
 	@Autowired
 	private ProjectService projectService;
@@ -84,6 +85,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		super(ureq, wControl, "calendar_widget");
 		this.project = project;
 		this.secCallback = secCallback;
+		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
 		loadModel();
@@ -146,14 +148,20 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
 		if (!milestones.isEmpty()) {
 			milestones.sort((m1, m2) -> m1.getDueDate().compareTo(m2.getDueDate()));
-			List<MilestoneRow> milestoneRows = new ArrayList<>(1);
+			List<CalendarWidgetRow> milestoneRows = new ArrayList<>(1);
 			Date now = DateUtils.addDays(new Date(), -1);
 			boolean inFutureFound = false;
 			for (ProjMilestone milestone : milestones) {
 				if (milestone.getStatus() == ProjMilestoneStatus.open && milestone.getDueDate().before(now)) {
-					milestoneRows.add(new MilestoneRow(ProjectUIFactory.getDisplayName(getTranslator(), milestone), milestone.getDueDate(), true));
+					milestoneRows.add(new CalendarWidgetRow(
+							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
+							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
+							true));
 				} else if (!inFutureFound && milestone.getDueDate().after(now)) {
-					milestoneRows.add(new MilestoneRow(ProjectUIFactory.getDisplayName(getTranslator(), milestone), milestone.getDueDate(), false));
+					milestoneRows.add(new CalendarWidgetRow(
+							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
+							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
+							false));
 					inFutureFound = true;
 				}
 			}
@@ -179,18 +187,31 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		List<CalendarWidgetRow> nextRows = new ArrayList<>();
 		for (KalendarEvent event : appointmentEvents) {
 			if (DateUtils.isOverlapping(event.getBegin(), event.getEnd(), todayStart, todayEnd)) {
-				todayRows.add(createRow(event));
+				if (event.isAllDayEvent()) {
+					todayRows.add(new CalendarWidgetRow(
+							event.getSubject(), 
+							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + getTranslator().translate("all.day"),
+							false));
+				} else if (event.getBegin().before(todayStart)) {
+					todayRows.add(new CalendarWidgetRow(
+							event.getSubject(), 
+							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(todayStart),
+							false));
+				} else {
+					todayRows.add(new CalendarWidgetRow(
+							event.getSubject(), 
+							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin()),
+							false));
+				}
 			} else if(nextRows.size() < 5 && todayEnd.before(event.getBegin())) {
-				nextRows.add(createRow(event));
+				nextRows.add(new CalendarWidgetRow(
+						event.getSubject(),
+						"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(event.getBegin()),
+						false));
 			}
 		}
 		flc.contextPut("todayRows", todayRows);
 		flc.contextPut("nextRows", nextRows);
-	}
-
-	private CalendarWidgetRow createRow(KalendarEvent event) {
-		ProjFormattedDateRange formatRange = ProjectUIFactory.formatRange(getTranslator(), event.getBegin(), event.getEnd());
-		return new CalendarWidgetRow(formatRange.getDate(), formatRange.getDate2(), formatRange.getTime(), event.getSubject());
 	}
 
 	@Override
@@ -274,45 +295,13 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	
 	public static final class CalendarWidgetRow {
 		
-		private final String date;
-		private final String date2;
-		private final String time;
-		private final String subject;
-		
-		public CalendarWidgetRow(String date, String date2, String time, String subject) {
-			this.date = date;
-			this.date2 = date2;
-			this.time = time;
-			this.subject = subject;
-		}
-		
-		public String getDate() {
-			return date;
-		}
-		
-		public String getDate2() {
-			return date2;
-		}
-		
-		public String getTime() {
-			return time;
-		}
-		
-		public String getSubject() {
-			return subject;
-		}
-		
-	}
-	
-	public static final class MilestoneRow {
-		
 		private final String displayName;
-		private final Date dueDate;
+		private final String dueName;
 		private final boolean warning;
 		
-		public MilestoneRow(String displayName, Date dueDate, boolean warning) {
+		public CalendarWidgetRow(String displayName, String dueName, boolean warning) {
 			this.displayName = displayName;
-			this.dueDate = dueDate;
+			this.dueName = dueName;
 			this.warning = warning;
 		}
 
@@ -320,8 +309,8 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			return displayName;
 		}
 
-		public Date getDueDate() {
-			return dueDate;
+		public String getDueName() {
+			return dueName;
 		}
 
 		public boolean isWarning() {

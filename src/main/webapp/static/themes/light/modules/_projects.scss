@@ -269,17 +269,11 @@
 	}
 }
 .o_proj_calendar_widget {
-	.o_proj_milestones {
-		.o_proj_card {
-			margin-bottom: 5px;
-		}
-	}
-	.o_proj_appointments {
-		display: grid;
-		grid-template-columns: max-content auto;
-		gap: 10px 20px; 
-		.o_proj_full_row {
-			grid-column: span 2;	
+	.o_proj_card {
+		margin-bottom: 5px;
+		.o_proj_calendar_widget_date {
+			flex-shrink: 0;
+			margin-left: 5px;
 		}
 	}
 }

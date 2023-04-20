@@ -130,7 +130,7 @@ public class ProjectUIFactory {
 			formatedRange.setDate(startDate);
 			StringBuilder timeSb = new StringBuilder();
 			if (sameTime) {
-				timeSb.append(translator.translate("full.day"));
+				timeSb.append(translator.translate("all.day"));
 			} else {
 				timeSb.append(startTime);
 				timeSb.append(" - ");

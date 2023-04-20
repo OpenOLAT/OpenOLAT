@@ -29,8 +29,8 @@
 							<div>
 								<i class="o_icon o_icon-lg #if($row.warning)o_icon_warn#end"> </i> $row.getDisplayName()
 							</div>
-							<div>
-								$r.formatDate($row.getDueDate())
+							<div class="o_proj_calendar_widget_date">
+								$row.getDueName()
 							</div>
 						</div>
 					</div>
@@ -38,66 +38,44 @@
 			</div>
 		#end
 		<div class="o_proj_appointments">
-			<div class="o_proj_full_row">
+			<div class="o_proj_full_row o_block_top">
 				<h4>
 					$r.translate("calendar.widget.today")
 				</h4>
 			</div>
 			#if($r.isNotEmpty($todayRows))
 				#foreach($row in $todayRows)
-					<div class="o_proj_date">
-						<div class="o_proj_appointment_date">
-							<i class="o_icon o_icon-fw o_icon_calendar"> </i>
-							$row.date
+					<div class="o_proj_card">
+						<div class="o_proj_card_meta o_flex_first_grow">
+							<div>
+								$row.getDisplayName()
+							</div>
+							<div class="o_proj_calendar_widget_date">
+								$row.getDueName()
+							</div>
 						</div>
-						#if($r.isNotEmpty($row.date2))
-							<div class="o_proj_appointment_time">
-								<i class="o_icon o_icon-fw "> </i>
-								$row.date2
-							</div>
-						#end
-						#if($r.isNotEmpty($row.time))
-							<div class="o_proj_appointment_time">
-								<i class="o_icon o_icon-fw o_icon_time"> </i>
-								$row.time
-							</div>
-						#end
-					</div>
-					<div class="o_proj_subject">
-						$r.escapeHtml($row.subject)
 					</div>
 				#end
 			#else
 				$r.translate("calendar.widget.no.appointments")
 			#end
 			
-			<div class="o_proj_full_row">
+			<div class="o_proj_full_row o_block_top">
 				<h4>
 					$r.translate("calendar.widget.next")
 				</h4>
 			</div>
 			#if($r.isNotEmpty($nextRows))
 				#foreach($row in $nextRows)
-					<div class="o_proj_date">
-						<div class="o_proj_appointment_date">
-							<i class="o_icon o_icon-fw o_icon_calendar"> </i>
-							$row.date
+					<div class="o_proj_card">
+						<div class="o_proj_card_meta o_flex_first_grow">
+							<div>
+								$row.getDisplayName()
+							</div>
+							<div class="o_proj_calendar_widget_date">
+								$row.getDueName()
+							</div>
 						</div>
-						#if($r.isNotEmpty($row.date2))
-							<div class="o_proj_appointment_time">
-								<i class="o_icon o_icon-fw "> </i>
-								$row.date2
-							</div>
-						#end
-						#if($r.isNotEmpty($row.time))
-							<div class="o_proj_appointment_time">
-								<i class="o_icon o_icon-fw o_icon_time"> </i>
-								$row.time
-							</div>
-						#end
-					</div>
-					<div class="o_proj_subject">
-						$r.escapeHtml($row.subject)
 					</div>
 				#end
 			#else
