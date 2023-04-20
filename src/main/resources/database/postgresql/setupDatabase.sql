@@ -3979,6 +3979,36 @@ create table o_repositoryentry_audit_log (
 );
 create index idx_re_audit_log_to_re_entry_idx on o_repositoryentry_audit_log (fk_entry);
 
+-- JupyterHub
+create table o_jup_hub (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   j_name varchar(255) not null,
+   j_status varchar(255) not null,
+   j_ram varchar(255) not null,
+   j_cpu int8 not null,
+   j_image_checking_service_url varchar(255),
+   j_info_text text,
+   j_lti_key varchar(255),
+   j_access_token varchar(255),
+   j_agreement_setting varchar(32) default 'suppressAgreement' not null,
+   fk_lti_tool_id int8 not null,
+   primary key (id)
+);
+
+create table o_jup_deployment (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   j_description varchar(255),
+   j_image varchar(255) not null,
+   j_suppress_data_transmission_agreement bool,
+   fk_hub int8 not null,
+   fk_lti_tool_deployment_id int8 not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -5360,4 +5390,15 @@ alter table o_proj_activity add constraint activity_organisation_idx foreign key
 create index idx_activity_organisation_idx on o_proj_activity (fk_organisation);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
 
+-- JupyterHub
+alter table o_jup_hub add constraint jup_hub_tool_idx foreign key (fk_lti_tool_id) references o_lti_tool (id);
+create index idx_jup_hub_tool_idx on o_jup_hub (fk_lti_tool_id);
+
+alter table o_jup_deployment add constraint jup_deployment_hub_idx foreign key (fk_hub) references o_jup_hub (id);
+create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
+
+alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
+create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
+
+-- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

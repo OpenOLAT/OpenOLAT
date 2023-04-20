@@ -1,0 +1,140 @@
+/**
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.modules.jupyterhub.manager;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.olat.core.id.Identity;
+import org.olat.ims.lti13.LTI13Tool;
+import org.olat.modules.jupyterhub.JupyterHub;
+import org.olat.modules.jupyterhub.JupyterManager;
+import org.olat.repository.RepositoryEntry;
+import org.olat.test.JunitTestHelper;
+import org.olat.test.OlatTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * Initial date: 2023-04-20<br>
+ *
+ * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
+ */
+public class JupyterHubDAOTest extends OlatTestCase {
+
+	@Autowired
+	private JupyterHubDAO jupyterHubDAO;
+	@Autowired
+	private JupyterManager jupyterManager;
+
+	@Test
+	public void testCreateJupyterHub() {
+		String clientId = UUID.randomUUID().toString();
+		LTI13Tool ltiTool = createTestLtiTool(clientId);
+		JupyterHub jupyterHub = jupyterHubDAO.createJupyterHub("JupyterHubTest", "2GB", 2, ltiTool,
+				JupyterHub.AgreementSetting.suppressAgreement);
+
+		Assert.assertNotNull(jupyterHub);
+		Assert.assertNotNull(jupyterHub.getKey());
+		Assert.assertEquals("JupyterHubTest", jupyterHub.getName());
+		Assert.assertEquals("2GB", jupyterHub.getRam());
+		Assert.assertEquals(2, jupyterHub.getCpu());
+		Assert.assertEquals(JupyterHub.AgreementSetting.suppressAgreement, jupyterHub.getAgreementSetting());
+
+		Assert.assertNotNull(jupyterHub.getLtiTool());
+		Assert.assertTrue(jupyterHub.getLtiTool().getInitiateLoginUrl().startsWith("https://jupyterhub."));
+		Assert.assertEquals(clientId, jupyterHub.getLtiTool().getClientId());
+	}
+
+	private LTI13Tool createTestLtiTool(String clientId) {
+		String jupyterHubUrl = "https://jupyterhub.openolat.org";
+		return ((JupyterManagerImpl) jupyterManager).createLtiTool("LtiToolForJupyter", jupyterHubUrl, clientId);
+	}
+
+	@Test
+	public void testGetJupyterHub() {
+		String clientId = UUID.randomUUID().toString();
+		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Test1", "1GB", 1, JupyterHub.AgreementSetting.suppressAgreement);
+
+		JupyterHub jupyterHubForClientId = jupyterHubDAO.getJupyterHub(clientId);
+		JupyterHub jupyterHubForRandomClientId = jupyterHubDAO.getJupyterHub(UUID.randomUUID().toString());
+		JupyterHub jupyterHubForKey = jupyterHubDAO.getJupyterHub(jupyterHub.getKey());
+
+		Assert.assertNotNull(jupyterHubForClientId);
+		Assert.assertNull(jupyterHubForRandomClientId);
+		Assert.assertNotNull(jupyterHubForKey);
+
+		Assert.assertEquals("Test1", jupyterHubForClientId.getName());
+		Assert.assertEquals(jupyterHubForClientId, jupyterHubForKey);
+		Assert.assertEquals(clientId, jupyterHubForKey.getLtiTool().getClientId());
+	}
+
+	private JupyterHub createTestJupyterHub(String clientId, String name, String ram, long cpu,
+											JupyterHub.AgreementSetting agreementSetting) {
+		LTI13Tool ltiTool = createTestLtiTool(clientId);
+		return jupyterHubDAO.createJupyterHub(name, ram, cpu, ltiTool, agreementSetting);
+	}
+
+	@Test
+	public void testGetJupyterHubs() {
+		String clientId1 = UUID.randomUUID().toString();
+		String clientId2 = UUID.randomUUID().toString();
+		JupyterHub jupyterHub1 = createTestJupyterHub(clientId1, "Test1", "1GB", 1, JupyterHub.AgreementSetting.suppressAgreement);
+		JupyterHub jupyterHub2 = createTestJupyterHub(clientId2, "Test2", "2GB", 2, JupyterHub.AgreementSetting.requireAgreement);
+
+		List<JupyterHub> jupyterHubs = jupyterHubDAO.getJupyterHubs();
+
+		Assert.assertTrue(jupyterHubs.size() >= 2);
+		Assert.assertTrue(jupyterHubs.containsAll(List.of(jupyterHub1, jupyterHub2)));
+		Assert.assertTrue(jupyterHubs.stream().anyMatch(h -> h.getLtiTool().getClientId().equals(clientId1) && h.getName().equals("Test1")));
+		Assert.assertEquals(1, jupyterHubs.stream().filter(h -> h.getLtiTool().getClientId().equals(clientId2) && h.getAgreementSetting().equals(JupyterHub.AgreementSetting.requireAgreement)).toList().size());
+	}
+
+	@Test
+	public void testGetApplications() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndAuthor("jupyter-author-1");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(author);
+		String clientId = UUID.randomUUID().toString();
+		JupyterHub jupyterHub = createTestJupyterHub(clientId, "Used JupyterHub", "16GB", 16, JupyterHub.AgreementSetting.configurableByAuthor);
+		String subIdent1 = "1234";
+		String subIdent2 = "2345";
+		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent1, clientId);
+		jupyterManager.initializeJupyterHubDeployment(courseEntry, subIdent2, clientId);
+
+		List<JupyterHubDAO.JupyterHubApplication> applications = jupyterManager.getJupyterHubApplications(jupyterHub.getKey());
+
+		Assert.assertNotNull(applications);
+		Assert.assertEquals(2, applications.size());
+		Assert.assertEquals(2, applications.stream().filter(a -> a.getName().equals("Used JupyterHub")).toList().size());
+		List<JupyterHubDAO.JupyterHubApplication> jupyterNode1Applications = applications.stream().filter(a -> a.getDescription().equals(courseEntry.getKey() + "-" + subIdent1)).toList();
+		Assert.assertEquals(1, jupyterNode1Applications.size());
+		Assert.assertEquals(subIdent1, jupyterNode1Applications.get(0).getLti13ToolDeployment().getSubIdent());
+
+		List<JupyterHubDAO.JupyterHubWithApplicationCount> hubsWithApplicationCounts = jupyterManager.getJupyterHubsWithApplicationCounts();
+
+		Assert.assertTrue(hubsWithApplicationCounts.size() >= 1);
+		List<JupyterHubDAO.JupyterHubWithApplicationCount> matchingHubs = hubsWithApplicationCounts.stream().filter(h -> h.getJupyterHub().getLtiTool().getClientId().equals(clientId)).toList();
+		Assert.assertEquals(1, matchingHubs.size());
+		Assert.assertEquals("Used JupyterHub", matchingHubs.get(0).getJupyterHub().getName());
+		Assert.assertEquals(Long.valueOf(2), matchingHubs.get(0).getApplicationCount());
+	}
+}

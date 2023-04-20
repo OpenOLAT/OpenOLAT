@@ -209,6 +209,8 @@
 		<class>org.olat.modules.grading.model.GradingTimeRecordAppender</class>
 		<class>org.olat.modules.grading.model.RepositoryEntryGradingConfigurationImpl</class>
 		<class>org.olat.modules.invitation.model.InvitationImpl</class>
+		<class>org.olat.modules.jupyterhub.model.JupyterDeploymentImpl</class>
+		<class>org.olat.modules.jupyterhub.model.JupyterHubImpl</class>
 		<class>org.olat.modules.lecture.model.ReasonImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockAuditLogImpl</class>
