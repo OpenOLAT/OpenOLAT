@@ -25,40 +25,67 @@ import org.olat.core.id.Identity;
 
 /**
  * Search parameters for repositoryEntryAuditLog filtering
- *
+ * <p>
  * Initial date: Apr 12, 2023
  *
  * @author Sumit Kapoor, sumit.kapoor@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class RepositoryEntryAuditLogSearchParams {
 
-	// author which should be exluced from the search - for action statusChange ignore own changes
 	private Identity exlcudedAuthor;
-	// retrieve learning resources where the identity is the owner
 	private Identity owner;
-	// retrieve learning resources from this date to current date
 	private Date untilCreationDate;
 
+	/**
+	 * get author which should be excluded from the search - for action statusChange ignore own changes
+	 *
+	 * @return identity of excluded author
+	 */
 	public Identity getExlcudedAuthor() {
 		return exlcudedAuthor;
 	}
 
+	/**
+	 * set identity of excluded author
+	 *
+	 * @param exlcudedAuthor
+	 */
 	public void setExlcudedAuthor(Identity exlcudedAuthor) {
 		this.exlcudedAuthor = exlcudedAuthor;
 	}
 
+	/**
+	 * get Date for filtering with a start date until current date
+	 *
+	 * @return date by which the earliest entry should be retrieved
+	 */
 	public Date getUntilCreationDate() {
 		return untilCreationDate;
 	}
 
+	/**
+	 * set date by which the earliest entry should be retrieved
+	 *
+	 * @param untilCreationDate
+	 */
 	public void setUntilCreationDate(Date untilCreationDate) {
 		this.untilCreationDate = untilCreationDate;
 	}
 
+	/**
+	 * get Owner for learning resources
+	 *
+	 * @return identity of learning resource owner
+	 */
 	public Identity getOwner() {
 		return owner;
 	}
 
+	/**
+	 * set identity of learning resource owner
+	 *
+	 * @param owner
+	 */
 	public void setOwner(Identity owner) {
 		this.owner = owner;
 	}
