@@ -21,7 +21,9 @@ package org.olat.selenium.page;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.coaching.CoachingPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.course.MyCoursesPage;
@@ -46,6 +48,8 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class NavigationPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(NavigationPage.class);
 	
 	private static final By navigationSitesBy = By.cssSelector("ul.o_navbar_sites");
 	private static final By authoringEnvTabBy = By.cssSelector("li.o_site_author_env > a");
@@ -173,7 +177,14 @@ public class NavigationPage {
 		OOGraphene.waitElementPresence(courseTab, 5, browser);
 		List<WebElement> courseLinks = browser.findElements(courseTab);
 		if(courseLinks.isEmpty() || !courseLinks.get(0).isDisplayed()) {
-			openMoreMenu();
+			try {
+				openMoreMenu();
+			} catch (Exception e) {
+				// For Firefox importUsers issue
+				log.error("", e);
+				OOGraphene.waitingALittleBit();
+				openMoreMenu();
+			}
 			courseLinks = browser.findElements(courseTab);
 		}
 		Assert.assertFalse(courseLinks.isEmpty());

@@ -329,6 +329,15 @@
 	}
 }
 
+.o_container_block_3_cols .o_evaluation_editor_form .o_slider_editor,
+.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="1"] .o_evaluation_editor_form .o_slider_editor,
+.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="2"] .o_evaluation_editor_form .o_slider_editor,
+.o_container_block_1_3_rows .o_page_container_slot[data-oo-slot="3"] .o_evaluation_editor_form .o_slider_editor {
+	.col-md-5, .col-md-2 {
+		 width: 100%;
+	}
+}
+
 @media (max-width: $screen-sm-min) {
 	.o_evaluation_form {
 		.o_evaluation_left_label {
