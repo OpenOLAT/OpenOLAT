@@ -29,6 +29,7 @@ import jakarta.persistence.FlushModeType;
 import jakarta.persistence.TypedQuery;
 
 import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -671,10 +672,14 @@ public class AssessmentEntryDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ae.key")
 		  .append("  from assessmententry ae")
+		  .append("  inner join bgroupmember as bmember on (bmember.identity.key=ae.identity.key and bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append("  inner join bmember.group as relGroup")
+		  .append("  inner join repoentrytogroup as rel on (relGroup.key=rel.group.key)")
 		  .and().append("ae.identity.key is not null")
 		  .and().append("ae.coach.key is null")
 		  .and().append("ae.repositoryEntry.key=:repositoryEntryKey")
-		  .and().append("ae.subIdent=:subIdent");
+		  .and().append("ae.subIdent=:subIdent")
+		  .and().append("rel.entry.key=:repositoryEntryKey");
 		
 		List<Long> counts = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)

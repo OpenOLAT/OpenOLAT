@@ -637,7 +637,10 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select elem,")
 		  .append(" (select count(aentry.key) from assessmententry aentry")
-		  .append("    where aentry.repositoryEntry.key=elem.repositoryEntry.key and aentry.subIdent=elem.subIdent and aentry.coach.key is null")
+		  .append("    inner join bgroupmember as bmember on (bmember.identity.key=aentry.identity.key and bmember.role='").append(GroupRoles.participant.name()).append("')")
+		  .append("    inner join bmember.group as relGroup")
+		  .append("    inner join repoentrytogroup as rel on (relGroup.key=rel.group.key)")
+		  .append("   where aentry.repositoryEntry.key=elem.repositoryEntry.key and aentry.subIdent=elem.subIdent and aentry.coach.key is null and rel.entry.key=elem.repositoryEntry.key")
 		  .append(" ) as numOfOpenAssignment")
 		  .append(" from courseelement elem")
 		  .append(" inner join fetch elem.repositoryEntry as re")
