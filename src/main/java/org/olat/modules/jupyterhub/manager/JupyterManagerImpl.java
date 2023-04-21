@@ -25,6 +25,7 @@ import java.util.List;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
+import org.olat.ims.lti.LTIManager;
 import org.olat.ims.lti13.LTI13Service;
 import org.olat.ims.lti13.LTI13Tool;
 import org.olat.ims.lti13.LTI13ToolDeployment;
@@ -226,11 +227,11 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1GB")
 				.add("56567cpu_guaranteed", "1")
 				.add("567567cpu_limit", jupyterHub != null ? Long.toString(jupyterHub.getCpu()) : "1")
-				.add("username", "$userprops_username")
-				.add("courseID", "$userprops_courseId")
-				.add("nodeID", "$userprops_nodeId")
-				.add("courseUrl", "$userprops_courseUrl")
-				.add("nodeUrl", "$userprops_nodeUrl");
+				.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
+				.add("course_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_ID)
+				.add("course_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_URL)
+				.add("node_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_ID)
+				.add("node_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_NODE_URL);
 		toolDeployment.setSendCustomAttributes(builder.build());
 	}
 

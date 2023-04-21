@@ -46,6 +46,7 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
+import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
@@ -311,6 +312,23 @@ public class LTI13PlatformDispatcherDelegate {
 					}
 					if (value != null) {
 						map.put(userProp, value);
+					}
+				} else if (value.startsWith(LTIManager.COURSE_INFO_PREFIX)) {
+					String key = value.substring(LTIManager.COURSE_INFO_PREFIX.length());
+					switch (key) {
+						case LTIManager.COURSE_INFO_COURSE_ID -> value = deployment.getEntry().getKey().toString();
+						case LTIManager.COURSE_INFO_COURSE_URL -> {
+							String businessPath = "[RepositoryEntry:" + deployment.getEntry().getKey() + "]";
+							value = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath);
+						}
+						case LTIManager.COURSE_INFO_NODE_ID -> value = deployment.getSubIdent();
+						case LTIManager.COURSE_INFO_NODE_URL -> {
+							String businessPath = "[RepositoryEntry:" + deployment.getEntry().getKey() + "][CourseNode:" + deployment.getSubIdent() + "]";
+							value = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathStrings(businessPath);
+						}
+					}
+					if (value != null) {
+						map.put(prop, value);
 					}
 				}
 				if (value != null) {

@@ -36,9 +36,15 @@ import org.olat.resource.OLATResource;
  */
 public interface LTIManager {
 
-	public static final String USER_NAME_PROP = "username";
-	public static final String USER_PROPS_PREFIX = "$userprops_";
-	public static final int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
+	String COURSE_INFO_PREFIX = "$courseinfo_";
+	String COURSE_INFO_COURSE_ID = "course_id";
+	String COURSE_INFO_COURSE_URL = "course_url";
+	String COURSE_INFO_NODE_ID = "node_id";
+	String COURSE_INFO_NODE_URL = "node_url";
+	String USER_PROPS_PREFIX = "$userprops_";
+	String USER_NAME_PROP = "username";
+
+	int EXPIRATION_TIME = 3600 * 24 * 30 * 6;//6 months
 
 	public Map<String,String> forgeLTIProperties(Identity identity, Locale locale,
 			LTIContext context, boolean sendName, boolean sendEmail, boolean ensureEmail);
