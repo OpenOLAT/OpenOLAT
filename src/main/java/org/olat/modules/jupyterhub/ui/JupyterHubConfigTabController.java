@@ -203,7 +203,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 	private boolean validateImage() {
 		imageEl.clearError();
 		if (!StringHelper.containsNonWhitespace(imageEl.getValue())) {
-			imageEl.setErrorKey("form.legende.mandatory");
+			imageEl.setErrorKey("form.mandatory.hover");
 			return false;
 		}
 		return true;

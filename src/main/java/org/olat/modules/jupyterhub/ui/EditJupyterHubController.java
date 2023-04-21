@@ -160,7 +160,7 @@ public class EditJupyterHubController extends FormBasicController {
 	private boolean validateName() {
 		nameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
-			nameEl.setErrorKey("form.legende.mandatory");
+			nameEl.setErrorKey("form.mandatory.hover");
 			return false;
 		}
 		return true;
@@ -212,7 +212,7 @@ public class EditJupyterHubController extends FormBasicController {
 	private boolean validateJupyterHubUrl() {
 		jupyterHubUrlEl.clearError();
 		if (!StringHelper.containsNonWhitespace(jupyterHubUrlEl.getValue())) {
-			jupyterHubUrlEl.setErrorKey("form.legende.mandatory");
+			jupyterHubUrlEl.setErrorKey("form.mandatory.hover");
 			return false;
 		}
 
