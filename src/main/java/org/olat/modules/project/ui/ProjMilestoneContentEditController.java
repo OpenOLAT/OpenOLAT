@@ -28,9 +28,9 @@ import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -57,14 +57,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjMilestoneContentEditController extends FormBasicController {
 	
-	private static final String CMD_COLOR = "color";
-
 	private TextElement subjectEl;
 	private TagSelection tagsEl;
 	private DateChooser dueEl;
 	private DropdownItem statusEl;
 	private FormLink statusLink;
-	private DropdownItem colorEl;
+	private ColorPickerElement colorPickerEl;
 	private TextAreaElement descriptionEl;
 	
 	private final ProjMilestone milestone;
@@ -105,22 +103,14 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		statusLink.setDomReplacementWrapperRequired(false);
 		statusEl.addElement(statusLink);
 		updateStatusUI();
-		
-		colorEl = uifactory.addDropdownMenu("color", "", "cal.form.event.color", formLayout, getTranslator());
-		colorEl.setElementCssClass("o_proj_color");
-		colorEl.setOrientation(DropdownOrientation.normal);
-		colorEl.addActionListener(FormEvent.ONCHANGE);
-		for (String color : CalendarColors.getColorClasses()) {
-			FormLink colorLink = uifactory.addFormLink(color, CMD_COLOR, "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
-			if (color.equals(milestone.getColor())){
-				colorLink.setIconLeftCSS("o_cal_color_element o_cal_colorchooser_selected " + color);
-			} else {
-				colorLink.setIconLeftCSS("o_cal_color_element " + color);
-			}
-			colorLink.setUserObject(color);
-			colorEl.addElement(colorLink);
+
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
+		if (milestone.getColor() != null && CalendarColors.getColorsList().contains(milestone.getColor())) {
+			colorPickerEl.setColor(milestone.getColor());
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_MILESTONE));
 		}
-		updateColorUI("o_cal_" + milestone.getColor());
+		colorPickerEl.setCssPrefix("o_cal");
 		
 		descriptionEl = uifactory.addTextAreaElement("description", "milestone.edit.description", -1, 3, 40, true,
 				false, milestone.getDescription(), formLayout);
@@ -140,25 +130,10 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		}
 	}
 	
-	private void updateColorUI(String colorCss) {
-		if (CalendarColors.colorClassExists(colorCss)) {
-			colorEl.setIconCSS("o_cal_color_element " + colorCss);
-			colorEl.setUserObject(colorCss);
-		} else {
-			colorEl.setIconCSS("o_cal_color_element " + ProjectUIFactory.COLOR_MILESTONE);
-			colorEl.setUserObject(null);
-		}
-	}
-	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == statusLink) {
 			doToggleStatus();
-		} else if (source instanceof FormLink link) {
-			if (CMD_COLOR.equals(link.getCmd())) {
-				String colorCss = (String)link.getUserObject();
-				updateColorUI(colorCss);
-			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -190,10 +165,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	}
 	
 	private String getColor() {
-		if (colorEl.getUserObject() instanceof String color) {
-			return color.substring(6, color.length());
-		}
-		return null;
+		return colorPickerEl.getColor().getId();
 	}
 	
 	private void doToggleStatus() {
