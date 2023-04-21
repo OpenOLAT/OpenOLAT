@@ -346,7 +346,16 @@
 		.o_proj_timeline_date {
 			text-align: right;
 			margin-left: auto;
-			@extend %o_muted;
+		}
+		&.o_proj_timeline_today {
+			.o_proj_timeline_date {
+				font-weight: bold;
+			}
+		}
+		&:not(.o_proj_timeline_today) {
+			.o_proj_timeline_date {
+				@extend %o_muted;
+			}
 		}
 		
 		&.o_proj_timeline_range_row {
@@ -355,8 +364,19 @@
 				border-top: .1rem solid $text-muted;
 				transform: translateY(1rem);
 			}
-			a {
-				@extend %o_muted;
+			&.o_proj_timeline_today {
+				.o_proj_timeline_range_deco {
+					border-top-color: $brand-primary;
+				}
+				a {
+					color: $text-color;
+					font-weight: bold;
+				}
+			}
+			&:not(.o_proj_timeline_today) {
+				a {
+					@extend %o_muted;
+				}
 			}
 		}
 		&.o_proj_timeline_more_row {

@@ -367,6 +367,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setDate(DateUtils.addSeconds(toDo.getToDoTask().getDueDate(), 4));
 		row.setFormattedDate(getFormattedDate(row.getDate(), false));
+		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.toDo);
 		return row;
 	}
@@ -408,6 +409,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setDate(DateUtils.addSeconds(kalendarEvent.getBegin(), 5));
 		row.setFormattedDate(getFormattedDate(row.getDate(), !appointment.isAllDay()));
+		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.appointment);
 		return row;
 	}
@@ -442,6 +444,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setDate(DateUtils.addSeconds(milestone.getDueDate(), 4));
 		row.setFormattedDate(getFormattedDate(row.getDate(), false));
+		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.milestone);
 		return row;
 	}
@@ -614,6 +617,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setDate(activity.getCreationDate());
 		row.setFormattedDate(getFormattedDate(row.getDate(), true));
+		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setDoerDisplyName(getDoerDisplayName(activityRowData.doerKeys()));
 		addStaticMessageItem(row);
 		
@@ -791,6 +795,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		
 		row.setMessage(getMessageWithCount(message, activityRowData.numActivities()));
 		row.setDate(activity.getCreationDate());
+		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setFormattedDate(getFormattedDate(row.getDate(), true));
 		row.setDoerDisplyName(getDoerDisplayName(activityRowData.doerKeys()));
 	
@@ -869,7 +874,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		Date today = DateUtils.setTime(new Date(), 0, 0, 0);
 		FormLink link = null;
 		if (rangeUserObject == null) {
-			link = createRangeLink(Range.nextLater, DateUtils.addYears(today, 10), DateUtils.addDays(today, 8), translate("timeline.range.later"), true);
+			link = createRangeLink(Range.nextLater, DateUtils.addYears(today, 10), DateUtils.addDays(today, 8), translate("timeline.range.later"), false);
 		} else if (rangeUserObject.getRange() == Range.nextLater) {
 			link = createRangeLink(Range.next7Days, DateUtils.addDays(today, 8), DateUtils.addDays(today, 1), translate("timeline.range.next.7.days"), true);
 		} else if (rangeUserObject.getRange() == Range.next7Days) {
@@ -908,8 +913,8 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	
 	private void updateRangeIcon(FormLink link, RangeUserObject rangeUserObject) {
 		String iconCss = rangeUserObject.isShow()
-				? "o_icon o_icon-lg o_icon_details_collaps"
-				: "o_icon o_icon-lg o_icon_details_expand";
+				? "o_icon o_icon-fw o_icon_close_togglebox"
+				: "o_icon o_icon-fw o_icon_open_togglebox";
 		link.setIconLeftCSS(iconCss);
 	}
 	
@@ -919,6 +924,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		ProjTimelineRow rangeRow = new ProjTimelineRow();
 		rangeRow.setRangeLink(rangeLink);
 		rangeRow.setDate(rangeUserObject.getDateRange().getTo());
+		rangeRow.setToday(DateUtils.isSameDay(new Date(), rangeUserObject.getDateRange().getFrom()));
 		rows.add(rangeRow);
 	}
 
@@ -997,10 +1003,14 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
 			ProjTimelineRow row = dataModel.getObject(pos);
-			if (row != null && row.getRangeLink() != null) {
-				return "o_proj_timeline_row o_proj_timeline_range_row";
+			String cssClass = "o_proj_timeline_row";
+			if (row != null && row.isToday()) {
+				cssClass += " o_proj_timeline_today";
 			}
-			return "o_proj_timeline_row";
+			if (row != null && row.getRangeLink() != null) {
+				cssClass += " o_proj_timeline_range_row";
+			}
+			return cssClass;
 		}
 	}
 	

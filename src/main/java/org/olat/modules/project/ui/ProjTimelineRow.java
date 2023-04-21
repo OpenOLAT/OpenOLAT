@@ -37,6 +37,7 @@ public class ProjTimelineRow {
 	private String message;
 	private Date date;
 	private String formattedDate;
+	private boolean today;
 	private String doerDisplyName;
 	private Collection<Long> identityKeys;
 	private String rangeEmpty;
@@ -68,6 +69,14 @@ public class ProjTimelineRow {
 
 	public void setFormattedDate(String formattedDate) {
 		this.formattedDate = formattedDate;
+	}
+
+	public boolean isToday() {
+		return today;
+	}
+
+	public void setToday(boolean today) {
+		this.today = today;
 	}
 
 	public String getDoerDisplyName() {
