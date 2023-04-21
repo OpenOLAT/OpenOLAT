@@ -27,7 +27,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface ColorPickerElement extends FormItem {
-	void setColor(String orchid);
+	void setColor(String color);
 
 	/**
 	 * @return true if the color picker is configured to send an ONCLICK form event every time the user selects

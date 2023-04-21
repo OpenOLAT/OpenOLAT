@@ -33,12 +33,10 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.dropdown.DropdownItem;
-import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -46,7 +44,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -65,7 +62,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 	private static final String RECURRENCE_NONE = "none";
-	private static final String CMD_COLOR = "color";
 
 	private TextElement subjectEl;
 	private TagSelection tagsEl;
@@ -75,7 +71,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private SingleSelection recurrenceRuleEl;
 	private DateChooser recurrenceEndEl;
 	private TextElement locationEl;
-	private DropdownItem colorEl;
+	private ColorPickerElement colorPickerEl;
 	private TextAreaElement descriptionEl;
 	
 	private final ProjAppointment appointment;
@@ -158,23 +154,15 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		
 		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, appointment.getLocation(), formLayout);
-		
-		colorEl = uifactory.addDropdownMenu("color", "", "cal.form.event.color", formLayout, getTranslator());
-		colorEl.setElementCssClass("o_proj_color");
-		colorEl.setOrientation(DropdownOrientation.normal);
-		colorEl.addActionListener(FormEvent.ONCHANGE);
-		for (String color : CalendarColors.getColorClasses()) {
-			FormLink colorLink = uifactory.addFormLink(color, CMD_COLOR, "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
-			if (color.equals(appointment.getColor())){
-				colorLink.setIconLeftCSS("o_cal_color_element o_cal_colorchooser_selected " + color);
-			} else {
-				colorLink.setIconLeftCSS("o_cal_color_element " + color);
-			}
-			colorLink.setUserObject(color);
-			colorEl.addElement(colorLink);
+
+		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
+		if (appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
+			colorPickerEl.setColor(appointment.getColor());
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
 		}
-		updateColorUI("o_cal_" + appointment.getColor());
-		
+		colorPickerEl.setCssPrefix("o_cal");
+
 		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, appointment.getDescription(), formLayout);
 	}
 	
@@ -189,27 +177,12 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		recurrenceEndEl.setVisible(reccurend );
 	}
 	
-	private void updateColorUI(String colorCss) {
-		if (CalendarColors.colorClassExists(colorCss)) {
-			colorEl.setIconCSS("o_cal_color_element " + colorCss);
-			colorEl.setUserObject(colorCss);
-		} else {
-			colorEl.setIconCSS("o_cal_color_element " + ProjectUIFactory.COLOR_APPOINTMENT);
-			colorEl.setUserObject(null);
-		}
-	}
-	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == allDayEl) {
 			updateAllDayUI();
 		} else if (source == recurrenceRuleEl) {
 			updateReccurenceUI();
-		} else if (source instanceof FormLink link) {
-			if (CMD_COLOR.equals(link.getCmd())) {
-				String colorCss = (String)link.getUserObject();
-				updateColorUI(colorCss);
-			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -280,10 +253,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	}
 	
 	public String getColor() {
-		if (colorEl.getUserObject() instanceof String color) {
-			return color.substring(6, color.length());
-		}
-		return null;
+		return colorPickerEl.getColor().getId();
 	}
 	
 	public boolean isAllDay() {
