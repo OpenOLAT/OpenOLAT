@@ -516,6 +516,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		} else {
 			removeMembers(reloadedRe, GroupRoles.coach.name(), GroupRoles.participant.name(), GroupRoles.waiting.name());
 		}
+
+		//delete reservations
+		reservationDao.deleteReservations(resource);
+		
 		//remove relation to business groups
 		List<RepositoryEntryToGroupRelation> relations = reToGroupDao.getBusinessGroupAndCurriculumRelations(reloadedRe);
 		for(RepositoryEntryToGroupRelation relation:relations) {
