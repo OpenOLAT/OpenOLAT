@@ -27,12 +27,12 @@ import jakarta.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjTag;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjTagSearchParams;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjTagImpl;
@@ -83,9 +83,9 @@ public class ProjTagDAO {
 				.executeUpdate();
 	}
 	
-	public List<ProjTagInfo> loadProjectTagInfos(ProjProjectRef project, ProjArtefactRef selectionArtefact) {
+	public List<TagInfo> loadProjectTagInfos(ProjProjectRef project, ProjArtefactRef selectionArtefact) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select new org.olat.modules.project.model.ProjTagInfoImpl(");
+		sb.append("select new org.olat.core.commons.services.tag.model.TagInfoImpl(");
 		sb.append("       tag.key");
 		sb.append("     , min(tag.creationDate)");
 		sb.append("     , min(tag.displayName)");
@@ -103,7 +103,7 @@ public class ProjTagDAO {
 		sb.groupBy().append("tag.key");
 		
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), ProjTagInfo.class)
+				.createQuery(sb.toString(), TagInfo.class)
 				.setParameter("projectKey", project.getKey())
 				.getResultList();
 	}

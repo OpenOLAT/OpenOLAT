@@ -29,8 +29,10 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
+import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -79,7 +81,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Util;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
 import org.olat.modules.todo.ToDoPriority;
@@ -95,6 +96,7 @@ import org.olat.modules.todo.ToDoTaskSecurityCallback;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 import org.olat.modules.todo.ui.ToDoUIFactory.Due;
+import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -143,26 +145,34 @@ public abstract class ToDoTaskListController extends FormBasicController
 
 	private final String createType;
 	private final Long createOriginId;
+	private final String createOriginSubPath;
 	private ToDoTask toDoTaskToDelete;
 	private int counter;
 	
 	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private MapperService mapperService;
 
 	protected ToDoTaskListController(UserRequest ureq, WindowControl wControl, String pageName,
-			MapperKey avatarMapperKey, String createType, Long createOriginId) {
+			MapperKey avatarMapperKey, String createType, Long createOriginId, String createOriginSubPath) {
 		super(ureq, wControl, pageName);
 		setTranslator(Util.createPackageTranslator(ToDoTaskListController.class, getLocale(), getTranslator()));
-		this.avatarMapperKey = avatarMapperKey;
+		this.avatarMapperKey = avatarMapperKey != null
+				? avatarMapperKey
+				: mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.createType = createType;
 		this.createOriginId = createOriginId;
+		this.createOriginSubPath = createOriginSubPath;
 	}
 	
 	protected abstract Date getLastVisitDate();
+
+	protected List<String> getFilterContextTypes() {
+		return List.of();
+	}
 	
-	protected abstract List<ProjTagInfo> getFilterTags();
-	
-	protected abstract ToDoTaskSecurityCallback getSecurityCallback();
+	protected abstract List<TagInfo> getFilterTags();
 	
 	protected boolean isNumOfRowsEnabled() {
 		return true;
@@ -181,6 +191,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	protected abstract ToDoTaskSearchParams createSearchParams();
+	
+	protected abstract ToDoTaskSecurityCallback getSecurityCallback();
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -221,6 +233,12 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (isVisible(ToDoTaskCols.status)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.status, new ToDoStatusCellRenderer(getTranslator())));
 		}
+		if (isVisible(ToDoTaskCols.contextType)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextType));
+		}
+		if (isVisible(ToDoTaskCols.contextTitle)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.contextTitle));
+		}
 		if (isVisible(ToDoTaskCols.assigned)) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ToDoTaskCols.assigned));
 		}
@@ -252,7 +270,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 	
-	protected boolean isVisible(@SuppressWarnings("unused") ToDoTaskCols col) {
+	@SuppressWarnings("unused") 
+	protected boolean isVisible(ToDoTaskCols col) {
 		return true;
 	}
 
@@ -287,7 +306,22 @@ public abstract class ToDoTaskListController extends FormBasicController
 		addStatusSVEntry(priorityValues, ToDoStatus.deleted);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
 		
-		List<ProjTagInfo> tagInfos = getFilterTags();
+		List<String> contextTypes = getFilterContextTypes();
+		if (!contextTypes.isEmpty()) {
+			SelectionValues typeValues = new SelectionValues();
+			for (String contextType : contextTypes) {
+				ToDoProvider provider = toDoService.getProvider(contextType);
+				if (provider != null) {
+					String displayName = provider.getDisplayName(getLocale());
+					typeValues.add(SelectionValues.entry(contextType, displayName));
+				}
+			}
+			if (typeValues.size() > 0) {
+				filters.add(new FlexiTableMultiSelectionFilter(translate("task.context.type"), ToDoTaskFilter.contextType.name(), typeValues, true));
+			}
+		}
+		
+		List<TagInfo> tagInfos = getFilterTags();
 		if (!tagInfos.isEmpty()) {
 			filters.add(new FlexiTableTagFilter(translate("tags"), ToDoTaskFilter.tag.name(), tagInfos, true));
 		}
@@ -387,7 +421,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 	
 	private void loadModel(UserRequest ureq, boolean sort) {
+		boolean contextTyoeVisible = isVisible(ToDoTaskCols.contextType);
 		LocalDate now = LocalDate.now();
+		
 		ToDoTaskSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
@@ -409,6 +445,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 			Due due = ToDoUIFactory.getDue(getTranslator(), DateUtils.toLocalDate(row.getDueDate()), now, toDoTask.getStatus());
 			row.setDue(due.name());
 			row.setOverdue(due.overdue());
+			
+			if (contextTyoeVisible) {
+				ToDoProvider provider = toDoService.getProvider(row.getType());
+				if (provider != null) {
+					row.setTranslatedType(provider.getDisplayName(getLocale()));
+				}
+			}
 			
 			List<Tag> tags = toDoTaskToTags.getOrDefault(toDoTask, List.of()).stream().map(ToDoTaskTag::getTag).collect(Collectors.toList());
 			row.setTags(tags);
@@ -479,6 +522,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 				} else {
 					searchParams.setPriorities(null);
 				}
+			}
+			if (ToDoTaskFilter.contextType.name() == filter.getFilter()) {
+				List<String> contextTypes = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (contextTypes != null && !contextTypes.isEmpty()) {
+					searchParams.setTypes(contextTypes);
+				}
+				// Do not set the types to null. Probably they are restricted by the list subclass.
 			}
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
@@ -774,13 +824,13 @@ public abstract class ToDoTaskListController extends FormBasicController
 		if (guardModalController(toToTaskEditCtrl)) return;
 		
 		ToDoProvider provider = toDoService.getProvider(createType);
-		toToTaskEditCtrl = provider.createCreateController(ureq, getWindowControl(), getIdentity(), createOriginId);
+		toToTaskEditCtrl = provider.createCreateController(ureq, getWindowControl(), getIdentity(), createOriginId, createOriginSubPath);
 		if (toToTaskEditCtrl == null) {
 			return;
 		}
 		listenTo(toToTaskEditCtrl);
 		
-		String title = translate("todo.edit");
+		String title = translate("task.edit");
 		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -801,7 +851,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		listenTo(toToTaskEditCtrl);
 		
-		String title = translate("todo.edit");
+		String title = translate("task.edit");
 		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

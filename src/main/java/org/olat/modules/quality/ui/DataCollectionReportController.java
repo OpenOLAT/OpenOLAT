@@ -28,6 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
@@ -50,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataCollectionReportController extends FormBasicController {
 	
 	private Controller reportHeaderCtrl;
-	private Controller reportsCtrl;
+	private EvaluationFormReportsController reportsCtrl;
 	
 	private QualityDataCollection dataCollection;
 	
@@ -82,6 +83,10 @@ public class DataCollectionReportController extends FormBasicController {
 		reportsCtrl = new EvaluationFormReportsController(ureq, getWindowControl(), form, storage,
 				filter, ReportSegment.OVERVIEW, reportHeaderCtrl.getInitialComponent(), figures, dataCollection.getTitle());
 		flc.put("report", reportsCtrl.getInitialComponent());
+	}
+	
+	public EvaluationFormSession getSession() {
+		return reportsCtrl != null? reportsCtrl.getSession(): null;
 	}
 	
 	@Override

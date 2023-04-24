@@ -65,6 +65,8 @@ public abstract class AbstractSessionSelectionController extends FormBasicContro
 	private final Component formHeader;
 	private EvaluationFormExecutionController executionCtrl;
 	
+	private EvaluationFormSession session;
+
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
@@ -157,15 +159,19 @@ public abstract class AbstractSessionSelectionController extends FormBasicContro
 	}
 
 	private void doShowQuickview(UserRequest ureq, SessionSelectionRow row) {
-		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(row.getSession());
+		session = evaluationFormManager.loadSessionByKey(row.getSession());
 		EvaluationFormResponses responses = evaluationFormManager.loadResponsesBySessions(filter);
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(),
-				reloadedSession, responses, form, storage, formHeader);
+				session, responses, form, storage, formHeader);
 		String breadcrumbName = row.getParticipant();
 		pushController(ureq, breadcrumbName, executionCtrl);
 	}
 
 	public abstract void pushController(UserRequest ureq, String breadcrumbName, EvaluationFormExecutionController theExecutionCtrl);
+	
+	public EvaluationFormSession getSession() {
+		return executionCtrl != null && !executionCtrl.isDisposed()? session: null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {

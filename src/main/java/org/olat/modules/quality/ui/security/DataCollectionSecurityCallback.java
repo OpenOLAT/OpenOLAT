@@ -20,6 +20,7 @@
 package org.olat.modules.quality.ui.security;
 
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.todo.ToDoTaskSecurityCallback;
 
 /**
  * 
@@ -27,7 +28,7 @@ import org.olat.modules.quality.QualityReminder;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface DataCollectionSecurityCallback {
+public interface DataCollectionSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	public boolean canViewDataCollectionConfigurations();
 	
@@ -45,7 +46,7 @@ public interface DataCollectionSecurityCallback {
 	
 	public boolean canAddParticipants();
 	
-	public boolean canRevomeParticipation();
+	public boolean canRemoveParticipation();
 
 	public boolean canEditReminder(QualityReminder reminder);
 	
@@ -56,5 +57,7 @@ public interface DataCollectionSecurityCallback {
 	public boolean canEditReportAccessMembers();
 
 	public boolean canViewReport();
+	
+	public boolean canViewToDos();
 
 }

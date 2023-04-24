@@ -71,6 +71,8 @@ import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.quality.QualityAuditLog;
+import org.olat.modules.quality.QualityAuditLogSearchParams;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextBuilder;
 import org.olat.modules.quality.QualityContextRef;
@@ -96,6 +98,7 @@ import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGenerator;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.todo.ToDoService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryDataDeletable;
 import org.olat.resource.OLATResourceManager;
@@ -139,6 +142,8 @@ public class QualityServiceImpl
 	@Autowired
 	private QualityReportAccessDAO reportAccessDao;
 	@Autowired
+	private QualityAuditLogDAO auditLogDao;
+	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
 	private QualityMailing qualityMailing;
@@ -156,6 +161,8 @@ public class QualityServiceImpl
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BaseSecurityManager securityManager;
+	@Autowired
+	private ToDoService toDoService;
 	
 	@Override
 	public List<Organisation> getDefaultOrganisations(Identity identity) {
@@ -225,6 +232,8 @@ public class QualityServiceImpl
 
 	@Override
 	public QualityDataCollection updateDataCollection(QualityDataCollection dataCollection) {
+		toDoService.updateOriginTitle(DataCollectionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle());
+		toDoService.updateOriginTitle(EvaluationFormSessionToDoTaskProvider.TYPE, dataCollection.getKey(), null, dataCollection.getTitle());
 		return dataCollectionDao.updateDataCollection(dataCollection);
 	}
 
@@ -439,6 +448,11 @@ public class QualityServiceImpl
 	@Override
 	public List<Organisation> loadDataCollectionOrganisations(QualityDataCollectionRef dataCollectionRef) {
 		return dataCollectionToOrganisationDao.loadOrganisationsByDataCollectionKey(dataCollectionRef);
+	}
+	
+	@Override
+	public List<Long> loadDataCollectionKeysByOrganisations(Collection<? extends OrganisationRef> organisations) {
+		return dataCollectionToOrganisationDao.loadDataCollectionKeysByOrganisations(organisations);
 	}
 
 	@Override
@@ -777,4 +791,15 @@ public class QualityServiceImpl
 		return EvaluationFormSurveyIdentifier.of(dataCollection);
 	}
 	
+	@Override
+	public List<QualityAuditLog> loadAuditLogs(QualityAuditLogSearchParams searchParams, int firstResult, int maxResults) {
+		return auditLogDao.loadAuditLogs(searchParams, firstResult, maxResults);
+	}
+	
+	@Override
+	public List<Identity> loadAuditLogDoers(QualityAuditLogSearchParams searchParams) {
+		return auditLogDao.loadAuditLogDoers(searchParams);
+	}
+	
+	//TODO uh zuviele Einträge in task modiferu
 }

@@ -29,6 +29,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationRef;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -121,9 +122,11 @@ public interface QualityService {
 
 	public List<Organisation> loadDataCollectionOrganisations(QualityDataCollectionRef dataCollectionRef);
 
+	public List<Long> loadDataCollectionKeysByOrganisations(Collection<? extends OrganisationRef> organisations);
+
 	public void updateDataCollectionOrganisations(QualityDataCollection dataCollection,
 			List<Organisation> organisations);
-
+	
 	/**
 	 * Add the executors to the data collection and returns the participations of
 	 * the executors. If already a participation for an executor exists, no further
@@ -237,5 +240,9 @@ public interface QualityService {
 	public List<Identity> loadReportMembers(QualityReportAccessReference reference);
 
 	public void removeReportMember(QualityReportAccessReference reference, IdentityRef identityRef);
+	
+	public List<QualityAuditLog> loadAuditLogs(QualityAuditLogSearchParams searchParams, int firstResult, int maxResults);
+
+	public List<Identity> loadAuditLogDoers(QualityAuditLogSearchParams searchParams);
 
 }

@@ -31,6 +31,10 @@ import org.olat.core.id.Identity;
  */
 public interface ToDoTaskMembers {
 	
+	public Set<Identity> getMembers();
+	
 	public Set<Identity> getMembers(ToDoRole role);
+	
+	public Set<ToDoRole> getRoles(Identity member);
 
 }

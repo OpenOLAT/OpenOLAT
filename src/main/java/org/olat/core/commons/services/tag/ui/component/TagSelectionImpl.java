@@ -76,13 +76,11 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 	private Set<Long> selectedKeys;
 	private Set<String> newTags = new HashSet<>(1);
 
-	public TagSelectionImpl(WindowControl wControl, String name, List<? extends TagInfo> allTags, Collection<? extends TagRef> initialSelection) {
+	public TagSelectionImpl(WindowControl wControl, String name, List<? extends TagInfo> allTags) {
 		super(name);
 		this.wControl = wControl;
 		this.allTags = allTags;
-		this.initialSelectedKeys = initialSelection != null
-				? initialSelection.stream().map(TagRef::getKey).collect(Collectors.toSet())
-				: Set.of();
+		this.initialSelectedKeys = allTags.stream().filter(TagInfo::isSelected).map(TagInfo::getKey).collect(Collectors.toSet());
 		this.selectedKeys = new HashSet<>();
 		this.selectedKeys.addAll(initialSelectedKeys);
 		this.component = new TagSelectionComponent(name, this);

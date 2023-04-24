@@ -39,12 +39,16 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisPresentationSearchParameter;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.ui.AnalysisListController;
 import org.olat.modules.quality.generator.ui.GeneratorListController;
+import org.olat.modules.quality.manager.QualityToDoTaskQuery;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
+import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +63,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private static final String ORES_SUGGESTION_TYPE = "suggestion";
 	private static final String ORES_DATA_COLLECTIONS_TYPE = "datacollections";
 	private static final String ORES_GENERATORS_TYPE = "generators";
+	private static final String ORES_TODOS_TYPE = "ToDos";
 	private static final String ORES_ANALYSIS_TYPE = "analysis";
 	
 	private final VelocityContainer mainVC;
@@ -66,6 +71,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	private Link suggestionLink;
 	private Link dataCollectionLink;
 	private Link generatorsLink;
+	private Link toDoLink;
 	private Link analysisLink;
 	private List<Component> analysisPresenatationLinks = Collections.emptyList();
 	
@@ -74,12 +80,17 @@ public class QualityHomeController extends BasicController implements Activateab
 	private SuggestionController suggestionCtrl;
 	private DataCollectionListController dataCollectionListCtrl;
 	private GeneratorListController generatorsListCtrl;
+	private QualityToDoListController toDoListCtrl;
 	private AnalysisListController analysisListCtrl;
 	
 	private final MainSecurityCallback secCallback;
 	
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityAnalysisService analysisService;
+	@Autowired
+	private ToDoService toDoService;
 	
 	public QualityHomeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, MainSecurityCallback secCallback) {
 		super(ureq, wControl);
@@ -94,7 +105,7 @@ public class QualityHomeController extends BasicController implements Activateab
 	}
 
 	private void createPanels() {
-		List<PanelWrapper> wrappers = new ArrayList<>(4);
+		List<PanelWrapper> wrappers = new ArrayList<>(5);
 		executorParticipationLink = LinkFactory.createLink("goto.executor.participation.link", mainVC, this);
 		executorParticipationLink.setIconRightCSS("o_icon o_icon_start");
 		wrappers.add(new PanelWrapper(translate("goto.executor.participation.title"),
@@ -121,6 +132,13 @@ public class QualityHomeController extends BasicController implements Activateab
 					translate("goto.generator.help"), generatorsLink, null));
 		}
 		
+		if (qualityModule.isToDoEnabled() && hasToDoTasks()) {
+			toDoLink = LinkFactory.createLink("goto.todo.link", mainVC, this);
+			toDoLink.setIconRightCSS("o_icon o_icon_start");
+			wrappers.add(new PanelWrapper(translate("goto.todo.title"),
+					translate("goto.todo.help"), toDoLink, null));
+		}
+		
 		if (secCallback.canViewAnalysis()) {
 			analysisLink = LinkFactory.createLink("goto.analysis.link", mainVC, this);
 			analysisLink.setIconRightCSS("o_icon o_icon_start");
@@ -132,6 +150,17 @@ public class QualityHomeController extends BasicController implements Activateab
 		mainVC.contextPut("panels", wrappers);
 	}
 	
+	private boolean hasToDoTasks() {
+		if (secCallback.canCreateToDoTasks()) {
+			return true;
+		}
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), false, List.of()));
+		Long count = toDoService.getToDoTaskCount(searchParams);
+		return count > 0;
+	}
+
 	private List<Component> getAnalysisPresentationLinks() {
 		int counter = 0;
 		AnalysisPresentationSearchParameter searchParams = new AnalysisPresentationSearchParameter();
@@ -178,6 +207,9 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenGenerators(ureq);
 			List<ContextEntry> subEntries = entries.subList(1, entries.size());
 			generatorsListCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+		} else if (ORES_TODOS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+				&& toDoLink != null) {
+			doOpenToDos(ureq);
 		} else if (ORES_ANALYSIS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 				&& secCallback.canViewAnalysis()) {
 			doOpenAnalysis(ureq);
@@ -192,6 +224,7 @@ public class QualityHomeController extends BasicController implements Activateab
 		return suggestionLink == null
 				&& dataCollectionLink == null
 				&& generatorsLink == null
+				&& toDoLink == null
 				&& analysisLink == null;
 	}
 
@@ -205,6 +238,8 @@ public class QualityHomeController extends BasicController implements Activateab
 			doOpenDataCollection(ureq);
 		} else if (generatorsLink == source) {
 			doOpenGenerators(ureq);
+		} else if (toDoLink == source) {
+			doOpenToDos(ureq);
 		} else if (analysisLink == source) {
 			doOpenAnalysis(ureq);
 		} else if (analysisPresenatationLinks.contains(source)) {
@@ -254,6 +289,15 @@ public class QualityHomeController extends BasicController implements Activateab
 		generatorsListCtrl = new GeneratorListController(ureq, bwControl, stackPanel, secCallback);
 		listenTo(generatorsListCtrl);
 		stackPanel.pushController(translate("breadcrumb.generators"), generatorsListCtrl);
+	}
+
+	private void doOpenToDos(UserRequest ureq) {
+		stackPanel.popUpToRootController(ureq);
+		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ORES_TODOS_TYPE, 0l);
+		WindowControl bwControl = addToHistory(ureq, ores, null);
+		toDoListCtrl = new QualityToDoListController(ureq, bwControl, secCallback);
+		listenTo(toDoListCtrl);
+		stackPanel.pushController(translate("breadcrumb.todos"), toDoListCtrl);
 	}
 	
 	private void doOpenAnalysis(UserRequest ureq) {

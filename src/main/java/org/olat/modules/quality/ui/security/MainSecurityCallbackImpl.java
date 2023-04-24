@@ -44,6 +44,8 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	private final boolean canView;
 	private final boolean canEdit;
 	private final List<OrganisationRef> viewerOrganisationRefs;
+	private final List<OrganisationRef> viewOnlyOrganisationRefs;
+	private final List<OrganisationRef> editOrganisationRefs;
 	private final List<OrganisationRef> learnResourceManagerOrganisationRefs;
 	private final QualityDataCollectionViewSearchParams reportAccessParams;
 	private boolean canViewDataCollections;
@@ -56,10 +58,13 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	private BaseSecurityModule securityModule;
 
 	public MainSecurityCallbackImpl(IdentityRef identityRef, boolean canView, boolean canEdit,
-			List<OrganisationRef> viewerOrganisationRefs, List<OrganisationRef> learnResourceManagerOrganisationRefs) {
+			List<OrganisationRef> viewerOrganisationRefs, List<OrganisationRef> viewOnlyOrganisationRefs,
+			List<OrganisationRef> editOrganisationRefs, List<OrganisationRef> learnResourceManagerOrganisationRefs) {
 		this.canView = canView;
 		this.canEdit = canEdit;
 		this.viewerOrganisationRefs = viewerOrganisationRefs;
+		this.viewOnlyOrganisationRefs = viewOnlyOrganisationRefs;
+		this.editOrganisationRefs = editOrganisationRefs;
 		this.learnResourceManagerOrganisationRefs = learnResourceManagerOrganisationRefs;
 		CoreSpringFactory.autowireObject(this);
 		
@@ -98,6 +103,16 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Override
 	public List<OrganisationRef> getViewDataCollectionOrganisationRefs() {
 		return viewerOrganisationRefs;
+	}
+
+	@Override
+	public List<OrganisationRef> getViewOnlyDataCollectionOrganisationRefs() {
+		return viewOnlyOrganisationRefs;
+	}
+
+	@Override
+	public List<OrganisationRef> getEditDataCollectionOrganisationRefs() {
+		return editOrganisationRefs;
 	}
 
 	@Override
@@ -148,6 +163,11 @@ class MainSecurityCallbackImpl implements MainSecurityCallback {
 	@Override
 	public boolean canDeletePresentation(AnalysisPresentation presentation) {
 		return canEditPresentations() && presentation.getKey() != null;
+	}
+
+	@Override
+	public boolean canCreateToDoTasks() {
+		return canEdit;
 	}
 
 }

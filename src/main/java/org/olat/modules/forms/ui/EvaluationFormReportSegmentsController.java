@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
@@ -182,6 +183,10 @@ public class EvaluationFormReportSegmentsController extends BasicController {
 		mainVC.put(SEGMENTS_CMP, stackedSessionPanel);
 		segmentView.select(sessionSelectionLink);
 		fireEvent(ureq, new ReportSegmentEvent(ReportSegment.QUESTIONNAIRES));
+	}
+	
+	public EvaluationFormSession getSession() {
+		return sessionSelectionCtrl != null && mainVC.getComponent(SEGMENTS_CMP) == stackedSessionPanel? sessionSelectionCtrl.getSession(): null;
 	}
 
 	@Override

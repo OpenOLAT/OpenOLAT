@@ -17,31 +17,48 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.model;
+package org.olat.modules.todo.model;
 
-import java.util.Date;
-
-import org.olat.core.commons.services.tag.model.TagInfoImpl;
-import org.olat.modules.project.ProjTagInfo;
+import org.olat.modules.todo.ToDoContext;
 
 /**
  * 
- * Initial date: 14 Mar 2023<br>
+ * Initial date: 21 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjTagInfoImpl extends TagInfoImpl implements ProjTagInfo {
-
-	private final boolean selected;
-
-	public ProjTagInfoImpl(Long key, Date creationDate, String displayName, Long count, Long artefactSelected) {
-		super(key, creationDate, displayName, count);
-		this.selected = artefactSelected > 0;
+public class ToDoContextImpl implements ToDoContext {
+	
+	private final String type;
+	private final Long originId;
+	private final String originSubPath;
+	private final String originTitle;
+	
+	public ToDoContextImpl(String type, Long originId, String originSubPath, String originTitle) {
+		this.type = type;
+		this.originId = originId;
+		this.originSubPath = originSubPath;
+		this.originTitle = originTitle;
 	}
 
 	@Override
-	public boolean isSelected() {
-		return selected;
+	public String getType() {
+		return type;
+	}
+
+	@Override
+	public Long getOriginId() {
+		return originId;
+	}
+
+	@Override
+	public String getOriginSubPath() {
+		return originSubPath;
+	}
+
+	@Override
+	public String getOriginTitle() {
+		return originTitle;
 	}
 
 }

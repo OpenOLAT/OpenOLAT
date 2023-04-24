@@ -808,13 +808,13 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private String getDoerDisplayName(Set<Long> doerKeys) {
 		return doerKeys.size() == 1
 				? userManager.getUserDisplayName(new ArrayList<>(doerKeys).get(0))
-				: translate("activity.log.doers.multi");
+				: translate("timeline.doers.multi");
 	}
 	
 	private String getMessageWithCount(String message, int numActivities) {
 		return numActivities == 1
 				? message
-				: translate("activity.log.message.num", message, String.valueOf(numActivities));
+				: translate("timeline.message.num", message, String.valueOf(numActivities));
 	}
 
 	private void addArtefactMesssageItem(ProjTimelineRow row, ProjArtefact artefact) {

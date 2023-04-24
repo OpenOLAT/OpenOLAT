@@ -141,13 +141,13 @@ public class ParticipationListController extends FormBasicController implements 
 		tableEl = uifactory.addTableElement(getWindowControl(), "participations", dataModel, 25, true, getTranslator(), flc);
 		tableEl.setAndLoadPersistedPreferences(ureq, "quality-participations");
 		tableEl.setEmptyTableSettings("participation.empty.table", null, "o_icon_user", "participation.user.add.user", "o_icon_qual_part_user_add_course", false);
-		if (secCallback.canRevomeParticipation()) {
+		if (secCallback.canRemoveParticipation()) {
 			tableEl.setMultiSelect(true);
 			tableEl.setSelectAllEnable(true);
 		}
 		
 		if (buttons != null) flc.remove(buttons);
-		if (secCallback.canRevomeParticipation()) {
+		if (secCallback.canRemoveParticipation()) {
 			buttons = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 			flc.add("buttons", buttons);
 			buttons.setElementCssClass("o_button_group");

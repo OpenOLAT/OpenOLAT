@@ -279,6 +279,7 @@
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorConfigImpl</class>
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorImpl</class>
 		<class>org.olat.modules.quality.generator.model.QualityGeneratorToOrganisationImpl</class>
+		<class>org.olat.modules.quality.model.QualityAuditLogImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextToCurriculumElementImpl</class>
 		<class>org.olat.modules.quality.model.QualityContextToCurriculumImpl</class>

@@ -26,10 +26,15 @@ import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
@@ -55,6 +60,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private ToDoService toDoService;
+	@Autowired
+	private TagService tagService;
 	
 	@Autowired
 	private ToDoTaskDAO sut;
@@ -65,7 +72,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath);
+		String originTitle = random();
+		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath, originTitle);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(toDoTask).isNotNull();
@@ -75,8 +83,9 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(toDoTask.getBaseGroup()).isNotNull();
 		assertThat(toDoTask.getOriginId()).isEqualTo(originId);
 		assertThat(toDoTask.getOriginSubPath()).isEqualTo(originSubPath);
-		assertThat(toDoTask.getStatus()).isEqualTo(ToDoStatus.open);
+		assertThat(toDoTask.getOriginTitle()).isEqualTo(originTitle);
 		assertThat(toDoTask.isOriginDeleted()).isFalse();
+		assertThat(toDoTask.getStatus()).isEqualTo(ToDoStatus.open);
 	}
 	
 	@Test
@@ -120,7 +129,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath);
+		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath, null);
 		dbInstance.commitAndCloseSession();
 		
 		String newTitle = random();
@@ -140,7 +149,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath);
+		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath, null);
 		dbInstance.commitAndCloseSession();
 		
 		sut.save(type, originId, originSubPath, true);
@@ -173,14 +182,13 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		String type = random();
 		Long originId = Long.valueOf(33);
 		String originSubPath = random();
-		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath);
+		ToDoTask toDoTask = sut.create(identity, type, originId, originSubPath, null);
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTask reloaded = sut.load(toDoTask.getType(), toDoTask.getOriginId(), toDoTask.getOriginSubPath());
 		
 		assertThat(reloaded).isEqualTo(toDoTask);
 	}
-
 	
 	@Test
 	public void shouldLoad_filer_toToTaskKeys() {
@@ -329,6 +337,23 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoadTaskCount() {
+		String type1 = random();
+		String type2 = random();
+		String type3 = random();
+		createRandomToDoTask(type1, null);
+		createRandomToDoTask(type1, null);
+		createRandomToDoTask(type2, null);
+		createRandomToDoTask(type3, null);
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type1, type2));
+		Long count = sut.loadToDoTaskCount(searchParams);
+		
+		assertThat(count).isEqualTo(3);
+	}
+	
+	@Test
 	public void shouldLoadTags() {
 		ToDoTask toDoTask1 = createRandomToDoTask();
 		String tag1 = random();
@@ -344,6 +369,46 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 				.extracting(ToDoTaskTag::getTag)
 				.extracting(Tag::getDisplayName)
 				.containsExactlyInAnyOrder(tag1, tag2);
+	}
+	
+	@Test
+	public void shouldLoadTagInfos() {
+		ToDoTask toDoTask1 = createRandomToDoTask();
+		ToDoTask toDoTask2 = createRandomToDoTask();
+		ToDoTask toDoTask3 = createRandomToDoTask();
+		Tag tag1 = tagService.getOrCreateTag(random());
+		Tag tag2 = tagService.getOrCreateTag(random());
+		Tag tag3 = tagService.getOrCreateTag(random());
+		Tag tag4 = tagService.getOrCreateTag(random());
+		
+		toDoService.updateTags(toDoTask1, List.of(tag1.getDisplayName(), tag2.getDisplayName(), tag3.getDisplayName()));
+		toDoService.updateTags(toDoTask2, List.of(tag1.getDisplayName(), tag2.getDisplayName()));
+		toDoService.updateTags(toDoTask3, List.of(tag1.getDisplayName(), tag4.getDisplayName()));
+		toDoService.updateTags(toDoTask3, List.of(tag1.getDisplayName()));
+		dbInstance.commitAndCloseSession();
+		
+		// Tags with selection
+		ToDoTaskSearchParams seachParams = new ToDoTaskSearchParams();
+		seachParams.setToDoTasks(List.of(toDoTask1, toDoTask2, toDoTask3));
+		Map<Long, TagInfo> keyToTag = sut.loadTagInfos(seachParams, toDoTask2).stream()
+				.collect(Collectors.toMap(TagInfo::getKey, Function.identity()));
+		assertThat(keyToTag).hasSize(3);
+		assertThat(keyToTag.get(tag1.getKey()).getCount()).isEqualTo(3);
+		assertThat(keyToTag.get(tag2.getKey()).getCount()).isEqualTo(2);
+		assertThat(keyToTag.get(tag3.getKey()).getCount()).isEqualTo(1);
+		assertThat(keyToTag.get(tag1.getKey()).isSelected()).isTrue();
+		assertThat(keyToTag.get(tag2.getKey()).isSelected()).isTrue();
+		assertThat(keyToTag.get(tag3.getKey()).isSelected()).isFalse();
+		
+		// Tags without selection
+		keyToTag = sut.loadTagInfos(seachParams, null).stream()
+				.collect(Collectors.toMap(TagInfo::getKey, Function.identity()));
+		assertThat(keyToTag.get(tag1.getKey()).getCount()).isEqualTo(3);
+		assertThat(keyToTag.get(tag2.getKey()).getCount()).isEqualTo(2);
+		assertThat(keyToTag.get(tag3.getKey()).getCount()).isEqualTo(1);
+		assertThat(keyToTag.get(tag1.getKey()).isSelected()).isFalse();
+		assertThat(keyToTag.get(tag2.getKey()).isSelected()).isFalse();
+		assertThat(keyToTag.get(tag3.getKey()).isSelected()).isFalse();
 	}
 	
 	@Test
@@ -386,7 +451,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	private ToDoTask createRandomToDoTask(String type, Long originId) {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
-		ToDoTask toDoTask = sut.create(identity, type, originId, null);
+		ToDoTask toDoTask = sut.create(identity, type, originId, null, null);
 		dbInstance.commitAndCloseSession();
 		return toDoTask;
 	}

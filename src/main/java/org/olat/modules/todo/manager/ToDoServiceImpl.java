@@ -37,6 +37,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.core.util.date.DateModule;
@@ -92,12 +93,12 @@ public class ToDoServiceImpl implements ToDoService {
 	
 	@Override
 	public ToDoTask createToDoTask(Identity doer, String type) {
-		return createToDoTask(doer, type, null, null);
+		return createToDoTask(doer, type, null, null, null);
 	}
 
 	@Override
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath) {
-		ToDoTask toDoTask = toDoTaskDao.create(doer, type, originId, originSubPath);
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle) {
+		ToDoTask toDoTask = toDoTaskDao.create(doer, type, originId, originSubPath, originTitle);
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.assignee.name());
@@ -107,13 +108,16 @@ public class ToDoServiceImpl implements ToDoService {
 	@Override
 	public ToDoTask update(Identity doer, ToDoTask toDoTask) {
 		List<GroupMembership> memberships = groupDao.getMemberships(toDoTask.getBaseGroup(), ToDoRole.modifier.name(), false);
-		if (!memberships.isEmpty()) {
+		if (memberships.size() == 1) {
 			GroupMembership membership = memberships.get(0);
 			if (!membership.getIdentity().getKey().equals(doer.getKey())) {
 				groupDao.removeMembership(membership);
 				groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
 			}
 		} else {
+			if (memberships.size() > 1) {
+				memberships.forEach(membership -> groupDao.removeMembership(membership));
+			}
 			groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
 		}
 		
@@ -157,6 +161,11 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
+	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams) {
+		return toDoTaskDao.loadToDoTaskCount(searchParams);
+	}
+	
+	@Override
 	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees) {
 		Map<Long, Set<ToDoRole>> identityKeyToRoles = new HashMap<>();
 		
@@ -167,6 +176,14 @@ public class ToDoServiceImpl implements ToDoService {
 		for (IdentityRef identityRef : delegatees) {
 			Set<ToDoRole> roles = identityKeyToRoles.computeIfAbsent(identityRef.getKey(), key -> new HashSet<>(1));
 			roles.add(ToDoRole.delegatee);
+		}
+		
+		// Add all current members to remove someone who has no role anymore
+		List<Identity> currentMembers = groupDao.getMembers(
+				List.of(toDoTask.getBaseGroup()),
+				ToDoRole.ASSIGNEE_DELEGATEE.stream().map(ToDoRole::name).toList());
+		for (IdentityRef identityRef : currentMembers) {
+			identityKeyToRoles.computeIfAbsent(identityRef.getKey(), key -> Set.of());
 		}
 		
 		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember(toDoTask, new IdentityRefImpl(identityToRole.getKey()),
@@ -242,6 +259,11 @@ public class ToDoServiceImpl implements ToDoService {
 	@Override
 	public List<ToDoTaskTag> getToDoTaskTags(ToDoTaskSearchParams searchParams) {
 		return toDoTaskDao.loadToDoTaskTags(searchParams);
+	}
+	
+	@Override
+	public List<TagInfo> getTagInfos(ToDoTaskSearchParams searchParams, ToDoTaskRef selectionTask) {
+		return toDoTaskDao.loadTagInfos(searchParams, selectionTask);
 	}
 
 	@Override

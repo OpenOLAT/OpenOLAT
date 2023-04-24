@@ -44,6 +44,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -93,7 +94,6 @@ import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjProjectToOrganisation;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjTag;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjTagSearchParams;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoInfo;
@@ -812,7 +812,7 @@ public class ProjectServiceImpl implements ProjectService {
 	}
 
 	@Override
-	public List<ProjTagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact){
+	public List<TagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact){
 		return tagDao.loadProjectTagInfos(project, selectionArtefact);
 	}
 	
@@ -972,7 +972,7 @@ public class ProjectServiceImpl implements ProjectService {
 	public ProjToDo createToDo(Identity doer, ProjProject project) {
 		String identifier = UUID.randomUUID().toString();
 		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
-		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier);
+		ToDoTask toDoTask = toDoService.createToDoTask(doer, ProjToDoProvider.TYPE, project.getKey(), identifier, project.getTitle());
 		ProjToDo toDo = toDoDao.create(artefact, toDoTask, identifier);
 		String after = ProjectXStream.toXml(toDo);
 		activityDao.create(Action.toDoCreate, null, after, null, doer, artefact);

@@ -19,11 +19,10 @@
  */
 package org.olat.modules.project.ui;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
-import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
@@ -39,7 +38,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjProject;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,8 +55,7 @@ public class ProjFileContentController extends FormBasicController {
 	private TextAreaElement descriptionEl;
 	
 	private final ProjProject project;
-	private final List<ProjTagInfo> projectTags;
-	private final Collection<? extends TagRef> artefactTags;
+	private final List<TagInfo> projectTags;
 	private String initialFilename;
 	
 	@Autowired
@@ -69,7 +66,6 @@ public class ProjFileContentController extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(CreateDocumentController.class, getLocale(), getTranslator()));
 		this.project = project;
 		this.projectTags = projectService.getTagInfos(project, file != null? file.getArtefact(): null);
-		this.artefactTags = projectTags.stream().filter(ProjTagInfo::isSelected).toList();
 		
 		initForm(ureq);
 	}
@@ -82,7 +78,7 @@ public class ProjFileContentController extends FormBasicController {
 		
 		titleEl = uifactory.addTextElement("title", -1, null, formLayout);
 		
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		descriptionEl = uifactory.addTextAreaElement("file.description", "file.description", -1, 3, 1, true, false, null, formLayout);
 	}

@@ -25,6 +25,8 @@ import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
 
 import org.olat.modules.quality.QualityDataCollectionStatus;
 import org.olat.modules.quality.QualityReminder;
+import org.olat.modules.todo.ToDoStatus;
+import org.olat.modules.todo.ToDoTask;
 
 /**
  * 
@@ -81,7 +83,7 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 	}
 
 	@Override
-	public boolean canRevomeParticipation() {
+	public boolean canRemoveParticipation() {
 		return isNotRunning();
 	}
 
@@ -124,6 +126,26 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 
 	private boolean isNotFinished() {
 		return !FINISHED.equals(status);
+	}
+
+	@Override
+	public boolean canViewToDos() {
+		return true;
+	}
+
+	@Override
+	public boolean canCreateToDoTasks() {
+		return true;
+	}
+
+	@Override
+	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		return ToDoStatus.deleted != toDoTask.getStatus();
+	}
+
+	@Override
+	public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+		return true;
 	}
 
 }

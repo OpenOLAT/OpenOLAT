@@ -19,48 +19,25 @@
  */
 package org.olat.modules.project.ui;
 
-import static org.olat.core.gui.components.util.SelectionValues.entry;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.controllers.activity.ActivityLogController;
+import org.olat.core.commons.controllers.activity.ActivityLogRow;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
-import org.olat.core.util.DateUtils;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjActivity;
@@ -76,148 +53,57 @@ import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.manager.ProjectXStream;
-import org.olat.modules.project.ui.ProjActivityLogTableModel.ActivityLogCols;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoUIFactory;
-import org.olat.user.UserManager;
-import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 3 Feb 2023<br>
- * 
+ * Initial date: 19 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjActivityLogController extends FormBasicController {
-
-	private static final String TAB_ID_LAST_7_DAYS = "Last7Days";
-	private static final String TAB_ID_LAST_4_WEEKS = "Last4Weeks";
-	private static final String TAB_ID_LAST_12_MONTH = "Last12Month";
-	private static final String TAB_ID_ALL = "All";
-	private static final String FILTER_ACTIVITY = "activity";
-	private static final String FILTER_USER = "user";
-
-	private final List<UserPropertyHandler> userPropertyHandlers;
-	private FlexiFiltersTab tabLast7Days;
-	private FlexiFiltersTab tabLast4Weeks;
-	private FlexiFiltersTab tabLast12Month;
-	private FlexiFiltersTab tabAll;
-	private ProjActivityLogTableModel dataModel;
-	private FlexiTableElement tableEl;
-
+public class ProjActivityLogController extends ActivityLogController {
+	
 	private final ProjArtefact artefact;
 	private final List<Identity> members;
-	private final Formatter formatter;
 
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
-	private BaseSecurityModule securityModule;
-	@Autowired
 	private CalendarManager calendarManager;
 	@Autowired
 	private ToDoService toDoService;
-
+	
 	public ProjActivityLogController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjArtefact artefact) {
-		super(ureq, wControl, LAYOUT_CUSTOM, "activity_log", mainForm);
-		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		super(ureq, wControl, mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
+		
 		this.artefact = artefact;
 		this.members = projectService.getMembers(artefact.getProject(), ProjectRole.PROJECT_ROLES);
-		this.formatter = Formatter.getInstance(getLocale());
-
-		boolean isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
-		userPropertyHandlers = userManager.getUserPropertyHandlersFor(ProjActivityLogTableModel.USAGE_IDENTIFIER,
-				isAdministrativeUser);
-
+		
 		initForm(ureq);
 		loadModel();
 	}
+	
+	@Override
+	protected List<Identity> getFilterIdentities() {
+		return members;
+	}
 
 	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FlexiTableSortOptions options = new FlexiTableSortOptions();
-		options.setDefaultOrderBy(new SortKey(ActivityLogCols.date.name(), false));
-
-		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ActivityLogCols.date));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ActivityLogCols.message));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ActivityLogCols.originalValue));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ActivityLogCols.newValue));
-
-		int colIndex = ProjActivityLogTableModel.USER_PROPS_OFFSET;
-		for (int i = 0; i < userPropertyHandlers.size(); i++) {
-			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-			boolean visible = UserManager.getInstance()
-					.isMandatoryUserProperty(ProjActivityLogTableModel.USAGE_IDENTIFIER, userPropertyHandler);
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(visible,
-					userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex++, true, "userProp-" + colIndex));
-		}
-
-		dataModel = new ProjActivityLogTableModel(columnsModel, getTranslator());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(),
-				formLayout);
-		tableEl.setSearchEnabled(true);
-		tableEl.setExportEnabled(true);
-		tableEl.setSortSettings(options);
-
-		initFilterTabs(ureq);
-		initFilters();
-	}
-
-	private void initFilterTabs(UserRequest ureq) {
-		List<FlexiFiltersTab> tabs = new ArrayList<>(4);
-
-		tabLast7Days = FlexiFiltersTabFactory.tab(TAB_ID_LAST_7_DAYS, translate("tab.last.7.days"),
-				TabSelectionBehavior.reloadData);
-		tabs.add(tabLast7Days);
-
-		tabLast4Weeks = FlexiFiltersTabFactory.tab(TAB_ID_LAST_4_WEEKS, translate("tab.last.4.weeks"),
-				TabSelectionBehavior.reloadData);
-		tabs.add(tabLast4Weeks);
-
-		tabLast12Month = FlexiFiltersTabFactory.tab(TAB_ID_LAST_12_MONTH, translate("tab.last.12.month"),
-				TabSelectionBehavior.reloadData);
-		tabs.add(tabLast12Month);
-
-		tabAll = FlexiFiltersTabFactory.tab(TAB_ID_ALL, translate("tab.all"), TabSelectionBehavior.reloadData);
-		tabs.add(tabAll);
-
-		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabLast7Days);
-	}
-
-	private void initFilters() {
-		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
-		
-		filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.activity"), FILTER_ACTIVITY,
-				getActivityFilterValues(), true));
-		SelectionValues userValues = new SelectionValues();
-
-		members.stream().forEach(member -> userValues
-				.add(SelectionValues.entry(member.getKey().toString(), userManager.getUserDisplayName(member))));
-		userValues.sort(SelectionValues.VALUE_ASC);
-		if (!userValues.isEmpty()) {
-			filters.add(new FlexiTableMultiSelectionFilter(translate("activity.log.filter.user"), FILTER_USER,
-					userValues, true));
-		}
-		
-		tableEl.setFilters(true, filters, false, false);
-	}
-
-	private void loadModel() {
+	protected List<ActivityLogRow> loadRows(DateRange dateRange, Set<Long> doerKeys) {
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProject(artefact.getProject());
 		searchParams.setArtefacts(List.of(artefact));
 		searchParams.setFetchDoer(true);
-		applyFilter(searchParams);
+		if (dateRange != null) {
+			searchParams.setCreatedDateRanges(List.of(dateRange));
+		}
+		searchParams.setDoerKeys(doerKeys);
 		List<ProjActivity> activities = projectService.getActivities(searchParams, 0, -1);
 		
 		List<ProjArtefact> artefactReferences = activities.stream()
@@ -229,74 +115,15 @@ public class ProjActivityLogController extends FormBasicController {
 		artefactSearchParams.setArtefacts(artefactReferences);
 		ProjArtefactItems artefactReferenceItems = projectService.getArtefactItems(artefactSearchParams);
 		
-		List<ProjActivityLogRow> rows = new ArrayList<>(activities.size());
+		List<ActivityLogRow> rows = new ArrayList<>(activities.size());
 		for (ProjActivity activity : activities) {
 			addActivityRows(rows, activity, artefactReferenceItems);
 		}
-		
-		applyFilters(rows);
-		
-		dataModel.setObjects(rows);
-		tableEl.reset(true, true, true);
-	}
-
-	private void applyFilter(ProjActivitySearchParams searchParams) {
-		if (tableEl.getSelectedFilterTab() != null) {
-			if (tableEl.getSelectedFilterTab() == tabLast7Days) {
-				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
-				searchParams.setCreatedDateRanges(
-						List.of(new DateRange(DateUtils.addDays(today, -7), DateUtils.addDays(today, 1))));
-			} else if (tableEl.getSelectedFilterTab() == tabLast4Weeks) {
-				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
-				searchParams.setCreatedDateRanges(
-						List.of(new DateRange(DateUtils.addDays(today, -28), DateUtils.addDays(today, 1))));
-			} else if (tableEl.getSelectedFilterTab() == tabLast12Month) {
-				Date today = DateUtils.setTime(new Date(), 0, 0, 0);
-				searchParams.setCreatedDateRanges(
-						List.of(new DateRange(DateUtils.addMonth(today, -12), DateUtils.addDays(today, 1))));
-			}
-		}
-		
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		if (filters == null || filters.isEmpty()) return;
-		
-		for (FlexiTableFilter filter : filters) {
-			if (FILTER_USER.equals(filter.getFilter())) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty()) {
-					Set<Long> selectedIdentityKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
-					searchParams.setDoerKeys(selectedIdentityKeys);
-				}
-			}
-		}
+		return rows;
 	}
 	
-	private void applyFilters(List<ProjActivityLogRow> rows) {
-		String searchString = tableEl.getQuickSearchString().toLowerCase();
-		if (StringHelper.containsNonWhitespace(searchString)) {
-			rows.removeIf(row -> !isSeachStringFound(row, searchString));
-		}
-		
-		List<FlexiTableFilter> filters = tableEl.getFilters();
-		if (filters == null || filters.isEmpty()) return;
-		
-		for (FlexiTableFilter filter : filters) {
-			if (FILTER_ACTIVITY.equals(filter.getFilter())) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty()) {
-					rows.removeIf(row -> !values.contains(row.getMessageI18nKey()));
-				}
-			}
-		}
-	}
-
-	private boolean isSeachStringFound(ProjActivityLogRow row, String searchString) {
-		return (row.getMessage() != null && row.getMessage().toLowerCase().indexOf(searchString) >= 0)
-				|| (row.getOriginalValue() != null && row.getOriginalValue().toLowerCase().indexOf(searchString) >= 0)
-				|| (row.getNewValue() != null && row.getNewValue().toLowerCase().indexOf(searchString) >=  0);
-	}
-	
-	private SelectionValuesSupplier getActivityFilterValues() {
+	@Override
+	protected SelectionValuesSupplier getActivityFilterValues() {
 		return switch (artefact.getType()) {
 				case ProjFile.TYPE -> getActivityFilterFileValues();
 				case ProjToDo.TYPE -> getActivityFilterToDoValues();
@@ -307,11 +134,7 @@ public class ProjActivityLogController extends FormBasicController {
 			};
 	}
 
-	private void addActivityFilterValue(SelectionValues filterSV, String messageI18nKey) {
-		filterSV.add(entry(messageI18nKey, translate(messageI18nKey)));
-	}
-
-	private void addActivityRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+	private void addActivityRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getActionTarget()) {
 		case file: addActivityFileRows(rows, activity, artefactReferenceItems);
 		case toDo: addActivityToDoRows(rows, activity, artefactReferenceItems);
@@ -342,7 +165,7 @@ public class ProjActivityLogController extends FormBasicController {
 		return filterSV;
 	}
 
-	private void addActivityFileRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+	private void addActivityFileRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
 		case fileRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case fileDownload: addRow(rows, activity, "activity.log.message.download"); break;
@@ -350,8 +173,8 @@ public class ProjActivityLogController extends FormBasicController {
 		case fileUpload: addRow(rows, activity, "activity.log.message.upload"); break;
 		case fileEdit: addRow(rows, activity, "activity.log.message.edit.file"); break;
 		case fileStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
-		case fileMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
-		case fileMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
+		case fileMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case fileMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
 		case fileReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
 		case fileReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
 		case fileTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
@@ -387,17 +210,22 @@ public class ProjActivityLogController extends FormBasicController {
 		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
 		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
-		addActivityFilterValue(filterSV, "activity.log.message.edit.title");
-		addActivityFilterValue(filterSV, "activity.log.message.edit.text");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.title");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.text");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.status");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.priority");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.expenditure.of.work");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.start.date");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.due.date");
 		return filterSV;
 	}
 	
-	private void addActivityToDoRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+	private void addActivityToDoRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
 		case toDoCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case toDoStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
-		case toDoMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
-		case toDoMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
+		case toDoMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case toDoMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
 		case toDoReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
 		case toDoReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
 		case toDoTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
@@ -406,37 +234,37 @@ public class ProjActivityLogController extends FormBasicController {
 				ToDoTask before = ProjectXStream.fromXml(activity.getBefore(), ProjToDo.class).getToDoTask();
 				ToDoTask after = ProjectXStream.fromXml(activity.getAfter(), ProjToDo.class).getToDoTask();
 				if (!Objects.equals(before.getTitle(), after.getTitle())) {
-					addRow(rows, activity, "activity.log.message.edit.title", before.getTitle(), after.getTitle());
+					addRow(rows, activity, "activity.log.message.todo.task.title", before.getTitle(), after.getTitle());
 				}
 				if (!Objects.equals(before.getDescription(), after.getDescription())) {
-					addRow(rows, activity, "activity.log.message.edit.description", before.getDescription(), after.getDescription());
+					addRow(rows, activity, "activity.log.message.todo.task.description", before.getDescription(), after.getDescription());
 				}
 				if (!Objects.equals(before.getStatus(), after.getStatus()) && after.getStatus() != ToDoStatus.deleted) {
-					addRow(rows, activity, "activity.log.message.edit.status",
+					addRow(rows, activity, "activity.log.message.todo.task.status",
 							ToDoUIFactory.getDisplayName(getTranslator(), before.getStatus()),
 							ToDoUIFactory.getDisplayName(getTranslator(), after.getStatus()));
 				}
 				if (!Objects.equals(before.getPriority(), after.getPriority())) {
-					addRow(rows, activity, "activity.log.message.edit.priority",
+					addRow(rows, activity, "activity.log.message.todo.task.priority",
 							ToDoUIFactory.getDisplayName(getTranslator(), before.getPriority()),
 							ToDoUIFactory.getDisplayName(getTranslator(), after.getPriority()));
 				}
 				if (!Objects.equals(before.getExpenditureOfWork(), after.getExpenditureOfWork())) {
-					addRow(rows, activity, "activity.log.message.edit.expenditure.of.work",
+					addRow(rows, activity, "activity.log.message.todo.task.expenditure.of.work",
 							ToDoUIFactory.format(toDoService.getExpenditureOfWork(before.getExpenditureOfWork())),
 							ToDoUIFactory.format(toDoService.getExpenditureOfWork(after.getExpenditureOfWork())));
 				}
 				Date beforeStartDate = before.getStartDate() != null? new Date(before.getStartDate().getTime()): null;
 				Date afterStartDate = after.getStartDate() != null? new Date(after.getStartDate().getTime()): null;
 				if (!Objects.equals(beforeStartDate, afterStartDate)) {
-					addRow(rows, activity, "activity.log.message.edit.start.date",
+					addRow(rows, activity, "activity.log.message.todo.task.start.date",
 							formatter.formatDateAndTime(beforeStartDate),
 							formatter.formatDateAndTime(afterStartDate));
 				}
 				Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
 				Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
 				if (!Objects.equals(beforeDueDate, afterDueDate)) {
-					addRow(rows, activity, "activity.log.message.edit.due.date",
+					addRow(rows, activity, "activity.log.message.todo.task.due.date",
 							formatter.formatDateAndTime(beforeDueDate),
 							formatter.formatDateAndTime(afterDueDate));
 				}
@@ -464,14 +292,14 @@ public class ProjActivityLogController extends FormBasicController {
 		return filterSV;
 	}
 	
-	private void addActivityNoteRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+	private void addActivityNoteRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
 		case noteRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case noteDownload: addRow(rows, activity, "activity.log.message.download"); break;
 		case noteCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case noteStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
-		case noteMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
-		case noteMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
+		case noteMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case noteMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
 		case noteReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
 		case noteReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
 		case noteTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
@@ -515,7 +343,7 @@ public class ProjActivityLogController extends FormBasicController {
 		return filterSV;
 	}
 	
-	private void addActivityAppointmentRows(List<ProjActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+	private void addActivityAppointmentRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
 		case appointmentCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case appointmentOccurrenceDelete:
@@ -523,8 +351,8 @@ public class ProjActivityLogController extends FormBasicController {
 					formatter.formatDateAndTime(ProjectXStream.fromXml(activity.getBefore(), Date.class)), null);
 			break;
 		case appointmentStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
-		case appointmentMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember())); break;
-		case appointmentMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember()), null); break;
+		case appointmentMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case appointmentMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
 		case appointmentReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
 		case appointmentReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
 		case appointmentTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
@@ -600,7 +428,7 @@ public class ProjActivityLogController extends FormBasicController {
 		return filterSV;
 	}
 	
-	private void addActivityMilestoneRows(List<ProjActivityLogRow> rows, ProjActivity activity) {
+	private void addActivityMilestoneRows(List<ActivityLogRow> rows, ProjActivity activity) {
 		switch (activity.getAction()) {
 		case milestoneCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case milestoneStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
@@ -637,7 +465,7 @@ public class ProjActivityLogController extends FormBasicController {
 		}
 	}
 	
-	private void addActivityReferenceAddRow(List<ProjActivityLogRow> rows, ProjActivity activity,
+	private void addActivityReferenceAddRow(List<ActivityLogRow> rows, ProjActivity activity,
 			ProjArtefactItems artefactReferenceItems) {
 		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
 		if (StringHelper.containsNonWhitespace(value)) {
@@ -645,7 +473,7 @@ public class ProjActivityLogController extends FormBasicController {
 		}
 	}
 
-	private void addActivityReferenceRemoveRow(List<ProjActivityLogRow> rows, ProjActivity activity,
+	private void addActivityReferenceRemoveRow(List<ActivityLogRow> rows, ProjActivity activity,
 			ProjArtefactItems artefactReferenceItems) {
 		String value = getArtefactValue(activity.getArtefactReference(), artefactReferenceItems);
 		if (StringHelper.containsNonWhitespace(value)) {
@@ -653,7 +481,7 @@ public class ProjActivityLogController extends FormBasicController {
 		}
 	}
 	
-	private void addActivityTagsUpdateRows(List<ProjActivityLogRow> rows, ProjActivity activity) {
+	private void addActivityTagsUpdateRows(List<ActivityLogRow> rows, ProjActivity activity) {
 		List<String> tagsBefore = ProjectXStream.tagsFromXml(activity.getBefore());
 		List<String> tagsAfter = ProjectXStream.tagsFromXml(activity.getAfter());
 		for (String tagAfter : tagsAfter) {
@@ -668,12 +496,12 @@ public class ProjActivityLogController extends FormBasicController {
 		}
 	}
 
-	private void addRow(List<ProjActivityLogRow> rows, ProjActivity activity, String messageI18n) {
+	private void addRow(List<ActivityLogRow> rows, ProjActivity activity, String messageI18n) {
 		addRow(rows, activity, messageI18n, null, null);
 	}
 	
-	private void addRow(List<ProjActivityLogRow> rows, ProjActivity activity, String messageI18nKey, String originalValue, String newValue) {
-		ProjActivityLogRow row = new ProjActivityLogRow(activity.getDoer(), userPropertyHandlers, getLocale());
+	private void addRow(List<ActivityLogRow> rows, ProjActivity activity, String messageI18nKey, String originalValue, String newValue) {
+		ActivityLogRow row = createRow(activity.getDoer());
 		row.setDate(activity.getCreationDate());
 		row.setMessageI18nKey(messageI18nKey);
 		row.setMessage(translate(messageI18nKey));
@@ -717,24 +545,6 @@ public class ProjActivityLogController extends FormBasicController {
 			return translate("cal.form.recurrence.yearly");
 		}
 		return null;
-	}
-
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (tableEl == source) {
-			if (event instanceof FlexiTableSearchEvent) {
-				loadModel();
-			} else if (event instanceof FlexiTableFilterTabEvent) {
-				loadModel();
-			}
-		}
-
-		super.formInnerEvent(ureq, source, event);
-	}
-
-	@Override
-	protected void formOK(UserRequest ureq) {
-		//
 	}
 
 }

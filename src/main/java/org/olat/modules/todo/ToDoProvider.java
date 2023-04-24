@@ -41,9 +41,11 @@ public interface ToDoProvider {
 
 	public String getType();
 
+	public String getDisplayName(Locale locale);
+
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status);
 
-	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId);
+	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId, String originSubPath);
 
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask);
 

@@ -68,12 +68,17 @@ public class ProjToDoProvider implements ToDoProvider {
 	}
 
 	@Override
+	public String getDisplayName(Locale locale) {
+		return Util.createPackageTranslator(ProjectUIFactory.class, locale).translate("todo.type");
+	}
+
+	@Override
 	public void upateStatus(Identity doer, ToDoTaskRef toDoTask, Long originId, String originSubPath, ToDoStatus status) {
 		projectService.updateToDoStatus(doer, originSubPath, status);
 	}
 
 	@Override
-	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId) {
+	public Controller createCreateController(UserRequest ureq, WindowControl wControl, Identity doer, Long originId, String originSubPath) {
 		ProjProject project = projectService.getProject(() -> originId);
 		if (project == null || project.getStatus() == ProjectStatus.deleted) {
 			return null;

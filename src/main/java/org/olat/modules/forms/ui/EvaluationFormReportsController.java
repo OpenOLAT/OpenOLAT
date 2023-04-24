@@ -110,6 +110,10 @@ public class EvaluationFormReportsController extends BasicController {
 
 		putInitialPanel(mainVC);
 	}
+	
+	public EvaluationFormSession getSession() {
+		return segmentsController != null? segmentsController.getSession(): null;
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

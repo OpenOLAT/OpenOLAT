@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.core.commons.controllers.activity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +43,17 @@ import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjActivityLogTableModel extends DefaultFlexiTableDataModel<ProjActivityLogRow>
-	implements SortableFlexiTableDataModel<ProjActivityLogRow>, ExportableFlexiTableDataModel {
+public class ActivityLogTableModel extends DefaultFlexiTableDataModel<ActivityLogRow>
+	implements SortableFlexiTableDataModel<ActivityLogRow>, ExportableFlexiTableDataModel {
 	
 	public static final int USER_PROPS_OFFSET = 500;
-	public static final String USAGE_IDENTIFIER = ProjActivityLogTableModel.class.getCanonicalName();
+	public static final String USAGE_IDENTIFIER = ActivityLogTableModel.class.getCanonicalName();
 	private static final ActivityLogCols[] COLS = ActivityLogCols.values();
 	
 	private final Translator translator;
 	private final Locale locale;
 	
-	public ProjActivityLogTableModel(FlexiTableColumnModel columnModel, Translator translator) {
+	public ActivityLogTableModel(FlexiTableColumnModel columnModel, Translator translator) {
 		super(columnModel);
 		this.translator = translator;
 		this.locale = translator.getLocale();
@@ -62,7 +62,7 @@ public class ProjActivityLogTableModel extends DefaultFlexiTableDataModel<ProjAc
 	@Override
 	public void sort(SortKey orderBy) {
 		if (orderBy != null) {
-			List<ProjActivityLogRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			List<ActivityLogRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}
@@ -78,17 +78,17 @@ public class ProjActivityLogTableModel extends DefaultFlexiTableDataModel<ProjAc
 				columns.add(column);
 			}
 		}
-		return new ProjActivityLogExport().export(ftC, columns, translator);
+		return new ActivityLogExport().export(ftC, columns, translator);
 	}
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		ProjActivityLogRow identityRow = getObject(row);
+		ActivityLogRow identityRow = getObject(row);
 		return getValueAt(identityRow, col);
 	}
 
 	@Override
-	public Object getValueAt(ProjActivityLogRow row, int col) {
+	public Object getValueAt(ActivityLogRow row, int col) {
 		if(col >= 0 && col < ActivityLogCols.values().length) {
 			switch(COLS[col]) {
 				case date: return row.getDate();

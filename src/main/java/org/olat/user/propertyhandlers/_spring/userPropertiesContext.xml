@@ -2005,9 +2005,9 @@
 					</bean>
 				</entry>
 				
-				<entry key="org.olat.modules.project.ui.ProjActivityLogTableModel">
+				<entry key="org.olat.core.commons.controllers.activity.ActivityLogTableModel">
 					<bean class="org.olat.user.propertyhandlers.UserPropertyUsageContext">
-						<property name="description" value="Activity log in a project" />
+						<property name="description" value="Activity log in several places" />
 						<property name="propertyHandlers">
 							<list>
 								<ref bean="userPropertyUserNickName" />

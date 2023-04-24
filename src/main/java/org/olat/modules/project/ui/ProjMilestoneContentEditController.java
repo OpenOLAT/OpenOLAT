@@ -19,12 +19,11 @@
  */
 package org.olat.modules.project.ui;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.ui.CalendarColors;
-import org.olat.core.commons.services.tag.TagRef;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -45,7 +44,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneStatus;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,8 +64,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	private TextAreaElement descriptionEl;
 	
 	private final ProjMilestone milestone;
-	private final List<ProjTagInfo> projectTags;
-	private final Collection<? extends TagRef> artefactTags;
+	private final List<TagInfo> projectTags;
 	private ProjMilestoneStatus status;
 	
 	@Autowired
@@ -81,7 +78,6 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		this.milestone = milestone;
 		this.status = milestone.getStatus();
 		this.projectTags = projectService.getTagInfos(milestone.getArtefact().getProject(), milestone.getArtefact());
-		this.artefactTags = projectTags.stream().filter(ProjTagInfo::isSelected).toList();
 		
 		initForm(ureq);
 	}
@@ -91,7 +87,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		subjectEl = uifactory.addTextElement("subject", "milestone.edit.subject", 256, milestone.getSubject(), formLayout);
 		subjectEl.setMandatory(true);
 		
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		dueEl = uifactory.addDateChooser("due", "milestone.edit.due", milestone.getDueDate(), formLayout);
 		dueEl.setMandatory(true);

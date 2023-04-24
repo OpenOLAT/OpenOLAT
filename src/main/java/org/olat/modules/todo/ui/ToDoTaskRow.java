@@ -57,6 +57,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private boolean overdue;
 	private final Date doneDate;
 	private final String type;
+	private String translatedType;
 	private final Long originId;
 	private final String originSubPath;
 	private final String originTitle;
@@ -157,6 +158,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public String getType() {
 		return type;
+	}
+
+	public String getTranslatedType() {
+		return translatedType;
+	}
+
+	public void setTranslatedType(String translatedType) {
+		this.translatedType = translatedType;
 	}
 
 	public Long getOriginId() {

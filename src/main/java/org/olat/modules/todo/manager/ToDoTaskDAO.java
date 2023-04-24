@@ -29,6 +29,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.StringHelper;
@@ -56,7 +57,7 @@ public class ToDoTaskDAO {
 	@Autowired
 	private GroupDAO groupDao;
 	
-	public ToDoTask create(Identity doer, String type, Long originId, String originSubPath) {
+	public ToDoTask create(Identity doer, String type, Long originId, String originSubPath, String originTitle) {
 		Group baseGroup = groupDao.createGroup();
 		groupDao.addMembershipOneWay(baseGroup, doer, ToDoRole.creator.name());
 		groupDao.addMembershipOneWay(baseGroup, doer, ToDoRole.modifier.name());
@@ -69,6 +70,7 @@ public class ToDoTaskDAO {
 		toDoTask.setStatus(ToDoStatus.open);
 		toDoTask.setOriginId(originId);
 		toDoTask.setOriginSubPath(originSubPath);
+		toDoTask.setOriginTitle(originTitle);
 		toDoTask.setOriginDeleted(false);
 		toDoTask.setBaseGroup(baseGroup);
 		dbInstance.getCurrentEntityManager().persist(toDoTask);
@@ -174,6 +176,19 @@ public class ToDoTaskDAO {
 		
 		return query.getResultList();
 	}
+	
+	public Long loadToDoTaskCount(ToDoTaskSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(toDoTask)");
+		sb.append("  from todotask toDoTask");
+		appendQuery(searchParams, sb);
+		
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class);
+		addParameters(query, searchParams);
+		
+		return query.getSingleResult();
+	}
 
 	public List<ToDoTaskTag> loadToDoTaskTags(ToDoTaskSearchParams searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -185,6 +200,32 @@ public class ToDoTaskDAO {
 		
 		TypedQuery<ToDoTaskTag> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ToDoTaskTag.class);
+		addParameters(query, searchParams);
+		
+		return query.getResultList();
+	}
+
+	public List<TagInfo> loadTagInfos(ToDoTaskSearchParams searchParams, ToDoTaskRef selectionTask) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.core.commons.services.tag.model.TagInfoImpl(");
+		sb.append("       tag.key");
+		sb.append("     , min(tag.creationDate)");
+		sb.append("     , min(tag.displayName)");
+		sb.append("     , count(toDoTask.key)");
+		if (selectionTask != null) {
+			sb.append(" , sum(case when (toDoTask.key=").append(selectionTask.getKey()).append(") then 1 else 0 end) as selected");
+		} else {
+			sb.append(" , cast(0 as long) as selected");
+		}
+		sb.append(")");
+		sb.append("  from todotasktag toDoTaskTag");
+		sb.append("       inner join toDoTaskTag.toDoTask toDoTask");
+		sb.append("       inner join toDoTaskTag.tag tag");
+		appendQuery(searchParams, sb);
+		sb.groupBy().append("tag.key");
+		
+		TypedQuery<TagInfo> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), TagInfo.class);
 		addParameters(query, searchParams);
 		
 		return query.getResultList();
@@ -234,6 +275,9 @@ public class ToDoTaskDAO {
 			}
 			sb.append(")");
 		}
+		if (searchParams.getCustomQuery() != null) {
+			searchParams.getCustomQuery().appendQuery(sb);
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, ToDoTaskSearchParams searchParams) {
@@ -261,6 +305,9 @@ public class ToDoTaskDAO {
 				query.setParameter("dueDateAfter" + i, dateRange.getFrom());
 				query.setParameter("dueDateBefore" + i, dateRange.getTo());
 			}
+		}
+		if (searchParams.getCustomQuery() != null) {
+			searchParams.getCustomQuery().addParameters(query);
 		}
 	}
 

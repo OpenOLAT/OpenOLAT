@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.core.commons.controllers.activity;
 
 import java.util.Date;
 import java.util.List;
@@ -34,7 +34,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjActivityLogRow extends UserPropertiesRow {
+public class ActivityLogRow extends UserPropertiesRow {
 	
 	private Date date;
 	private String messageI18nKey;
@@ -42,7 +42,7 @@ public class ProjActivityLogRow extends UserPropertiesRow {
 	private String originalValue;
 	private String newValue;
 	
-	public ProjActivityLogRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
+	public ActivityLogRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(identity, userPropertyHandlers, locale);
 	}
 

@@ -2621,6 +2621,19 @@ create table o_qual_analysis_presentation (
    primary key (id)
 );
 
+create table o_qual_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   q_action varchar(32) not null,
+   q_before text,
+   q_after text,
+   fk_doer int8 not null,
+   fk_data_collection int8,
+   fk_todo_task int8,
+   fk_identity int8,
+   primary key (id)
+);
+
 -- question item
 create table o_qp_pool (
    id int8 not null,
@@ -4967,6 +4980,11 @@ create index o_qual_report_access_gen_idx on o_qual_report_access(fk_generator);
 
 alter table o_qual_generator_to_org add constraint qual_gen_to_org_idx foreign key (fk_generator) references o_qual_generator (id);
 create unique index idx_qual_gen_to_org_idx on o_qual_generator_to_org (fk_generator, fk_organisation);
+
+create index idx_qm_audit_doer_idx on o_qual_audit_log (fk_doer);
+create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
+create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
+create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

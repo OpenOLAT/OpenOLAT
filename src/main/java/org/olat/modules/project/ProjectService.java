@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
@@ -106,7 +107,7 @@ public interface ProjectService {
 	
 	public void updateTags(Identity doer, ProjArtefactRef artefact, List<String> displayNames);
 	
-	public List<ProjTagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact);
+	public List<TagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact);
 	
 
 	/*

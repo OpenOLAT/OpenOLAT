@@ -1,0 +1,7 @@
+$r.render("header")
+#if($r.available("todo.create") && $r.visible("todo.create"))
+	<div class="o_button_group o_button_group_right">
+			$r.render("todo.create")
+	</div>
+#end
+$r.render("table")

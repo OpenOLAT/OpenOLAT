@@ -51,10 +51,14 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.modules.quality.QualityDataCollectionStatus;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
+import org.olat.modules.quality.manager.EvaluationFormSessionToDoTaskProvider;
 import org.olat.modules.quality.ui.event.DataCollectionEvent;
 import org.olat.modules.quality.ui.event.DataCollectionEvent.Action;
 import org.olat.modules.quality.ui.security.DataCollectionSecurityCallback;
@@ -69,16 +73,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionController extends BasicController implements TooledController, Activateable2 {
 
+	private static final String ORES_TODOS_TYPE = "todos";
 	private static final String ORES_REPORT_TYPE = "report";
 	
 	private Link statusPreparationLink;
 	private Link statusReadyLink;
 	private Link statusRunningLink;
 	private Link statusFinishedLink;
+	private Link toDoCreateLink;
 	private Link deleteLink;
 	private Link configurationLink;
 	private Link participantsLink;
 	private Link remindersLink;
+	private Link toDosLink;
 	private Link reportAccessLink;
 	private Link reportLink;
 	private Link previousReportLink;
@@ -91,6 +98,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private DataCollectionConfigurationController configurationCtrl;
 	private ParticipationListController participationsCtrl;
 	private RemindersController remindersCtrl;
+	private DataCollectionToDoListController toDosCtrl;
 	private DataCollectionReportAccessController reportAccessCtrl;
 	private DataCollectionReportController reportCtrl;
 	private DataCollectionReportController previousReportCtrl;
@@ -98,6 +106,7 @@ public class DataCollectionController extends BasicController implements TooledC
 	private CloseableModalController cmc;
 	private DataCollectionStartConfirmationController startConfirmationController;
 	private DataCollectionFinishConfirmationController finishConfirmationController;
+	private QualityToDoEditController toDoCreateCtrl;
 	
 	private DataCollectionSecurityCallback secCallback;
 	private QualityDataCollection dataCollection;
@@ -106,7 +115,13 @@ public class DataCollectionController extends BasicController implements TooledC
 	private QualityDataCollection followUpDataCollection;
 	
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private DataCollectionToDoTaskProvider dataCollectionToDoProvider;
+	@Autowired
+	private EvaluationFormSessionToDoTaskProvider sessionToDoProvider;
 
 	protected DataCollectionController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QualityDataCollectionLight dataCollectionLight) {
@@ -126,6 +141,12 @@ public class DataCollectionController extends BasicController implements TooledC
 			segmentButtonsCmp.addButton(participantsLink, false);
 			remindersLink = LinkFactory.createLink("data.collection.reminders", getTranslator(), this);
 			segmentButtonsCmp.addButton(remindersLink, false);
+		}
+		if (secCallback.canViewToDos() && qualityModule.isToDoEnabled()) {
+			toDosLink = LinkFactory.createLink("data.collection.todos", getTranslator(), this);
+			segmentButtonsCmp.addButton(toDosLink, false);
+		}
+		if (secCallback.canViewDataCollectionConfigurations()) {
 			reportAccessLink = LinkFactory.createLink("data.collection.report.access", getTranslator(), this);
 			segmentButtonsCmp.addButton(reportAccessLink, false);
 		}
@@ -158,11 +179,18 @@ public class DataCollectionController extends BasicController implements TooledC
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (entries != null && !entries.isEmpty()) {
 			OLATResourceable resource = entries.get(0).getOLATResourceable();
-			if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+			if (ORES_TODOS_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
+					&& secCallback.canViewToDos()) {
+				doOpenToDos(ureq);
+				return;
+			} else if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 					&& secCallback.canViewReport()) {
 				doOpenReport(ureq);
+				return;
 			}
-		} else if (secCallback.canViewDataCollectionConfigurations()) {
+		}
+		
+		if (secCallback.canViewDataCollectionConfigurations()) {
 			doOpenConfiguration(ureq);
 		} else if (secCallback.canViewReport()) {
 			doOpenReport(ureq);
@@ -241,12 +269,22 @@ public class DataCollectionController extends BasicController implements TooledC
 	}
 
 	private void initButtons() {
-		if (deleteLink != null) stackPanel.removeTool(deleteLink, this);
+		if (deleteLink != null) {
+			stackPanel.removeTool(deleteLink, this);
+		}
 		if (secCallback.canDeleteDataCollection() ) {
 			deleteLink = LinkFactory.createToolLink("data.collection.delete", translate("data.collection.delete"),
 					this);
 			deleteLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_dc_delete");
 			stackPanel.addTool(deleteLink, Align.left, true, null, this);
+		}
+		if (toDoCreateLink != null) {
+			stackPanel.removeTool(toDoCreateLink, this);
+		}
+		if (secCallback.canCreateToDoTasks()) {
+			toDoCreateLink = LinkFactory.createToolLink("todo.create", translate("todo.create"), this);
+			toDoCreateLink.setIconLeftCSS("o_icon o_icon-fw o_icon_todo_task");
+			stackPanel.addTool(toDoCreateLink, Align.right, true, null, this);
 		}
 	}
 	
@@ -273,6 +311,12 @@ public class DataCollectionController extends BasicController implements TooledC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (source == toDoCreateCtrl) {
+			cmc.deactivate();
+			cleanUp();
+			if (toDosCtrl != null) {
+				toDosCtrl.reload(ureq);
+			}
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -289,6 +333,8 @@ public class DataCollectionController extends BasicController implements TooledC
 			doConfirmStatusRunning(ureq);
 		} else if (source == statusFinishedLink) {
 			doConfirmStatusFinished(ureq);
+		} else if (source == toDoCreateLink) {
+			doCreateToDo(ureq);
 		} else if (source == deleteLink) {
 			fireEvent(ureq, new DataCollectionEvent(dataCollection, Action.DELETE));
 		} else if (configurationLink == source) {
@@ -297,6 +343,8 @@ public class DataCollectionController extends BasicController implements TooledC
 			doOpenParticipants(ureq);
 		} else if(remindersLink == source) {
 			doOpenReminders(ureq);
+		} else if(toDosLink == source) {
+			doOpenToDos(ureq);
 		} else if(reportAccessLink == source) {
 			doOpenReportAccess(ureq);
 		} else if(reportLink == source) {
@@ -314,7 +362,7 @@ public class DataCollectionController extends BasicController implements TooledC
 			}
 		}
 	}
-	
+
 	private void doOpenConfiguration(UserRequest ureq) {
 		doOpenConfiguration(ureq, false);
 	}
@@ -343,6 +391,14 @@ public class DataCollectionController extends BasicController implements TooledC
 		listenTo(remindersCtrl);
 		stackPanel.pushController(translate("data.collection.reminders"), remindersCtrl);
 		segmentButtonsCmp.setSelectedButton(remindersLink);
+	}
+	
+	private void doOpenToDos(UserRequest ureq) {
+		stackPanel.popUpToController(this);
+		toDosCtrl = new DataCollectionToDoListController(ureq, getWindowControl(), secCallback, dataCollection);
+		listenTo(toDosCtrl);
+		stackPanel.pushController(translate("data.collection.todos"), toDosCtrl);
+		segmentButtonsCmp.setSelectedButton(toDosLink);
 	}
 	
 	private void doOpenReportAccess(UserRequest ureq) {
@@ -388,9 +444,11 @@ public class DataCollectionController extends BasicController implements TooledC
 	protected void cleanUp() {
 		removeAsListenerAndDispose(finishConfirmationController);
 		removeAsListenerAndDispose(startConfirmationController);
+		removeAsListenerAndDispose(toDoCreateCtrl);
 		removeAsListenerAndDispose(cmc);
 		finishConfirmationController = null;
 		startConfirmationController = null;
+		toDoCreateCtrl = null;
 		cmc = null;
 	}
 
@@ -453,6 +511,34 @@ public class DataCollectionController extends BasicController implements TooledC
 		afterDataCollectionUpdated(ureq);
 	}
 	
+	private void doCreateToDo(UserRequest ureq) {
+		if (guardModalController(toDoCreateCtrl)) return;
+		
+		EvaluationFormSession session = null;
+		if (segmentButtonsCmp.getSelectedButton() == reportLink) {
+			session = reportCtrl.getSession();
+		} else if (segmentButtonsCmp.getSelectedButton() == previousReportLink) {
+			session = previousReportCtrl.getSession();
+		} else if (segmentButtonsCmp.getSelectedButton() == followUpReportLink) {
+			session = followUpReportCtrl.getSession();
+		}
+		
+		if (session != null) {
+			toDoCreateCtrl = sessionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
+					dataCollection.getKey(), session.getKey().toString());
+		} else {
+			toDoCreateCtrl = dataCollectionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
+					dataCollection.getKey(), null);
+		}
+		
+		listenTo(toDoCreateCtrl);
+		
+		String title = translate("todo.create");
+		cmc = new CloseableModalController(getWindowControl(), "close", toDoCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void afterDataCollectionUpdated(UserRequest ureq) {
 		secCallback = QualitySecurityCallbackFactory.createDataCollectionSecurityCallback(
 				ureq.getUserSession().getRoles(), dataCollection, organisations);
@@ -465,6 +551,9 @@ public class DataCollectionController extends BasicController implements TooledC
 		}
 		if (remindersCtrl != null) {
 			remindersCtrl.onChanged(dataCollection, secCallback);
+		}
+		if (toDosCtrl != null) {
+			toDosCtrl.reload(ureq);
 		}
 		if (reportAccessCtrl != null) {
 			reportAccessCtrl.onChanged(secCallback, ureq);

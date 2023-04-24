@@ -30,13 +30,13 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjTag;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjTagSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -138,8 +138,8 @@ public class ProjTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// Tags with artefact selection
-		Map<Long, ProjTagInfo> keyToTag = sut.loadProjectTagInfos(project, artefact2).stream()
-				.collect(Collectors.toMap(ProjTagInfo::getKey, Function.identity()));
+		Map<Long, TagInfo> keyToTag = sut.loadProjectTagInfos(project, artefact2).stream()
+				.collect(Collectors.toMap(TagInfo::getKey, Function.identity()));
 		assertThat(keyToTag).hasSize(3);
 		assertThat(keyToTag.get(tag1.getKey()).getCount()).isEqualTo(3);
 		assertThat(keyToTag.get(tag2.getKey()).getCount()).isEqualTo(2);
@@ -150,7 +150,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 		
 		// Tags without artefact selection
 		keyToTag = sut.loadProjectTagInfos(project, null).stream()
-					.collect(Collectors.toMap(ProjTagInfo::getKey, Function.identity()));
+					.collect(Collectors.toMap(TagInfo::getKey, Function.identity()));
 		assertThat(keyToTag.get(tag1.getKey()).getCount()).isEqualTo(3);
 		assertThat(keyToTag.get(tag2.getKey()).getCount()).isEqualTo(2);
 		assertThat(keyToTag.get(tag3.getKey()).getCount()).isEqualTo(1);

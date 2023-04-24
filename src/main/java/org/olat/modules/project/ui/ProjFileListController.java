@@ -31,6 +31,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -96,7 +97,6 @@ import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
@@ -224,7 +224,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("file.filter.my.value")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("file.filter.my"), ProjFileFilter.my.name(), myValues, true));
 		
-		List<ProjTagInfo> tagInfos = projectService.getTagInfos(project, null);
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
 		if (!tagInfos.isEmpty()) {
 			filters.add(new FlexiTableTagFilter(translate("tags"), ProjFileFilter.tag.name(), tagInfos, true));
 		}

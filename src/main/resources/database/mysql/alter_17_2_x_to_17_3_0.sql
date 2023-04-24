@@ -234,6 +234,7 @@ alter table o_proj_activity add constraint activity_member_idx foreign key (fk_m
 alter table o_proj_activity add constraint activity_organisation_idx foreign key (fk_organisation) references o_org_organisation (id);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
 
+
 -- JupyterHub
 create table o_jup_hub (
    id bigint not null auto_increment,
@@ -275,3 +276,23 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
 
+
+-- Quality management
+create table o_qual_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   q_action varchar(32) not null,
+   q_before longtext,
+   q_after longtext,
+   fk_doer bigint not null,
+   fk_data_collection bigint,
+   fk_todo_task bigint,
+   fk_identity bigint,
+   primary key (id)
+);
+alter table o_qual_audit_log ENGINE = InnoDB;
+
+create index idx_qm_audit_doer_idx on o_qual_audit_log (fk_doer);
+create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
+create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
+create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);

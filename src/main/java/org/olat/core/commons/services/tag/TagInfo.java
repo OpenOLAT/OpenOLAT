@@ -29,4 +29,6 @@ public interface TagInfo extends Tag {
 	
 	public Long getCount();
 	
+	public boolean isSelected();
+	
 }

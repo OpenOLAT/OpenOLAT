@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -80,6 +81,20 @@ class QualityDataCollectionToOrganisationDAO {
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("dataCollectionKey", dataCollectionRef.getKey())
+				.getResultList();
+	}
+	
+	List<Long> loadDataCollectionKeysByOrganisations(Collection<? extends OrganisationRef> organisations) {
+		if (organisations == null || organisations.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct rel.dataCollection.key");
+		sb.append("  from qualitydatacollectiontoorganisation as rel");
+		sb.append(" where rel.organisation.key in :organisationKeys");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("organisationKeys", organisations.stream().map(OrganisationRef::getKey).toList())
 				.getResultList();
 	}
 	

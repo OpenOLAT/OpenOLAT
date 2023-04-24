@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -88,7 +89,6 @@ import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjNoteSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjNoteDataModel.NoteCols;
@@ -221,7 +221,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		myValues.add(SelectionValues.entry(FILTER_KEY_MY, translate("note.filter.my.value")));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("note.filter.my"), ProjNoteFilter.my.name(), myValues, true));
 		
-		List<ProjTagInfo> tagInfos = projectService.getTagInfos(project, null);
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
 		if (!tagInfos.isEmpty()) {
 			filters.add(new FlexiTableTagFilter(translate("tags"), ProjNoteFilter.tag.name(), tagInfos, true));
 		}

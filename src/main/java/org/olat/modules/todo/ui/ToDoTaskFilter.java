@@ -26,6 +26,6 @@ package org.olat.modules.todo.ui;
  *
  */
 public enum ToDoTaskFilter {
-	my, tag, priority, due, status
+	my, tag, priority, due, status, contextType
 
 }

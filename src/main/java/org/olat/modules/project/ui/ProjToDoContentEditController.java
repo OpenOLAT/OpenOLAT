@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -28,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
@@ -68,12 +68,11 @@ public class ProjToDoContentEditController extends FormBasicController {
 		ToDoTaskMembers toDoTaskMembers = toDoService.getToDoTaskGroupKeyToMembers(List.of(toDo.getToDoTask()), ToDoRole.ASSIGNEE_DELEGATEE)
 				.get(toDo.getToDoTask().getBaseGroup().getKey());
 		
-		List<ProjTagInfo> tagInfos = projectService.getTagInfos(toDo.getArtefact().getProject(), toDo.getArtefact());
-		List<ProjTagInfo> artefactTags = tagInfos.stream().filter(ProjTagInfo::isSelected).toList();
+		List<TagInfo> tagInfos = projectService.getTagInfos(toDo.getArtefact().getProject(), toDo.getArtefact());
 		
-		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDo.getToDoTask(), projectMembers,
-				toDoTaskMembers.getMembers(ToDoRole.assignee), toDoTaskMembers.getMembers(ToDoRole.delegatee), tagInfos,
-				artefactTags);
+		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm, toDo.getToDoTask(), false, null,
+				null, projectMembers, false,
+				toDoTaskMembers.getMembers(ToDoRole.assignee), toDoTaskMembers.getMembers(ToDoRole.delegatee), tagInfos);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}
@@ -91,7 +90,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 		
 		projectService.updateMembers(getIdentity(), toDo, toDoTaskEditForm.getAssignees(), toDoTaskEditForm.getDelegatees());
 		
-		projectService.updateTags(getIdentity(), toDo, toDoTaskEditForm.getTagDisplayValues());
+		projectService.updateTags(getIdentity(), toDo, toDoTaskEditForm.getTagDisplayNames());
 	}
 
 }

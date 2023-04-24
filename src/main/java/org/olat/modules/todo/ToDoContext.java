@@ -17,18 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.todo;
 
-import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.modules.todo.model.ToDoContextImpl;
 
 /**
  * 
- * Initial date: 14 Mar 2023<br>
+ * Initial date: 21 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjTagInfo extends TagInfo {
+public interface ToDoContext {
 	
-	public boolean isSelected();
+	public String getType();
+
+	public Long getOriginId();
+
+	public String getOriginSubPath();
+	
+	public String getOriginTitle();
+	
+	public static ToDoContext of(String type, Long originId, String originSubPath, String originTitle) {
+		return new ToDoContextImpl(type, originId, originSubPath, originTitle);
+	}
 
 }

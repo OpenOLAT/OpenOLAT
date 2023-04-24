@@ -21,7 +21,6 @@ package org.olat.modules.project.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -30,7 +29,6 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarColors;
 import org.olat.core.commons.services.tag.TagInfo;
-import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -76,18 +74,16 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 	private final ProjAppointment appointment;
 	private final List<? extends TagInfo> projectTags;
-	private final Collection<? extends TagRef> artefactTags;
 
 	@Autowired
 	private CalendarManager calendarManager;
 
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment, List<? extends TagInfo> projectTags, Collection<? extends TagRef> artefactTags) {
+			ProjAppointment appointment, List<? extends TagInfo> projectTags) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "appointment_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.appointment = appointment;
 		this.projectTags = projectTags;
-		this.artefactTags = artefactTags;
 		
 		initForm(ureq);
 		updateAllDayUI();
@@ -109,7 +105,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, appointment.getSubject(), formLayout);
 		subjectEl.setMandatory(true);
 		
-		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags, artefactTags);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		allDayEl = uifactory.addToggleButton("all.day", null, "&nbsp;&nbsp;", formLayout, null, null);
 		allDayEl.addActionListener(FormEvent.ONCHANGE);

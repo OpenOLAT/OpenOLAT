@@ -47,14 +47,19 @@ public class QualitySecurityCallbackFactory {
 			OrganisationRoles.qualitymanager, OrganisationRoles.administrator };
 	private static final OrganisationRoles[] QUALITY_VIEWER_ROLES = new OrganisationRoles[] {
 			OrganisationRoles.qualitymanager, OrganisationRoles.administrator, OrganisationRoles.principal };
+	private static final OrganisationRoles[] QUALITY_VIEWER_ONLY_ROLES = new OrganisationRoles[] {
+			OrganisationRoles.principal };
 
 	public static MainSecurityCallback createMainSecurityCallback(Roles roles, IdentityRef identityRef) {
 		boolean canEdit = roles.isAdministrator() || roles.isQualityManager();
 		boolean canView = canEdit || roles.isPrincipal();
-		List<OrganisationRef> organisations = getViewOrganisations(roles, canView);
+		List<OrganisationRef> viewOrganisations = getViewOrganisations(roles, canView);
+		List<OrganisationRef> viewOnlyOrganisations = getViewOnlyOrganisations(roles, canView);
+		List<OrganisationRef> editOrganisations = getEditOrganisations(roles, canEdit);
 		List<OrganisationRef> learnResourceManagerOrganisations = getLearnResourceManagerOrganisations(roles);
 		
-		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, organisations, learnResourceManagerOrganisations);
+		return new MainSecurityCallbackImpl(identityRef, canView, canEdit, viewOrganisations, viewOnlyOrganisations,
+				editOrganisations, learnResourceManagerOrganisations);
 	}
 	
 	private static List<OrganisationRef> getViewOrganisations(Roles roles, boolean canView) {
@@ -62,6 +67,28 @@ public class QualitySecurityCallbackFactory {
 			OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
 			if (organisationModule.isEnabled()) {
 				return roles.getOrganisationsWithRoles(QUALITY_VIEWER_ROLES);
+			}
+			return null; // null = all organisations
+		}
+		return Collections.emptyList(); // empty list = no organisations
+	}
+	
+	private static List<OrganisationRef> getViewOnlyOrganisations(Roles roles, boolean canView) {
+		if (canView) {
+			OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+			if (organisationModule.isEnabled()) {
+				return roles.getOrganisationsWithRoles(QUALITY_VIEWER_ONLY_ROLES);
+			}
+			return null; // null = all organisations
+		}
+		return Collections.emptyList(); // empty list = no organisations
+	}
+	
+	private static List<OrganisationRef> getEditOrganisations(Roles roles, boolean canEdit) {
+		if (canEdit) {
+			OrganisationModule organisationModule = CoreSpringFactory.getImpl(OrganisationModule.class);
+			if (organisationModule.isEnabled()) {
+				return roles.getOrganisationsWithRoles(QUALITY_MANAGER_ROLES);
 			}
 			return null; // null = all organisations
 		}

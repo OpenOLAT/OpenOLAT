@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
  */
 public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> implements SortableFlexiTableDataModel<ToDoTaskRow> {
 	
-	private static final ToDoTaskCols[] COLS = ToDoTaskCols.values();
+	public static final ToDoTaskCols[] COLS = ToDoTaskCols.values();
 
 	private final Locale locale;
 	
@@ -82,6 +82,8 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		case dueDate: return row;
 		case due: return row;
 		case doneDate: return row.getDoneDate();
+		case contextType: return row.getTranslatedType();
+		case contextTitle: return row.getOriginTitle();
 		case assigned: return row.getAssigneesPortraits();
 		case delegated: return row.getDelegateesPortraits();
 		case tags: return row.getFormattedTags();
@@ -103,6 +105,8 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		dueDate("task.due.date"),
 		due("task.due"),
 		doneDate("task.done.date"),
+		contextType("task.context.type"),
+		contextTitle("task.context.title"),
 		assigned("task.assigned"),
 		delegated("task.delegated"),
 		tags("tags"),

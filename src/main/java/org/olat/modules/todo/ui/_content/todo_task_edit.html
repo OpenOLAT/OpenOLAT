@@ -1,11 +1,20 @@
 <div class="o_todo_task_edit">
+	#if($r.available("task.context"))
+		$r.render("task.context", "vertical", "form")
+	#end
 	<div class="o_todo_task_do_row">
 		$r.render("task.do", "vertical", "form")
 		$r.render("task.title", "vertical", "form")
 	</div>
 	$r.render("tags", "vertical", "form")
 	$r.render("task.assigned", "vertical", "form")
+	#if($r.available("assigneeCont"))
+		$r.render("assigneeCont", "vertical", "form")
+	#end
 	$r.render("task.delegated", "vertical", "form")
+	#if($r.available("delegateeCont"))
+		$r.render("delegateeCont", "vertical", "form")
+	#end
 	<div class="o_form_two_cols">
 		$r.render("task.status", "horizontal", "form")
 		$r.render("task.priority", "horizontal", "form")

@@ -35,12 +35,18 @@ public class TagInfoImpl implements TagInfo {
 	private final Date creationDate;
 	private final String displayName;
 	private final Long count;
+	private final boolean selected;
 
-	public TagInfoImpl(Long key, Date creationDate, String displayName, Long count) {
+	public TagInfoImpl(Long key, Date creationDate, String displayName, Long count, Long numSelected) {
+		this(key, creationDate, displayName, count, numSelected > 0);
+	}
+	
+	public TagInfoImpl(Long key, Date creationDate, String displayName, Long count, boolean selected) {
 		this.key = key;
 		this.creationDate = creationDate;
 		this.displayName = displayName;
 		this.count = count;
+		this.selected = selected;
 	}
 
 	@Override
@@ -61,6 +67,11 @@ public class TagInfoImpl implements TagInfo {
 	@Override
 	public Long getCount() {
 		return count;
+	}
+
+	@Override
+	public boolean isSelected() {
+		return selected;
 	}
 	
 }

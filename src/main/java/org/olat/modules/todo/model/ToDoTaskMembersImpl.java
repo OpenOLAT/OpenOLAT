@@ -36,23 +36,33 @@ import org.olat.modules.todo.ToDoTaskMembers;
  */
 public class ToDoTaskMembersImpl implements ToDoTaskMembers {
 	
-	private Map<String, Set<Identity>> roleNameToIdentity;
+	private Set<Identity> identities = new HashSet<>(1);
+	private Map<String, Set<Identity>> roleNameToIdentity = new HashMap<>(1);
+	private Map<Identity, Set<ToDoRole>> identityToRole = new HashMap<>(1);
 
 	@Override
+	public Set<Identity> getMembers() {
+		return identities;
+	}
+	
+	@Override
 	public Set<Identity> getMembers(ToDoRole role) {
-		return getRoleNameToIdentity().getOrDefault(role.name(), Set.of());
+		return roleNameToIdentity.getOrDefault(role.name(), Set.of());
+	}
+	
+	@Override
+	public Set<ToDoRole> getRoles(Identity member) {
+		return identityToRole.getOrDefault(member, Set.of());
 	}
 	
 	public void add(String role, Identity identity) {
-		Set<Identity> identities = getRoleNameToIdentity().computeIfAbsent(role, a -> new HashSet<>(1));
 		identities.add(identity);
-	}
-	
-	private Map<String, Set<Identity>> getRoleNameToIdentity() {
-		if (roleNameToIdentity == null) {
-			roleNameToIdentity  = new HashMap<>(2);
-		}
-		return roleNameToIdentity;
+		
+		Set<Identity> identities = roleNameToIdentity.computeIfAbsent(role, a -> new HashSet<>(1));
+		identities.add(identity);
+		
+		Set<ToDoRole> roles = identityToRole.computeIfAbsent(identity, a -> new HashSet<>(1));
+		roles.add(ToDoRole.valueOf(role));
 	}
 
 }

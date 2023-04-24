@@ -124,5 +124,25 @@ public class QualityDataCollectionToOrganisationDAOTest extends OlatTestCase {
 				.containsExactlyInAnyOrder(organisation1, organisation2)
 				.doesNotContain(otherOrganisation);
 	}
+	
+	@Test
+	public void shouldLoadDataCollectionKeysByOrganisations() {
+		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollectionWithoutOrganisation();
+		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollectionWithoutOrganisation();
+		QualityDataCollection dataCollection3 = qualityTestHelper.createDataCollectionWithoutOrganisation();
+		QualityDataCollection dataCollection4 = qualityTestHelper.createDataCollectionWithoutOrganisation();
+		qualityTestHelper.createDataCollectionWithoutOrganisation();
+		Organisation organisation1 = qualityTestHelper.createOrganisation();
+		Organisation organisation2 = qualityTestHelper.createOrganisation();
+		Organisation organisation3 = qualityTestHelper.createOrganisation();
+		sut.createRelation(dataCollection1, organisation1);
+		sut.createRelation(dataCollection1, organisation2);
+		sut.createRelation(dataCollection2, organisation2);
+		sut.createRelation(dataCollection3, organisation2);
+		sut.createRelation(dataCollection4, organisation3);
+		
+		List<Long> dataCollectionKeys = sut.loadDataCollectionKeysByOrganisations(List.of(organisation1, organisation2));
+		assertThat(dataCollectionKeys).containsExactlyInAnyOrder(dataCollection1.getKey(), dataCollection2.getKey(), dataCollection3.getKey());
+	}
 
 }

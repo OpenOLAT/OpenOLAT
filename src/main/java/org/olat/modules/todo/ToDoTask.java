@@ -31,7 +31,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ToDoTask extends ToDoTaskRef, CreateInfo, ModifiedInfo {
+public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, ModifiedInfo {
 	
 	public Date getContentModifiedDate();
 	
@@ -66,14 +66,6 @@ public interface ToDoTask extends ToDoTaskRef, CreateInfo, ModifiedInfo {
 	public void setDueDate(Date dueDate);
 
 	public Date getDoneDate();
-
-	public String getType();
-
-	public Long getOriginId();
-
-	public String getOriginSubPath();
-	
-	public String getOriginTitle();
 	
 	public boolean isOriginDeleted();
 	

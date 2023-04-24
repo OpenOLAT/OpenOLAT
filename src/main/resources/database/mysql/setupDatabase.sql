@@ -2737,6 +2737,19 @@ create table o_qual_analysis_presentation (
    primary key (id)
 );
 
+create table o_qual_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   q_action varchar(32) not null,
+   q_before longtext,
+   q_after longtext,
+   fk_doer bigint not null,
+   fk_data_collection bigint,
+   fk_todo_task bigint,
+   fk_identity bigint,
+   primary key (id)
+);
+
 -- LTI
 create table o_lti_outcome (
    id bigint not null,
@@ -4292,6 +4305,7 @@ alter table o_qual_generator ENGINE = InnoDB;
 alter table o_qual_generator_config ENGINE = InnoDB;
 alter table o_qual_generator_to_org ENGINE = InnoDB;
 alter table o_qual_analysis_presentation ENGINE = InnoDB;
+alter table o_qual_audit_log ENGINE = InnoDB;
 alter table o_vfs_metadata ENGINE = InnoDB;
 alter table o_vfs_thumbnail ENGINE = InnoDB;
 alter table o_vfs_revision ENGINE = InnoDB;
@@ -4966,6 +4980,11 @@ alter table o_qual_report_access add constraint qual_repacc_to_generator_idx for
 
 alter table o_qual_generator_to_org add constraint qual_gen_to_org_idx foreign key (fk_generator) references o_qual_generator (id);
 create unique index idx_qual_gen_to_org_idx on o_qual_generator_to_org (fk_generator, fk_organisation);
+
+create index idx_qm_audit_doer_idx on o_qual_audit_log (fk_doer);
+create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
+create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
+create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);
 
 -- question pool
 alter table o_qp_pool add constraint idx_qp_pool_owner_grp_id foreign key (fk_ownergroup) references o_bs_secgroup(id);

@@ -41,6 +41,10 @@ public interface MainSecurityCallback {
 	
 	public List<OrganisationRef> getViewDataCollectionOrganisationRefs();
 	
+	public List<OrganisationRef> getViewOnlyDataCollectionOrganisationRefs();
+	
+	public List<OrganisationRef> getEditDataCollectionOrganisationRefs();
+	
 	public List<OrganisationRef> getLearnResourceManagerOrganisationRefs();
 	
 	public boolean canCreateDataCollections();
@@ -60,5 +64,7 @@ public interface MainSecurityCallback {
 	public boolean canEditPresentations();
 
 	public boolean canDeletePresentation(AnalysisPresentation presentation);
+	
+	public boolean canCreateToDoTasks();
 
 }

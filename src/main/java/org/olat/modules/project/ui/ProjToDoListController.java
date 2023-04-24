@@ -22,12 +22,12 @@ package org.olat.modules.project.ui;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
@@ -49,13 +49,12 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	protected final ProjProjectSecurityCallback secCallback;
 	protected final Date lastVisitDate;
 	
-
 	@Autowired
 	protected ProjectService projectService;
 
 	public ProjToDoListController(UserRequest ureq, WindowControl wControl, String pageName, MapperKey avatarMapperKey,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate) {
-		super(ureq, wControl, pageName, avatarMapperKey, ProjToDoProvider.TYPE, project.getKey());
+		super(ureq, wControl, pageName, avatarMapperKey, ProjToDoProvider.TYPE, project.getKey(), null);
 		this.project = project;
 		this.secCallback = secCallback;
 		this.lastVisitDate = lastVisitDate;
@@ -67,7 +66,7 @@ public abstract class ProjToDoListController extends ToDoTaskListController {
 	}
 
 	@Override
-	protected List<ProjTagInfo> getFilterTags() {
+	protected List<TagInfo> getFilterTags() {
 		return projectService.getTagInfos(project, null);
 	}
 

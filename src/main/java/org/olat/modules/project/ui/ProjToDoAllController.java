@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 
 /**
  * 
@@ -54,6 +55,12 @@ public class ProjToDoAllController extends ProjToDoListController {
 		doSelectFilterTab(null);
 		
 		reload(ureq);
+	}
+	
+	@Override
+	protected boolean isVisible(ToDoTaskCols col) {
+		return col != ToDoTaskCols.contextType
+				&& col != ToDoTaskCols.contextTitle;
 	}
 	
 	@Override

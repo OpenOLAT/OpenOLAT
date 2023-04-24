@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -28,7 +29,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjAppointment;
-import org.olat.modules.project.ProjTagInfo;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,10 +57,9 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<ProjTagInfo> tagInfos = projectService.getTagInfos(appointment.getArtefact().getProject(), appointment.getArtefact());
-		List<ProjTagInfo> artefactTags = tagInfos.stream().filter(ProjTagInfo::isSelected).toList();
+		List<TagInfo> tagInfos = projectService.getTagInfos(appointment.getArtefact().getProject(), appointment.getArtefact());
 		
-		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, tagInfos, artefactTags);
+		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, tagInfos);
 		listenTo(appointmentContentEditForm);
 		formLayout.add(appointmentContentEditForm.getInitialFormItem());
 	}

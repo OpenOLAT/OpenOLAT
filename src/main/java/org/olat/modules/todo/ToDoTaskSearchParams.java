@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import jakarta.persistence.TypedQuery;
+
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.DateRange;
 
 /**
@@ -41,6 +44,7 @@ public class ToDoTaskSearchParams {
 	private Date createdAfter;
 	private boolean dueDateNull;
 	private List<DateRange> dueDateRanges;
+	private ToDoTaskCustomQuery customQuery;
 
 	public Collection<Long> getToDoTaskKeys() {
 		return toDoTaskKeys;
@@ -104,6 +108,21 @@ public class ToDoTaskSearchParams {
 
 	public void setDueDateRanges(List<DateRange> dueDateRanges) {
 		this.dueDateRanges = dueDateRanges;
+	}
+	
+	public ToDoTaskCustomQuery getCustomQuery() {
+		return customQuery;
+	}
+
+	public void setCustomQuery(ToDoTaskCustomQuery customQuery) {
+		this.customQuery = customQuery;
+	}
+
+	public interface ToDoTaskCustomQuery {
+		
+		public void appendQuery(QueryBuilder sb);
+		
+		public void addParameters(TypedQuery<?> query);
 	}
 
 }

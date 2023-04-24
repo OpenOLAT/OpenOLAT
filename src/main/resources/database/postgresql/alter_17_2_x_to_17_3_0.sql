@@ -257,6 +257,7 @@ alter table o_proj_activity add constraint activity_organisation_idx foreign key
 create index idx_activity_organisation_idx on o_proj_activity (fk_organisation);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
 
+
 -- JupyterHub
 create table o_jup_hub (
    id bigserial,
@@ -295,3 +296,22 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
+
+
+-- Quality management
+create table o_qual_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   q_action varchar(32) not null,
+   q_before text,
+   q_after text,
+   fk_doer int8 not null,
+   fk_data_collection int8,
+   fk_todo_task int8,
+   fk_identity int8,
+   primary key (id)
+);
+create index idx_qm_audit_doer_idx on o_qual_audit_log (fk_doer);
+create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
+create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
+create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);

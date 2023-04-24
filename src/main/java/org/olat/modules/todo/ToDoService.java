@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 
 /**
@@ -38,7 +39,7 @@ public interface ToDoService {
 	
 	public ToDoTask createToDoTask(Identity doer, String type);
 	
-	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath);
+	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle);
 	
 	public ToDoTask update(Identity doer, ToDoTask toDoTask);
 
@@ -54,6 +55,8 @@ public interface ToDoService {
 	
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams);
 	
+	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams);
+
 	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
@@ -61,6 +64,8 @@ public interface ToDoService {
 	public void updateTags(ToDoTaskRef toDoTask, List<String> displayNames);
 	
 	public List<ToDoTaskTag> getToDoTaskTags(ToDoTaskSearchParams searchParams);
+	
+	public List<TagInfo> getTagInfos(ToDoTaskSearchParams searchParams, ToDoTaskRef selectionTask);
 	
 	public ToDoExpenditureOfWork getExpenditureOfWork(Long hours);
 	

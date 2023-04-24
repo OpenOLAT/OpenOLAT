@@ -51,6 +51,7 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String DELIMITER = ",";
 	private static final String FROM_EMAIL = "quality.from.email";
 	private static final String FROM_NAME = "quality.from.name";
+	private static final String QUALITY_TODO_ENABLED = "quality.todo.enabled";
 	
 	@Value("${quality.enabled:false}")
 	private boolean enabled;
@@ -64,6 +65,8 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	private String fromEmail;
 	@Value("${quality.from.name}")
 	private String fromName;
+	@Value("${quality.todo.enabled:false}")
+	private boolean toDoEnabled;
 
 	@Autowired
 	public QualityModule(CoordinatorManager coordinatorManager) {
@@ -117,6 +120,11 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 		String fromNameObj = getStringPropertyValue(FROM_NAME, true);
 		if (StringHelper.containsNonWhitespace(fromNameObj)) {
 			fromName = fromNameObj;
+		}
+		
+		String toDoEnabledObj = getStringPropertyValue(QUALITY_TODO_ENABLED, true);
+		if (StringHelper.containsNonWhitespace(toDoEnabledObj)) {
+			toDoEnabled = "true".equals(toDoEnabledObj);
 		}
 	}
 
@@ -185,6 +193,15 @@ public class QualityModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setFromName(String fromName) {
 		this.fromName = fromName;
 		setStringProperty(FROM_NAME, fromName, true);
+	}
+
+	public boolean isToDoEnabled() {
+		return toDoEnabled;
+	}
+
+	public void setToDoEnabled(boolean toDoEnabled) {
+		this.toDoEnabled = toDoEnabled;
+		setStringProperty(QUALITY_TODO_ENABLED, Boolean.toString(toDoEnabled), true);
 	}
 
 }

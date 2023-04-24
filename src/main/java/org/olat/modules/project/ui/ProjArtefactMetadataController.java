@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import org.olat.core.commons.controllers.activity.ActivityLogController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -38,7 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjArtefactMetadataController extends FormBasicController {
 	
-	private ProjActivityLogController activityLogCtrl;
+	private ActivityLogController activityLogCtrl;
 	
 	private final ProjArtefact artefact;
 	private final Formatter formatter;

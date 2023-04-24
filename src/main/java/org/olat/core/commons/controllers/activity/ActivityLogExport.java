@@ -17,10 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui;
+package org.olat.core.commons.controllers.activity;
 
 import java.util.Date;
 
+import org.olat.core.commons.controllers.activity.ActivityLogTableModel.ActivityLogCols;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
@@ -29,7 +30,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.modules.lecture.ui.ParticipantListRepositoryController;
-import org.olat.modules.project.ui.ProjActivityLogTableModel.ActivityLogCols;
 
 /**
  * 
@@ -37,7 +37,7 @@ import org.olat.modules.project.ui.ProjActivityLogTableModel.ActivityLogCols;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjActivityLogExport extends XlsFlexiTableExporter {
+public class ActivityLogExport extends XlsFlexiTableExporter {
 	
 	@Override
 	protected void createCell(FlexiTableComponent ftC, FlexiColumnModel cd, Row dataRow, int row, int col,
