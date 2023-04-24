@@ -751,7 +751,7 @@ function showAjaxBusy() {
 					// fix modal conflic with modal dialogs, make ajax busy appear always above modal dialogs
 					jQuery('#o_ajax_busy').after('<div id="o_ajax_busy_backdrop" class="modal-backdrop in"></div>');
 					jQuery('#o_ajax_busy>.modal-backdrop').remove();
-					jQuery('#o_ajax_busy_backdrop').css({'z-index' : 1200});
+					jQuery('#o_ajax_busy_backdrop').css({'z-index' : 70041});
 				}
 			} catch (e) {
 				if(window.console) console.log(e);
