@@ -107,6 +107,8 @@ public class AssessmentViewController extends BasicController implements Assessm
 		reopenLink = LinkFactory.createButton("reopen", mainVC, this);
 		reopenLink.setElementCssClass("o_sel_assessment_form_reopen");
 		reopenLink.setIconLeftCSS("o_icon o_icon_status_in_review");
+		reopenLink.setVisible(!coachCourseEnv.isCourseReadOnly());
+		
 		updateUserVisibilityUI();
 		
 		putConfigToVC();
@@ -116,8 +118,9 @@ public class AssessmentViewController extends BasicController implements Assessm
 	}
 	
 	private void updateUserVisibilityUI() {
-		boolean canChangeUserVisibility = coachCourseEnv.isAdmin()
-				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY);
+		boolean canChangeUserVisibility = (coachCourseEnv.isAdmin()
+				|| coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY))
+				&& !coachCourseEnv.isCourseReadOnly();
 		
 		mainVC.remove("user.visibility.set.hidden");
 		mainVC.remove("user.visibility.set.visible");
