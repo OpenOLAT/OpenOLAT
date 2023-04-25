@@ -61,7 +61,7 @@ public class OLATAuthentcationForm extends FormBasicController {
 		login.clearError();
 		//only POST is allowed
 		if(!"POST".equals(ureq.getHttpReq().getMethod())) {
-			login.setErrorKey("error.post.method.mandatory", null);
+			login.setErrorKey("error.post.method.mandatory");
 			valid = false;
 		}
 		valid &= !login.isEmpty("lf.error.loginempty");

@@ -182,7 +182,7 @@ public class PasswordPolicyController extends FormBasicController {
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue())
 				&& !StringHelper.isLong(el.getValue())) {
-			el.setErrorKey("form.error.nointeger", null);
+			el.setErrorKey("form.error.nointeger");
 			allOk &= false;
 		}
 		
