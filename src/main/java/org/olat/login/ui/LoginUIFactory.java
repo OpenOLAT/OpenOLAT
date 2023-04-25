@@ -49,15 +49,15 @@ public class LoginUIFactory {
 			try {
 				double value = Integer.parseInt(val);
 				if(min > value) {
-					el.setErrorKey("error.wrong.int", null);
+					el.setErrorKey("error.wrong.int");
 					allOk = false;
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("error.wrong.int", null);
+				el.setErrorKey("error.wrong.int");
 				allOk = false;
 			}
 		} else {
-			el.setErrorKey("error.wrong.int", null);
+			el.setErrorKey("error.wrong.int");
 			allOk = false;
 		}
 		return allOk;

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -115,8 +116,8 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 				// User accepted disclaimer, do login now
 				doAccept(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
-				// User did not accept, workflow ends here
-				showWarning("disclaimer.form.cancelled");
+				String redirectUrl = WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault();
+				ureq.getDispatchResult().setResultingMediaResource(new RedirectMediaResource(redirectUrl));
 			}
 			cleanUp();
 		} else if(cmc == source) {

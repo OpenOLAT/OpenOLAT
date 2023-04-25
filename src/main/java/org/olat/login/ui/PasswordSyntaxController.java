@@ -287,14 +287,14 @@ public class PasswordSyntaxController extends FormBasicController {
 			int min = Integer.parseInt(minLengthEl.getValue());
 			int max = Integer.parseInt(maxLengthEl.getValue());
 			if (max < min) {
-				maxLengthEl.setErrorKey("error.password.length.lower", null);
+				maxLengthEl.setErrorKey("error.password.length.lower");
 				allOk = false;
 			}
 		}
 		
 		historyEl.clearError();
 		if(!historyEl.isOneSelected()) {
-			historyEl.setErrorKey("form.legende.mandatory", null);
+			historyEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
