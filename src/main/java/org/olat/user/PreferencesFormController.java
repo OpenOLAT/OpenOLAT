@@ -84,8 +84,6 @@ public class PreferencesFormController extends FormBasicController {
 	@Autowired
 	private MailModule mailModule;
 	@Autowired
-	private UserModule userModule;
-	@Autowired
 	private I18nManager i18nManager;
 	@Autowired
 	private UserManager userManager;
@@ -186,9 +184,8 @@ public class PreferencesFormController extends FormBasicController {
 		username.setEnabled(false);
 		
 		// Expiration
-		boolean expirationDateVisible = (tobeChangedIdentity.getExpirationDate() != null || tobeChangedIdentity.getReactivationDate() != null)
-				&& !tobeChangedIdentity.getStatus().equals(Identity.STATUS_INACTIVE)
-				&& userModule.isUserAutomaticDeactivation();
+		boolean expirationDateVisible = tobeChangedIdentity.getExpirationDate() != null
+				&& !tobeChangedIdentity.getStatus().equals(Identity.STATUS_INACTIVE);
 
 		Date expirationDate = userLifecycleManager.getDateUntilDeactivation(tobeChangedIdentity);
 		String expDate = Formatter.getInstance(getLocale()).formatDate(expirationDate);

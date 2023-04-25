@@ -88,7 +88,6 @@ import org.olat.user.ProfileAndHomePageEditController;
 import org.olat.user.ProfileFormController;
 import org.olat.user.PropFoundEvent;
 import org.olat.user.UserManager;
-import org.olat.user.UserModule;
 import org.olat.user.UserPropertiesController;
 import org.olat.user.ui.admin.ReloadIdentityEvent;
 import org.olat.user.ui.admin.UserAccountController;
@@ -179,8 +178,6 @@ public class UserAdminController extends BasicController implements Activateable
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	private CertificateAndEfficiencyStatementListController efficicencyCtrl;
 
-	@Autowired
-	private UserModule userModule;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -687,8 +684,7 @@ public class UserAdminController extends BasicController implements Activateable
 		removeAsListenerAndDispose(userShortDescrCtr);
 		
 		Builder rowsBuilder = Rows.builder();
-		if(userModule.isUserAutomaticDeactivation() && identity.getExpirationDate() != null
-				&& !Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
+		if(identity.getExpirationDate() != null && !Identity.STATUS_INACTIVE.equals(identity.getStatus())) {
 			String inactivationDate = Formatter.getInstance(getLocale()).formatDate(identity.getExpirationDate());
 			rowsBuilder.addRow(translate("user.expiration.date"), inactivationDate);
 		}
