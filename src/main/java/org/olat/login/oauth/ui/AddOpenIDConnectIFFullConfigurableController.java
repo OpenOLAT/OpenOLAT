@@ -102,7 +102,7 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 		if(StringHelper.containsNonWhitespace(providerName)) {
 			OAuthSPI existingSpi = oauthModule.getProvider(providerName);
 			if(existingSpi != null) {
-				openIdConnectIFName.setErrorKey("error.duplicate.provider", null);
+				openIdConnectIFName.setErrorKey("error.duplicate.provider");
 				allOk &= false;
 			}
 		}

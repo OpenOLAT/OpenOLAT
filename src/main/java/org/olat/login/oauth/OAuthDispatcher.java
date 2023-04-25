@@ -53,6 +53,7 @@ import org.olat.login.oauth.spi.OpenIdConnectApi.OpenIdConnectService;
 import org.olat.login.oauth.spi.OpenIdConnectFullConfigurableApi.OpenIdConnectFullConfigurableService;
 import org.olat.login.oauth.ui.JSRedirectWindowController;
 import org.olat.login.oauth.ui.OAuthAuthenticationController;
+import org.olat.registration.RegistrationManager;
 import org.olat.registration.RegistrationModule;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,8 @@ public class OAuthDispatcher implements Dispatcher {
 	private OAuthLoginManager oauthLoginManager;
 	@Autowired
 	private RegistrationModule registrationModule;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response)
@@ -166,8 +169,7 @@ public class OAuthDispatcher implements Dispatcher {
 			OAuthRegistration registration = new OAuthRegistration(provider.getProviderName(), infos);
 			login(infos, registration);
 
-			if(provider instanceof OAuthUserCreator) {
-				OAuthUserCreator userCreator = (OAuthUserCreator)provider;
+			if(provider instanceof OAuthUserCreator userCreator) {
 				if(registration.getIdentity() != null) {
 					Identity newIdentity = userCreator.updateUser(infos, registration.getIdentity());
 					registration.setIdentity(newIdentity);		
@@ -175,7 +177,7 @@ public class OAuthDispatcher implements Dispatcher {
 			}
 			
 			if(provider instanceof OAuthUserCreator && registration.getIdentity() == null) {
-				disclaimer(request, response, infos, provider);
+				disclaimer(request, response, infos, registration, provider);
 			} else if(registration.getIdentity() == null) {
 				if(oauthLoginModule.isAllowUserCreation()) {
 					createUser(infos, registration, provider, ureq, request, response);
@@ -190,7 +192,11 @@ public class OAuthDispatcher implements Dispatcher {
 				}
 			
 				Identity identity = registration.getIdentity();
-				login(identity, provider, ureq, response);
+				if(!oauthLoginModule.isSkipDisclaimerDialog() && registrationManager.needsToConfirmDisclaimer(identity)) {
+					disclaimer(request, response, infos, registration, provider);
+				} else {
+					login(identity, provider, ureq, response);
+				}
 			}
 		} catch (Exception e) {
 			log.error("Unexpected error", e);
@@ -210,7 +216,7 @@ public class OAuthDispatcher implements Dispatcher {
 				error(ureq, "Unexpected error");
 			}
 		} else if(oauthLoginModule.isSkipRegistrationDialog() && oauthLoginManager.isValid(infos)) {
-			disclaimer(request, response, infos, provider);
+			disclaimer(request, response, infos, registration, provider);
 		} else {
 			register(request, response, registration);
 		}
@@ -232,8 +238,7 @@ public class OAuthDispatcher implements Dispatcher {
 			//update last login date and register active user
 			securityManager.setIdentityLastLogin(identity);
 			MediaResource mr = ureq.getDispatchResult().getResultingMediaResource();
-			if (mr instanceof RedirectMediaResource) {
-				RedirectMediaResource rmr = (RedirectMediaResource)mr;
+			if (mr instanceof RedirectMediaResource rmr) {
 				rmr.prepare(response);
 			} else {
 				DispatcherModule.redirectToDefaultDispatcher(response); // error, redirect to login screen
@@ -287,7 +292,7 @@ public class OAuthDispatcher implements Dispatcher {
 	private String translate(UserRequest ureq, String i18nKey, String arg) {
 		Translator trans = Util.createPackageTranslator(OAuthAuthenticationController.class, ureq.getLocale(),
 				Util.createPackageTranslator(LoginModule.class, ureq.getLocale()));
-		return trans.translate(i18nKey, new String[] { arg });
+		return trans.translate(i18nKey, arg);
 	}
 	
 	private String translateOauthError(UserRequest ureq, String error) {
@@ -317,10 +322,12 @@ public class OAuthDispatcher implements Dispatcher {
 		msgcc.getWindow().dispatchRequest(ureq, true);
 	}
 	
-	private void disclaimer(HttpServletRequest request, HttpServletResponse response, OAuthUser user, OAuthSPI provider) {
+	private void disclaimer(HttpServletRequest request, HttpServletResponse response, OAuthUser user,
+			OAuthRegistration registration, OAuthSPI provider) {
 		try {
 			request.getSession().setAttribute(OAuthConstants.OAUTH_SPI, provider);
 			request.getSession().setAttribute(OAuthConstants.OAUTH_USER_ATTR, user);
+			request.getSession().setAttribute(OAuthConstants.OAUTH_REGISTRATION_ATTR, registration);
 			response.sendRedirect(WebappHelper.getServletContextPath() + DispatcherModule.getPathDefault() + OAuthConstants.OAUTH_DISCLAIMER_PATH + "/");
 		} catch (IOException e) {
 			log.error("Redirect failed: url={}{}", WebappHelper.getServletContextPath(), DispatcherModule.getPathDefault(),e);

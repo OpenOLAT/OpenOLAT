@@ -41,6 +41,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.login.oauth.OAuthLoginManager;
 import org.olat.login.oauth.OAuthSPI;
 import org.olat.login.oauth.OAuthUserCreator;
+import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.RegistrationForm2;
@@ -62,6 +63,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	
 	private final OAuthUser user;
 	private final OAuthSPI provider;
+	private final OAuthRegistration registration;
 
 	private CloseableModalController cmc;
 	private DisclaimerController disclaimerController;
@@ -74,13 +76,14 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	private RegistrationManager registrationManager;
 	
 	public OAuthDisclaimerController(UserRequest ureq, WindowControl wControl,
-			OAuthUser user, OAuthSPI provider) {
+			OAuthUser user, OAuthRegistration registration, OAuthSPI provider) {
 		super(ureq, wControl, "disclaimer");
 		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 
 		this.user = user;
 		this.provider = provider;
+		this.registration = registration;
 		initForm(ureq);
 	}
 
@@ -99,8 +102,8 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener,	UserRequest ureq) {
-		if(provider == null && formLayout instanceof FormLayoutContainer) {
-			((FormLayoutContainer)formLayout).contextPut("noProvider", Boolean.TRUE);
+		if(provider == null && formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("noProvider", Boolean.TRUE);
 		}
 	}
 	
@@ -108,10 +111,9 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(disclaimerController == source) {
 			cmc.deactivate();
-			
 			if (event == Event.DONE_EVENT) {
 				// User accepted disclaimer, do login now
-				doCreateUser(ureq);
+				doAccept(ureq);
 			} else if (event == Event.CANCELLED_EVENT) {
 				// User did not accept, workflow ends here
 				showWarning("disclaimer.form.cancelled");
@@ -135,10 +137,12 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 		//
 	}
 	
-	private void doCreateUser(UserRequest ureq) {
+	private void doAccept(UserRequest ureq) {
 		Identity authenticatedIdentity;
-		if(provider instanceof OAuthUserCreator) {
-			authenticatedIdentity =((OAuthUserCreator)provider).createUser(user);
+		if(registration != null && registration.getIdentity() != null && registration.getIdentity().getKey() != null) {
+			authenticatedIdentity = registration.getIdentity();
+		} else if(provider instanceof OAuthUserCreator creator) {
+			authenticatedIdentity = creator.createUser(user);
 		} else {
 			authenticatedIdentity = oauthLoginManager.createIdentity(user, provider.getProviderName());
 		}

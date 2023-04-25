@@ -46,6 +46,8 @@ import org.olat.user.UserModule;
  */
 public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<IdentityPropertiesRow> {
 	
+	private static final UserCols[] COLS = UserCols.values();
+	
 	private final Date now;
 	private final UserModule userModule;
 	private final UserLifecycleManager lifecycleManager;
@@ -77,7 +79,7 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	public Object getValueAt(int row, int col) {
 		IdentityPropertiesRow userRow = getObject(row);
 		if(col < UserSearchTableController.USER_PROPS_OFFSET) {
-			switch(UserCols.values()[col]) {
+			switch(COLS[col]) {
 				case id: return userRow.getIdentityKey();
 				case creationDate: return userRow.getCreationDate();
 				case lastLogin: return getLastLogin(userRow);
@@ -104,10 +106,9 @@ public class UserSearchTableModel extends DefaultFlexiTableDataSourceModel<Ident
 	}
 	
 	private Long getDaysToInactivation(IdentityPropertiesRow userRow) {
-		if(userModule.isUserAutomaticDeactivation()
-				&& (userRow.getStatus().equals(Identity.STATUS_ACTIV)
-						|| userRow.getStatus().equals(Identity.STATUS_PENDING)
-						|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
+		if((userRow.getStatus().equals(Identity.STATUS_ACTIV)
+					|| userRow.getStatus().equals(Identity.STATUS_PENDING)
+					|| userRow.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
 				&& (userRow.getExpirationDate() != null || userRow.getReactivationDate() != null || !guestsKeys.contains(userRow.getIdentityKey()))) {
 			return lifecycleManager.getDaysUntilDeactivation(userRow, now);
 		}

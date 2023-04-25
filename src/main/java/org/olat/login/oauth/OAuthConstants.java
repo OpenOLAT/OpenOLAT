@@ -35,6 +35,7 @@ public interface OAuthConstants {
 	public static final String OAUTH_REGISTER_PATH = "oauthregister";
 	public static final String OAUTH_DISCLAIMER_PATH = "oauthdisclaimer";
 	public static final String OAUTH_USER_ATTR = "oauthUser";
+	public static final String OAUTH_REGISTRATION_ATTR = "oauthRegistration";
 	public static final String OAUTH_SPI = "oauthSpi";
 	public static final String OAUTH_STATE = "oauthState";
 	public static final String OAUTH_NONCE = "oauthNonce";

@@ -237,8 +237,7 @@ public class UserAccountController extends FormBasicController {
 		reactivationDateEl.setValue(formatter.formatDate(reactivationDate));
 		reactivationDateEl.setVisible(reactivationDate != null);
 
-		daysInactivationEl.setVisible(userModule.isUserAutomaticDeactivation()
-				&& (editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
+		daysInactivationEl.setVisible((editedIdentity.getStatus().equals(Identity.STATUS_ACTIV)
 						|| editedIdentity.getStatus().equals(Identity.STATUS_PENDING)
 						|| editedIdentity.getStatus().equals(Identity.STATUS_LOGIN_DENIED))
 				&& !editedRoles.isGuestOnly());
