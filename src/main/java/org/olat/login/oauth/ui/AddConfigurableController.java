@@ -174,7 +174,7 @@ public class AddConfigurableController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(providerName)) {
 			OAuthSPI existingSpi = oauthModule.getProvider(providerName);
 			if(existingSpi != null) {
-				nameEl.setErrorKey("error.duplicate.provider", null);
+				nameEl.setErrorKey("error.duplicate.provider");
 				allOk &= false;
 			}
 		}
@@ -186,7 +186,7 @@ public class AddConfigurableController extends FormBasicController {
 		boolean allOk = true;
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!el.validate()) {
 			allOk &= false;

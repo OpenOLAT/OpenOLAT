@@ -27,6 +27,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.login.oauth.OAuthConstants;
 import org.olat.login.oauth.OAuthSPI;
+import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
 
 /**
@@ -53,7 +54,9 @@ public class OAuthDisclaimerCreator implements ControllerCreator {
 					.getSession().getAttribute(OAuthConstants.OAUTH_USER_ATTR);
 			OAuthSPI provider = (OAuthSPI)ureq.getHttpReq()
 					.getSession().getAttribute(OAuthConstants.OAUTH_SPI);
-			return new OAuthDisclaimerController(ureq, wControl, user, provider);
+			OAuthRegistration registration = (OAuthRegistration)ureq.getHttpReq()
+					.getSession().getAttribute(OAuthConstants.OAUTH_REGISTRATION_ATTR);
+			return new OAuthDisclaimerController(ureq, wControl, user, registration, provider);
 		}
 	}
 }

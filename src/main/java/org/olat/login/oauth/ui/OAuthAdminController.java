@@ -589,7 +589,7 @@ public class OAuthAdminController extends FormBasicController {
 				TextElement textEl = (TextElement)item;
 				textEl.clearError();
 				if(container.isVisible() && !StringHelper.containsNonWhitespace(textEl.getValue())) {
-					textEl.setErrorKey("form.legende.mandatory", null);
+					textEl.setErrorKey("form.legende.mandatory");
 					allOk = false;
 				}
 			}
@@ -607,7 +607,7 @@ public class OAuthAdminController extends FormBasicController {
 				if(textEl != null) {
 					textEl.clearError();
 					if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
-						textEl.setErrorKey("form.legende.mandatory", null);
+						textEl.setErrorKey("form.legende.mandatory");
 						allOk &= false;
 					}
 				}
@@ -1094,7 +1094,7 @@ public class OAuthAdminController extends FormBasicController {
 			
 			responseTypeEl.clearError();
 			if(!responseTypeEl.isOneSelected()) {
-				responseTypeEl.setErrorKey("form.legende.mandatory", null);
+				responseTypeEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			

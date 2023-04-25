@@ -193,7 +193,7 @@ public class OAuthRegistrationController extends FormBasicController {
 		
 		usernameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(username)) {
-			usernameEl.setErrorKey("form.legende.mandatory", null);
+			usernameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else {
 			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
