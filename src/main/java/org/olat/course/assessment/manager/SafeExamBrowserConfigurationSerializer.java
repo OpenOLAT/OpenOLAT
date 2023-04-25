@@ -25,6 +25,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.PList;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.model.SafeExamBrowserConfiguration;
 import org.w3c.dom.Element;
 
@@ -54,7 +55,7 @@ public class SafeExamBrowserConfigurationSerializer {
 		//
 	}
 	
-	public static String toPList(SafeExamBrowserConfiguration configuration) {
+	public static String toPList(SafeExamBrowserConfiguration configuration, AssessmentModule assessmentModule) {
 		try {
 			PList plist = new PList();
 			plist.add("showTaskBar", configuration.isShowTaskBar());
@@ -64,6 +65,8 @@ public class SafeExamBrowserConfigurationSerializer {
 			plist.add("allowQuit", configuration.isAllowQuit());
 			if(StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
 				plist.add("quitURL", configuration.getLinkToQuit());
+			} else {
+				plist.add("quitURL", assessmentModule.getShadowQuitURL());
 			}
 			plist.add("quitURLConfirm", configuration.isQuitURLConfirm());
 			plist.add("audioControlEnabled", configuration.isAudioControlEnabled());
@@ -127,7 +130,7 @@ public class SafeExamBrowserConfigurationSerializer {
 		plist.add(dictEl, "regex", regex);
 	}
 	
-	public static String toJson(SafeExamBrowserConfiguration configuration) {
+	public static String toJson(SafeExamBrowserConfiguration configuration, AssessmentModule assessmentModule) {
 		try {
 			JsonObject plist = new JsonObject();
 			plist.addProperty("allowAudioCapture", configuration.isAllowAudioCapture());
@@ -149,6 +152,8 @@ public class SafeExamBrowserConfigurationSerializer {
 			}
 			if(StringHelper.containsNonWhitespace(configuration.getLinkToQuit())) {
 				plist.addProperty("quitURL", configuration.getLinkToQuit());
+			} else {
+				plist.addProperty("quitURL", assessmentModule.getShadowQuitURL());
 			}
 			plist.addProperty("quitURLConfirm", configuration.isQuitURLConfirm());
 			plist.addProperty("sendBrowserExamKey", true);

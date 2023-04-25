@@ -131,7 +131,9 @@ public class AssessmentModule extends AbstractSpringModule {
 	private String safeExamBrowserHint;	
 	
 	@Value("${safe.exam.browser.download.url}")
-	private String safeExamBrowserDownloadUrl;	
+	private String safeExamBrowserDownloadUrl;
+	
+	private String shadowQuitUrl;
 
 	@Autowired
 	public AssessmentModule(CoordinatorManager coordinatorManager) {
@@ -302,6 +304,13 @@ public class AssessmentModule extends AbstractSpringModule {
 	public void setSafeExamBrowserQuitURL(boolean quitUrl) {
 		safeExamBrowserQuitUrl = quitUrl ? "true" : "false";
 		setStringProperty(SEB_QUITURL, safeExamBrowserQuitUrl, true);
+	}
+	
+	public synchronized String getShadowQuitURL() {
+		if(shadowQuitUrl == null) {
+			shadowQuitUrl = Settings.getServerContextPathURI() + "/" + UUID.randomUUID().toString();
+		}
+		return shadowQuitUrl;
 	}
 
 	public boolean isSafeExamBrowserQuitURLConfirm() {

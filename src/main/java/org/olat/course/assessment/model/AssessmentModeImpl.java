@@ -42,6 +42,7 @@ import jakarta.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -49,6 +50,7 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.SafeExamBrowserConfigurationSerializer;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.model.LectureBlockImpl;
@@ -482,11 +484,12 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 			setSafeExamBrowserConfigPList(null);
 			setSafeExamBrowserConfigPListKey(null);
 		} else {
+			AssessmentModule assessmentModule = CoreSpringFactory.getImpl(AssessmentModule.class);
 			String xml = SafeExamBrowserConfigurationSerializer.toXml(configuration);
 			setSafeExamBrowserConfigXml(xml);
-			String plist = SafeExamBrowserConfigurationSerializer.toPList(configuration);
+			String plist = SafeExamBrowserConfigurationSerializer.toPList(configuration, assessmentModule);
 			setSafeExamBrowserConfigPList(plist);
-			String json = SafeExamBrowserConfigurationSerializer.toJson(configuration);
+			String json = SafeExamBrowserConfigurationSerializer.toJson(configuration, assessmentModule);
 			if(json != null) {
 				setSafeExamBrowserConfigPListKey(Encoder.sha256Exam(json));
 			}
