@@ -801,5 +801,4 @@ public class QualityServiceImpl
 		return auditLogDao.loadAuditLogDoers(searchParams);
 	}
 	
-	//TODO uh zuviele Einträge in task modiferu
 }

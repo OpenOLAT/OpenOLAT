@@ -47,11 +47,13 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final String topic;
 	private final String previousTitle;
 	private final Long numberOfParticipants;
+	private final Long numToDoTaskDone;
+	private final Long numToDoTaskTotal;
 	
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
 			Date deadline, Date creationDate, String generatorTitle, String formName,
 			QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
-			String previousTitle, Long numberOfParticipants) {
+			String previousTitle, Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
 		super();
 		this.key = key;
 		this.status = status;
@@ -66,6 +68,8 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.topic = topic;
 		this.previousTitle = previousTitle;
 		this.numberOfParticipants = numberOfParticipants;
+		this.numToDoTaskDone = numToDoTaskDone;
+		this.numToDoTaskTotal = numToDoTaskTotal;
 	}
 
 	@Override
@@ -141,6 +145,16 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public Long getNumberOfParticipants() {
 		return numberOfParticipants;
+	}
+
+	@Override
+	public Long getNumToDoTaskDone() {
+		return numToDoTaskDone;
+	}
+
+	@Override
+	public Long getNumToDoTaskTotal() {
+		return numToDoTaskTotal;
 	}
 
 	@Override

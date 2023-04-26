@@ -73,6 +73,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 			case formName: return dataCollectionRow.getFormName();
 			case numberParticipants: return dataCollectionRow.getNumberOfParticipants();
 			case creationDate: return dataCollectionRow.getCreationDate();
+			case toDos: return dataCollectionRow.getToDosItem();
 			case generatorTitle: return dataCollectionRow.getGeneratorTitle();
 			default: return null;
 		}
@@ -105,6 +106,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 		formName("data.collection.form"),
 		numberParticipants("data.collection.number.of.participants"),
 		creationDate("data.collection.creation.date"),
+		toDos("data.collection.todos"),
 		generatorTitle("data.collection.generator.title");
 		
 		private final String i18nKey;

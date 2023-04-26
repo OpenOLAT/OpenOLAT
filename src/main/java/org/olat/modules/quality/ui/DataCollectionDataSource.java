@@ -43,17 +43,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<DataCollectionRow> {
 	
+	public interface DataCollectionDataSourceUIFactory {
+		
+		public void forgeToDosLink(DataCollectionRow row);
+		
+	}
+	
 	private final Translator translator;
 	private final QualityDataCollectionViewSearchParams defaultSearchParams;
+	private final DataCollectionDataSourceUIFactory uiFactory;
 	private QualityDataCollectionViewSearchParams searchParams;
 	private Integer count;
 	
 	@Autowired
 	private QualityService qualityService;
 
-	public DataCollectionDataSource(Translator translator, QualityDataCollectionViewSearchParams defaultSearchParams) {
+	public DataCollectionDataSource(Translator translator, QualityDataCollectionViewSearchParams defaultSearchParams,
+			DataCollectionDataSourceUIFactory uiFactory) {
 		this.translator = translator;
 		this.defaultSearchParams = defaultSearchParams;
+		this.uiFactory = uiFactory;
 		
 		CoreSpringFactory.autowireObject(this);
 	}
@@ -64,6 +73,7 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 		this.searchParams.setReportAccessIdentity(defaultSearchParams.getReportAccessIdentity());
 		this.searchParams.setLearnResourceManagerOrganisationRefs(defaultSearchParams.getLearnResourceManagerOrganisationRefs());
 		this.searchParams.setIgnoreReportAccessRelationRole(defaultSearchParams.isIgnoreReportAccessRelationRole());
+		this.searchParams.setCountToDoTasks(defaultSearchParams.isCountToDoTasks());
 		count = null;
 	}
 	
@@ -91,11 +101,14 @@ public class DataCollectionDataSource implements FlexiTableDataSourceDelegate<Da
 
 		List<QualityDataCollectionView> dataCollections = qualityService.loadDataCollections(translator, searchParams,
 				firstResult, maxResults, orderBy);
+		
 		List<DataCollectionRow> rows = new ArrayList<>();
 		for (QualityDataCollectionView dataCollection : dataCollections) {
-			rows.add(new DataCollectionRow(dataCollection));
+			DataCollectionRow row = new DataCollectionRow(dataCollection);
+			uiFactory.forgeToDosLink(row);
+			rows.add(row);
 		}
-
+		
 		return new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 	}
 }

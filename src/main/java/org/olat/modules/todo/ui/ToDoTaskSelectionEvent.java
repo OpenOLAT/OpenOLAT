@@ -17,24 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo;
+package org.olat.modules.todo.ui;
 
-import java.util.List;
+import org.olat.core.gui.control.Event;
+import org.olat.modules.todo.ToDoTask;
 
 /**
  * 
- * Initial date: 24 Mar 2023<br>
+ * Initial date: 25 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum ToDoStatus {
+public class ToDoTaskSelectionEvent extends Event {
 	
-	open,
-	inProgress,
-	done,
-	deleted;
+	private static final long serialVersionUID = 6109099741671131114L;
 	
-	public static final List<ToDoStatus> OPEN_TO_DONE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
-	public static final List<ToDoStatus> STATUS_OVERDUE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.deleted);
+	private final ToDoTask toDoTask;
+
+	public ToDoTaskSelectionEvent(ToDoTask toDoTask) {
+		super("todo-selection");
+		this.toDoTask = toDoTask;
+	}
+
+	public ToDoTask getToDoTask() {
+		return toDoTask;
+	}
 
 }
