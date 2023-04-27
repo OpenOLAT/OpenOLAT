@@ -84,8 +84,21 @@ public interface ProjActivity extends CreateInfo {
 			Action.appointmentStatusDelete,
 			Action.milestoneCreate,
 			Action.milestoneContentUpdate,
-			Action.milestoneStatusDelete);
+			Action.milestoneStatusDelete
+		);
 	
+	public static Action[] QUICK_START_ACTIONS = {
+			ProjActivity.Action.fileCreate,
+			ProjActivity.Action.fileUpload,
+			ProjActivity.Action.fileEdit,
+			ProjActivity.Action.fileContentUpdate,
+			ProjActivity.Action.fileRead,
+			ProjActivity.Action.fileDownload,
+			ProjActivity.Action.noteCreate,
+			ProjActivity.Action.noteContentUpdate,
+			ProjActivity.Action.noteRead,
+			ProjActivity.Action.noteDownload
+	};
 	
 	public enum Action {
 		projectCreate(ActionTarget.project),

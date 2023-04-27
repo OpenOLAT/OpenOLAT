@@ -21,6 +21,7 @@ package org.olat.modules.project.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.miniRandom;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.Date;
 import java.util.List;
@@ -29,8 +30,11 @@ import org.junit.Test;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjActivity;
+import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -52,6 +56,8 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	private GroupDAO groupDao;
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private ProjActivityDAO projActivityDao;
 	
 	@Autowired
 	private ProjArtefactDAO sut;
@@ -165,6 +171,96 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		
 		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
 	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer);
+		ProjArtefact artefact = sut.create(random(), project, doer);
+		createActivity(doer, project, artefact, new Date(), Action.noteContentUpdate);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project, doer);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact);
+	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts_filter_project() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project1 = projectService.createProject(doer);
+		ProjProject project2 = projectService.createProject(doer);
+		ProjArtefact artefact1 = sut.create(random(), project1, doer);
+		createActivity(doer, project1, artefact1, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact2 = sut.create(random(), project1, doer);
+		createActivity(doer, project1, artefact2, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact3 = sut.create(random(), project2, doer);
+		createActivity(doer, project2, artefact3, new Date(), Action.noteContentUpdate);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project1, doer);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
+	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts_filter_doer() {
+		Identity doer1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity doer2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer1);
+		
+		ProjArtefact artefact1 = sut.create(random(), project, doer1);
+		createActivity(doer1, project, artefact1, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact2 =  sut.create(random(), project, doer1);
+		createActivity(doer1, project, artefact2, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact3 =  sut.create(random(), project, doer1);
+		createActivity(doer2, project, artefact3, new Date(), Action.noteContentUpdate);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project, doer1);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
+	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts_filter_action() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer);
+		ProjArtefact artefact1 = sut.create(random(), project, doer);
+		createActivity(doer, project, artefact1, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact2 = sut.create(random(), project, doer);
+		createActivity(doer, project, artefact2, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact3 = sut.create(random(), project, doer);
+		createActivity(doer, project, artefact3, new Date(), Action.toDoContentUpdate);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project, doer);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
+	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts_filter_creatorOrMember() {
+		Identity doer1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity doer2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity doer3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer1);
+		
+		ProjArtefact artefact1 = sut.create(ProjNote.TYPE, project, doer1);
+		createActivity(doer1, project, artefact1, new Date(), Action.noteContentUpdate);
+		createActivity(doer2, project, artefact1, new Date(), Action.noteContentUpdate);
+		createActivity(doer3, project, artefact1, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact2 = sut.create(ProjNote.TYPE, project, doer1);
+		createActivity(doer1, project, artefact2, new Date(), Action.noteContentUpdate);
+		createActivity(doer2, project, artefact2, new Date(), Action.noteContentUpdate);
+		createActivity(doer3, project, artefact2, new Date(), Action.noteContentUpdate);
+		projectService.updateMembers(doer1, artefact2, List.of(doer2));
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.loadQuickSearchArtefacts(project, doer1)).containsExactlyInAnyOrder(artefact1, artefact2);
+		assertThat(sut.loadQuickSearchArtefacts(project, doer2)).containsExactlyInAnyOrder(artefact2);
+		assertThat(sut.loadQuickSearchArtefacts(project, doer3)).isEmpty();
+	}
 
 	private ProjArtefact createRandomArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
@@ -173,6 +269,10 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		ProjArtefact artefact = sut.create(type, project, creator);
 		dbInstance.commitAndCloseSession();
 		return artefact;
+	}
+	
+	private ProjActivity createActivity(Identity doer, ProjProject project, ProjArtefact artefact, Date creationDate, Action action) {
+		return projActivityDao.create(action, null, null, null, doer, project, artefact, null, null, null, creationDate);
 	}
 
 }

@@ -29,10 +29,12 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
+import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjArtefactImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,6 +147,35 @@ public class ProjArtefactDAO {
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());
 		}
+	}
+	
+	public List<ProjArtefact> loadQuickSearchArtefacts(ProjProjectRef project, Identity identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select artefact");
+		sb.append("  from projactivity activity");
+		sb.append("       inner join activity.artefact");
+		sb.and().append("activity.project.key = :projectKey");
+		sb.and().append("activity.doer.key = :identityKey");
+		sb.and().append("activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.and();
+		sb.append("(");
+		sb.append("artefact.creator.key = :identityKey");
+		sb.append(" or ");
+		sb.append("artefact.baseGroup.key in (");
+		sb.append("select membership.group.key");
+		sb.append("  from bgroupmember as membership");
+		sb.append(" where membership.group.key = artefact.baseGroup.key");
+		sb.append("   and membership.identity.key = :identityKey");
+		sb.append(")");
+		sb.append(")");
+		sb.orderBy().append(" activity.creationDate desc");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), ProjArtefact.class)
+				.setParameter("projectKey", project.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setMaxResults(6)
+				.getResultList();
 	}
 
 }

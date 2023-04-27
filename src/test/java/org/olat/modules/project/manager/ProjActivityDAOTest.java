@@ -306,6 +306,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 		createActivity(doer, project2, DateUtils.addDays(dueDate, 4));
 		createActivity(doer, project2, DateUtils.addDays(dueDate, 5));
 		ProjActivity activity6 = createActivity(doer, project2, DateUtils.addDays(dueDate, 6));
+		dbInstance.commitAndCloseSession();
 		
 		ProjActivitySearchParams searchParams = new ProjActivitySearchParams();
 		searchParams.setProjects(List.of(project1, project2));

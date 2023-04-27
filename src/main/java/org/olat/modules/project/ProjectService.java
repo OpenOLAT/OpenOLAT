@@ -101,6 +101,8 @@ public interface ProjectService {
 	
 	public ProjArtefactItems getArtefactItems(ProjArtefactSearchParams searchParams);
 
+	public ProjArtefactItems getQuickStartArtefactItems(ProjProjectRef project, Identity identity);
+	
 	public void updateMembers(Identity doer, ProjArtefactRef artefactRef, List<IdentityRef> identities);
 	
 	public Map<Long, Set<Long>> getArtefactKeyToIdentityKeys(Collection<ProjArtefact> artefacts);

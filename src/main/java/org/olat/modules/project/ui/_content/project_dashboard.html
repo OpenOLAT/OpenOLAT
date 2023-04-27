@@ -23,8 +23,11 @@
 	</div>
 	<div class="o_proj_widgets o_block">
 		<div class="o_proj_widget_col">
-			#if($r.available("files"))
-				$r.render("files")
+			#if($r.available("quick"))
+				$r.render("quick")
+			#end
+			#if($r.available("calendar"))
+				$r.render("calendar")
 			#end
 			#if($r.available("toDos"))
 				$r.render("toDos")
@@ -32,8 +35,8 @@
 			#if($r.available("notes"))
 				$r.render("notes")
 			#end
-			#if($r.available("calendar"))
-				$r.render("calendar")
+			#if($r.available("files"))
+				$r.render("files")
 			#end
 		</div>
 		<div class="o_proj_timeline_col">

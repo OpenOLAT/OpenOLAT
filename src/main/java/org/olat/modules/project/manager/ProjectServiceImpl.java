@@ -574,6 +574,14 @@ public class ProjectServiceImpl implements ProjectService {
 		
 		return loadArtefacts(typeToArtefacts);
 	}
+	
+	@Override
+	public ProjArtefactItems getQuickStartArtefactItems(ProjProjectRef project, Identity identity) {
+		Map<String, List<ProjArtefact>> typeToArtefacts = artefactDao.loadQuickSearchArtefacts(project, identity).stream()
+				.collect(Collectors.groupingBy(ProjArtefact::getType));
+		
+		return loadArtefacts(typeToArtefacts);
+	}
 
 	private ProjArtefactItems loadArtefacts(Map<String, List<ProjArtefact>> typeToArtefacts) {
 		ProjArtefactItemsImpl artefacts = new ProjArtefactItemsImpl();

@@ -64,6 +64,7 @@ import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.event.OpenToDoEvent;
+import org.olat.modules.project.ui.event.QuickStartEvent;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -101,6 +102,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjConfirmationController deleteConfirmationCtrl;
 	private DialogBoxController reopenConfirmationCtrk;
 	private ProjMembersManagementController membersManagementCtrl;
+	private ProjQuickStartWidgetController quickWidgetCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
 	private ProjFileAllController fileAllCtrl;
 	private ProjToDoWidgetController toDoWidgetCtrl;
@@ -173,6 +175,13 @@ public class ProjProjectDashboardController extends BasicController implements A
 		usersPortraitCmp.setUsers(portraitUsers);
 		
 		//Widgets
+		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewNotes()
+				|| secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
+			quickWidgetCtrl = new ProjQuickStartWidgetController(ureq, wControl, project, secCallback);
+			listenTo(quickWidgetCtrl);
+			mainVC.put("quick", quickWidgetCtrl.getInitialComponent());
+		}
+		
 		if (secCallback.canViewFiles()) {
 			fileWidgetCtrl = new ProjFileWidgetController(ureq, wControl, project, secCallback, lastVisitDate);
 			listenTo(fileWidgetCtrl);
@@ -212,6 +221,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 	public void reload(UserRequest ureq, Controller exceptCtrl) {
 		if (exceptCtrl != this) {
 			putProjectToVC();
+		}
+		if (exceptCtrl != quickWidgetCtrl) {
+			quickWidgetCtrl.reload();
 		}
 		if (exceptCtrl != fileWidgetCtrl) {
 			fileWidgetCtrl.reload(ureq);
@@ -315,8 +327,16 @@ public class ProjProjectDashboardController extends BasicController implements A
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doReopen(ureq);
 			}
-		} else if(cmc == source) {
-			cleanUp();
+		} else if (source == quickWidgetCtrl) {
+			if (event == QuickStartEvent.CALENDAR_EVENT) {
+				doOpenCalendar(ureq);
+			} else if (event == QuickStartEvent.TODOS_EVENT) {
+				doOpenToDos(ureq);
+			} else if (event == QuickStartEvent.NOTES_EVENT) {
+				doOpenNotes(ureq);
+			} else if (event == QuickStartEvent.FILES_EVENT) {
+				doOpenFiles(ureq);
+			}
 		} else if (source == fileWidgetCtrl) {
 			if (event == SHOW_ALL) {
 				doOpenFiles(ureq);
@@ -328,16 +348,16 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenToDos(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, toDoWidgetCtrl);
-			} else if (event instanceof OpenToDoEvent) {
-				doOpenToDo(ureq, (OpenToDoEvent)event);
+			} else if (event instanceof OpenToDoEvent oEvent) {
+				doOpenToDo(ureq, oEvent);
 			}
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
 				doOpenNotes(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, noteWidgetCtrl);
-			} else if (event instanceof OpenNoteEvent) {
-				doOpenNote(ureq, (OpenNoteEvent)event);
+			} else if (event instanceof OpenNoteEvent oEvent) {
+				doOpenNote(ureq, oEvent);
 			}
 		} else if (source == calendarWidgetCtrl) {
 			if (event == SHOW_ALL) {
@@ -345,8 +365,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			} else if (event == Event.CHANGED_EVENT) {
 				reload(ureq, calendarWidgetCtrl);
 			}
-		} else if (event instanceof OpenArtefactEvent) {
-			OpenArtefactEvent oae = (OpenArtefactEvent)event;
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		if (event instanceof OpenArtefactEvent oae) {
 			doOpenArtefact(ureq, oae.getArtefact());
 		}
 		super.event(ureq, source, event);

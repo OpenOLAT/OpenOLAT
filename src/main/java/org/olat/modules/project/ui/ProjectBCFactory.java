@@ -164,6 +164,11 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
+	public static String getToDosUrl(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createToDosCes(projectRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
 	public static String getToDoUrl(ProjToDo toDo) {
 		return getToDoUrl(toDo.getArtefact().getProject(), toDo);
 	}
