@@ -133,7 +133,7 @@ public class BigBlueButtonConfigurationController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ConfigServerCols.manualOnly));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
-		serversTableModel = new BigBlueButtonConfigurationServersTableModel(columnsModel);
+		serversTableModel = new BigBlueButtonConfigurationServersTableModel(columnsModel, getLocale());
 		
 		serversTableEl = uifactory.addTableElement(getWindowControl(), "servers", serversTableModel, 10, false, getTranslator(), formLayout);
 		serversTableEl.setCustomizeColumns(false);
