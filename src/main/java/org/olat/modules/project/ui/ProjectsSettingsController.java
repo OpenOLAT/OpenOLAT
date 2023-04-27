@@ -26,9 +26,12 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -43,55 +46,75 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjectsSettingsController extends FormBasicController {
 	
-	private static final String[] ON_KEYS = new String[] {"on"};
+	private static final String KEY_ALL = "all";
+	private static final String KEY_ROLE_BASED = "role";
 
+	private FormToggle enabledEl;
+	private SingleSelection createAllowedEl;
+	private MultipleSelectionElement createRolesEl;
+	
 	@Autowired
 	private ProjectModule projectModule;
 
-	private MultipleSelectionElement enabledEl;
-
-	private MultipleSelectionElement createRestrictedEl;
-
-	private MultipleSelectionElement createRolesEl;
-	
 	public ProjectsSettingsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, LAYOUT_VERTICAL);
 		initForm(ureq);
 		updateUI();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("admin.settings");
+		FormLayoutContainer settingsCont = FormLayoutContainer.createDefaultFormLayout("settings", getTranslator());
+		settingsCont.setFormTitle(translate("admin.settings"));
+		settingsCont.setRootForm(mainForm);
+		formLayout.add(settingsCont);
 		
-		String[] onValues = new String[] { translate("on") };
-		enabledEl = uifactory.addCheckboxesVertical("admin.enabled", formLayout, ON_KEYS, onValues, 1);
+		enabledEl = uifactory.addToggleButton("admin.enabled", translate("admin.enabled"), "&nbsp;&nbsp;", settingsCont, null, null);
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
-		enabledEl.select(enabledEl.getKey(0), projectModule.isEnabled());
+		if (projectModule.isEnabled()) {
+			enabledEl.toggleOn();
+		} else {
+			enabledEl.toggleOff();
+		}
 		
-		createRestrictedEl = uifactory.addCheckboxesVertical("admin.create.roles.restricted", formLayout, ON_KEYS, onValues, 1);
-		createRestrictedEl.addActionListener(FormEvent.ONCHANGE);
-		createRestrictedEl.select(createRestrictedEl.getKey(0), !projectModule.getCreateRoles().isEmpty());
+		FormLayoutContainer rightsCont = FormLayoutContainer.createDefaultFormLayout("rights", getTranslator());
+		rightsCont.setFormTitle(translate("admin.rights"));
+		rightsCont.setRootForm(mainForm);
+		formLayout.add(rightsCont);
+		
+		SelectionValues createAllowedSV = new SelectionValues();
+		createAllowedSV.add(SelectionValues.entry(KEY_ALL, translate("admin.create.all")));
+		createAllowedSV.add(SelectionValues.entry(KEY_ROLE_BASED, translate("admin.create.role.based")));
+		createAllowedEl = uifactory.addRadiosVertical("admin.create.allowed", rightsCont, createAllowedSV.keys(), createAllowedSV.values());
+		createAllowedEl.addActionListener(FormEvent.ONCHANGE);
+		if (projectModule.getCreateRoles().isEmpty()) {
+			createAllowedEl.select(KEY_ALL, true);
+		} else {
+			createAllowedEl.select(KEY_ROLE_BASED, true);
+		}
 		
 		SelectionValues createRolesSV = new SelectionValues();
-		createRolesSV.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("admin.role.authors")));
-		createRolesEl = uifactory.addCheckboxesVertical("admin.create.roles", formLayout, createRolesSV.keys(), createRolesSV.values(), 1);
-		createRolesEl.setHelpTextKey("admin.create.roles.help", null);
+		createRolesSV.add(SelectionValues.entry(OrganisationRoles.administrator.name(), translate("admin.role.administrator")));
+		createRolesSV.add(SelectionValues.entry(OrganisationRoles.projectmanager.name(), translate("admin.role.project.manager")));
+		createRolesSV.add(SelectionValues.entry(OrganisationRoles.author.name(), translate("admin.role.author")));
+		createRolesEl = uifactory.addCheckboxesVertical("admin.roles", rightsCont, createRolesSV.keys(), createRolesSV.values(), 1);
 		createRolesEl.addActionListener(FormEvent.ONCHANGE);
+		createRolesEl.setEnabled(OrganisationRoles.administrator.name(), false);
+		createRolesEl.select(OrganisationRoles.administrator.name(), true);
 		if (projectModule.getCreateRoles() != null) {
 			projectModule.getCreateRoles().forEach(role -> createRolesEl.select(role.name(), true));
 		}
 	}
 
 	private void updateUI() {
-		createRolesEl.setVisible(createRestrictedEl.isAtLeastSelected(1));
+		createRolesEl.setVisible(createAllowedEl.isOneSelected() && createAllowedEl.isKeySelected(KEY_ROLE_BASED));
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == enabledEl) {
-			projectModule.setEnabled(enabledEl.isAtLeastSelected(1));
-		} else if (source == createRestrictedEl) {
+			projectModule.setEnabled(enabledEl.isOn());
+		} else if (source == createAllowedEl) {
 			doUpdateCreateRoles();
 			updateUI();
 		} else if (source == createRolesEl) {
@@ -106,9 +129,12 @@ public class ProjectsSettingsController extends FormBasicController {
 	}
 	
 	private void doUpdateCreateRoles() {
-		boolean createRestriced = createRestrictedEl.isAtLeastSelected(1);
+		boolean createRestriced = createAllowedEl.isOneSelected() && createAllowedEl.isKeySelected(KEY_ROLE_BASED);
 		Set<OrganisationRoles> createRoles = createRestriced
-				? createRolesEl.getSelectedKeys().stream().map(OrganisationRoles::valueOf).collect(Collectors.toSet())
+				? createRolesEl.getSelectedKeys().stream()
+						.map(OrganisationRoles::valueOf)
+						.filter(role -> !role.equals(OrganisationRoles.administrator))
+						.collect(Collectors.toSet())
 				: null;
 		projectModule.setCreateRoles(createRoles);
 	}
