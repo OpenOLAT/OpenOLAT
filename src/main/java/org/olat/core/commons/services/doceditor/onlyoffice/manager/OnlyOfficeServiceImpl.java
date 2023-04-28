@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Optional;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -91,7 +92,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Autowired
 	private HttpClientService httpClientService;
 	@Autowired
-	private DocEditorService documentEditorServie;
+	private DocEditorService documentEditorService;
 	@Autowired
 	private DocEditorIdentityService identityService;
 	@Autowired
@@ -257,7 +258,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			params.setMode(Mode.EDIT);
 			params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
 			params.setIdentityKey(identity.getKey());
-			documentEditorServie.getAccesses(params).forEach(access -> documentEditorServie.updateEditStart(access));
+			documentEditorService.getAccesses(params).forEach(access -> documentEditorService.updateEditStart(access));
 		}
 		
 		return lock != null;
@@ -273,7 +274,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			params.setEditorType(OnlyOfficeEditor.TYPE);
 			params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
 			params.setIdentityKey(identity.getKey());
-			documentEditorServie.getAccesses(params).forEach(this::deleteAccess);
+			documentEditorService.getAccesses(params).forEach(this::deleteAccess);
 		}
 		return true;
 	}
@@ -298,9 +299,20 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 			log.warn("ONLYOFFICE failed to update file. Metadata ID: {}, identity: {}",
 					vfsLeaf.getMetaInfo().getKey(), identity.getKey());
 		} else {
+			AccessSearchParams params = new AccessSearchParams();
+			params.setEditorType(OnlyOfficeEditor.TYPE);
+			params.setMode(Mode.EDIT);
+			params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
+			params.setIdentityKey(identity.getKey());
+			Optional<Access> access = documentEditorService.getAccesses(params).stream()
+					.sorted((a1, a2) -> a1.getKey().compareTo(a2.getKey()))
+					.findFirst();
+			if (access.isPresent()) {
+				documentEditorService.documentSaved(access.get());
+			}
+			
 			log.debug("ONLYOFFICE updated file. Metadata ID: {}, identity: {})",
 					vfsLeaf.getMetaInfo().getKey(), identity.getKey());
-			
 		}
 		
 		// The access and lock are removed even if the file was not saved back.
@@ -315,7 +327,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		AccessSearchParams params = new AccessSearchParams();
 		params.setEditorType(OnlyOfficeEditor.TYPE);
 		params.setMetadataKey(vfsLeaf.getMetaInfo().getKey());
-		documentEditorServie.getAccesses(params).forEach(this::deleteAccess);
+		documentEditorService.getAccesses(params).forEach(this::deleteAccess);
 		
 		unlock(vfsLeaf);
 	}
@@ -323,7 +335,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private void deleteAccess(Access access) {
 		log.info("ONLYOFFICE closed: Access (key={}), VFSMetadata (key={}), Mode: ({}), Identity: ({})", 
 				access.getKey(), access.getMetadata().getKey(), access.getMode(), access.getIdentity().getKey());
-		documentEditorServie.deleteAccess(access);
+		documentEditorService.deleteAccess(access);
 	}
 
 	private boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
@@ -371,13 +383,13 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		if (licenseEdit == null) return true;
 		if (licenseEdit.intValue() <= 0) return false;
 		
-		Long accessCount = documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
+		Long accessCount = documentEditorService.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
 		return accessCount <= licenseEdit.intValue();
 	}
 
 	@Override
 	public Long getEditLicensesInUse() {
-		return documentEditorServie.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
+		return documentEditorService.getAccessCount(OnlyOfficeEditor.TYPE, Mode.EDIT);
 	}
 	
 	@Override

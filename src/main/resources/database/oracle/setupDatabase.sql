@@ -2230,6 +2230,7 @@ create table o_de_access (
    o_edit_start_date date,
    o_version_controlled number default 0 not null,
    o_download number default 0,
+   o_fire_saved_event number default 0,
    fk_metadata number(20) not null,
    fk_identity number(20) not null,
    primary key (id)

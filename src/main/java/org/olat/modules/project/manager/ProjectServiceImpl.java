@@ -36,6 +36,8 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
@@ -43,16 +45,21 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -126,7 +133,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ProjectServiceImpl implements ProjectService {
+public class ProjectServiceImpl implements ProjectService, GenericEventListener {
 
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
@@ -170,6 +177,11 @@ public class ProjectServiceImpl implements ProjectService {
 	private ProjTagDAO tagDao;
 	@Autowired
 	private TagService tagService;
+	
+	@PostConstruct
+	private void init() {
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, DocEditorService.DOCUMENT_SAVED_EVENT_CHANNEL);
+	}
 	
 	@Override
 	public ProjProject createProject(Identity doer) {
@@ -1877,15 +1889,31 @@ public class ProjectServiceImpl implements ProjectService {
 	public void createActivityDownload(Identity doer, ProjArtefact artefact) {
 		activityDao.create(Action.download(artefact.getType()), null, null, null, doer, artefact);
 	}
-	
-	@Override
-	public void createActivityEdit(Identity doer, ProjFileRef file) {
-		ProjFile reloadedFile = getFile(file);
+
+	private void createActivityFileEdit(Long identityKey, Long vfsMetadatKey, Long accessKey) {
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setMetadataKeys(List.of(vfsMetadatKey));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjFile> files = fileDao.loadFiles(searchParams);
+		ProjFile reloadedFile = files != null && !files.isEmpty()? files.get(0): null;
 		if (reloadedFile == null) {
 			return;
 		}
+		
 		String before = ProjectXStream.toXml(reloadedFile);
-		activityDao.create(Action.fileEdit, before, null, null, doer, reloadedFile.getArtefact());
+		
+		Identity doer = securityManager.loadIdentityByKey(identityKey);
+		updateContentModified(reloadedFile.getArtefact(), doer);
+		
+		reloadedFile = getFile(reloadedFile);
+		String after = ProjectXStream.toXml(reloadedFile);
+		String editSessionIdentifier = accessKey.toString();
+		List<ProjActivity> activities =  activityDao.loadActivities(editSessionIdentifier, Action.fileEdit);
+		if (!activities.isEmpty()) {
+			before = activities.get(0).getBefore();
+			activityDao.delete(activities);
+		}
+		activityDao.create(Action.fileEdit, before, after, editSessionIdentifier, doer, reloadedFile.getArtefact());
 	}
 
 	@Override
@@ -1896,6 +1924,13 @@ public class ProjectServiceImpl implements ProjectService {
 	@Override
 	public Map<Long, ProjActivity> getProjectKeyToLastActivity(ProjActivitySearchParams searchParams) {
 		return activityDao.loadProjectKeyToLastActivity(searchParams);
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof DocumentSavedEvent dccEvent && dccEvent.isEventOnThisNode()) {
+			createActivityFileEdit(dccEvent.getIdentityKey(), dccEvent.getVfsMetadatKey(), dccEvent.getAccessKey());
+		}
 	}
 
 }

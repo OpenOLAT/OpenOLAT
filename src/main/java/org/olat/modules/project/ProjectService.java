@@ -253,8 +253,6 @@ public interface ProjectService {
 	public void createActivityRead(Identity doer, ProjArtefact artefact);
 
 	public void createActivityDownload(Identity doer, ProjArtefact artefact);
-
-	public void createActivityEdit(Identity doer, ProjFileRef file);
 	
 	public List<ProjActivity> getActivities(ProjActivitySearchParams searchParams, int firstResult, int maxResults);
 	

@@ -106,8 +106,10 @@ public class TextEditorController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == saveLink) {
 			doSave();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} else if (source == saveCloseLink) {
 			doSave();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 			fireEvent(ureq, Event.DONE_EVENT);
 		} else if (source == closeLink) {
 			fireEvent(ureq, Event.DONE_EVENT);

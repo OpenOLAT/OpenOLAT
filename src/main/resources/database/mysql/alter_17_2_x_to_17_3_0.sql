@@ -1,4 +1,8 @@
 
+-- Document editor
+alter table o_de_access add o_fire_saved_event bool default false;
+
+
 -- Tags
 create table o_tag_tag (
    id bigint not null auto_increment,

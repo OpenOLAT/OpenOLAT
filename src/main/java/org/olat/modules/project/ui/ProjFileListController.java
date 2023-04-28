@@ -614,6 +614,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(mode)
+				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
 		 
@@ -621,7 +622,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
 		
 		if (Mode.EDIT == mode) {
-			projectService.createActivityEdit(getIdentity(), file);
 			reload(ureq);
 		} else {
 			projectService.createActivityRead(getIdentity(), file.getArtefact());

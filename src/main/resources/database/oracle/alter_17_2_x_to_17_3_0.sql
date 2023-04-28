@@ -1,4 +1,7 @@
 
+-- Document editor
+alter table o_de_access add o_fire_saved_event number default 0;
+
 -- Tags
 create table o_tag_tag (
    id number(20) generated always as identity,

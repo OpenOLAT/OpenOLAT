@@ -27,8 +27,10 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -38,6 +40,9 @@ import org.olat.core.util.vfs.VFSLeaf;
  *
  */
 public interface DocEditorService {
+	
+	public static final OLATResourceable DOCUMENT_SAVED_EVENT_CHANNEL = OresHelper
+			.createOLATResourceableType("DocumentSavedChannel");
 	
 	/**
 	 * Check if file with a specific suffix is supported by any enabled editor.
@@ -157,6 +162,8 @@ public interface DocEditorService {
 	public String prepareDocumentUrl(UserSession userSession, DocEditorConfigs configs);
 	
 	public String getConfigKey(Access access);
+
+	public void documentSaved(Access access);
 	
 	public UserInfo createOrUpdateUserInfo(Identity identity, String info);
 	

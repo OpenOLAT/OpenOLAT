@@ -118,6 +118,9 @@ public class ProjFileDAO {
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			sb.and().append("artefact.key in :artefactKeys");
 		}
+		if (searchParams.getMetadataKeys() != null && !searchParams.getMetadataKeys().isEmpty()) {
+			sb.and().append("metadata.key in :metadataKeys");
+		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("artefact.status in :status");
 		}
@@ -166,6 +169,9 @@ public class ProjFileDAO {
 		}
 		if (searchParams.getArtefactKeys() != null && !searchParams.getArtefactKeys().isEmpty()) {
 			query.setParameter("artefactKeys", searchParams.getArtefactKeys());
+		}
+		if (searchParams.getMetadataKeys() != null && !searchParams.getMetadataKeys().isEmpty()) {
+			query.setParameter("metadataKeys", searchParams.getMetadataKeys());
 		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());

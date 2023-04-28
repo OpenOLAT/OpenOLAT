@@ -19,38 +19,39 @@
  */
 package org.olat.core.commons.services.doceditor;
 
-import java.util.Date;
-
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.Identity;
-import org.olat.core.id.ModifiedInfo;
+import org.olat.core.util.event.MultiUserEvent;
 
 /**
  * 
- * Initial date: 6 Mar 2019<br>
+ * Initial date: 27 Apr 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface Access extends AccessRef, ModifiedInfo, CreateInfo {
+public class DocumentSavedEvent extends MultiUserEvent {
 	
-	String getEditorType();
+	private static final long serialVersionUID = 8912260605953132188L;
 	
-	Date getExpiresAt();
+	private final Long accessKey;
+	private final Long vfsMetadatKey;
+	private final Long identityKey;
+
+	public DocumentSavedEvent(Long accessKey, Long vfsMetadatKey, Long identityKey) {
+		super("doc-comtent-changed");
+		this.accessKey = accessKey;
+		this.vfsMetadatKey = vfsMetadatKey;
+		this.identityKey = identityKey;
+	}
 	
-	Mode getMode();
+	public Long getAccessKey() {
+		return accessKey;
+	}
 	
-	Date getEditStartDate();
+	public Long getVfsMetadatKey() {
+		return vfsMetadatKey;
+	}
 	
-	boolean isVersionControlled();
-	
-	boolean isDownload();
-	
-	boolean isFireSavedEvent();
-	
-	VFSMetadata getMetadata();
-	
-	Identity getIdentity();
+	public Long getIdentityKey() {
+		return identityKey;
+	}
 
 }

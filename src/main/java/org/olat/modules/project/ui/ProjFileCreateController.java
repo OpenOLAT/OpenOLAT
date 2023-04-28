@@ -212,6 +212,7 @@ public class ProjFileCreateController extends FormBasicController {
 				.build();
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.withMode(DocEditor.Mode.EDIT)
+				.withFireSavedEvent(true)
 				.addConfig(htmlEditorConfig)
 				.build(vfsLeaf);
 		 

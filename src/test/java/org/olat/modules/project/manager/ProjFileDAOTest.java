@@ -143,6 +143,19 @@ public class ProjFileDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_metadatas() {
+		ProjFile file1 = createRandomFile();
+		ProjFile file2 = createRandomFile();
+		createRandomFile();
+		
+		ProjFileSearchParams params = new ProjFileSearchParams();
+		params.setMetadataKeys(List.of(file1.getVfsMetadata().getKey(), file2.getVfsMetadata().getKey()));
+		List<ProjFile> files = sut.loadFiles(params);
+		
+		assertThat(files).containsExactlyInAnyOrder(file1, file2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_status() {
 		ProjFile file1 = createRandomFile();
 		projectService.deleteFileSoftly(file1.getArtefact().getCreator(), file1);
