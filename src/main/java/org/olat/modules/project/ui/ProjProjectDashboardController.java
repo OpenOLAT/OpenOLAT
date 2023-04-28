@@ -100,7 +100,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjProjectEditController editCtrl;
 	private ProjConfirmationController doneConfirmationCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
-	private DialogBoxController reopenConfirmationCtrk;
+	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
 	private ProjQuickStartWidgetController quickWidgetCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
@@ -323,7 +323,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if (source == reopenConfirmationCtrk ) {
+		} else if (source == reopenConfirmationCtrl ) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				doReopen(ureq);
 			}
@@ -489,7 +489,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void doConfirmReopen(UserRequest ureq) {
 		String title = translate("project.reopen.title");
 		String msg = translate("project.reopen.text");
-		reopenConfirmationCtrk = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrk);
+		reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
 	}
 	
 	private void doSetStatusDone(UserRequest ureq) {

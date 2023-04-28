@@ -44,7 +44,7 @@ import org.olat.modules.todo.ToDoStatus;
  */
 public interface ProjectService {
 	
-	public ProjProject createProject(Identity doer);
+	public ProjProject createProject(Identity doer, Identity owner);
 
 	public ProjProject updateProject(Identity doer, ProjProject project);
 	

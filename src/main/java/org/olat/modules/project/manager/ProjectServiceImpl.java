@@ -184,9 +184,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public ProjProject createProject(Identity doer) {
+	public ProjProject createProject(Identity doer, Identity owner) {
 		Group baseGroup = groupDao.createGroup();
-		groupDao.addMembershipOneWay(baseGroup, doer, ProjectRole.owner.name());
+		groupDao.addMembershipOneWay(baseGroup, owner, ProjectRole.owner.name());
 		ProjProject project = projectDao.create(doer, baseGroup);
 		String after = ProjectXStream.toXml(project);
 		activityDao.create(Action.projectCreate, null, after, doer, project);

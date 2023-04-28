@@ -26,28 +26,37 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,35 +70,65 @@ public class ProjProjectEditController extends FormBasicController {
 	private static final OrganisationRoles[] ROLES_PROJECT_MANAGER = { OrganisationRoles.administrator,
 			OrganisationRoles.projectmanager };
 
+	private StaticTextElement ownerEl;
+	private FormLink ownerSelectLink;
 	private TextElement titleEl;
 	private TextElement externalRefEl;
 	private TextElement teaserEl;
 	private TextAreaElement descriptionEl;
 	private MultiSelectionFilterElement organisationsEl;
+	
+	private CloseableModalController cmc;
+	private UserSearchController userSearchCtrl;
 
 	private ProjProject project;
 	private final boolean readOnly;
+	private final boolean creatorForEnabled;
 	private List<Organisation> organisations;
 	private List<Organisation> projectOrganisations;
+	private Identity owner;
 	
 	@Autowired
 	private ProjectModule projectModule;
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
+	private UserManager userManager;
+	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+
+	public ProjProjectEditController(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.creatorForEnabled = createForEnabled;
+		this.readOnly = false;
+		this.owner = getIdentity();
+		initForm(ureq);
+	}
 
 	public ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.project = project;
 		this.readOnly = readOnly;
+		this.creatorForEnabled = false;
+		this.owner = getIdentity();
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (creatorForEnabled) {
+			ownerEl = uifactory.addStaticTextElement("project.create.for", "", formLayout);
+			updateOwnerUI();
+			
+			FormLayoutContainer ownerCont = FormLayoutContainer.createButtonLayout("ownerCont", getTranslator());
+			ownerCont.setRootForm(mainForm);
+			formLayout.add("ownerCont", ownerCont);
+			
+			ownerSelectLink = uifactory.addFormLink("project.owner.select", ownerCont, Link.BUTTON);
+		}
+		
 		String title = project != null? project.getTitle(): null;
 		titleEl = uifactory.addTextElement("project.title", 100, title, formLayout);
 		titleEl.setMandatory(true);
@@ -120,7 +159,7 @@ public class ProjProjectEditController extends FormBasicController {
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
 	}
-	
+
 	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
 		OrganisationRoles[] orgRoles;
 		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
@@ -147,6 +186,46 @@ public class ProjProjectEditController extends FormBasicController {
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(!readOnly);
 		projectOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+	}
+	
+	private void updateOwnerUI() {
+		if (ownerEl != null && owner != null) {
+			ownerEl.setValue(userManager.getUserDisplayName(owner.getKey()));
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (userSearchCtrl == source) {
+			if (event instanceof SingleIdentityChosenEvent) {
+				SingleIdentityChosenEvent singleEvent = (SingleIdentityChosenEvent)event;
+				Identity choosenIdentity = singleEvent.getChosenIdentity();
+				if (choosenIdentity != null) {
+					owner = choosenIdentity;
+					updateOwnerUI();
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(userSearchCtrl);
+		removeAsListenerAndDispose(cmc);
+		userSearchCtrl = null;
+		cmc = null;
+	}
+	
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == ownerSelectLink) {
+			doSelectOwner(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override
@@ -178,7 +257,7 @@ public class ProjProjectEditController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (project == null) {
-			project = projectService.createProject(getIdentity());
+			project = projectService.createProject(getIdentity(), owner);
 		}
 		
 		project.setTitle(titleEl.getValue());
@@ -196,6 +275,18 @@ public class ProjProjectEditController extends FormBasicController {
 		}
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);
+	}
+	
+	private void doSelectOwner(UserRequest ureq) {
+		if (guardModalController(userSearchCtrl)) return;
+		
+		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, false, false);
+		listenTo(userSearchCtrl);
+		
+		String title = translate("project.owner.select.title");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), userSearchCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 }

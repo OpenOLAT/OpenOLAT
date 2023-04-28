@@ -65,7 +65,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		String type = miniRandom();
 		dbInstance.commitAndCloseSession();
 		
@@ -175,7 +175,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadQuickSearchArtefacts() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(doer);
+		ProjProject project = projectService.createProject(doer, doer);
 		ProjArtefact artefact = sut.create(miniRandom(), project, doer);
 		createActivity(doer, project, artefact, new Date(), Action.noteContentUpdate);
 		dbInstance.commitAndCloseSession();
@@ -188,8 +188,8 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadQuickSearchArtefacts_filter_project() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project1 = projectService.createProject(doer);
-		ProjProject project2 = projectService.createProject(doer);
+		ProjProject project1 = projectService.createProject(doer, doer);
+		ProjProject project2 = projectService.createProject(doer, doer);
 		ProjArtefact artefact1 = sut.create(miniRandom(), project1, doer);
 		createActivity(doer, project1, artefact1, new Date(), Action.noteContentUpdate);
 		ProjArtefact artefact2 = sut.create(miniRandom(), project1, doer);
@@ -207,7 +207,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	public void shouldLoadQuickSearchArtefacts_filter_doer() {
 		Identity doer1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity doer2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(doer1);
+		ProjProject project = projectService.createProject(doer1, doer1);
 		
 		ProjArtefact artefact1 = sut.create(miniRandom(), project, doer1);
 		createActivity(doer1, project, artefact1, new Date(), Action.noteContentUpdate);
@@ -225,7 +225,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadQuickSearchArtefacts_filter_action() {
 		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(doer);
+		ProjProject project = projectService.createProject(doer, doer);
 		ProjArtefact artefact1 = sut.create(miniRandom(), project, doer);
 		createActivity(doer, project, artefact1, new Date(), Action.noteContentUpdate);
 		ProjArtefact artefact2 = sut.create(miniRandom(), project, doer);
@@ -244,7 +244,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		Identity doer1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity doer2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity doer3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(doer1);
+		ProjProject project = projectService.createProject(doer1, doer1);
 		
 		ProjArtefact artefact1 = sut.create(ProjNote.TYPE, project, doer1);
 		createActivity(doer1, project, artefact1, new Date(), Action.noteContentUpdate);
@@ -264,7 +264,7 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 
 	private ProjArtefact createRandomArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		String type = JunitTestHelper.miniRandom();
 		ProjArtefact artefact = sut.create(type, project, creator);
 		dbInstance.commitAndCloseSession();

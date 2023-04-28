@@ -61,7 +61,7 @@ public class ProjMilestoneDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateMilestone() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, creator);
 		dbInstance.commitAndCloseSession();
 		
@@ -206,7 +206,7 @@ public class ProjMilestoneDAOTest extends OlatTestCase {
 	}
 
 	private ProjMilestone createRandomMilestone(Identity creator) {
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, creator);
 		ProjMilestone milestone = sut.create(artefact, DateUtils.addDays(new Date(), 2));
 		dbInstance.commitAndCloseSession();

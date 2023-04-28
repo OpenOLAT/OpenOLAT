@@ -61,7 +61,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canViewProjectMetadata() {
-		return hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
+		return manager || hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canEditProjectStatus() {
-		return hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
+		return manager || hasRole(of(ProjectRole.owner, ProjectRole.leader, ProjectRole.projectOffice));
 	}
 
 	@Override

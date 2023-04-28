@@ -65,7 +65,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateTag() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = projectService.createNote(creator, project).getArtefact();
 		Tag tag = tagService.getOrCreateTag(random());
 		dbInstance.commitAndCloseSession();
@@ -97,7 +97,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteByArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact1 = projectService.createNote(creator, project).getArtefact();
 		ProjArtefact artefact2 = projectService.createNote(creator, project).getArtefact();
 		Tag tag1 = tagService.getOrCreateTag(random());
@@ -122,7 +122,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoadProjectTags() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact1 = projectService.createNote(creator, project).getArtefact();
 		ProjArtefact artefact2 = projectService.createNote(creator, project).getArtefact();
 		ProjArtefact artefact3 = projectService.createNote(creator, project).getArtefact();
@@ -174,7 +174,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_artefacts() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact1 = projectService.createNote(creator, project).getArtefact();
 		ProjArtefact artefact2 = projectService.createNote(creator, project).getArtefact();
 		ProjArtefact artefact3 = projectService.createNote(creator, project).getArtefact();
@@ -198,7 +198,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_artefactStatus() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact1 = projectService.createNote(creator, project).getArtefact();
 		ProjNote note2 = projectService.createNote(creator, project);
 		ProjArtefact artefact2 = note2.getArtefact();
@@ -224,7 +224,7 @@ public class ProjTagDAOTest extends OlatTestCase {
 	
 	private ProjTag createRandomTag() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note = projectService.createNote(creator, project);
 		Tag tag = tagService.getOrCreateTag(random());
 		ProjTag projTag = sut.create(project, note.getArtefact(), tag);

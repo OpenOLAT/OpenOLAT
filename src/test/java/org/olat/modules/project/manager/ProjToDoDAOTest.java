@@ -298,7 +298,7 @@ public class ProjToDoDAOTest extends OlatTestCase {
 	}
 	
 	private ProjArtefact createRandomArtefact(Identity doer) {
-		ProjProject project = projectService.createProject(doer);
+		ProjProject project = projectService.createProject(doer, doer);
 		ProjArtefact artefact = artefactDao.create(ProjToDo.TYPE, project, doer);
 		return artefact;
 	}

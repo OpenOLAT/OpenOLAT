@@ -255,7 +255,7 @@ public class ProjFileDAOTest extends OlatTestCase {
 
 	private ProjArtefact createRandomArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjArtefact artefact = artefactDao.create(ProjFile.TYPE, project, creator);
 		return artefact;
 	}

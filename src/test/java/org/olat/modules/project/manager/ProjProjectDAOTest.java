@@ -193,13 +193,30 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(projects).containsExactlyInAnyOrder(project1, project2, project3);
 	}
 	
+	@Test
+	public void shouldLoad_filter_ArtefactAvailable() {
+		ProjProject project1 = createRandomProject();
+		projectService.createNote(project1.getCreator(), project1);
+		ProjProject project2 = createRandomProject();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setProjectKeys(List.of(project1, project2));
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2);
+		
+		params.setArtefactAvailable(Boolean.TRUE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1);
+		
+		params.setArtefactAvailable(Boolean.FALSE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project2);
+	}
+	
 	private ProjProject createRandomProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		return createProject(creator);
 	}
 
 	private ProjProject createProject(Identity creator) {
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		dbInstance.commitAndCloseSession();
 		return project;
 	}

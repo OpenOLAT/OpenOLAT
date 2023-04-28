@@ -55,7 +55,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateArtefactToArtefact() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		dbInstance.commitAndCloseSession();
@@ -73,7 +73,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteAll() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		ProjNote note3 = projectService.createNote(creator, project);
@@ -98,7 +98,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDelete() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		sut.create(project, creator, note1.getArtefact(), note2.getArtefact());
@@ -128,7 +128,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCheckIfExists() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		dbInstance.commitAndCloseSession();
@@ -186,7 +186,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	@Test
 	public void shouldLoad_filter_artefacts() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		ProjNote note3 = projectService.createNote(creator, project);
@@ -214,7 +214,7 @@ public class ProjArtefactToArtefactDAOTest extends OlatTestCase {
 	}
 
 	private ProjArtefactToArtefact createRandomArtefactToArtefact(Identity creator) {
-		ProjProject project = projectService.createProject(creator);
+		ProjProject project = projectService.createProject(creator, creator);
 		ProjNote note1 = projectService.createNote(creator, project);
 		ProjNote note2 = projectService.createNote(creator, project);
 		ProjArtefactToArtefact ata = sut.create(project, creator, note1.getArtefact(), note2.getArtefact());

@@ -149,6 +149,13 @@ public class ProjProjectDAO {
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			sb.and().append("project.status in :status");
 		}
+		if (params.getArtefactAvailable() != null) {
+			sb.and().append("project.key ").append("not", !params.getArtefactAvailable().booleanValue()).append(" in (");
+			sb.append("select distinct artefact.project.key");
+			sb.append("  from projartefact artefact");
+			sb.append(" where artefact.project.key = project.key");
+			sb.append(")");
+		}
 	}
 
 	private void addParameters(TypedQuery<?> query, ProjProjectSearchParams params) {

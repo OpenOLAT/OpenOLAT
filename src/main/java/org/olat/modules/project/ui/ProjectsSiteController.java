@@ -23,6 +23,11 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
+import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
+import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
@@ -31,6 +36,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 
 /**
  * 
@@ -40,31 +46,85 @@ import org.olat.core.id.context.StateEntry;
  */
 public class ProjectsSiteController extends BasicController implements Activateable2 {
 	
-	private BreadcrumbedStackedPanel stackPanel;
-	private ProjProjectListController projectListCtrl;
+	private static final String ORES_TYPE_ADMIN = "Admin";
 	
+	private final VelocityContainer mainVC;
+	private final SegmentViewComponent segmentView;
+	private final Link myLink;
+	private Link adminLink;
+	
+	private BreadcrumbedStackedPanel myStackPanel;
+	private BreadcrumbedStackedPanel adminStackPanel;
+	private ProjProjectMyController myCtrl;
+	private ProjProjectAdminController adminCtrl;
+
 	public ProjectsSiteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		
-		VelocityContainer mainVC = createVelocityContainer("main");
+		mainVC = createVelocityContainer("main");
 		putInitialPanel(mainVC);
+
+		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
 		
-		stackPanel = new BreadcrumbedStackedPanel("projectsstack", getTranslator(), this);
-		mainVC.put("stack", stackPanel);
+		myLink = LinkFactory.createLink("segment.my", mainVC, this);
+		segmentView.addSegment(myLink, true);
 		
-		projectListCtrl = new ProjProjectListController(ureq, wControl, stackPanel);
-		listenTo(projectListCtrl);
-		stackPanel.pushController(translate("project.list.title"), projectListCtrl);
+		if (ureq.getUserSession().getRoles().isProjectManager() || ureq.getUserSession().getRoles().isAdministrator()) {
+			adminLink = LinkFactory.createLink("segment.admin", mainVC, this);
+			segmentView.addSegment(adminLink, false);
+		}
+		
+		if (segmentView.getSegments().size() > 1) {
+			mainVC.contextPut("cssClass", "o_block_top");
+		}
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		projectListCtrl.activate(ureq, entries, state);
+		doOpenMy(ureq);
+		myCtrl.activate(ureq, entries, state);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if (source == segmentView) {
+			if (event instanceof SegmentViewEvent) {
+				SegmentViewEvent sve = (SegmentViewEvent)event;
+				String segmentCName = sve.getComponentName();
+				Component clickedLink = mainVC.getComponent(segmentCName);
+				if (clickedLink == myLink) {
+					doOpenMy(ureq);
+				} else if (clickedLink == adminLink) {
+					doOpenAdmin(ureq);
+				}
+			}
+		}
 	}
-
+	
+	public void doOpenMy(UserRequest ureq) {
+		removeAsListenerAndDispose(myCtrl);
+		
+		myStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
+		myCtrl = new ProjProjectMyController(ureq, getWindowControl(), myStackPanel);
+		listenTo(myCtrl);
+		myStackPanel.pushController(translate("project.list.title"), myCtrl);
+		
+		mainVC.put("segmentCmp", myStackPanel);
+		segmentView.select(myLink);
+	}
+	
+	private void doOpenAdmin(UserRequest ureq) {
+		removeAsListenerAndDispose(adminCtrl);
+		
+		adminStackPanel = new BreadcrumbedStackedPanel("adminstack", getTranslator(), this);
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ADMIN), null);
+		adminCtrl = new ProjProjectAdminController(ureq, swControl, adminStackPanel);
+		listenTo(adminCtrl);
+		adminStackPanel.pushController(translate("project.list.title"), adminCtrl);
+		
+		mainVC.put("segmentCmp", adminStackPanel);
+		segmentView.select(adminLink);
+	}
+	
 }

@@ -38,6 +38,7 @@ public class ProjProjectSearchParams {
 	private List<OrganisationRef> projectOrganisations;
 	private Collection<Long> projectKeys;
 	private Collection<ProjectStatus> status;
+	private Boolean artefactAvailable;
 	
 	public IdentityRef getIdentity() {
 		return identity;
@@ -69,6 +70,14 @@ public class ProjProjectSearchParams {
 
 	public void setStatus(Collection<ProjectStatus> status) {
 		this.status = status;
+	}
+
+	public Boolean getArtefactAvailable() {
+		return artefactAvailable;
+	}
+
+	public void setArtefactAvailable(Boolean artefactAvailable) {
+		this.artefactAvailable = artefactAvailable;
 	}
 	
 }

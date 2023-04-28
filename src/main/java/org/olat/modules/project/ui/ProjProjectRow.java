@@ -20,10 +20,12 @@
 package org.olat.modules.project.ui;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjectStatus;
 
 /**
@@ -32,7 +34,7 @@ import org.olat.modules.project.ProjectStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjProjectRow {
+public class ProjProjectRow implements ProjProjectRef {
 	
 	private final Long key;
 	private final String externalRef;
@@ -42,10 +44,12 @@ public class ProjProjectRow {
 	private String translatedStatus;
 	private Date lastActivityDate;
 	private String modified;
+	private Set<Long> memberKeys;
 	private String ownersNames;
 	private String url;
 	private Component userPortraits;
 	private FormLink selectLink;
+	private FormLink toolsLink;
 	
 	public ProjProjectRow(ProjProject project) {
 		this.key = project.getKey();
@@ -55,6 +59,7 @@ public class ProjProjectRow {
 		this.status = project.getStatus();
 	}
 
+	@Override
 	public Long getKey() {
 		return key;
 	}
@@ -99,6 +104,14 @@ public class ProjProjectRow {
 		this.modified = modified;
 	}
 
+	public Set<Long> getMemberKeys() {
+		return memberKeys;
+	}
+
+	public void setMemberKeys(Set<Long> memberKeys) {
+		this.memberKeys = memberKeys;
+	}
+
 	public String getOwnersNames() {
 		return ownersNames;
 	}
@@ -137,6 +150,14 @@ public class ProjProjectRow {
 
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
+	}
+
+	public FormLink getToolsLink() {
+		return toolsLink;
+	}
+
+	public void setToolsLink(FormLink toolsLink) {
+		this.toolsLink = toolsLink;
 	}
 	
 }
