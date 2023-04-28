@@ -20,24 +20,37 @@
 package org.olat.course.assessment.ui.tool;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.services.export.ui.ExportsListDataModel.ExportsCols;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -45,15 +58,16 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.ui.tool.component.IdentityCertificateRowComparator;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -71,17 +85,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityCertificatesController extends BasicController implements GenericEventListener {
+public class IdentityCertificatesController extends FormBasicController implements GenericEventListener, FlexiTableComponentDelegate {
 	
-	private Link generateLink;
-	private final VelocityContainer mainVC;
+	private FormLink generateLink;
+	private FlexiTableElement tableEl;
+	private IdentityCertificatesTableModel tableModel;
+
 	private DialogBoxController confirmDeleteCtrl;
 	private DialogBoxController confirmCertificateCtrl;
 	
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	private final boolean canDelete;
+	private final boolean canGenerate;
 	private final Formatter formatter;
 	
 	@Autowired
@@ -94,27 +112,22 @@ public class IdentityCertificatesController extends BasicController implements G
 	private CertificatesManager certificatesManager;
 	
 	public IdentityCertificatesController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, RepositoryEntry courseEntry, Identity assessedIdentity) {
-		super(ureq, wControl);
+			UserCourseEnvironment coachCourseEnv, RepositoryEntry courseEntry,
+			RepositoryEntryCertificateConfiguration certificateConfig, Identity assessedIdentity) {
+		super(ureq, wControl, "certificate_overview");
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 
 		this.courseEntry = courseEntry;
 		this.assessedIdentity = assessedIdentity;
+		this.certificateConfig = certificateConfig;
 		
-		CourseConfig courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
-		canDelete = courseConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly();
-		mainVC = createVelocityContainer("certificate_overview");
+		canDelete = canGenerate = certificateConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly();
 		formatter = Formatter.getInstance(getLocale());
 
-		if(courseConfig.isManualCertificationEnabled() && !coachCourseEnv.isCourseReadOnly()) {
-			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
-			generateLink.setElementCssClass("o_sel_certificate_generate");
-		}
-		loadList();
-		putInitialPanel(mainVC);
-		
 		coordinatorManager.getCoordinator().getEventBus()
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
+		initForm(ureq);
+		loadModel();
 	}
 	
 	@Override
@@ -125,49 +138,113 @@ public class IdentityCertificatesController extends BasicController implements G
 	}
 
 	@Override
-	public void event(Event event) {
-		if(event instanceof CertificateEvent ce) {
-			if(ce.getOwnerKey().equals(assessedIdentity.getKey())
-					&& courseEntry.getOlatResource().getKey().equals(ce.getResourceKey())) {
-				loadList();
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			if(certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+				int recertificationLeadTime = certificateConfig.getRecertificationLeadTimeInDays();
+				layoutCont.contextPut("leadTimeMsg", translate("info.leadtime.days",
+						Integer.toString(recertificationLeadTime)));		
 			}
 		}
+		
+		if(canGenerate) {
+			generateLink = uifactory.addFormLink("generate.certificate", formLayout, Link.BUTTON);
+			generateLink.setElementCssClass("o_sel_certificate_generate");
+			generateLink.setIconLeftCSS("o_icon o_icon_add");
+		}
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ExportsCols.creationDate));
+		
+		tableModel = new IdentityCertificatesTableModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "certificates", tableModel, 25, false, getTranslator(), formLayout);
+		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setNumOfRowsEnabled(false);
+		
+		VelocityContainer row = createVelocityContainer("certificate_row_1");
+		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
+		tableEl.setRowRenderer(row, this);
+	}
+	
+	@Override
+	public Iterable<Component> getComponents(int row, Object rowObject) {
+		IdentityCertificateRow certificateRow = tableModel.getObject(row);
+		List<Component> components = new ArrayList<>(3);
+		if(certificateRow.getDownloadLink() != null) {
+			components.add(certificateRow.getDownloadLink().getComponent());
+		}
+		if(certificateRow.getDeleteLink() != null) {
+			components.add(certificateRow.getDeleteLink().getComponent());
+		}
+		return components;
 	}
 
-	void loadList() {
+	protected void loadModel() {
 		List<Certificate> certificates = certificatesManager.getCertificates(assessedIdentity, courseEntry.getOlatResource());
-		List<Links> certificatesLink = new ArrayList<>(certificates.size());
+		List<IdentityCertificateRow> rows = new ArrayList<>(certificates.size());
 		int count = 0;
-		Date now = new Date();
+		final Date now = new Date();
 		for(Certificate certificate:certificates) {
-			String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 			String url = DownloadCertificateCellRenderer.getUrl(certificate);
-			boolean needRecertification = false;
-			if(certificate.getNextRecertificationDate() != null) {
-				displayName += " <small>" + translate("certificate.valid.until", formatter.formatDate(certificate.getNextRecertificationDate())) + "</small>";
-				if (certificate.getNextRecertificationDate().compareTo(now) < 0) {
-					needRecertification = true; //only check the last one???
-				}
+			String filename = DownloadCertificateCellRenderer.getName(certificate);
+			
+			Long expiredInDays = null;
+			Date validity = certificate.getNextRecertificationDate();
+			if(validity != null && validity.before(now)) {
+				expiredInDays = DateUtils.countDays(validity, now);
 			}
 			
-			Links links = new Links(url, displayName, certificate.getStatus().name(), needRecertification);
-			certificatesLink.add(links);
+			IdentityCertificateRow row = new IdentityCertificateRow(certificate, filename, url, expiredInDays);
+			rows.add(row);
 			
 			if(canDelete && !CertificateManagedFlag.isManaged(certificate, CertificateManagedFlag.delete)) {
-				Link deleteLink = LinkFactory.createLink("delete." + count++, "delete",
-						getTranslator(), mainVC, this, Link.NONTRANSLATED);
-				deleteLink.setCustomDisplayText(" ");
+				FormLink deleteLink = uifactory.addFormLink("delete." + (++count), "delete", null, flc, Link.LINK);
 				deleteLink.setElementCssClass("o_sel_certificate_delete");
-				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete");
-				deleteLink.setUserObject(certificate);
-				links.setDelete(deleteLink);
+				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+				deleteLink.setUserObject(row);
+				row.setDeleteLink(deleteLink);
 			}
+
+			FormLink downloadLink = uifactory.addFormLink("download." + (++count), "download", "download.certificate", null, flc, Link.LINK);
+			downloadLink.setElementCssClass("o_sel_certificate_download");
+			downloadLink.setIconLeftCSS("o_icon o_icon-lg o_icon_download");
+			downloadLink.setUserObject(row);
+			row.setDownloadLink(downloadLink);
 		}
-		mainVC.contextPut("certificates", certificatesLink);
+		
+		if(rows.size() > 1) {
+			Collections.sort(rows, new IdentityCertificateRowComparator());
+		}
+		tableModel.setObjects(rows);
+		tableEl.reset(true, true, true);
+		
+		Date recertificationDate = null;
+		if(!rows.isEmpty() && certificateConfig.isRecertificationEnabled()
+				&& rows.get(0).getCertificate().getNextRecertificationDate() != null) {
+			recertificationDate = rows.get(0).getCertificate().getNextRecertificationDate();
+			recertificationDate = certificatesManager.nextRecertificationWindow(recertificationDate, certificateConfig);
+		}
+		if(recertificationDate != null) {
+			flc.contextPut("recertficationMsg", translate("info.recertfication.date",
+					Formatter.getInstance(getLocale()).formatDate(recertificationDate)));
+		} else {
+			flc.contextRemove("recertficationMsg");
+		}
+	}
+	
+	@Override
+	public void event(Event event) {
+		if(event instanceof CertificateEvent ce
+				&& ce.getOwnerKey().equals(assessedIdentity.getKey())
+				&& courseEntry.getOlatResource().getKey().equals(ce.getResourceKey())) {
+			loadModel();
+		}
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(generateLink == source) {
 			doConfirmGenerateCertificate(ureq) ;
 		} else if(source instanceof Link link) {
@@ -177,6 +254,11 @@ public class IdentityCertificatesController extends BasicController implements G
 				doConfirmDelete(ureq, certificate);
 			}
 		}
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		//
 	}
 
 	@Override
@@ -203,7 +285,7 @@ public class IdentityCertificatesController extends BasicController implements G
 	
 	private void doDelete(Certificate certificate) {
 		certificatesManager.deleteCertificate(certificate);
-		loadList();
+		loadModel();
 		String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 		showInfo("confirm.certificate.deleted", displayName);
 	}
@@ -230,67 +312,24 @@ public class IdentityCertificatesController extends BasicController implements G
 		scoreAccounting.evaluateAll();
 		AssessmentEvaluation assessmentEval = scoreAccounting.evalCourseNode(rootNode);
 
-		CertificateTemplate template = null;
-		Long templateKey = course.getCourseConfig().getCertificateTemplate();
-		if(templateKey != null) {
-			template = certificatesManager.getTemplateById(templateKey);
-		}
-
 		Float score = assessmentEval == null ? null : assessmentEval.getScore();
 		Boolean passed = assessmentEval == null ? null : assessmentEval.getPassed();
 		Double completion = assessmentEval == null ? null : assessmentEval.getCompletion();
 		Float maxScore = assessmentEval == null ? null : assessmentEval.getMaxScore();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		CertificateConfig config = CertificateConfig.builder()
-				.withCustom1(course.getCourseConfig().getCertificateCustom1())
-				.withCustom2(course.getCourseConfig().getCertificateCustom2())
-				.withCustom3(course.getCourseConfig().getCertificateCustom3())
+				.withCustom1(certificateConfig.getCertificateCustom1())
+				.withCustom2(certificateConfig.getCertificateCustom2())
+				.withCustom3(certificateConfig.getCertificateCustom3())
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)
 				.build();
+		
+		CertificateTemplate template = certificateConfig.getTemplate();
 		certificatesManager.generateCertificate(certificateInfos, courseEntry, template, config);
-		loadList();
+		loadModel();
 		showInfo("msg.certificate.pending");
 		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-	
-	public static class Links {
-		private String url;
-		private String name;
-		private String status;
-		private Link delete;
-		private boolean needRecertification;
-		
-		public Links(String url, String name, String status, boolean needRecertification) {
-			this.url = url;
-			this.name = name;
-			this.status = status;
-			this.needRecertification = needRecertification;
-		}
-		
-		public String getUrl() {
-			return url;
-		}
-		
-		public String getName() {
-			return name;
-		}
-		
-		public String getStatus() {
-			return status;
-		}
-		
-		public boolean isNeedRecertification() {
-			return needRecertification;
-		}
-
-		public String getDeleteName() {
-			return delete == null ? null : delete.getComponentName();
-		}
-
-		public void setDelete(Link delete) {
-			this.delete = delete;
-		}
 	}
 }

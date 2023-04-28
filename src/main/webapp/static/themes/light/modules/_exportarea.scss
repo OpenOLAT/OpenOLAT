@@ -57,6 +57,11 @@
 		.o_actions {
 			white-space: nowrap;
 		}
+		
+		
+		&.small {
+			font-size: 100%;
+		}
 	}
 }
 

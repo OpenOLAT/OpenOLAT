@@ -29,9 +29,7 @@ import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -89,15 +87,6 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String NODE_ACCESS_TYPE_DEFAULT = LearningPathNodeAccessProvider.TYPE;
 
 	public static final transient String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
-	public static final transient String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
-	public static final transient String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
-	public static final transient String CERTIFICATE_TEMPLATE = "CERTIFICATE_TEMPLATE";
-	public static final transient String CERTIFICATE_CUSTOM1 = "CERTIFICATE_CUSTOM1";
-	public static final transient String CERTIFICATE_CUSTOM2 = "CERTIFICATE_CUSTOM2";
-	public static final transient String CERTIFICATE_CUSTOM3 = "CERTIFICATE_CUSTOM3";
-	public static final transient String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
-	public static final transient String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
-	public static final transient String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
 
 	public static final transient String MENU_ENABLED = "MENU_ENABLED";
 	public static final transient String MENU_NODE_ICONS_ENABLED = "MENU_NODE_ICONS_ENABLED";
@@ -306,16 +295,6 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 
 			if (version == 9) {
-				if (!configuration.containsKey(CERTIFICATE_AUTO_ENABLED))
-					configuration.put(CERTIFICATE_AUTO_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(CERTIFICATE_MANUAL_ENABLED))
-					configuration.put(CERTIFICATE_MANUAL_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(CERTIFICATE_TEMPLATE))
-					configuration.put(CERTIFICATE_TEMPLATE, "");
-				if (!configuration.containsKey(RECERTIFICATION_ENABLED))
-					configuration.put(RECERTIFICATION_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(RECERTIFICATION_TIMELAPSE))
-					configuration.put(RECERTIFICATION_TIMELAPSE, Integer.valueOf(0));
 				this.version = 10;
 			}
 
@@ -340,13 +319,6 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 
 			if (version == 13) {
-				if (!configuration.containsKey(CERTIFICATE_CUSTOM1))
-					configuration.put(CERTIFICATE_CUSTOM1, "");
-				if (!configuration.containsKey(CERTIFICATE_CUSTOM2))
-					configuration.put(CERTIFICATE_CUSTOM2, "");
-				if (!configuration.containsKey(CERTIFICATE_CUSTOM3))
-					configuration.put(CERTIFICATE_CUSTOM3, "");
-
 				this.version = 14;
 			}
 
@@ -617,118 +589,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		Boolean bool = (Boolean) configuration.get(KEY_EFFICENCY_ENABLED);
 		return bool.booleanValue();
 	}
-
-	public Long getCertificateTemplate() {
-		Object templateIdObj = configuration.get(CERTIFICATE_TEMPLATE);
-		Long templateId = null;
-		if (templateIdObj instanceof Long) {
-			templateId = (Long) templateIdObj;
-		}
-		return templateId;
-	}
-
-	public String getCertificateCustom1() {
-		return (String) configuration.get(CERTIFICATE_CUSTOM1);
-	}
-
-	public void setCertificateCustom1(String custom1) {
-		if (custom1 != null) {
-			configuration.put(CERTIFICATE_CUSTOM1, custom1);
-		} else {
-			configuration.remove(CERTIFICATE_CUSTOM1);
-		}
-	}
-
-	public String getCertificateCustom2() {
-		return (String) configuration.get(CERTIFICATE_CUSTOM2);
-	}
-
-	public void setCertificateCustom2(String custom2) {
-		if (custom2 != null) {
-			configuration.put(CERTIFICATE_CUSTOM2, custom2);
-		} else {
-			configuration.remove(CERTIFICATE_CUSTOM2);
-		}
-	}
-
-	public String getCertificateCustom3() {
-		return (String) configuration.get(CERTIFICATE_CUSTOM3);
-	}
-
-	public void setCertificateCustom3(String custom3) {
-		if (custom3 != null) {
-			configuration.put(CERTIFICATE_CUSTOM3, custom3);
-		} else {
-			configuration.remove(CERTIFICATE_CUSTOM3);
-		}
-	}
-
-	public void setCertificateTemplate(Long templateId) {
-		if (templateId != null) {
-			configuration.put(CERTIFICATE_TEMPLATE, templateId);
-		} else {
-			configuration.remove(CERTIFICATE_TEMPLATE);
-		}
-	}
-
-	public boolean isCertificateEnabled() {
-		return isAutomaticCertificationEnabled() || isManualCertificationEnabled();
-	}
-
-	public boolean isAutomaticCertificationEnabled() {
-		Boolean bool = (Boolean) configuration.get(CERTIFICATE_AUTO_ENABLED);
-		return bool != null && bool.booleanValue();
-	}
-
-	public void setAutomaticCertificationEnabled(boolean enabled) {
-		configuration.put(CERTIFICATE_AUTO_ENABLED, Boolean.valueOf(enabled));
-	}
-
-	public boolean isManualCertificationEnabled() {
-		Boolean bool = (Boolean) configuration.get(CERTIFICATE_MANUAL_ENABLED);
-		return bool != null && bool.booleanValue();
-	}
-
-	public void setManualCertificationEnabled(boolean enabled) {
-		configuration.put(CERTIFICATE_MANUAL_ENABLED, Boolean.valueOf(enabled));
-	}
-
-	public boolean isRecertificationEnabled() {
-		Boolean bool = (Boolean) configuration.get(RECERTIFICATION_ENABLED);
-		return bool != null && bool.booleanValue();
-	}
-
-	public void setRecertificationEnabled(boolean b) {
-		configuration.put(RECERTIFICATION_ENABLED, Boolean.valueOf(b));
-	}
-
-	public int getRecertificationTimelapse() {
-		Object timelapse = configuration.get(RECERTIFICATION_TIMELAPSE);
-		if (timelapse instanceof Integer) {
-			return ((Integer) timelapse).intValue();
-		}
-		return 0;
-	}
-
-	public void setRecertificationTimelapse(int timelapse) {
-		configuration.put(RECERTIFICATION_TIMELAPSE, Integer.valueOf(timelapse));
-	}
-
-	public RecertificationTimeUnit getRecertificationTimelapseUnit() {
-		String timelapseUnit = (String) configuration.get(RECERTIFICATION_TIMELAPSE_UNIT);
-		RecertificationTimeUnit timeUnit = null;
-		if (StringHelper.containsNonWhitespace(timelapseUnit)) {
-			timeUnit = RecertificationTimeUnit.valueOf(timelapseUnit);
-		}
-		return timeUnit;
-	}
-
-	public void setRecertificationTimelapseUnit(RecertificationTimeUnit timeUnit) {
-		if (timeUnit == null) {
-			configuration.remove(RECERTIFICATION_TIMELAPSE_UNIT);
-		} else {
-			configuration.put(RECERTIFICATION_TIMELAPSE_UNIT, timeUnit.name());
-		}
+	
+	public Object getRawValue(String key) {
+		return configuration.get(key);
 	}
 
 	public boolean isCalendarEnabled() {
@@ -1112,15 +975,6 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setGlossaryIsEnabled(isGlossaryEnabled());
 		clone.setSharedFolderSoftkey(getSharedFolderSoftkey());
 		clone.setSharedFolderReadOnlyMount(isSharedFolderReadOnlyMount());
-		clone.setAutomaticCertificationEnabled(isAutomaticCertificationEnabled());
-		clone.setManualCertificationEnabled(isManualCertificationEnabled());
-		clone.setCertificateTemplate(getCertificateTemplate());
-		clone.setCertificateCustom1(getCertificateCustom1());
-		clone.setCertificateCustom2(getCertificateCustom2());
-		clone.setCertificateCustom3(getCertificateCustom3());
-		clone.setRecertificationEnabled(isRecertificationEnabled());
-		clone.setRecertificationTimelapse(getRecertificationTimelapse());
-		clone.setRecertificationTimelapseUnit(getRecertificationTimelapseUnit());
 		clone.setMenuEnabled(isMenuEnabled());
 		clone.setMenuNodeIconsEnabled(isMenuNodeIconsEnabled());
 		clone.setMenuPathEnabled(isMenuPathEnabled());

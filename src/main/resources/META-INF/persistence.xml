@@ -100,6 +100,7 @@
 		<class>org.olat.course.certificate.model.CertificateStandalone</class>
 		<class>org.olat.course.certificate.model.CertificateLightImpl</class>
 		<class>org.olat.course.certificate.model.CertificateTemplateImpl</class>
+		<class>org.olat.course.certificate.model.RepositoryEntryCertificateConfigurationImpl</class>
 		<class>org.olat.course.statistic.daily.DailyStat</class>
 		<class>org.olat.course.statistic.dayofweek.DayOfWeekStat</class>
 		<class>org.olat.course.statistic.hourofday.HourOfDayStat</class>

@@ -35,5 +35,7 @@ public interface SentReminder extends CreateInfo {
 	public Reminder getReminder();
 	
 	public String getStatus();
+	
+	public long getRun();
 
 }

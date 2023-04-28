@@ -17,18 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.certificate;
+package org.olat.course.assessment.ui.tool.component;
 
+import java.util.Comparator;
+import java.util.Date;
+
+import org.olat.course.assessment.ui.tool.IdentityCertificateRow;
 
 /**
  * 
- * Initial date: 20.10.2014<br>
+ * Initial date: 27 mars 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum RecertificationTimeUnit {
-	day,
-	week,
-	month,
-	year
+public class IdentityCertificateRowComparator implements Comparator<IdentityCertificateRow> {
+
+	@Override
+	public int compare(IdentityCertificateRow o1, IdentityCertificateRow o2) {
+		int c = Boolean.compare(o1.isLast(), o2.isLast());
+		
+		if(c == 0) {
+			Date d1 = o1.getCreationDate();
+			Date d2 = o2.getCreationDate();
+			if(d1 != null && d2 != null) {
+				c = d1.compareTo(d2);
+			} else if(d1 == null && d2 != null) {
+				c = -1;
+			} else if(d1 != null) {
+				c = 1;
+			}
+		}
+		return -c;
+	}
 }

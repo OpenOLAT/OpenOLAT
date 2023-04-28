@@ -57,8 +57,8 @@ public class RepositoryCertificateSettingsPage {
 		return this;
 	}
 	
-	public RepositoryCertificateSettingsPage enableRecertification() {
-		By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[type='checkbox'][name='recertification.period']");
+	public RepositoryCertificateSettingsPage enableValidity() {
+		By recertificationBy = By.cssSelector("fieldset.o_sel_certificate_settings input[type='checkbox'][name='validity.period']");
 		WebElement checkEl = browser.findElement(recertificationBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		

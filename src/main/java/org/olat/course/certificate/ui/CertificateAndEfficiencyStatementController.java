@@ -27,6 +27,7 @@ package org.olat.course.certificate.ui;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -81,6 +82,7 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.group.BusinessGroup;
@@ -127,6 +129,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
 	private UserEfficiencyStatement userEfficiencyStatement;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -157,14 +160,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	 * @param courseId
 	 */
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, EfficiencyStatement efficiencyStatement) {
-		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false, false, false);
+		this(wControl, ureq, ureq.getIdentity(), null, null, null, efficiencyStatement, null, false, false, false, true, true);
 	}
 	
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, RepositoryEntry entry) {
 		this(wControl, ureq, 
 				ureq.getIdentity(), null, entry.getOlatResource().getKey(), entry,
 				CoreSpringFactory.getImpl(EfficiencyStatementManager.class).getUserEfficiencyStatementByResourceKey(entry.getOlatResource().getKey(), ureq.getIdentity()),
-				null, false, true, false);
+				null, false, true, false, true, true);
 	}
 	
 	/**
@@ -183,13 +186,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	public CertificateAndEfficiencyStatementController(WindowControl wControl, UserRequest ureq, Identity statementOwner,
 			BusinessGroup businessGroup, Long resourceKey, RepositoryEntry courseRepo,
 			EfficiencyStatement efficiencyStatement, Certificate preloadedCertificate,
-			boolean links, boolean history, boolean downloadArchive) {
+			boolean links, boolean history, boolean downloadArchive, boolean title, boolean userData) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.courseRepoEntry = courseRepo;
 		this.businessGroup = businessGroup;
+		certificateConfig = certificatesManager.getConfiguration(courseRepo);
 
 		if(businessGroup == null && courseRepo != null) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(statementOwner, false, true);
@@ -215,7 +219,11 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		}
 		
 		mainVC = createVelocityContainer("certificate_efficiencystatement");
-		populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
+		mainVC.contextPut("withTitle", Boolean.valueOf(title));
+		mainVC.contextPut("withUserData", Boolean.valueOf(userData));
+		if(userData) {
+			populateAssessedIdentityInfos(ureq, courseRepo, businessGroup, links);
+		}
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
 		segmentView.setDontShowSingleSegment(true);
@@ -382,16 +390,27 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	}
 	
 	private void populateCertificateInfos(Certificate certificateToShow) {
-		if(certificateToShow == null) {
-			mainVC.contextRemove("certCreation");
-			mainVC.contextRemove("certRecertification");
-		} else {
+		mainVC.contextRemove("certCreation");
+		mainVC.contextRemove("certRecertification");
+		mainVC.contextRemove("nextRecertificationWindow");
+		
+		if(certificateToShow != null) {
 			Formatter formatter = Formatter.getInstance(getLocale());
 			mainVC.contextPut("certCreation", formatter.formatDateAndTime(certificateToShow.getCreationDate()));
-			if (certificateToShow.getNextRecertificationDate() != null) {
-				mainVC.contextPut("certRecertification", formatter.formatDate(certificateToShow.getNextRecertificationDate()));
-			} else {
-				mainVC.contextRemove("certRecertification");
+			
+			if(certificateConfig.isValidityEnabled() && certificateToShow.isLast()) {
+				Date nextRecertificationDate = certificateToShow.getNextRecertificationDate();
+				if(nextRecertificationDate != null) {
+					mainVC.contextPut("certRecertification", formatter.formatDate(nextRecertificationDate));
+				}
+				
+				if(certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+					Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificateToShow, certificateConfig);
+					if(nextRecertificationWindow != null) {
+						mainVC.contextPut("nextRecertificationWindow", translate("certificate.recertification.start",
+								formatter.formatDate(nextRecertificationWindow)));
+					}
+				}
 			}
 		}
 	}

@@ -1,31 +1,15 @@
-<div class="panel panel-default">
-	<ul class="list-group">
-		<li class="list-group-item"><span><i class="o_icon o_icon_certificate"> </i> $r.translate("certificate")</span></li>
-		<li class="list-group-item">
-			#if($certificates.isEmpty())
-				$r.translate("no.certificate")
-			#else
-				<ul class="list-unstyled o_certificates">
-				#foreach($certificate in $certificates)
-					<li>
-					#if($certificate.status == "pending")
-						<span><i class="o_icon o_icon_pending o_icon-spin"> </i> $certificate.name</span>
-					#elseif($certificate.status == "ok" || $certificate.status == "archived")
-						<a href="$certificate.url" target="_blank">#if(${certificate.isNeedRecertification()})<i class="o_icon o_icon_warn"> </i> #end<i class="o_icon o_filetype_pdf"> </i> $certificate.name</a>
-					#elseif($certificate.status == "error")
-						<span><i class="o_icon o_icon_error"> </i> $certificate.name</span>
-					#end
-
-					#if($r.available($certificate.getDeleteName())) 
-						$r.render($certificate.getDeleteName())
-					#end
-					</li>
-				#end
-				</ul>
-			#end
-			#if($r.available("generate.certificate"))
-				<div class="o_button_group">$r.render("generate.certificate")</div>
-			#end
-		</li>
-	</ul>
-</div>
+<fieldset class="o_block">
+	<legend>$r.translate("certificate")</legend>
+	#if($r.isNotEmpty($leadTimeMsg))
+	<div class="o_note">
+		#if($r.isNotEmpty($leadTimeMsg))<p><i class="o_icon o_icon-fw o_icon_certificate"> </i> $leadTimeMsg</p>#end
+		#if($r.isNotEmpty($recertficationMsg))<p><i class="o_icon o_icon-fw o_icon_calendar"> </i> $recertficationMsg</p>#end
+	</div>
+	#end
+	#if($r.available("generate.certificate"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("generate.certificate")
+		</div>
+	#end
+	$r.render("certificates")
+</fieldset>

@@ -1,0 +1,39 @@
+#set($creationDate = $r.formatDate($row.creationDate))
+#set($nextRecertificationDate = $r.formatDate($row.nextRecertificationDate))
+#set($expiredInDays = $row.expiredInDays)
+<div class="o_export_card">
+	<div class="o_export_type">
+		<span>
+		#if($row.status == "pending")
+			<i class="o_icon o_icon_pending o_icon-spin"> </i>
+		#elseif($row.status == "ok" || $row.status == "archived")
+			<i class="o_icon o_filetype_pdf"> </i>
+		#elseif($row.status == "error")
+			<i class="o_icon o_icon_error"> </i>
+		#end
+		</span>
+	</div>
+	<div class="o_export_meta">
+		<a class="o_certificate_download" href="$row.url">$row.filename</a>
+		<span>$r.translate("row.created", $creationDate) #if($r.isNotEmpty($nextRecertificationDate)) | $r.translate("row.valid.until", $nextRecertificationDate)#end</span>
+	</div>
+	#if($r.isNotNull($expiredInDays))
+		<div class="o_export_exp">
+		#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
+			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
+		#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
+			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
+		#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
+			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
+		#end
+		</div>
+	#end
+	<div class="o_export_actions small">
+		<div class="o_actions">
+			$r.render($row.downloadLink)
+			#if($r.available($row.deleteLink.component.componentName))
+				$r.render($row.deleteLink)
+			#end
+		</div>
+	</div>
+</div>

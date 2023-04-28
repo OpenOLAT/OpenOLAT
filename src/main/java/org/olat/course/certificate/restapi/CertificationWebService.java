@@ -59,6 +59,7 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificateManagedFlag;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.repository.RepositoryEntry;
@@ -278,12 +279,8 @@ public class CertificationWebService {
 		
 		ICourse course = CourseFactory.loadCourse(resource);
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-
-		CertificateTemplate template = null;
-		Long templateId = course.getCourseConfig().getCertificateTemplate();
-		if(templateId != null) {
-			template = certificatesManager.getTemplateById(templateId);
-		}
+		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
+		CertificateTemplate template = certificateConfig.getTemplate();
 		
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		if(StringHelper.containsNonWhitespace(creationDate)) {
@@ -295,9 +292,9 @@ public class CertificationWebService {
 		}
 		
 		CertificateConfig config = CertificateConfig.builder()
-				.withCustom1(course.getCourseConfig().getCertificateCustom1())
-				.withCustom2(course.getCourseConfig().getCertificateCustom2())
-				.withCustom3(course.getCourseConfig().getCertificateCustom3())
+				.withCustom1(certificateConfig.getCertificateCustom1())
+				.withCustom2(certificateConfig.getCertificateCustom2())
+				.withCustom3(certificateConfig.getCertificateCustom3())
 				.withSendEmailBcc(false)
 				.withSendEmailLinemanager(false)
 				.withSendEmailIdentityRelations(false)

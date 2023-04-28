@@ -257,7 +257,7 @@ public class UserDetailsController extends BasicController implements Activateab
 			}
 			statementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
 					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null,
-					true, true, true);
+					true, true, true, true, true);
 			listenTo(statementCtrl);
 			hasChanged = false;
 		}

@@ -71,6 +71,8 @@ public class SentReminderImpl implements SentReminder, Persistable {
 	
 	@Column(name="r_status", nullable=false, insertable=true, updatable=false)
 	private String status;
+	@Column(name="r_run", nullable=false, insertable=true, updatable=false)
+	private long run;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_identity", nullable=false, insertable=true, updatable=false)
@@ -105,6 +107,15 @@ public class SentReminderImpl implements SentReminder, Persistable {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	@Override
+	public long getRun() {
+		return run;
+	}
+
+	public void setRun(long run) {
+		this.run = run;
 	}
 
 	@Override

@@ -260,6 +260,33 @@ alter table o_proj_activity add constraint activity_organisation_idx foreign key
 create index idx_activity_organisation_idx on o_proj_activity (fk_organisation);
 create index idx_activity_temp_ident_idx on o_proj_activity (p_temp_identifier);
 
+-- Certificate
+create table o_cer_entry_config (
+  id number(20) generated always as identity,
+  creationdate date not null,
+  lastmodified date not null,
+  c_cer_auto_enabled number default 0 not null,
+  c_cer_manual_enabled number default 0 not null,
+  c_cer_custom_1 varchar(4000),
+  c_cer_custom_2 varchar(4000),
+  c_cer_custom_3 varchar(4000),
+  c_validity_enabled number default 0 not null,
+  c_validity_timelapse number(20) default 0 not null,
+  c_validity_timelapse_unit varchar(32),
+  c_recer_enabled number default 0 not null,
+  c_recer_leadtime_enabled number default 0 not null,
+  c_recer_leadtime_days number(20) default 0 not null,
+  fk_template number(20),
+  fk_entry number(20) not null,
+  unique(fk_entry),
+  primary key (id)
+);
+
+alter table o_cer_entry_config add constraint cer_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_cer_entry_config add constraint template_config_entry_idx foreign key (fk_template) references o_cer_template (id);
+create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
+
+alter table o_rem_sent_reminder add r_run number(20) default 1 not null;
 
 -- JupyterHub
 create table o_jup_hub (

@@ -539,6 +539,14 @@ ul.o_certificates li {
 	width: 37px;
 }
 
+.o_export_card {
+	.o_certificate_download {
+		display: block;
+		font-size: 150%;
+	}
+
+}
+
 
 /* Calendar */
 .o_cal_toptoolbar {
@@ -670,6 +678,27 @@ div.o_assessment_mode_row {
 		border-left: 3px solid $o-assessment-mode-end-soon-border-color;
 		background-color: $o-assessment-mode-end-soon-bg;
 	}
+}
+
+div.panel.o_assessment_mini_overview {
+	display: grid;
+	grid-template-columns: auto auto;
+	
+	.o_button_group {
+		justify-self: end;
+		margin-right: 1em;
+	}
+	
+	.o_assessment_mini_status {
+		font-size: 125%;
+		margin: 0 10px 0 0;
+	}
+}
+
+div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 80px fit-content(200px) auto auto;
 }
 
 /* BigBlueButton */

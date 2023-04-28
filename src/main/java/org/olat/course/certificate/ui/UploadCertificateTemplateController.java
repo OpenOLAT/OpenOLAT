@@ -167,7 +167,7 @@ public class UploadCertificateTemplateController extends FormBasicController {
 			} else if(filename.endsWith(".zip")) {
 				allOk = validateHtml(filename, template);
 			} else {
-				fileEl.setErrorKey("upload.wrong.mimetype", null);
+				fileEl.setErrorKey("upload.wrong.mimetype");
 				allOk &= false;
 			}
 		}
@@ -183,19 +183,19 @@ public class UploadCertificateTemplateController extends FormBasicController {
 				IndexVisitor visitor = new IndexVisitor(path);
 				Files.walkFileTree(path, visitor);
 				if(!visitor.hasFound() || path.getNameCount() > 0) {
-					fileEl.setErrorKey("upload.error.noindex", null);
+					fileEl.setErrorKey("upload.error.noindex");
 					allOk &= false;
 				}
 				PathUtils.closeSubsequentFS(path);
 				formatEl.setVisible(allOk);
 				orientationEl.setVisible(allOk);
 			} else {
-				fileEl.setErrorKey("upload.error.no.html.templates", null);
+				fileEl.setErrorKey("upload.error.no.html.templates");
 				allOk &= false;
 			}
 		} catch (Exception e) {
 			logError("", e);
-			fileEl.setErrorKey("upload.unkown.error", null);
+			fileEl.setErrorKey("upload.unkown.error");
 			allOk = false;
 		}
 		return allOk;
@@ -208,7 +208,7 @@ public class UploadCertificateTemplateController extends FormBasicController {
 				PDDocument document = PDDocument.load(in)) {		
 			
 			if (document.isEncrypted()) {
-				fileEl.setErrorKey("upload.error.encrypted", null);
+				fileEl.setErrorKey("upload.error.encrypted");
 				allOk &= false;
 			} else {
 				//check if we can write the form
@@ -225,14 +225,14 @@ public class UploadCertificateTemplateController extends FormBasicController {
 		} catch(IOException ex) {
 			logError("", ex);
 			if(ex.getMessage() != null && ex.getMessage().contains("Don't know how to calculate the position for non-simple fonts")) {
-				fileEl.setErrorKey("upload.error.simplefonts", null);
+				fileEl.setErrorKey("upload.error.simplefonts");
 			} else {
-				fileEl.setErrorKey("upload.unkown.error", null);
+				fileEl.setErrorKey("upload.unkown.error");
 			}
 			allOk &= false;
 		} catch(Exception ex) {
 			logError("", ex);
-			fileEl.setErrorKey("upload.unkown.error", null);
+			fileEl.setErrorKey("upload.unkown.error");
 			allOk &= false;
 		}
 		

@@ -24,7 +24,9 @@ import static org.olat.course.reminder.ui.CourseSendReminderListController.USER_
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -34,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DateTimeFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -112,9 +115,8 @@ public class CourseReminderLogsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status.i18nKey(), SendCols.status.ordinal(),
-				 true, SendCols.status.name(), new StatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.reminder.i18nKey(), SendCols.reminder.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.status, new StatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.reminder.i18nHeaderKey(), SendCols.reminder.ordinal(),
 				"reminder", true, SendCols.reminder.name(), new StaticFlexiCellRenderer("reminder", new TextFlexiCellRenderer())));
 		
 		int i=0;
@@ -137,9 +139,9 @@ public class CourseReminderLogsController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(col);
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime.i18nKey(), SendCols.sendTime.ordinal(),
-				true, SendCols.sendTime.name()));
-
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.sendTime, new DateTimeFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(SendCols.courseRun));
+	
 		DefaultFlexiColumnModel resendCol = new DefaultFlexiColumnModel("resend", translate("resend"), "resend");
 		resendCol.setAlwaysVisible(true);
 		resendCol.setExportable(false);
@@ -167,7 +169,7 @@ public class CourseReminderLogsController extends FormBasicController {
 
 		tableModel.setObjects(rows);
 		tableEl.reset();
-		tableEl.setVisible(rows.size() > 0);
+		tableEl.setVisible(!rows.isEmpty());
 	}
 	
 	private boolean isVisible(SentReminder sentReminder) {
@@ -176,13 +178,15 @@ public class CourseReminderLogsController extends FormBasicController {
 			List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
 			if(rules != null && !rules.isEmpty()) {
 				List<String> nodeIdents = new ArrayList<>(1);
+				Set<String> ruleTypes = new HashSet<>();
 				for (ReminderRule rule : rules) {
 					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
-					if (ruleSPI instanceof CourseNodeRuleSPI) {
-						nodeIdents.add(((CourseNodeRuleSPI)ruleSPI).getCourseNodeIdent(rule));
+					if (ruleSPI instanceof CourseNodeRuleSPI courseNodeRuleSPI) {
+						nodeIdents.add(courseNodeRuleSPI.getCourseNodeIdent(rule));
 					}
+					ruleTypes.add(rule.getType());
 				}
-				return reminderProvider.filter(nodeIdents);
+				return reminderProvider.filter(nodeIdents, ruleTypes);
 			}
 		}
 		

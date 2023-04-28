@@ -1703,6 +1703,27 @@ create table o_cer_certificate (
    primary key (id)
 );
 
+create table o_cer_entry_config (
+  id bigserial not null,
+  creationdate timestamp not null,
+  lastmodified timestamp not null,
+  c_cer_auto_enabled bool default false not null,
+  c_cer_manual_enabled bool default false not null,
+  c_cer_custom_1 varchar(4000),
+  c_cer_custom_2 varchar(4000),
+  c_cer_custom_3 varchar(4000),
+  c_validity_enabled bool default false not null,
+  c_validity_timelapse int8 default 0 not null,
+  c_validity_timelapse_unit varchar(32),
+  c_recer_enabled bool default false not null,
+  c_recer_leadtime_enabled bool default false not null,
+  c_recer_leadtime_days int8 default 0 not null,
+  fk_template int8,
+  fk_entry int8 not null,
+  unique(fk_entry),
+  primary key (id)
+);
+
 -- Grade
 create table o_gr_grade_system (
    id bigserial,
@@ -2999,6 +3020,7 @@ create table o_rem_sent_reminder (
    id int8 not null,
    creationdate timestamp not null,
    r_status varchar(16),
+   r_run int8 default 1 not null,
    fk_identity int8 not null,
    fk_reminder int8 not null,
    primary key (id)
@@ -5086,6 +5108,11 @@ alter table o_cer_certificate add constraint cer_to_resource_idx foreign key (fk
 create index cer_resource_idx on o_cer_certificate (fk_olatresource);
 create index cer_archived_resource_idx on o_cer_certificate (c_archived_resource_id);
 create index cer_uuid_idx on o_cer_certificate (c_uuid);
+
+alter table o_cer_entry_config add constraint cer_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_cer_entry_config_entry_idx on o_cer_entry_config(fk_entry);
+alter table o_cer_entry_config add constraint template_config_entry_idx foreign key (fk_template) references o_cer_template (id);
+create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
 
 -- sms
 alter table o_sms_message_log add constraint sms_log_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);

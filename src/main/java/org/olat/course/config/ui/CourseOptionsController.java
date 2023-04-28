@@ -637,13 +637,13 @@ public class CourseOptionsController extends FormBasicController {
 		coachFolderPathEl.clearError();
 		if (enableCoachFolderEl.isSelected(0) && coachFolderModeEl.isKeySelected(COACH_FOLDER_CUSTOM)) {
 			if (!coachFolderPathSelected || !StringHelper.containsNonWhitespace(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			} else if (isSharedfolderNotPresent(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.sharedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.sharedfolder");
 				allOk &= false;
 			} else if (isLinkedFolderNotPresent(coachFolderPathEl.getValue())) {
-				coachFolderPathEl.setErrorKey("warning.no.linkedfolder", null);
+				coachFolderPathEl.setErrorKey("warning.no.linkedfolder");
 				allOk &= false;
 			}
 		}

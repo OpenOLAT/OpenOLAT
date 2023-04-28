@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.modules.reminder.EmailCopy;
 import org.olat.modules.reminder.Reminder;
 import org.olat.modules.reminder.ReminderRule;
@@ -95,6 +97,8 @@ public class ReminderServiceImpl implements ReminderService {
 	private ReminderRuleEngine ruleEngine;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private UserCourseInformationsManager userCourseInformationsManager;
 	
 	@Override
 	public Reminder createReminder(RepositoryEntry entry, Identity creator) {
@@ -114,8 +118,7 @@ public class ReminderServiceImpl implements ReminderService {
 		if(StringHelper.containsNonWhitespace(configuration)) {
 			ReminderRules rules = toRules(configuration);
 			for(ReminderRule rule:rules.getRules()) {
-				if(rule instanceof ReminderRuleImpl && ReminderRuleEngine.DATE_RULE_TYPE.equals(rule.getType())) {
-					ReminderRuleImpl r = (ReminderRuleImpl)rule;
+				if(rule instanceof ReminderRuleImpl r && ReminderRuleEngine.DATE_RULE_TYPE.equals(rule.getType())) {
 					if(DateRuleSPI.AFTER.equals(r.getOperator()) && StringHelper.containsNonWhitespace(r.getRightOperand())) {
 						try {
 							Date date = Formatter.parseDatetime(r.getRightOperand());
@@ -248,6 +251,7 @@ public class ReminderServiceImpl implements ReminderService {
 		RepositoryEntry entry = reminder.getEntry();
 		Set<Identity> copyOwners = getCopyOwners(reminder);
 		List<String> copyAddresses = getCopyAdresses(reminder);
+		Map<Long, Long> runsInfos = userCourseInformationsManager.getCourseRuns(entry.getOlatResource(), identitiesToRemind);
 		
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + entry.getKey() + "]");
 		Locale locale = I18nModule.getDefaultLocale();
@@ -257,7 +261,7 @@ public class ReminderServiceImpl implements ReminderService {
 		if (body.contains("$courseurl")) {
 			body = body.replace("$courseurl", "<a href=\"$courseurl\">$courseurl</a>");
 		} else {			
-			body = body + "<p>---<br />" + trans.translate("reminder.from.course", new String[] {"<a href=\"$courseurl\">$coursename</a>"}) + "</p>";
+			body = body + "<p>---<br />" + trans.translate("reminder.from.course", "<a href=\"$courseurl\">$coursename</a>") + "</p>";
 		}
 		String metaId = UUID.randomUUID().toString();
 		String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
@@ -267,6 +271,9 @@ public class ReminderServiceImpl implements ReminderService {
 
 		for(Identity identityToRemind:identitiesToRemind) {
 			String status;
+			Long currentRun = runsInfos.get(identityToRemind.getKey());
+			long run = currentRun == null || currentRun.longValue() < 1 ? 1l : currentRun.longValue();
+			
 			MailBundle bundle = mailManager.makeMailBundle(context, identityToRemind, template, null, metaId, overviewResult);
 			if(bundle == null) {
 				status = "error";
@@ -282,7 +289,7 @@ public class ReminderServiceImpl implements ReminderService {
 					sendReminderCopies(reminder, bundle, copyOwners, copyAddresses);
 				}
 			}
-			reminderDao.markAsSend(reminder, identityToRemind, status);
+			reminderDao.markAsSend(reminder, identityToRemind, status, run);
 		}
 		
 		return overviewResult;
@@ -364,12 +371,10 @@ public class ReminderServiceImpl implements ReminderService {
 
 	private MailBundle createCopyMailBundle(MailBundle remindedMailBundle, Translator translator) {
 		String remindedUser = userManager.getUserDisplayName(remindedMailBundle.getToId().getKey());
-		String copySubject = translator.translate("email.copy.subject", new String[] {
-				remindedMailBundle.getContent().getSubject()});
-		String copyBody = translator.translate("email.copy.body", new String[] {
-				remindedUser,
+		String copySubject = translator.translate("email.copy.subject", remindedMailBundle.getContent().getSubject());
+		String copyBody = translator.translate("email.copy.body", remindedUser,
 				remindedMailBundle.getContent().getSubject(),
-				remindedMailBundle.getContent().getBody()});
+				remindedMailBundle.getContent().getBody());
 		MailBundle bundle = new MailBundle();
 		bundle.setContext(remindedMailBundle.getContext());
 		bundle.setContent(copySubject, copyBody);

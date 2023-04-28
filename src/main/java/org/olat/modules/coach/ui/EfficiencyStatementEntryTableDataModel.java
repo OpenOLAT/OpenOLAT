@@ -89,7 +89,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 				case grade: return entry;
 				case passed: return entry.getPassed();
 				case certificate: return getCertificate(entry);
-				case recertification: {
+				case certificateValidity: {
 					CertificateLight certificate = getCertificate(entry);
 					return certificate == null ? null : certificate.getNextRecertificationDate();
 				}
@@ -206,7 +206,7 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		grade("table.header.grade"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
-		recertification("table.header.certificate.validity"),
+		certificateValidity("table.header.certificate.validity"),
 		numberAssessments("table.header.number.assessments"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),

@@ -180,6 +180,7 @@ public abstract class AbstractCertificate implements Certificate, Persistable {
 		this.courseTitle = courseTitle;
 	}
 
+	@Override
 	public boolean isLast() {
 		return last;
 	}

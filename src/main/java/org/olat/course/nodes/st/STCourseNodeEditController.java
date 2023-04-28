@@ -70,6 +70,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -412,10 +413,11 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 			relFilPathIsProposal = true;
 		}
 		// File create/select controller
+		RepositoryEntry courseEntry = euce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		VFSEdusharingProvider edusharingProvider = new LazyRepositoryEdusharingProvider(repoKey);
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, getWindowControl(), courseFolderContainer, relFilePath,
 				relFilPathIsProposal, allowRelativeLinks, false, new CourseInternalLinkTreeModel(editorModel),
-				new CourseToolLinkTreeModel(courseConfig, getLocale()), edusharingProvider, UPLOAD_MIME_TYPE,
+				new CourseToolLinkTreeModel(courseConfig, courseEntry, getLocale()), edusharingProvider, UPLOAD_MIME_TYPE,
 				SELECTION_SUFFIX, null);
 		listenTo(combiLinkCtr);
 		configvc.put("combiCtr", combiLinkCtr.getInitialComponent());		

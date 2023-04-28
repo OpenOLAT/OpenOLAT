@@ -239,10 +239,11 @@ public class ReminderDAO {
 		return infos;
 	}
 
-	public SentReminderImpl markAsSend(Reminder reminder, Identity identity, String status) {
+	public SentReminderImpl markAsSend(Reminder reminder, Identity identity, String status, long run) {
 		SentReminderImpl send = new SentReminderImpl();
 		send.setCreationDate(new Date());
 		send.setStatus(status);
+		send.setRun(run < 1 ? 1 : run);
 		send.setReminder(reminder);
 		send.setIdentity(identity);
 		dbInstance.getCurrentEntityManager().persist(send);
@@ -266,9 +267,14 @@ public class ReminderDAO {
 	}
 	
 	public List<Long> getReminderRecipientKeys(Reminder reminder) {
-		String q = "select sent.identity.key from sentreminder sent where sent.reminder.key=:reminderKey";
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select sent.identity.key from sentreminder sent")
+		  .append(" inner join sent.reminder reminder")
+		  .append(" inner join reminder.entry re")
+		  .append(" inner join usercourseinfos infos on (infos.identity.key=sent.identity.key and infos.resource.key=re.olatResource.key and infos.run=sent.run)")
+		  .append(" where sent.reminder.key=:reminderKey");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(q, Long.class)
+				.createQuery(sb.toString(), Long.class)
 				.setParameter("reminderKey", reminder.getKey())
 				.getResultList();
 	}

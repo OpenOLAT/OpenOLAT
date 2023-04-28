@@ -158,7 +158,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 		}
 		if (roleSecurityCallback.canReceiveCertificatesMail()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 		}
 
 		if (roleSecurityCallback.canViewEfficiencyStatements()) {

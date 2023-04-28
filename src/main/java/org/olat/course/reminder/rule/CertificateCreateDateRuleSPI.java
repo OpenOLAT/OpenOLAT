@@ -30,7 +30,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.course.CourseFactory;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.reminder.manager.ReminderRuleDAO;
 import org.olat.course.reminder.ui.CourseReminderListController;
@@ -55,6 +55,8 @@ public class CertificateCreateDateRuleSPI extends AbstractLaunchDateRuleSPI {
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;
+	@Autowired
+	private CertificatesManager certificatesManager;
 
 	@Override
 	public String getLabelI18nKey() {
@@ -68,13 +70,12 @@ public class CertificateCreateDateRuleSPI extends AbstractLaunchDateRuleSPI {
 	
 	@Override
 	public boolean isEnabled(RepositoryEntry entry) {
-		return CourseFactory.loadCourse(entry).getCourseConfig().isCertificateEnabled();
+		return certificatesManager.isCertificateEnabled(entry);
 	}
 
 	@Override
 	public String getStaticText(ReminderRule rule, RepositoryEntry entry, Locale locale) {
-		if (rule instanceof ReminderRuleImpl) {
-			ReminderRuleImpl r = (ReminderRuleImpl)rule;
+		if (rule instanceof ReminderRuleImpl r) {
 			Translator translator = Util.createPackageTranslator(CourseReminderListController.class, locale);
 			String currentUnit = r.getRightUnit();
 			String currentValue = r.getRightOperand();
@@ -99,7 +100,7 @@ public class CertificateCreateDateRuleSPI extends AbstractLaunchDateRuleSPI {
 	@Override
 	protected Map<Long, Date> getLaunchDates(ReminderRule rule, RepositoryEntry entry, List<Identity> identities) {
 		if (rule instanceof ReminderRuleImpl) {
-			if (!CourseFactory.loadCourse(entry).getCourseConfig().isCertificateEnabled()) {
+			if (!certificatesManager.isCertificateEnabled(entry)) {
 				log.warn("Course {} ({}) has certificate not enabled.", entry.getKey(), entry.getDisplayname());
 				return Collections.emptyMap();
 			}

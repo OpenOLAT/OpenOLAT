@@ -50,7 +50,7 @@ public class FormReminderProvider implements CourseNodeReminderProvider {
 	}
 
 	@Override
-	public boolean filter(Collection<String> ruleNodeIdents) {
+	public boolean filter(Collection<String> ruleNodeIdents, Collection<String> ruleTypes) {
 		return ruleNodeIdents.contains(nodeIdent);
 	}
 	

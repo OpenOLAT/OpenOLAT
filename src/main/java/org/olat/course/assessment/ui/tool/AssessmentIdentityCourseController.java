@@ -56,7 +56,8 @@ import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.config.CourseConfig;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -110,6 +111,8 @@ public class AssessmentIdentityCourseController extends BasicController
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable,
@@ -130,15 +133,15 @@ public class AssessmentIdentityCourseController extends BasicController
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
-		CourseConfig courseConfig = course.getCourseConfig();
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
 		UserCourseEnvironmentImpl assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
 				coachCourseEnv.getCourseReadOnlyDetails());
 		assessedUserCourseEnv.setUserRoles(false, false, true);
-		
-		if(courseConfig.isAutomaticCertificationEnabled() || courseConfig.isManualCertificationEnabled()) {
-			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, assessedIdentity);
+
+		final RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+		if(certificateConfig.isAutomaticCertificationEnabled() || certificateConfig.isManualCertificationEnabled()) {
+			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, certificateConfig, assessedIdentity);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
 			listenTo(certificateCtrl);
 		}
@@ -146,7 +149,10 @@ public class AssessmentIdentityCourseController extends BasicController
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
 		if (learningPath && (passedManually || coachCourseEnv.isAdmin())) {
-			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
+			boolean certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
+					|| certificateConfig.isManualCertificationEnabled()
+					|| course.getCourseConfig().isEfficencyStatementEnabled();
+			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv, certificateAndEfficiencyLink);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
 		}
@@ -206,8 +212,12 @@ public class AssessmentIdentityCourseController extends BasicController
 		} else if(currentNodeCtrl == source) {
 			if(event instanceof AssessmentFormEvent aee) {
 				treeOverviewCtrl.loadModel();
-				if (passedCtrl != null) passedCtrl.refresh();
-				if (certificateCtrl != null) certificateCtrl.loadList();
+				if (passedCtrl != null) {
+					passedCtrl.refresh();
+				}
+				if (certificateCtrl != null) {
+					certificateCtrl.loadModel();
+				}
 				if(aee.isClose()) {
 					stackPanel.popController(currentNodeCtrl);
 				}
@@ -221,7 +231,9 @@ public class AssessmentIdentityCourseController extends BasicController
 		} else if (source == passedCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
-				if (certificateCtrl != null) certificateCtrl.loadList();
+				if (certificateCtrl != null) {
+					certificateCtrl.loadModel();
+				}
 				fireEvent(ureq, event);
 			}
 		} else if(resetDataCtrl == source) {
@@ -230,7 +242,9 @@ public class AssessmentIdentityCourseController extends BasicController
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					treeOverviewCtrl.loadModel();
 					if (passedCtrl != null) passedCtrl.refresh();
-					if (certificateCtrl != null) certificateCtrl.loadList();
+					if (certificateCtrl != null) {
+						certificateCtrl.loadModel();
+					}
 				}
 				cleanUp();
 			}

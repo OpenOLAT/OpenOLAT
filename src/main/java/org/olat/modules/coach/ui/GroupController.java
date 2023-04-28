@@ -165,8 +165,7 @@ public class GroupController extends FormBasicController implements Activateable
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("groupName", StringHelper.escapeHtml(group.getName()));
 		}
 		
@@ -188,7 +187,7 @@ public class GroupController extends FormBasicController implements Activateable
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastModification));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.lastUserModified));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Columns.lastCoachModified));
@@ -210,8 +209,7 @@ public class GroupController extends FormBasicController implements Activateable
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
+		if(event instanceof CertificateEvent ce) {
 			IdentityResourceKey key = new IdentityResourceKey(ce.getOwnerKey(), ce.getResourceKey());
 			if(model.contains(key)) {
 				updateCertificate(ce.getCertificateKey());
@@ -356,9 +354,7 @@ public class GroupController extends FormBasicController implements Activateable
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
 		String displayName = statementEntry.getCourseDisplayName();
 		String display =fullname + " (" + displayName + ")";
-		String details = translate("students.details", new String[] {
-				display, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
-		});
+		String details = translate("students.details", display, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
 				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, true, false);

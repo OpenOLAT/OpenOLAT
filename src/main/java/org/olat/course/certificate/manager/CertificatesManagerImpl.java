@@ -64,6 +64,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationSearchParams;
 import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -108,8 +109,9 @@ import org.olat.course.certificate.CertificateStatus;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.CertificatesModule;
+import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.EmailStatus;
-import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.AbstractCertificate;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateImpl;
@@ -127,9 +129,11 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserDataExportable;
 import org.olat.user.UserManager;
@@ -178,6 +182,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
@@ -187,6 +193,8 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	private FolderModule folderModule;
 	@Autowired
 	private CertificatesModule certificatesModule;
+	@Autowired
+	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 	
 
 	@Resource(name="certificateQueue")
@@ -323,10 +331,55 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	public int deleteRepositoryEntry(RepositoryEntry re) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("update certificate set olatResource = null where olatResource.key=:resourceKey");
-		return dbInstance.getCurrentEntityManager()
+		int rows = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString())
 				.setParameter("resourceKey", re.getOlatResource().getKey())
 				.executeUpdate();
+		rows += certificateConfigurationDao.deleteConfiguration(re);
+		return rows;
+	}
+	
+	@Override
+	public RepositoryEntryCertificateConfiguration createConfiguration(RepositoryEntry entry) {
+		return certificateConfigurationDao.createConfiguration(entry);
+	}
+	
+	@Override
+	public RepositoryEntryCertificateConfiguration getConfiguration(RepositoryEntry entry) {
+		RepositoryEntryCertificateConfiguration config = certificateConfigurationDao.getConfiguration(entry);
+		if(config == null) {
+			RepositoryEntry reloadedEntry = repositoryEntryDao.loadForUpdate(entry);
+			config = certificateConfigurationDao.getConfiguration(entry);
+			if(config == null) {
+				config = certificateConfigurationDao.createConfiguration(reloadedEntry);
+			}
+			dbInstance.commit();
+		}
+		return config;
+	}
+
+	@Override
+	public RepositoryEntryCertificateConfiguration updateConfiguration(RepositoryEntryCertificateConfiguration configuration) {
+		return certificateConfigurationDao.updateConfiguration(configuration);
+	}	
+
+	@Override
+	public boolean isCertificateEnabled(RepositoryEntryRef entry) {
+		return certificateConfigurationDao.isCertificateEnabled(entry);
+	}
+
+	@Override
+	public boolean isAutomaticCertificationEnabled(RepositoryEntryRef entry) {
+		return certificateConfigurationDao.isAutomaticCertificationEnabled(entry);
+	}
+	
+	@Override
+	public RepositoryEntryCertificateConfiguration copyRepositoryEntryCertificateConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry) {
+		RepositoryEntryCertificateConfiguration config = certificateConfigurationDao.getConfiguration(sourceEntry);
+		if(config != null) {
+			config = certificateConfigurationDao.cloneConfiguration(config, targetEntry);
+		}
+		return config;
 	}
 
 	@Override
@@ -346,7 +399,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		if(StringHelper.containsNonWhitespace(certificate.getPath())) {
 			cerItem = cerContainer.resolve(certificate.getPath());
 		}
-		return cerItem instanceof VFSLeaf ? (VFSLeaf)cerItem : null;
+		return cerItem instanceof VFSLeaf cerLeaf ? cerLeaf : null;
 	}
 	
 	private File getCertificateFile(Certificate certificate) {
@@ -645,15 +698,16 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		try {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-			if(config.isRecertificationEnabled() && ConditionNodeAccessProvider.TYPE.equals(config.getNodeAccessType().getType())) {
+			RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);
+			if(certificateConfig.isValidityEnabled() && ConditionNodeAccessProvider.TYPE.equals(config.getNodeAccessType().getType())) {
 				Certificate certificate =  getLastCertificate(identity, entry.getOlatResource().getKey());
 				if(certificate == null) {
 					allowed = true;
 				} else {
 					Calendar cal = Calendar.getInstance();
 					Date now = cal.getTime();
-					Date nextCertificationDate = getDateNextRecertification(certificate, config);
-					allowed = (nextCertificationDate != null ? nextCertificationDate.before(now) : false);
+					Date nextCertificationWindowDate = nextRecertificationWindow(certificate, certificateConfig);
+					allowed = nextCertificationWindowDate != null && nextCertificationWindowDate.before(now);
 				}
 			} else {
 				allowed = !hasValidCertificate(identity, entry.getOlatResource().getKey());
@@ -665,30 +719,51 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 	
 	@Override
-	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry) {
-		ICourse course = CourseFactory.loadCourse(entry);
-		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-		return getDateNextRecertification(certificate, config);
+	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry) {
+		RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);
+		if(certificateConfig.isRecertificationEnabled()) {
+			Certificate certificate = getLastCertificate(identity, entry.getOlatResource().getKey());
+			if(certificate == null || certificate.getStatus() == CertificateStatus.archived) {
+				return false;
+			}
+			Date nextDate = nextRecertificationWindow(certificate, certificateConfig);
+			return new Date().after(nextDate);
+		}
+		return false;
 	}
 
-	private Date getDateNextRecertification(Certificate certificate, CourseConfig config) {
-		if(config.isRecertificationEnabled() && certificate != null) {
-			int time = config.getRecertificationTimelapse();
-			RecertificationTimeUnit timeUnit = config.getRecertificationTimelapseUnit();
-			Date date = certificate.getCreationDate();
+	@Override
+	public Date nextRecertificationWindow(Certificate certificate, RepositoryEntryCertificateConfiguration certificateConfig) {
+		Date startRecertification = certificate.getNextRecertificationDate();
+		if(startRecertification == null) {
+			startRecertification = getDateNextRecertification(certificate, certificateConfig);
+		}
+		return nextRecertificationWindow(startRecertification, certificateConfig);
+	}
+
+	public Date nextRecertificationWindow(Date nextCertificationDate, RepositoryEntryCertificateConfiguration certificateConfig) {
+		if(nextCertificationDate != null && certificateConfig.isRecertificationLeadTimeEnabled()) {
+			int leadTime = certificateConfig.getRecertificationLeadTimeInDays();
 			Calendar cal = Calendar.getInstance();
-			cal.setTime(date);
-			switch(timeUnit) {
-				case day: cal.add(Calendar.DATE, time); break;
-				case week: cal.add(Calendar.DATE, time * 7); break;
-				case month: cal.add(Calendar.MONTH, time); break;
-				case year: cal.add(Calendar.YEAR, time); break;
-			}
-			return cal.getTime();
+			cal.setTime(nextCertificationDate);
+			cal.add(Calendar.DATE, -leadTime);
+			nextCertificationDate = cal.getTime();
+			nextCertificationDate = CalendarUtils.startOfDay(nextCertificationDate);
+		}
+		return nextCertificationDate;
+	}
+	
+	private Date getDateNextRecertification(Certificate certificate, RepositoryEntryCertificateConfiguration certificateConfig) {
+		if(certificateConfig.isValidityEnabled() && certificate != null) {
+			Date date = certificate.getCreationDate();
+			int time = certificateConfig.getValidityTimelapse();
+			CertificationTimeUnit timeUnit = certificateConfig.getValidityTimelapseUnit();
+			Date nextRecertification = timeUnit.toDate(date, time);
+			nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+			return nextRecertification;
 		}		
 		return null;
 	}
-
 	
 	@Override
 	public void deleteCertificate(Certificate certificate) {
@@ -936,8 +1011,9 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		certificate.setCourseTitle(entry.getDisplayname());
 		certificate.setStatus(CertificateStatus.pending);
 		
-		Date nextCertification = getDateNextRecertification(certificate, entry);
-		certificate.setNextRecertificationDate(nextCertification);
+		RepositoryEntryCertificateConfiguration certificateConfig = getConfiguration(entry);
+		Date nextCertificationDate = getDateNextRecertification(certificate, certificateConfig);
+		certificate.setNextRecertificationDate(nextCertificationDate);
 		
 		dbInstance.getCurrentEntityManager().persist(certificate);
 		dbInstance.commit();

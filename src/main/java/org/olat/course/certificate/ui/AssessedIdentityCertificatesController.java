@@ -43,9 +43,9 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -68,6 +68,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 	
 	private final OLATResource resource;
 	private final UserCourseEnvironment assessedUserCourseEnv;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	private final boolean canDelete;
 	private final Formatter formatter;
@@ -81,12 +82,13 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		CourseConfig courseConfig = assessedUserCourseEnv.getCourseEnvironment().getCourseConfig();
-		canDelete = courseConfig.isManualCertificationEnabled();
+		RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		certificateConfig = certificatesManager.getConfiguration(entry);
+		canDelete = certificateConfig.isManualCertificationEnabled();
 		mainVC = createVelocityContainer("certificate_overview");
 		formatter = Formatter.getInstance(getLocale());
 
-		if(courseConfig.isManualCertificationEnabled()) {
+		if(certificateConfig.isManualCertificationEnabled()) {
 			generateLink = LinkFactory.createLink("generate.certificate", "generate", getTranslator(), mainVC, this, Link.BUTTON);
 			generateLink.setElementCssClass("o_sel_certificate_generate");
 		}
@@ -203,11 +205,7 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		AssessmentEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
 		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
-		CertificateTemplate template = null;
-		Long templateKey = course.getCourseConfig().getCertificateTemplate();
-		if(templateKey != null) {
-			template = certificatesManager.getTemplateById(templateKey);
-		}
+		CertificateTemplate template = certificateConfig.getTemplate();
 
 		Float score = scoreEval == null ? null : scoreEval.getScore();
 		Boolean passed = scoreEval == null ? null : scoreEval.getPassed();
@@ -215,9 +213,9 @@ public class AssessedIdentityCertificatesController extends BasicController impl
 		Float maxScore = scoreEval == null ? null : scoreEval.getMaxScore();
 		CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, score, maxScore, passed, completion);
 		CertificateConfig config = CertificateConfig.builder()
-				.withCustom1(course.getCourseConfig().getCertificateCustom1())
-				.withCustom2(course.getCourseConfig().getCertificateCustom2())
-				.withCustom3(course.getCourseConfig().getCertificateCustom3())
+				.withCustom1(certificateConfig.getCertificateCustom1())
+				.withCustom2(certificateConfig.getCertificateCustom2())
+				.withCustom3(certificateConfig.getCertificateCustom3())
 				.withSendEmailBcc(true)
 				.withSendEmailLinemanager(true)
 				.withSendEmailIdentityRelations(true)

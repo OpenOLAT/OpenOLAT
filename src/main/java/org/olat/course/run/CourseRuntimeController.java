@@ -105,6 +105,7 @@ import org.olat.course.assessment.ui.mode.ChangeAssessmentModeEvent;
 import org.olat.course.assessment.ui.tool.AssessmentToolController;
 import org.olat.course.assessment.ui.tool.StopAssessmentWarningController;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
@@ -281,6 +282,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private CertificatesManager certificatesManager;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	@Autowired
@@ -910,7 +913,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock
+		if ((cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry())) && !isGuestOnly && !assessmentLock
 				&& userCourseEnv != null && userCourseEnv.isParticipant()) {
 			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",
 					translate(CourseTool.efficiencystatement.getI18nKey()), this,
@@ -2012,7 +2015,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				
 				WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Reminders", 0l), null);
 				CourseReminderListController ctrl = new CourseReminderListController(ureq, swControl, toolbarPanel, getRepositoryEntry(),
-						CourseProvider.create(), null);
+						CourseProvider.create(), null, true);
 				remindersCtrl = pushController(ureq, translate("command.reminders"), ctrl);
 				setActiveTool(reminderLink);
 				currentToolCtr = remindersCtrl;
@@ -2871,7 +2874,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if(efficiencyStatementsLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
+					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(getRepositoryEntry()));
 					toolbarPanel.setDirty(true);
 				}
 				break;

@@ -58,6 +58,7 @@ import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -461,7 +462,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
+		generateCertificate(userCourseEnvironment);
 	}
 
 	@Override
@@ -586,7 +587,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		
 		updateUserEfficiencyStatement(userCourseEnv);
-		generateCertificate(userCourseEnv, course);
+		generateCertificate(userCourseEnv);
 	}
 	
 	@Override
@@ -633,7 +634,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
+		generateCertificate(userCourseEnvironment);
 		
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -672,7 +673,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(ace, course);
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
-		generateCertificate(userCourseEnvironment, course);
+		generateCertificate(userCourseEnvironment);
 		
 		return assessmentEntry.getPassedOverridable();
 	}
@@ -719,25 +720,23 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 	}
 
-	private void generateCertificate(UserCourseEnvironment userCourseEnvironment, ICourse course) {
-		if (course.getCourseConfig().isAutomaticCertificationEnabled()) {
+	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+		if (certificatesManager.isAutomaticCertificationEnabled(courseEntry)) {
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 			CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
 			AssessmentEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
 			if (rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
-					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
-				CertificateTemplate template = null;
-				Long templateId = course.getCourseConfig().getCertificateTemplate();
-				if (templateId != null) {
-					template = certificatesManager.getTemplateById(templateId);
-				}
+					&& certificatesManager.isCertificationAllowed(assessedIdentity, courseEntry)) {
+				RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+				CertificateTemplate template = certificateConfig.getTemplate();
 				CertificateInfos certificateInfos = new CertificateInfos(assessedIdentity, rootEval.getScore(),
 						rootEval.getMaxScore(), rootEval.getPassed(), rootEval.getCompletion());
 				CertificateConfig config = CertificateConfig.builder()
-						.withCustom1(course.getCourseConfig().getCertificateCustom1())
-						.withCustom2(course.getCourseConfig().getCertificateCustom2())
-						.withCustom3(course.getCourseConfig().getCertificateCustom3())
+						.withCustom1(certificateConfig.getCertificateCustom1())
+						.withCustom2(certificateConfig.getCertificateCustom2())
+						.withCustom3(certificateConfig.getCertificateCustom3())
 						.withSendEmailBcc(true)
 						.withSendEmailLinemanager(true)
 						.withSendEmailIdentityRelations(true)

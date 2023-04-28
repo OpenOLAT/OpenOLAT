@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.course.reminder.model.SentReminderRow;
@@ -34,6 +35,8 @@ import org.olat.course.reminder.model.SentReminderRow;
  *
  */
 public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<SentReminderRow> implements SortableFlexiTableDataModel<SentReminderRow> {
+	
+	private static final SendCols[] COLS = SendCols.values();
 	
 	public CourseSendReminderTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -55,32 +58,48 @@ public class CourseSendReminderTableModel extends DefaultFlexiTableDataModel<Sen
 
 	@Override
 	public Object getValueAt(SentReminderRow reminder, int col) {
-		if(col == SendCols.reminder.ordinal()) {
-			return reminder.getReminderDescription();
-		} else if(col == SendCols.status.ordinal()) {
-			return reminder.getStatus();
-		} else if(col == SendCols.sendTime.ordinal()) {
-			return reminder.getSendDate();
-		} else if(col >= CourseSendReminderListController.USER_PROPS_OFFSET) {
+		if(col >= 0 && col < COLS.length) {
+			switch(COLS[col]) {
+				case reminder: return reminder.getReminderDescription();
+				case status: return reminder.getStatus();
+				case sendTime: return reminder.getSendDate();
+				case courseRun: return reminder.getCourseRun();
+				default: return "ERROR";
+			}
+		}
+		if(col >= CourseSendReminderListController.USER_PROPS_OFFSET) {
 			int propIndex = col - CourseSendReminderListController.USER_PROPS_OFFSET;
 			return reminder.getIdentityProp(propIndex);
 		} 
 		return null;
 	}
 	
-	public enum SendCols {
+	public enum SendCols implements FlexiSortableColumnDef {
 		reminder("table.header.reminder"),
 		status("table.header.status"),
-		sendTime("table.header.sendTime");
+		sendTime("table.header.sendTime"),
+		courseRun("table.header.course.run");
 		
 		private final String i18nKey;
 		
 		private SendCols(String i18nKey) {
 			this.i18nKey = i18nKey;
 		}
-		
-		public String i18nKey() {
+
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

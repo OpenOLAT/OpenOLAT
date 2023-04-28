@@ -117,13 +117,13 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		if(enableBccEl.isAtLeastSelected(1)) {
 			String emails = bccEl.getValue();
 			if(!StringHelper.containsNonWhitespace(emails)) {
-				bccEl.setErrorKey("form.legende.mandatory", null);
+				bccEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else {
 				List<String> emailList = certificatesModule.splitEmails(bccEl.getValue());
 				for(String email:emailList) {
 					if(!EmailAddressValidator.isValidEmailAddress(email)) {
-						bccEl.setErrorKey("error.mail.invalid", null);
+						bccEl.setErrorKey("error.mail.invalid");
 						allOk &= false;
 					}
 				}

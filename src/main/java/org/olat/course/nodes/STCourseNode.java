@@ -75,6 +75,7 @@ import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.nodes.st.STReminderProvider;
 import org.olat.course.reminder.CourseNodeReminderProvider;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.FailedEvaluationType;
@@ -165,7 +166,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
 			VisibilityFilter visibilityFilter) {
 		Controller cont;
-		
+
+		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		String displayType = getModuleConfiguration().getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE);
 		String relPath = STCourseNodeEditController.getFileName(getModuleConfiguration());
 		
@@ -180,12 +182,12 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			}
 			DeliveryOptions deliveryOptions = (DeliveryOptions)getModuleConfiguration().get(SPEditController.CONFIG_KEY_DELIVERYOPTIONS);
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(CourseModule.class, userCourseEnv.getCourseEnvironment().getCourseResourceableId());
-			Long courseRepoKey = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey();
+			Long courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
 			SinglePageController spCtr = new SinglePageController(ureq, wControl, userCourseEnv.getCourseEnvironment().getCourseFolderContainer(),
 					relPath, allowRelativeLinks.booleanValue(), null, ores, deliveryOptions,
-					userCourseEnv.getCourseEnvironment().isPreview(), courseRepoKey);
+					courseEnv.isPreview(), courseRepoKey);
 			// check if user is allowed to edit the page in the run view
-			CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+			CourseGroupManager cgm = courseEnv.getCourseGroupManager();
 			GroupRoles role = GroupRoles.owner;
 			if (userCourseEnv.isParticipant()) {
 				role = GroupRoles.participant;
@@ -198,9 +200,9 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 			if (hasEditRights) {
 				spCtr.allowPageEditing();
 				// set the link tree model to internal for the HTML editor
-				CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode());
+				CustomLinkTreeModel linkTreeModel = new CourseInternalLinkTreeModel(courseEnv.getRunStructure().getRootNode());
 				spCtr.setInternalLinkTreeModel(linkTreeModel);
-				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(userCourseEnv.getCourseEnvironment().getCourseConfig(), ureq.getLocale()));
+				spCtr.setToolLinkTreeModel(new CourseToolLinkTreeModel(courseEnv.getCourseConfig(), cgm.getCourseEntry(), ureq.getLocale()));
 			}
 			spCtr.addLoggingResourceable(LoggingResourceable.wrap(this));
 			cont = TitledWrapperHelper.getWrapper(ureq, wControl, spCtr, userCourseEnv, this, ICON_CSS_CLASS);

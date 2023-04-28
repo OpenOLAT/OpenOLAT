@@ -23,12 +23,27 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.course.CorruptedCourseException;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.certificate.CertificateTemplate;
+import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.CertificationTimeUnit;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAO;
+import org.olat.course.config.CourseConfig;
 import org.olat.modules.project.ProjectModule;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -43,9 +58,30 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 
 	private static final String VERSION = "OLAT_17.3.0";
 	private static final String INIT_PROJECTS_CONFIGS = "INIT PROJECTS CONFIG";
+	
+	private static final String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
+	private static final String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
+	private static final String CERTIFICATE_TEMPLATE = "CERTIFICATE_TEMPLATE";
+
+	private static final String CERTIFICATE_CUSTOM1 = "CERTIFICATE_CUSTOM1";
+	private static final String CERTIFICATE_CUSTOM2 = "CERTIFICATE_CUSTOM2";
+	private static final String CERTIFICATE_CUSTOM3 = "CERTIFICATE_CUSTOM3";
+	private static final String RECERTIFICATION_ENABLED = "RECERTIFICATION_ENABLED";
+	private static final String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
+	private static final String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
+
+	private static final String MIGRATE_CERTIFICATE_CONFIG = "MIGRATE CERTIFICATE CONFIG";
 
 	@Autowired
+	private DB dbInstance;
+	@Autowired
 	private ProjectModule projectModule;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
+	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 
 	public OLATUpgrade_17_3_0() {
 		super();
@@ -68,6 +104,7 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 		
 		boolean allOk = true;
 		allOk &= initProjectsConfigs(upgradeManager, uhd);
+		allOk &= initMigrateCertificateConfiguration(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -102,6 +139,104 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
+	}
+	
+
+	private boolean initMigrateCertificateConfiguration(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CERTIFICATE_CONFIG)) {
+			try {
+				log.info("Start courses certificates configuration migration.");
+
+				int counter = 0;
+				List<Long> courses = getCourseEntries();
+				for(Long courseKey:courses) {
+					initMigrateCertificateConfiguration(courseKey);
+					if((++counter) % 25 == 0) {
+						log.info("Courses certificates configuration migration: {} / {}", counter, courses.size());
+						dbInstance.commitAndCloseSession();
+					}
+				}
+				dbInstance.commitAndCloseSession();
+				
+				log.info("Courses certificates configuration migration finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_CERTIFICATE_CONFIG, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private void initMigrateCertificateConfiguration(Long repositoryEntryKey) {
+		RepositoryEntry repositoryEntry = repositoryService.loadByKey(repositoryEntryKey);
+		// Don't create if not exists
+		RepositoryEntryCertificateConfiguration configuration = certificateConfigurationDao.getConfiguration(repositoryEntry);
+		if(configuration == null) {
+			try {
+				ICourse course = CourseFactory.loadCourse(repositoryEntry);
+				CourseConfig config = course.getCourseConfig();
+				configuration = certificatesManager.createConfiguration(repositoryEntry);
+				
+				Object autoEnabled = config.getRawValue(CERTIFICATE_AUTO_ENABLED);
+				if(autoEnabled instanceof Boolean autoEnabledBool) {
+					configuration.setAutomaticCertificationEnabled(autoEnabledBool.booleanValue());
+				}
+				Object manualEnabled = config.getRawValue(CERTIFICATE_MANUAL_ENABLED);
+				if(manualEnabled instanceof Boolean manualEnabledBool) {
+					configuration.setManualCertificationEnabled(manualEnabledBool.booleanValue());
+				}
+				
+				Object templateId = config.getRawValue(CERTIFICATE_TEMPLATE);
+				if (templateId instanceof Long templateIdLong) {
+					CertificateTemplate template = certificatesManager.getTemplateById(templateIdLong);
+					configuration.setTemplate(template);	
+				}
+				
+				Object custom1 = config.getRawValue(CERTIFICATE_CUSTOM1);
+				if(custom1 instanceof String custom1String) {
+					configuration.setCertificateCustom1(custom1String);
+				}
+				Object custom2 = config.getRawValue(CERTIFICATE_CUSTOM2);
+				if(custom2 instanceof String custom2String) {
+					configuration.setCertificateCustom2(custom2String);
+				}
+				Object custom3 = config.getRawValue(CERTIFICATE_CUSTOM3);
+				if(custom3 instanceof String custom3String) {
+					configuration.setCertificateCustom3(custom3String);
+				}
+				Object recertificationEnabled = config.getRawValue(RECERTIFICATION_ENABLED);
+				if(recertificationEnabled instanceof Boolean recertificationEnabledBool) {
+					configuration.setValidityEnabled(recertificationEnabledBool.booleanValue());
+				}
+				Object timelapse = config.getRawValue(RECERTIFICATION_TIMELAPSE);
+				if (timelapse instanceof Integer timelapseInt) {
+					configuration.setValidityTimelapse(timelapseInt.intValue());
+				}
+				Object timelapseUnit = config.getRawValue(RECERTIFICATION_TIMELAPSE_UNIT);
+				if (timelapseUnit instanceof String unitString  && StringHelper.containsNonWhitespace(unitString)) {
+					configuration.setValidityTimelapseUnit(CertificationTimeUnit.valueOf(unitString));
+				}
+				certificatesManager.updateConfiguration(configuration);
+				dbInstance.commit();
+			} catch (CorruptedCourseException e) {
+				log.error("Course is corrupted: {}", repositoryEntryKey);
+			}
+		}
+	}
+
+	private List<Long> getCourseEntries() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select re.key from repositoryentry re")
+		  .append(" inner join re.olatResource as ores")
+		  .and().append(" ores.resName = 'CourseModule'")
+		  .append(" order by re.key asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
 	}
 	
 }

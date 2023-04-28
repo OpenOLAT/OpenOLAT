@@ -227,7 +227,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.numberAssessments, new ProgressOfCellRenderer()));
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));

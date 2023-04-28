@@ -245,7 +245,7 @@ public class CourseSettingsController extends RepositoryEntrySettingsController 
 		ICourse course = CourseFactory.loadCourse(entry);
 		CourseConfig courseConfig = course.getCourseEnvironment().getCourseConfig().clone();
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Assessment"), null);
-		assessmentSettingsCtrl = new CourseAssessmentSettingsController(ureq, swControl, entry, courseConfig, !readOnly);
+		assessmentSettingsCtrl = new CourseAssessmentSettingsController(ureq, swControl, stackPanel, entry, courseConfig, !readOnly);
 		listenTo(assessmentSettingsCtrl);
 		mainPanel.setContent(assessmentSettingsCtrl.getInitialComponent());
 		buttonsGroup.setSelectedButton(assessmentLink);

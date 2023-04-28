@@ -41,6 +41,7 @@ public class SentReminderRow extends UserPropertiesRow {
 	private final String description;
 	private final Date sendDate;
 	private final String status;
+	private final long courseRun;
 	
 	public SentReminderRow(Reminder reminder, SentReminder sentReminder,
 			Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
@@ -49,6 +50,7 @@ public class SentReminderRow extends UserPropertiesRow {
 		this.sendDate = sentReminder.getCreationDate();
 		this.status = sentReminder.getStatus();
 		this.reminderKey = reminder.getKey();
+		this.courseRun = sentReminder.getRun();
 	}
 	
 	public Long getReminderKey() {
@@ -65,5 +67,9 @@ public class SentReminderRow extends UserPropertiesRow {
 	
 	public Date getSendDate() {
 		return sendDate;
+	}
+	
+	public long getCourseRun() {
+		return courseRun;
 	}
 }

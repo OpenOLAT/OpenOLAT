@@ -36,6 +36,8 @@ public interface Certificate extends CreateInfo {
 	
 	public CertificateStatus getStatus();
 	
+	public boolean isLast();
+	
 	public String getUuid();
 	
 	public String getExternalId();

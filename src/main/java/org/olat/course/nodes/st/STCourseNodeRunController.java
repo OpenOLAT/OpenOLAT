@@ -51,6 +51,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.AssessmentParticipantViewController;
+import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodeaccess.NodeAccessService;
@@ -90,6 +91,8 @@ public class STCourseNodeRunController extends BasicController {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
 	private NodeAccessService nodeAccessService;
 
 	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
@@ -111,7 +114,8 @@ public class STCourseNodeRunController extends BasicController {
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			
 			CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
-			if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
+			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			if ((cc.isEfficencyStatementEnabled() || certificatesManager.isCertificateEnabled(courseEntry))
 					&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
 				VelocityContainer customCont = createVelocityContainer("assessment_custom_fields");
 				

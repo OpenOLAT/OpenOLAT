@@ -49,8 +49,6 @@ import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.ui.reset.ConfirmResetDataController;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
@@ -61,6 +59,7 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ResetCourseDataHelper;
@@ -120,11 +119,11 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
-		ICourse course = CourseFactory.loadCourse(getCourseRepositoryEntry());
-		if(course.getCourseConfig().isCertificateEnabled()) {
+		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+		if(certificateConfig.isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer(getLocale())));
-			if(course.getCourseConfig().isRecertificationEnabled()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.recertification, new DateFlexiCellRenderer(getLocale())));
+			if(certificateConfig.isValidityEnabled()) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificateValidity, new DateFlexiCellRenderer(getLocale())));
 			}
 		}
 		//no callout

@@ -38,6 +38,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.resource.OLATResource;
 
 /**
@@ -64,6 +65,26 @@ public interface CertificatesManager {
 	public int deleteRepositoryEntry(RepositoryEntry re);
 	
 	public List<OLATResource> getResourceWithCertificates();
+	
+	public RepositoryEntryCertificateConfiguration createConfiguration(RepositoryEntry entry);
+	
+	public RepositoryEntryCertificateConfiguration getConfiguration(RepositoryEntry entry);
+	
+	public RepositoryEntryCertificateConfiguration updateConfiguration(RepositoryEntryCertificateConfiguration configuration);
+	
+	
+	/**
+	 * Clone the configuration of the source if it's available.
+	 * 
+	 * @param sourceEntry The source of the clonage
+	 * @param targetEntry The target of the clonage
+	 * @return A cloned configuration if the source has one, or null
+	 */
+	public RepositoryEntryCertificateConfiguration copyRepositoryEntryCertificateConfiguration(RepositoryEntry sourceEntry, RepositoryEntry targetEntry);
+	
+	public boolean isCertificateEnabled(RepositoryEntryRef entry);
+	
+	public boolean isAutomaticCertificationEnabled(RepositoryEntryRef entry);
 	
 	//templates management
 	public List<CertificateTemplate> getTemplates();
@@ -156,19 +177,24 @@ public interface CertificatesManager {
 	
 	public List<Certificate> getCertificates(IdentityRef identity, OLATResource resource);
 	
-	
-	
 	/**
-	 * Check if recertification is allowed and if it is the case, check the
-	 * recertification period. If not allowed, check if a certificate was
-	 * already emitted.
+	 * Check if certification is allowed and check if a certificate was
+	 * already emitted and a new one can be generated.
 	 * 
-	 * @param identity
-	 * @param entry
+	 * @param identity The identity
+	 * @param entry The repository entry / course
 	 * @return
 	 */
-	
 	public boolean isCertificationAllowed(Identity identity, RepositoryEntry entry);
+
+	/**
+	 * Check if the user can starts the certification process again.
+	 * 
+	 * @param identity The identity
+	 * @param entry The repository entry / course
+	 * @return
+	 */
+	public boolean isRecertificationAllowed(Identity identity, RepositoryEntry entry);
 	
 	/**
 	 * Set the status to archive.
@@ -178,13 +204,11 @@ public interface CertificatesManager {
 	 */
 	public Certificate archiveCertificate(Certificate certificate);
 	
-	/**
-	 * Get the next re-certification date or NULL if no recertification possible
-	 * @param certificate An exiting certificate
-	 * @param entry The repository entry of the course
-	 * @return Date representing the next possible recertification date or NULL if no recertification possible at this time
-	 */
-	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry);
+
+	public Date nextRecertificationWindow(Certificate certificate, RepositoryEntryCertificateConfiguration certificateConfig);
+	
+	public Date nextRecertificationWindow(Date nextCertificationDate, RepositoryEntryCertificateConfiguration certificateConfig);
+	
 	
 	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 

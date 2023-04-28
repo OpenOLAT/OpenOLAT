@@ -3,8 +3,9 @@
 		#if($r.available("collectArtefactLink"))
 			<div class="pull-right">$r.render("collectArtefactLink")</div>
 		#end
-		<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title") #if($r.isNotEmpty($version))<small>$version</small>#end</h3>	
-		
+		#if($r.isTrue($withTitle))
+			<h3><i class="o_icon o_icon_certificate"> </i> $r.translate("efficiencystatement.title") #if($r.isNotEmpty($version))<small>$version</small>#end</h3>	
+		#end
 		#if($r.available("home.link") || $r.available("contact.link") || $r.available("statements.list") || $r.visible("download.archive"))
 		<div class="o_button_group_right o_block_bottom">
  			#if($r.available("download.archive"))
@@ -23,86 +24,80 @@
 			</div>
 		</div>
 		#end
+
+		#if($r.isTrue($withUserData))
 		<div class="row">
-		<div class="col-xs-12 col-sm-6">
-			<table class="table table-condensed table-striped">
-			<tbody>
-				<tr>
-					<th style="width: 30%;">$r.translate("username")</th>
-					<td>$username</td>
-				</tr>
-			#foreach( $propertyHandler in $userPropertyHandlers )
-				#if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
-				<tr>
-					<th>
-						$r.translate($propertyHandler.i18nFormElementLabelKey())
-					</th>
-					<td>
-						#if($propertyHandler.name == "email")
-							$propertyHandler.getUserProperty($user, $locale)
-						#else
-							$propertyHandler.getUserPropertyAsHTML($user, $locale)
+			<div class="col-xs-12 col-sm-6">
+					<table class="table table-condensed table-striped"><tbody>
+							<tr>
+								<th style="width: 30%;">$r.translate("username")</th>
+								<td>$username</td>
+							</tr>
+						#foreach( $propertyHandler in $userPropertyHandlers )
+							#if ($propertyHandler.getUserPropertyAsHTML($user, $locale) && $propertyHandler.getUserPropertyAsHTML($user, $locale) != "")
+							<tr>
+								<th>
+									$r.translate($propertyHandler.i18nFormElementLabelKey())
+								</th>
+								<td>
+									#if($propertyHandler.name == "email")
+										$propertyHandler.getUserProperty($user, $locale)
+									#else
+										$propertyHandler.getUserPropertyAsHTML($user, $locale)
+									#end
+								</td>
+							</tr>
+							#end
 						#end
-					</td>
-				</tr>
-				#end
-			#end
-			</tbody>
-			</table>
+					</tbody></table>
+				</div>
+			
+			<div class="col-xs-12 col-sm-6">
+					<table class="table table-condensed table-striped"><tbody>
+					#if($courseTitle)
+						<tr>
+							<th id="oo-course-title" style="width: 30%;">$r.translate("course.title")</th>
+							<td aria-labelledby="oo-course-title">$courseTitle
+								#if($r.available("course.link"))
+									<div>$r.render("course.link")</div>
+								#end
+							</td>
+						</tr>
+					#end
+					#if($groupName)
+						<tr>
+							<th id="oo-groups" style="width: 30%;">$r.translate("group.name")</th>
+							<td aria-labelledby="oo-groups">
+								$groupName 
+								#if($r.available("group.link"))
+									<div>$r.render("group.link")</div>
+								#end
+							</td>
+						</tr>
+					#end
+					#if($r.available("completion"))
+						<tr>
+							<th id="oo-completion" style="width: 30%;">$r.translate("completion")</th>
+							<td aria-labelledby="oo-completion">$r.render("completion")</td>
+						</tr>
+					#end
+					#if($certCreation)
+						<tr>
+							<th id="oo-certificate-issued" style="width: 30%;">$r.translate("certificate.issued")</th>
+							<td aria-labelledby="oo-certificate-issued">$certCreation</td>
+						</tr>
+					#end
+					#if($certRecertification)
+						<tr>
+							<th id="oo-certificate-validity" style="width: 30%;">$r.translate("certificate.valid.until")</th>
+							<td aria-labelledby="oo-certificate-validity">$certRecertification #if($r.isNotNull($nextRecertificationWindow))| $nextRecertificationWindow#end</td>
+						</tr>
+					#end
+					</tbody></table>
+				</div>
 		</div>
-		
-		<div class="col-xs-12 col-sm-6">
-			<table class="table table-condensed table-striped">
-			<tbody>
-			#if($courseTitle)
-				<tr>
-					<th style="width: 30%;">$r.translate("course.title")</th>
-					<td>$courseTitle
-						#if($r.available("course.link"))
-							<div>$r.render("course.link")</div>
-						#end
-					</td>
-				</tr>
-			#end
-			#if($groupName)
-				<tr>
-					<th style="width: 30%;">$r.translate("group.name")</th>
-					<td>
-						$groupName 
-						#if($r.available("group.link"))
-							<div>$r.render("group.link")</div>
-						#end
-					</td>
-				</tr>
-			#end
-			#if($r.available("completion"))
-				<tr>
-					<th style="width: 30%;">$r.translate("completion")</th>
-					<td>
-						$r.render("completion")
-					</td>
-				</tr>
-			#end
-			#if($certCreation)
-				<tr>
-					<th style="width: 30%;">$r.translate("certificate.issued")</th>
-					<td>
-						$certCreation
-					</td>
-				</tr>
-			#end
-			#if($certRecertification)
-				<tr>
-					<th style="width: 30%;">$r.translate("certificate.valid.until")</th>
-					<td>
-						$certRecertification
-					</td>
-				</tr>
-			#end
-			</tbody>
-			</table>
-		</div>
-	</div></div>
+		#end ## with user data
+	</div>
 	
 	<div class="row">
 	#if($r.available("segments"))

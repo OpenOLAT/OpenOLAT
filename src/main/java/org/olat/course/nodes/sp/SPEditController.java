@@ -134,7 +134,8 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		combiLinkCtr = new LinkFileCombiCalloutController(ureq, wControl, courseFolderBaseContainer, relFilePath,
 				relFilPathIsProposal, allowRelativeLinks, false,
 				new CourseInternalLinkTreeModel(course.getEditorTreeModel()),
-				new CourseToolLinkTreeModel(course.getCourseConfig(), getLocale()), edusharingProvider,
+				new CourseToolLinkTreeModel(course.getCourseConfig(), course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), 
+				getLocale()), edusharingProvider,
 				UPLOAD_MIME_TYPE, SELECTION_SUFFIX, new PfdWarning());
 		combiLinkCtr.setEditable(hasEditRights(relFilePath));
 		listenTo(combiLinkCtr);

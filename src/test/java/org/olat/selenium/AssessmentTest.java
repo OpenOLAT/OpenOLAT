@@ -422,7 +422,7 @@ public class AssessmentTest extends Deployments {
 		courseSettings
 			.certificates()
 			.enableCertificates(false)
-			.enableRecertification()
+			.enableValidity()
 			.save();
 		courseSettings
 			.clickToolbarBack();
@@ -532,7 +532,7 @@ public class AssessmentTest extends Deployments {
 		courseSetting
 			.certificates()
 			.enableCertificates(true)
-			.enableRecertification()
+			.enableValidity()
 			.save();
 		courseSetting
 			.clickToolbarBack();
@@ -780,7 +780,7 @@ public class AssessmentTest extends Deployments {
 		courseSettings
 			.certificates()
 			.enableCertificates(true)
-			.enableRecertification()
+			.enableValidity()
 			.save();
 		
 		//go to members management

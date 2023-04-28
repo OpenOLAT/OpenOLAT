@@ -261,11 +261,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
-			if(getIdentity().getKey().equals(ce.getOwnerKey())) {
-				updateStatement(ce.getResourceKey(), ce.getCertificateKey());
-			}
+		if(event instanceof CertificateEvent ce && getIdentity().getKey().equals(ce.getOwnerKey())) {
+			updateStatement(ce.getResourceKey(), ce.getCertificateKey());
 		}
 	}
 	
@@ -857,7 +854,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		Certificate certificate = certificatesManager.getCertificateById(statement.getCertificateKey());
 		CertificateAndEfficiencyStatementController efficiencyCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
 				assessedIdentity, null, statement.getResourceKey(), entry, efficiencyStatment, certificate,
-				false, true, true);
+				false, true, true, true, true);
 		listenTo(efficiencyCtrl);
 		stackPanel.pushController(statement.getDisplayName(), efficiencyCtrl);
 	}
