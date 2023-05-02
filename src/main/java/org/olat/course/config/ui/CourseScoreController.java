@@ -144,12 +144,14 @@ public class CourseScoreController extends FormBasicController {
 		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_GRADE_APPLY, translate("options.grade.apply")));
 		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_USER_VISIBILITY, translate("options.user.visibility")));
 		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_PASSED_MANUALLY, translate("options.passed.manually")));
+		coachesCanSV.add(SelectionValues.entry(STCourseNode.CONFIG_COACH_RESET_DATA, translate("options.reset.data")));
 		coachesCanEl = uifactory.addCheckboxesVertical("options.coaches.can", formLayout, coachesCanSV.keys(), coachesCanSV.values(), 1);
 		coachesCanEl.addActionListener(FormEvent.ONCHANGE);
 		coachesCanEl.setEnabled(editable);
 		coachesCanEl.select(STCourseNode.CONFIG_COACH_GRADE_APPLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY));
 		coachesCanEl.select(STCourseNode.CONFIG_COACH_USER_VISIBILITY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_USER_VISIBILITY));
 		coachesCanEl.select(STCourseNode.CONFIG_PASSED_MANUALLY, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY));
+		coachesCanEl.select(STCourseNode.CONFIG_COACH_RESET_DATA, moduleConfig.getBooleanSafe(STCourseNode.CONFIG_COACH_RESET_DATA));
 		
 		// Passed evaluation
 		SelectionValues passedSV = new SelectionValues();
@@ -210,9 +212,7 @@ public class CourseScoreController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == coachesCanEl) {
-			updateUI();
-		} else if (source == passedEl) {
+		if (source == coachesCanEl || source == passedEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -221,8 +221,7 @@ public class CourseScoreController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source == assessmentResetCtrl) {
-			if (event instanceof AssessmentResetEvent) {
-				AssessmentResetEvent are = (AssessmentResetEvent)event;
+			if (event instanceof AssessmentResetEvent are) {
 				doSettingsConfirmed(ureq, are);
 			} else if (event == AssessmentResetController.RESET_SETTING_EVENT) {
 				initForm(ureq);
@@ -273,7 +272,7 @@ public class CourseScoreController extends FormBasicController {
 			}
 		}
 		if (!allOk) {
-			el.setErrorKey(i18nKey, null);
+			el.setErrorKey(i18nKey);
 		}
 		return allOk;
 	}
@@ -350,6 +349,15 @@ public class CourseScoreController extends FormBasicController {
 		} else {
 			runConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
 			editorConfig.remove(STCourseNode.CONFIG_PASSED_MANUALLY);
+		}
+
+		boolean resetData = coachesCanEl.isKeySelected(STCourseNode.CONFIG_COACH_RESET_DATA);
+		if (resetData) {
+			runConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_RESET_DATA, true);
+			editorConfig.setBooleanEntry(STCourseNode.CONFIG_COACH_RESET_DATA, true);
+		} else {
+			runConfig.remove(STCourseNode.CONFIG_COACH_RESET_DATA);
+			editorConfig.remove(STCourseNode.CONFIG_COACH_RESET_DATA);
 		}
 		
 		boolean passedProgress = passedEl.isKeySelected(STCourseNode.CONFIG_PASSED_PROGRESS);

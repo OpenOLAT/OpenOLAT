@@ -134,6 +134,8 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_PASSED_MANUALLY = "passed.manually";
 	public static final String CONFIG_COACH_USER_VISIBILITY = "coach.user.visibility";
 	public static final String CONFIG_COACH_GRADE_APPLY = "coach.user.grade.apply";
+	// Defines whether the COACH can reset the data
+	public static final String CONFIG_COACH_RESET_DATA = "coach.user.reset.data";
 
 	// Score calculation with conditions.
 	public static final String CONFIG_SCORE_CALCULATOR_SUPPORTED = "score.calculator.supported";

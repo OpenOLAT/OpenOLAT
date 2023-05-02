@@ -134,6 +134,7 @@ public class LearningPathListController extends FormBasicController implements T
 	private final UserCourseEnvironment userCourseEnv;
 	private final RepositoryEntry courseEntry;
 	private final boolean canEdit;
+	private final boolean canReset;
 	
 	@Autowired
 	private AssessmentService assessmentService;
@@ -145,13 +146,14 @@ public class LearningPathListController extends FormBasicController implements T
 	private LearningPathNodeAccessProvider learningPathNodeAccessProvider;
 
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment userCourseEnv, boolean canEdit) {
+			UserCourseEnvironment userCourseEnv, boolean canEdit, boolean canReset) {
 		super(ureq, wControl, "identity_nodes");
 		setTranslator(Util.createPackageTranslator(AssessedIdentityListController.class, getLocale(), getTranslator()));
 		this.userCourseEnv = userCourseEnv;
 		this.stackPanel = stackPanel;
 		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		this.canEdit = canEdit;
+		this.canReset = canReset;
 		initForm(ureq);
 	}
 
@@ -232,13 +234,13 @@ public class LearningPathListController extends FormBasicController implements T
 	@Override
 	public void initTools() {
 		// Never enable this function in a productive environment. It may lead to corrupt data.
-		if (Settings.isDebuging()) {
+		if (canReset && Settings.isDebuging()) {
 			resetStatusLink = LinkFactory.createToolLink("reset.all.status", translate("reset.all.status"), this);
 			resetStatusLink.setIconLeftCSS("o_icon o_icon-lg o_icon_exclamation");
 			stackPanel.addTool(resetStatusLink, Align.right);
 		}
 		
-		if(canEdit) {
+		if(canReset) {
 			resetDataLink = LinkFactory.createToolLink("reset.data", translate("reset.data"), this);
 			resetDataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_reset_data");
 			stackPanel.addTool(resetDataLink, Align.right);
@@ -658,8 +660,10 @@ public class LearningPathListController extends FormBasicController implements T
 				editObligationLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_edit");
 			}
 			
-			resetNodeDataLink = LinkFactory.createLink("reset.data", "reset.data", getTranslator(), mainVC, this, Link.LINK);
-			resetNodeDataLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_reset_data");
+			if(canReset) {
+				resetNodeDataLink = LinkFactory.createLink("reset.data", "reset.data", getTranslator(), mainVC, this, Link.LINK);
+				resetNodeDataLink.setIconLeftCSS( "o_icon o_icon-fw o_icon_reset_data");
+			}
 
 			putInitialPanel(mainVC);
 		}

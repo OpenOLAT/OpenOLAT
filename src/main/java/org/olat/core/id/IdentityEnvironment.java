@@ -53,6 +53,10 @@ public class IdentityEnvironment implements Serializable {
 	// defaults all to null
 	}
 	
+	public IdentityEnvironment(Identity identity) {
+		this(identity, null);
+	}
+	
 	public IdentityEnvironment(Identity identity, Roles roles) {
 		this.identity = identity;
 		this.roles = roles;
