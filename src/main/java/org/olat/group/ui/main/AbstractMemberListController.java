@@ -258,6 +258,9 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			Roles roles = ureq.getUserSession().getRoles();
 			return roles.isAdministrator() && repositoryService.hasRoleExpanded(getIdentity(), repoEntry,
 					OrganisationRoles.administrator.name());
+		} else if(this.businessGroup != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator();
 		}
 		return false;
 	}

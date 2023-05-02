@@ -272,7 +272,11 @@ public class MembersOverviewController extends BasicController implements Activa
 		unOverrideLink.setVisible(overrideManaged);
 		
 		addMemberLink.setVisible(overrideManaged);
-
+		if(invitationLink != null) {
+			invitationLink.setVisible(overrideManaged);
+			addMemberDropdown.setVisible(overrideManaged);
+		}
+		
 		dedupLink.setVisible(overrideManaged);
 		mainVC.setDirty(true);
 		
