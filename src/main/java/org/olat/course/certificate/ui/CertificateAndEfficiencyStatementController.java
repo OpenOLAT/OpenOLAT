@@ -129,7 +129,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private final RepositoryEntry courseRepoEntry;
 	private EfficiencyStatement efficiencyStatement;
 	private UserEfficiencyStatement userEfficiencyStatement;
-	private final RepositoryEntryCertificateConfiguration certificateConfig;
+	private RepositoryEntryCertificateConfiguration certificateConfig;
 	
 	private CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -193,7 +193,9 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 		
 		this.courseRepoEntry = courseRepo;
 		this.businessGroup = businessGroup;
-		certificateConfig = certificatesManager.getConfiguration(courseRepo);
+		if(courseRepo != null) {
+			certificateConfig = certificatesManager.getConfiguration(courseRepo);
+		}
 
 		if(businessGroup == null && courseRepo != null) {
 			SearchBusinessGroupParams params = new SearchBusinessGroupParams(statementOwner, false, true);
@@ -398,13 +400,14 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			Formatter formatter = Formatter.getInstance(getLocale());
 			mainVC.contextPut("certCreation", formatter.formatDateAndTime(certificateToShow.getCreationDate()));
 			
-			if(certificateConfig.isValidityEnabled() && certificateToShow.isLast()) {
+			if(certificateToShow.isLast() && ((certificateConfig != null && certificateConfig.isValidityEnabled())
+					|| (certificateConfig == null && certificateToShow.getNextRecertificationDate() != null))) {
 				Date nextRecertificationDate = certificateToShow.getNextRecertificationDate();
 				if(nextRecertificationDate != null) {
 					mainVC.contextPut("certRecertification", formatter.formatDate(nextRecertificationDate));
 				}
 				
-				if(certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+				if(certificateConfig != null && certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
 					Date nextRecertificationWindow = certificatesManager.nextRecertificationWindow(certificateToShow, certificateConfig);
 					if(nextRecertificationWindow != null) {
 						mainVC.contextPut("nextRecertificationWindow", translate("certificate.recertification.start",
