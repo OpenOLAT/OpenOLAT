@@ -22,7 +22,6 @@ package org.olat.ims.qti21.ui.statistics;
 import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
@@ -125,16 +124,6 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 	
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {
 		return resolvedAssessmentTest;
-	}
-	
-	public List<AssessmentItem> getAssessmentItems() {
-		List<AssessmentItemRef> itemRefs = resolvedAssessmentTest.getAssessmentItemRefs();
-		List<AssessmentItem> items = new ArrayList<>(itemRefs.size());
-		for(AssessmentItemRef itemRef:itemRefs) {
-			AssessmentItem item = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef).getRootNodeLookup().extractIfSuccessful();
-			items.add(item);
-		}
-		return items;
 	}
 	
 	public QTI21StatisticSearchParams getSearchParams() {
