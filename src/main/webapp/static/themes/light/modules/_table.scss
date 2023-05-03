@@ -687,6 +687,18 @@ a.o_orderby, a.o_orderby:hover {
 	}
 }
 
+// Optimization for the old table controller
+@media screen and (max-width: $screen-md-min) {
+	.o_classic_table_toolbar .tt-input {
+		width: 250px;
+	}
+}
+@media screen and (max-width: $screen-xs-min) {
+	.o_classic_table_toolbar .tt-input {
+		width: 200px;
+	}
+}
+
 
 
 	

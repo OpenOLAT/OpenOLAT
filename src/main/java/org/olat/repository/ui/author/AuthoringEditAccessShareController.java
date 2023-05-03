@@ -237,6 +237,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setRootForm(mainForm);
+		generalCont.setElementCssClass("o_sel_repo_access_general");
 		formLayout.add(generalCont);
 
 		initStatus(generalCont);
@@ -308,6 +309,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		metadataSV.add(SelectionValues.entry(KEY_INDEXING, translate("cif.indexing.enabled")));
 
 		enableMetadataIndexingEl = uifactory.addCheckboxesVertical("cif.metadata.enabled", generalCont, metadataSV.keys(), metadataSV.values(), 1);
+		enableMetadataIndexingEl.setElementCssClass("o_sel_repo_access_metadata_index");
 		enableMetadataIndexingEl.select(KEY_INDEXING, entry.getCanIndexMetadata());
 		enableMetadataIndexingEl.setHelpUrlForManualPage("manual_admin/administration/Modules_OAI/");
 		enableMetadataIndexingEl.setHelpTextKey("cif.metadata.help", null);
@@ -326,6 +328,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 				.toList();
 
 		oaiCont = FormLayoutContainer.createVerticalFormLayout("oaiIndexingWarning", getTranslator());
+		oaiCont.setElementCssClass("o_sel_repo_oai_warning");
 		oaiCont.setFormWarning(translate("cif.metadata.warning",
 				isEntryPublished ? "" : translate("cif.metadata.release"),
 				isEntryLicenseAllowedForIndexing() ? "" : translate("cif.metadata.license.requirements") +

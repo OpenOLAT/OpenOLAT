@@ -109,7 +109,7 @@ public class TeamsCollaborationSettingsController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!meetingsAccessEl.isOneSelected()) {
-			meetingsAccessEl.setErrorKey("", null);
+			meetingsAccessEl.setErrorKey("");
 			allOk &= false;
 		}
 		

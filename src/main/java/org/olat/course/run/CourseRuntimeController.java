@@ -1601,6 +1601,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if (bigBlueButtonLink != null && bigBlueButtonLink.isVisible()) {
 					activateSubEntries(ureq, doBigBlueButton(ureq), entries);
 				}
+			} else if("Meeting".equalsIgnoreCase(type)) {
+				doActivateMeeting(ureq, entries);
 			} else if("Wiki".equalsIgnoreCase(type)) {
 				if (wikiLink != null && wikiLink.isVisible()) {
 					activateSubEntries(ureq, doWiki(ureq), entries);
@@ -1712,6 +1714,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		RunMainController rmc = getRunMainController();
 		if(rmc != null) {
 			rmc.activate(ureq, entries, state);
+		}
+	}
+	
+	private void doActivateMeeting(UserRequest ureq, List<ContextEntry> entries) {
+		boolean selected = false;
+		if(bigBlueButtonLink != null && bigBlueButtonLink.isVisible()) {
+			BigBlueButtonRunController bigBlueButtonRunCtrl = doBigBlueButton(ureq);
+			if(bigBlueButtonRunCtrl != null) {
+				bigBlueButtonRunCtrl.activate(ureq, entries, null);
+				selected = bigBlueButtonRunCtrl.isMeetingSelected();
+			}	
+		}
+		if(!selected && teamsLink != null && teamsLink.isVisible()) {
+			TeamsMeetingsRunController teamsRunCtrl = doTeams(ureq);
+			if(teamsRunCtrl != null) {
+				teamsRunCtrl.activate(ureq, entries, null);
+			}
 		}
 	}
 	

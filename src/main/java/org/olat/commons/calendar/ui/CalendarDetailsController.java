@@ -189,14 +189,11 @@ public class CalendarDetailsController extends BasicController {
 			if(!isGuestOnly) {
 				fireEvent(ureq, new CalendarGUIEditEvent(calEvent, calendar));
 			}
-		} else if(source instanceof Link) {
-			Link internalLink = (Link)source;
-			if(internalLink.getUserObject() instanceof LinkWrapper) {
-				fireEvent(ureq, Event.DONE_EVENT);
-				LinkWrapper wrapper = (LinkWrapper)internalLink.getUserObject();
-				ureq.getDispatchResult()
-					.setResultingMediaResource(new RedirectMediaResource(wrapper.getUri()));
-			}
+		} else if(source instanceof Link internalLink
+				&& internalLink.getUserObject() instanceof LinkWrapper wrapper) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			ureq.getDispatchResult()
+				.setResultingMediaResource(new RedirectMediaResource(wrapper.getUri()));
 		}
 	}
 	

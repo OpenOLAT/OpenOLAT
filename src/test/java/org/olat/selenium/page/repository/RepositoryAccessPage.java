@@ -23,6 +23,7 @@ import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -53,6 +54,19 @@ public class RepositoryAccessPage {
 	public RepositoryAccessPage setAccessToMembersOnly() {
 		By allUsersBy = By.xpath("//fieldset[@id='o_coentry_access_type']//label/input[@name='entry.access.type' and @value='private']");
 		browser.findElement(allUsersBy).click();
+		return this;
+	}
+	
+	public RepositoryAccessPage setMetadataIndex() {
+		By metadataBy = By.xpath("//fieldset[contains(@class,'o_sel_repo_access_metadata_index')]//label/input[@name='cif.metadata.enabled' and @value='indexing']");
+		WebElement metadataEl = browser.findElement(metadataBy);
+		OOGraphene.check(metadataEl, Boolean.TRUE);
+		return this;
+	}
+	
+	public RepositoryAccessPage assertOnOaiWaring() {
+		By oaiWarningBy = By.cssSelector(".o_sel_repo_access_general .o_sel_repo_oai_warning");
+		OOGraphene.waitElement(oaiWarningBy, browser);
 		return this;
 	}
 	

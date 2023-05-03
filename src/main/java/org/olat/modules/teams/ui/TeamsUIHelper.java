@@ -71,10 +71,10 @@ public class TeamsUIHelper {
 			String identifier = externalLinkEl.getValue();
 			if (StringHelper.containsNonWhitespace(externalLinkEl.getValue())) {
 				if(identifier.length() > 64) {
-					externalLinkEl.setErrorKey("form.error.toolong", new String[] { "64" });
+					externalLinkEl.setErrorKey("form.error.toolong", "64");
 					allOk &= false;
 				} else if(getTeamsService().isIdentifierInUse(identifier, meeting)) {
-					externalLinkEl.setErrorKey("error.identifier.in.use", null);
+					externalLinkEl.setErrorKey("error.identifier.in.use");
 					allOk &= false;
 				} else {
 					try {
@@ -102,13 +102,13 @@ public class TeamsUIHelper {
 		boolean allOk = true;
 		
 		if(startDateEl.getDate() == null) {
-			startDateEl.setErrorKey("form.legende.mandatory", null);
+			startDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!revalidateDates(startDateEl)) {
 			allOk &= false;
 		}
 		if(endDateEl.getDate() == null) {
-			endDateEl.setErrorKey("form.legende.mandatory", null);
+			endDateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!revalidateDates(endDateEl)) {
 			allOk &= false;
@@ -118,13 +118,13 @@ public class TeamsUIHelper {
 			Date start = startDateEl.getDate();
 			Date end = endDateEl.getDate();
 			if(end.before(start)) {
-				endDateEl.setErrorKey("error.start.after.end", null);
+				endDateEl.setErrorKey("error.start.after.end");
 				allOk &= false;
 			}
 			
 			Date now = new Date();
 			if(end.before(now)) {
-				endDateEl.setErrorKey("error.end.past", null);
+				endDateEl.setErrorKey("error.end.past");
 				allOk &= false;
 			}
 		}
