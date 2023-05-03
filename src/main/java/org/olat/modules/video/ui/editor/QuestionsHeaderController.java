@@ -372,7 +372,7 @@ public class QuestionsHeaderController extends FormBasicController {
 	private void doExport() {
 		getOptionalQuestion().ifPresent(question -> {
 			doExport(question);
-			showInfo("tools.export.pool.success", Integer.toString(1));
+			showInfo("tools.export.pool.success.one");
 		});
 	}
 
@@ -393,7 +393,11 @@ public class QuestionsHeaderController extends FormBasicController {
 		for (VideoQuestion question : questions.getQuestions()) {
 			doExport(question);
 		}
-		showInfo("tools.export.pool.success", Integer.toString(questions.getQuestions().size()));
+		if (questions.getQuestions().size() == 1) {
+			showInfo("tools.export.pool.success.one");
+		} else {
+			showInfo("tools.export.pool.success", Integer.toString(questions.getQuestions().size()));
+		}
 	}
 
 	private Optional<VideoQuestion> getOptionalQuestion() {
