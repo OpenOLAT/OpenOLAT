@@ -19,7 +19,9 @@
  */
 package org.olat.modules.video.ui.editor;
 
+import java.io.File;
 import java.io.Serial;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,12 +46,16 @@ import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.ims.qti21.QTI21Constants;
+import org.olat.ims.qti21.QTI21Service;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
+import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
+import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoQuestion;
 import org.olat.modules.video.VideoQuestions;
@@ -59,6 +65,9 @@ import org.olat.modules.video.ui.question.VideoQuestionRowComparator;
 import org.olat.repository.RepositoryEntry;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
+import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 
 /**
  * Initial date: 2023-01-18<br>
@@ -87,6 +96,12 @@ public class QuestionsHeaderController extends FormBasicController {
 	private SelectItemController selectItemController;
 	@Autowired
 	private QPoolService questionPoolService;
+	@Autowired
+	private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
+	@Autowired
+	private QTI21Service qti21Service;
+	@Autowired
+	private VideoManager videoManager;
 	private CloseableModalController cmc;
 
 	protected QuestionsHeaderController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
@@ -250,8 +265,9 @@ public class QuestionsHeaderController extends FormBasicController {
 	}
 
 	private void doCommands(UserRequest ureq) {
-		commandsController = new HeaderCommandsController(ureq, getWindowControl(), true);
+		commandsController = new HeaderCommandsController(ureq, getWindowControl(), true, true);
 		commandsController.setCanDelete(!questionsKV.isEmpty());
+		commandsController.setCanExport(!questionsKV.isEmpty());
 		listenTo(commandsController);
 		ccwc = new CloseableCalloutWindowController(ureq, getWindowControl(), commandsController.getInitialComponent(),
 				commandsButton.getFormDispatchId(), "", true, "");
@@ -281,6 +297,10 @@ public class QuestionsHeaderController extends FormBasicController {
 				doDeleteQuestion(ureq);
 			} else if (HeaderCommandsController.IMPORT_EVENT == event) {
 				doImport(ureq);
+			} else if (HeaderCommandsController.EXPORT_EVENT == event) {
+				doExport();
+			} else if (HeaderCommandsController.EXPORT_ALL_EVENT == event) {
+				doExportAll();
 			}
 		} else if (cmc == source) {
 			cleanUp();
@@ -347,6 +367,33 @@ public class QuestionsHeaderController extends FormBasicController {
 				selectItemController.getInitialComponent(), true, translate("form.common.import"));
 		cmc.activate();
 		listenTo(cmc);
+	}
+
+	private void doExport() {
+		getOptionalQuestion().ifPresent(question -> {
+			doExport(question);
+			showInfo("tools.export.pool.success", Integer.toString(1));
+		});
+	}
+
+	private void doExport(VideoQuestion question) {
+		File assessmentDirectory = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
+		File assessmentItemDirectory = new File(assessmentDirectory, question.getQuestionRootPath());
+		File assessmentItemFile = new File(assessmentItemDirectory, question.getQuestionFilename());
+		URI assessmentKey = assessmentItemFile.toURI();
+		ResolvedAssessmentItem resolvedAssessmentItem = qti21Service.loadAndResolveAssessmentItem(assessmentKey, assessmentItemDirectory);
+		RootNodeLookup<AssessmentItem> rootNode = resolvedAssessmentItem.getItemLookup();
+		AssessmentItem assessmentItem = rootNode.extractIfSuccessful();
+		File itemFile = new File(rootNode.getSystemId());
+		ManifestMetadataBuilder manifestMetadataBuilder = new ManifestMetadataBuilder();
+		qti21QPoolServiceProvider.importAssessmentItemRef(getIdentity(), assessmentItem, itemFile, manifestMetadataBuilder, getLocale());
+	}
+
+	private void doExportAll() {
+		for (VideoQuestion question : questions.getQuestions()) {
+			doExport(question);
+		}
+		showInfo("tools.export.pool.success", Integer.toString(questions.getQuestions().size()));
 	}
 
 	private Optional<VideoQuestion> getOptionalQuestion() {

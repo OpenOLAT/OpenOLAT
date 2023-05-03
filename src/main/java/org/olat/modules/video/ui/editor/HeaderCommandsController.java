@@ -36,14 +36,18 @@ import org.olat.core.gui.control.controller.BasicController;
 public class HeaderCommandsController extends BasicController {
 	public static final Event DELETE_EVENT = new Event("header.commands.delete");
 	public static final Event IMPORT_EVENT = new Event("header.commands.import");
+	public static final Event EXPORT_EVENT = new Event("header.commands.export");
+	public static final Event EXPORT_ALL_EVENT = new Event("header.commands.export.all");
 	private Link importLink;
+	private Link exportLink;
+	private Link exportAllLink;
 	private final Link deleteLink;
 
 	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl) {
-		this(ureq, wControl, false);
+		this(ureq, wControl, false, false);
 	}
 
-	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport) {
+	protected HeaderCommandsController(UserRequest ureq, WindowControl wControl, boolean withImport, boolean withExport) {
 		super(ureq, wControl);
 
 		VelocityContainer mainVC = createVelocityContainer("header_commands");
@@ -53,6 +57,18 @@ public class HeaderCommandsController extends BasicController {
 					Link.LINK);
 			importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
 			mainVC.put("import", importLink);
+		}
+
+		if (withExport) {
+			exportLink = LinkFactory.createLink("tools.export.pool", "export", getTranslator(), mainVC, this,
+					Link.LINK);
+			exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+			mainVC.put("export", exportLink);
+
+			exportAllLink = LinkFactory.createLink("tools.export.all.pool", "exportAll", getTranslator(), mainVC, this,
+					Link.LINK);
+			exportAllLink.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+			mainVC.put("exportAll", exportAllLink);
 		}
 
 		deleteLink = LinkFactory.createLink("delete", "delete", getTranslator(), mainVC, this,
@@ -70,10 +86,23 @@ public class HeaderCommandsController extends BasicController {
 			fireEvent(ureq, DELETE_EVENT);
 		} else if (importLink == source) {
 			fireEvent(ureq, IMPORT_EVENT);
+		} else if (exportLink == source) {
+			fireEvent(ureq, EXPORT_EVENT);
+		} else if (exportAllLink == source) {
+			fireEvent(ureq, EXPORT_ALL_EVENT);
 		}
 	}
 
 	public void setCanDelete(boolean canDelete) {
 		deleteLink.setEnabled(canDelete);
+	}
+
+	public void setCanExport(boolean canExport) {
+		if (exportLink != null) {
+			exportLink.setEnabled(canExport);
+		}
+		if (exportAllLink != null) {
+			exportAllLink.setEnabled(canExport);
+		}
 	}
 }
