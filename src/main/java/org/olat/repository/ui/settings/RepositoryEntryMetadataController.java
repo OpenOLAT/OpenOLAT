@@ -220,6 +220,7 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		}
 
 		authors = uifactory.addTextElement("cif.authors", "cif.authors", MAX_LENGTH_AUTHORS, repositoryEntry.getAuthors(), formLayout);
+		authors.setElementCssClass("o_sel_repo_authors");
 		authors.setDisplaySize(60);
 		authors.setEnabled(!readOnly);
 		
