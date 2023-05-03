@@ -238,7 +238,7 @@ public class ForumManager {
 			qb.and().append("msg.creationDate<=:endDate");
 		}
 
-		qb.append(" order by msg.forum, msg.creationDate ASC");
+		qb.append(" order by msg.creationDate ASC");
 
 		TypedQuery<Message> dbQuery = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), Message.class)
