@@ -72,10 +72,10 @@ public class AddMeetingController extends FormBasicController {
 		
 		dateEl.clearError();
 		if(dateEl.getDate() == null) {
-			dateEl.setErrorKey("form.legende.mandatory", null);
+			dateEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(dateEl.getDate().before(new Date())) {
-			dateEl.setErrorKey("error.date.in.past", null);
+			dateEl.setErrorKey("error.date.in.past");
 			allOk &= false;
 		} else {
 			Date newDate = dateEl.getDate();
@@ -83,7 +83,7 @@ public class AddMeetingController extends FormBasicController {
 			for(TeamsRecurringMeeting rMeeting:rMeetings) {
 				Date date = rMeeting.getStartDate();
 				if(CalendarUtils.isSameDay(newDate, date)) {
-					dateEl.setErrorKey("error.same.day", null);
+					dateEl.setErrorKey("error.same.day");
 					allOk &= false;
 					break;
 				}

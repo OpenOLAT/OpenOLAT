@@ -193,13 +193,13 @@ public class TeamsConfigurationController extends FormBasicController {
 		if(infos != null) {
 			if(StringHelper.containsNonWhitespace(producerIdEl.getValue())
 					&& !StringHelper.containsNonWhitespace(infos.getProducerDisplayName())) {
-				producerIdEl.setErrorKey("error.producerNotFound", null);
+				producerIdEl.setErrorKey("error.producerNotFound");
 				allOk &= false;
 			}
 		}
 		
 		if(errors.hasErrors()) {
-			clientIdEl.setErrorKey("error.connection", null);
+			clientIdEl.setErrorKey("error.connection");
 		}
 
 		return allOk;
@@ -210,7 +210,7 @@ public class TeamsConfigurationController extends FormBasicController {
 		
 		el.clearError();
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
-			el.setErrorKey("form.legende.mandatory", null);
+			el.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
