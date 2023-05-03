@@ -152,6 +152,8 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment implements Cou
 			unitEl.select(unitKeys[1], true);	
 		}
 		
+		uifactory.addStaticTextElement("ago", trans.translate("ago"), ruleCont);
+		
 		return ruleCont;
 	}
 	
