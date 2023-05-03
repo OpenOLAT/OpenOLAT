@@ -23,7 +23,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
@@ -32,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -48,6 +51,9 @@ public class ProjectsSettingsController extends FormBasicController {
 	
 	private static final String KEY_ALL = "all";
 	private static final String KEY_ROLE_BASED = "role";
+	
+	private ProjectsRolesAssistanceController rolesAssistanceCtrl;
+	private AssistanceAccordionController assistanceCtrl;
 
 	private FormToggle enabledEl;
 	private SingleSelection createAllowedEl;
@@ -104,6 +110,13 @@ public class ProjectsSettingsController extends FormBasicController {
 		if (projectModule.getCreateRoles() != null) {
 			projectModule.getCreateRoles().forEach(role -> createRolesEl.select(role.name(), true));
 		}
+		
+		rolesAssistanceCtrl = new ProjectsRolesAssistanceController(ureq, getWindowControl());
+		assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
+		assistanceCtrl.setCssClass("o_proj_roles_assistance");
+		listenTo(assistanceCtrl);
+		flc.add("assistance", new ComponentWrapperElement(assistanceCtrl.getInitialComponent()));
+		assistanceCtrl.addQuestionAnswer("roles.rights", null, new Component[] {rolesAssistanceCtrl.getInitialComponent()});
 	}
 
 	private void updateUI() {

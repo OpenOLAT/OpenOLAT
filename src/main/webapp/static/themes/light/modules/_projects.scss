@@ -472,6 +472,16 @@
 	}
 }
 
+.o_proj_roles_assistance {
+	&.o_assistance_accordion {
+		.o_item_content {
+			.o_components_block {
+				display: block;
+			}
+		}
+	}
+}
+
 /* Helpers */
 .o_proj_title {
 	@extend %o_flex_first_grow_base;

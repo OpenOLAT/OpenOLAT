@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.controllers.accordion.AssistanceAccordionController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.DropdownItem;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -116,6 +118,8 @@ public class ProjMemberListController extends FormBasicController implements Act
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private boolean reloadProjectAfterWizard;
 
+	private ProjRolesAssistanceController rolesAssistanceCtrl;
+	private AssistanceAccordionController assistanceCtrl;
 	private StepsMainRunController addMembersWizardCtrl;
 	private StepsMainRunController invitationWizardCtrl;
 	private ToolsController toolsCtrl;
@@ -185,6 +189,13 @@ public class ProjMemberListController extends FormBasicController implements Act
 			removeButton = uifactory.addFormLink("member.bulk.remove", formLayout, Link.BUTTON);
 			tableEl.addBatchButton(removeButton);
 		}
+		
+		rolesAssistanceCtrl = new ProjRolesAssistanceController(ureq, getWindowControl());
+		assistanceCtrl = new AssistanceAccordionController(ureq, getWindowControl(), getTranslator(), "assistance");
+		assistanceCtrl.setCssClass("o_proj_roles_assistance");
+		listenTo(assistanceCtrl);
+		flc.add("assistance", new ComponentWrapperElement(assistanceCtrl.getInitialComponent()));
+		assistanceCtrl.addQuestionAnswer("roles.rights", null, new Component[] {rolesAssistanceCtrl.getInitialComponent()});
 	}
 	
 	private void initColumnsModel(FlexiTableColumnModel columnsModel) {
