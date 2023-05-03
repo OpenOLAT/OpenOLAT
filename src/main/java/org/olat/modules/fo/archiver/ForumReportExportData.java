@@ -97,8 +97,8 @@ public class ForumReportExportData {
 
 			// retrieve data and assign them
 			String foName = forumNode.getLongTitle();
-			Long courseElementID = course.getResourceableId();
-			String thread = message.getParent() == null ? message.getTitle() : message.getParent().getTitle();
+			String courseElementID = course.getResourceableId().toString();
+			String thread = message.getThreadtop() == null ? message.getTitle() : message.getThreadtop().getTitle();
 			String title = message.getParent() == null ? "" : message.getTitle();
 			Date creationDate = message.getCreationDate();
 			Date lastModifiedDate = message.getLastModified();

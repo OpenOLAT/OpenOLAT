@@ -104,6 +104,7 @@ public class ForumReportExportResource implements MediaResource {
 		try (OutputStream out = hres.getOutputStream();
 			 OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 			OpenXMLWorksheet sheet = workbook.nextWorksheet();
+			sheet.setHeaderRows(1);
 
 			createHeader(sheet);
 
