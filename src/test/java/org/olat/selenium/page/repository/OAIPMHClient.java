@@ -63,13 +63,28 @@ public class OAIPMHClient {
 		this.deploymentUrl = deploymentUrl;
 	}
 	
-	public String getIndex() {
+	public String getOAIPMHIndex() {
 		try {
 			URI url = getOaiPmhURIBuilder()
 					.queryParam("verb", "listRecords")
 					.queryParam("metadataprefix", "oai_dc")
 					.build();
 
+			RestConnection restConnection = new RestConnection(deploymentUrl);
+			HttpGet method = restConnection.createGet(url, "application/xml", false);
+			HttpResponse response = restConnection.execute(method);
+			Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+			return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException | UriBuilderException | URISyntaxException | IOException e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	public String getSitemap() {
+		try {
+			URI url = getResourceInfoURIBuilder()
+					.path("sitemap.xml").build();
 			RestConnection restConnection = new RestConnection(deploymentUrl);
 			HttpGet method = restConnection.createGet(url, "application/xml", false);
 			HttpResponse response = restConnection.execute(method);
@@ -107,8 +122,44 @@ public class OAIPMHClient {
 		return this;
 	}
 	
+	public OAIPMHClient assertOnSitemap(String xml) {
+        try(StringReader source = new StringReader(xml)) {
+        	DocumentBuilderFactory documentBuilderFactory = XMLFactories.newDocumentBuilderFactory();
+        	documentBuilderFactory.setNamespaceAware(true);
+            documentBuilderFactory.setExpandEntityReferences(false);
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+            Document document = documentBuilder.parse(new InputSource(source));
+            Element rootElement = document.getDocumentElement();
+			Assert.assertEquals("urlset", rootElement.getTagName());
+        } catch(ParserConfigurationException | SAXException | IOException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+        return this;
+	}
+	
+	public OAIPMHClient assertOnUrlLoc(String xml, String browserUrl) {
+		try {
+			int index = browserUrl.indexOf("RepositoryEntry");
+			int startId = browserUrl.indexOf("/", index) + 1;
+			int endId = browserUrl.indexOf("/", startId);
+			String id = browserUrl.substring(startId, endId);
+			String url = getResourceInfoURIBuilder().path(id).build().toString();
+			Assert.assertTrue(xml.contains("<loc>" + url + "</loc>"));
+		} catch (IllegalArgumentException | UriBuilderException | MalformedURLException | URISyntaxException e) {
+			log.error("", e);
+			Assert.fail();
+		}
+		return this;
+	}
+	
 	public UriBuilder getOaiPmhURIBuilder()
 	throws URISyntaxException, MalformedURLException {
 		return UriBuilder.fromUri(deploymentUrl.toURI()).path("oaipmh");
+	}
+	
+	public UriBuilder getResourceInfoURIBuilder()
+	throws URISyntaxException, MalformedURLException {
+		return UriBuilder.fromUri(deploymentUrl.toURI()).path("resourceinfo");
 	}
 }

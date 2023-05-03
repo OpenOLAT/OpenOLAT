@@ -64,7 +64,7 @@ public class RepositoryAccessPage {
 		return this;
 	}
 	
-	public RepositoryAccessPage assertOnOaiWaring() {
+	public RepositoryAccessPage assertOnOaiWarning() {
 		By oaiWarningBy = By.cssSelector(".o_sel_repo_access_general .o_sel_repo_oai_warning");
 		OOGraphene.waitElement(oaiWarningBy, browser);
 		return this;
