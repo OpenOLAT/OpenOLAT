@@ -146,8 +146,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			List<ProjAppointment> appointmentReadOnly = new ArrayList<>();
 			for (ProjAppointmentInfo appointmentInfo : appointmentInfos) {
 				ProjAppointment appointment = appointmentInfo.getAppointment();
-				boolean participant = appointmentInfo.getMembers().contains(getIdentity());
-				if (secCallback.canEditAppointment(appointment, participant)) {
+				if (secCallback.canEditAppointment(appointment)) {
 					appointmentReadWrite.add(appointment);
 				} else {
 					appointmentReadOnly.add(appointment);

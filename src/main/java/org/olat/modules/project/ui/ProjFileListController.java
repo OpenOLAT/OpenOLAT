@@ -445,7 +445,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		}
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
-			if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 				link.setNewWindow(true, true, false);
 			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 				link.setNewWindow(true, true, false);
@@ -662,7 +662,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
 				Roles roles = ureq.getUserSession().getRoles();
 				
-				if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
 				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
@@ -757,13 +757,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					vfsLeaf = (VFSLeaf)vfsItem;
 					Roles roles = ureq.getUserSession().getRoles();
 					
-					if (secCallback.canEditFile(file, getIdentity()) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+					if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 						addLink("file.edit", CMD_EDIT, "o_icon o_icon_edit", true);
 					} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 						addLink("file.view", CMD_VIEW, "o_icon o_icon_preview", true);
 					}
 					
-					if (secCallback.canEditFile(file, getIdentity())) {
+					if (secCallback.canEditFile(file)) {
 						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit", false);
 					}
 					

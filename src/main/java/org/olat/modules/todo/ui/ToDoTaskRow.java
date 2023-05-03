@@ -62,6 +62,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private final String originSubPath;
 	private final String originTitle;
 	private final boolean originDeleted;
+	private Identity creator;
 	private Identity modifier;
 	private Set<Identity> assignees;
 	private Component assigneesPortraits;
@@ -198,6 +199,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setOverdue(boolean overdue) {
 		this.overdue = overdue;
+	}
+
+	public Identity getCreator() {
+		return creator;
+	}
+
+	public void setCreator(Identity creator) {
+		this.creator = creator;
 	}
 
 	public Identity getModifier() {

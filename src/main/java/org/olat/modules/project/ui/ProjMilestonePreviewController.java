@@ -77,7 +77,7 @@ public class ProjMilestonePreviewController extends BasicController {
 			}
 			editLink = LinkFactory.createButton("edit", mainVC, this);
 		}
-		if (secCallback.canDeleteMilestone(milestone)) {
+		if (secCallback.canDeleteMilestone(milestone, getIdentity())) {
 			deleteLink = LinkFactory.createButton("delete", mainVC, this);
 		}
 	}

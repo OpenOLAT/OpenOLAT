@@ -122,10 +122,10 @@ public class ProjAppointmentPreviewController extends BasicController {
 		listenTo(referencesCtrl);
 		mainVC.put("references", referencesCtrl.getInitialComponent());
 		
-		if (secCallback.canEditAppointment(appointment, info.getMembers().contains(getIdentity()))) {
+		if (secCallback.canEditAppointment(appointment)) {
 			editLink = LinkFactory.createButton("edit", mainVC, this);
 		}
-		if (secCallback.canDeleteAppointment(appointment, info.getMembers().contains(getIdentity()))) {
+		if (secCallback.canDeleteAppointment(appointment, getIdentity())) {
 			deleteLink = LinkFactory.createButton("delete", mainVC, this);
 		}
 	}

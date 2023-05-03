@@ -124,14 +124,14 @@ public class ProjNoteController extends BasicController {
 		downloadLink = LinkFactory.createToolLink(CMD_DOWNLOAD, translate("download"), this, "o_icon_download");
 		cmdsDropDown.addComponent(downloadLink);
 		
-		if (secCallback.canDeleteNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity()))) {
+		if (secCallback.canDeleteNote(noteInfo.getNote(), getIdentity())) {
 			cmdsDropDown.addComponent(new Spacer("delete-spacer"));
 			
 			deleteLink = LinkFactory.createToolLink(CMD_DELETE, translate("delete"), this, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 			cmdsDropDown.addComponent(deleteLink);
 		}
 		
-		if (edit && secCallback.canEditNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity()))) {
+		if (edit && secCallback.canEditNote(noteInfo.getNote())) {
 			doOpenEdit(ureq);
 		} else {
 			doOpenView(ureq);
@@ -162,7 +162,7 @@ public class ProjNoteController extends BasicController {
 		listenTo(noteViewCtrl);
 		mainVC.put("viewNote", noteViewCtrl.getInitialComponent());
 		
-		editLink.setVisible(secCallback.canEditNote(noteInfo.getNote(), noteInfo.getMembers().contains(getIdentity())));
+		editLink.setVisible(secCallback.canEditNote(noteInfo.getNote()));
 	}
 	
 	private void doOpenEdit(UserRequest ureq) {

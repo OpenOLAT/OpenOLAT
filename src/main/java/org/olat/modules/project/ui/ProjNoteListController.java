@@ -711,15 +711,14 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			
 			ProjNote note = projectService.getNote(row);
 			if (note != null) {
-				boolean participant = row.getMembers().contains(getIdentity());
-				if (secCallback.canEditNote(note, participant)) {
+				if (secCallback.canEditNote(note)) {
 					addLink("note.edit", CMD_EDIT, "o_icon o_icon_edit", false);
 				}
 				
 				addLink("open.in.new.window", CMD_OPEN_WINDOW, "o_icon o_icon_content_popup", true);
 				addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);
 				
-				if (secCallback.canDeleteNote(note, participant)) {
+				if (secCallback.canDeleteNote(note, getIdentity())) {
 					addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted), false);
 				}
 			}

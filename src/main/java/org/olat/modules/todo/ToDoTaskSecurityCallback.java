@@ -31,6 +31,6 @@ public interface ToDoTaskSecurityCallback {
 	
 	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee);
 	
-	public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee);
+	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee);
 
 }

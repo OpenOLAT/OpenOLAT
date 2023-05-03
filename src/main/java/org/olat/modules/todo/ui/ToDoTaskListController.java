@@ -459,6 +459,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), tags));
 			
 			ToDoTaskMembers toDoTaskMembers = toDoTaskGroupKeyToMembers.get(toDoTask.getBaseGroup().getKey());
+			Set<Identity> creators = toDoTaskMembers.getMembers(ToDoRole.creator);
+			row.setCreator(creators.stream().findFirst().orElse(null));
 			Set<Identity> modifiers = toDoTaskMembers.getMembers(ToDoRole.modifier);
 			row.setModifier(modifiers.stream().findFirst().orElse(null));
 			Set<Identity> assignees = toDoTaskMembers.getMembers(ToDoRole.assignee);
@@ -476,10 +478,11 @@ public abstract class ToDoTaskListController extends FormBasicController
 				row.setStatus(ToDoStatus.deleted);
 			}
 			
+			boolean creator = row.getCreator() != null && row.getCreator().getKey().equals(getIdentity().getKey());
 			boolean assignee = row.getAssignees().contains(getIdentity());
 			boolean delegatee = row.getDelegatees().contains(getIdentity());
 			row.setCanEdit(getSecurityCallback().canEdit(toDoTask, assignee, delegatee));
-			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, assignee, delegatee));
+			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDoItem(row);
 			forgeTitleItem(row);
 			forgeToolsLink(row);

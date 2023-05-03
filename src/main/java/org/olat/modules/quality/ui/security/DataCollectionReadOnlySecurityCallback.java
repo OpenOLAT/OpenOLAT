@@ -117,7 +117,7 @@ class DataCollectionReadOnlySecurityCallback implements DataCollectionSecurityCa
 	}
 
 	@Override
-	public boolean canDelete(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
+	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return false;
 	}
 
