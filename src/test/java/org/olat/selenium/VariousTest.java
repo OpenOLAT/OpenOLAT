@@ -32,6 +32,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.modules.library.LibraryManagerTest;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.FolderPage;
@@ -41,8 +42,10 @@ import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.OAIPMHClient;
+import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
@@ -195,7 +198,7 @@ public class VariousTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void oaipmhIndex()
+	public void indexOAIPMH()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -250,7 +253,7 @@ public class VariousTest extends Deployments {
 		settings
 			.accessConfiguration()
 			.setMetadataIndex()
-			.assertOnOaiWaring()
+			.assertOnOaiWarning()
 			.save();
 		// Add license
 		settings
@@ -262,10 +265,61 @@ public class VariousTest extends Deployments {
 			.clickToolbarBack();
 		
 		OAIPMHClient oaiPmhClient = new OAIPMHClient(deploymentUrl);
-		String indexXml = oaiPmhClient.getIndex();
+		String indexXml = oaiPmhClient.getOAIPMHIndex();
 		oaiPmhClient
 			.assertOnOAIPMH(indexXml)
 			.assertOnTitle(indexXml, title)
 			.assertOnContributer(indexXml, "Dr Johns");
+	}
+	
+	/**
+	 * Create a wiki, set a license, allow indexing, publish it
+	 * and check if the sitemap.xml contains the URL of the resource.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void indexSitemap()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String title = "SiteMap " + UUID.randomUUID();
+		//create course
+		RepositorySettingsPage settings = authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.wiki)
+			.fillCreateForm(title);
+		settings
+			.assertOnInfos();
+		settings
+			.accessConfiguration()
+			.setMetadataIndex()
+			.assertOnOaiWarning()
+			.save();
+		settings
+			.metadata()
+			.setLicense()
+			.save();
+		
+		WikiPage wiki = WikiPage.getWiki(browser);
+		wiki.changeStatus(RepositoryEntryStatusEnum.published);
+		
+		String currentUrl = browser.getCurrentUrl();
+
+		OAIPMHClient oaiPmhClient = new OAIPMHClient(deploymentUrl);
+		String sitemap = oaiPmhClient.getSitemap();
+		oaiPmhClient
+			.assertOnSitemap(sitemap)
+			.assertOnUrlLoc(sitemap, currentUrl);
 	}
 }
