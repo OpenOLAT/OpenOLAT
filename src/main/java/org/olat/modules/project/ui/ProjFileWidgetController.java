@@ -68,14 +68,12 @@ public class ProjFileWidgetController extends ProjFileListController {
 		
 		uploadLink = uifactory.addFormLink("file.upload", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		uploadLink.setIconLeftCSS("o_icon o_icon_upload");
-		uploadLink.setElementCssClass("o_link_plain");
 		uploadLink.setTitle(translate("file.upload"));
 		uploadLink.setGhost(true);
 		uploadLink.setVisible(secCallback.canCreateFiles());
 		
 		createLink = uifactory.addFormLink("file.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setElementCssClass("o_link_plain");
 		createLink.setTitle(translate("file.create"));
 		createLink.setGhost(true);
 		createLink.setVisible(secCallback.canCreateFiles());

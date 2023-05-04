@@ -151,9 +151,9 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		listsCont.setRootForm(mainForm);
 		formLayout.add("lists", listsCont);
 		
-		fileEl = uifactory.addCheckboxesVertical("reference.files", listsCont, fileSV.keys(), fileSV.values(), fileSV.icons(), 1);
-		fileEl.setEscapeHtml(false);
-		fileEl.addActionListener(FormEvent.ONCHANGE);
+		appointmentEl = uifactory.addCheckboxesVertical("reference.appointments", listsCont, appointmentSV.keys(), appointmentSV.values(), appointmentSV.icons(), 1);
+		appointmentEl.setEscapeHtml(false);
+		appointmentEl.addActionListener(FormEvent.ONCHANGE);
 		
 		toDoEl = uifactory.addCheckboxesVertical("reference.todos", listsCont, toDoSV.keys(), toDoSV.values(), toDoSV.icons(), 1);
 		toDoEl.setEscapeHtml(false);
@@ -163,9 +163,9 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		noteEl.setEscapeHtml(false);
 		noteEl.addActionListener(FormEvent.ONCHANGE);
 		
-		appointmentEl = uifactory.addCheckboxesVertical("reference.appointments", listsCont, appointmentSV.keys(), appointmentSV.values(), appointmentSV.icons(), 1);
-		appointmentEl.setEscapeHtml(false);
-		appointmentEl.addActionListener(FormEvent.ONCHANGE);
+		fileEl = uifactory.addCheckboxesVertical("reference.files", listsCont, fileSV.keys(), fileSV.values(), fileSV.icons(), 1);
+		fileEl.setEscapeHtml(false);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
 		noValuesAvailableEl = uifactory.addStaticTextElement("no.values.available", null, translate("no.values.available"), formLayout);
 		

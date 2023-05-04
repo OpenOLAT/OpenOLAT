@@ -438,7 +438,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 		searchParams.setIdentifiers(List.of(kalendarEvent.getExternalId()));
 		searchParams.setStatus(List.of(ProjectStatus.active));
-		List<ProjMilestoneInfo> milestonesInfos = projectService.getMilestoneInfos(searchParams, ProjArtefactInfoParams.TAG_DISPLAY_NAMES);
+		List<ProjMilestoneInfo> milestonesInfos = projectService.getMilestoneInfos(searchParams, ProjArtefactInfoParams.TAGS);
 		if (milestonesInfos.isEmpty()) {
 			return;
 		}

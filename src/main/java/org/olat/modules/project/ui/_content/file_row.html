@@ -1,5 +1,9 @@
 <div class="o_proj_card o_proj_file_card">
-	<div class="o_proj_file_thumbnail">
+	#if($row.isOpenInNewWindow())
+		<div class="o_proj_file_thumbnail" onClick="$f.openFfXHREvent(false, true, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'select_file','$row.key');" role="link">
+	#else
+		<div class="o_proj_file_thumbnail" onClick="$f.ffXHREvent("select_file","$row.key");" role="link">
+	#end
 		<div class="o_proj_file_img">
 			#if($row.isThumbnailAvailable())
 				<img src="${row.getThumbnailUrl()}" />

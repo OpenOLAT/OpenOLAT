@@ -53,6 +53,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private boolean button = false;
 	private ButtonSize buttonSize = ButtonSize.regular;
 	private boolean primary = false;
+	private boolean ghost = false;
 	private CaretPosition caretPosition = CaretPosition.right;
 	private boolean embbeded = false;
 	private boolean expandContentHeight = false;
@@ -118,6 +119,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 
 	public void setPrimary(boolean primary) {
 		this.primary = primary;
+	}
+
+	public boolean isGhost() {
+		return ghost;
+	}
+
+	public void setGhost(boolean ghost) {
+		this.ghost = ghost;
 	}
 
 	public CaretPosition getCaretPosition() {

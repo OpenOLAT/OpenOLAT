@@ -222,7 +222,13 @@ public class TagSelectionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		doSelect(ureq);
+		if (createLink.isVisible()) {
+			// Create a new tag on enter...
+			doCreateTag();
+		} else {
+			//.. or close this selection view.
+			doSelect(ureq);
+		}
 	}
 	
 	private void doSelect(UserRequest ureq) {
@@ -237,6 +243,8 @@ public class TagSelectionController extends FormBasicController {
 		TagItem tagItem = createNewTagItem(quickSearchEl.getValue());
 		tagItems.add(tagItem);
 		tagItems.sort(comparator);
+		createLink.setVisible(false);
+		selectButton.setFocus(true);
 	}
 	
 	private void doToggleTag(FormLink link) {

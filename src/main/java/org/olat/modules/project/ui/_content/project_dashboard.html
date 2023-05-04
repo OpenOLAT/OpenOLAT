@@ -13,13 +13,15 @@
 			#end
 		</div>
 	</div>
-	<div class="o_proj_project_teaser">
-		#if($projectTeaser)
-			$projectTeaser
-		#end
-	</div>
-	<div>
-		$r.render("users")
+	<div class="o_proj_project_meta">
+		<div class="o_proj_project_members">
+			$r.render("users")
+		</div>
+		<div class="o_proj_project_teaser">
+			#if($projectTeaser)
+				$projectTeaser
+			#end
+		</div>
 	</div>
 	<div class="o_proj_widgets o_block">
 		<div class="o_proj_widget_col">

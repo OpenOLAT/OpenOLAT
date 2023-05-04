@@ -157,6 +157,7 @@ public class ProjArtefactDAO {
 		sb.and().append("activity.project.key = :projectKey");
 		sb.and().append("activity.doer.key = :identityKey");
 		sb.and().append("activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.and().append("artefact.status = '").append(ProjectStatus.active.name()).append("'");
 		sb.and();
 		sb.append("(");
 		sb.append("artefact.creator.key = :identityKey");

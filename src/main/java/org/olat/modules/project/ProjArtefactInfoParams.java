@@ -27,9 +27,9 @@ package org.olat.modules.project;
  */
 public class ProjArtefactInfoParams {
 	
-	public static final ProjArtefactInfoParams ALL = of(true, true, false);
+	public static final ProjArtefactInfoParams ALL = of(true, true, true);
 	public static final ProjArtefactInfoParams MEMBERS = of(true, false, false);
-	public static final ProjArtefactInfoParams TAG_DISPLAY_NAMES = of(false, false, false);
+	public static final ProjArtefactInfoParams TAGS = of(false, false, true);
 	
 	private final boolean members;
 	private final boolean numReferences;

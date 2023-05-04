@@ -381,6 +381,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			activityDao.create(Action.projectRolesUpdate, rolesBeforeXml, null, doer, project, identity);
 			activityDao.create(Action.projectMemberRemove, null, null, doer, project, identity);
+			
+			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+			searchParams.setProject(project);
+			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.deleteEvent(milestone, identity));
+			
 			return;
 		}
 		
@@ -409,6 +414,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		if (currentRoles.isEmpty()) {
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
+			
+			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+			searchParams.setProject(project);
+			searchParams.setStatus(List.of(ProjectStatus.active));
+			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.createOrUpdateEvent(milestone, List.of(identity)));
 		}
 	}
 	
@@ -425,6 +435,12 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public boolean isProjectMember(IdentityRef identity) {
 		return memberQueries.isProjectMember(identity);
+	}
+	
+	private Set<Identity> getMembers(ProjProject project) {
+		Long projectGroupKey = project.getBaseGroup().getKey();
+		Set<Identity> members = memberQueries.getGroupKeyToIdentities(List.of(projectGroupKey)).getOrDefault(projectGroupKey, Set.of());
+		return members;
 	}
 	
 	@Override
@@ -574,6 +590,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ataSearchParams.setArtefact(artefact);
 		Map<String, List<ProjArtefact>> typeToArtefacts = artefactToArtefactDao.loadArtefactToArtefacts(ataSearchParams).stream()
 				.map(ata -> artefact.getKey().equals(ata.getArtefact1().getKey())? ata.getArtefact2(): ata.getArtefact1())
+				.filter(a -> a.getStatus() != ProjectStatus.deleted)
 				.collect(Collectors.groupingBy(ProjArtefact::getType));
 		
 		return loadArtefacts(typeToArtefacts);
@@ -699,11 +716,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		List<Identity> toAdd = new ArrayList<>(members);
 		toAdd.removeAll(currentMembers);
-		toAdd.forEach(identity -> updateMember2(doer, artefact, identity, Set.of(DEFAULT_ROLE_NAME)));
+		toAdd.forEach(identity -> updateMember(doer, artefact, identity, Set.of(DEFAULT_ROLE_NAME)));
 		
 		List<Identity> toRemove = new ArrayList<>(currentMembers);
 		toRemove.removeAll(members);
-		toRemove.forEach(identity -> updateMember2(doer, artefact, identity, Set.of()));
+		toRemove.forEach(identity -> updateMember(doer, artefact, identity, Set.of()));
 		
 		onUpdateMembers(artefact, toAdd, toRemove);
 		
@@ -712,11 +729,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 	}
 	
-	private void updateMember2(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles) {
-		updateMember2(doer, artefact, identity, roles, null, null);
+	private void updateMember(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles) {
+		updateMember(doer, artefact, identity, roles, null, null);
 	}
 	
-	private void updateMember2(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles, List<Identity> addedIdentities, List<Identity> removedIdentities) {
+	private void updateMember(Identity doer, ProjArtefact artefact, Identity identity, Set<String> roles, List<Identity> addedIdentities, List<Identity> removedIdentities) {
 		Group group = artefact.getBaseGroup();
 		
 		List<String> currentRoles = groupDao.getMemberships(group, identity).stream()
@@ -1096,7 +1113,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		List<Identity> addedIdentities = new ArrayList<>(identityKeyToRoles.size());
 		List<Identity> revedIdentities = new ArrayList<>(identityKeyToRoles.size());
-		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember2(doer, reloadedToDo.getArtefact(),
+		identityKeyToRoles.entrySet().forEach(identityToRole -> updateMember(doer, reloadedToDo.getArtefact(),
 				identityKeyToIdentity.get(identityToRole.getKey()), identityToRole.getValue(), addedIdentities, revedIdentities));
 		
 		if (!addedIdentities.isEmpty() || !revedIdentities.isEmpty()) {
@@ -1696,14 +1713,14 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjMilestone createMilestone(Identity doer, boolean createActivity, ProjProject project, Date dueDate) {
 		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, doer);
 		ProjMilestone milestone = milestoneDao.create(artefact, DateUtils.truncateSeconds(dueDate));
-		calendarHelper.createOrUpdateEvent(milestone, List.of(doer));
+		Set<Identity> members = getMembers(project);
+		calendarHelper.createOrUpdateEvent(milestone, members);
 		if (createActivity) {
 			String after = ProjectXStream.toXml(milestone);
 			activityDao.create(Action.milestoneCreate, null, after, null, doer, artefact);
 		}
 		return milestone;
 	}
-	
 	
 	@Override
 	public void updateMilestone(Identity doer, ProjMilestoneRef milestone, ProjMilestoneStatus status, Date dueDate,
@@ -1774,7 +1791,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			reloadedMilestone = milestoneDao.save(reloadedMilestone);
 			updateContentModified(reloadedMilestone.getArtefact(), doer);
 			
-			List<Identity> members = groupDao.getMembers(reloadedMilestone.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+			Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
 			calendarHelper.createOrUpdateEvent(reloadedMilestone, members);
 			
 			String after = ProjectXStream.toXml(reloadedMilestone);
@@ -1803,7 +1820,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		String after = ProjectXStream.toXml(deletedMilestone);
 		activityDao.create(Action.milestoneStatusDelete, before, after, null, doer, deletedMilestone.getArtefact());
 		
-		List<Identity> members = groupDao.getMembers(deletedMilestone.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
+		Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
 		calendarHelper.deleteEvent(deletedMilestone, members);
 	}
 
@@ -1813,6 +1830,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		if (reloadedMilestone == null) {
 			return;
 		}
+		
+		Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
+		calendarHelper.deleteEvent(reloadedMilestone, members);
 		
 		ProjArtefact artefact = reloadedMilestone.getArtefact();
 		milestoneDao.delete(milestone);

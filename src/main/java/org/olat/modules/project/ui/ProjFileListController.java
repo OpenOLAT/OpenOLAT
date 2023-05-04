@@ -77,6 +77,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -315,7 +316,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	protected void loadModel(UserRequest ureq, boolean sort) {
 		ProjFileSearchParams searchParams = createSearchParams();
 		applyFilters(searchParams);
-		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(false, false, true));
+		List<ProjFileInfo> infos = projectService.getFileInfos(searchParams, ProjArtefactInfoParams.of(true, false, true));
 		List<ProjFileRow> rows = new ArrayList<>(infos.size());
 		
 		for (ProjFileInfo info : infos) {
@@ -344,6 +345,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					}
 				}
 			}
+			
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
 			
 			forgeSelectLink(row, info.getFile(), vfsMetadata, ureq.getUserSession().getRoles());
 			forgeToolsLink(row);
@@ -380,15 +383,6 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
-			if (ProjFileFilter.my.name() == filter.getFilter()) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
-					searchParams.setCreators(List.of(getIdentity()));
-				} else {
-					searchParams.setCreators(null);
-				}
-			}
-			
 			if (ProjFileFilter.type.name() == filter.getFilter()) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -414,6 +408,14 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ProjFileFilter.my.name() == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
+					Long identityKey = getIdentity().getKey();
+					rows.removeIf(row -> !row.getMemberKeys().contains(identityKey));
+				}
+			}
+			
 			if (ProjFileFilter.tag.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {
@@ -447,8 +449,10 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
 			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 				link.setNewWindow(true, true, false);
+				row.setOpenInNewWindow(true);
 			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 				link.setNewWindow(true, true, false);
+				row.setOpenInNewWindow(true);
 			}
 			
 		}
@@ -549,6 +553,19 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		fileCreateCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("ONCLICK".equals(event.getCommand())) {
+			String fileKey = ureq.getParameter("select_file");
+			if (StringHelper.isLong(fileKey)) {
+				Long key = Long.valueOf(fileKey);
+				doOpenOrDownload(ureq, key);
+				return;
+			}
+		}
+		super.event(ureq, source, event);
 	}
 	
 	@Override

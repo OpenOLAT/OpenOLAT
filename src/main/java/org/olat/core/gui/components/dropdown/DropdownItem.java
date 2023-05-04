@@ -176,4 +176,9 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 	public void setPrimary(boolean primary) {
 		dropdown.setPrimary(primary);
 	}
+	
+	public void setGhost(boolean ghost) {
+		dropdown.setGhost(ghost);
+	}
+	
 }

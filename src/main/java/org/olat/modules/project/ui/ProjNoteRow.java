@@ -42,6 +42,7 @@ public class ProjNoteRow implements ProjNoteRef {
 	private final Identity contentModifiedBy;
 	
 	private final Set<Identity> members;
+	private Set<Long> memberKeys;
 	private String displayName;
 	private String text;
 	private String modified;
@@ -78,6 +79,14 @@ public class ProjNoteRow implements ProjNoteRef {
 
 	public Set<Identity> getMembers() {
 		return members;
+	}
+
+	public Set<Long> getMemberKeys() {
+		return memberKeys;
+	}
+
+	public void setMemberKeys(Set<Long> memberKeys) {
+		this.memberKeys = memberKeys;
 	}
 
 	public String getDisplayName() {

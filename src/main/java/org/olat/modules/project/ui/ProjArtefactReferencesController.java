@@ -125,16 +125,16 @@ public class ProjArtefactReferencesController extends FormBasicController {
 			addDropdown.setOrientation(DropdownOrientation.right);
 			addDropdown.setEmbbeded(true);
 			
-			fileUploadLink = uifactory.addFormLink("reference.file.upload", formLayout, Link.LINK);
-			addDropdown.addElement(fileUploadLink);
-			fileCreateLink = uifactory.addFormLink("reference.file.create", formLayout, Link.LINK);
-			addDropdown.addElement(fileCreateLink);
+			appointmentCreateLink = uifactory.addFormLink("reference.appointment.create", formLayout, Link.LINK);
+			addDropdown.addElement(appointmentCreateLink);
 			toDoCreateLink = uifactory.addFormLink("reference.todo.create", formLayout, Link.LINK);
 			addDropdown.addElement(toDoCreateLink);
 			noteCreateLink = uifactory.addFormLink("reference.note.create", formLayout, Link.LINK);
 			addDropdown.addElement(noteCreateLink);
-			appointmentCreateLink = uifactory.addFormLink("reference.appointment.create", formLayout, Link.LINK);
-			addDropdown.addElement(appointmentCreateLink);
+			fileCreateLink = uifactory.addFormLink("reference.file.create", formLayout, Link.LINK);
+			addDropdown.addElement(fileCreateLink);
+			fileUploadLink = uifactory.addFormLink("reference.file.upload", formLayout, Link.LINK);
+			addDropdown.addElement(fileUploadLink);
 		}
 		
 		loadArtefacts();
@@ -142,15 +142,14 @@ public class ProjArtefactReferencesController extends FormBasicController {
 
 	private void loadArtefacts() {
 		ProjArtefactItems artefacts = projectService.getLinkedArtefactItems(artefact);
-		
 		List<ArtefactRow> artefactRows = new ArrayList<>();
-		List<ProjFile> files = artefacts.getFiles();
-		if (files != null && !files.isEmpty()) {
-			List<ArtefactRow> rows = new ArrayList<>(files.size());
-			for (ProjFile file : files) {
-				ArtefactRow artefactRow = new ArtefactRow(file.getKey(), file.getArtefact());
-				String iconCss = CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename());
-				forgeRow(artefactRow, iconCss, ProjectUIFactory.getDisplayName(file), ProjectBCFactory.getFileUrl(file));
+		
+		List<ProjAppointment> appointments = artefacts.getAppointments();
+		if (appointments != null && !appointments.isEmpty()) {
+			List<ArtefactRow> rows = new ArrayList<>(appointments.size());
+			for (ProjAppointment appointment : appointments) {
+				ArtefactRow artefactRow = new ArtefactRow(appointment.getKey(), appointment.getArtefact());
+				forgeRow(artefactRow, "o_icon_proj_appointment", ProjectUIFactory.getDisplayName(getTranslator(), appointment), ProjectBCFactory.getAppointmentUrl(appointment));
 				rows.add(artefactRow);
 			}
 			rows.sort((r1, r2) -> r1.getDisplayName().compareToIgnoreCase(r2.getDisplayName()));
@@ -181,12 +180,13 @@ public class ProjArtefactReferencesController extends FormBasicController {
 			artefactRows.addAll(rows);
 		}
 		
-		List<ProjAppointment> appointments = artefacts.getAppointments();
-		if (appointments != null && !appointments.isEmpty()) {
-			List<ArtefactRow> rows = new ArrayList<>(appointments.size());
-			for (ProjAppointment appointment : appointments) {
-				ArtefactRow artefactRow = new ArtefactRow(appointment.getKey(), appointment.getArtefact());
-				forgeRow(artefactRow, "o_icon_proj_appointment", ProjectUIFactory.getDisplayName(getTranslator(), appointment), ProjectBCFactory.getAppointmentUrl(appointment));
+		List<ProjFile> files = artefacts.getFiles();
+		if (files != null && !files.isEmpty()) {
+			List<ArtefactRow> rows = new ArrayList<>(files.size());
+			for (ProjFile file : files) {
+				ArtefactRow artefactRow = new ArtefactRow(file.getKey(), file.getArtefact());
+				String iconCss = CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename());
+				forgeRow(artefactRow, iconCss, ProjectUIFactory.getDisplayName(file), ProjectBCFactory.getFileUrl(file));
 				rows.add(artefactRow);
 			}
 			rows.sort((r1, r2) -> r1.getDisplayName().compareToIgnoreCase(r2.getDisplayName()));

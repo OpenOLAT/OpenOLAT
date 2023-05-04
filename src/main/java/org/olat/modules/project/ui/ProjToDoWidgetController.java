@@ -78,7 +78,6 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		
 		createLink = uifactory.addFormLink("todo.create", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
-		createLink.setElementCssClass("o_link_plain");
 		createLink.setTitle(translate("todo.create"));
 		createLink.setGhost(true);
 		createLink.setVisible(secCallback.canCreateNotes());

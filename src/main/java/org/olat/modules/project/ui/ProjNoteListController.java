@@ -82,6 +82,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjArtefactInfoParams;
+import org.olat.modules.project.ProjFileFilter;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteFilter;
 import org.olat.modules.project.ProjNoteInfo;
@@ -319,6 +320,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
 			
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
+			
 			forgeUsersPortraits(ureq, row, info.getMembers());
 			forgeSelectLink(row);
 			forgeToolsLink(row);
@@ -365,15 +368,6 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
-			if (ProjNoteFilter.my.name() == filter.getFilter()) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
-					searchParams.setCreators(List.of(getIdentity()));
-				} else {
-					searchParams.setCreators(null);
-				}
-			}
-			
 			if (ProjNoteFilter.status.name() == filter.getFilter()) {
 				List<String> status = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (status != null && !status.isEmpty()) {
@@ -390,6 +384,14 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (ProjFileFilter.my.name() == filter.getFilter()) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_MY)) {
+					Long identityKey = getIdentity().getKey();
+					rows.removeIf(row -> !row.getMemberKeys().contains(identityKey));
+				}
+			}
+			
 			if (ProjNoteFilter.tag.name().equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableTagFilter)filter).getValues();
 				if (values != null && !values.isEmpty()) {

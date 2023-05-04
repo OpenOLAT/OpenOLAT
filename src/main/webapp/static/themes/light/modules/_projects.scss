@@ -68,6 +68,17 @@
 			display: inline;
 		}
 	}
+	.o_proj_project_meta {
+		display: flex;
+		flex-wrap: wrap;
+		flex-direction: row-reverse;
+		gap: 10px;
+		.o_proj_project_teaser {
+			margin-right: auto;
+			min-width: 300px;
+			flex: 1;
+		}
+	}
 	.o_proj_widgets {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
@@ -89,7 +100,12 @@
 	
 	.o_proj_widget {
 		.o_proj_widget_title {
+			h3 {
+				font-size: 20px;
+				margin: 5px 0px;
+			}
 			.o_proj_widget_cmds {
+				margin: -10px 0px;
 				.btn-group,
 				.btn {
 					font-size: $font-size-h3;
@@ -109,8 +125,10 @@
 	flex-wrap: wrap;
 	gap: 10px;
 	>div {
-		// Minus 5px because of the gap?!
-		width: calc(50% - 5px);
+		width: calc(percentage(math.div(1, 3)) - 7px);
+		@media (max-width: $screen-md-max) {
+			min-width: calc(50% - 5px)
+		}
 		@media (max-width: $screen-sm-max) {
 			min-width: 100%;
 		}
@@ -328,6 +346,11 @@
 			.o_proj_note_name {
 				margin: 0px;
 			}
+			.o_proj_note_text {
+				font-size: 18px;
+				line-height: 1.5;
+				letter-spacing: .02em;
+			}
 		}
 	}
 }
@@ -352,21 +375,10 @@
 			margin-bottom: 0;
 		}
 	}
-	.o_proj_color.dropdown-menu {
-		min-width: 46px;
-		li {
-			height: 32px;
-		}
-		.form-group {
-			margin-bottom: 0;
-		}
-		.o_cal_color_element {
-			margin: 0px 12px;
-		}
-	}
 	.o_proj_status_color {
-		display: flex;
+		display: grid;
 		gap: 10px;
+		grid-template-columns: 1fr 1fr;
 	}
 }
 .o_proj_appointment_preview {
@@ -413,6 +425,7 @@
 		&.o_proj_timeline_today {
 			.o_proj_timeline_date {
 				font-weight: bold;
+				white-space: nowrap;
 			}
 		}
 		&:not(.o_proj_timeline_today) {

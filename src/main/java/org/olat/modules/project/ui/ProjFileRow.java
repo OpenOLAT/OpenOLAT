@@ -41,11 +41,13 @@ public class ProjFileRow implements ProjFileRef {
 	private final Date creationDate;
 	private final Date lastModifiedDate;
 	private final Identity lastModifiedBy;
+	private Set<Long> memberKeys;
 	private String modified;
 	private Set<Long> tagKeys;
 	private String formattedTags;
 	private boolean thumbnailAvailable;
 	private String thumbnailUrl;
+	private boolean openInNewWindow;
 	private FormLink selectLink;
 	private FormLink toolsLink;
 	
@@ -81,6 +83,14 @@ public class ProjFileRow implements ProjFileRef {
 
 	public Identity getLastModifiedBy() {
 		return lastModifiedBy;
+	}
+
+	public Set<Long> getMemberKeys() {
+		return memberKeys;
+	}
+
+	public void setMemberKeys(Set<Long> memberKeys) {
+		this.memberKeys = memberKeys;
 	}
 
 	public String getModified() {
@@ -121,6 +131,14 @@ public class ProjFileRow implements ProjFileRef {
 
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public boolean isOpenInNewWindow() {
+		return openInNewWindow;
+	}
+
+	public void setOpenInNewWindow(boolean openInNewWindow) {
+		this.openInNewWindow = openInNewWindow;
 	}
 
 	public String getSelectLinkName() {

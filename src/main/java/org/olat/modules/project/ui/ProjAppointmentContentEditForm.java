@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -74,6 +75,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 	private final ProjAppointment appointment;
 	private final List<? extends TagInfo> projectTags;
+	private Date startDate;
 
 	@Autowired
 	private CalendarManager calendarManager;
@@ -113,13 +115,14 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			allDayEl.toggleOn();
 		}
 		
-		Date startDate = appointment.getStartDate();
+		startDate = appointment.getStartDate();
 		Date endDate = appointment.getEndDate();
 		if (startDate == null && endDate == null) {
 			startDate = new Date();
 			endDate = DateUtils.addHours(startDate, 1);
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
+		startEl.addActionListener(FormEvent.ONCHANGE);
 		startEl.setMandatory(true);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
@@ -172,11 +175,25 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		boolean reccurend = recurrenceRuleEl.isOneSelected() && !RECURRENCE_NONE.equals(recurrenceRuleEl.getSelectedKey());
 		recurrenceEndEl.setVisible(reccurend );
 	}
+
+	private void syncEndDate() {
+		Date newStartdDate = startEl.getDate();
+		Date endDate = endEl.getDate();
+		if (newStartdDate == null || endDate == null) {
+			return;
+		}
+		
+		Duration duration = Duration.between(DateUtils.toLocalDateTime(startDate), DateUtils.toLocalDateTime(newStartdDate));
+		Date newEndDate = DateUtils.toDate( DateUtils.toLocalDateTime(endDate).plus(duration));
+		endEl.setDate(newEndDate);
+	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == allDayEl) {
 			updateAllDayUI();
+		} else if (source == startEl) {
+			syncEndDate();
 		} else if (source == recurrenceRuleEl) {
 			updateReccurenceUI();
 		}
