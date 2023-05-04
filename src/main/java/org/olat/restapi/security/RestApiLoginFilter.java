@@ -480,6 +480,7 @@ public class RestApiLoginFilter implements Filter {
 			urls.add(context + "/ping");
 			urls.add(context + "/openmeetings");
 			urls.add(context + "/system");
+			urls.add(context + "/collabora");
 			urls.add(context + "/onlyoffice");
 			urls.add(context + "/office365");
 			alwaysEnabledUrls = urls;
@@ -499,6 +500,7 @@ public class RestApiLoginFilter implements Filter {
 			urls.add(context + "/wadl");
 			urls.add(context + "/registration");
 			urls.add(context + "/openmeetings");
+			urls.add(context + "/collabora");
 			urls.add(context + "/onlyoffice");
 			urls.add(context + "/office365");
 			openUrls = urls;
