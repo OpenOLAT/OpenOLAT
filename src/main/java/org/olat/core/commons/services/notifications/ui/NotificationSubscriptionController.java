@@ -384,7 +384,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // ok
 				// Remove subscription and update data model
 				Subscriber sub = (Subscriber) delYesNoC.getUserObject();
-				notificationsManager.unsubscribe(sub);
+				notificationsManager.deleteSubscriber(sub.getKey());
 				updateSubscriptionsDataModel();
 				showInfo("info.notification.deleted");
 				// Notify parent controller
