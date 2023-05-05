@@ -78,6 +78,7 @@ public class PublicationController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("wizard.title.publication");
+		formLayout.setElementCssClass("o_sel_course_wizard_publication");
 		
 		SelectionValues statusKV = new SelectionValues();
 		statusKV.add(SelectionValues.entry(RepositoryEntryStatusEnum.preparation.name(), translate("cif.status.preparation")));

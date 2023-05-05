@@ -26,7 +26,6 @@ import org.olat.course.CourseModule;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
-import org.olat.selenium.page.course.CourseWizardPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -196,14 +195,13 @@ public class AuthoringEnvPage {
 	 * @param displayName
 	 * @return
 	 */
-	public CourseWizardPage fillCreateFormAndStartWizard(String displayName) {
+	public void fillCreateFormAndStartWizard(String displayName, String courseType, Wizard wizard) {
 		OOGraphene.waitModalDialog(browser);
 		By inputFocusBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input:focus");
 		OOGraphene.waitElement(inputFocusBy, browser);
 		By inputBy = By.cssSelector("div.modal.o_sel_author_create_popup div.o_sel_author_displayname input");
 		browser.findElement(inputBy).sendKeys(displayName);
 		// select node model for the course
-		String courseType = CourseModule.COURSE_TYPE_CLASSIC;
 		By typeBy = By.xpath("//div[contains(@class,'o_radio_cards') and contains(@class,'o_course_design')]//input[@name='course.design' and @value='" + courseType + "']");
 		browser.findElement(typeBy).click();
 		// open the assistant list
@@ -212,11 +210,10 @@ public class AuthoringEnvPage {
 		By assistantDropdownBy = By.cssSelector("div.modal-dialog ul.dropdown-menu");
 		OOGraphene.waitElement(assistantDropdownBy, browser);
 		// create the course
-		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@class,'o_sel_wizard_simple.course')]");
+		By simpleCourseWizardBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@class,'" + wizard.linkCssClass() + "')]");
 		browser.findElement(simpleCourseWizardBy).click();
 		// wait the wizard
-		OOGraphene.waitModalDialog(browser, "div.o_sel_course_elements");
-		return new CourseWizardPage(browser);
+		OOGraphene.waitModalDialog(browser, wizard.modalCssClass());
 	}
 	
 	/**
@@ -370,6 +367,27 @@ public class AuthoringEnvPage {
 	public CoursePageFragment clickToolbarRootCrumb() {
 		OOGraphene.clickBreadcrumbBack(browser);
 		return new CoursePageFragment(browser);
+	}
+	
+	public enum Wizard {
+		classic("o_sel_wizard_simple.course", "div.o_sel_course_elements"),
+		exam("o_sel_wizard_exam.course", "fieldset.o_sel_course_wizard_options");
+		
+		private final String linkCssClass;
+		private final String modalCssClass;
+		
+		private Wizard(String linkCssClass, String modalCssClass) {
+			this.linkCssClass = linkCssClass;
+			this.modalCssClass = modalCssClass;
+		}
+		
+		public String linkCssClass() {
+			return linkCssClass;
+		}
+		
+		public String modalCssClass() {
+			return modalCssClass;
+		}
 	}
 	
 	public enum ResourceType {

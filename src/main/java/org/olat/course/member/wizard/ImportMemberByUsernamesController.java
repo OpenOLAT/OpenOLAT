@@ -102,6 +102,7 @@ public class ImportMemberByUsernamesController extends StepFormBasicController {
 		// input field
 		inputContainer = FormLayoutContainer.createDefaultFormLayout("input", getTranslator());
 		formLayout.add(inputContainer);
+		inputContainer.setElementCssClass("o_sel_user_import_by_username");
 		
 		namesEl = uifactory.addTextAreaElement("addusers", "form.addusers", -1, 15, 40, false, false, context.getRawNames(), inputContainer);
 		namesEl.setElementCssClass("o_sel_user_import");

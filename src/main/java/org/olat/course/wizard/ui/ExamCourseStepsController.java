@@ -68,12 +68,14 @@ public class ExamCourseStepsController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("wizard.title.exam.steps");
+		formLayout.setElementCssClass("o_sel_course_wizard_options");
 		
 		SelectionValues configKV = new SelectionValues();
 		configKV.add(SelectionValues.entry(KEY_DISCLAIMER, translate("exam.disclaimer")));
 		configKV.add(SelectionValues.entry(KEY_RETEST, translate("exam.retest")));
 		configKV.add(SelectionValues.entry(KEY_CERTIFICATE, translate("exam.certificate")));
 		configEl = uifactory.addCheckboxesVertical("exam.config", formLayout, configKV.keys(), configKV.values(), 1);
+		configEl.setElementCssClass("o_sel_course_wizard_exam_config");
 		configEl.select(KEY_RETEST, parts.isRetest());
 		configEl.select(KEY_CERTIFICATE, parts.isCertificate());
 		
@@ -81,8 +83,7 @@ public class ExamCourseStepsController extends StepFormBasicController {
 		membersKV.add(SelectionValues.entry(KEY_COACHES, translate("exam.coaches")));
 		membersKV.add(SelectionValues.entry(KEY_PARTICIPANTS, translate("exam.participants")));
 		membersEl = uifactory.addCheckboxesVertical("exam.members", formLayout, membersKV.keys(), membersKV.values(), 1);
-		membersEl.select(KEY_RETEST, parts.isRetest());
-		membersEl.select(KEY_CERTIFICATE, parts.isCertificate());
+		membersEl.setElementCssClass("o_sel_course_wizard_members");
 	}
 
 	@Override
