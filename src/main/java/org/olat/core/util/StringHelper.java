@@ -477,6 +477,12 @@ public class StringHelper {
 		}
 	}
 	
+	public static final String escapeJavaScriptParam(String str) {
+		return str.replaceAll("(\\r|\\n|\\r\\n)", "\\\\n")
+				.replaceAll("`", "\\\\x60")
+				.replaceAll("'", "\\\\x27");
+	}
+	
 	public static final String encodeUrlPathSegment(String path) {
 		return UriUtils.encodePathSegment(path, StandardCharsets.UTF_8);
 	}

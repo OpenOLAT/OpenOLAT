@@ -224,10 +224,10 @@ public class ProjectUIFactory {
 		downloadFileName += "_";
 		downloadFileName += Formatter.formatDatetimeFilesystemSave(new Date());
 		downloadFileName = FileUtils.normalizeFilename(downloadFileName);
-		downloadFileName += ".txt";
+		downloadFileName += ".md";
 		resource.setDownloadable(true, downloadFileName);
 		
-		resource.setContentType("text/txt");
+		resource.setContentType("text/markdown");
 		resource.setEncoding("UTF-8");
 		
 		return resource;

@@ -83,6 +83,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.IntegerElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.JSDateChooser;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.MemoryElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultiSelectionFilterElementImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.MultipleSelectionElementImpl;
@@ -854,6 +855,15 @@ public class FormUIFactory {
 		setLabelIfNotNull(i18nLabel, te);
 		formLayout.add(te);
 		return te;
+	}
+	
+	public MarkdownElement addMarkdownElement(String name, String i18nLabel, String initialValue, FormItemContainer formLayout) {
+		MarkdownElement element = new MarkdownElement(name);
+		element.setNewOriginalValue(initialValue);
+		element.setValue(initialValue);
+		setLabelIfNotNull(i18nLabel, element);
+		formLayout.add(element);
+		return element;
 	}
 
 	/**

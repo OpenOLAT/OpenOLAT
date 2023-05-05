@@ -26,12 +26,12 @@ import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
-import org.olat.core.gui.components.form.flexible.elements.TextAreaElement.TextAreaAutosaveEvent;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.MarkdownElement.MarkdownAutosaveEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjNote;
@@ -48,7 +48,7 @@ public class ProjNoteContentEditController extends FormBasicController {
 	
 	private TextElement titleEl;
 	private TagSelection tagsEl;
-	private TextAreaElement textEl;
+	private MarkdownElement textEl;
 
 	private final ProjNote note;
 	private final String tempIdentifier;
@@ -80,7 +80,7 @@ public class ProjNoteContentEditController extends FormBasicController {
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		tagsEl.addActionListener(FormEvent.ONCHANGE);
 		
-		textEl = uifactory.addTextAreaElement("note.text", "note.text", -1, 4, 1, true, false, text, formLayout);
+		textEl = uifactory.addMarkdownElement("note.text", "note.text", text, formLayout);
 		textEl.addActionListener(FormEvent.ONCHANGE);
 		textEl.setAutosave(true);
 	}
@@ -94,8 +94,8 @@ public class ProjNoteContentEditController extends FormBasicController {
 			tagDisplayName = tagsEl.getDisplayNames();
 			doSave();
 		} else if (textEl == source) {
-			if (event instanceof TextAreaAutosaveEvent) {
-				text = ((TextAreaAutosaveEvent)event).getText();
+			if (event instanceof MarkdownAutosaveEvent maEvent) {
+				text = maEvent.getText();
 				doSave();
 			} else {
 				text = textEl.getValue();

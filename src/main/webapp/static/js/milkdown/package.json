@@ -1,0 +1,26 @@
+{
+	"name": "@frentix/oomilkdown",
+	"version": "1.0.0",
+	"description": "Milkdown for OpenOlat",
+	"main": "src/index.js",
+	"scripts": {
+		"build": "webpack --mode production"
+	},
+	"author": "Urs Hensler <urs.hensler@frentix.com>",
+	"homepage": "https://openolat.org",
+	"devDependencies": {
+		"@babel/core": "^7.12.16",
+		"@babel/preset-env": "^7.12.16",
+		"babel-loader": "^8.2.2",
+		"webpack": "^5.76.2",
+		"webpack-cli": "^4.9.1"
+	},
+	"dependencies": {
+		"@milkdown/core": "^7.2.1",
+		"@milkdown/ctx": "^7.2.1",
+		"@milkdown/prose": "^7.2.1",
+		"@milkdown/transformer": "^7.2.1",
+		"@milkdown/plugin-listener": "^7.2.1",
+		"@milkdown/preset-commonmark": "^7.2.1"
+	}
+}

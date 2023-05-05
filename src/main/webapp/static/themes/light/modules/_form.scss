@@ -209,6 +209,13 @@
 		margin-right: 0.2em;
 	}
 	
+	.o_markdown_element {
+		.form-control.ProseMirror {
+			height: unset;
+			min-height: 10em;
+		}
+	}
+	
 	.o_form_two_cols {
 		@media (min-width: $screen-sm-max) {
 			display: grid;

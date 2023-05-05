@@ -29,7 +29,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjNote;
 
@@ -49,8 +48,7 @@ public class ProjNoteContentViewController extends BasicController {
 		
 		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), note);
 		mainVC.contextPut("displayName", displayName);
-		mainVC.contextPut("text", Formatter.escWithBR(StringHelper.blankIfNull(note.getText())).toString());
-		
+		mainVC.contextPut("text", StringHelper.blankIfNull(note.getText()).toString());
 		mainVC.contextPut("tags", TagUIFactory.getFormattedTags(getLocale(), tags));
 	}
 
