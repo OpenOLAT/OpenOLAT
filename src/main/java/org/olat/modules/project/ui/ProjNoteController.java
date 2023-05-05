@@ -141,7 +141,7 @@ public class ProjNoteController extends BasicController {
 	private void updateHeaderUI(UserRequest ureq) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(noteInfo.getMembers()));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "members", mainVC, null, avatarMapperKey);
-		usersPortraitCmp.setAriaLabel(translate("members"));
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);

@@ -651,7 +651,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			return;
 		}
 		
-		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, flc, new String[] {"do"}, new String[] {""});
+		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, null, flc, new String[] {"do"}, new String[] {""});
 		doEl.setAjaxOnly(true);
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (ToDoStatus.done == row.getStatus()) {

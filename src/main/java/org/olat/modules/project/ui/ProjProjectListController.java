@@ -496,7 +496,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(members);
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
-		usersPortraitCmp.setAriaLabel(translate("members"));
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);

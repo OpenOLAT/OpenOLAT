@@ -342,7 +342,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 	private void forgeUsersPortraits(UserRequest ureq, ProjNoteRow row, Set<Identity> members) {
 		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
 		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + row.getKey(), flc.getFormItemComponent(), null, avatarMapperKey);
-		usersPortraitCmp.setAriaLabel(translate("members"));
+		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setSize(PortraitSize.small);
 		usersPortraitCmp.setMaxUsersVisible(5);
 		usersPortraitCmp.setUsers(portraitUsers);

@@ -353,7 +353,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		ProjTimelineRow row = new ProjTimelineRow();
 		
 		String icon = "<i class=\"o_icon o_icon-lg o_icon_todo_task\"> </i>";
-		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, icon, flc);
 		iconItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setIconItem(iconItem);
 		
@@ -393,7 +393,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		ProjTimelineRow row = new ProjTimelineRow();
 		
 		String icon = "<i class=\"o_icon o_icon-lg o_icon_proj_appointment\"> </i>";
-		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, icon, flc);
 		iconItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setIconItem(iconItem);
 		
@@ -430,7 +430,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		ProjTimelineRow row = new ProjTimelineRow();
 		
 		String icon = "<i class=\"o_icon o_icon-lg o_icon_proj_milestone\"> </i>";
-		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, icon, flc);
+		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, icon, flc);
 		iconItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setIconItem(iconItem);
 		
