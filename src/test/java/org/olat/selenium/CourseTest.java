@@ -37,6 +37,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
+import org.olat.course.CourseModule;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.modules.invitation.restapi.InvitationVO;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -67,6 +68,7 @@ import org.olat.selenium.page.qti.QTI21ConfigurationCEPage;
 import org.olat.selenium.page.qti.QTI21Page;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
 import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
+import org.olat.selenium.page.repository.AuthoringEnvPage.Wizard;
 import org.olat.selenium.page.repository.CPPage;
 import org.olat.selenium.page.repository.RepositoryEditDescriptionPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
@@ -229,7 +231,7 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createCourse_withWizard()
+	public void createCourseWithClassicWizard()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -244,10 +246,11 @@ public class CourseTest extends Deployments {
 		
 		String title = "Create-Course-Wizard-" + UUID.randomUUID().toString();
 		//create course
-		CourseWizardPage courseWizard = authoringEnv
+		 authoringEnv
 			.openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateFormAndStartWizard(title);
+			.fillCreateFormAndStartWizard(title, CourseModule.COURSE_TYPE_CLASSIC, Wizard.classic);
+		CourseWizardPage courseWizard = CourseWizardPage.getWizard(browser);
 		
 		courseWizard
 			.selectAllCourseElements()

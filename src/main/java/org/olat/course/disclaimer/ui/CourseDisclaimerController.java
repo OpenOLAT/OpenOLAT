@@ -141,6 +141,7 @@ public class CourseDisclaimerController extends FormBasicController {
 			setFormTitle("course.disclaimer.headline");
 		}
 		setFormContextHelp("manual_user/course_create/Course_Settings/#disclaimer");
+		formLayout.setElementCssClass("o_sel_course_disclaimer_settings");
 		
 		// Enable and disable the disclaimers
 		disclaimer1CheckBoxEl = uifactory.addCheckboxesHorizontal("course.disclaimer.1", formLayout, onKeys, onValues);
@@ -246,11 +247,11 @@ public class CourseDisclaimerController extends FormBasicController {
 		textElement.clearError();
 		if(StringHelper.containsNonWhitespace(textElement.getValue())) {
 			if(lenght != -1 && textElement.getValue().length() > lenght) {
-				textElement.setErrorKey("input.toolong", new String[]{ String.valueOf(lenght) });
+				textElement.setErrorKey("input.toolong", String.valueOf(lenght));
 				return false;
 			}
 		} else if (textElement.isMandatory()) {
-			textElement.setErrorKey("form.legende.mandatory", null);
+			textElement.setErrorKey("form.legende.mandatory");
 			return false;
 		}
 

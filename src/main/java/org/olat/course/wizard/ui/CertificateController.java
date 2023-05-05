@@ -96,6 +96,7 @@ public class CertificateController extends StepFormBasicController {
 		configsCont = FormLayoutContainer.createDefaultFormLayout("configs", getTranslator());
 		formLayout.add("configs", configsCont);
 		configsCont.setRootForm(mainForm);
+		configsCont.setElementCssClass("o_sel_certificates_options");
 		
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
 		String[] pdfCertificatesOptionsValues = new String[] {
