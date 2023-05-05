@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.gui.components.util;
+package org.olat.core.commons.services.doceditor.collabora.ui;
 
 import java.util.ArrayList;
 import java.util.Comparator;

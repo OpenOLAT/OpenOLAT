@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.doceditor;
+package org.olat.core.commons.services.doceditor.collabora;
 
 import java.time.Instant;
 import java.util.Date;

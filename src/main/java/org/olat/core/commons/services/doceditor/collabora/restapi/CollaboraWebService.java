@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.doceditor.collabora.restapi;
 
-import static org.olat.core.commons.services.doceditor.DocEditorRestHelper.getAsIso8601;
-import static org.olat.core.commons.services.doceditor.DocEditorRestHelper.getFirstRequestHeader;
+import static org.olat.core.commons.services.doceditor.collabora.DocEditorRestHelper.getAsIso8601;
+import static org.olat.core.commons.services.doceditor.collabora.DocEditorRestHelper.getFirstRequestHeader;
 
 import java.io.InputStream;
 import java.util.Date;

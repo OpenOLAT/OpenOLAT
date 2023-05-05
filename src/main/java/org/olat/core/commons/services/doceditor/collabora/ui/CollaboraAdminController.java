@@ -21,7 +21,7 @@ package org.olat.core.commons.services.doceditor.collabora.ui;
 
 import static org.olat.core.commons.services.doceditor.collabora.CollaboraService.REFRESH_EVENT_ORES;
 import static org.olat.core.commons.services.doceditor.collabora.ui.CollaboraUIFactory.validateIsMandatory;
-import static org.olat.core.gui.components.util.KeyValues.entry;
+import static org.olat.core.commons.services.doceditor.collabora.ui.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
 import java.util.Collection;
@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
