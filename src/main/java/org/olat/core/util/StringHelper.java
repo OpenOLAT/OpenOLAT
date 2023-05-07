@@ -478,7 +478,8 @@ public class StringHelper {
 	}
 	
 	public static final String escapeJavaScriptParam(String str) {
-		return str.replaceAll("(\\r|\\n|\\r\\n)", "\\\\n")
+		return escapeJavaScript(str)
+				.replaceAll("(\\r|\\n|\\r\\n)", "\\\\n")
 				.replaceAll("`", "\\\\x60")
 				.replaceAll("'", "\\\\x27");
 	}
