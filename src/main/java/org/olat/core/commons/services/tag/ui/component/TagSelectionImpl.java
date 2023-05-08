@@ -39,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
@@ -75,6 +76,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 	private final Set<Long> initialSelectedKeys;
 	private Set<Long> selectedKeys;
 	private Set<String> newTags = new HashSet<>(1);
+	private boolean dirtyCheck = true;
 
 	public TagSelectionImpl(WindowControl wControl, String name, List<? extends TagInfo> allTags) {
 		super(name);
@@ -130,6 +132,11 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 		}
 		
 		return tags;
+	}
+	
+	@Override
+	public void setDirtyCheck(boolean dirtyCheck) {
+		this.dirtyCheck = dirtyCheck;
 	}
 
 	public FormLink getButton() {
@@ -188,8 +195,12 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 				calloutCtrl.deactivate();
 				updateButtonUI();
 				getFormItemComponent().setDirty(true);
-				Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
-				wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+				if (dirtyCheck) {
+					Command dirtyOnLoad = FormJSHelper.getFlexiFormDirtyOnLoadCommand(getRootForm());
+					wControl.getWindowBackOffice().sendCommandTo(dirtyOnLoad);
+				}
+				if (getAction() == FormEvent.ONCHANGE)
+					getRootForm().fireFormEvent(ureq, new FormEvent("ONCHANGE", this, FormEvent.ONCHANGE));
 			}
 		} else if (calloutCtrl == source) {
 			cleanUp();

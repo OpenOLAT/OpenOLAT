@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.commons.calendar.ui.ConfirmUpdateController;
 import org.olat.commons.calendar.ui.components.FullCalendarElement;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
+import org.olat.commons.calendar.ui.events.CalendarGUIAddEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIResizeEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
@@ -363,11 +365,13 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == appointmentCreateLink) {
-			doCreateAppointment(ureq);
+			doCreateAppointment(ureq, new Date());
 		} else if (source == milestoneCreateLink) {
 			doCreateMilestone(ureq);
 		} else if (source == calendarEl) {
-			if (event instanceof CalendarGUISelectEvent) {
+			if (event instanceof CalendarGUIAddEvent caEvent) {
+				doCreateAppointment(ureq, caEvent.getStartDate());
+			} else if (event instanceof CalendarGUISelectEvent) {
 				CalendarGUISelectEvent selectEvent = (CalendarGUISelectEvent)event;
 				if (selectEvent.getKalendarEvent() != null) {
 					doOpenPreviewCallout(ureq, selectEvent.getKalendarEvent(), selectEvent.getTargetDomId());
@@ -381,7 +385,6 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				if (appointmentReadWriteKalendarId.equals(resizeEvent.getKalendarRenderWrapper().getKalendar().getCalendarID())) {
 					doMoveAppointment(ureq, resizeEvent.getKalendarEvent(), 0l, resizeEvent.getMinuteDelta(),
 							resizeEvent.getAllDay(), false);
-					
 				}
 			}
 		}
@@ -454,10 +457,10 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		calloutCtr.activate();
 	}
 
-	private void doCreateAppointment(UserRequest ureq) {
+	private void doCreateAppointment(UserRequest ureq, Date date) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project);
+		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project, date);
 		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
 		listenTo(appointmentEditCtrl);
 		

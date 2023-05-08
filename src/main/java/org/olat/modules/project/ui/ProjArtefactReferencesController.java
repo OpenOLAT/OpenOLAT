@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -413,7 +414,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentCreateCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), artefact.getProject());
+		ProjAppointment appointment = projectService.createAppointment(getIdentity(), artefact.getProject(), new Date());
 		projectService.linkArtefacts(getIdentity(), artefact, appointment.getArtefact());
 		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
 		listenTo(appointmentCreateCtrl);

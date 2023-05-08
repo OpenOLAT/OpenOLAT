@@ -187,17 +187,17 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (DateUtils.isOverlapping(event.getBegin(), event.getEnd(), todayStart, todayEnd)) {
 				if (event.isAllDayEvent()) {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + getTranslator().translate("all.day"),
 							false));
 				} else if (event.getBegin().before(todayStart)) {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(todayStart),
 							false));
 				} else {
 					todayRows.add(new CalendarWidgetRow(
-							event.getSubject(), 
+							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin()),
 							false));
 				}
@@ -207,7 +207,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 					dueName += " <i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin());
 				}
 				nextRows.add(new CalendarWidgetRow(
-						event.getSubject(),
+						ProjectUIFactory.getDisplayName(getTranslator(), event),
 						dueName,
 						false));
 			}
@@ -272,7 +272,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project);
+		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project, new Date());
 		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
 		listenTo(appointmentEditCtrl);
 		

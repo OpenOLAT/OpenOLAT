@@ -44,4 +44,10 @@ public interface TagSelection extends FormItem {
 	 * @return all tag display values (selected and new)
 	 */
 	public List<String> getDisplayNames();
+	
+	/**
+	 * @param dirtyCheck false to suppress the dirty check when changing tags. Default: true
+	 */
+	public void setDirtyCheck(boolean dirtyCheck);
+	
 }

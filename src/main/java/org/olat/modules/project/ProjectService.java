@@ -188,7 +188,7 @@ public interface ProjectService {
 	 * Appointments
 	 */
 	
-	public ProjAppointment createAppointment(Identity doer, ProjProject project);
+	public ProjAppointment createAppointment(Identity doer, ProjProject project, Date startDay);
 
 	public void updateAppointment(Identity doer, ProjAppointmentRef appointment, Date startDate, Date endDate,
 			String subject, String description, String location, String color, boolean allDay, String recurrenceRule);

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
@@ -104,6 +105,12 @@ public class ProjectUIFactory {
 	public static String getDisplayName(Translator translator, ProjAppointment appointment) {
 		return StringHelper.containsNonWhitespace(appointment.getSubject())
 				? appointment.getSubject()
+				: getNoTitle(translator);
+	}
+	
+	public static String getDisplayName(Translator translator, KalendarEvent kalendarEvent) {
+		return StringHelper.containsNonWhitespace(kalendarEvent.getSubject())
+				? kalendarEvent.getSubject()
 				: getNoTitle(translator);
 	}
 	

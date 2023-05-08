@@ -184,8 +184,9 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		
 		Duration duration = Duration.between(DateUtils.toLocalDateTime(startDate), DateUtils.toLocalDateTime(newStartdDate));
-		Date newEndDate = DateUtils.toDate( DateUtils.toLocalDateTime(endDate).plus(duration));
+		Date newEndDate = DateUtils.toDate(DateUtils.toLocalDateTime(endDate).plus(duration));
 		endEl.setDate(newEndDate);
+		startDate = newStartdDate;
 	}
 	
 	@Override

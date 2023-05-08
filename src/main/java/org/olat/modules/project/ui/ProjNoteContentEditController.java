@@ -78,6 +78,7 @@ public class ProjNoteContentEditController extends FormBasicController {
 		titleEl.addActionListener(FormEvent.ONCHANGE);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
+		tagsEl.setDirtyCheck(false);
 		tagsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		textEl = uifactory.addMarkdownElement("note.text", "note.text", text, formLayout);
