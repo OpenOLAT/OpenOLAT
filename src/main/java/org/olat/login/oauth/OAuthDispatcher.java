@@ -258,9 +258,17 @@ public class OAuthDispatcher implements Dispatcher {
 		if(StringHelper.containsNonWhitespace(id)) {
 			auth = securityManager.findAuthenticationByAuthusername(id, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER);
 			if(auth == null) {
+
 				String email = infos.getEmail();
-				if(StringHelper.containsNonWhitespace(email)) {
-					Identity identity = userManager.findUniqueIdentityByEmail(email);
+				String institutionalEmail = infos.getInstitutionalEmail();
+				if(StringHelper.containsNonWhitespace(email) || StringHelper.containsNonWhitespace(institutionalEmail)) {
+					Identity identity = null;
+					if(StringHelper.containsNonWhitespace(institutionalEmail)) {
+						identity = userManager.findUniqueIdentityByEmail(institutionalEmail);
+					}
+					if(identity == null && StringHelper.containsNonWhitespace(email)) {
+						identity = userManager.findUniqueIdentityByEmail(email);
+					}
 					if(identity == null) {
 						identity = securityManager.findIdentityByLogin(id);
 					}
