@@ -461,7 +461,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		if (tableEl.getSelectedFilterTab() != null 
 				&& (tableEl.getSelectedFilterTab() == tabNoActivity || tableEl.getSelectedFilterTab() == tabToDelete)) {
 			Date lastActivityDate = DateUtils.addDays(new Date(), -28);
-			rows.removeIf(row -> lastActivityDate.after(row.getLastActivityDate()));
+			rows.removeIf(row -> lastActivityDate.before(row.getLastActivityDate()));
 		}
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
