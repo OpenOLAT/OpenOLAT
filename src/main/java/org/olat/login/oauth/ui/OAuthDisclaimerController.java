@@ -153,7 +153,7 @@ public class OAuthDisclaimerController extends FormBasicController implements Ac
 	
 	private void doLoginAndRegister(Identity authIdentity, UserRequest ureq) {
 		// prepare redirects to home etc, set status
-		int loginStatus = AuthHelper.doLogin(authIdentity, null, ureq);
+		int loginStatus = AuthHelper.doLogin(authIdentity, provider.getProviderName(), ureq);
 		if (loginStatus == AuthHelper.LOGIN_OK) {
 			//update last login date and register active user
 			securityManager.setIdentityLastLogin(authIdentity);
