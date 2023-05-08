@@ -128,7 +128,8 @@ public class SwitchEduIDProvider implements OAuthSPI {
 			user.setEmail(getValue(obj, "email"));
 			user.setFirstName(getValue(obj, "given_name"));
 			user.setLastName(getValue(obj, "family_name"));
-			user.setInstitutionalUserIdentifier(this.getFirstArrayValue(obj, "swissEduIDLinkedAffiliationUniqueID"));
+			user.setInstitutionalUserIdentifier(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationUniqueID"));
+			user.setInstitutionalEmail(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationMail"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}

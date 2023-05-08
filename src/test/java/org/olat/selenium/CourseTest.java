@@ -54,6 +54,7 @@ import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
+import org.olat.selenium.page.course.CourseExamWizardPage;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.CourseWizardPage;
@@ -282,6 +283,107 @@ public class CourseTest extends Deployments {
 			By activeLinkBy = By.xpath("//div[contains(@class,'o_tree')]//li[" + (i+1) + "][contains(@class,'active')]/div/span[contains(@class,'o_tree_link')][contains(@class,'o_tree_l1')][contains(@class,'o_tree_level_label_leaf')]/a[span]");
 			OOGraphene.waitElement(activeLinkBy, browser);
 		}
+	}
+	
+
+	/**
+	 * An author create a course with the exam wizard, it creates one test
+	 * and doesn't select all the steps (there is an other test with all steps).
+	 * It add a student which pass the test.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void createCourseWithExamWizard()
+	throws IOException, URISyntaxException {
+		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Samuel");
+
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		String qtiTestTitle = "Exam 2.1 " + UUID.randomUUID();
+		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/e4_test_qti21.zip");
+		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.uploadResource(qtiTestTitle, qtiTestFile);
+
+		//go to authoring
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		// Create course with the exam wizard
+		String courseTitle = "Exam " + UUID.randomUUID();
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateFormAndStartWizard(courseTitle, CourseModule.COURSE_TYPE_CLASSIC, Wizard.exam);
+		CourseExamWizardPage courseWizard = CourseExamWizardPage.getWizard(browser);
+		
+		String examElement = "Exam 2.1";
+		// Choose options
+		courseWizard
+			.setExamConfiguration(true, false, false)
+			.setExamMembersConfiguration(false, true)
+			.nextInfosMetadata()
+			.nextDisclaimers()
+			.nextTest()
+			.selectTest(qtiTestTitle, examElement)
+			.nextTestConfiguration()
+			.disableTestDate()
+			// Participants
+			.nextSearchUsers()
+			.importMembers(student)
+			.nextUsersOverview()
+			.assertOnOverview(student)
+			.nextPublication()
+			.publish()
+			.finish();
+		
+		RepositorySettingsPage settings = new RepositorySettingsPage(browser);
+		settings
+			.assertOnInfos();
+		settings	
+			.back();
+		
+		// See the course
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		course
+			.assertOnCoursePage();
+		
+		// Assert on one test
+		By elementsBy = By.xpath("//div[contains(@class,'o_tree')]//ul[contains(@class,' o_tree_l1')][count(li)=1]");
+		OOGraphene.waitElement(elementsBy, browser);
+		course
+			.tree()
+			.assertWithTitleSelected(examElement);
+		
+		//Student login
+		LoginPage studentLoginPage = LoginPage.load(browser, deploymentUrl);
+		studentLoginPage
+			.loginAs(student)
+			.resume();
+		
+		NavigationPage studentNavBar = NavigationPage.load(browser);
+		studentNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		// Go to the first test
+		CoursePageFragment studentCourse = new CoursePageFragment(browser);
+		studentCourse
+			.tree()
+			.assertWithTitleSelected(examElement);
+		
+		// Pass the test
+		QTI21Page.getQTI21Page(browser)
+			.passE4()
+			.assertOnCourseAssessmentTestScore(4);
 	}
 	
 	/**

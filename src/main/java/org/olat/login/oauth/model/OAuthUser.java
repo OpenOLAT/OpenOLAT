@@ -42,6 +42,7 @@ public class OAuthUser {
 	private String lastName;
 	private String institutionalUserIdentifier;
 	private String institutionalName;
+	private String institutionalEmail;
 	private String department;
 	private String country;
 	private String lang;
@@ -102,6 +103,14 @@ public class OAuthUser {
 		this.institutionalName = institutionalName;
 	}
 
+	public String getInstitutionalEmail() {
+		return institutionalEmail;
+	}
+
+	public void setInstitutionalEmail(String institutionalEmail) {
+		this.institutionalEmail = institutionalEmail;
+	}
+
 	public String getDepartment() {
 		return department;
 	}
@@ -134,6 +143,7 @@ public class OAuthUser {
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: return institutionalUserIdentifier;
 			case UserConstants.INSTITUTIONALNAME: return institutionalName;
+			case UserConstants.INSTITUTIONALEMAIL: return institutionalEmail;
 			case UserConstants.DEPARTMENT: return department;
 			case UserConstants.COUNTRY: return country;
 			default: return null;
@@ -148,6 +158,7 @@ public class OAuthUser {
 			case UserConstants.LASTNAME: lastName = value; break;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: institutionalUserIdentifier = value; break;
 			case UserConstants.INSTITUTIONALNAME: institutionalName = value; break;
+			case UserConstants.INSTITUTIONALEMAIL: institutionalEmail = value; break;
 			case UserConstants.DEPARTMENT: department = value; break;
 			case UserConstants.COUNTRY: country = value; break;
 			default: break;
