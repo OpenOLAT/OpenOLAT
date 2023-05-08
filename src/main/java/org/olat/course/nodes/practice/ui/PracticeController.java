@@ -286,6 +286,16 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		return false;
 	}
 	
+	private boolean hasNotCorrectOrSkip() {
+		for(int i=0; i<runningPracticeItems.size(); i++) {
+			RunningPracticeItem item = runningPracticeItems.get(i);
+			if(!item.isCorrect() && !item.isSkip() && !item.isError()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private boolean hasIncorrectAnsweredItem() {
 		for(RunningPracticeItem item:runningPracticeItems) {
 			if(!item.isCorrect()) {
@@ -744,7 +754,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			formLayout.add("solutionItem", solutionFormItem);
 			
 			FormSubmit nextButton = uifactory.addFormSubmitButton("next.question", formLayout);
-			if(!hasNextQuestion()) {
+			if(!hasNextQuestion() && !hasNotCorrectOrSkip()) {
 				nextButton.setI18nKey("last.question", null);
 			}
 			nextButton.setFocus(true);

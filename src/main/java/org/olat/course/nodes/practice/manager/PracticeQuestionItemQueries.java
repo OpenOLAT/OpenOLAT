@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
 
@@ -76,19 +75,19 @@ public class PracticeQuestionItemQueries {
 		if(collections != null && !collections.isEmpty()) {
 			List<Long> keys = collections.stream()
 					.map(QuestionItemCollection::getKey)
-					.collect(Collectors.toList());
+					.toList();
 			query.setParameter("collectionKey", keys);
 		}
 		if(pools != null && !pools.isEmpty()) {
 			List<Long> keys = pools.stream()
 					.map(Pool::getKey)
-					.collect(Collectors.toList());
+					.toList();
 			query.setParameter("poolKey", keys);
 		}
 		if(resources != null && !resources.isEmpty()) {
 			List<Long> keys = resources.stream()
 					.map(OLATResource::getKey)
-					.collect(Collectors.toList());
+					.toList();
 			query.setParameter("resourceKey", keys);
 		}
 		appendSearchParams(query, searchParams);
@@ -161,7 +160,7 @@ public class PracticeQuestionItemQueries {
 				if(i > 0) {
 					sb.append(" or ");
 				}
-				sb.append("taxonomyLevel.materializedPathKeys like :taxonomyLevels_" + i);
+				sb.append("taxonomyLevel.materializedPathKeys=:taxonomyLevels_" + i);
 			}
 			if(searchParams.isIncludeWithoutTaxonomyLevel()) {
 				sb.append(" or taxonomyLevel is null");
@@ -214,12 +213,11 @@ public class PracticeQuestionItemQueries {
 	private void appendSearchParams(TypedQuery<QuestionItem> query, SearchPracticeItemParameters searchParams) {
 		if(searchParams.hasExactTaxonomyLevels()) {
 			List<Long> levelKeys = searchParams.getExactTaxonomyLevels().stream()
-					.map(TaxonomyLevel::getKey)
-					.collect(Collectors.toList());
+					.map(TaxonomyLevel::getKey).toList();
 			query.setParameter("taxonomyLevelKey", levelKeys);
 		} else if(searchParams.getDescendantsLevels() != null && !searchParams.getDescendantsLevels().isEmpty()) {
 			for(int i=0; i<searchParams.getDescendantsLevels().size(); i++) {
-				query.setParameter("taxonomyLevels_" + i, searchParams.getDescendantsLevels().get(i).getMaterializedPathKeys() + "%");
+				query.setParameter("taxonomyLevels_" + i, searchParams.getDescendantsLevels().get(i).getMaterializedPathKeys());
 			}
 		}
 		
