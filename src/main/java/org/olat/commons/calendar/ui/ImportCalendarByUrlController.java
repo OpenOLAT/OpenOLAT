@@ -85,19 +85,19 @@ public class ImportCalendarByUrlController extends FormBasicController {
 		
 		calendarName.clearError();
 		if (calendarName.isEmpty()) {
-			calendarName.setErrorKey("cal.import.calname.empty.error", null);
+			calendarName.setErrorKey("cal.import.calname.empty.error");
 			allOk = false;
 		} else {
 			String calID = ImportCalendarManager.getImportedCalendarID(getIdentity(), calendarName.getValue());
 			if (calendarManager.calendarExists(CalendarManager.TYPE_USER, calID)) {
-				calendarName.setErrorKey("cal.import.calname.exists.error", null);
+				calendarName.setErrorKey("cal.import.calname.exists.error");
 				allOk &= false;
 			}
 		}
 		
 		calendarUrl.clearError();
 		if (calendarUrl.isEmpty()) {
-			calendarUrl.setErrorKey("cal.import.url.empty.error", null);
+			calendarUrl.setErrorKey("cal.import.url.empty.error");
 			allOk &= false;
 		}
 		

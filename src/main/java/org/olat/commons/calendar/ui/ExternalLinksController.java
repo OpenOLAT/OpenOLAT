@@ -155,23 +155,23 @@ public class ExternalLinksController extends FormBasicController {
 			if(!link.isEmpty()) {
 				String url = link.getUrl().getValue();
 				if(!StringHelper.containsNonWhitespace(url)) {
-					link.getUrl().setErrorKey("form.legende.mandatory", null);
+					link.getUrl().setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				} else {
 					try {
 						String host = new URL(url).getHost();
 						if(host == null) {
-							link.getUrl().setErrorKey("tab.links.extern.url.invalid", null);
+							link.getUrl().setErrorKey("tab.links.extern.url.invalid");
 						}
 					} catch(MalformedURLException e) {
-						link.getUrl().setErrorKey("tab.links.extern.url.invalid", null);
+						link.getUrl().setErrorKey("tab.links.extern.url.invalid");
 						allOk &= false;
 					}
 				}
 				
 				String name = link.getName().getValue();
 				if(!StringHelper.containsNonWhitespace(name)) {
-					link.getName().setErrorKey("form.legende.mandatory", null);
+					link.getName().setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 			}

@@ -93,19 +93,19 @@ public class ImportCalendarFileController extends FormBasicController {
 		
 		calendarName.clearError();
 		if (calendarName.isEmpty()) {
-			calendarName.setErrorKey("cal.import.calname.empty.error", null);
+			calendarName.setErrorKey("cal.import.calname.empty.error");
 			allOk = false;
 		} else {
 			String calID = ImportCalendarManager.getImportedCalendarID(getIdentity(), calendarName.getValue());
 			if (calendarManager.calendarExists(CalendarManager.TYPE_USER, calID)) {
-				calendarName.setErrorKey("cal.import.calname.exists.error", null);
+				calendarName.setErrorKey("cal.import.calname.exists.error");
 				allOk &= false;
 			}
 		}
 		
 		uploadEl.clearError();
 		if(uploadEl.getUploadFile() == null) {
-			 uploadEl.setErrorKey("form.legende.mandatory", null);
+			 uploadEl.setErrorKey("form.legende.mandatory");
 			 allOk &= false;
 		}
 		
