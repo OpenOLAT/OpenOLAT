@@ -271,8 +271,8 @@ public class ReminderDAO {
 		sb.append("select sent.identity.key from sentreminder sent")
 		  .append(" inner join sent.reminder reminder")
 		  .append(" inner join reminder.entry re")
-		  .append(" inner join usercourseinfos infos on (infos.identity.key=sent.identity.key and infos.resource.key=re.olatResource.key and infos.run=sent.run)")
-		  .append(" where sent.reminder.key=:reminderKey");
+		  .append(" left join usercourseinfos infos on (infos.identity.key=sent.identity.key and infos.resource.key=re.olatResource.key)")
+		  .append(" where sent.reminder.key=:reminderKey and ((sent.run=1 and infos is null) or infos.run=sent.run)");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)
 				.setParameter("reminderKey", reminder.getKey())
