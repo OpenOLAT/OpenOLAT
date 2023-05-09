@@ -100,6 +100,7 @@ public class OAuthAdminController extends FormBasicController {
 	private TextElement tequilaOAuth2EndpointEl;
 
 	private MultipleSelectionElement switchEduIDDefaultEl;
+	private MultipleSelectionElement switchEduIDMFAEl;
 	private TextElement switchEduIDApiKeyEl;
 	private TextElement switchEduIDApiSecretEl;
 	
@@ -468,6 +469,10 @@ public class OAuthAdminController extends FormBasicController {
 		String apiSecret = oauthModule.getSwitchEduIDApiSecret();
 		switchEduIDApiSecretEl = uifactory.addTextElement("switcheduid.secret", "switcheduid.api.secret", 256, apiSecret, switchEduIdCont);
 		switchEduIDApiSecretEl.setMandatory(true);
+		
+		switchEduIDMFAEl = uifactory.addCheckboxesHorizontal("switcheduid.mfa.enabled", switchEduIdCont, keys, values);
+		switchEduIDMFAEl.select(keys[0], oauthModule.isSwitchEduIDMFAEnabled());
+		
 		return switchEduIdCont;
 	}
 	
@@ -797,11 +802,13 @@ public class OAuthAdminController extends FormBasicController {
 			oauthModule.setSwitchEduIDRootEnabled(switchEduIDDefaultEl.isAtLeastSelected(1));
 			oauthModule.setSwitchEduIDApiKey(switchEduIDApiKeyEl.getValue());
 			oauthModule.setSwitchEduIDApiSecret(switchEduIDApiSecretEl.getValue());
+			oauthModule.setSwitchEduIDMFAEnabled(switchEduIDMFAEl.isAtLeastSelected(1));
 		} else {
 			oauthModule.setSwitchEduIDEnabled(false);
 			oauthModule.setSwitchEduIDRootEnabled(false);
 			oauthModule.setSwitchEduIDApiKey("");
 			oauthModule.setSwitchEduIDApiSecret("");
+			oauthModule.setSwitchEduIDMFAEnabled(true);//Reset to default value
 		}
 	}
 	
