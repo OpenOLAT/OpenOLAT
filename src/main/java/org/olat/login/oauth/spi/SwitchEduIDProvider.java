@@ -67,6 +67,10 @@ public class SwitchEduIDProvider implements OAuthSPI {
 		return oauthModule.isSwitchEduIDRootEnabled();
 	}
 	
+	public boolean isMFAEnabled() {
+		return oauthModule.isSwitchEduIDMFAEnabled();
+	}
+	
 	public boolean isTestEnvironment() {
 		return test;
 	}

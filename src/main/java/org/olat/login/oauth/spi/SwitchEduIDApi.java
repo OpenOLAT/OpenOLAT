@@ -62,8 +62,13 @@ public class SwitchEduIDApi extends DefaultApi20 {
     	StringBuilder authorizeUrl = new StringBuilder();
     	authorizeUrl
     		.append(provider.isTestEnvironment() ? SWITCH_EDUID_TEST_LOGIN_URL : SWITCH_EDUID_LOGIN_URL)
-    		.append("/oidc/authorize?")
-    		.append("&nonce=").append(UUID.randomUUID().toString());		
+    		.append("/oidc/authorize?");
+    	if(provider.isMFAEnabled()) {
+    		authorizeUrl
+    			.append("claims=%7B%22id_token%22%3A%7B%22acr%22%3A%20%7B%22essential%22%3A%20true%2C%22values%22%3A%20%5B%22https%3A%2F%2Frefeds.org%2Fprofile%2Fmfa%22%5D%7D%7D%7D");
+    	}
+    	authorizeUrl
+    		.append("&nonce=").append(UUID.randomUUID().toString());	
     	return authorizeUrl.toString();
     }
 }

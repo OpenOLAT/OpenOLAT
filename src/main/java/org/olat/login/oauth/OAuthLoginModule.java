@@ -98,6 +98,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	private String switchEduIDApiKey;
 	@Value("${switch.eduid.client.secret}")
 	private String switchEduIDApiSecret;
+	@Value("${switch.eduid.mfa.enabled:true}")
+	private boolean switchEduIDMFAEnabled;
 	
 	@Value("${oauth.datenlotsen.enabled:false}")
 	private boolean datenlotsenEnabled;
@@ -221,6 +223,8 @@ public class OAuthLoginModule extends AbstractSpringModule {
 		switchEduIDRootEnabled = "true".equals(switchEduIDRootEnabledObj);
 		switchEduIDApiKey = getStringPropertyValue("switchEduIDApiKey", switchEduIDApiKey);
 		switchEduIDApiSecret = getStringPropertyValue("switchEduIDApiSecret", switchEduIDApiSecret);
+		String switchEduIDMFAEnabledObj = getStringPropertyValue("switchEduIDMFAEnabled", Boolean.toString(switchEduIDMFAEnabled));
+		switchEduIDMFAEnabled = "true".equals(switchEduIDMFAEnabledObj);
 		
 		// Datenlotsen
 		String datenlotsenEnabledObj = getStringPropertyValue("datenlotsenEnabled", Boolean.toString(datenlotsenEnabled));
@@ -654,6 +658,15 @@ public class OAuthLoginModule extends AbstractSpringModule {
 	public void setSwitchEduIDApiSecret(String secret) {
 		this.switchEduIDApiSecret = secret;
 		setSecretStringProperty("switchEduIDApiSecret", secret, true);
+	}
+	
+	public boolean isSwitchEduIDMFAEnabled() {
+		return switchEduIDMFAEnabled;
+	}
+
+	public void setSwitchEduIDMFAEnabled(boolean enabled) {
+		this.switchEduIDMFAEnabled = enabled;
+		setStringProperty("switchEduIDMFAEnabled", enabled ? "true" : "false", true);
 	}
 
 	public boolean isDatenlotsenEnabled() {
