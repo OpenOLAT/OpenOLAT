@@ -78,9 +78,14 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		FormLayoutContainer layoutCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
-		formLayout.add("confirm", layoutCont);
-		layoutCont.setRootForm(mainForm);
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			int numOfEvents = 1;//calendarRow.getWrapper().getKalendar().getEvents().size();
+			String msgI18nKey = numOfEvents <= 1 ? "cal.confirm.delete.imported.to.confirmation_message.singular"
+					: "cal.confirm.delete.imported.to.confirmation_message";
+			layoutCont.contextPut("msg", translate(msgI18nKey, Integer.toString(numOfEvents)));
+		}
+
+		FormLayoutContainer layoutCont = uifactory.addDefaultFormLayout("confirm", null, formLayout);
 		
 		SelectionValues calendarKeyValues = new SelectionValues();
 		for(ImportedToCalendar importedCalendar:importedCalendars) {
@@ -92,8 +97,7 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 		String confirmValue = translate("cal.confirm.delete.imported.to.check");
 		confirmEl = uifactory.addCheckboxesHorizontal("confirm", "cal.confirm", layoutCont, confirmKeys, new String[] { confirmValue });
 		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		layoutCont.add(buttonsCont);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("cal.delete.imported.to.calendar", buttonsCont);
 	}
@@ -104,13 +108,13 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 		
 		confirmEl.clearError();
 		if(!confirmEl.isAtLeastSelected(1)) {
-			confirmEl.setErrorKey("form.legende.mandatory", null);
+			confirmEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		calendarEl.clearError();
 		if(!calendarEl.isAtLeastSelected(1)) {
-			calendarEl.setErrorKey("error.atleast.one", null);
+			calendarEl.setErrorKey("error.atleast.one");
 			allOk &= false;
 		}
 		

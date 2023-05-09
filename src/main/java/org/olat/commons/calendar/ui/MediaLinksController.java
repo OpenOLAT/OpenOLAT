@@ -167,7 +167,7 @@ public class MediaLinksController extends FormBasicController {
 			if(!link.isEmpty()) {
 				String name = link.getName().getValue();
 				if(!StringHelper.containsNonWhitespace(name)) {
-					link.getName().setErrorKey("form.legende.mandatory", null);
+					link.getName().setErrorKey("form.legende.mandatory");
 					allOk &= false;
 				}
 			}
@@ -184,8 +184,8 @@ public class MediaLinksController extends FormBasicController {
 			LinkWrapper linkWrapper = new LinkWrapper(link);
 			externalLinks.add(linkWrapper);
 			addNewFormLink(linkWrapper, linksContainer);
-		} else if (source.getUserObject() instanceof LinkWrapper){
-			currentLink = (LinkWrapper)source.getUserObject();
+		} else if (source.getUserObject() instanceof LinkWrapper linkWrapper){
+			currentLink = linkWrapper;
 			if(currentLink.getDelButton().equals(source)) {
 				externalLinks.remove(currentLink);
 			} else if (currentLink.getAddButton().equals(source)) {
@@ -214,8 +214,7 @@ public class MediaLinksController extends FormBasicController {
 			removeAsListenerAndDispose(mediaDialogBox);
 			mediaDialogBox = null;
 		} else if(mediaChooserController == source) {
-			if(event instanceof URLChoosenEvent) {
-				URLChoosenEvent choosenEvent = (URLChoosenEvent)event;
+			if(event instanceof URLChoosenEvent choosenEvent) {
 				String url = choosenEvent.getURL();
 				currentLink.getUrl().setValue(url);
 				currentLink.setCssClass(choosenEvent.getIconCssClass());
@@ -280,10 +279,9 @@ public class MediaLinksController extends FormBasicController {
 	}
 
 	private LinkWrapper createLinkWrapper() {
-		String id = UUID.randomUUID().toString().replaceAll("-", "");
+		String id = UUID.randomUUID().toString().replace("-", "");
 		KalendarEventLink newLink = new KalendarEventLink(provider, id, "", "", "");
-		LinkWrapper newLinkWrapper = new LinkWrapper(newLink);
-		return newLinkWrapper;
+		return new LinkWrapper(newLink);
 	}
 
 	public class LinkWrapper {
