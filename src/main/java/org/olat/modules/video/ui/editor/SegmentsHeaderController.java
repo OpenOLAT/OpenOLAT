@@ -109,8 +109,8 @@ public class SegmentsHeaderController extends FormBasicController {
 		nextSegmentButton.setIconRightCSS("o_icon o_icon_start");
 		nextSegmentButton.setForceOwnDirtyFormWarning(true);
 
-		addSegmentButton = uifactory.addFormLink("addSegment", "form.segment.add",
-				"form.segment.add", formLayout, Link.BUTTON);
+		addSegmentButton = uifactory.addFormLink("addSegment", "form.add", "form.add", formLayout, Link.BUTTON);
+		addSegmentButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);
