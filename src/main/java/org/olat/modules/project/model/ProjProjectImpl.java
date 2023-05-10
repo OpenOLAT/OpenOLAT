@@ -78,6 +78,8 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	private String teaser;
 	@Column(name="p_description", nullable=true, insertable=true, updatable=true)
 	private String description;
+	@Column(name="p_avatar_css_class", nullable=true, insertable=true, updatable=true)
+	private String avatarCssClass;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
@@ -171,6 +173,16 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	@Override
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	@Override
+	public String getAvatarCssClass() {
+		return avatarCssClass;
+	}
+
+	@Override
+	public void setAvatarCssClass(final String avatarCssClass) {
+		this.avatarCssClass = avatarCssClass;
 	}
 
 	@Override

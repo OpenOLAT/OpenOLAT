@@ -34,6 +34,7 @@ import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -42,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.OrganisationUIFactory;
 import org.olat.core.gui.components.util.SelectionValues;
@@ -53,7 +55,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
 import org.olat.user.UserManager;
@@ -67,6 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjProjectEditController extends FormBasicController {
 	
+	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	private static final OrganisationRoles[] ROLES_PROJECT_MANAGER = { OrganisationRoles.administrator,
 			OrganisationRoles.projectmanager };
 
@@ -76,6 +82,8 @@ public class ProjProjectEditController extends FormBasicController {
 	private TextElement externalRefEl;
 	private TextElement teaserEl;
 	private TextAreaElement descriptionEl;
+	private FileElement avatarImageEl;
+	private FileElement backgroundImageEl;
 	private MultiSelectionFilterElement organisationsEl;
 	
 	private CloseableModalController cmc;
@@ -145,6 +153,32 @@ public class ProjProjectEditController extends FormBasicController {
 		String description = project != null? project.getDescription(): null;
 		descriptionEl = uifactory.addTextAreaElement("project.description", 4, 6, description, formLayout);
 		descriptionEl.setEnabled(!readOnly);
+		
+		avatarImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "project.image.avatar", formLayout);
+		avatarImageEl.setMaxUploadSizeKB(2048, null, null);
+		avatarImageEl.setExampleKey("project.image.avatar.example", null);
+		avatarImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
+		avatarImageEl.setReplaceButton(true);
+		avatarImageEl.setDeleteEnabled(true);
+		avatarImageEl.setPreview(ureq.getUserSession(), true);
+		avatarImageEl.addActionListener(FormEvent.ONCHANGE);
+		VFSLeaf avatarImage = projectService.getProjectImage(project, ProjProjectImageType.avatar);
+		if (avatarImage instanceof LocalFileImpl localFile) {
+			avatarImageEl.setInitialFile(localFile.getBasefile());
+		}
+		
+		backgroundImageEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "project.image.background", formLayout);
+		backgroundImageEl.setMaxUploadSizeKB(2048, null, null);
+		backgroundImageEl.setExampleKey("project.image.background.example", null);
+		backgroundImageEl.limitToMimeType(IMAGE_MIME_TYPES, "error.mimetype", new String[]{ IMAGE_MIME_TYPES.toString()} );
+		backgroundImageEl.setReplaceButton(true);
+		backgroundImageEl.setDeleteEnabled(true);
+		backgroundImageEl.setPreview(ureq.getUserSession(), true);
+		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
+		VFSLeaf backgroundImage = projectService.getProjectImage(project, ProjProjectImageType.background);
+		if (backgroundImage instanceof LocalFileImpl localFile) {
+			backgroundImageEl.setInitialFile(localFile.getBasefile());
+		}
 		
 		if (organisationModule.isEnabled()) {
 			initFormOrganisations(formLayout, ureq.getUserSession());
@@ -224,6 +258,30 @@ public class ProjProjectEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == ownerSelectLink) {
 			doSelectOwner(ureq);
+		} else if (source == avatarImageEl) {
+			if (FileElementEvent.DELETE.equals(event.getCommand())) {
+				avatarImageEl.setInitialFile(null);
+				if (avatarImageEl.getUploadFile() != null) {
+					avatarImageEl.reset();
+				}
+				avatarImageEl.clearError();
+				markDirty();
+			} else if (avatarImageEl.isUploadSuccess()) {
+				avatarImageEl.clearError();
+				markDirty();
+			}
+		} else if (source == backgroundImageEl) {
+			if (FileElementEvent.DELETE.equals(event.getCommand())) {
+				backgroundImageEl.setInitialFile(null);
+				if (backgroundImageEl.getUploadFile() != null) {
+					backgroundImageEl.reset();
+				}
+				backgroundImageEl.clearError();
+				markDirty();
+			} else if (backgroundImageEl.isUploadSuccess()) {
+				backgroundImageEl.clearError();
+				markDirty();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -237,6 +295,9 @@ public class ProjProjectEditController extends FormBasicController {
 			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
+		
+		avatarImageEl.validate();
+		backgroundImageEl.validate();
 		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
@@ -272,6 +333,18 @@ public class ProjProjectEditController extends FormBasicController {
 					.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
 					.collect(Collectors.toList());
 			projectService.updateProjectOrganisations(getIdentity(), project, selectedOrganisations);
+		}
+		
+		if (avatarImageEl.getUploadFile() != null) {
+			projectService.storeProjectImage(project, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getUploadFile(), avatarImageEl.getUploadFileName());
+		} else if (avatarImageEl.getInitialFile() == null) {
+			projectService.deleteProjectImage(project, ProjProjectImageType.avatar);
+		}
+		
+		if (backgroundImageEl.getUploadFile() != null) {
+			projectService.storeProjectImage(project, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getUploadFile(), backgroundImageEl.getUploadFileName());
+		} else if (backgroundImageEl.getInitialFile() == null) {
+			projectService.deleteProjectImage(project, ProjProjectImageType.background);
 		}
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);

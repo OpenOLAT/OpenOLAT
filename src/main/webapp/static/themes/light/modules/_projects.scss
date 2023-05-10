@@ -62,10 +62,67 @@
 	}
 }
 
+.o_proj_avatar {
+	border-radius: 12px;
+	img {
+		object-fit: cover;
+		border-radius: 12px;
+	}
+	&.o_proj_avatar_large {
+		width: 120px;
+		height: 120px;
+		img {
+			width: 120px;
+			height: 120px;
+		}
+		&.o_proj_avatar_color {
+			font-size: 60px;
+		}
+	}
+	&.o_proj_avatar_medium {
+		width: 60px;
+		height: 60px;
+		img {
+			width: 60px;
+			height: 60px;
+		}
+		&.o_proj_avatar_color {
+			font-size: 30px;
+		}
+	}
+	&.o_proj_avatar_color {
+		color: $o-proj-avatar-color;	
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+}
+.o_proj_avatar.o_proj_avatar_dark_blue { background-color: $o-proj-avatar-dark-blue-bg-color; }
+.o_proj_avatar.o_proj_avatar_light_blue { background-color: $o-proj-avatar-light-blue-bg-color; }
+.o_proj_avatar.o_proj_avatar_purple { background-color: $o-proj-avatar-purple-bg-color; }
+.o_proj_avatar.o_proj_avatar_red { background-color: $o-proj-avatar-red-bg-color; }
+.o_proj_avatar.o_proj_avatar_orange { background-color: $o-proj-avatar-orange-bg-color; }
+.o_proj_avatar.o_proj_avatar_yellow { background-color: $o-proj-avatar-yellow-bg-color; color: $o-proj-avatar-yellow-color;}
+.o_proj_avatar.o_proj_avatar_dark_green { background-color: $o-proj-avatar-dark-green-bg-color;}
+.o_proj_avatar.o_proj_avatar_light_green { background-color: $o-proj-avatar-light-green-bg-color;}
+
 .o_proj_dashboard {
-	.o_proj_header {
-		.o_proj_dashboard_title {
-			display: inline;
+	.o_proj_header_images {
+		position: relative;
+		height: 300px;
+		max-height: 300px;
+		.o_proj_background {
+			max-height: 240px;
+			overflow: hidden;
+			img {
+				object-position: left top;
+				object-fit: none;
+			}
+		}
+		.o_proj_avatar {
+			position: absolute;
+			bottom: 0px;
+			left: 20px;
 		}
 	}
 	.o_proj_project_meta {
@@ -116,6 +173,22 @@
 	.panel-heading {
 		h3 {
 			margin-top: 10px;
+		}
+	}
+}
+
+.o_proj_title {
+	.o_proj_ref,
+	.o_proj_dashboard_title {
+		display: inline;
+	}
+	.o_proj_avatar_title_ref {
+		display: flex;
+		gap: 15px;
+		.o_proj_avatar ~ .o_proj_title_ref {
+			display: flex;
+			flex-direction: column-reverse;
+			justify-content: space-between;
 		}
 	}
 }
@@ -498,7 +571,7 @@
 /* Helpers */
 .o_proj_title {
 	@extend %o_flex_first_grow_base;
-	align-items: center;
+	align-items: end;
 	&.o_proj_title_top {
 		align-items: start;
 	}

@@ -20,8 +20,6 @@
 package org.olat.modules.project.ui;
 
 
-import static java.util.Collections.singletonList;
-
 import java.util.Date;
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -55,11 +53,14 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
@@ -116,6 +117,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
 	private final MapperKey avatarMapperKey;
+	private final ProjProjectImageMapper projectImageMapper;
+	private final String projectMapperUrl;
+
 	private Date lastVisitDate;
 	
 	@Autowired
@@ -131,6 +135,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		this.project = project;
 		this.secCallback = secCallback;
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
+		this.projectImageMapper = new ProjProjectImageMapper(projectService);
+		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 		
 		ProjProjectUserInfo projectUserInfo = projectService.getOrCreateProjectUserInfo(project, getIdentity());
 		lastVisitDate = projectUserInfo.getLastVisitDate();
@@ -250,6 +257,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 		if (secCallback.canViewProjectMetadata()) {
 			mainVC.contextPut("projectTeaser", project.getTeaser());
 		}
+		
+		String backgroundUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.background);
+		mainVC.contextPut("backgroundUrl", backgroundUrl);
+		String avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		Size size = backgroundUrl != null? Size.large: Size.medium;
+		mainVC.put("avatar", new ProjAvatarComponent("avatar", project, avatarUrl, size));
 	}
 	
 	private void updateCmdsUI() {
@@ -409,7 +422,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	@Override
 	protected void doDispose() {
 		super.doDispose();
-		mapperService.cleanUp(singletonList(avatarMapperKey));
+		mapperService.cleanUp(List.of(avatarMapperKey));
 		if (stackPanel != null) {
 			stackPanel.removeListener(this);
 		}

@@ -1287,6 +1287,17 @@ $o-proj-message-font-weight					: bold !default;
 $o-proj-proj-rows-gap						: 10px !default;
 $o-proj-timeline-row-gap						: 15px  !default;
 $o-proj-timeline-row-margin-top				: 10px  !default;
+$o-proj-avatar-color						: #fff !default;
+$o-proj-avatar-dark-blue-bg-color			: #000080 !default;
+$o-proj-avatar-light-blue-bg-color			: #4169E1 !default;
+$o-proj-avatar-purple-bg-color				: #800080 !default;
+$o-proj-avatar-red-bg-color					: #DC143C !default;
+$o-proj-avatar-orange-bg-color				: #FF8C00 !default;
+$o-proj-avatar-yellow-bg-color				: #FFD700 !default;
+$o-proj-avatar-yellow-color					: $gray-dark !default;
+$o-proj-avatar-light-green-bg-color			: #32CD32 !default;
+$o-proj-avatar-dark-green-bg-color			: #228B22 !default;
+
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;

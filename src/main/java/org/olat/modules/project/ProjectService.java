@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Date;
@@ -33,6 +34,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoStatus;
 
@@ -63,6 +65,12 @@ public interface ProjectService {
 	public List<Organisation> getOrganisations(ProjProjectRef project);
 	
 	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations);
+	
+	public boolean storeProjectImage(ProjProjectRef project, ProjProjectImageType type, Identity savedBy, File file, String filename);
+	
+	public void deleteProjectImage(ProjProjectRef project, ProjProjectImageType type);
+
+	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type);
 
 	public void updateMember(Identity doer, ProjProject project, Identity identity, Set<ProjectRole> roles);
 	

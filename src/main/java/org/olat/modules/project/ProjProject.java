@@ -53,6 +53,10 @@ public interface ProjProject extends ProjProjectRef, OLATResourceable, ModifiedI
 	
 	public void setDescription(String description);
 	
+	public String getAvatarCssClass();
+	
+	public void setAvatarCssClass(String avatarCssClass);
+	
 	public Identity getCreator();
 
 	public Group getBaseGroup();

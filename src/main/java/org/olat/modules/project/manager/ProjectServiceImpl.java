@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.manager;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,6 +97,7 @@ import org.olat.modules.project.ProjNoteInfo;
 import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjNoteSearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjProjectToOrganisation;
@@ -144,6 +146,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Autowired
 	private ProjProjectUserInfoDAO projectUserInfoDao;
 	@Autowired
+	private ProjectStorage projectStorage;
+	@Autowired
 	private ProjMemberQueries memberQueries;
 	@Autowired
 	private ProjArtefactDAO artefactDao;
@@ -151,8 +155,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjArtefactToArtefactDAO artefactToArtefactDao;
 	@Autowired
 	private ProjFileDAO fileDao;
-	@Autowired
-	private ProjFileStorage fileStorage;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -187,7 +189,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	public ProjProject createProject(Identity doer, Identity owner) {
 		Group baseGroup = groupDao.createGroup();
 		groupDao.addMembershipOneWay(baseGroup, owner, ProjectRole.owner.name());
-		ProjProject project = projectDao.create(doer, baseGroup);
+		
+		ProjProject project = projectDao.create(doer, baseGroup, ProjProjectImageType.getRandmonAvatarCssClass());
 		String after = ProjectXStream.toXml(project);
 		activityDao.create(Action.projectCreate, null, after, doer, project);
 		return project;
@@ -359,6 +362,21 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		List<Long> projectOrganisationKeys = getOrganisations(project).stream().map(Organisation::getKey).toList();
 		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();
 		return !Collections.disjoint(projectOrganisationKeys, organisationKeys);
+	}
+	
+	@Override
+	public boolean storeProjectImage(ProjProjectRef project, ProjProjectImageType type, Identity savedBy, File file, String filename) {
+		return projectStorage.storeProjectImage(project, type, savedBy, file, filename);
+	}
+	
+	@Override
+	public void deleteProjectImage(ProjProjectRef project, ProjProjectImageType type) {
+		projectStorage.deleteProjectImage(project, type);
+	}
+	
+	@Override
+	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type) {
+		return projectStorage.getProjectImage(project, type);
 	}
 
 	@Override
@@ -901,7 +919,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public ProjFile createFile(Identity doer, ProjProject project, String filename, InputStream inputStream, boolean upload) {
 		ProjArtefact artefact = artefactDao.create(ProjFile.TYPE, project, doer);
-		VFSLeaf vfsLeaf = fileStorage.store(project, doer, filename, inputStream);
+		VFSLeaf vfsLeaf = projectStorage.storeFile(project, doer, filename, inputStream);
 		ProjFile file = fileDao.create(artefact, vfsLeaf.getMetaInfo());
 		Action action = upload? Action.fileUpload: Action.fileCreate;
 		String after = ProjectXStream.toXml(file);
@@ -968,7 +986,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public boolean existsFile(ProjProjectRef project, String filename) {
-		return fileStorage.exists(project, filename);
+		return projectStorage.exists(project, filename);
 	}
 	
 	@Override
@@ -1319,7 +1337,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 
 	@Override
 	public VFSContainer getProjectContainer(ProjProjectRef project) {
-		return fileStorage.getOrCreateFileContainer(project);
+		return projectStorage.getOrCreateFileContainer(project);
 	}
 	
 	

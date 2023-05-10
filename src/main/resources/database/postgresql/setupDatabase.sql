@@ -3877,6 +3877,7 @@ create table o_proj_project (
    p_title varchar(128),
    p_teaser varchar(150),
    p_description text,
+   p_avatar_css_class varchar(32),
    fk_creator int8 not null,
    fk_group int8 not null,
    primary key (id)

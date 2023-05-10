@@ -30,8 +30,10 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +44,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class ProjFileStorage {
+public class ProjectStorage {
 	
-	private static final Logger log = Tracing.createLoggerFor(ProjFileStorage.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectStorage.class);
 	
 	private File bcrootDirectory, rootDirectory, projectDirectory;
 	
@@ -58,13 +60,41 @@ public class ProjFileStorage {
 		}
 	}
 	
-	public VFSLeaf store(ProjProjectRef project, Identity savedBy, String filename, InputStream inputStream) {
+	public boolean storeProjectImage(ProjProjectRef project, ProjProjectImageType type, Identity savedBy, File file, String filename) {
+		return storeImage(project, type.name(), savedBy, file, filename);
+	}
+	
+	public void deleteProjectImage(ProjProjectRef project, ProjProjectImageType type) {
+		deleteContainer(project, type.name());
+	}
+	
+	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type) {
+		return getFirstLeaf(project, type.name());
+	}
+	
+	private boolean storeImage(ProjProjectRef project, String path, Identity savedBy, File file, String filename) {
+		if (file == null || !file.exists() || !file.isFile()) {
+			return false;
+		}
+		
+		try {
+			VFSContainer imageContainer = getOrCreateContainer(project, path);
+			tryToStore(imageContainer, savedBy, file, filename);
+		} catch (Exception e) {
+			log.error("", e);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public VFSLeaf storeFile(ProjProjectRef project, Identity savedBy, String filename, InputStream inputStream) {
 		if (inputStream == null) {
 			return null;
 		}
 		
 		try {
-			VFSContainer fileContainer = getOrCreateFileContainer(project);
+			VFSContainer fileContainer = getOrCreateContainer(project, "file");
 			return tryToStore(fileContainer, savedBy, filename, inputStream);
 		} catch (Exception e) {
 			log.error("", e);
@@ -73,11 +103,19 @@ public class ProjFileStorage {
 	}
 	
 	public VFSContainer getOrCreateFileContainer(ProjProjectRef project) {
+		return getOrCreateContainer(project, "file");
+	}
+
+	public boolean exists(ProjProjectRef project, String filename) {
+		return getOrCreateFileContainer(project).resolve(filename) != null? true: false;
+	}
+	
+	private VFSContainer getOrCreateContainer(ProjProjectRef project, String path) {
 		File storage = new File(projectDirectory, project.getKey().toString());
 		if (!storage.exists()) {
 			storage.mkdirs();
 		}
-		storage = new File(storage, "file");
+		storage = new File(storage, path);
 		if (!storage.exists()) {
 			storage.mkdirs();
 		}
@@ -86,15 +124,37 @@ public class ProjFileStorage {
 		return VFSManager.olatRootContainer(relativePath);
 	}
 	
+	private VFSLeaf getFirstLeaf(ProjProjectRef project, String path) {
+		if (project != null) {
+			VFSContainer imageContainer = getOrCreateContainer(project, path);
+			if (!imageContainer.getItems().isEmpty()) {
+				VFSItem vfsItem = imageContainer.getItems().get(0);
+				if (vfsItem instanceof VFSLeaf) {
+					return (VFSLeaf)vfsItem;
+				}
+			}
+		}
+		return null;
+	}
+	
+	private void tryToStore(VFSContainer imageContainer, Identity savedBy, File file, String filename) {
+		imageContainer.delete();
+		
+		String cleandFilename = FileUtils.cleanFilename(filename);
+		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(imageContainer, cleandFilename);
+		VFSManager.copyContent(file, vfsLeaf, savedBy);
+	}
+	
 	private VFSLeaf tryToStore(VFSContainer container, Identity savedBy, String filename, InputStream inputStream) {
 		String cleandFilename = FileUtils.cleanFilename(filename);
 		VFSLeaf vfsLeaf = VFSManager.resolveOrCreateLeafFromPath(container, cleandFilename);
 		VFSManager.copyContent(inputStream, vfsLeaf, savedBy);
 		return vfsLeaf;
 	}
-
-	public boolean exists(ProjProjectRef project, String filename) {
-		return getOrCreateFileContainer(project).resolve(filename) != null? true: false;
+	
+	private void deleteContainer(ProjProjectRef project, String path) {
+		VFSContainer imageContainer = getOrCreateContainer(project, path);
+		imageContainer.delete();
 	}
 	
 }

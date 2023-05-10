@@ -27,13 +27,17 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjNoteRef;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 
 /**
  * 
@@ -44,16 +48,25 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 public class ProjNoteAllController extends ProjNoteListController {
 	
 	private FormLink createLink;
+	
+	private final String avatarUrl;
 
 	public ProjNoteAllController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
 			ProjProject project, ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, stackPanel, "note_all", project, secCallback, lastVisitDate, avatarMapperKey);
+		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
+		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		
 		initForm(ureq);
 		loadModel(ureq, true);
 	}
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium)));
+		
 		createLink = uifactory.addFormLink("note.create", formLayout, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");
 		createLink.setVisible(secCallback.canCreateNotes());

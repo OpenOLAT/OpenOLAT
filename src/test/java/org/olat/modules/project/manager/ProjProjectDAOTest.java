@@ -20,6 +20,7 @@
 package org.olat.modules.project.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
@@ -67,7 +68,7 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		Group group = groupDao.createGroup();
 		dbInstance.commitAndCloseSession();
 		
-		ProjProject project = sut.create(creator, group);
+		ProjProject project = sut.create(creator, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		assertThat(project).isNotNull();
@@ -90,6 +91,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		project.setTeaser(teaser);
 		String description = random();
 		project.setDescription(description);
+		String avatarCssClass = miniRandom();
+		project.setAvatarCssClass(avatarCssClass);
 		sut.save(project);
 		dbInstance.commitAndCloseSession();
 		
@@ -101,13 +104,14 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(project.getTitle()).isEqualTo(title);
 		assertThat(project.getTeaser()).isEqualTo(teaser);
 		assertThat(project.getDescription()).isEqualTo(description);
+		assertThat(project.getAvatarCssClass()).isEqualTo(avatarCssClass);
 	}
 	
 	@Test
 	public void shouldDeleteProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Group group = groupDao.createGroup();
-		ProjProject project = sut.create(creator, group);
+		ProjProject project = sut.create(creator, group, null);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(project);

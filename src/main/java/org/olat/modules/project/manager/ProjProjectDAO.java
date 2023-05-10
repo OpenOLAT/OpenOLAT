@@ -52,11 +52,12 @@ public class ProjProjectDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public ProjProject create(Identity creator, Group baseGroup) {
+	public ProjProject create(Identity creator, Group baseGroup, String avatarCssClass) {
 		ProjProjectImpl project = new ProjProjectImpl();
 		project.setCreationDate(new Date());
 		project.setLastModified(project.getCreationDate());
 		project.setStatus(ProjectStatus.active);
+		project.setAvatarCssClass(avatarCssClass);
 		project.setCreator(creator);
 		project.setBaseGroup(baseGroup);
 		dbInstance.getCurrentEntityManager().persist(project);

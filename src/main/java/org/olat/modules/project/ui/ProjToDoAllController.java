@@ -27,11 +27,15 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 
 /**
@@ -44,10 +48,16 @@ public class ProjToDoAllController extends ProjToDoListController {
 	
 	private FormLink createLink;
 
+	private final String avatarUrl;
 
 	public ProjToDoAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
 			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, "todo_all", avatarMapperKey, project, secCallback, lastVisitDate);
+		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
+		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		
 		initForm(ureq);
 		
 		initFilters();
@@ -66,6 +76,8 @@ public class ProjToDoAllController extends ProjToDoListController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
+		
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium)));
 		
 		createLink = uifactory.addFormLink("todo.create", formLayout, Link.BUTTON);
 		createLink.setIconLeftCSS("o_icon o_icon_add");

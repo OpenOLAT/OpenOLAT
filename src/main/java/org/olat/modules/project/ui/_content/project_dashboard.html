@@ -1,10 +1,27 @@
 <div class="o_proj_dashboard">
+	#if($r.isNotEmpty($backgroundUrl))
+		<div class="o_proj_header_images">
+			<div class="o_proj_background">
+				<img src="$backgroundUrl"> 
+			</div>
+			$r.render("avatar")
+		</div>
+	#end
 	<div class="o_proj_title o_proj_title_top o_block_large">
 		<div>
-			<h2 class="o_proj_dashboard_title o_proj_title">$projectTitle</h2>
-			#if($projectExternalRef)
-				<small class="text-muted">$projectExternalRef</small>
-			#end
+			<div class="o_proj_avatar_title_ref">
+				#if($r.isEmpty($backgroundUrl))
+					$r.render("avatar")
+				#end
+				<div class="o_proj_title_ref">
+					<h2 class="o_proj_dashboard_title">$projectTitle</h2>
+					#if($projectExternalRef)
+						<div class="o_proj_ref">
+							<small class="text-muted">$projectExternalRef</small>
+						</div>
+					#end
+				</div>
+			</div>
 		</div>
 		<span class="o_proj_project_status_badge $statusCssClass">$status</span>
 		<div class="o_title_cmds">

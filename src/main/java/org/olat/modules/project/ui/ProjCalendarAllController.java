@@ -43,6 +43,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,10 +66,13 @@ import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjMilestoneSearchParams;
 import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjAppointmentDeleteConfirmationController.Cascade;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.AppointmentDeleteEvent;
 import org.olat.modules.project.ui.event.AppointmentEditEvent;
 import org.olat.modules.project.ui.event.MilestoneDeleteEvent;
@@ -101,6 +105,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
+	private final String avatarUrl;
 	private String appointmentReadWriteKalendarId;
 	private String appointmentReadOnlyKalendarId;
 	private String milestoneKalendarId;
@@ -117,12 +122,18 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.project = project;
 		this.secCallback = secCallback;
+		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
+		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
+		this.avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
 		
 		initForm(ureq);
 		loadModel();
 	}
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium)));
+		
 		appointmentCreateLink = uifactory.addFormLink("appointment.create", formLayout, Link.BUTTON);
 		appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");
 		appointmentCreateLink.setVisible(secCallback.canCreateAppointments());

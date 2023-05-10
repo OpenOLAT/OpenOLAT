@@ -322,7 +322,7 @@ public class ProjActivityDAOTest extends OlatTestCase {
 	
 	private ProjProject createProject(Identity creator) {
 		Group baseGroup = groupDao.createGroup();
-		return projectDao.create(creator, baseGroup);
+		return projectDao.create(creator, baseGroup, null);
 	}
 	
 	private ProjArtefact createArtefact(ProjProject project, Identity createdBy) {

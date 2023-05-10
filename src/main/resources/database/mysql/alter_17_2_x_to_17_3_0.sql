@@ -62,6 +62,7 @@ create table o_proj_project (
    p_title varchar(128),
    p_teaser varchar(150),
    p_description longtext,
+   p_avatar_css_class varchar(32),
    fk_creator bigint not null,
    fk_group bigint not null,
    primary key (id)
