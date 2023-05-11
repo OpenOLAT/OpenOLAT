@@ -265,9 +265,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	
 	private void doLaunchStatistics(UserRequest ureq) {
 		IdentitiesList identities = getIdentities(false);
-		boolean canReset = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
+		boolean canDelete = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
 		Controller statisticsCtrl = new VideoTaskAssessmentStatisticsController(ureq, getWindowControl(), 
-				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canReset);
+				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canDelete);
 		listenTo(statisticsCtrl);
 		stackPanel.pushController(translate("button.stats"), statisticsCtrl);
 	}

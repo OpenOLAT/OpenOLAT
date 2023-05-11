@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -87,10 +88,10 @@ public class VideoTaskDeleteDataController extends FormBasicController {
 	
 	public VideoTaskDeleteDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, List<Identity> identities, VideoTaskCourseNode courseNode) {
-		super(ureq, wControl, "confirm_reset_data");
+		super(ureq, wControl, "confirm_delete_all_data");
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
-		
+
 		options = new ArchiveOptions();
 		options.setIdentities(identities);
 		this.identities = List.copyOf(identities);
@@ -100,10 +101,10 @@ public class VideoTaskDeleteDataController extends FormBasicController {
 	
 	public VideoTaskDeleteDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, VideoTaskCourseNode courseNode) {
-		super(ureq, wControl, "confirm_reset_data");
+		super(ureq, wControl, "confirm_delete_all_data");
 		this.courseNode = courseNode;
 		this.courseEnv = courseEnv;
-		
+
 		options = new ArchiveOptions();
 		if(asOptions.getGroup() == null && asOptions.getIdentities() == null) {
 			identities = ScoreAccountingHelper.loadUsers(courseEnv);
@@ -134,7 +135,8 @@ public class VideoTaskDeleteDataController extends FormBasicController {
 				acknowledgeValues.keys(), acknowledgeValues.values());
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, confirmCont);
-		uifactory.addFormSubmitButton("reset.data", buttonsCont);
+		FormSubmit submit = uifactory.addFormSubmitButton("tool.delete.data", buttonsCont);
+		submit.setElementCssClass("btn btn-default btn-danger");
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	
