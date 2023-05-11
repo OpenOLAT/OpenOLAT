@@ -79,7 +79,7 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			int numOfEvents = 1;//calendarRow.getWrapper().getKalendar().getEvents().size();
+			int numOfEvents = calendarRow.getWrapper().getKalendar().getEvents().size();
 			String msgI18nKey = numOfEvents <= 1 ? "cal.confirm.delete.imported.to.confirmation_message.singular"
 					: "cal.confirm.delete.imported.to.confirmation_message";
 			layoutCont.contextPut("msg", translate(msgI18nKey, Integer.toString(numOfEvents)));
@@ -97,7 +97,7 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 		String confirmValue = translate("cal.confirm.delete.imported.to.check");
 		confirmEl = uifactory.addCheckboxesHorizontal("confirm", "cal.confirm", layoutCont, confirmKeys, new String[] { confirmValue });
 		
-		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
+		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, layoutCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("cal.delete.imported.to.calendar", buttonsCont);
 	}

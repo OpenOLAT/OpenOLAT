@@ -132,8 +132,8 @@ public class CommentsHeaderController extends FormBasicController {
 		nextCommentButton.setIconRightCSS("o_icon o_icon_start");
 		nextCommentButton.setForceOwnDirtyFormWarning(true);
 
-		addCommentButton = uifactory.addFormLink("addComment", "form.comment.add",
-				"form.comment.add", formLayout, Link.BUTTON);
+		addCommentButton = uifactory.addFormLink("addComment", "form.add", "form.add", formLayout, Link.BUTTON);
+		addCommentButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		addCommentButton.setIconRightCSS("o_icon o_icon_caret o_video_add_comment");
 
 
