@@ -177,7 +177,7 @@ public class UserAuthenticationWebService {
 			return Response.serverError().status(Status.CONFLICT).entity(error).build();
 		}
 		
-		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, authUsername, credentials, null);
+		Authentication authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, null, authUsername, credentials, null);
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}

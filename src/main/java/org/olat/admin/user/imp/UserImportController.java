@@ -202,19 +202,22 @@ public class UserImportController extends BasicController {
 		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER, uniqueID, null, preselectedOrganisation, singleUser.getExpirationDate());
+					ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER, null,
+					uniqueID, null, preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else if(pwd != null && pwd.startsWith(LDAP_MARKER) && ldapModule.isLDAPEnabled()) {
 			String uniqueID = pwd.substring(LDAP_MARKER.length());
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, uniqueID, null,  preselectedOrganisation, singleUser.getExpirationDate());
+					LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, null,
+					uniqueID, null,  preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 			report.incrementUpdatedLdapAuthentication();
 		} else {
 			String provider = StringHelper.containsNonWhitespace(pwd) ? BaseSecurityModule.getDefaultAuthProviderIdentifier() : null;
 			ident = securityManager.createAndPersistIdentityAndUserWithOrganisation(identityName, login, null, newUser,
-					provider, BaseSecurity.DEFAULT_ISSUER, login, pwd,  preselectedOrganisation, singleUser.getExpirationDate());
+					provider, BaseSecurity.DEFAULT_ISSUER, null,
+					login, pwd,  preselectedOrganisation, singleUser.getExpirationDate());
 			report.incrementCreatedUser();
 		}
 		return ident;
@@ -269,14 +272,14 @@ public class UserImportController extends BasicController {
 		
 		boolean ok = false;
 		if(auth == null) {
-			securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, uniqueID, null, null);
+			securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, null, uniqueID, null, null);
 			ok = true;
 		} else if(!uniqueID.equals(auth.getAuthusername())) {
 			//remove the old authentication
 			securityManager.deleteAuthentication(auth);
 			dbInstance.commit();
 			//create the new one with the new authusername
-			securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, uniqueID, null, null);
+			securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, null, uniqueID, null, null);
 			ok = true;
 		}
 		return ok;

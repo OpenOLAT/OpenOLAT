@@ -78,7 +78,7 @@ public class LTI13AssessmentEntryDAOTest extends OlatTestCase {
 		LTI13ToolDeployment deployment = lti13ToolDeploymentDao.createDeployment(null, tool, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 
-		securityManager.createAndPersistAuthentication(participant, LTI13Service.LTI_PROVIDER, tool.getToolDomain(), subIdentity, null, null);
+		securityManager.createAndPersistAuthentication(participant, LTI13Service.LTI_PROVIDER, tool.getToolDomain(), null, subIdentity, null, null);
 		
 		AssessmentEntry nodeAssessment = assessmentEntryDao
 				.createAssessmentEntry(participant, null, entry, subIdent, Boolean.FALSE, entry);

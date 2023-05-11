@@ -131,6 +131,7 @@ public class ObjectFactory {
 		vo.setIdentityKey(authentication.getIdentity().getKey());
 		vo.setAuthUsername(authentication.getAuthusername());
 		vo.setProvider(authentication.getProvider());
+		vo.setExternalId(authentication.getExternalId());
 		if(withCred) {
 			vo.setCredential(authentication.getCredential());
 		}

@@ -606,7 +606,7 @@ public class RegistrationController extends BasicController implements Activatea
 						BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 				if(auth == null) {
 					securityManager.createAndPersistAuthentication(identity,
-							BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER,
+							BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 							username, pwd, loginModule.getDefaultHashAlgorithm());
 				}
 			}

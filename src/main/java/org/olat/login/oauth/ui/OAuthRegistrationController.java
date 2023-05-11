@@ -231,7 +231,7 @@ public class OAuthRegistrationController extends FormBasicController {
 			id = username;
 		}
 		authenticatedIdentity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, username, null, newUser,
-				registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, id, null, null, null);
+				registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, null, id, null, null, null);
 		
 		if(oauthLoginModule.isSkipDisclaimerDialog() || !registrationModule.isDisclaimerEnabled()) {
 			doLoginAndRegister(authenticatedIdentity, ureq);

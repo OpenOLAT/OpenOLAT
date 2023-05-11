@@ -581,7 +581,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager,
 				
 				Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 				if(authentication == null) {
-					securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER, login, creds, Encoder.Algorithm.aes);
+					securityManager.createAndPersistAuthentication(identity, ACONNECT_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, login, creds, Encoder.Algorithm.aes);
 				} else if(creds != null) {
 					securityManager.updateCredentials(authentication, creds, Encoder.Algorithm.aes);
 				}

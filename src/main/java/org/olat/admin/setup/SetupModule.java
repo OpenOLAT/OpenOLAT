@@ -147,7 +147,7 @@ public class SetupModule extends AbstractSpringModule {
 				legacyName = user.getUserName();
 			}
 			identity = securityManager.createAndPersistIdentityAndUser(legacyName, user.getUserName(), null, newUser,
-					authenticationProviderConstant, BaseSecurity.DEFAULT_ISSUER,
+					authenticationProviderConstant, BaseSecurity.DEFAULT_ISSUER, null,
 					user.getUserName(), user.getPassword(), null);
 
 			if (identity == null) {

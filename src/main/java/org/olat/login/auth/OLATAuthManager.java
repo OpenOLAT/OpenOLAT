@@ -419,7 +419,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // create new authentication for provider OLAT
 			username = getOlatAuthusernameFromIdentity(identity);
-			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, username, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.info(Tracing.M_AUDIT, "{} created new authentication for identity: {} with authusername: {}", doer.getKey(), identity.getKey(), username);
 		} else {
 			username = auth.getAuthusername();
@@ -437,7 +437,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	public boolean synchronizeOlatPasswordAndUsername(Identity doer, Identity identity, String username, String newPwd) {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER);
 		if (auth == null) { // create new authentication for provider OLAT
-			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, username, newPwd, loginModule.getDefaultHashAlgorithm());
+			securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, username, newPwd, loginModule.getDefaultHashAlgorithm());
 			log.info(Tracing.M_AUDIT, "{} created new authenticatin for identity: {}", doer.getKey(), identity.getKey());
 		} else {
 			//update credentials

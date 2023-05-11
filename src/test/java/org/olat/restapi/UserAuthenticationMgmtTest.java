@@ -129,6 +129,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		vo.setIdentityKey(adminIdent.getKey());
 		vo.setProvider("REST-API");
 		vo.setCredential("credentials");
+		vo.setExternalId("R-234");
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("/users/administrator/auth").build();
 		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
@@ -150,6 +151,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		assertEquals(refAuth.getIdentity().getKey(), savedAuth.getIdentityKey());
 		assertEquals(refAuth.getProvider(), savedAuth.getProvider());
 		assertEquals(refAuth.getCredential(), savedAuth.getCredential());
+		assertEquals(refAuth.getExternalId(), savedAuth.getExternalId());
 		
 		conn.shutdown();
 	}
@@ -211,7 +213,7 @@ public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 		
 		//create an authentication token
 		Identity adminIdent = JunitTestHelper.findIdentityByLogin("administrator");
-		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER,
+		Authentication authentication = securityManager.createAndPersistAuthentication(adminIdent, "REST-A-2", BaseSecurity.DEFAULT_ISSUER, null,
 				"administrator", "credentials", Encoder.Algorithm.sha512);
 		assertTrue(authentication != null && authentication.getKey() != null && authentication.getKey().longValue() > 0);
 		dbInstance.intermediateCommit();

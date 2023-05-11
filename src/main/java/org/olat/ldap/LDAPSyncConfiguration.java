@@ -63,8 +63,6 @@ public class LDAPSyncConfiguration {
 	private String ldapUserPasswordAttribute;
 	private String ldapUserLoginAttribute;
 	
-	private String[] userAttributes;
-	
 	private String coachRoleAttribute;
 	private String coachRoleValue;
 	
@@ -506,7 +504,13 @@ public class LDAPSyncConfiguration {
 	}
 	
 	public String[] getUserAttributes() {
-		return userAttributes;
+		Set<String> userAttributesSet = new HashSet<>(userAttributeMap.keySet());
+		if(getLdapUserLoginAttributes() != null) {
+			for(String loginAttr:getLdapUserLoginAttributes()) {
+				userAttributesSet.add(loginAttr.trim());
+			}
+		}
+		return userAttributesSet.toArray(new String[userAttributesSet.size()]);
 	}
 
 	public Map<String, String> getUserAttributeMap() {
@@ -521,9 +525,7 @@ public class LDAPSyncConfiguration {
 			if (StringHelper.containsNonWhitespace(ldapAttrib) && StringHelper.containsNonWhitespace(olatProp)){
 				userAttributeMap.put(ldapAttrib.trim(), olatProp.trim());
 			}
-		}		
-		// optimizes for later usage
-		userAttributes = userAttributeMap.keySet().toArray(new String[userAttributeMap.size()]);
+		}
 	}
 
 	public Map<String, String> getStaticUserProperties() {
@@ -569,7 +571,7 @@ public class LDAPSyncConfiguration {
 			String ldapAttribute = attributes.getKey();
 			String olatProperty = attributes.getValue();
 			if (olatProperty.equals(LDAPConstants.LDAP_USER_IDENTIFYER)) {
-				// LDAP user identifyer is not a user propery, it's the username
+				// LDAP user identifier is not a user propery, it's the username
 				continue;
 			}
 			

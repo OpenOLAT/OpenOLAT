@@ -126,6 +126,7 @@ create table o_bs_authentication (
    version mediumint unsigned not null,
    creationdate datetime,
    lastmodified datetime not null,
+   externalid varchar(255),
    identity_fk bigint not null,
    provider varchar(8),
    issuer varchar(255) default 'DEFAULT' not null,
@@ -4470,6 +4471,7 @@ alter table o_gp_bgtoarea_rel add constraint FK9B663F2DD381B9B7 foreign key (are
 -- bs
 alter table o_bs_authentication add constraint FKC6A5445652595FE6 foreign key (identity_fk) references o_bs_identity (id);
 alter table o_bs_authentication add constraint unique_pro_iss_authusername UNIQUE (provider, issuer, authusername);
+alter table o_bs_authentication add constraint unique_pro_iss_externalid unique (provider, issuer, externalid);
 create index provider_idx on o_bs_authentication (provider);
 create index credential_idx on o_bs_authentication (credential);
 create index authusername_idx on o_bs_authentication (authusername);

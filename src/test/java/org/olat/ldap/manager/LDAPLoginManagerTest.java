@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
+
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 
@@ -137,6 +138,8 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	
 	@Before
 	public void resetSynchronizationSettings() {
+		syncConfiguration.setLdapUserLoginAttribute("uid");
+		
 		syncConfiguration.setLdapGroupBases(List.of());
 		syncConfiguration.setLdapGroupFilter("(objectClass=groupOfNames)");
 		syncConfiguration.setLdapOrganisationsGroupBases(List.of());
@@ -437,6 +440,75 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		userModule.setEmailMandatory(emailMandatory);
 	}
 	
+	@Test
+	public void syncExternalIdBySeparateLDAPAttribute() throws LDAPException {
+		final String backedUpLoginAttr = syncConfiguration.getLdapUserLoginAttribute();
+		// user identifier -> uid
+		// login -> upn
+		syncConfiguration.setLdapUserLoginAttribute("upn");
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity synchedId = securityManager.findIdentityByNickName("jessicajones");
+		Assert.assertNotNull(synchedId);
+		Assert.assertEquals("Jessica", synchedId.getUser().getFirstName());
+		Assert.assertEquals("Jones", synchedId.getUser().getLastName());
+		
+		// Use the upn
+		Identity identity = ldapManager.authenticate("jessica.jones@openolat.com", "olat", errors);
+		Assert.assertEquals(synchedId, identity);
+		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertEquals("jessica.jones@openolat.com", authentication.getAuthusername());
+		Assert.assertEquals("jessicajones", authentication.getExternalId());
+
+		syncConfiguration.setLdapUserLoginAttribute(backedUpLoginAttr);
+	}
+	
+	@Test
+	public void syncRenameLoginAttribute() throws LDAPException {
+		final String backedUpLoginAttr = syncConfiguration.getLdapUserLoginAttribute();
+		// user identifier -> uid
+		// login -> upn
+		syncConfiguration.setLdapUserLoginAttribute("upn");
+
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		Identity synchedId = securityManager.findIdentityByNickName("veronicablum");
+		Assert.assertNotNull(synchedId);
+		Assert.assertEquals("Veronica", synchedId.getUser().getFirstName());
+		
+		// Use the upn
+		Identity identity = ldapManager.authenticate("veronica.blum@openolat.com", "olat", errors);
+		Assert.assertEquals(synchedId, identity);
+		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertEquals("veronica.blum@openolat.com", authentication.getAuthusername());
+		Assert.assertEquals("veronicablum", authentication.getExternalId());
+		
+		// Change the upn
+		String dn = "uid=veronicablum,ou=person,dc=olattest,dc=org";
+		List<Modification> modifications = new ArrayList<>();
+		modifications.add(new Modification(ModificationType.REPLACE, "upn", "veronica.dupont@frentix.com"));
+		embeddedLdapRule.ldapConnection().modify(dn, modifications);
+		
+		boolean allOk2 = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk2);
+		
+		// Check if the authentication was updated
+		Authentication updatedAuthentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertEquals("veronica.dupont@frentix.com", updatedAuthentication.getAuthusername());
+		Assert.assertEquals("veronicablum", updatedAuthentication.getExternalId());
+		
+		// Check if the user can log in
+		Identity updatedIdentity = ldapManager.authenticate("veronica.dupont@frentix.com", "olat", errors);
+		Assert.assertEquals(synchedId, updatedIdentity);
+		
+		syncConfiguration.setLdapUserLoginAttribute(backedUpLoginAttr);
+	}
+	
 	/**
 	 * The email is written in OpenOlat and doesn't come from LDAP
 	 * 
@@ -508,7 +580,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	public void getIdentitiesDeletedInLdap() {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		Identity orphan = JunitTestHelper.createAndPersistIdentityAsRndUser("ldap-orphan");
-		securityManager.createAndPersistAuthentication(orphan, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(orphan, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, null,
 				UUID.randomUUID().toString(), null, null);
 		dbInstance.commitAndCloseSession();
 
@@ -1263,7 +1335,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Authentication authentication = securityManager.findAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER);
 		Assert.assertNotNull(authentication);
 		securityManager.deleteAuthentication(authentication);
-		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, "cguerrera", "secret", Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER,  null, "cguerrera", "secret", Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// convert users to LDAP
@@ -1297,7 +1369,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		Assert.assertNotNull(authentication);
 		Assert.assertTrue(authentication.getAuthusername().contains("chelling"));
 		securityManager.deleteAuthentication(authentication);
-		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, "uschelling", "secret", Algorithm.sha512);
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, null, "uschelling", "secret", Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
 		// convert users to LDAP
@@ -1341,7 +1413,7 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 		
 		// Create the user without OLAT login
 		User user = userManager.createUser("Leyla", "Salathe", "lsalathe@openolat.com");
-		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null, null, null);
+		Identity identity = securityManager.createAndPersistIdentityAndUser("lsalathe", null, null, user, null, null, null, null, null, null);
 		
 		// convert users to LDAP
 		boolean currentConvertExistingLocalUsers = ldapLoginModule.isConvertExistingLocalUsersToLDAPUsers();

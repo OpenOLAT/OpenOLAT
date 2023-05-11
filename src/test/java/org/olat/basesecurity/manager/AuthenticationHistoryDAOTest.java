@@ -81,7 +81,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 		
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
 		Authentication auth = securityManager
-				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER,
+				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
@@ -98,7 +98,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	public void updateCredential() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-1-");
 		Authentication auth = securityManager
-				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER,
+				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
@@ -113,7 +113,7 @@ public class AuthenticationHistoryDAOTest extends OlatTestCase {
 	public void deleteAuthenticationHistory_identity() {
 		Identity ident = JunitTestHelper.createAndPersistIdentityAsRndUser("authdao-3-");
 		Authentication auth = securityManager
-				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER,
+				.createAndPersistAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null,
 						ident.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);

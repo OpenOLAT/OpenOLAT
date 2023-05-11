@@ -439,7 +439,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 		Authentication ltiAuth = authenticationDao.getAuthentication(identity, LTI_PROVIDER, issuer);
 		if(ltiAuth == null) {
 			String uuid = UUID.randomUUID().toString();
-			ltiAuth = securityManager.createAndPersistAuthentication(identity, LTI_PROVIDER, issuer, uuid, null, null);
+			ltiAuth = securityManager.createAndPersistAuthentication(identity, LTI_PROVIDER, issuer, null, uuid, null, null);
 		}
 		
 		if(ltiAuth != null) {
@@ -466,7 +466,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 				List<Identity> currentIdentities = userManager.findIdentitiesByEmail(List.of(email));
 				if(currentIdentities.size() == 1) {
 					identity = currentIdentities.get(0);
-					securityManager.createAndPersistAuthentication(identity, LTI13Service.LTI_PROVIDER, issuer, sub, null, null);
+					securityManager.createAndPersistAuthentication(identity, LTI13Service.LTI_PROVIDER, issuer, null, sub, null, null);
 					return identity;
 				}
 			}
@@ -480,7 +480,7 @@ public class LTI13ServiceImpl implements LTI13Service, RepositoryEntryDataDeleta
 			user.getPreferences().setLanguage(locale.toString());
 			String nickName = "l" + CodeHelper.getForeverUniqueID();
 			identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(null, nickName, null, user,
-					LTI13Service.LTI_PROVIDER, issuer, sub, null, ltiOrganisation, null);
+					LTI13Service.LTI_PROVIDER, issuer, null, sub, null, ltiOrganisation, null);
 		} else if(isLTIOnlyUser(identity) &&
 				(!StringHelper.isSame(identity.getUser().getFirstName(), givenName)
 						|| !StringHelper.isSame(identity.getUser().getLastName(), familyName)

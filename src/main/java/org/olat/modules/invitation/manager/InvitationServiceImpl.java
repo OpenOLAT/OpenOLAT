@@ -132,7 +132,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 		String tempUsername = UUID.randomUUID().toString();
 		User user = userManager.createUser(invitation.getFirstName(), invitation.getLastName(), invitation.getMail());
 		user.getPreferences().setLanguage(locale.toString());
-		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null, null, null);
+		Identity invitee = securityManager.createAndPersistIdentityAndUser(null, tempUsername, null, user, null, null, null, null, null, null);
 		groupDao.addMembershipTwoWay(invitation.getBaseGroup(), invitee, GroupRoles.invitee.name());
 		organisationService.addMember(invitee, OrganisationRoles.invitee);
 		return invitee;
@@ -163,7 +163,7 @@ public class InvitationServiceImpl implements InvitationService, UserDataDeletab
 					}
 				}
 				user.getPreferences().setLanguage(locale.toString());
-				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, expirationDate);
+				invitee = securityManager.createAndPersistIdentityAndUser(null, invitation.getMail(), null, user, null, null, null, null, null, expirationDate);
 			} else if(invitee.getExpirationDate() != null && invitee.getExpirationDate().before(expirationDate)) {
 				securityManager.saveIdentityExpirationDate(invitee, expirationDate, doer);
 			} else if(invitee.getExpirationDate() == null && securityManager.getRoles(invitee).isInviteeOnly()) {

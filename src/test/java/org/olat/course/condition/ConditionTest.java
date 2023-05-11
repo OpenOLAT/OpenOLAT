@@ -419,7 +419,7 @@ public class ConditionTest extends OlatTestCase {
 		if(shibAuthentication == null) {
 			String rnd = "ConDitIon." + CodeHelper.getForeverUniqueID();
 			shibAuthentication = securityManager
-				.createAndPersistAuthentication(identity, "Shib", BaseSecurity.DEFAULT_ISSUER, rnd, null, null);
+				.createAndPersistAuthentication(identity, "Shib", BaseSecurity.DEFAULT_ISSUER, null, rnd, null, null);
 		}
 		Assert.assertNotNull(shibAuthentication);
 

@@ -190,6 +190,7 @@ public class UserAuthenticationsWebService {
 		String provider = authenticationVO.getProvider();
 		String authUsername = authenticationVO.getAuthUsername();
 		String credentials = authenticationVO.getCredential();
+		String externalId = authenticationVO.getExternalId();
 		
 		Authentication authentication;
 		if(authenticationVO.getKey() != null) {
@@ -204,6 +205,9 @@ public class UserAuthenticationsWebService {
 				return Response.serverError().status(Status.CONFLICT).build();
 			}
 			
+			if(externalId != null) {
+				currentAuthentication.setExternalId(externalId);
+			}
 			currentAuthentication.setAuthusername(authUsername);
 			authentication = securityManager.updateAuthentication(currentAuthentication);
 			log.info(Tracing.M_AUDIT, "Authentication created for {} with provider {}", authUsername, provider);
@@ -213,7 +217,7 @@ public class UserAuthenticationsWebService {
 				return notSameIdentity(currentAuthentication);
 			}
 		
-			authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, authUsername, credentials, null);
+			authentication = securityManager.createAndPersistAuthentication(identity, provider, BaseSecurity.DEFAULT_ISSUER, externalId, authUsername, credentials, null);
 			if(authentication == null) {
 				return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 			}
