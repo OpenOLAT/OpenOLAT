@@ -7,9 +7,9 @@
 			$r.render("avatar")
 		</div>
 	#end
-	<div class="o_proj_title o_proj_title_top o_block_large">
+	<div class="o_proj_title o_proj_title_top o_block">
 		<div>
-			<div class="o_proj_avatar_title_ref">
+			<div class="o_proj_avatar_title_ref #if($r.isNotEmpty($backgroundUrl))o_proj_avatar_shift#end">
 				#if($r.isEmpty($backgroundUrl))
 					$r.render("avatar")
 				#end
@@ -31,13 +31,13 @@
 		</div>
 	</div>
 	<div class="o_proj_project_meta">
-		<div class="o_proj_project_members">
-			$r.render("users")
-		</div>
-		<div class="o_proj_project_teaser">
+		<div class="o_proj_project_teaser #if($r.isNotEmpty($backgroundUrl))o_proj_avatar_shift#end">
 			#if($projectTeaser)
 				$projectTeaser
 			#end
+		</div>
+		<div class="o_proj_project_members">
+			$r.render("users")
 		</div>
 	</div>
 	<div class="o_proj_widgets o_block">

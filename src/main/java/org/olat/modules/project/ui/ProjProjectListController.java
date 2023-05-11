@@ -66,6 +66,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
+import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -174,6 +175,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	public ProjProjectListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "project_list");
 		this.stackPanel = stackPanel;
+		stackPanel.addListener(this);
 		this.canCreateProject = projectModule.canCreateProject(ureq.getUserSession().getRoles());
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.formatter = Formatter.getInstance(getLocale());
@@ -587,6 +589,18 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		super.formInnerEvent(ureq, source, event);
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if (source == stackPanel) {
+			if (event instanceof PopEvent) {
+				if (stackPanel.getLastController() == stackPanel.getRootController()) {
+					loadModel(ureq);
+				}
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
@@ -671,6 +685,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	protected void doDispose() {
 		super.doDispose();
 		mapperService.cleanUp(singletonList(avatarMapperKey));
+		stackPanel.removeListener(this);
 	}
 
 	@Override

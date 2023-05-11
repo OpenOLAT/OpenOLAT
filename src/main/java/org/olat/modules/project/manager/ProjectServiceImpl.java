@@ -386,18 +386,46 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public boolean storeProjectImage(ProjProjectRef project, ProjProjectImageType type, Identity savedBy, File file, String filename) {
-		return projectStorage.storeProjectImage(project, type, savedBy, file, filename);
+	public void storeProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type, File file, String filename) {
+		VFSLeaf projectImage = getProjectImage(project, type);
+		String filenameBefore = null;
+		if (projectImage != null) {
+			filenameBefore = projectImage.getName();
+		}
+		
+		projectStorage.storeProjectImage(project, type, doer, file, filename);
+		
+		projectImage = getProjectImage(project, type);
+		String filenameAfter = null;
+		if (projectImage != null) {
+			filenameAfter = projectImage.getName();
+		}
+		
+		if (!Objects.equals(filenameBefore, filenameAfter)) {
+			createProjectImageActivity(doer, project, type, filenameBefore, filenameAfter);
+		}
 	}
 	
 	@Override
-	public void deleteProjectImage(ProjProjectRef project, ProjProjectImageType type) {
+	public void deleteProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type) {
+		VFSLeaf projectImage = getProjectImage(project, type);
+		if (projectImage != null) {
+			createProjectImageActivity(doer, project, type, projectImage.getName(), null);
+		}
+		
 		projectStorage.deleteProjectImage(project, type);
 	}
 	
 	@Override
 	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type) {
 		return projectStorage.getProjectImage(project, type);
+	}
+	
+	private void createProjectImageActivity(Identity doer, ProjProjectRef project, ProjProjectImageType type, String before, String after) {
+		switch (type) {
+		case avatar -> activityDao.create(Action.projectImageAvatarUpdate, before, after, doer, getProject(project));
+		case background -> activityDao.create(Action.projectImageBackgroundUpdate, before, after, doer, getProject(project));
+		}
 	}
 
 	@Override

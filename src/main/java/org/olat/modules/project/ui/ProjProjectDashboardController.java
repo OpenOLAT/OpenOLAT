@@ -56,7 +56,6 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectUserInfo;
-import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -89,7 +88,6 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private static final String CMD_STATUS_DONE = "status.done";
 	private static final String CMD_REOPEN = "reopen";
 	private static final String CMD_STATUS_DELETED = "status.deleted";
-
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private VelocityContainer mainVC;
@@ -129,8 +127,6 @@ public class ProjProjectDashboardController extends BasicController implements A
 	
 	@Autowired
 	private ProjectService projectService;
-	@Autowired
-	private ProjectCopyService projectCopyService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -260,6 +256,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	}
 	
 	private void putProjectToVC() {
+		stackPanel.changeDisplayname(project.getTitle(), null, this);
+		
 		mainVC.contextPut("projectExternalRef", project.getExternalRef());
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));

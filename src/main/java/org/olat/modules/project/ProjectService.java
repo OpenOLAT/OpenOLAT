@@ -66,9 +66,9 @@ public interface ProjectService {
 	
 	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations);
 	
-	public boolean storeProjectImage(ProjProjectRef project, ProjProjectImageType type, Identity savedBy, File file, String filename);
+	public void storeProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type, File file, String filename);
 	
-	public void deleteProjectImage(ProjProjectRef project, ProjProjectImageType type);
+	public void deleteProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type);
 
 	public VFSLeaf getProjectImage(ProjProjectRef project, ProjProjectImageType type);
 

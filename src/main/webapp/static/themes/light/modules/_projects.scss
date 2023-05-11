@@ -109,26 +109,32 @@
 .o_proj_dashboard {
 	.o_proj_header_images {
 		position: relative;
-		height: 300px;
 		max-height: 300px;
+		margin-bottom: 50px;
 		.o_proj_background {
+			min-height: 80px;
 			max-height: 240px;
 			overflow: hidden;
 			img {
 				object-position: left top;
 				object-fit: none;
+				max-width: none;
 			}
 		}
 		.o_proj_avatar {
 			position: absolute;
-			bottom: 0px;
+			bottom: -30px;
 			left: 20px;
+			border: 2px solid #fff;
 		}
+	}
+	.o_proj_avatar_shift {
+		// o_proj_avatar.left + o_proj_avatar.border
+		margin-left: 22px;
 	}
 	.o_proj_project_meta {
 		display: flex;
 		flex-wrap: wrap;
-		flex-direction: row-reverse;
 		gap: 10px;
 		.o_proj_project_teaser {
 			margin-right: auto;
@@ -270,6 +276,7 @@
 				border-bottom: 1px solid $o-coursesite-rowelem-border;
 				padding-bottom: 5px;
 				cursor: pointer;
+				overflow: hidden;
 				display: flex;
 				.o_proj_quick_icon {
 					display: flex;
@@ -279,8 +286,14 @@
 						margin-right: 5px;
 					}
 				}
-				.o_proj_quick_changed {	
-					line-height: 0.9em;
+				.o_proj_quick_name_changed {
+					overflow: hidden;
+					.o_proj_quick_name {
+						@extend %o_nowrap;
+					}
+					.o_proj_quick_changed {	
+						line-height: 0.9em;
+					}
 				}
 			}
 		}

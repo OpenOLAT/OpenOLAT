@@ -396,19 +396,19 @@ public class ProjProjectEditController extends FormBasicController {
 		projectService.updateProjectOrganisations(getIdentity(), targetProject, selectedOrganisations);
 		
 		if (avatarImageEl.getUploadFile() != null) {
-			projectService.storeProjectImage(targetProject, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getUploadFile(), avatarImageEl.getUploadFileName());
+			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.avatar, avatarImageEl.getUploadFile(), avatarImageEl.getUploadFileName());
 		} else if (copyArtefacts && avatarImageEl.getInitialFile() != null) {
-			projectService.storeProjectImage(targetProject, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getInitialFile(), avatarImageEl.getInitialFile().getName());
+			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.avatar, avatarImageEl.getInitialFile(), avatarImageEl.getInitialFile().getName());
 		} else if (avatarImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(targetProject, ProjProjectImageType.avatar);
+			projectService.deleteProjectImage(null, targetProject, ProjProjectImageType.avatar);
 		}
 		
 		if (backgroundImageEl.getUploadFile() != null) {
-			projectService.storeProjectImage(targetProject, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getUploadFile(), backgroundImageEl.getUploadFileName());
+			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.background, backgroundImageEl.getUploadFile(), backgroundImageEl.getUploadFileName());
 		} else if (copyArtefacts && backgroundImageEl.getInitialFile() != null) {
-			projectService.storeProjectImage(targetProject, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getInitialFile(), backgroundImageEl.getInitialFile().getName());
+			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.background, backgroundImageEl.getInitialFile(), backgroundImageEl.getInitialFile().getName());
 		} else if (backgroundImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(targetProject, ProjProjectImageType.background);
+			projectService.deleteProjectImage(null, targetProject, ProjProjectImageType.background);
 		}
 		
 		if (copyArtefacts) {
@@ -429,5 +429,4 @@ public class ProjProjectEditController extends FormBasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-
 }

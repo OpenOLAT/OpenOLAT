@@ -584,6 +584,8 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		case projectStatusActive: message = translate("timeline.activity.project.status.active"); break;
 		case projectStatusDone: message = translate("timeline.activity.project.status.done"); break;
 		case projectStatusDelete: message = translate("timeline.activity.project.status.deleted"); break;
+		case projectImageAvatarUpdate: message = translate("timeline.activity.project.image.update.avatar"); break;
+		case projectImageBackgroundUpdate: message = translate("timeline.activity.project.image.update.background"); break;
 		case projectMemberAdd: {
 			Identity member = activity.getMember();
 			if (member != null) {
