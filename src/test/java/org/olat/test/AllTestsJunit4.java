@@ -354,7 +354,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.project.manager.ProjProjectToOrganisationDAOTest.class,
 	org.olat.modules.project.manager.ProjProjectUserInfoDAOTest.class,
 	org.olat.modules.project.manager.ProjToDoDAOTest.class,
-	org.olat.modules.project.ProjectCopyService.class,
+	org.olat.modules.project.ProjectCopyServiceTest.class,
 	org.olat.modules.quality.analysis.manager.AnalysisFilterDAOTest.class,
 	org.olat.modules.quality.analysis.manager.AnalysisPresentationDAOTest.class,
 	org.olat.modules.quality.analysis.manager.EvaluationFormDAOTest.class,
