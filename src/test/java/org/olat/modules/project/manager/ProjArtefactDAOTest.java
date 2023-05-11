@@ -155,6 +155,20 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_type() {
+		ProjArtefact artefact1 = createRandomArtefact();
+		ProjArtefact artefact2 = createRandomArtefact();
+		ProjArtefact artefact3 = createRandomArtefact();
+		
+		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
+		searchParams.setArtefacts(List.of(artefact1, artefact2, artefact3));
+		searchParams.setTypes(List.of(artefact1.getType(), artefact2.getType()));
+		List<ProjArtefact> artefacts = sut.loadArtefacts(searchParams);
+		
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_status() {
 		ProjArtefact artefact1 = createRandomArtefact();
 		artefact1.setStatus(ProjectStatus.deleted);

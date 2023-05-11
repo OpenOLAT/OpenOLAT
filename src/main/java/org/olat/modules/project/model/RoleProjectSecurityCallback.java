@@ -80,6 +80,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canEditProjectStatus() {
 		return canEditProjectMetadata();
 	}
+	
+	@Override
+	public boolean canCopyProject() {
+		return manager || roles.contains(ProjectRole.owner);
+	}
 
 	@Override
 	public boolean canDeleteProject() {

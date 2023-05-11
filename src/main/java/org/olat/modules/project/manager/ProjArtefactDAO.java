@@ -129,6 +129,9 @@ public class ProjArtefactDAO {
 		if (searchParams.getExcludedArtefactKeys() != null && !searchParams.getExcludedArtefactKeys().isEmpty()) {
 			sb.and().append("artefact.key not in :excludedArtefactKeys");
 		}
+		if (searchParams.getTypes() != null && !searchParams.getTypes().isEmpty()) {
+			sb.and().append("artefact.type in :types");
+		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			sb.and().append("artefact.status in :status");
 		}
@@ -143,6 +146,9 @@ public class ProjArtefactDAO {
 		}
 		if (searchParams.getExcludedArtefactKeys() != null && !searchParams.getExcludedArtefactKeys().isEmpty()) {
 			query.setParameter("excludedArtefactKeys", searchParams.getExcludedArtefactKeys());
+		}
+		if (searchParams.getTypes() != null && !searchParams.getTypes().isEmpty()) {
+			query.setParameter("types", searchParams.getTypes());
 		}
 		if (searchParams.getStatus() != null && !searchParams.getStatus().isEmpty()) {
 			query.setParameter("status", searchParams.getStatus());

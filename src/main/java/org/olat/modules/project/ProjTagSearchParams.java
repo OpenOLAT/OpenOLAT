@@ -32,6 +32,7 @@ public class ProjTagSearchParams {
 	
 	private Long projectKey;
 	private Collection<Long> artefactKeys;
+	private Collection<String> artefactTypes;
 	private Collection<ProjectStatus> artefactStatus;
 
 	public Long getProjectKey() {
@@ -50,6 +51,14 @@ public class ProjTagSearchParams {
 		this.artefactKeys = artefacts.stream().map(ProjArtefactRef::getKey).collect(Collectors.toSet());
 	}
 	
+	public Collection<String> getArtefactTypes() {
+		return artefactTypes;
+	}
+
+	public void setArtefactTypes(Collection<String> artefactTypes) {
+		this.artefactTypes = artefactTypes;
+	}
+
 	public Collection<ProjectStatus> getArtefactStatus() {
 		return artefactStatus;
 	}

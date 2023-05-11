@@ -56,6 +56,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjProjectUserInfo;
+import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
@@ -83,15 +84,19 @@ public class ProjProjectDashboardController extends BasicController implements A
 	public static final Event SHOW_ALL = new Event("show.all");
 	
 	private static final String CMD_EDIT_PROJECT = "edit.project";
+	private static final String CMD_EDIT_MEMBER_MANAGEMENT = "member.management";
+	private static final String CMD_COPY_PROJECT = "copy.project";
 	private static final String CMD_STATUS_DONE = "status.done";
 	private static final String CMD_REOPEN = "reopen";
 	private static final String CMD_STATUS_DELETED = "status.deleted";
+
 
 	private final BreadcrumbedStackedPanel stackPanel;
 	private VelocityContainer mainVC;
 	private Dropdown cmdsDropDown;
 	private Link editProjectLink;
 	private Link membersManagementLink;
+	private Link copyProjectLink;
 	private Link statusDoneLink;
 	private Link reopenLink;
 	private Link statusDeletedLink;
@@ -124,6 +129,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private ProjectCopyService projectCopyService;
 	@Autowired
 	private MapperService mapperService;
 
@@ -159,8 +166,11 @@ public class ProjProjectDashboardController extends BasicController implements A
 		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate("project.edit"), this, "o_icon_edit");
 		cmdsDropDown.addComponent(editProjectLink);
 		
-		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate("members.management"), this, "o_icon_membersmanagement");
+		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_MEMBER_MANAGEMENT, translate("members.management"), this, "o_icon_membersmanagement");
 		cmdsDropDown.addComponent(membersManagementLink);
+		
+		copyProjectLink = LinkFactory.createToolLink(CMD_COPY_PROJECT, translate("project.copy"), this, "o_icon_copy");
+		cmdsDropDown.addComponent(copyProjectLink);
 		
 		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate("project.set.status.done"), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
@@ -268,6 +278,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void updateCmdsUI() {
 		editProjectLink.setVisible(secCallback.canViewProjectMetadata());
 		membersManagementLink.setVisible(secCallback.canEditMembers());
+		copyProjectLink.setVisible(secCallback.canCopyProject());
 		
 		statusDoneLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus());
 		reopenLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus());
@@ -404,6 +415,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doEditProject(ureq);
 		} else if (source == membersManagementLink) {
 			doOpenMembersManagement(ureq);
+		} else if (source == copyProjectLink) {
+			doCopyProject(ureq);
 		} else if (source == statusDoneLink) {
 			doConfirmStatusDone(ureq);
 		} else if (source == reopenLink) {
@@ -433,7 +446,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		project = projectService.getProject(project);
 		putProjectToVC();
-		editCtrl = new ProjProjectEditController(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
 		String title = translate("project.edit");
@@ -449,6 +462,18 @@ public class ProjProjectDashboardController extends BasicController implements A
 		membersManagementCtrl = new ProjMembersManagementController(ureq, swControl, stackPanel, project, secCallback);
 		listenTo(membersManagementCtrl);
 		stackPanel.pushController(translate("members.management"), membersManagementCtrl);
+	}
+	
+	private void doCopyProject(UserRequest ureq) {
+		if (guardModalController(editCtrl)) return;
+		
+		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), project);
+		listenTo(editCtrl);
+		
+		String title = translate("project.copy");
+		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doConfirmStatusDone(UserRequest ureq) {

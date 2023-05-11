@@ -19,12 +19,15 @@
  */
 package org.olat.modules.project.model;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjFile;
@@ -50,6 +53,27 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	private Map<Long, ProjAppointment> artefactKeyToAppointment;
 	private List<ProjMilestone> milestones;
 	private Map<Long, ProjMilestone> artefactKeyToMilestone;
+	
+	@Override
+	public Set<ProjArtefact> getArtefacts() {
+		Set<ProjArtefact> artefacts = new HashSet<>();
+		if (files != null) {
+			artefacts.addAll(files.stream().map(ProjFile::getArtefact).toList());
+		}
+		if (toDos != null) {
+			artefacts.addAll(toDos.stream().map(ProjToDo::getArtefact).toList());
+		}
+		if (notes != null) {
+			artefacts.addAll(notes.stream().map(ProjNote::getArtefact).toList());
+		}
+		if (appointments != null) {
+			artefacts.addAll(appointments.stream().map(ProjAppointment::getArtefact).toList());
+		}
+		if (milestones != null) {
+			artefacts.addAll(milestones.stream().map(ProjMilestone::getArtefact).toList());
+		}
+		return artefacts;
+	}
 	
 	@Override
 	public List<ProjFile> getFiles() {

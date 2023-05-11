@@ -54,11 +54,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
+import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectService;
 import org.olat.user.UserManager;
@@ -84,16 +84,19 @@ public class ProjProjectEditController extends FormBasicController {
 	private TextAreaElement descriptionEl;
 	private FileElement avatarImageEl;
 	private FileElement backgroundImageEl;
+	private FormLayoutContainer orgCont;
 	private MultiSelectionFilterElement organisationsEl;
 	
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
 
-	private ProjProject project;
+	private final ProjProject initialProject;
+	private final String initialTitle;
+	private ProjProject targetProject;
 	private final boolean readOnly;
 	private final boolean creatorForEnabled;
+	private final boolean copyArtefacts;
 	private List<Organisation> organisations;
-	private List<Organisation> projectOrganisations;
 	private Identity owner;
 	
 	@Autowired
@@ -101,25 +104,56 @@ public class ProjProjectEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
+	private ProjectCopyService projectCopyService;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private OrganisationModule organisationModule;
 	@Autowired
 	private OrganisationService organisationService;
+	
+	public static ProjProjectEditController createCreateCtrl(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
+		return new ProjProjectEditController(ureq, wControl, createForEnabled);
+	}
 
-	public ProjProjectEditController(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, boolean createForEnabled) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.creatorForEnabled = createForEnabled;
+		this.initialProject = null;
+		this.initialTitle = null;
 		this.readOnly = false;
+		this.creatorForEnabled = createForEnabled;
+		this.copyArtefacts = false;
 		this.owner = getIdentity();
 		initForm(ureq);
 	}
+	
+	public static ProjProjectEditController createEditCtrl(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
+		return new ProjProjectEditController(ureq, wControl, project, readOnly);
+	}
 
-	public ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject project, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-		this.project = project;
+		this.initialProject = project;
+		this.initialTitle = project.getTitle();
+		this.targetProject = project;
 		this.readOnly = readOnly;
 		this.creatorForEnabled = false;
+		this.copyArtefacts = false;
+		this.owner = getIdentity();
+		initForm(ureq);
+	}
+	
+	public static ProjProjectEditController createCopyCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
+		return new ProjProjectEditController(ureq, wControl, initialProject);
+	}
+	
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
+		super(ureq, wControl, LAYOUT_VERTICAL);
+		this.initialProject = initialProject;
+		this.initialTitle = translate("project.title.copy", StringHelper.blankIfNull(initialProject.getTitle()));
+		this.readOnly = false;
+		this.creatorForEnabled = true;
+		this.copyArtefacts = true;
 		this.owner = getIdentity();
 		initForm(ureq);
 	}
@@ -128,7 +162,6 @@ public class ProjProjectEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (creatorForEnabled) {
 			ownerEl = uifactory.addStaticTextElement("project.create.for", "", formLayout);
-			updateOwnerUI();
 			
 			FormLayoutContainer ownerCont = FormLayoutContainer.createButtonLayout("ownerCont", getTranslator());
 			ownerCont.setRootForm(mainForm);
@@ -137,20 +170,19 @@ public class ProjProjectEditController extends FormBasicController {
 			ownerSelectLink = uifactory.addFormLink("project.owner.select", ownerCont, Link.BUTTON);
 		}
 		
-		String title = project != null? project.getTitle(): null;
-		titleEl = uifactory.addTextElement("project.title", 100, title, formLayout);
+		titleEl = uifactory.addTextElement("project.title", 100, initialTitle, formLayout);
 		titleEl.setMandatory(true);
 		titleEl.setEnabled(!readOnly);
 		
-		String externalRef = project != null? project.getExternalRef(): null;
+		String externalRef = initialProject != null? initialProject.getExternalRef(): null;
 		externalRefEl = uifactory.addTextElement("project.external.ref", 100, externalRef, formLayout);
 		externalRefEl.setEnabled(!readOnly);
 		
-		String teaser = project != null? project.getTeaser(): null;
+		String teaser = initialProject != null? initialProject.getTeaser(): null;
 		teaserEl = uifactory.addTextElement("project.teaser", 150, teaser, formLayout);
 		teaserEl.setEnabled(!readOnly);
 		
-		String description = project != null? project.getDescription(): null;
+		String description = initialProject != null? initialProject.getDescription(): null;
 		descriptionEl = uifactory.addTextAreaElement("project.description", 4, 6, description, formLayout);
 		descriptionEl.setEnabled(!readOnly);
 		
@@ -162,7 +194,7 @@ public class ProjProjectEditController extends FormBasicController {
 		avatarImageEl.setDeleteEnabled(true);
 		avatarImageEl.setPreview(ureq.getUserSession(), true);
 		avatarImageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf avatarImage = projectService.getProjectImage(project, ProjProjectImageType.avatar);
+		VFSLeaf avatarImage = projectService.getProjectImage(initialProject, ProjProjectImageType.avatar);
 		if (avatarImage instanceof LocalFileImpl localFile) {
 			avatarImageEl.setInitialFile(localFile.getBasefile());
 		}
@@ -175,13 +207,19 @@ public class ProjProjectEditController extends FormBasicController {
 		backgroundImageEl.setDeleteEnabled(true);
 		backgroundImageEl.setPreview(ureq.getUserSession(), true);
 		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
-		VFSLeaf backgroundImage = projectService.getProjectImage(project, ProjProjectImageType.background);
+		VFSLeaf backgroundImage = projectService.getProjectImage(initialProject, ProjProjectImageType.background);
 		if (backgroundImage instanceof LocalFileImpl localFile) {
 			backgroundImageEl.setInitialFile(localFile.getBasefile());
 		}
 		
 		if (organisationModule.isEnabled()) {
-			initFormOrganisations(formLayout, ureq.getUserSession());
+			orgCont = FormLayoutContainer.createVerticalFormLayout("orgCont", getTranslator());
+			orgCont.setRootForm(mainForm);
+			formLayout.add(orgCont);
+			
+			if (!creatorForEnabled) {
+				initOrganisations(ureq);
+			}
 		}
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -192,9 +230,13 @@ public class ProjProjectEditController extends FormBasicController {
 			uifactory.addFormSubmitButton("save", buttonLayout);
 			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 		}
+
+		updateOwnerUI();
 	}
 
-	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
+	private void initOrganisations(UserRequest ureq) {
+		if (orgCont == null) return;
+		
 		OrganisationRoles[] orgRoles;
 		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
 		if (!createRoles.isEmpty()) {
@@ -204,8 +246,8 @@ public class ProjProjectEditController extends FormBasicController {
 		} else {
 			orgRoles = ROLES_PROJECT_MANAGER;
 		}
-		organisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(), orgRoles);
-		projectOrganisations = projectService.getOrganisations(project);
+		organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
+		List<Organisation> projectOrganisations = projectService.getOrganisations(initialProject);
 		
 		if (!projectOrganisations.isEmpty()) {
 			for (Organisation projectOrganisation : projectOrganisations) {
@@ -216,15 +258,31 @@ public class ProjProjectEditController extends FormBasicController {
 		}
 		
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
-		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", formLayout, getWindowControl(), orgSV);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
 		organisationsEl.setEnabled(!readOnly);
 		projectOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
 	}
 	
+	private void initUserOrganisations() {
+		if (orgCont == null) return;
+		
+		organisations = organisationService.getOrganisations(owner, OrganisationRoles.user);
+		
+		orgCont.remove("organisations");
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
+		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
+		organisationsEl.setMandatory(true);
+		organisationsEl.setEnabled(!readOnly);
+		organisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+	}
+	
 	private void updateOwnerUI() {
 		if (ownerEl != null && owner != null) {
 			ownerEl.setValue(userManager.getUserDisplayName(owner.getKey()));
+			if (creatorForEnabled && organisationModule.isEnabled()) {
+				initUserOrganisations();
+			}
 		}
 	}
 	
@@ -317,34 +375,44 @@ public class ProjProjectEditController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (project == null) {
-			project = projectService.createProject(getIdentity(), owner);
+		if (targetProject == null) {
+			targetProject = projectService.createProject(getIdentity(), owner);
 		}
 		
-		project.setTitle(titleEl.getValue());
-		project.setExternalRef(externalRefEl.getValue());
-		project.setTeaser(teaserEl.getValue());
-		project.setDescription(descriptionEl.getValue());
-		project = projectService.updateProject(getIdentity(), project);
+		targetProject.setTitle(titleEl.getValue());
+		targetProject.setExternalRef(externalRefEl.getValue());
+		targetProject.setTeaser(teaserEl.getValue());
+		targetProject.setDescription(descriptionEl.getValue());
+		targetProject = projectService.updateProject(getIdentity(), targetProject);
 		
+		Collection<Organisation> selectedOrganisations = null;
 		if (organisationsEl != null) {
 			Collection<String> selectedOrgKeys = organisationsEl.getSelectedKeys();
-			List<Organisation> selectedOrganisations = organisations.stream()
+			selectedOrganisations = organisations.stream()
 					.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
 					.collect(Collectors.toList());
-			projectService.updateProjectOrganisations(getIdentity(), project, selectedOrganisations);
 		}
+		// Call always the update method to init the default organisation.
+		projectService.updateProjectOrganisations(getIdentity(), targetProject, selectedOrganisations);
 		
 		if (avatarImageEl.getUploadFile() != null) {
-			projectService.storeProjectImage(project, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getUploadFile(), avatarImageEl.getUploadFileName());
+			projectService.storeProjectImage(targetProject, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getUploadFile(), avatarImageEl.getUploadFileName());
+		} else if (copyArtefacts && avatarImageEl.getInitialFile() != null) {
+			projectService.storeProjectImage(targetProject, ProjProjectImageType.avatar, getIdentity(), avatarImageEl.getInitialFile(), avatarImageEl.getInitialFile().getName());
 		} else if (avatarImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(project, ProjProjectImageType.avatar);
+			projectService.deleteProjectImage(targetProject, ProjProjectImageType.avatar);
 		}
 		
 		if (backgroundImageEl.getUploadFile() != null) {
-			projectService.storeProjectImage(project, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getUploadFile(), backgroundImageEl.getUploadFileName());
+			projectService.storeProjectImage(targetProject, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getUploadFile(), backgroundImageEl.getUploadFileName());
+		} else if (copyArtefacts && backgroundImageEl.getInitialFile() != null) {
+			projectService.storeProjectImage(targetProject, ProjProjectImageType.background, getIdentity(), backgroundImageEl.getInitialFile(), backgroundImageEl.getInitialFile().getName());
 		} else if (backgroundImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(project, ProjProjectImageType.background);
+			projectService.deleteProjectImage(targetProject, ProjProjectImageType.background);
+		}
+		
+		if (copyArtefacts) {
+			projectCopyService.copyProjectArtefacts(owner, initialProject, targetProject);
 		}
 		
 		fireEvent(ureq, FormEvent.DONE_EVENT);

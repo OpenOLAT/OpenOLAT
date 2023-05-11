@@ -681,7 +681,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private void doCreateProject(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = new ProjProjectEditController(ureq, getWindowControl(), isCreateForEnabled());
+		editCtrl = ProjProjectEditController.createCreateCtrl(ureq, getWindowControl(), isCreateForEnabled());
 		listenTo(editCtrl);
 		
 		String title = translate("project.create");
@@ -701,7 +701,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			return;
 		}
 		
-		editCtrl = new ProjProjectEditController(ureq, getWindowControl(), project, false);
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, false);
 		listenTo(editCtrl);
 		
 		String title = translate("project.edit");

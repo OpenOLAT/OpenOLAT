@@ -147,6 +147,7 @@ public class ProjActivityLogController extends ActivityLogController {
 
 	private SelectionValues getActivityFilterFileValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.upload");
 		addActivityFilterValue(filterSV, "activity.log.message.read");
@@ -167,6 +168,7 @@ public class ProjActivityLogController extends ActivityLogController {
 
 	private void addActivityFileRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case fileCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case fileRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case fileDownload: addRow(rows, activity, "activity.log.message.download"); break;
 		case fileCreate: addRow(rows, activity, "activity.log.message.create"); break;
@@ -202,6 +204,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private SelectionValues getActivityFilterToDoValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.delete");
 		addActivityFilterValue(filterSV, "activity.log.message.member.add");
@@ -222,6 +225,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private void addActivityToDoRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case toDoCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case toDoCreate: addRow(rows, activity, "activity.log.message.create"); break;
 		case toDoStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
 		case toDoMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
@@ -277,6 +281,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private SelectionValues getActivityFilterNoteValues() {
 		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
 		addActivityFilterValue(filterSV, "activity.log.message.create");
 		addActivityFilterValue(filterSV, "activity.log.message.read");
 		addActivityFilterValue(filterSV, "activity.log.message.download");
@@ -294,6 +299,7 @@ public class ProjActivityLogController extends ActivityLogController {
 	
 	private void addActivityNoteRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
 		switch (activity.getAction()) {
+		case noteCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
 		case noteRead: addRow(rows, activity, "activity.log.message.read"); break;
 		case noteDownload: addRow(rows, activity, "activity.log.message.download"); break;
 		case noteCreate: addRow(rows, activity, "activity.log.message.create"); break;

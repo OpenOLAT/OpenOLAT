@@ -196,6 +196,31 @@ public class ProjTagDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_artefactType() {
+		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(creator, creator);
+		ProjArtefact artefact1 = projectService.createNote(creator, project).getArtefact();
+		ProjArtefact artefact2 =  projectService.createToDo(creator, project).getArtefact();
+		ProjArtefact artefact3 = projectService.createNote(creator, project).getArtefact();
+		Tag tag1 = tagService.getOrCreateTag(random());
+		Tag tag2 = tagService.getOrCreateTag(random());
+		ProjTag projTag11 = sut.create(project, artefact1, tag1);
+		ProjTag projTag12 = sut.create(project, artefact1, tag2);
+		sut.create(project, artefact2, tag1);
+		sut.create(project, artefact2, tag2);
+		ProjTag projTag31 = sut.create(project, artefact3, tag1);
+		ProjTag projTag32 = sut.create(project, artefact3, tag2);
+		dbInstance.commitAndCloseSession();
+		
+		ProjTagSearchParams params = new ProjTagSearchParams();
+		params.setProject(project);
+		params.setArtefactTypes(List.of(ProjNote.TYPE));
+		List<ProjTag> projTags = sut.loadTags(params);
+		
+		assertThat(projTags).containsExactlyInAnyOrder(projTag11, projTag12, projTag31, projTag32);
+	}
+	
+	@Test
 	public void shouldLoad_filter_artefactStatus() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = projectService.createProject(creator, creator);

@@ -19,37 +19,16 @@
  */
 package org.olat.modules.project;
 
-import java.util.List;
-import java.util.Set;
+import org.olat.core.id.Identity;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 9 May 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public interface ProjectCopyService {
 	
-	public Set<ProjArtefact> getArtefacts();
-	
-	public List<ProjFile> getFiles();
-	
-	public ProjFile getFile(ProjArtefactRef artefact);
-	
-	public List<ProjToDo> getToDos();
+	public void copyProjectArtefacts(Identity doer, ProjProjectRef project, ProjProject projectCopy);
 
-	public ProjToDo getToDo(ProjArtefactRef artefact);
-
-	public List<ProjNote> getNotes();
-
-	public ProjNote getNote(ProjArtefactRef artefact);
-	
-	public List<ProjAppointment> getAppointments();
-
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
-
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

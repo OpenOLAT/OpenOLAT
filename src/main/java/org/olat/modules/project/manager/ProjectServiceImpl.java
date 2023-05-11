@@ -39,10 +39,13 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
@@ -57,6 +60,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -137,6 +141,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProjectServiceImpl implements ProjectService, GenericEventListener {
 
+	private static final Logger log = Tracing.createLoggerFor(ProjectServiceImpl.class);
+	
 	static final String DEFAULT_ROLE_NAME = ProjectRole.participant.name();
 	
 	@Autowired
@@ -171,6 +177,10 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjCalendarHelper calendarHelper;
 	@Autowired
 	private ProjActivityDAO activityDao;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	protected BaseSecurity securityManager;
 	@Autowired
@@ -323,8 +333,19 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public void updateProjectOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations) {
+		// If the organisation module is not enabled add the project to the default organisation
+		if (!organisationModule.isEnabled()) {
+			List<ProjProjectToOrganisation> currentRelations = projectToOrganisationDao.loadRelations(project, null);
+			if (currentRelations.isEmpty()) {
+				projectToOrganisationDao.createRelation(project, organisationService.getDefaultOrganisation());
+				// No activity log
+			}
+			return;
+		}
+		
 		if (organisations == null || organisations.isEmpty()) {
-			projectToOrganisationDao.delete(project);
+			// All projects have to have a relation to a organisation.
+			log.warn("{} tries to remove project {} (key::{}) from all organisations", doer, project.getTitle(), project.getKey());
 			return;
 		}
 		
