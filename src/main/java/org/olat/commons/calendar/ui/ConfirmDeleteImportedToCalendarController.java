@@ -75,14 +75,22 @@ public class ConfirmDeleteImportedToCalendarController extends FormBasicControll
 				.filter(cal -> selectedKeys.contains(cal.getKey().toString()))
 				.collect(Collectors.toList());
 	}
+	
+	private long getNumberOfEvents() {
+		long numOfEvents = 0;
+		for(ImportedToCalendar importedCalendar:importedCalendars) {
+			numOfEvents += importToCalendarManager.countEvents(importedCalendar);
+		}
+		return numOfEvents;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			int numOfEvents = calendarRow.getWrapper().getKalendar().getEvents().size();
-			String msgI18nKey = numOfEvents <= 1 ? "cal.confirm.delete.imported.to.confirmation_message.singular"
+			long numOfEvents = getNumberOfEvents();
+			String msgI18nKey = numOfEvents <= 1l ? "cal.confirm.delete.imported.to.confirmation_message.singular"
 					: "cal.confirm.delete.imported.to.confirmation_message";
-			layoutCont.contextPut("msg", translate(msgI18nKey, Integer.toString(numOfEvents)));
+			layoutCont.contextPut("msg", translate(msgI18nKey, Long.toString(numOfEvents)));
 		}
 
 		FormLayoutContainer layoutCont = uifactory.addDefaultFormLayout("confirm", null, formLayout);
