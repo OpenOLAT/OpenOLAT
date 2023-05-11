@@ -22,9 +22,7 @@ package org.olat.basesecurity.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -295,14 +293,14 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
-		List<String> olatProviderList = Collections.singletonList("OLAT");
+		List<String> olatProviderList = List.of("OLAT");
 		List<Authentication> olatAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin(), olatProviderList);
 		Assert.assertNotNull(olatAuthentications);
 		Assert.assertEquals(1, olatAuthentications.size());
 		Assert.assertEquals(ident.getIdentity(), olatAuthentications.get(0).getIdentity());
 		
 		// negative test
-		List<String> ldapProviderList = Collections.singletonList("LDAP");
+		List<String> ldapProviderList = List.of("LDAP");
 		List<Authentication> ldapAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin(), ldapProviderList);
 		Assert.assertNotNull(ldapAuthentications);
 		Assert.assertTrue(ldapAuthentications.isEmpty());
@@ -317,7 +315,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 
-		List<String> providerList = Collections.singletonList("OLAT");
+		List<String> providerList = List.of("OLAT");
 		List<Authentication> lowerAuthentications = authenticationDao.getAuthenticationsByAuthusername(ident.getLogin().toLowerCase(), providerList);
 		Assert.assertNotNull(lowerAuthentications);
 		Assert.assertEquals(1, lowerAuthentications.size());
@@ -331,9 +329,38 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getAuthenticationsByAuthusernameAndExternalIds() {
+		String provider = "DIUDES";
+		String token = UUID.randomUUID().toString();
+		String externalId = UUID.randomUUID().toString();
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-3-");
+		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), provider, BaseSecurity.DEFAULT_ISSUER, externalId,
+				ident.getLogin(), token, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(auth);
+
+		// All match
+		List<Authentication> authentications = authenticationDao.getAuthentications(ident.getLogin().toLowerCase(), List.of(externalId), provider, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertNotNull(authentications);
+		Assert.assertEquals(1, authentications.size());
+		Assert.assertEquals(ident.getIdentity(), authentications.get(0).getIdentity());
+		
+		// Partial match
+		List<Authentication> partialAuthentications = authenticationDao.getAuthentications("something-other", List.of(externalId, "more-than-external-id"), provider, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertNotNull(partialAuthentications);
+		Assert.assertEquals(1, partialAuthentications.size());
+		Assert.assertEquals(ident.getIdentity(), partialAuthentications.get(0).getIdentity());
+		
+		// No match
+		List<Authentication> noAuthentications = authenticationDao.getAuthentications("something-other", List.of("something-random", "more-than-external-id"), provider, BaseSecurity.DEFAULT_ISSUER);
+		Assert.assertNotNull(noAuthentications);
+		Assert.assertTrue(noAuthentications.isEmpty());
+	}
+	
+	@Test
 	public void getAuthentications() {
 		String token = UUID.randomUUID().toString();
-		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-4-");
 		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
 				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
@@ -348,7 +375,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	@Test
 	public void hasAuthentication() {
 		String token = UUID.randomUUID().toString();
-		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-2-");
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-5-");
 		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
 				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
@@ -363,14 +390,13 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	@Test
 	public void hasValidOlatAuthentication() {
 		String token = UUID.randomUUID().toString();
-		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-3-");
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-6-");
 		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
 				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
 		
-		List<String> fullProviders = new ArrayList<>();
-		fullProviders.add(LDAPAuthenticationController.PROVIDER_LDAP);
+		List<String> fullProviders = List.of(LDAPAuthenticationController.PROVIDER_LDAP);
 
 		//check nothing at the end
 		boolean valid = authenticationDao.hasValidOlatAuthentication(ident.getIdentity(), false, 0, fullProviders);
@@ -386,7 +412,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 	@Test
 	public void hasValidOlatAuthentication_tooOld() {
 		String token = UUID.randomUUID().toString();
-		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-3-");
+		IdentityWithLogin ident = JunitTestHelper.createAndPersistRndUser("authdao-7-");
 		Authentication auth = securityManager.createAndPersistAuthentication(ident.getIdentity(), "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
 				ident.getLogin(), token, null);
 		dbInstance.commitAndCloseSession();
@@ -400,8 +426,7 @@ public class AuthenticationDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check if the authentication is new
-		List<String> fullProviders = new ArrayList<>();
-		fullProviders.add(LDAPAuthenticationController.PROVIDER_LDAP);
+		List<String> fullProviders = List.of(LDAPAuthenticationController.PROVIDER_LDAP);
 		boolean tooOld = authenticationDao.hasValidOlatAuthentication(ident.getIdentity(), false, 60, fullProviders);
 		Assert.assertFalse(tooOld);
 	}

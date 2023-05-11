@@ -233,6 +233,15 @@ public class QueryBuilder implements Appendable {
 		return this;
 	}
 	
+	public QueryBuilder lowerIn(String field) {
+		if(dbInstance.isMySQL()) {
+			append(" ").append(field).append(" in ");
+		} else {
+			append(" lower(").append(field).append(") in ");
+		}
+		return this;
+	}
+	
 	public QueryBuilder likeFuzzy(String field, String key) {
 		if(dbInstance.isMySQL()) {
 			append(" ").append(field).append(" like :").append(key);

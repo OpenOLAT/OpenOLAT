@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,9 +64,10 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	private static final BigDecimal MEDIUM = BigDecimal.valueOf(34);
 	
 	private VideoTaskSession lastSession;
+	private long nbSessions;
 
 	private List<VideoTaskSessionRow> backupRows;
-	
+
 	public VideoTaskAssessmentDetailsTableModel(FlexiTableColumnModel columnsModel) {
 		super(columnsModel);
 	}
@@ -73,7 +75,11 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	public VideoTaskSession getLastSession() {
 		return lastSession;
 	}
-	
+
+	public long getNbSessions() {
+		return nbSessions;
+	}
+
 	public int getMaxAttempts() {
 		int maxAttempts = 0;
 		for(int i=this.getRowCount(); i-->0; ) {
@@ -222,9 +228,10 @@ implements FlexiTableCssDelegate, FilterableFlexiTableModel {
 	public void setObjects(List<VideoTaskSessionRow> objects) {
 		backupRows = new ArrayList<>(objects);
 		super.setObjects(objects);
-		
+
 		List<VideoTaskSessionRow> sessions = new ArrayList<>(objects);
 		Collections.sort(sessions, new VideoTaskSessionRowComparator());
+		nbSessions = sessions.stream().map(VideoTaskSessionRow::getTaskSession).filter(Objects::nonNull).filter(s -> !s.isCancelled()).count();
 		for(VideoTaskSessionRow session:sessions) {
 			VideoTaskSession taskSession = session.getTaskSession();
 			if(taskSession != null && !taskSession.isCancelled()) {

@@ -96,6 +96,27 @@ public class ImportToCalendarManager {
 		}
 	}
 	
+	public long countEvents(ImportedToCalendar importedToCalendar) {
+		String type = importedToCalendar.getToType();
+		String id = importedToCalendar.getToCalendarId();
+		String importUrl = importedToCalendar.getUrl();
+		
+		try(InputStream in = new URL(importUrl).openStream()) {
+			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
+			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
+			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
+			if(!importedEventsIds.isEmpty()) {
+				Kalendar cal = calendarManager.getCalendar(type, id);
+				return cal.getEvents().stream()
+					.filter(e -> importedEventsIds.contains(e.getID()))
+					.count();
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		return -1l;
+	}
+	
 	public void deleteImportedCalendarsAndEvents(ImportedToCalendar importedToCalendar) {
 		String type = importedToCalendar.getToType();
 		String id = importedToCalendar.getToCalendarId();

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,6 +67,7 @@ import org.olat.course.nodes.videotask.ui.VideoTaskAssessmentDetailsTableModel.D
 import org.olat.course.nodes.videotask.ui.components.DurationFlexiCellRenderer;
 import org.olat.course.nodes.videotask.ui.components.PercentCellRenderer;
 import org.olat.course.nodes.videotask.ui.components.SelectionCellRenderer;
+import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionComparator;
 import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionRowComparator;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -434,9 +436,13 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 	
 	protected void doInvalidate(UserRequest ureq, VideoTaskSessionRow taskSession,
 			UserCourseEnvironment assessedUserCourseEnv) {
-		boolean lastSession = taskSession.getTaskSession().equals(tableModel.getLastSession());
+		boolean singleSession = tableModel.getNbSessions() == 1;
+		boolean latestSession = taskSession.getTaskSession().equals(tableModel.getLastSession());
+		String text = getInvalidateText(singleSession, latestSession);
+		String buttonKey = getInvalidateButtonKey(singleSession, latestSession);
 		confirmInvalidateCtrl = new ConfirmInvalidateTaskController(ureq, getWindowControl(),
-				taskSession.getTaskSession(), lastSession, courseNode, assessedUserCourseEnv);
+				taskSession.getTaskSession(), text, buttonKey, singleSession, latestSession, courseNode,
+				assessedUserCourseEnv);
 		listenTo(confirmInvalidateCtrl);
 		
 		String title = translate("confirm.invalidate.title");
@@ -445,13 +451,37 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		cmc.activate();
 		listenTo(cmc);
 	}
+
+	private String getInvalidateText(boolean singleSession, boolean latestSession) {
+		String result = translate("confirm.invalidate.text");
+		if (singleSession) {
+			return result + " " + translate("confirm.invalidate.text.singleAttempt");
+		} else if (latestSession) {
+			return result + " " + translate("confirm.invalidate.text.latestAttempt");
+		} else {
+			return result;
+		}
+	}
+
+	private String getInvalidateButtonKey(boolean singleSession, boolean latestSession) {
+		if (singleSession) {
+			return "confirm.invalidate.buttonText.singleAttempt";
+		} else if (latestSession) {
+			return "confirm.invalidate.buttonText.latestAttempt";
+		} else {
+			return "confirm.invalidate.buttonText";
+		}
+	}
 	
 	protected abstract void doRevalidate(UserRequest ureq, VideoTaskSessionRow taskSession);
 	
 	protected void doRevalidate(UserRequest ureq, VideoTaskSessionRow taskSession,
 			UserCourseEnvironment assessedUserCourseEnv) {
+		boolean apply = willBeNextLatestSession(taskSession);
+		String text = getRevalidateText(apply);
+		String buttonKey = getRevalidateButtonKey(apply);
 		confirmRevalidateCtrl = new ConfirmRevalidateTaskController(ureq, getWindowControl(),
-				taskSession.getTaskSession(), courseNode, assessedUserCourseEnv);
+				taskSession.getTaskSession(), text, buttonKey, apply, courseNode, assessedUserCourseEnv);
 		listenTo(confirmRevalidateCtrl);
 		
 		String title = translate("confirm.revalidate.title");
@@ -460,7 +490,32 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		cmc.activate();
 		listenTo(cmc);
 	}
-	
+
+	private boolean willBeNextLatestSession(VideoTaskSessionRow taskSession) {
+		VideoTaskSession session = taskSession.getTaskSession();
+		List<VideoTaskSession> sessions = tableModel.getObjects().stream().map(VideoTaskSessionRow::getTaskSession).filter(Objects::nonNull).filter(s -> !s.isCancelled()).collect(Collectors.toList());
+		sessions.add(session);
+		sessions.sort(new VideoTaskSessionComparator(false));
+		return session.equals(sessions.get(0));
+	}
+
+	private String getRevalidateText(boolean apply) {
+		String result = translate("confirm.revalidate.text");
+		if (apply) {
+			return result + " " + translate("confirm.revalidate.text.apply");
+		} else {
+			return result;
+		}
+	}
+
+	private String getRevalidateButtonKey(boolean apply) {
+		if (apply) {
+			return "confirm.revalidate.buttonText.apply";
+		} else {
+			return "confirm.revalidate.buttonText";
+		}
+	}
+
 	private class ToolsController extends BasicController {
 		
 		private Link revalidateLink;
