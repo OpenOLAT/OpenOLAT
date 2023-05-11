@@ -256,7 +256,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			try {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
-				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, BaseSecurity.DEFAULT_ISSUER,
+				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, BaseSecurity.DEFAULT_ISSUER, null,
 						authUsername, password, loginModule.getDefaultHashAlgorithm());
 				log.info(Tracing.M_AUDIT, "{} created new WebDAV authentication for identity: {} ({})", doer.getKey(), identity.getKey(), authUsername);
 				dbInstance.commit();
@@ -364,7 +364,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			try {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
-				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, BaseSecurity.DEFAULT_ISSUER,
+				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, BaseSecurity.DEFAULT_ISSUER, null,
 						authUsername, digestToken, Encoder.Algorithm.md5_utf_8);
 				log.info(Tracing.M_AUDIT, "{} created new WebDAV (HA1) authentication for identity: {} ({})", doer.getKey(), identity.getKey(), authUsername);
 				dbInstance.commit();

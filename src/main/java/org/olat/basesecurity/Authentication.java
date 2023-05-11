@@ -31,12 +31,14 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
- * Description: <BR/>
- * 
  * @author Felix Jost
  */
 public interface Authentication extends CreateInfo, ModifiedInfo, Persistable {
 
+	public String getExternalId();
+	
+	public void setExternalId(String externalId);
+	
 	/**
 	 * @return
 	 */

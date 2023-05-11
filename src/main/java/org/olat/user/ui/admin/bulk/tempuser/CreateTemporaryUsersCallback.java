@@ -108,8 +108,8 @@ public class CreateTemporaryUsersCallback implements StepRunnerCallback {
 		newUser.getPreferences().setLanguage(identity.getLanguage());
 		newUser.getPreferences().setInformSessionTimeout(true);
 		return securityManager.createAndPersistIdentityAndUserWithOrganisation(identity.getName(), identity.getName(), null, newUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, identity.getName(), identity.getPassword(),
-				organisation, identity.getExpirationDate());
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER,
+				null, identity.getName(), identity.getPassword(), organisation, identity.getExpirationDate());
 	}
 	
 	private static class TemporaryUsersMediaResources extends OpenXMLWorkbookResource {

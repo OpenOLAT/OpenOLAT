@@ -154,7 +154,7 @@ public class UserAuthenticationAddController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String provider = providerEl.getSelectedKey();
 		String username = loginEl.getValue();
-		securityManager.createAndPersistAuthentication(changeableIdentity, provider, BaseSecurity.DEFAULT_ISSUER, username, null, null);
+		securityManager.createAndPersistAuthentication(changeableIdentity, provider, BaseSecurity.DEFAULT_ISSUER, null, username, null, null);
 		
 		dbInstance.commit();
 		fireEvent(ureq, Event.CHANGED_EVENT);

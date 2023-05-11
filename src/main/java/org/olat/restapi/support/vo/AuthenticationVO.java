@@ -40,6 +40,7 @@ public class AuthenticationVO {
 	private String provider;
 	private String authUsername;
 	private String credential;
+	private String externalId;
 	
 	public Long getKey() {
 		return key;
@@ -55,6 +56,14 @@ public class AuthenticationVO {
 
 	public void setIdentityKey(Long identityKey) {
 		this.identityKey = identityKey;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public String getProvider() {

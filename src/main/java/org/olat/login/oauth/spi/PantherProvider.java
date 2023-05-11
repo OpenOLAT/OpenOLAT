@@ -135,7 +135,7 @@ public class PantherProvider implements OAuthSPI, OAuthUserCreator {
 		Identity newIdentity = ldapManager.createAndPersistUser(uid);
 		if(newIdentity != null) {
 			log.info("create user identifier by uid: {}", uid);
-			securityManager.createAndPersistAuthentication(newIdentity, getProviderName(), BaseSecurity.DEFAULT_ISSUER, uid, null, null);
+			securityManager.createAndPersistAuthentication(newIdentity, getProviderName(), BaseSecurity.DEFAULT_ISSUER, null, uid, null, null);
 		}
 		dbInstance.commit();
 		return newIdentity;

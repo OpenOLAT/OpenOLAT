@@ -500,7 +500,7 @@ public class ViteroManager implements UserDataDeletable {
 				created = true;
 				userId =  createVmsUser(identity);
 				if(userId > 0) {
-					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, Integer.toString(userId), null, null);
+					securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, Integer.toString(userId), null, null);
 				}
 			} else {
 				userId = -1;
@@ -1398,7 +1398,7 @@ public class ViteroManager implements UserDataDeletable {
 						Identity identity = securityManager.findIdentityByName(olatUsername);
 						if(identity != null) {
 							authenticationCreated++;
-							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, Integer.toString(user.getId()), null, null);
+							securityManager.createAndPersistAuthentication(identity, VMS_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null, Integer.toString(user.getId()), null, null);
 							log.info("Recreate VMS authentication for: {}", identity.getKey());
 						}
 					}

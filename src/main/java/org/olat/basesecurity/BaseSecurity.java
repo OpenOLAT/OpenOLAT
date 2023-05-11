@@ -278,7 +278,8 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String identityName, String nickName, String externalId,
-			User user, String provider, String issuer, String authusername, String password, Date expirationDate);
+			User user, String provider, String issuer, String authenticationExternalId,
+			String authusername, String password, Date expirationDate);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
@@ -298,7 +299,8 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
-			User user, String provider, String issuer, String authusername, String password, Organisation organisation, Date expirationDate);
+			User user, String provider, String issuer, String authenticationExternalId,
+			String authusername, String password, Organisation organisation, Date expirationDate);
 	
 
 	/**
@@ -355,7 +357,7 @@ public interface BaseSecurity {
 	 * @param credential
 	 * @return an Authentication
 	 */
-	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer,
+	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer, String externalId,
 			String authUsername, String password, Encoder.Algorithm algoritm);
 
 	/**

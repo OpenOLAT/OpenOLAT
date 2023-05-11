@@ -334,7 +334,8 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					// create additional authentication
 					Authentication auth = migrationForm.getAuthentication();
 					Identity authenticationedIdentity = auth.getIdentity();
-					securityManager.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER, shibbolethUniqueID, null, null);
+					securityManager.createAndPersistAuthentication(authenticationedIdentity, ShibbolethDispatcher.PROVIDER_SHIB, BaseSecurity.DEFAULT_ISSUER, null,
+							shibbolethUniqueID, null, null);
 
 					// update user profile
 					shibbolethManager.syncUser(authenticationedIdentity, shibbolethAttributes);
