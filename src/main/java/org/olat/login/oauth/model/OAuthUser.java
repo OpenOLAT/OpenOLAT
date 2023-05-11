@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth.model;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.id.UserConstants;
@@ -46,6 +47,8 @@ public class OAuthUser {
 	private String department;
 	private String country;
 	private String lang;
+	
+	private List<String> authenticationExternalIds;
 	
 	public String getId() {
 		return id;
@@ -133,6 +136,14 @@ public class OAuthUser {
 
 	public void setLang(String lang) {
 		this.lang = lang;
+	}
+
+	public List<String> getAuthenticationExternalIds() {
+		return authenticationExternalIds;
+	}
+
+	public void setAuthenticationExternalIds(List<String> authenticationExternalIds) {
+		this.authenticationExternalIds = authenticationExternalIds;
 	}
 
 	public String getProperty(String propName) {

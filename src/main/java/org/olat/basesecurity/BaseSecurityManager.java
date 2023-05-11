@@ -1090,6 +1090,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
+	public List<Authentication> findAuthentications(String authusername, List<String> externalIds, String provider, String issuer) {
+		return authenticationDao.getAuthentications(authusername, externalIds, provider, issuer);
+	}
+
+	@Override
 	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers) {
 		if(providers == null || providers.isEmpty()) {
 			return authenticationDao.getAuthenticationsByAuthusername(authusername);

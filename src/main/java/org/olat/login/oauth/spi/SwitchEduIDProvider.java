@@ -20,6 +20,8 @@
 package org.olat.login.oauth.spi;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.logging.log4j.Logger;
@@ -134,6 +136,7 @@ public class SwitchEduIDProvider implements OAuthSPI {
 			user.setLastName(getValue(obj, "family_name"));
 			user.setInstitutionalUserIdentifier(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationUniqueID"));
 			user.setInstitutionalEmail(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationMail"));
+			user.setAuthenticationExternalIds(getArrayValues(obj, "swissEduIDLinkedAffiliationUniqueID"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
@@ -149,5 +152,18 @@ public class SwitchEduIDProvider implements OAuthSPI {
 	private String getFirstArrayValue(JSONObject obj, String property) {
 		JSONArray value = obj.optJSONArray(property);
 		return value == null || value.isEmpty() ? null : value.iterator().next().toString();
+	}
+	
+	private List<String> getArrayValues(JSONObject obj, String property) {
+		JSONArray value = obj.optJSONArray(property);
+		if(value == null) return null;
+		
+		List<String> list = new ArrayList<>(value.length());
+		for(Object object:value) {
+			if(object instanceof String string) {
+				list.add(string);
+			}
+		}
+		return list;
 	}
 }

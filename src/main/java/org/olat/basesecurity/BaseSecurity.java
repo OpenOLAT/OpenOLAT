@@ -421,9 +421,12 @@ public interface BaseSecurity {
 	 */
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider, String issuer);
 	
+	
 	public Authentication findAuthenticationByKey(Long authenticationKey);
 
 	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers);
+	
+	public List<Authentication> findAuthentications(String authusername, List<String> externalIds, String provider, String issuer);
 
 
 	/**
