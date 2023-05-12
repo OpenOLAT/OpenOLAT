@@ -71,7 +71,7 @@ public class SessionInformationLegendNameGenerator implements LegendNameGenerato
 
 	private String conacatName(String firstname, String lastname) {
 		boolean hasFirstname = StringHelper.containsNonWhitespace(firstname);
-		boolean hasLastname = StringHelper.containsNoneOfCoDouSemi(lastname);
+		boolean hasLastname = StringHelper.containsNonWhitespace(lastname);
 		if (hasFirstname && hasLastname) return new StringBuilder().append(firstname).append(" ").append(lastname).toString();
 		if (hasFirstname) return firstname;
 		if (hasLastname) return lastname;

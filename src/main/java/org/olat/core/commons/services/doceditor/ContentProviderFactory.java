@@ -21,11 +21,8 @@ package org.olat.core.commons.services.doceditor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
@@ -140,10 +137,9 @@ public class ContentProviderFactory {
 
 		@Override
 		public InputStream getContent(Locale locale) {
-			URL url = PptxContentProvider.class.getResource("empty.pptx");
 			try {
-				return new FileInputStream(url.getFile());
-			} catch (FileNotFoundException e) {
+				return PptxContentProvider.class.getResourceAsStream("empty.pptx");
+			} catch (Exception e) {
 				log.error("", e);
 			}
 			return new EmptyContentProvider().getContent(locale);

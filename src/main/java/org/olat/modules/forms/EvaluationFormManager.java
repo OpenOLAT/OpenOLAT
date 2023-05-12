@@ -22,6 +22,7 @@ package org.olat.modules.forms;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -212,11 +213,11 @@ public interface EvaluationFormManager {
 
 	public VFSLeaf loadResponseLeaf(EvaluationFormResponse response);
 	
-	public File createTmpDir();
+	public Path createTmpDir();
 	
 	public void deleteTmpDirs();
 	
-	public void copyFilesTo(Collection<EvaluationFormResponse> responses, File targetDir);
+	public void copyFilesTo(Collection<EvaluationFormResponse> responses, Path tmpDir);
 	
 	public Date getDate(EvaluationFormResponse response);
 
