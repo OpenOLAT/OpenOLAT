@@ -1075,17 +1075,21 @@ public class FileUtils {
 	}
 
 	public static String appendNumberAtTheEndOfFilename(String name, int number, String numberPrefix) {
+		return appendAtTheEndOfFilename(name, numberPrefix + number);
+	}
+	
+	public static String appendAtTheEndOfFilename(String name, String value) {
 		// Try to match the file to the pattern "[name].[extension]"
 		Matcher m = fileNamePattern.matcher(name);
 		StringBuilder newName = new StringBuilder();
 		if (m.matches()) {
-			newName.append(m.group(1)).append(numberPrefix).append(number);
+			newName.append(m.group(1)).append(value);
 			if (m.group(2) != null) {
 				// is null in case it was not a file or does not contain a file ending.
 				newName.append(m.group(2));
 			}
 		} else {
-			newName.append(name).append(numberPrefix).append(number);
+			newName.append(name).append(value);
 		}
 		return newName.toString();
 	}

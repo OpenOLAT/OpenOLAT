@@ -19,7 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,10 +131,10 @@ public class FileUploadListingController extends BasicController {
 	
 	private void doExport(UserRequest ureq) {
 		List<EvaluationFormResponse> responses = dataSource.getAllResponses();
-		File tmpDir = evaluationFormManager.createTmpDir();
+		Path tmpDir = evaluationFormManager.createTmpDir();
 		evaluationFormManager.copyFilesTo(responses, tmpDir);
 		String name = "survey_files";
-		ZippedDirectoryMediaResource zipResource = new ZippedDirectoryMediaResource(name, tmpDir);
+		ZippedDirectoryMediaResource zipResource = new ZippedDirectoryMediaResource(name, tmpDir.toFile());
 		ureq.getDispatchResult().setResultingMediaResource(zipResource);
 	}
 

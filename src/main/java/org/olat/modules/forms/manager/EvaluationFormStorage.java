@@ -30,8 +30,8 @@ import java.util.UUID;
 
 import jakarta.annotation.PostConstruct;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -72,8 +72,10 @@ class EvaluationFormStorage {
 		}
 	}
 	
-	File createTmpDir() {
-		return getTmpDir().resolve(CodeHelper.getUniqueID()).toFile();
+	Path createTmpDir() {
+		Path tempDirPath = getTmpDir().resolve(CodeHelper.getUniqueID());
+		tempDirPath.toFile().mkdir();
+		return tempDirPath;
 	}
 
 	void deleteTmpDirs() {
@@ -112,9 +114,9 @@ class EvaluationFormStorage {
 		return VFSManager.olatRootLeaf("/" + relativePath.toString());
 	}
 
-	void copyTo(Path relativePath, File targetDir) {
-		File file = getAbsolutePath(relativePath).toFile();
-		FileUtils.copyFileToDir(file, targetDir, "copy evaluation form upload file");
+	void copyTo(Path relativePath, Path targetFilePath) throws IOException {
+		Path source = getAbsolutePath(relativePath);
+		Files.copy(source, targetFilePath, StandardCopyOption.REPLACE_EXISTING);
 	}
 
 	void delete(Path relativePath) {

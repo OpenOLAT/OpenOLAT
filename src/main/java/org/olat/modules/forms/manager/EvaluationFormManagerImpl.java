@@ -30,15 +30,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
+import org.olat.core.util.Encoder;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.nodes.ms.MSService;
@@ -92,6 +99,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class EvaluationFormManagerImpl implements EvaluationFormManager {
+
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormManagerImpl.class);
 	
 	@Autowired
 	private EvaluationFormSurveyDAO evaluationFormSurveyDao;
@@ -468,7 +477,7 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	@Override
-	public File createTmpDir() {
+	public Path createTmpDir() {
 		return evaluationFormStorage.createTmpDir();
 	}
 	
@@ -478,11 +487,26 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 	
 	@Override
-	public void copyFilesTo(Collection<EvaluationFormResponse> responses, File targetDir) {
+	public void copyFilesTo(Collection<EvaluationFormResponse> responses, Path targetDir) {
 		if (targetDir == null) return;
-		
+	
+		Set<String> filenames = new HashSet<>(responses.size());
 		for (EvaluationFormResponse response: responses) {
-			evaluationFormStorage.copyTo(response.getFileResponse(), targetDir);
+			String filename = response.getStringuifiedResponse();
+			if (StringHelper.containsNonWhitespace(filename)) {
+				if (filenames.contains(filename)) {
+					// Make the filename unique
+					String filenameEnd = "_" + Encoder.md5hash(String.valueOf(response.getKey()));
+					filename = FileUtils.appendAtTheEndOfFilename(filename, filenameEnd);
+				}
+				Path targetFile = targetDir.resolve(filename);
+				try {
+					evaluationFormStorage.copyTo(response.getFileResponse(), targetFile);
+					filenames.add(filename);
+				} catch (IOException e) {
+					log.warn("Can not copy file of evaluation form response key::{}.", response.getKey());
+				}
+			}
 		}
 	}
 
