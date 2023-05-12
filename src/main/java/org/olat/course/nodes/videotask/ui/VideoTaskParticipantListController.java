@@ -23,6 +23,8 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -109,13 +111,22 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 		}
 		
 		if(!coachCourseEnv.isCourseReadOnly()) {
-			if(getAssessmentCallback().canDeleteData()) {
-				deleteAllDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
-				deleteAllDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
-			}
 			if(getAssessmentCallback().canResetData()) {
-				resetAllDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
+				resetAllDataButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON);
 				resetAllDataButton.setIconLeftCSS("o_icon o_icon_reset_data");
+			}
+
+			if(getAssessmentCallback().canDeleteData()) {
+				DropdownItem moreDropdown = uifactory.addDropdownMenu("more.menu", null, null,
+						formLayout, getTranslator());
+				moreDropdown.setCarretIconCSS("o_icon o_icon_commands");
+				moreDropdown.setOrientation(DropdownOrientation.right);
+				moreDropdown.setEmbbeded(true);
+				moreDropdown.setButton(true);
+
+				deleteAllDataButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.LINK);
+				deleteAllDataButton.setIconLeftCSS("o_icon o_icon_delete_item");
+				moreDropdown.addElement(deleteAllDataButton);
 			}
 		}
 	}
@@ -254,9 +265,9 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 	
 	private void doLaunchStatistics(UserRequest ureq) {
 		IdentitiesList identities = getIdentities(false);
-		boolean canReset = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
+		boolean canDelete = !coachCourseEnv.isCourseReadOnly() && getAssessmentCallback().isAdmin();
 		Controller statisticsCtrl = new VideoTaskAssessmentStatisticsController(ureq, getWindowControl(), 
-				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canReset);
+				stackPanel, getCourseEnvironment(), identities, (VideoTaskCourseNode)courseNode, canDelete);
 		listenTo(statisticsCtrl);
 		stackPanel.pushController(translate("button.stats"), statisticsCtrl);
 	}
