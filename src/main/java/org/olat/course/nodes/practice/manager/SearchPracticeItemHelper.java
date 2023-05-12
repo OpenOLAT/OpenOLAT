@@ -100,9 +100,21 @@ public class SearchPracticeItemHelper {
 		return true;
 	}
 	
+	/**
+	 * Check without taxonomy or in the specified list of taxonomy.
+	 * 
+	 * @param item The practice item
+	 * @param levelsPathKeys The accepted list of taxonomy
+	 * @param allowDescendants True to include the descendants, false for exact match
+	 * @param includeWithoutTaxonomy Include item without taxonomy
+	 * @return True if one of the both criteria match
+	 */
 	public static boolean accept(PracticeItem item, List<String> levelsPathKeys, boolean allowDescendants, boolean includeWithoutTaxonomy) {
+		if(includeWithoutTaxonomy && !StringHelper.containsNonWhitespace(item.getTaxonomyLevelName())) {
+			return true;
+		}
 		String taxonomicPathKey = buildKeyOfTaxonomicPath(item.getTaxonomyLevelName(), item.getTaxonomicPath());
-		return accept(taxonomicPathKey, levelsPathKeys, allowDescendants, includeWithoutTaxonomy);
+		return taxonomicPathKey != null && acceptPath(taxonomicPathKey, levelsPathKeys, allowDescendants);
 	}
 	
 	public static boolean accept(String taxonomicPathKey, List<String> levelsPathKeys, boolean allowDescendants, boolean includeWithoutTaxonomy) {
@@ -113,9 +125,7 @@ public class SearchPracticeItemHelper {
 			if(taxonomicPathKey != null && !acceptPath(taxonomicPathKey, levelsPathKeys, allowDescendants)) {
 				return false;
 			}
-		}/* else if (includeWithoutTaxonomy && StringHelper.containsNonWhitespace(taxonomicPathKey)) {
-			return false;
-		}*/
+		}
 		return true;
 	}
 	
