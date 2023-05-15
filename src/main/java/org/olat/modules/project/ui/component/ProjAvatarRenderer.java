@@ -47,7 +47,6 @@ public class ProjAvatarRenderer extends DefaultComponentRenderer implements Comp
 		
 		if (isImageAvailable || isCssClassAvailable) {
 			sb.append("<div aria-hidden=\"true\" class=\"o_proj_avatar ");
-			sb.append("o_proj_avatar_color " + avatar.getAvatarCssClass() + " ", isCssClassAvailable && !isImageAvailable);
 			if (Size.large == avatar.getSize()) {
 				sb.append("o_proj_avatar_large ");
 			} else if (Size.medium == avatar.getSize()) {
@@ -55,9 +54,24 @@ public class ProjAvatarRenderer extends DefaultComponentRenderer implements Comp
 			}
 			sb.append("\">");
 			if (isImageAvailable) {
-				sb.append("<img src=\"").append(avatar.getImageUrl()).append("\">");
+				sb.append("<img class=\"o_proj_avatar_image ");
+				if (avatar.isBorder()) {
+					sb.append("o_proj_avatar_prevborder ");
+				}
+				sb.append("\" src=\"").append(avatar.getImageUrl()).append("\">");
 			} else if (isCssClassAvailable) {
+				sb.append("<div class=\"o_proj_avatar_image ");
+				sb.append("o_proj_avatar_color " + avatar.getAvatarCssClass() + " ");
+				if (avatar.isBorder()) {
+					sb.append("o_proj_avatar_prevborder ");
+				}
+				sb.append("\">");
 				sb.append(avatar.getAbbrev());
+				sb.append("</div>");
+			}
+			// Border in a separate overlay div to keep the image dimension.
+			if (avatar.isBorder()) {
+				sb.append("<div class=\"o_proj_avatar_border\"></div>");
 			}
 			sb.append("</div>");
 		}

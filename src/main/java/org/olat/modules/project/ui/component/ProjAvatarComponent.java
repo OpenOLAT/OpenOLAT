@@ -41,8 +41,9 @@ public class ProjAvatarComponent extends AbstractComponent {
 	private final String avatarCssClass;
 	private final String abbrev;
 	private final Size size;
+	private final boolean border;
 
-	public ProjAvatarComponent(String name, ProjProject project, String imageUrl, Size size) {
+	public ProjAvatarComponent(String name, ProjProject project, String imageUrl, Size size, boolean border) {
 		super(name);
 		this.imageUrl = imageUrl;
 		this.avatarCssClass = project.getAvatarCssClass();
@@ -50,6 +51,7 @@ public class ProjAvatarComponent extends AbstractComponent {
 				? Formatter.truncateOnly(project.getTitle(), 2).toUpperCase()
 				: null;
 		this.size = size;
+		this.border = border;
 		setDomReplacementWrapperRequired(false);
 	}
 
@@ -77,6 +79,10 @@ public class ProjAvatarComponent extends AbstractComponent {
 
 	public Size getSize() {
 		return size;
+	}
+
+	public boolean isBorder() {
+		return border;
 	}
 
 }

@@ -132,7 +132,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	}
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium)));
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium, false)));
 		
 		appointmentCreateLink = uifactory.addFormLink("appointment.create", formLayout, Link.BUTTON);
 		appointmentCreateLink.setIconLeftCSS("o_icon o_icon_add");

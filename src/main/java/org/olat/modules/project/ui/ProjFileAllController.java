@@ -66,7 +66,7 @@ public class ProjFileAllController extends ProjFileListController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium)));
+		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium, false)));
 		
 		uploadLink = uifactory.addFormLink("file.upload", formLayout, Link.BUTTON);
 		uploadLink.setIconLeftCSS("o_icon o_icon_upload");

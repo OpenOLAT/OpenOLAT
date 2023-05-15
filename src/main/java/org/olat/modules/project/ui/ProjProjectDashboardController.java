@@ -270,7 +270,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		mainVC.contextPut("backgroundUrl", backgroundUrl);
 		String avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
 		Size size = backgroundUrl != null? Size.large: Size.medium;
-		mainVC.put("avatar", new ProjAvatarComponent("avatar", project, avatarUrl, size));
+		mainVC.put("avatar", new ProjAvatarComponent("avatar", project, avatarUrl, size, true));
 	}
 	
 	private void updateCmdsUI() {

@@ -1287,6 +1287,11 @@ $o-proj-message-font-weight					: bold !default;
 $o-proj-proj-rows-gap						: 10px !default;
 $o-proj-timeline-row-gap						: 15px  !default;
 $o-proj-timeline-row-margin-top				: 10px  !default;
+$o-proj-avatar-size-large					: 120px !default;
+$o-proj-avatar-font-size-large				: calc($o-proj-avatar-size-large / 2) !default;
+$o-proj-avatar-size-medium					: 60px !default;
+$o-proj-avatar-font-size-medium				: calc($o-proj-avatar-size-medium / 2) !default;
+$o-proj-avatar-border-radius					: 12px !default;
 $o-proj-avatar-color						: #fff !default;
 $o-proj-avatar-dark-blue-bg-color			: #000080 !default;
 $o-proj-avatar-light-blue-bg-color			: #4169E1 !default;
@@ -1297,7 +1302,13 @@ $o-proj-avatar-yellow-bg-color				: #FFD700 !default;
 $o-proj-avatar-yellow-color					: $gray-dark !default;
 $o-proj-avatar-light-green-bg-color			: #32CD32 !default;
 $o-proj-avatar-dark-green-bg-color			: #228B22 !default;
-
+// Upload example text: 2 * ($o-proj-header-background-width-max $o-proj-header-background-height-max)
+$o-proj-header-avatar-offset-bottom: 30px !default;
+$o-proj-header-avatar-offset-left: 20px !default;
+$o-proj-header-background-height-min: 110px !default;
+$o-proj-header-background-height-max: 250px !default;
+$o-proj-header-background-width-max: calc($o-page-width-max - $grid-gutter-width) !default;
+$o-proj-header-margin-bottom: 20px !default;
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;
