@@ -37,6 +37,9 @@ public class SwitchEduIDApi extends DefaultApi20 {
     private static final String SWITCH_EDUID_LOGIN_URL = "https://login.eduid.ch/idp/profile";
     private static final String SWITCH_EDUID_TEST_LOGIN_URL = "https://login.test.eduid.ch/idp/profile";
 
+	protected static final String  SWITCH_EDUID_USERINFOS_ENDPOINT = "https://login.eduid.ch/idp/profile/oidc/userinfo";
+	protected static final String  SWITCH_EDUID_TEST_USERINFOS_ENDPOINT = "https://login.test.eduid.ch/idp/profile/oidc/userinfo";
+
 	private final SwitchEduIDProvider provider;
 
 	public SwitchEduIDApi(SwitchEduIDProvider provider) {
