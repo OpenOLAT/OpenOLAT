@@ -527,9 +527,13 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		List<Taxonomy> entries = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Taxonomy.class)
 				.setParameter("taxonomyKey", taxonomy.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		return entries == null || entries.isEmpty() ? null : entries.get(0);
+		if(entries.size() == 1) {
+			Taxonomy entryToLock = entries.get(0);
+			dbInstance.getCurrentEntityManager().lock(entryToLock, LockModeType.PESSIMISTIC_WRITE);
+			return entryToLock;
+		}
+		return null;
 	}
 	
 	public VFSContainer getDocumentsLibrary(TaxonomyLevel level) {

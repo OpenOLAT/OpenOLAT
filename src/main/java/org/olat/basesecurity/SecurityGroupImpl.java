@@ -48,7 +48,7 @@ import jakarta.persistence.Version;
 
 @Entity
 @Table(name="o_bs_secgroup")
-public class SecurityGroupImpl implements Persistable, SecurityGroup {
+public class SecurityGroupImpl implements SecurityGroup {
 	
 	private static final long serialVersionUID = 2789719555367184860L;
 

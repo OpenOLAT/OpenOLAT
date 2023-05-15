@@ -105,9 +105,13 @@ public class GoToOrganizerDAO {
 		List<GoToOrganizer> organizers = dbInstance.getCurrentEntityManager()
 			.createNamedQuery("loadOrganizerByKey", GoToOrganizer.class)
 			.setParameter("key", organizer.getKey())
-	  		.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 			.getResultList();
-		return organizers == null || organizers.isEmpty() ? null : organizers.get(0);
+		if(organizers.size() == 1) {
+			GoToOrganizer organizerToLock = organizers.get(0);
+			dbInstance.getCurrentEntityManager().lock(organizerToLock, LockModeType.PESSIMISTIC_WRITE);
+			return organizerToLock;
+		}
+		return null;
 	}
 	
 	public GoToOrganizer updateOrganizer(GoToOrganizer organizer, String name) {

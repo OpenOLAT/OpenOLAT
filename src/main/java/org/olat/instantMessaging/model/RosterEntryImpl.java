@@ -25,7 +25,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -45,8 +44,6 @@ import org.olat.instantMessaging.RosterEntry;
 @Entity(name="imrosterentry")
 @Table(name="o_im_roster_entry")
 @NamedQuery(name="loadIMRosterEntryByIdentityandResource", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
-@NamedQuery(name="loadIMRosterEntryForUpdate", query="select entry from imrosterentry entry where entry.key=:entryKey",
-	lockMode=LockModeType.PESSIMISTIC_WRITE)
 @NamedQuery(name="loadIMRosterEntry", query="select entry from imrosterentry entry where entry.identityKey=:identityKey and entry.resourceId=:resid and entry.resourceTypeName=:resname")
 @NamedQuery(name="loadIMRosterEntryByResourceNo", query="select entry from imrosterentry entry where entry.resourceId=:resid and entry.resourceTypeName=:resname")
 public class RosterEntryImpl implements Persistable, RosterEntry {

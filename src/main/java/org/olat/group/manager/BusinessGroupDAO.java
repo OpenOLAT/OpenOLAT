@@ -252,8 +252,6 @@ public class BusinessGroupDAO {
 		return groups == null || groups.isEmpty() ? null : groups.get(0);
 	}
 	
-	
-	
 	public BusinessGroup loadForUpdate(Long id) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select bgi from businessgroup bgi ")
@@ -262,10 +260,13 @@ public class BusinessGroupDAO {
 		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("key", id)
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		if(groups.isEmpty()) return null;
-		return groups.get(0);
+		if(groups.size() == 1) {
+			BusinessGroup businessGroup = groups.get(0);
+			dbInstance.getCurrentEntityManager().lock(businessGroup, LockModeType.PESSIMISTIC_WRITE);
+			return businessGroup;
+		}
+		return null;
 	}
 	
 	public BusinessGroup loadForUpdate(BusinessGroup group) {
@@ -280,10 +281,13 @@ public class BusinessGroupDAO {
 		List<BusinessGroup> groups = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), BusinessGroup.class)
 				.setParameter("key", groupKey)
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		if(groups.isEmpty()) return null;
-		return groups.get(0);
+		if(groups.size() == 1) {
+			BusinessGroup businessGroup = groups.get(0);
+			dbInstance.getCurrentEntityManager().lock(businessGroup, LockModeType.PESSIMISTIC_WRITE);
+			return businessGroup;
+		}
+		return null;
 	}
 	
 	/**

@@ -2088,11 +2088,16 @@ public class GTAManagerImpl implements GTAManager, DeletableGroupData {
 		dbInstance.getCurrentEntityManager().detach(tasks);
 		
 		String q = "select tasks from gtatasklist tasks where tasks.key=:taskListKey";
-		return dbInstance.getCurrentEntityManager()
+		List<TaskList> tasksLists = dbInstance.getCurrentEntityManager()
 				.createQuery(q, TaskList.class)
 				.setParameter("taskListKey", tasks.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
-				.getSingleResult();
+				.getResultList();
+		if(tasksLists.size() == 1) {
+			TaskList taskToLock = tasksLists.get(0);
+			dbInstance.getCurrentEntityManager().lock(taskToLock, LockModeType.PESSIMISTIC_WRITE);
+			return taskToLock;
+		}
+		return null;
 	}
 
 	@Override

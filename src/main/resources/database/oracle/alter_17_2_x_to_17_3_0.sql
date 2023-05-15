@@ -347,3 +347,9 @@ create index idx_qm_audit_dc_idx on o_qual_audit_log (fk_data_collection);
 create index idx_qm_audit_todo_idx on o_qual_audit_log (fk_todo_task);
 create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);
 
+
+-- Assessment message
+update o_as_message set a_publication_type='asap' where a_publication_type='0';
+update o_as_message set a_publication_type='scheduled' where a_publication_type='1';
+
+

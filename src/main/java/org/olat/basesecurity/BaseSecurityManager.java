@@ -1310,12 +1310,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		List<IdentityImpl> identities = dbInstance.getCurrentEntityManager()
 	  		.createQuery(sb.toString(), IdentityImpl.class)
 	  		.setParameter("identityKey", identity.getKey())
-	  		.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 	  		.getResultList();
 		if(identities.isEmpty()) {
 			return null;
 		}
-		return identities.get(0);
+		IdentityImpl iimpl = identities.get(0);
+		dbInstance.getCurrentEntityManager().lock(iimpl, LockModeType.PESSIMISTIC_WRITE);
+		return iimpl;
 	}
 
 	@Override

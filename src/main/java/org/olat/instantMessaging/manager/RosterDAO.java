@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 
@@ -160,14 +161,18 @@ public class RosterDAO {
 	}
 	
 	private RosterEntryImpl loadForUpdate(RosterEntry rosterEntry) {
-		TypedQuery<RosterEntryImpl> query = dbInstance.getCurrentEntityManager()
-				.createNamedQuery("loadIMRosterEntryForUpdate", RosterEntryImpl.class)
-				.setParameter("entryKey", rosterEntry.getKey());
-		List<RosterEntryImpl> entries = query.getResultList();
-		if(entries.isEmpty()) {
-			return null;
+		String sb= "select entry from imrosterentry entry where entry.key=:entryKey";
+		
+		List<RosterEntryImpl> entries = dbInstance.getCurrentEntityManager()
+				.createQuery(sb, RosterEntryImpl.class)
+				.setParameter("entryKey", rosterEntry.getKey())
+				.getResultList();
+		if(entries.size() == 1) {
+			RosterEntryImpl entry = entries.get(0);
+			dbInstance.getCurrentEntityManager().lock(entry, LockModeType.PESSIMISTIC_WRITE);		
+			return entry;
 		}
-		return entries.get(0);
+		return null;
 	}
 	
 	/**

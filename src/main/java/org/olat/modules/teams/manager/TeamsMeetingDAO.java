@@ -106,9 +106,13 @@ public class TeamsMeetingDAO {
 		List<TeamsMeeting> meetings = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), TeamsMeeting.class)
 				.setParameter("meetingKey", meeting.getKey())
-				.setLockMode(LockModeType.PESSIMISTIC_WRITE)
 				.getResultList();
-		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
+		if(meetings.size() == 1) {
+			TeamsMeeting meetingToLock = meetings.get(0);
+			dbInstance.getCurrentEntityManager().lock(meetingToLock, LockModeType.PESSIMISTIC_WRITE);
+			return meetingToLock;
+		}
+		return null;
 	}
 	
 	public TeamsMeeting loadByIdentifier(String identifier) {
