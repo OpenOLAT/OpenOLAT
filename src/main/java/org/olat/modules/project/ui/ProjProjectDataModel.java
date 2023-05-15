@@ -90,6 +90,8 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		case status: return row;
 		case lastAcitivityDate: return row.getLastActivityDate();
 		case owners: return row.getOwnersNames();
+		case template: return row.getTemplateName();
+		case createFromTemplate: return Boolean.valueOf(row.isTemplate());
 		case tools: return row.getToolsLink();
 		default: return null;
 		}
@@ -103,7 +105,9 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		status("status"),
 		lastAcitivityDate("project.last.activity.date"),
 		owners("project.owners"),
-		tools("project.owners");
+		template("project.template"),
+		createFromTemplate("project.create.from.template"),
+		tools("tools");
 		
 		private final String i18nKey;
 		

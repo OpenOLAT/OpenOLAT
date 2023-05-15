@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.project.manager.ProjArtefactToArtefactDAO;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoService;
@@ -59,6 +60,35 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	
 	@Autowired
 	private ProjectCopyService sut;
+	
+	@Test
+	public void shouldCopyFromTemplate() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject template = projectService.createProject(doer, doer);
+		template = projectService.updateProject(doer, template, random(), random(), random(), random(), true, true);
+		projectService.createNote(doer, template);
+		dbInstance.commitAndCloseSession();
+		
+		ProjProject projectCopy = sut.copyProjectFromTemplate(doer, template);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(projectCopy.getExternalRef()).isEqualTo(template.getExternalRef());
+		assertThat(projectCopy.getTitle()).isEqualTo(template.getTitle());
+		assertThat(projectCopy.getTeaser()).isEqualTo(template.getTeaser());
+		assertThat(projectCopy.getDescription()).isEqualTo(template.getDescription());
+		assertThat(projectCopy.isTemplatePrivate()).isFalse();
+		assertThat(projectCopy.isTemplatePublic()).isFalse();
+		
+		// Just make sure the project has at least one reference to an organisation
+		List<Organisation> organisations = projectService.getOrganisations(projectCopy);
+		assertThat(organisations).isNotEmpty();
+		
+		// Just make sure that the artefact copy method is called.
+		ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
+		searchParams.setProject(projectCopy);
+		List<ProjNote> noteCopies = projectService.getNotes(searchParams);
+		assertThat(noteCopies).hasSize(1);
+	}
 
 	@Test
 	public void shouldCopyArtefacts_excludeDeleted() {

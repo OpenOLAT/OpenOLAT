@@ -24,9 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjActivity.Action;
@@ -66,9 +69,35 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 	@Autowired
 	private ProjTagDAO tagDao;
 	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryServcie;
 	@Autowired
 	private ProjActivityDAO activityDao;
+	
+	@Override
+	public ProjProject copyProjectFromTemplate(Identity doer, ProjProjectRef projectTemplate) {
+		ProjProject project = projectService.getProject(projectTemplate);
+		if (project == null || ProjectStatus.deleted == project.getStatus()) {
+			return null;
+		}
+		
+		ProjProject projectCopy = projectService.createProject(doer, doer);
+		projectCopy = projectService.updateProject(doer, projectCopy, 
+				project.getExternalRef(),
+				project.getTitle(),
+				project.getTeaser(),
+				project.getDescription(),
+				false,
+				false);
+		
+		List<Organisation> organisations = organisationService.getOrganisations(doer, OrganisationRoles.user);
+		projectService.updateProjectOrganisations(doer, projectCopy, organisations);
+		
+		copyProjectArtefacts(doer, project, projectCopy);
+		
+		return projectCopy;
+	}
 
 	@Override
 	public void copyProjectArtefacts(Identity doer, ProjProjectRef project, ProjProject projectCopy) {

@@ -207,35 +207,47 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
-	public ProjProject updateProject(Identity doer, ProjProject project) {
+	public ProjProject updateProject(Identity doer, ProjProjectRef project, String externalRef, String title,
+			String teaser, String description, boolean templatePrivate, boolean templatePublic) {
 		ProjProject reloadedProject = getProject(project);
 		if (reloadedProject == null) {
-			return project;
+			return null;
 		}
 		String before = ProjectXStream.toXml(reloadedProject);
 		
 		boolean contentChanged = false;
 		boolean titleChanged = false;
-		if (!Objects.equals(reloadedProject.getExternalRef(), project.getExternalRef())) {
+		if (!Objects.equals(reloadedProject.getExternalRef(), externalRef)) {
+			reloadedProject.setExternalRef(externalRef);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedProject.getTitle(), project.getTitle())) {
+		if (!Objects.equals(reloadedProject.getTitle(), title)) {
+			reloadedProject.setTitle(title);
 			contentChanged = true;
 			titleChanged = true;
 		}
-		if (!Objects.equals(reloadedProject.getTeaser(), project.getTeaser())) {
+		if (!Objects.equals(reloadedProject.getTeaser(), teaser)) {
+			reloadedProject.setTeaser(teaser);
 			contentChanged = true;
 		}
-		if (!Objects.equals(reloadedProject.getDescription(), project.getDescription())) {
+		if (!Objects.equals(reloadedProject.getDescription(), description)) {
+			reloadedProject.setDescription(description);
+			contentChanged = true;
+		}
+		if (reloadedProject.isTemplatePrivate() != templatePrivate) {
+			reloadedProject.setTemplatePrivate(templatePrivate);
+			contentChanged = true;
+		}
+		if (reloadedProject.isTemplatePublic() != templatePublic) {
+			reloadedProject.setTemplatePublic(templatePublic);
 			contentChanged = true;
 		}
 		
-		ProjProject updatedProject = project;
 		if (contentChanged) {
-			updatedProject = projectDao.save(project);
+			reloadedProject = projectDao.save(reloadedProject);
 			
-			String after = ProjectXStream.toXml(updatedProject);
-			activityDao.create(Action.projectContentUpdate, before, after, doer, updatedProject);
+			String after = ProjectXStream.toXml(reloadedProject);
+			activityDao.create(Action.projectContentUpdate, before, after, doer, reloadedProject);
 			
 			if (titleChanged) {
 				ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
@@ -244,11 +256,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 				getAppointmentInfos(searchParams, ProjArtefactInfoParams.MEMBERS)
 						.forEach(info -> calendarHelper.createOrUpdateEvent(info.getAppointment(), info.getMembers()));
 				
-				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, project.getTitle());
+				toDoService.updateOriginTitle(ProjToDoProvider.TYPE, project.getKey(), null, reloadedProject.getTitle());
 			}
 		}
 		
-		return updatedProject;
+		return reloadedProject;
 	}
 	
 	@Override

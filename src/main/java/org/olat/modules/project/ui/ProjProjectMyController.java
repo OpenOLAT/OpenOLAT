@@ -38,6 +38,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 		initForm(ureq);
 		loadModel(ureq);
 	}
+	
+	@Override
+	protected boolean isCreateFromTemplateEnabled() {
+		return true;
+	}
 
 	@Override
 	protected boolean isCreateForEnabled() {
@@ -52,6 +57,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 	@Override
 	protected boolean isToolsEnabled() {
 		return false;
+	}
+	
+	@Override
+	protected boolean isColumnCreateFromTemplateEnabled() {
+		return true;
 	}
 
 	@Override

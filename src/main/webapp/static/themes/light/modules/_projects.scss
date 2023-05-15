@@ -11,7 +11,19 @@
 				
 				.o_proj_project_row {
 					.panel {
+						height: 100%;
+						display: flex;
+						flex-direction: column;
 						margin-bottom: 0;
+						.panel-body {
+							height: 100%;
+							display: flex;
+							flex-direction: column;
+							.o_start_buttons{
+								margin-top: auto;
+								padding-top: 10px;
+							}
+						}
 					}
 					.o_proj_project_title {
 						display: inline;
@@ -21,6 +33,11 @@
 					}
 					.o_proj_project_modified {
 						@extend %o_muted;
+					}
+					.o_start_buttons {
+						display: flex;
+						flex-direction: column;
+						align-items: end;
 					}
 				}
 			}

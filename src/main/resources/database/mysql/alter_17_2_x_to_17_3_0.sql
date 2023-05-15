@@ -63,6 +63,8 @@ create table o_proj_project (
    p_teaser varchar(150),
    p_description longtext,
    p_avatar_css_class varchar(32),
+   p_template_private bool default false not null,
+   p_template_public bool default false not null,
    fk_creator bigint not null,
    fk_group bigint not null,
    primary key (id)

@@ -267,8 +267,7 @@ public class InvitationDAOTest extends OlatTestCase {
 	public void findInvitationsWithProject() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = projectService.createProject(creator, creator);
-		project.setTitle("Project with invitations.");
-		project = projectService.updateProject(project.getCreator(), project);
+		project = projectService.updateProject(project.getCreator(), project, null, "Project with invitations.", null, null, false, false);
 		Identity invitee = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Invitation invitation = invitationDao.createInvitation(InvitationTypeEnum.project);
 		((InvitationImpl)invitation).setIdentity(invitee);

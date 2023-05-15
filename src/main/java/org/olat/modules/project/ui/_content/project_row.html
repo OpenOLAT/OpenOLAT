@@ -32,11 +32,14 @@
 			#end
 		</div>
 		
-		#if($r.isNotNull($row.getSelectLinkName()))
-			<div class="o_button_group o_button_group_right o_button_group_bottom">
+		<div class="o_start_buttons">
+			#if($r.isNotNull($row.getSelectLinkName()))
 				$r.render($row.getSelectLinkName())
-			</div>
-		#end
+			#end
+			#if($$r.isNotNull($row.getCreateFromTemplateLinkName()))
+				$r.render($row.getCreateFromTemplateLinkName())
+			#end
+		</div>
 		
 	</div>
 </div>

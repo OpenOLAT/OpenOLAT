@@ -3879,6 +3879,8 @@ create table o_proj_project (
    p_teaser varchar(150),
    p_description text,
    p_avatar_css_class varchar(32),
+   p_template_private bool default false not null,
+   p_template_public bool default false not null,
    fk_creator int8 not null,
    fk_group int8 not null,
    primary key (id)

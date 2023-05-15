@@ -75,6 +75,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(project.getCreationDate()).isNotNull();
 		assertThat(project.getLastModified()).isNotNull();
 		assertThat(project.getStatus()).isEqualTo(ProjectStatus.active);
+		assertThat(project.isTemplatePrivate()).isFalse();
+		assertThat(project.isTemplatePublic()).isFalse();
 		assertThat(project.getCreator()).isEqualTo(creator);
 		assertThat(project.getBaseGroup()).isEqualTo(group);
 	}
@@ -93,6 +95,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		project.setDescription(description);
 		String avatarCssClass = miniRandom();
 		project.setAvatarCssClass(avatarCssClass);
+		project.setTemplatePrivate(true);
+		project.setTemplatePublic(true);
 		sut.save(project);
 		dbInstance.commitAndCloseSession();
 		
@@ -105,6 +109,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(project.getTeaser()).isEqualTo(teaser);
 		assertThat(project.getDescription()).isEqualTo(description);
 		assertThat(project.getAvatarCssClass()).isEqualTo(avatarCssClass);
+		assertThat(project.isTemplatePrivate()).isTrue();
+		assertThat(project.isTemplatePublic()).isTrue();
 	}
 	
 	@Test
@@ -195,6 +201,37 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		List<ProjProject> projects = sut.loadProjects(params);
 		
 		assertThat(projects).containsExactlyInAnyOrder(project1, project2, project3);
+	}
+	
+	@Test
+	public void shouldLoad_filter_Template() {
+		ProjProject project1 = createRandomProject();
+		project1.setTemplatePrivate(true);
+		project1.setTemplatePublic(true);
+		sut.save(project1);
+		ProjProject project2 = createRandomProject();
+		project2.setTemplatePrivate(true);
+		project2.setTemplatePublic(false);
+		sut.save(project2);
+		ProjProject project3 = createRandomProject();
+		project3.setTemplatePrivate(false);
+		project3.setTemplatePublic(true);
+		sut.save(project3);
+		ProjProject project4 = createRandomProject();
+		project4.setTemplatePrivate(false);
+		project4.setTemplatePublic(false);
+		sut.save(project4);
+		dbInstance.commitAndCloseSession();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setProjectKeys(List.of(project1, project2, project3, project4));
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2, project3, project4);
+		
+		params.setTemplate(Boolean.TRUE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project1, project2, project3);
+		
+		params.setTemplate(Boolean.FALSE);
+		assertThat(sut.loadProjects(params)).containsExactlyInAnyOrder(project4);
 	}
 	
 	@Test

@@ -58,6 +58,8 @@ public class ProjProjectDAO {
 		project.setLastModified(project.getCreationDate());
 		project.setStatus(ProjectStatus.active);
 		project.setAvatarCssClass(avatarCssClass);
+		project.setTemplatePrivate(false);
+		project.setTemplatePublic(false);
 		project.setCreator(creator);
 		project.setBaseGroup(baseGroup);
 		dbInstance.getCurrentEntityManager().persist(project);
@@ -149,6 +151,16 @@ public class ProjProjectDAO {
 		}
 		if (params.getStatus() != null && !params.getStatus().isEmpty()) {
 			sb.and().append("project.status in :status");
+		}
+		if (params.getTemplate() != null) {
+			if (params.getTemplate().booleanValue()) {
+				sb.and().append("(");
+				sb.append("project.templatePrivate = true or project.templatePublic = true");
+				sb.append(")");
+			} else {
+				sb.and().append("project.templatePrivate = false");
+				sb.and().append("project.templatePublic = false");
+			}
 		}
 		if (params.getArtefactAvailable() != null) {
 			sb.and().append("project.key ").append("not", !params.getArtefactAvailable().booleanValue()).append(" in (");

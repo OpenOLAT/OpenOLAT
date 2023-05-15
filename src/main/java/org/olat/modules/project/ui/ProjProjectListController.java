@@ -38,6 +38,8 @@ import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -47,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -56,6 +59,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableTextFilter;
@@ -91,6 +95,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectSecurityCallbackFactory;
@@ -121,11 +126,16 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private static final String TAB_ID_DONE = "Done";
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_STATUS = "status";
+	private static final String FILTER_TEMPLATE = "template";
+	private static final String FILTER_TEMPLATE_PROJECT = "template.project";
+	private static final String FILTER_TEMPLATE_TEMPLATE = "template.template";
 	private static final String FILTER_ORPHANS = "orphans";
 	private static final String FILTER_ORPHANS_KEY = "orphans.key";
 	private static final String FILTER_MEMBER = "member";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
+	private static final String CMD_CREATE_FROM_TEMPLATE = "create.from.template";
+	private static final String CMD_CREATE_FROM_TEMPLATELINK = "create.from.template.link";
 	private static final String CMD_MEMBERS = "members";
 	private static final String CMD_STATUS_DONE = "done";
 	private static final String CMD_STATUS_REOPEN = "reopen";
@@ -166,6 +176,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
+	private ProjectCopyService projectCopyService;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
@@ -181,11 +193,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		this.formatter = Formatter.getInstance(getLocale());
 	}
 	
+	protected abstract boolean isCreateFromTemplateEnabled();
+	
 	protected abstract boolean isCreateForEnabled();
 	
 	protected abstract boolean isBulkEnabled();
 
 	protected abstract boolean isToolsEnabled();
+	
+	protected abstract boolean isColumnCreateFromTemplateEnabled();
 	
 	protected abstract boolean isCustomRendererEnabled();
 	
@@ -206,6 +222,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			createLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
+		if (isCreateFromTemplateEnabled()) {
+			initCreateFromTemplateLinks(formLayout);
+		}
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if (ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectCols.id));
@@ -216,6 +236,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.status, new ProjectStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.lastAcitivityDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.owners));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.template));
+		if (isColumnCreateFromTemplateEnabled()) {
+			DefaultFlexiColumnModel createFromTemplateColumn = new DefaultFlexiColumnModel(
+					ProjectCols.createFromTemplate.i18nHeaderKey(), ProjectCols.createFromTemplate.ordinal(),
+					CMD_CREATE_FROM_TEMPLATE, new BooleanCellRenderer(new StaticFlexiCellRenderer(
+							translate(ProjectCols.createFromTemplate.i18nHeaderKey()), CMD_CREATE_FROM_TEMPLATE), null));
+			createFromTemplateColumn.setExportable(false);
+			columnsModel.addFlexiColumnModel(createFromTemplateColumn);
+		}
 		if (isToolsEnabled()) {
 			StickyActionColumnModel toolsCol = new StickyActionColumnModel(ProjectCols.tools);
 			toolsCol.setAlwaysVisible(true);
@@ -249,6 +278,28 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		initFilterTabs(ureq);
 	}
 	
+	private void initCreateFromTemplateLinks(FormItemContainer formLayout) {
+		ProjProjectSearchParams templateSearchParams = createSearchParams();
+		templateSearchParams.setTemplate(Boolean.TRUE);
+		templateSearchParams.setStatus(List.of(ProjectStatus.active, ProjectStatus.done));
+		List<ProjProject> projects = projectService.getProjects(templateSearchParams);
+		if (projects.isEmpty()) {
+			return;
+		}
+		
+		projects = projects.stream().sorted((p1, p2) -> p1.getTitle().compareTo(p2.getTitle())).toList();
+		DropdownItem templateDropdown = uifactory.addDropdownMenu("project.template.links", "project.create.template.link.button", null, formLayout, getTranslator());
+		templateDropdown.setCarretIconCSS("o_icon o_icon_commands");
+		templateDropdown.setOrientation(DropdownOrientation.right);
+		for (ProjProject project : projects) {
+			FormLink link = uifactory.addFormLink("tem" + project.getKey(), CMD_CREATE_FROM_TEMPLATELINK, null, null, formLayout, Link.LINK + Link.NONTRANSLATED);
+			String name = translate("project.create.template.link", project.getTitle());
+			link.setI18nKey(name);
+			link.setUserObject(project);
+			templateDropdown.addElement(link);
+		}
+	}
+
 	private void initBulkLinks() {
 		if (isBulkEnabled()) {
 			bulkDoneButton = uifactory.addFormLink("project.list.bulk.done", flc, Link.BUTTON);
@@ -324,6 +375,11 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		statusValues.add(SelectionValues.entry(ProjectStatus.deleted.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.deleted)));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("status"), FILTER_STATUS, statusValues, true));
 		
+		SelectionValues templateValues = new SelectionValues();
+		templateValues.add(SelectionValues.entry(FILTER_TEMPLATE_PROJECT, translate("project.normal")));
+		templateValues.add(SelectionValues.entry(FILTER_TEMPLATE_TEMPLATE, translate("project.template.template")));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("project.template"), FILTER_TEMPLATE, templateValues, true));
+		
 		if (isFilterOrphanEnabled()) {
 			SelectionValues orphansValues = new SelectionValues();
 			orphansValues.add(SelectionValues.entry(FILTER_ORPHANS_KEY, translate("filter.orphans.orphans")));
@@ -364,7 +420,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> cmps = new ArrayList<>(2);
+		List<Component> cmps = new ArrayList<>(3);
 		if (rowObject instanceof ProjProjectRow) {
 			ProjProjectRow projRow = (ProjProjectRow)rowObject;
 			if (projRow.getUserPortraits() != null) {
@@ -372,6 +428,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			}
 			if (projRow.getSelectLink() != null) {
 				cmps.add(projRow.getSelectLink().getComponent());
+			}
+			if (projRow.getCreateFromTemplateLink() != null) {
+				cmps.add(projRow.getCreateFromTemplateLink().getComponent());
 			}
 		}
 		return cmps;
@@ -417,10 +476,17 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
 			row.setUrl(url);
 			
+			row.setTemplate(project.isTemplatePrivate() || project.isTemplatePublic());
+			String template = row.isTemplate()
+					? translate("project.template.template")
+					: translate("project.normal");
+			row.setTemplateName(template);
+			
 			List<Identity> members = projectKeyToMembers.getOrDefault(project.getBaseGroup().getKey(), List.of());
 			row.setMemberKeys(members.stream().map(Identity::getKey).collect(Collectors.toSet()));
 			forgeUsersPortraits(ureq, row, members);
 			forgeSelectLink(row);
+			forgeCreateFormTemplateLink(row, project);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -446,6 +512,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
 				} else {
 					searchParams.setStatus(null);
+				}
+			}
+			if (FILTER_TEMPLATE.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && values.size() == 1) {
+					Boolean template = values.contains(FILTER_TEMPLATE_TEMPLATE);
+					searchParams.setTemplate(template);
+				} else {
+					searchParams.setTemplate(null);
 				}
 			}
 			if (FILTER_ORPHANS.equals(filter.getFilter())) {
@@ -513,6 +588,16 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		row.setSelectLink(link);
 	}
 	
+	private void forgeCreateFormTemplateLink(ProjProjectRow row, ProjProject project) {
+		if (project.isTemplatePrivate() || project.isTemplatePublic()) {
+			FormLink link = uifactory.addFormLink("ctemp_" + row.getKey(), CMD_CREATE_FROM_TEMPLATE, "project.create.from.template", null, flc, Link.LINK);
+			link.setIconRightCSS("o_icon o_icon_start");
+			link.setUrl(row.getUrl());
+			link.setUserObject(row);
+			row.setCreateFromTemplateLink(link);
+		}
+	}
+	
 	private void forgeToolsLink(ProjProjectRow row) {
 		if (!isToolsEnabled()) return;
 		
@@ -569,6 +654,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				ProjProjectRow row = dataModel.getObject(se.getIndex());
 				if (CMD_SELECT.equals(cmd)) {
 					doOpenProject(ureq, row.getKey(), true);
+				} else if (CMD_CREATE_FROM_TEMPLATE.equals(cmd)) {
+					doCreateFromTemplate(ureq, row.getKey());
 				}
 			} else if (event instanceof FlexiTableSearchEvent) {
 				loadModel(ureq);
@@ -582,6 +669,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjProjectRow projectRow) {
 				doOpenProject(ureq, projectRow.getKey(), true);
+			} else if (CMD_CREATE_FROM_TEMPLATE.equals(link.getCmd()) && link.getUserObject() instanceof ProjProjectRow projectRow) {
+				doCreateFromTemplate(ureq, projectRow.getKey());
+			} else if (CMD_CREATE_FROM_TEMPLATELINK.equals(link.getCmd()) && link.getUserObject() instanceof ProjProject project) {
+				doCreateFromTemplate(ureq, project.getKey());
 			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ProjProjectRow projectRow) {
 				doOpenTools(ureq, projectRow, link);
 			}
@@ -589,7 +680,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == stackPanel) {
@@ -711,12 +802,12 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
-		if (!secCallback.canEditProjectMetadata()) {
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		if (!secCallback.canViewProjectMetadata()) {
 			return;
 		}
 		
-		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, false);
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
 		String title = translate("project.edit");
@@ -738,7 +829,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 			boolean manager = projectService.isInOrganisation(project, ureq.getUserSession().getRoles()
 					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager));
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), roles, manager);
+			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, roles, manager);
 			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback);
 			listenTo(projectCtrl);
 			String title = Formatter.truncate(project.getTitle(), 50);
@@ -754,13 +845,28 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		return null;
 	}
 	
+	private void doCreateFromTemplate(UserRequest ureq, Long key) {
+
+		
+		//TODO uh crate from template spalte in der liste (keien actions)
+		//TODO uh Template sec call back mit alles ro ausser delete
+		
+		ProjProject projectCopy = projectCopyService.copyProjectFromTemplate(getIdentity(), () -> key);
+		if (projectCopy == null) {
+			return;
+		}
+		
+		loadModel(ureq);
+		doOpenProject(ureq, projectCopy.getKey(), true);
+	}
+	
 	private void doOpenMembersManagement(UserRequest ureq, ProjProjectRef projectRef) {
 		removeAsListenerAndDispose(membersManagementCtrl);
 		
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 		if (!secCallback.canEditProjectMetadata()) {
 			return;
 		}
@@ -776,7 +882,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
@@ -806,7 +912,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
@@ -834,7 +940,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
@@ -928,7 +1034,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
 		for (ProjProject project: projects) {
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 			if (secCallback.canEditProjectStatus()) {
 				projectService.setStatusDone(getIdentity(), project);
 			}
@@ -953,7 +1059,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
 		for (ProjProject project: projects) {
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
+			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 			if (secCallback.canDeleteProject()) {
 				projectService.setStatusDeleted(getIdentity(), project);
 			}
@@ -990,19 +1096,25 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			
 			project = projectService.getProject(row);
 			if (project != null) {
-				ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project.getStatus(), Set.of(), true);
-				if (secCallback.canEditProjectMetadata()) {
+				boolean dividerDelete = false;
+				ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+				if (secCallback.canViewProjectMetadata()) {
 					addLink("project.edit", CMD_EDIT, "o_icon o_icon_edit");
+					dividerDelete &= true;
 				}
 				if (secCallback.canEditMembers()) {
 					addLink("members.management", CMD_MEMBERS, "o_icon o_icon_membersmanagement");
+					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus()) {
 					addLink("project.set.status.done", CMD_STATUS_DONE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
+					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus()) {
 					addLink("project.reopen", CMD_STATUS_REOPEN, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
+					dividerDelete &= true;
 				}
+				mainVC.contextPut("dividerDelete", dividerDelete);
 				if (secCallback.canDeleteProject() && ProjectStatus.deleted != project.getStatus()) {
 					addLink("project.set.status.deleted", CMD_STATUS_DELETED, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 				}

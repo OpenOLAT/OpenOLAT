@@ -29,6 +29,8 @@ import org.olat.core.id.Identity;
  */
 public interface ProjectCopyService {
 	
+	public ProjProject copyProjectFromTemplate(Identity doer, ProjProjectRef projectTemplate);
+
 	public void copyProjectArtefacts(Identity doer, ProjProjectRef project, ProjProject projectCopy);
 
 }

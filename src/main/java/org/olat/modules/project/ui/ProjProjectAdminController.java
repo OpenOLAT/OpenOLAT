@@ -48,6 +48,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	}
 
 	@Override
+	protected boolean isCreateFromTemplateEnabled() {
+		return false;
+	}
+
+	@Override
 	protected boolean isCreateForEnabled() {
 		return true;
 	}
@@ -60,6 +65,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	@Override
 	protected boolean isToolsEnabled() {
 		return true;
+	}
+
+	@Override
+	protected boolean isColumnCreateFromTemplateEnabled() {
+		return false;
 	}
 
 	@Override

@@ -30,6 +30,7 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjectRole;
@@ -59,10 +60,12 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	private final boolean projectReadOnly;
 	private final Set<ProjectRole> roles;
 	private final boolean manager;
+	private final boolean template;
 
-	public RoleProjectSecurityCallback(ProjectStatus status, Set<ProjectRole> roles, boolean manager) {
+	public RoleProjectSecurityCallback(ProjProject project, Set<ProjectRole> roles, boolean manager) {
 		this.manager = manager;
-		this.projectReadOnly = ProjectStatus.deleted == status;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
+		this.projectReadOnly = project.getStatus() == ProjectStatus.deleted || template;
 		this.roles = roles;
 	}
 
@@ -83,7 +86,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	
 	@Override
 	public boolean canCopyProject() {
-		return manager || roles.contains(ProjectRole.owner);
+		return !template && (manager || roles.contains(ProjectRole.owner));
 	}
 
 	@Override

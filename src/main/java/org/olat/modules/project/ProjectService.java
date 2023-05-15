@@ -48,7 +48,8 @@ public interface ProjectService {
 	
 	public ProjProject createProject(Identity doer, Identity owner);
 
-	public ProjProject updateProject(Identity doer, ProjProject project);
+	public ProjProject updateProject(Identity doer, ProjProjectRef project, String externalRef, String title,
+			String teaser, String description, boolean templatePrivate, boolean templatePublic);
 	
 	public ProjProject setStatusDone(Identity doer, ProjProjectRef project);
 	

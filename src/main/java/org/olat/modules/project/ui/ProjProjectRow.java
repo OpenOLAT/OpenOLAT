@@ -47,8 +47,11 @@ public class ProjProjectRow implements ProjProjectRef {
 	private Set<Long> memberKeys;
 	private String ownersNames;
 	private String url;
+	private boolean template;
+	private String templateName;
 	private Component userPortraits;
 	private FormLink selectLink;
+	private FormLink createFromTemplateLink;
 	private FormLink toolsLink;
 	
 	public ProjProjectRow(ProjProject project) {
@@ -127,7 +130,23 @@ public class ProjProjectRow implements ProjProjectRef {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
+
+	public boolean isTemplate() {
+		return template;
+	}
+
+	public void setTemplate(boolean template) {
+		this.template = template;
+	}
+
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
+
 	public String getUserPortraitsName() {
 		return userPortraits != null? userPortraits.getComponentName(): null;
 	}
@@ -150,6 +169,18 @@ public class ProjProjectRow implements ProjProjectRef {
 
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
+	}
+	
+	public String getCreateFromTemplateLinkName() {
+		return createFromTemplateLink != null? createFromTemplateLink.getComponent().getComponentName(): null;
+	}
+
+	public FormLink getCreateFromTemplateLink() {
+		return createFromTemplateLink;
+	}
+
+	public void setCreateFromTemplateLink(FormLink createFromTemplateLink) {
+		this.createFromTemplateLink = createFromTemplateLink;
 	}
 
 	public FormLink getToolsLink() {

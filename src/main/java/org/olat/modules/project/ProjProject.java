@@ -57,6 +57,14 @@ public interface ProjProject extends ProjProjectRef, OLATResourceable, ModifiedI
 	
 	public void setAvatarCssClass(String avatarCssClass);
 	
+	public boolean isTemplatePrivate();
+	
+	public void setTemplatePrivate(boolean templatePrivate);
+	
+	public boolean isTemplatePublic();
+	
+	public void setTemplatePublic(boolean templatePublic);
+	
 	public Identity getCreator();
 
 	public Group getBaseGroup();

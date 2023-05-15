@@ -37,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -75,9 +76,12 @@ public class ProjProjectEditController extends FormBasicController {
 	private static final Set<String> IMAGE_MIME_TYPES = Set.of("image/gif", "image/jpg", "image/jpeg", "image/png");
 	private static final OrganisationRoles[] ROLES_PROJECT_MANAGER = { OrganisationRoles.administrator,
 			OrganisationRoles.projectmanager };
+	private static final String TEMPLATE_KEY = "template";
+	private static final String TEMPLATE_PUBLIC_KEY = "template.public";
 
 	private StaticTextElement ownerEl;
 	private FormLink ownerSelectLink;
+	private MultipleSelectionElement templateEl;
 	private TextElement titleEl;
 	private TextElement externalRefEl;
 	private TextElement teaserEl;
@@ -170,6 +174,13 @@ public class ProjProjectEditController extends FormBasicController {
 			ownerSelectLink = uifactory.addFormLink("project.owner.select", ownerCont, Link.BUTTON);
 		}
 		
+		if (copyArtefacts) {
+			SelectionValues templateSV = new SelectionValues();
+			templateSV.add(SelectionValues.entry(TEMPLATE_KEY, translate("project.template.private")));
+			templateSV.add(SelectionValues.entry(TEMPLATE_PUBLIC_KEY, translate("project.template.public")));
+			templateEl = uifactory.addCheckboxesVertical("project.template", formLayout, templateSV.keys(), templateSV.values(), 1);
+		}
+		
 		titleEl = uifactory.addTextElement("project.title", 100, initialTitle, formLayout);
 		titleEl.setMandatory(true);
 		titleEl.setEnabled(!readOnly);
@@ -194,6 +205,7 @@ public class ProjProjectEditController extends FormBasicController {
 		avatarImageEl.setDeleteEnabled(true);
 		avatarImageEl.setPreview(ureq.getUserSession(), true);
 		avatarImageEl.addActionListener(FormEvent.ONCHANGE);
+		avatarImageEl.setEnabled(!readOnly);
 		VFSLeaf avatarImage = projectService.getProjectImage(initialProject, ProjProjectImageType.avatar);
 		if (avatarImage instanceof LocalFileImpl localFile) {
 			avatarImageEl.setInitialFile(localFile.getBasefile());
@@ -207,6 +219,7 @@ public class ProjProjectEditController extends FormBasicController {
 		backgroundImageEl.setDeleteEnabled(true);
 		backgroundImageEl.setPreview(ureq.getUserSession(), true);
 		backgroundImageEl.addActionListener(FormEvent.ONCHANGE);
+		backgroundImageEl.setEnabled(!readOnly);
 		VFSLeaf backgroundImage = projectService.getProjectImage(initialProject, ProjProjectImageType.background);
 		if (backgroundImage instanceof LocalFileImpl localFile) {
 			backgroundImageEl.setInitialFile(localFile.getBasefile());
@@ -379,11 +392,23 @@ public class ProjProjectEditController extends FormBasicController {
 			targetProject = projectService.createProject(getIdentity(), owner);
 		}
 		
-		targetProject.setTitle(titleEl.getValue());
-		targetProject.setExternalRef(externalRefEl.getValue());
-		targetProject.setTeaser(teaserEl.getValue());
-		targetProject.setDescription(descriptionEl.getValue());
-		targetProject = projectService.updateProject(getIdentity(), targetProject);
+		boolean templatePrivate = false;
+		boolean templatePublic = false;
+		if (templateEl.isVisible()) {
+			templatePrivate = templateEl.getSelectedKeys().contains(TEMPLATE_KEY);
+			templatePublic = templateEl.getSelectedKeys().contains(TEMPLATE_PUBLIC_KEY);
+		}
+		targetProject = projectService.updateProject(getIdentity(), targetProject,
+				externalRefEl.getValue(),
+				titleEl.getValue(),
+				teaserEl.getValue(),
+				descriptionEl.getValue(),
+				templatePrivate,
+				templatePublic);
+		if (targetProject == null) {
+			fireEvent(ureq, FormEvent.DONE_EVENT);
+			return;
+		}
 		
 		Collection<Organisation> selectedOrganisations = null;
 		if (organisationsEl != null) {
