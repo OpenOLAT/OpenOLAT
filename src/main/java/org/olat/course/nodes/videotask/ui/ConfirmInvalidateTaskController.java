@@ -28,9 +28,13 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
+import org.olat.core.gui.control.winmgr.CommandFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.nodes.VideoTaskCourseNode;
 import org.olat.course.nodes.videotask.ui.components.VideoTaskSessionComparator;
+import org.olat.course.run.scoring.ResetCourseDataHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.video.VideoAssessmentService;
@@ -85,7 +89,6 @@ public class ConfirmInvalidateTaskController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		doInvalidateSession(ureq);
-		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override
@@ -99,7 +102,18 @@ public class ConfirmInvalidateTaskController extends FormBasicController {
 		dbInstance.commit();
 
 		if (singleSession) {
-			courseNode.promoteTaskSession(null, assessedUserCourseEnv, true, getIdentity(), Role.coach, getLocale());
+			ResetCourseDataHelper resetCourseDataHelper = new ResetCourseDataHelper(assessedUserCourseEnv.getCourseEnvironment());
+			MediaResource mediaResource = resetCourseDataHelper.resetCourseNodes(
+					List.of(assessedIdentity),
+					List.of(courseNode),
+					false,
+					getIdentity(),
+					Role.coach
+			);
+			if (mediaResource != null) {
+				Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, mediaResource);
+				getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
+			}
 		} else if (latestSession) {
 			VideoTaskSession promotedSession = getNextLatestSession();
 			if (promotedSession != null) {

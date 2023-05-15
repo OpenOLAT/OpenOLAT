@@ -134,7 +134,9 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 		} else {
 			templateEl.select("template", true);
 			String correctionMode = config.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-			if(IQEditController.CORRECTION_AUTO.equals(correctionMode)) {
+			boolean enableScoreInfo = config.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
+			boolean showResultsOnFinish = config.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+			if(IQEditController.CORRECTION_AUTO.equals(correctionMode) && (enableScoreInfo || showResultsOnFinish)) {
 				text = translate("confirmation.mail.content.auto");
 			} else {
 				text = translate("confirmation.mail.content.manual");

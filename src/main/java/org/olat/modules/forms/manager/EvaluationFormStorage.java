@@ -74,7 +74,11 @@ class EvaluationFormStorage {
 	
 	Path createTmpDir() {
 		Path tempDirPath = getTmpDir().resolve(CodeHelper.getUniqueID());
-		tempDirPath.toFile().mkdir();
+		try {
+			Files.createDirectories(tempDirPath);
+		} catch (Exception e) {
+			log.error("Creation of evaluation forms temp directory failed! Path: " + responsesDirectory, e);
+		}
 		return tempDirPath;
 	}
 
