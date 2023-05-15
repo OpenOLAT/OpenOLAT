@@ -360,7 +360,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 					doLaunchSubscriptionResource(ureq, subscriber);
 				}
 				if (FORMLINK_DELETE.equals(cmd)) {
-					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete"), delYesNoC);
+					NotificationSubscriptionRow row = (NotificationSubscriptionRow) link.getUserObject();
+					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete", row.getLearningResource().getI18nKey()), delYesNoC);
 					delYesNoC.setUserObject(subscriber);
 				}
 			}
