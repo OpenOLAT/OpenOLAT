@@ -371,9 +371,9 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		if(updateScoring) {
 			Float cutValue = (Float)getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 
-			BigDecimal finalScore = taskSession != null ? taskSession.getScore() : BigDecimal.ZERO;
+			BigDecimal finalScore = taskSession.getScore();
 			score = finalScore == null ? null : finalScore.floatValue();
-			passed = taskSession != null && Boolean.TRUE.equals(taskSession.getPassed());
+			passed = taskSession.getPassed();
 			if(finalScore != null) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(new CourseEntryRef(assessedUserCourseEnv), this);
 				if (assessmentConfig.hasGrade() && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
@@ -400,10 +400,9 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		if (currentAssessmentEntry == null) {
 			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		}
-		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
-		Long assessmentId = taskSession != null ? taskSession.getKey() : null;
+		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts() == 0;
 		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
-				null, null, null, 1.0d, AssessmentRunStatus.done, assessmentId);
+				null, null, null, 1.0d, AssessmentRunStatus.done, taskSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);
 	}
 	
