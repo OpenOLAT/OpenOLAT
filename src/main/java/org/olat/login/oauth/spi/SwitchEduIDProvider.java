@@ -39,7 +39,12 @@ import org.springframework.stereotype.Service;
 
 import com.github.scribejava.apis.openid.OpenIdOAuth2AccessToken;
 import com.github.scribejava.core.builder.ServiceBuilder;
+import com.github.scribejava.core.model.OAuth2AccessToken;
+import com.github.scribejava.core.model.OAuthRequest;
+import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Token;
+import com.github.scribejava.core.model.Verb;
+import com.github.scribejava.core.oauth.OAuth20Service;
 import com.github.scribejava.core.oauth.OAuthService;
 
 /**
@@ -118,16 +123,25 @@ public class SwitchEduIDProvider implements OAuthSPI {
 		try {
 			String idToken = ((OpenIdOAuth2AccessToken)accessToken).getOpenIdToken();
 			JSONWebToken token = JSONWebToken.parse(idToken);
-			return parseInfos(token.getPayload());
+
+			String userInfosEndPoint = test ? SwitchEduIDApi.SWITCH_EDUID_TEST_USERINFOS_ENDPOINT : SwitchEduIDApi.SWITCH_EDUID_USERINFOS_ENDPOINT;
+			if(token != null && StringHelper.containsNonWhitespace(userInfosEndPoint)) {
+				OAuth20Service oauthService = (OAuth20Service)service;
+				OAuthRequest oauthRequest = new OAuthRequest(Verb.GET, userInfosEndPoint); 
+				oauthService.signRequest((OAuth2AccessToken)accessToken, oauthRequest);
+				Response oauthResponse = oauthService.execute(oauthRequest);
+				
+				OAuthUser user = new OAuthUser();
+				parseUserInfos(user, oauthResponse.getBody());
+				return user;
+			}
 		} catch (JSONException e) {
 			log.error("", e);
-			return null;
 		}
+		return null;
 	}
-	
-	public OAuthUser parseInfos(String body) {
-		OAuthUser user = new OAuthUser();
-		
+
+	public void parseUserInfos(OAuthUser user, String body) {
 		try {
 			JSONObject obj = new JSONObject(body);
 			user.setId(getValue(obj, "swissEduPersonUniqueID"));
@@ -137,11 +151,10 @@ public class SwitchEduIDProvider implements OAuthSPI {
 			user.setInstitutionalUserIdentifier(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationUniqueID"));
 			user.setInstitutionalEmail(getFirstArrayValue(obj, "swissEduIDLinkedAffiliationMail"));
 			user.setAuthenticationExternalIds(getArrayValues(obj, "swissEduIDLinkedAffiliationUniqueID"));
+			user.setLang(getValue(obj, "locale"));
 		} catch (JSONException e) {
 			log.error("", e);
 		}
-		
-		return user;
 	}
 	
 	private String getValue(JSONObject obj, String property) {
