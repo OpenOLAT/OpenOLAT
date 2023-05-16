@@ -394,7 +394,7 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		boolean templatePrivate = false;
 		boolean templatePublic = false;
-		if (templateEl.isVisible()) {
+		if (templateEl != null && templateEl.isVisible()) {
 			templatePrivate = templateEl.getSelectedKeys().contains(TEMPLATE_KEY);
 			templatePublic = templateEl.getSelectedKeys().contains(TEMPLATE_PUBLIC_KEY);
 		}
