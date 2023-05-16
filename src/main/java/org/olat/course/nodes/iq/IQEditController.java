@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.iq;
 
+import java.util.Locale;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -34,8 +36,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -358,6 +362,7 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 				layoutConfigurationCtrl.updateEditController(urequest);
 				updateGradingTab();
 				gradingInfosCtrl.reloadRepositoryEntry(getIQReference(moduleConfiguration, false));
+				confirmationMailCtrl.loadDefaultEmailText();
 			}
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
@@ -450,6 +455,21 @@ public class IQEditController extends ActivateableTabbableDefaultController {
 	 */
 	public static void removeIQReference(ModuleConfiguration moduleConfiguration) {
 		moduleConfiguration.remove(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+	}
+	
+	public static String getDefaultConfirmationEmailText(ModuleConfiguration moduleConfiguration, Locale locale) {
+		Translator trans = Util.createPackageTranslator(IQEditController.class, locale);
+		final String correctionMode = moduleConfiguration.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
+		boolean enableScoreInfo = moduleConfiguration.getBooleanSafe(IQEditController.CONFIG_KEY_ENABLESCOREINFO);
+		boolean showResultsOnFinish = moduleConfiguration.getBooleanSafe(IQEditController.CONFIG_KEY_RESULT_ON_FINISH);
+		
+		String text;
+		if(IQEditController.CORRECTION_AUTO.equals(correctionMode) && (enableScoreInfo || showResultsOnFinish)) {
+			text = trans.translate("confirmation.mail.content.auto");
+		} else {
+			text = trans.translate("confirmation.mail.content.manual");
+		}
+		return text;
 	}
 
 	@Override
