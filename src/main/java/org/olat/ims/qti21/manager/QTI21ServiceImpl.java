@@ -306,7 +306,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			} else {
 				//set default config
 				config = QTI21DeliveryOptions.defaultSettings();
-				setDeliveryOptions(testEntry, config);
+				internalSaveDeliveryOptions(testEntry, config);
 			}
 			return config;
 		});
@@ -314,6 +314,11 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options) {
+		internalSaveDeliveryOptions(testEntry, options);
+		deliveryOptionsCache.remove(testEntry.getKey());
+	}
+	
+	private void internalSaveDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
@@ -326,7 +331,6 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 				log.error("", e);
 			}
 		}
-		deliveryOptionsCache.remove(testEntry.getKey());
 	}
 
 	@Override
