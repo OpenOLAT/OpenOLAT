@@ -284,8 +284,10 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 	public List<Subscriber> getValidSubscribersOf(Publisher publisher) {
 		StringBuilder q = new StringBuilder(256);
 		q.append("select sub from notisub sub ")
-		 .append(" inner join fetch sub.identity")
-		 .append(" where sub.publisher.key=:publisherKey and sub.enabled=true and sub.publisher.state=").append(PUB_STATE_OK);
+		 .append(" inner join sub.publisher as pub")
+		 .append(" inner join fetch sub.identity as ident")
+		 .append(" inner join fetch ident.user as user")
+		 .append(" where pub.key=:publisherKey and sub.enabled=true and pub.state=").append(PUB_STATE_OK);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(q.toString(), Subscriber.class)
@@ -298,13 +300,13 @@ public class NotificationsManagerImpl implements NotificationsManager, UserDataD
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select sub from notisub sub")
 			.append(" inner join fetch sub.publisher as pub")
-			.append(" where sub.identity=:identity and sub.enabled=true and pub.type=:type and pub.state=:aState");
+			.append(" where sub.identity.key=:identityKey and sub.enabled=true and pub.type=:type and pub.state=:aState");
 		
 		List<Subscriber> subscribers = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Subscriber.class)
 				.setParameter("aState", PUB_STATE_OK)
 				.setParameter("type", publisherType)
-				.setParameter("identity", identity)
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		if(subscribers.isEmpty()) {
 			return Collections.emptyList();
