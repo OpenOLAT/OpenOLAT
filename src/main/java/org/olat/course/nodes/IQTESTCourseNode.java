@@ -654,15 +654,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		// Email
 		String subject = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_SUBJECT);
 		String body = getModuleConfiguration().getStringValue(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_BODY);
-		String correctionMode = getModuleConfiguration().getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-
-		Translator trans = Util.createPackageTranslator(IQEditController.class, locale);
-		if(StringHelper.containsNonWhitespace(body)) {
-			//
-		} else if(IQEditController.CORRECTION_AUTO.equals(correctionMode)) {
-			body = trans.translate("confirmation.mail.content.auto");
-		} else {
-			body = trans.translate("confirmation.mail.content.manual");
+		if(!StringHelper.containsNonWhitespace(body)) {
+			body = IQEditController.getDefaultConfirmationEmailText(getModuleConfiguration(), locale);
 		}
 
 		MailContext context = new MailContextImpl("[RepositoryEntry:" + courseEntry.getKey() + "]");
