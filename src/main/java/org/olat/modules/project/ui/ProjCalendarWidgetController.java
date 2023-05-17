@@ -103,6 +103,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		if (secCallback.canCreateAppointments() && secCallback.canCreateMilestones()) {
 			DropdownItem createDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
 			createDropdown.setCarretIconCSS("o_icon o_icon_lg o_icon_add");
+			createDropdown.setAriaLabel(translate("calendar.widget.commands.open"));
 			createDropdown.setOrientation(DropdownOrientation.right);
 			createDropdown.setButton(false);
 			createDropdown.setGhost(true);

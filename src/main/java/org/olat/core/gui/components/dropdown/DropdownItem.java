@@ -181,4 +181,8 @@ public class DropdownItem extends FormItemImpl implements FormItemCollection {
 		dropdown.setGhost(ghost);
 	}
 	
+	public void setAriaLabel(String ariaLabel) {
+		dropdown.setAriaLabel(ariaLabel);
+	}
+	
 }

@@ -1303,12 +1303,12 @@ $o-proj-avatar-yellow-color					: $gray-dark !default;
 $o-proj-avatar-light-green-bg-color			: #32CD32 !default;
 $o-proj-avatar-dark-green-bg-color			: #228B22 !default;
 // Upload example text: 2 * ($o-proj-header-background-width-max $o-proj-header-background-height-max)
-$o-proj-header-avatar-offset-bottom: 30px !default;
-$o-proj-header-avatar-offset-left: 20px !default;
-$o-proj-header-background-height-min: 110px !default;
-$o-proj-header-background-height-max: 250px !default;
-$o-proj-header-background-width-max: calc($o-page-width-max - $grid-gutter-width) !default;
-$o-proj-header-margin-bottom: 20px !default;
+$o-proj-header-avatar-offset-bottom			: 30px !default;
+$o-proj-header-avatar-offset-left			: 20px !default;
+$o-proj-header-background-height-min			: 110px !default;
+$o-proj-header-background-height-max			: 250px !default;
+$o-proj-header-background-width-max			: calc($o-page-width-max - $grid-gutter-width) !default;
+$o-proj-header-margin-bottom					: 20px !default;
 
 /* To-dos */
 $o-todo-overdue-color						: $brand-danger !default;

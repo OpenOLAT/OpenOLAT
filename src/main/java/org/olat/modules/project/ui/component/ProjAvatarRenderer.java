@@ -54,7 +54,7 @@ public class ProjAvatarRenderer extends DefaultComponentRenderer implements Comp
 			}
 			sb.append("\">");
 			if (isImageAvailable) {
-				sb.append("<img class=\"o_proj_avatar_image ");
+				sb.append("<img alt=\"\" class=\"o_proj_avatar_image ");
 				if (avatar.isBorder()) {
 					sb.append("o_proj_avatar_prevborder ");
 				}

@@ -63,6 +63,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private String carretIconCSS;
 	private String innerText;
 	private String innerCSS;
+	private String ariaLabel;
 	private boolean labeledToggle = false;
 	private boolean labeledMenu = false;
 	private List<Component> components = new ArrayList<>();
@@ -309,6 +310,14 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	 */
 	public String getInnerCSS() {
 		return innerCSS;
+	}
+
+	public String getAriaLabel() {
+		return ariaLabel;
+	}
+
+	public void setAriaLabel(String ariaLabel) {
+		this.ariaLabel = ariaLabel;
 	}
 
 	/**

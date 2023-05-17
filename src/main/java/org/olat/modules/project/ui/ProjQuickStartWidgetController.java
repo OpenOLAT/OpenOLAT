@@ -128,7 +128,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						file.getVfsMetadata().getFileLastModified(),
 						getChanged(file.getVfsMetadata().getFileLastModified()),
 						CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename()),
-						ProjectUIFactory.getDisplayName(file));
+						ProjectUIFactory.getDisplayName(file),
+						ProjectBCFactory.getFileUrl(file));
 				items.add(item);
 			}
 		}
@@ -143,7 +144,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						artefact.getLastModified(),
 						getChanged(artefact.getLastModified()),
 						"o_icon_proj_note",
-						ProjectUIFactory.getDisplayName(getTranslator(), note));
+						ProjectUIFactory.getDisplayName(getTranslator(), note),
+						ProjectBCFactory.getNoteUrl(note));
 				items.add(item);
 			}
 		}
@@ -195,13 +197,15 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		private final String changed;
 		private final String iconCss;
 		private final String displayName;
+		private final String url;
 		
-		public QuickSearchItem(Long artefactKey, Date changeDate, String changed, String iconCss, String displayName) {
+		public QuickSearchItem(Long artefactKey, Date changeDate, String changed, String iconCss, String displayName, String url) {
 			this.artefactKey = artefactKey;
 			this.changeDate = changeDate;
 			this.changed = changed;
 			this.iconCss = iconCss;
 			this.displayName = displayName;
+			this.url = url;
 		}
 
 		public Long getArtefactKey() {
@@ -222,6 +226,10 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 
 		public String getDisplayName() {
 			return displayName;
+		}
+
+		public String getUrl() {
+			return url;
 		}
 		
 	}

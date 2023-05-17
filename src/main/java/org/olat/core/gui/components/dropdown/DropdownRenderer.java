@@ -73,7 +73,13 @@ public class DropdownRenderer extends DefaultComponentRenderer {
 		}
 		String btnDomID = "dd_btn_" + dropdown.getDispatchID();
 		sb.append("' id='").append(btnDomID);
-		sb.append("' data-toggle='dropdown'>");		
+		sb.append("' data-toggle='dropdown'");
+		if (StringHelper.containsNonWhitespace(dropdown.getAriaLabel())) {
+			sb.append(" aria-label=\"");
+			sb.append(dropdown.getAriaLabel());
+			sb.append("\"");
+		}
+		sb.append(">");
 
 		String dropdownInnerCss = dropdown.getInnerCSS();
 		sb.append("<span class='o_inner_wrapper ").append(dropdownInnerCss, (dropdownInnerCss != null)).append("'>");

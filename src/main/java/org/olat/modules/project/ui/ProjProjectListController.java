@@ -145,6 +145,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private final BreadcrumbedStackedPanel stackPanel;
 	private FormLink createLink;
 	private FormLink bulkDoneButton;
+	private FormLink bulkReopenButton;
 	private FormLink bulkDeletedButton;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabActive;
@@ -161,6 +162,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private ProjConfirmationController doneConfirmationCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
 	private ProjConfirmationController doneConfirmationBulkCtrl;
+	private ProjConfirmationController reopenConfirmationBulkCtrl;
 	private ProjConfirmationController deleteConfirmationBulkCtrl;
 	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
@@ -306,6 +308,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			bulkDoneButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 			tableEl.addBatchButton(bulkDoneButton);
 			
+			bulkReopenButton = uifactory.addFormLink("project.list.bulk.reopen", flc, Link.BUTTON);
+			bulkReopenButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
+			tableEl.addBatchButton(bulkReopenButton);
+			
 			bulkDeletedButton = uifactory.addFormLink("project.list.bulk.deleted", flc, Link.BUTTON);
 			bulkDeletedButton.setIconLeftCSS("o_icon o_icon-fw " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 			tableEl.addBatchButton(bulkDeletedButton);
@@ -415,6 +421,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		if (isBulkEnabled()) {
 			bulkDoneButton.setVisible(tabDone != tab);
+			bulkReopenButton.setVisible(tabDone == tab);
 		}
 	}
 	
@@ -645,6 +652,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			doCreateProject(ureq);
 		} else if (bulkDoneButton == source) {
 			doConfirmBulkStatusDone(ureq);
+		} else if (bulkReopenButton == source) {
+			doConfirmBulkReopen(ureq);
 		} else if (bulkDeletedButton == source) {
 			doConfirmBulkStatusDeleted(ureq);
 		} else if (tableEl == source) {
@@ -732,6 +741,12 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (reopenConfirmationBulkCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				doBulkReopen(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (deleteConfirmationBulkCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				doBulkSetStatusDeleted(ureq);
@@ -755,6 +770,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteConfirmationBulkCtrl);
+		removeAsListenerAndDispose(reopenConfirmationBulkCtrl);
 		removeAsListenerAndDispose(doneConfirmationBulkCtrl);
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(doneConfirmationCtrl);
@@ -763,6 +779,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		removeAsListenerAndDispose(editCtrl);
 		removeAsListenerAndDispose(cmc);
 		deleteConfirmationBulkCtrl = null;
+		reopenConfirmationBulkCtrl = null;
 		doneConfirmationBulkCtrl = null;
 		deleteConfirmationCtrl = null;
 		doneConfirmationCtrl = null;
@@ -846,11 +863,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	}
 	
 	private void doCreateFromTemplate(UserRequest ureq, Long key) {
-
-		
-		//TODO uh crate from template spalte in der liste (keien actions)
-		//TODO uh Template sec call back mit alles ro ausser delete
-		
 		ProjProject projectCopy = projectCopyService.copyProjectFromTemplate(getIdentity(), () -> key);
 		if (projectCopy == null) {
 			return;
@@ -998,6 +1010,25 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		cmc.activate();
 	}
 	
+	private void doConfirmBulkReopen(UserRequest ureq) {
+		if (guardModalController(reopenConfirmationBulkCtrl)) return;
+		
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		String message = translate("project.reopen.bulk.message", Integer.toString(selectedIndex.size()));
+		reopenConfirmationBulkCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
+				"project.reopen.bulk.confirm", "project.reopen.bulk.button");
+		listenTo(reopenConfirmationBulkCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", reopenConfirmationBulkCtrl.getInitialComponent(),
+				true, translate("project.reopen.bulk.title"), true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doConfirmBulkStatusDeleted(UserRequest ureq) {
 		if (guardModalController(deleteConfirmationBulkCtrl)) return;
 		
@@ -1037,6 +1068,32 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
 			if (secCallback.canEditProjectStatus()) {
 				projectService.setStatusDone(getIdentity(), project);
+			}
+		}
+		
+		loadModel(ureq);
+	}
+	
+	private void doBulkReopen(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		if (selectedIndex == null || selectedIndex.isEmpty()) {
+			return;
+		}
+		
+		
+		List<ProjProjectRow> selectedProjects = selectedIndex.stream()
+				.map(index -> dataModel.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		ProjProjectSearchParams searchParams = new ProjProjectSearchParams();
+		searchParams.setProjectKeys(selectedProjects);
+		List<ProjProject> projects = projectService.getProjects(searchParams);
+		
+		for (ProjProject project: projects) {
+			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+			if (secCallback.canEditProjectStatus()) {
+				projectService.reopen(getIdentity(), project);
 			}
 		}
 		
