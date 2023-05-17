@@ -641,7 +641,7 @@ public class TopicsRunController extends FormBasicController implements Activate
 
 	private void doJoinBBBMeeting(TopicWrapper wrapper, Appointment appointment) {
 		if (BigBlueButtonUIHelper.isRecord(appointment.getBBBMeeting()) && !acknowlededRecordings.contains(appointment.getTopic())) {
-			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory", null);
+			wrapper.getAcknowledgeRecordingEl().setErrorKey("form.legende.mandatory");
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowCancelRedirectTo());
 			return;
 		} else if (wrapper.getAcknowledgeRecordingEl() != null) {

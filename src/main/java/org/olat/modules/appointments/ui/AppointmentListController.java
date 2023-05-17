@@ -44,7 +44,9 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -56,8 +58,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -96,6 +105,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AppointmentListController extends FormBasicController implements FlexiTableComponentDelegate {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_FUTURE = "Future";
+	private static final String TAB_ID_PARTICIPATED = "Participated";
+	private static final String FILTER_KEY_FUTURE = "future";
+	private static final String FILTER_KEY_PARTICIPATED = "participated";
 	private static final String CMD_MORE = "more";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
@@ -112,6 +126,9 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private FormLink addStartDurationAppointmentsLink;
 	private FormLink addStartEndAppointmentsLink;
 	private FormLink addRecurringAppointmentLink;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabFuture;
+	private FlexiFiltersTab tabParticipated;
 	private FlexiTableElement tableEl;
 	private AppointmentDataModel dataModel;
 	
@@ -264,40 +281,66 @@ public abstract class AppointmentListController extends FormBasicController impl
 		tableEl.setRowRenderer(rowVC, this);
 		
 		initFilters();
+		initFilterTabs(ureq);
 		initSorters();
 	}
-
-	protected void initFilters() {
-		List<String> filters = getFilters();
-		if (filters != null && !filters.isEmpty()) {
-			List<FlexiTableFilter> tableFilters = new ArrayList<>(3);
-			List<String> defaultFilters = getDefaultFilters();
-			List<FlexiTableFilter> selectedFilters = new ArrayList<>(defaultFilters.size());
-			if (filters.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
-				FlexiTableFilter filter = new FlexiTableFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, false);
-				tableFilters.add(filter);
-				if (defaultFilters.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
-					selectedFilters.add(filter);
-				}
-			}
-			if (filters.contains(AppointmentDataModel.FILTER_FUTURE)) {
-				FlexiTableFilter filter = new FlexiTableFilter(translate("filter.future"), AppointmentDataModel.FILTER_FUTURE, false);
-				tableFilters.add(filter);
-				if (defaultFilters.contains(AppointmentDataModel.FILTER_FUTURE)) {
-					selectedFilters.add(filter);
-				}
-			}
-			tableFilters.add(FlexiTableFilter.SPACER);
-			FlexiTableFilter filter = new FlexiTableFilter(translate("filter.all"), AppointmentDataModel.FILTER_ALL, true);
-			tableFilters.add(filter);
-			if (defaultFilters.contains(AppointmentDataModel.FILTER_ALL)) {
-				selectedFilters.add(filter);
-			}
-			tableEl.setFilters("Filters", tableFilters, true);
-			tableEl.setSelectedFilters(selectedFilters);
+	
+	private void initFilters() {
+		List<String> filterConfig = getFilters();
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_FUTURE)) {
+			SelectionValues futureValues = new SelectionValues();
+			futureValues.add(SelectionValues.entry(FILTER_KEY_FUTURE, translate("filter.future")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.future"), AppointmentDataModel.FILTER_FUTURE, futureValues, true));
+		}
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
+			SelectionValues participatedValues = new SelectionValues();
+			participatedValues.add(SelectionValues.entry(FILTER_KEY_PARTICIPATED, translate("filter.participated")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, participatedValues, true));
+		}
+		
+		if (!filters.isEmpty()) {
+			tableEl.setFilters(true, filters, false, false);
 		}
 	}
 	
+	private void initFilterTabs(UserRequest ureq) {
+		List<String> filterConfig = getFilters();
+		List<FlexiFiltersTab> tabs = new ArrayList<>(3);
+		
+		tabAll = FlexiFiltersTabFactory.tab(
+				TAB_ID_ALL,
+				translate("all"),
+				TabSelectionBehavior.reloadData);
+		tabs.add(tabAll);
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_FUTURE)) {
+			tabFuture = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_FUTURE,
+					translate("filter.future"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(AppointmentDataModel.FILTER_FUTURE, FILTER_KEY_FUTURE)));
+			tabs.add(tabFuture);
+		}
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
+			tabParticipated = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_PARTICIPATED,
+					translate("filter.participated"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(AppointmentDataModel.FILTER_PARTICIPATED, FILTER_KEY_PARTICIPATED)));
+			tabs.add(tabParticipated);
+		}
+		
+		tableEl.setFilterTabs(true, tabs);
+		if (filterConfig.contains(AppointmentDataModel.FILTER_FUTURE)) {
+			tableEl.setSelectedFilterTab(ureq, tabFuture);
+		} else {
+			tableEl.setSelectedFilterTab(ureq, tabAll);
+		}
+	}	
 	private void initSorters() {
 		List<FlexiTableSort> sorters = new ArrayList<>(2);
 		sorters.add(new FlexiTableSort(translate(AppointmentCols.start.i18nHeaderKey()), AppointmentCols.start.name()));
@@ -309,8 +352,31 @@ public abstract class AppointmentListController extends FormBasicController impl
 
 	private void updateModel() {
 		List<AppointmentRow> rows = loadModel();
+		applyFilter(rows);
 		dataModel.setObjects(rows);
 		tableEl.reset(false, false, true);
+	}
+
+	private void applyFilter(List<AppointmentRow> rows) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (AppointmentDataModel.FILTER_FUTURE.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_FUTURE)) {
+					Date now = new Date();
+					rows.removeIf(row -> !AppointmentsUIFactory.isEndInFuture(row.getAppointment(), now));
+				}
+			}
+			
+			if (AppointmentDataModel.FILTER_PARTICIPATED.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_PARTICIPATED)) {
+					rows.removeIf(row -> row.getParticipation() == null);
+				}
+			}
+		}
 	}
 
 	protected void forgeAppointmentView(AppointmentRow row, Appointment appointment) {
@@ -520,6 +586,12 @@ public abstract class AppointmentListController extends FormBasicController impl
 			doAddStartEndAppointments(ureq);
 		} else if (source == addRecurringAppointmentLink) {
 			doAddRecurringAppointment(ureq);
+		} else if (tableEl == source) {
+			if (event instanceof FlexiTableSearchEvent) {
+				updateModel();
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				updateModel();
+			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
