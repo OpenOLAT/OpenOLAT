@@ -93,7 +93,8 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 			return false;
 		}
 		
-		if(!SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, false, includeWithoutTaxonomy)) {
+		if((!taxonomyLevelsKeyPaths.isEmpty() || includeWithoutTaxonomy)
+				&& !SearchPracticeItemHelper.accept(row.getItem(), taxonomyLevelsKeyPaths, false, includeWithoutTaxonomy)) {
 			return false;
 		}
 		
@@ -138,7 +139,7 @@ implements SortableFlexiTableDataModel<PracticeComposeItemRow> {
 	
 	private Integer getLevels(PracticeAssessmentItemGlobalRef globalRef) {
 		if(globalRef == null || globalRef.getLevel() < 0) {
-			return null;
+			return Integer.valueOf(0);
 		}
 		if(globalRef.getLevel() > numOfLevels) {
 			return Integer.valueOf(numOfLevels);
