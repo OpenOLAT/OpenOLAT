@@ -228,12 +228,12 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 		if (formItem.isMandatory()) {
 			if (isMultiselect) {
 				MultipleSelectionElement msel = (MultipleSelectionElement) formItem;
-				msel.setErrorKey("form.legende.mandatory", null);
+				msel.setErrorKey("form.legende.mandatory");
 				return msel.isAtLeastSelected(1);
 			} else {
 				SingleSelection ssel = (SingleSelection) formItem;
 				if (ssel.getSelectedKey().equals(NO_SEL_KEY)) {
-					ssel.setErrorKey("form.legende.mandatory", null);
+					ssel.setErrorKey("form.legende.mandatory");
 					return false;
 				}
 			}

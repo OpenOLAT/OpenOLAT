@@ -52,7 +52,7 @@ public class PastDatePropertyHandler extends DatePropertyHandler {
 		if (date == null || isDateInThePast(date)) {
 			return true;
 		} else {
-			formItem.setErrorKey("form.name.date.past.error", null);
+			formItem.setErrorKey("form.name.date.past.error");
 			return false;
 		}
 	}

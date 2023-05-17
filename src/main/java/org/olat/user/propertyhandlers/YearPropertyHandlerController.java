@@ -87,7 +87,7 @@ public class YearPropertyHandlerController extends FormBasicController implement
 			}
 			Integer.parseInt(fV);
 		} catch (NumberFormatException e) {
-			txeFrom.setErrorKey("yph.err", null);
+			txeFrom.setErrorKey("yph.err");
 			return false;
 		}
 
@@ -97,7 +97,7 @@ public class YearPropertyHandlerController extends FormBasicController implement
 			}
 			Integer.parseInt(tV);
 		} catch (NumberFormatException e) {
-			txeTo.setErrorKey("yph.err", null);
+			txeTo.setErrorKey("yph.err");
 			return false;
 		}
 		

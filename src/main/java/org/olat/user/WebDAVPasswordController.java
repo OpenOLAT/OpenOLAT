@@ -208,7 +208,7 @@ public class WebDAVPasswordController extends FormBasicController {
 			ValidationResult validationResult = syntaxValidator.validate(password, getIdentity());
 			if (!validationResult.isValid()) {
 				String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
-				passwordEl.setErrorKey("error.password.invalid", new String[] { descriptions });
+				passwordEl.setErrorKey("error.password.invalid", descriptions);
 				allOk &= false;
 			}
 			
@@ -216,7 +216,7 @@ public class WebDAVPasswordController extends FormBasicController {
 			if(password == null || password.equals(confirmation)) {
 				confirmPasswordEl.clearError();
 			} else {
-				confirmPasswordEl.setErrorKey("error.password.nomatch", null);
+				confirmPasswordEl.setErrorKey("error.password.nomatch");
 				allOk = false;
 			}
 		}

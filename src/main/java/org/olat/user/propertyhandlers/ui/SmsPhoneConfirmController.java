@@ -64,11 +64,11 @@ public class SmsPhoneConfirmController extends FormBasicController {
 		
 		if(StringHelper.containsNonWhitespace(tokenEl.getValue())) {
 			if(!tokenEl.getValue().equals(token)) {
-				tokenEl.setErrorKey("error.sms.change.confirm.token", null);
+				tokenEl.setErrorKey("error.sms.change.confirm.token");
 				allOk &= false;
 			}
 		} else {
-			tokenEl.setErrorKey("form.legende.mandatory", null);
+			tokenEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		return allOk;

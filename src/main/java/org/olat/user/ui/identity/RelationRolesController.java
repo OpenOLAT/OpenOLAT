@@ -95,7 +95,7 @@ public class RelationRolesController extends StepFormBasicController {
 		
 		relationRoleEl.clearError();
 		if(relationRoleEl.getSelectedKeys().isEmpty()) {
-			relationRoleEl.setErrorKey("form.legende.mandatory", null);
+			relationRoleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

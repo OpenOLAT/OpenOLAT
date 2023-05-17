@@ -87,7 +87,7 @@ public class PhonePropertyHandler extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(value)) {
 			// check phone address syntax
 			if (!VALID_PHONE_PATTERN_IP.matcher(value.toLowerCase()).matches()) {
-				formItem.setErrorKey(i18nFormElementLabelKey() + ".error.valid", null);
+				formItem.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
 				return false;
 			}
 		}

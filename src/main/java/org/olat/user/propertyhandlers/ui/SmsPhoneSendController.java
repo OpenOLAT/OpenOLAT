@@ -97,10 +97,10 @@ public class SmsPhoneSendController extends FormBasicController {
 
 		newPhoneEl.clearError();
 		if(!StringHelper.containsNonWhitespace(newPhoneEl.getValue())) {
-			newPhoneEl.setErrorKey("form.legende.mandatory", null);
+			newPhoneEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(!messageService.validate(newPhoneEl.getValue())) {
-			newPhoneEl.setErrorKey("error.phone.invalid", null);
+			newPhoneEl.setErrorKey("error.phone.invalid");
 			allOk &= false;
 		}
 		
@@ -110,7 +110,7 @@ public class SmsPhoneSendController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		try {
-			String msg = translate("sms.token", new String[]{ sentToken });
+			String msg = translate("sms.token", sentToken);
 			String phone = newPhoneEl.getValue();
 			
 			Identity recipient = securityManager.findIdentityByUser(userToChange);

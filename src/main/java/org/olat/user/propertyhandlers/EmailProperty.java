@@ -128,13 +128,13 @@ public class EmailProperty extends Generic127CharTextPropertyHandler {
 			value = value.toLowerCase().trim();
 			// check mail address syntax
 			if (!MailHelper.isValidEmailAddress(value)) {
-				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.valid", null);
+				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.valid");
 				return false;
 			}
 			// email is syntactically correct. 
 		  // Check whether it's available.
 			if (!isAddressAvailable(value, user)) {
-				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.exists", new String[] { value });
+				textElement.setErrorKey(i18nFormElementLabelKey() + ".error.exists", value);
 				return false;
 			}
 		}

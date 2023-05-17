@@ -135,7 +135,7 @@ public class ICQPropertyHandler extends Generic127CharTextPropertyHandler {
 		if (StringHelper.containsNonWhitespace(textElement.getValue())) {
 			boolean valid = isValidICQNumber(textElement.getValue());
 			if (!valid) {
-				textElement.setErrorKey("form.name.icq.error", null);
+				textElement.setErrorKey("form.name.icq.error");
 			}
 			return valid;
 		}

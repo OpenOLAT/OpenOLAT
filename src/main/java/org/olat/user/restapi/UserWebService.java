@@ -685,7 +685,8 @@ public class UserWebService {
 	}
 	
 	/**
-	 * Update a user expiration date and only the expiration date.
+	 * Update a user. If the expiration date is set, the expiration will be update.
+	 * If there aren't any dates (expiration and inactivation), the user is reactivated.
 	 * 
 	 * @param identityKey The user key identifier
 	 * @param lifecycle The user life-cycle data
@@ -694,7 +695,7 @@ public class UserWebService {
 	 */
 	@POST
 	@Path("{identityKey}/lifecycle")
-	@Operation(summary = "Update a user's expiration date", description = "Update a user expiration date and only the expiration date.")
+	@Operation(summary = "Update a user's expiration date", description = "Update a user. If the expiration date is set, the expiration will be update. If there aren't any dates (expiration and inactivation), the user is reactivated.")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserLifecycleVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserLifecycleVO.class)) })
@@ -707,7 +708,8 @@ public class UserWebService {
 	}
 	
 	/**
-	 * Update a user expiration date and only the expiration date.
+	 * Update a user. If the expiration date is set, the expiration will be update.
+	 * If there aren't any dates (expiration and inactivation), the user is reactivated.
 	 * 
 	 * @param identityKey The user key identifier
 	 * @param lifecycle The user life-cycle data
@@ -716,7 +718,7 @@ public class UserWebService {
 	 */
 	@PUT
 	@Path("{identityKey}/lifecycle")
-	@Operation(summary = "Update a user's expiration date", description = "Update a user expiration date and only the expiration date.")
+	@Operation(summary = "Update a user's expiration date", description = "Update a user. If the expiration date is set, the expiration will be update. If there aren't any dates (expiration and inactivation), the user is reactivated.")
 	@ApiResponse(responseCode = "200", description = "The user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = UserLifecycleVO.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = UserLifecycleVO.class)) })
@@ -741,7 +743,14 @@ public class UserWebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
-		Identity updatedIdentity = securityManager.saveIdentityExpirationDate(retrievedIdentity, lifecycle.getExpirationDate(), getIdentity(request));
+		Identity updatedIdentity;
+		if(lifecycle.getExpirationDate() == null && lifecycle.getInactivationDate() == null) {
+			updatedIdentity = securityManager.reactivatedIdentity(retrievedIdentity);
+		} else if(lifecycle.getExpirationDate() != null) {
+			updatedIdentity = securityManager.saveIdentityExpirationDate(retrievedIdentity, lifecycle.getExpirationDate(), getIdentity(request));
+		} else {
+			return Response.ok().status(Status.NOT_MODIFIED).build();
+		}
 		UserLifecycleVO lifecycleVo = UserLifecycleVO.valueOf(updatedIdentity);
 		return Response.ok(lifecycleVo).build();
 	}

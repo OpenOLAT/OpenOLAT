@@ -147,7 +147,7 @@ public class GenderPropertyHandler extends AbstractUserPropertyHandler {
 			org.olat.core.gui.components.form.flexible.elements.SingleSelection sse = (org.olat.core.gui.components.form.flexible.elements.SingleSelection) formItem;
 			// when mandatory, the - must not be selected
 			if (sse.getSelectedKey().equals("-")) {
-				sse.setErrorKey("gender.error", null);
+				sse.setErrorKey("gender.error");
 				return false;
 			}
 		}
