@@ -332,9 +332,16 @@ public class OOGraphene {
 		clickAndWait(wizardNextBy, browser);
 	}
 	
+
 	public static void finishStep(WebDriver browser) {
+		finishStep(browser, true);
+	}
+	
+	public static void finishStep(WebDriver browser, boolean closeBlueMessage) {
 		moveAndClick(wizardFinishBy, browser);
-		closeBlueMessageWindow(browser);
+		if(closeBlueMessage) {
+			closeBlueMessageWindow(browser);
+		}
 		By wizardBy = By.cssSelector("div.o_layered_panel div.o_wizard");
 		waitElementDisappears(wizardBy, 10, browser);
 		waitBusyAndScrollTop(browser);

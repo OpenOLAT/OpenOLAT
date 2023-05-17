@@ -360,7 +360,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 					doLaunchSubscriptionResource(ureq, subscriber);
 				}
 				if (FORMLINK_DELETE.equals(cmd)) {
-					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete"), delYesNoC);
+					NotificationSubscriptionRow row = (NotificationSubscriptionRow) link.getUserObject();
+					delYesNoC = activateYesNoDialog(ureq, null, translate("confirm.delete", row.getLearningResource().getI18nKey()), delYesNoC);
 					delYesNoC.setUserObject(subscriber);
 				}
 			}
@@ -384,7 +385,7 @@ public class NotificationSubscriptionController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) { // ok
 				// Remove subscription and update data model
 				Subscriber sub = (Subscriber) delYesNoC.getUserObject();
-				notificationsManager.unsubscribe(sub);
+				notificationsManager.deleteSubscriber(sub.getKey());
 				updateSubscriptionsDataModel();
 				showInfo("info.notification.deleted");
 				// Notify parent controller

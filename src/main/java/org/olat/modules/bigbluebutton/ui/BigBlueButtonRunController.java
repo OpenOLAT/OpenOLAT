@@ -111,6 +111,9 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 		putInitialPanel(mainVC);
 	}
 
+	public boolean isMeetingSelected() {
+		return meetingCtrl != null;
+	}
 	
 	private boolean hasAtLeastOneTemplate(UserRequest ureq) {
 		// TODO bbb should also apply to group config form: don't let regular students enable bbb in groups when they have no 
@@ -157,8 +160,7 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 		if(backLink == source) {
 			back();
 		} else if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == meetingsLink) {
@@ -173,8 +175,7 @@ public class BigBlueButtonRunController extends BasicController implements Activ
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(meetingsCtrl == source) {
-			if(event instanceof SelectBigBlueButtonMeetingEvent) {
-				SelectBigBlueButtonMeetingEvent se = (SelectBigBlueButtonMeetingEvent)event;
+			if(event instanceof SelectBigBlueButtonMeetingEvent se) {
 				doSelectMeeting(ureq, se.getMeeting());
 			}
 		} else if(meetingCtrl == source) {

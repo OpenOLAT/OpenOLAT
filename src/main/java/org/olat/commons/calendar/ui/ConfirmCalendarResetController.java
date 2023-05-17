@@ -71,7 +71,7 @@ public class ConfirmCalendarResetController extends FormBasicController {
 		List<KalendarEvent> events = calendarRow.getWrapper().getKalendar().getEvents();
 		long numberToDelete = events.stream().filter(e -> !e.isManaged()).count();
 
-		String msg = translate("cal.confirm.reset.confirmation_message", new String[] { Long.toString(numberToDelete) });
+		String msg = translate("cal.confirm.reset.confirmation_message", Long.toString(numberToDelete));
 		if(formLayout instanceof FormLayoutContainer) {
 			((FormLayoutContainer)formLayout).contextPut("msg", msg);
 		}
@@ -88,7 +88,7 @@ public class ConfirmCalendarResetController extends FormBasicController {
 		
 		confirmEl.clearError();
 		if(!confirmEl.isAtLeastSelected(1)) {
-			confirmEl.setErrorKey("form.legende.mandatory", null);
+			confirmEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

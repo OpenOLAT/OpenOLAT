@@ -357,7 +357,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		}
 		return taskSessions.get(0);
 	}
-	
+
 	public void promoteTaskSession(VideoTaskSession taskSession, UserCourseEnvironment assessedUserCourseEnv,
 			boolean updateScoring, Identity coachingIdentity, Role by, Locale locale) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
@@ -400,7 +400,7 @@ public class VideoTaskCourseNode extends AbstractAccessableCourseNode {
 		if (currentAssessmentEntry == null) {
 			currentAssessmentEntry = courseAssessmentService.getAssessmentEntry(this, assessedUserCourseEnv);
 		}
-		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts().intValue() == 0;
+		boolean increment = currentAssessmentEntry.getAttempts() == null || currentAssessmentEntry.getAttempts() == 0;
 		ScoreEvaluation sceval = new ScoreEvaluation(score, grade, gradeSystemIdent, performanceClassIdent, passed,
 				null, null, null, 1.0d, AssessmentRunStatus.done, taskSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseEnv, coachingIdentity, increment, by);

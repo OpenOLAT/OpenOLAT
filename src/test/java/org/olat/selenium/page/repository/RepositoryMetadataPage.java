@@ -53,6 +53,13 @@ public class RepositoryMetadataPage {
 		return this;
 	}
 	
+	public RepositoryMetadataPage setAuthors(String authors) {
+		By authorsBy = By.cssSelector("div.o_sel_repo_authors input.o_sel_repo_authors[type='text']");
+		OOGraphene.waitElement(authorsBy, browser);
+		browser.findElement(authorsBy).sendKeys(authors);
+		return this;
+	}
+	
 	public RepositoryMetadataPage save() {
 		By saveBy = By.cssSelector("div.o_sel_repo_save_details button.btn-primary");
 		OOGraphene.click(saveBy, browser);

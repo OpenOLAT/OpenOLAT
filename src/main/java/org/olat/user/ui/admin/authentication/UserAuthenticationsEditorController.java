@@ -126,6 +126,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.issuer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.login));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.credential));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AuthenticationCols.externalId));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", translate("delete"), "delete"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.action", AuthenticationCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null)));
@@ -273,6 +274,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 		issuer("table.auth.issuer"),
 		login("table.auth.login"),
 		credential("table.auth.credential"),
+		externalId("table.auth.externalId"),
 		edit("edit");
 		
 		private final String i18nKey;
@@ -331,6 +333,7 @@ public class UserAuthenticationsEditorController extends FormBasicController {
 				case issuer: return getIssuer(auth);
 				case login: return auth.getAuthusername();
 				case credential: return auth.getCredential();
+				case externalId: return auth.getExternalId();
 				case edit: return row.isCanEditAuthenticationUsername();
 				default: return "error";
 			}

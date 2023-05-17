@@ -771,7 +771,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private boolean isExcludedByAssignment(Set<Long> filterAssignmentKeys, AssessmentEntry entry) {
-		if(filterAssignmentKeys == null) return false;
+		if(filterAssignmentKeys == null || entry == null) return false;
 		
 		Identity assignedCoach = entry.getCoach();
 		return (assignedCoach == null && !filterAssignmentKeys.contains(Long.valueOf(-1l)))

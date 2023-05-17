@@ -43,6 +43,12 @@ Object.assign(MediaElementPlayer.prototype, {
 			player.setmarkers(controls);
 		});
 		media.addEventListener('timeupdate', function () {
+			if (media.currentTime === 0) {
+				// Chrome and Edge send 'timeupdate' events at initialization.
+				// We prefer not to send marker events for these updates yet.
+				return;
+			}
+
 			var currentPos = Math.floor(media.currentTime);
 			if (lastPlayPos > currentPos) {
 				if (lastMarkerCallBack > currentPos) {

@@ -278,7 +278,8 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUser(String identityName, String nickName, String externalId,
-			User user, String provider, String issuer, String authusername, String password, Date expirationDate);
+			User user, String provider, String issuer, String authenticationExternalId,
+			String authusername, String password, Date expirationDate);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to
@@ -298,7 +299,8 @@ public interface BaseSecurity {
 	 * @return The new persisted identity
 	 */
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String identityName, String nickName, String externalId,
-			User user, String provider, String issuer, String authusername, String password, Organisation organisation, Date expirationDate);
+			User user, String provider, String issuer, String authenticationExternalId,
+			String authusername, String password, Organisation organisation, Date expirationDate);
 	
 
 	/**
@@ -355,7 +357,7 @@ public interface BaseSecurity {
 	 * @param credential
 	 * @return an Authentication
 	 */
-	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer,
+	public Authentication createAndPersistAuthentication(Identity identity, String provider, String issuer, String externalId,
 			String authUsername, String password, Encoder.Algorithm algoritm);
 
 	/**
@@ -419,9 +421,12 @@ public interface BaseSecurity {
 	 */
 	public Authentication findAuthenticationByAuthusername(String authusername, String provider, String issuer);
 	
+	
 	public Authentication findAuthenticationByKey(Long authenticationKey);
 
 	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers);
+	
+	public List<Authentication> findAuthentications(String authusername, List<String> externalIds, String provider, String issuer);
 
 
 	/**

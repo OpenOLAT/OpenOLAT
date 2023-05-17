@@ -123,8 +123,10 @@ public class InfoMetadataController extends StepFormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("details.info.title");
+		formLayout.setElementCssClass("o_sel_course_metadata");
 		
 		displayNameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, context.getDisplayName(), formLayout);
+		displayNameEl.setElementCssClass("o_sel_course_displayname");
 		displayNameEl.setDisplaySize(30);
 		displayNameEl.setMandatory(true);
 		

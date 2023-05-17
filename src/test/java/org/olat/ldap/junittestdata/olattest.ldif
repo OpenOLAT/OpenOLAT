@@ -29,6 +29,7 @@ mail: mrohrer@openolat.com
 o: Informatik
 sn: Rohrer
 uid: mrohrer
+upn: mrohrer
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 
@@ -299,6 +300,38 @@ labeleduri: https://www.openolat.com/afrommenwiler
 o: Informatik
 sn: Frommenwiler
 uid: afrommenwiler
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=jessicajones,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Jessica Jones
+givenname: Jessica
+labeleduri: https://www.openolat.com/jessicajones
+o: Informatik
+sn: Jones
+uid: jessicajones
+upn: jessica.jones@openolat.com
+mail: jessica.jones@openolat.com
+userPassword: olat
+modifyTimestamp: 20100630180000Z
+
+dn: uid=veronicablum,ou=person,dc=olattest,dc=org
+objectClass: organizationalPerson
+objectClass: person
+objectClass: inetOrgPerson
+objectClass: top
+cn: Veronica Blum
+givenname: Veronica
+labeleduri: https://www.openolat.com/veronicablum
+o: Informatik
+sn: Blum
+uid: veronicablum
+upn: veronica.blum@openolat.com
+mail: veronica.blum@openolat.com
 userPassword: olat
 modifyTimestamp: 20100630180000Z
 

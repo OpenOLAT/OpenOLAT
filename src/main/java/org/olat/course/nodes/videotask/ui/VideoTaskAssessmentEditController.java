@@ -24,6 +24,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SpacerElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -87,6 +88,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private TextElement cutEl;
 	private SingleSelection weightingEl;
 	private SpacerElement ignoreSpacer;
+	private MultipleSelectionElement individualAssessmentEl;
+	private SelectionValues individualAssessmentKV;
 
 	private GradeScale gradeScale;
 	private final String nodeIdent;
@@ -103,7 +106,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	private GradeService gradeService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
-	
+
 	public VideoTaskAssessmentEditController(UserRequest ureq, WindowControl wControl,
 			ICourse course, VideoTaskCourseNode courseNode) {
 		super(ureq, wControl);
@@ -156,22 +159,38 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 		ignoreSpacer = uifactory.addSpacerElement("ignore-spacer", formLayout, false);
 
+		individualAssessmentKV = new SelectionValues();
+		individualAssessmentKV.add(SelectionValues.entry("individualComment", translate("form.individualComment")));
+		individualAssessmentKV.add(SelectionValues.entry("individualAssessmentDocuments", translate("form.individualAssessmentDocuments")));
+		individualAssessmentEl = uifactory.addCheckboxesVertical("form.individualAssessment", formLayout, individualAssessmentKV.keys(),
+				individualAssessmentKV.values(), 1);
+		boolean hasIndividualComment = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, true);
+		if (hasIndividualComment) {
+			individualAssessmentEl.select(individualAssessmentKV.keys()[0], true);
+		}
+		boolean hasIndividualAssessmentDocuments = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS);
+		if (hasIndividualAssessmentDocuments) {
+			individualAssessmentEl.select(individualAssessmentKV.keys()[1], true);
+		}
+		uifactory.addSpacerElement("individual-assessment-spacer", formLayout, false);
+
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
 	private void initFormScore(FormItemContainer formLayout) {
 		// Minimum
-		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		min = min != null? min: MSCourseNode.CONFIG_DEFAULT_SCORE_MIN;
+		Float min = MSCourseNode.CONFIG_DEFAULT_SCORE_MIN;
 		minEl = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
 		minEl.setElementCssClass("o_sel_course_video_min");
+		minEl.setEnabled(false);
 		
 		// Maximum
 		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		max = max != null? max: MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
 		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
 		maxEl.setElementCssClass("o_sel_course_video_max");
+		maxEl.setMandatory(true);
 		
 		int rounding = config.getIntegerSafe(VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING,
 				VideoTaskEditController.CONFIG_KEY_SCORE_ROUNDING_DEFAULT);
@@ -362,23 +381,15 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
-		minEl.clearError();
 		maxEl.clearError();
-		boolean minIsFloat = isFloat(minEl.getValue());
 		boolean maxIsFloat = isFloat(maxEl.getValue());
-		if (minEl.isVisible() && minEl.isEnabled()) {
-			if (!minIsFloat) {
-				minEl.setErrorKey("form.error.wrongFloat");
-				allOk &= false;
-			}
-			if (!maxIsFloat) {
-				maxEl.setErrorKey("form.error.wrongFloat");
-				allOk &= false;
-			}
-			if (minIsFloat && maxIsFloat && isNotGreaterFloat(minEl.getValue(), maxEl.getValue())) {
-				maxEl.setErrorKey("form.error.minGreaterThanMax");
-				allOk &= false;
-			}
+		if (!maxIsFloat) {
+			maxEl.setErrorKey("form.error.wrongFloat");
+			allOk &= false;
+		}
+		if (maxIsFloat && isNotGreaterFloat(minEl.getValue(), maxEl.getValue())) {
+			maxEl.setErrorKey("form.error.minGreaterThanMax");
+			allOk &= false;
 		}
 		
 		passedTypeEl.clearError();
@@ -394,8 +405,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 				cutEl.setErrorKey("form.error.wrongFloat");
 				allOk &= false;
 			}
-			if (cutIsFloat && minIsFloat && maxIsFloat
-					&& notInRange(minEl.getValue(), maxEl.getValue(), cutEl.getValue())) {
+			if (cutIsFloat && maxIsFloat && notInRange(minEl.getValue(), maxEl.getValue(), cutEl.getValue())) {
 				cutEl.setErrorKey("form.error.cutOutOfRange");
 				allOk &= false;
 			}
@@ -470,6 +480,11 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 
 		boolean ignoreInCourseAssessment = ignoreInCourseAssessmentEl.isVisible() && Boolean.parseBoolean(ignoreInCourseAssessmentEl.getSelectedKey());
 		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_IGNORE_IN_COURSE_ASSESSMENT, ignoreInCourseAssessment);
+
+		boolean hasIndividualComment = individualAssessmentEl.isKeySelected(individualAssessmentKV.keys()[0]);
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, hasIndividualComment);
+		boolean hasIndividualAssessmentDocuments = individualAssessmentEl.isKeySelected(individualAssessmentKV.keys()[1]);
+		config.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, hasIndividualAssessmentDocuments);
 	}
 	
 	protected static void resetConfiguration(ModuleConfiguration configuration) {
@@ -482,6 +497,8 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 		configuration.setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
 		configuration.remove(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		configuration.remove(VideoTaskEditController.CONFIG_KEY_WEIGHT_WRONG_ANSWERS);
+		configuration.remove(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
+		configuration.remove(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS);
 	}
 	
 	private void doEditGradeScale(UserRequest ureq) {

@@ -92,6 +92,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 		formLayout.add(nodeCont);
 		
 		titleEl = uifactory.addTextElement("nodeConfigForm.displaytitle", "nodeConfigForm.displaytitle", 255, null, nodeCont);
+		titleEl.setElementCssClass("o_sel_course_wizard_element_title");
 		titleEl.setCheckVisibleLength(true);
 		titleEl.setExampleKey("nodeConfigForm.max.length.recommended", new String[] {String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH)});
 		titleEl.setMandatory(true);
@@ -134,7 +135,7 @@ public class TitleAndEntryController extends StepFormBasicController {
 		
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if (titleEl.getValue().length() > NodeConfigController.LONG_TITLE_MAX_LENGTH) {
 			titleEl.setWarningKey("error.title.too.long", String.valueOf(NodeConfigController.LONG_TITLE_MAX_LENGTH));

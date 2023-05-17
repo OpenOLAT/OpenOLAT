@@ -100,6 +100,35 @@ public class AuthenticationDAO {
 	}
 	
 	/**
+	 * @param authusername The user name (mandatory)
+	 * @param externalIds The external identifiers (optional)
+	 * @param provider The provider (mandatory)
+	 * @param issuer The issuer (mandatory)
+	 * @return A list of authentication which match username or external identifiers.
+	 */
+	public List<Authentication> getAuthentications(String authusername, List<String> externalIds, String provider, String issuer) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .where().append("auth.provider=:provider and auth.issuer=:issuer and (").lowerEqual("auth.authusername").append(":authusername");
+		if(externalIds != null && !externalIds.isEmpty()) {
+			sb.append(" or ").lowerIn("auth.externalId").append(" (:externalIds)");
+		}
+		sb.append(")");
+		
+		TypedQuery<Authentication> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
+				.setParameter("authusername", authusername.toLowerCase());
+		if(externalIds != null && !externalIds.isEmpty()) {
+			query.setParameter("externalIds", externalIds);
+		}
+		return query.getResultList();
+	}
+	
+	/**
 	 * 
 	 * @param provider The authentication provider
 	 * @return A list of identities (the user is not fetched)
@@ -262,6 +291,24 @@ public class AuthenticationDAO {
 				.createQuery(sb.toString(), Authentication.class)
 				.setFlushMode(FlushModeType.COMMIT)
 				.setParameter("authUsername", authUsername.toLowerCase())
+				.setParameter("provider", provider)
+				.setParameter("issuer", issuer)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return authentications != null && !authentications.isEmpty() ? authentications.get(0) : null;
+	}
+	
+	public Authentication getAuthenticationByExternalId(String externalId, String provider, String issuer) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select auth from ").append(AuthenticationImpl.class.getName()).append(" as auth")
+		  .append(" inner join fetch auth.identity as ident")
+		  .append(" inner join fetch ident.user as user")
+		  .append(" where ").lowerEqual("auth.externalId").append(":externalId and auth.provider=:provider and auth.issuer=:issuer");
+		List<Authentication> authentications = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Authentication.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("externalId", externalId.toLowerCase())
 				.setParameter("provider", provider)
 				.setParameter("issuer", issuer)
 				.setFirstResult(0)

@@ -19,6 +19,7 @@
  */
 package org.olat.login.oauth.model;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.id.UserConstants;
@@ -42,9 +43,12 @@ public class OAuthUser {
 	private String lastName;
 	private String institutionalUserIdentifier;
 	private String institutionalName;
+	private String institutionalEmail;
 	private String department;
 	private String country;
 	private String lang;
+	
+	private List<String> authenticationExternalIds;
 	
 	public String getId() {
 		return id;
@@ -102,6 +106,14 @@ public class OAuthUser {
 		this.institutionalName = institutionalName;
 	}
 
+	public String getInstitutionalEmail() {
+		return institutionalEmail;
+	}
+
+	public void setInstitutionalEmail(String institutionalEmail) {
+		this.institutionalEmail = institutionalEmail;
+	}
+
 	public String getDepartment() {
 		return department;
 	}
@@ -126,6 +138,14 @@ public class OAuthUser {
 		this.lang = lang;
 	}
 
+	public List<String> getAuthenticationExternalIds() {
+		return authenticationExternalIds;
+	}
+
+	public void setAuthenticationExternalIds(List<String> authenticationExternalIds) {
+		this.authenticationExternalIds = authenticationExternalIds;
+	}
+
 	public String getProperty(String propName) {
 		switch(propName) {
 			case UserConstants.EMAIL: return email;
@@ -134,6 +154,7 @@ public class OAuthUser {
 			case UserConstants.LASTNAME: return lastName;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: return institutionalUserIdentifier;
 			case UserConstants.INSTITUTIONALNAME: return institutionalName;
+			case UserConstants.INSTITUTIONALEMAIL: return institutionalEmail;
 			case UserConstants.DEPARTMENT: return department;
 			case UserConstants.COUNTRY: return country;
 			default: return null;
@@ -148,6 +169,7 @@ public class OAuthUser {
 			case UserConstants.LASTNAME: lastName = value; break;
 			case UserConstants.INSTITUTIONALUSERIDENTIFIER: institutionalUserIdentifier = value; break;
 			case UserConstants.INSTITUTIONALNAME: institutionalName = value; break;
+			case UserConstants.INSTITUTIONALEMAIL: institutionalEmail = value; break;
 			case UserConstants.DEPARTMENT: department = value; break;
 			case UserConstants.COUNTRY: country = value; break;
 			default: break;

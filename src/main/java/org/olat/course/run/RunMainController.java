@@ -1201,8 +1201,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 					entries = entries.subList(1, entries.size());
 				}
 				// the node to be activated is the one that is already on the screen
-				if (currentNodeController instanceof Activateable2) {
-					Activateable2 activateable = (Activateable2) currentNodeController;
+				if (currentNodeController instanceof Activateable2 activateable) {
 					activateable.activate(ureq, entries, state);
 				}
 			}

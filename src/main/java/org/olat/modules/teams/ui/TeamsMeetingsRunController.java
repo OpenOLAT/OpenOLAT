@@ -104,14 +104,37 @@ public class TeamsMeetingsRunController extends BasicController implements Activ
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		//
+		if(entries == null || entries.isEmpty()) return;
+
+		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("Meetings".equalsIgnoreCase(type)) {
+			doOpenMeetings(ureq);
+			if(segmentView != null) {
+				segmentView.select(meetingsLink);
+			}
+		} else if("Administration".equalsIgnoreCase(type)) {
+			if(administrator) {
+				doOpenAdmin(ureq);
+				if(segmentView != null) { 
+					segmentView.select(adminLink);
+				}
+			}
+		} else if("Meeting".equalsIgnoreCase(type)) {
+			doOpenMeetings(ureq);
+			if(segmentView != null) {
+				segmentView.select(meetingsLink);
+			}
+			Long meetingKey = entries.get(0).getOLATResourceable().getResourceableId();
+			if(meetingsCtrl.hasMeetingByKey(meetingKey)) {
+				doSelectMeeting(ureq, meetingsCtrl.getMeetingByKey(meetingKey));
+			}
+		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(meetingsCtrl == source) {
-			if(event instanceof SelectTeamsMeetingEvent) {
-				SelectTeamsMeetingEvent se = (SelectTeamsMeetingEvent)event;
+			if(event instanceof SelectTeamsMeetingEvent se) {
 				doSelectMeeting(ureq, se.getMeeting());
 			}
 		} else if(meetingCtrl == source) {
@@ -127,8 +150,7 @@ public class TeamsMeetingsRunController extends BasicController implements Activ
 		if(backLink == source) {
 			back();
 		} else if(source == segmentView) {
-			if(event instanceof SegmentViewEvent) {
-				SegmentViewEvent sve = (SegmentViewEvent)event;
+			if(event instanceof SegmentViewEvent sve) {
 				String segmentCName = sve.getComponentName();
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == meetingsLink) {

@@ -72,6 +72,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BusinessGroupMembersController extends BasicController {
 	
+	private Link overrideLink;
+	private Link unOverrideLink;
 	private Link invitationLink;
 	private final Link addMemberLink;
 	private Dropdown addMemberDropdown; 
@@ -83,6 +85,7 @@ public class BusinessGroupMembersController extends BasicController {
 	private StepsMainRunController invitationWizard;
 	private StepsMainRunController importMembersWizard;
 	
+	private boolean overrideManaged;
 	private BusinessGroup businessGroup;
 	
 	@Autowired
@@ -126,6 +129,15 @@ public class BusinessGroupMembersController extends BasicController {
 
 		mainVC.put("members", membersController.getInitialComponent());
 		
+		if(managed && isAllowedToOverrideManaged(ureq)) {
+			overrideLink = LinkFactory.createButton("override.member", mainVC, this);
+			overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+			
+			unOverrideLink = LinkFactory.createButton("unoverride.member", mainVC, this);
+			unOverrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
+			unOverrideLink.setVisible(false);
+		}
+		
 		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setElementCssClass("o_sel_group_add_member");
@@ -147,9 +159,17 @@ public class BusinessGroupMembersController extends BasicController {
 			addMemberDropdown.addComponent(invitationLink);
 		}
 	}
-	
+
 	public BusinessGroup getGroup() {
 		return businessGroup;
+	}
+	
+	protected boolean isAllowedToOverrideManaged(UserRequest ureq) {
+		if(businessGroup != null) {
+			Roles roles = ureq.getUserSession().getRoles();
+			return roles.isAdministrator();
+		}
+		return false;
 	}
 	
 	private boolean isAllowedToInvite(UserRequest ureq) {
@@ -169,6 +189,10 @@ public class BusinessGroupMembersController extends BasicController {
 			doImportMembers(ureq);
 		} else if (source == invitationLink) {
 			doInvitation(ureq);
+		} else if (source == overrideLink) {
+			doOverrideManagedResource(ureq);
+		} else if (source == unOverrideLink) {
+			doUnOverrideManagedResource(ureq);
 		}
 	}
 	
@@ -288,5 +312,32 @@ public class BusinessGroupMembersController extends BasicController {
 				translate("invitation.member"), "o_sel_course_member_invitation_wizard");
 		listenTo(invitationWizard);
 		getWindowControl().pushAsModalDialog(invitationWizard.getInitialComponent());
+	}
+	
+	private void doOverrideManagedResource(UserRequest ureq) {
+		overrideManagedResource(ureq, true);
+	}
+	
+	private void doUnOverrideManagedResource(UserRequest ureq) {
+		overrideManagedResource(ureq, false);
+	}
+	
+	private void overrideManagedResource(UserRequest ureq, boolean override) {
+		overrideManaged = override;
+
+		overrideLink.setVisible(!overrideManaged);
+		unOverrideLink.setVisible(overrideManaged);
+		
+		addMemberLink.setVisible(overrideManaged);
+		if(invitationLink != null) {
+			invitationLink.setVisible(overrideManaged);
+			addMemberDropdown.setVisible(overrideManaged);
+		}
+		
+		mainVC.setDirty(true);
+		
+		if(membersController != null) {
+			membersController.overrideManaged(ureq, overrideManaged);
+		}
 	}
 }

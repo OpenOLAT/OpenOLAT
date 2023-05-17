@@ -348,7 +348,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 
 		Authentication auth = baseSecurityManager.findAuthentication(ident, BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER);
 		baseSecurityManager.deleteAuthentication(auth);
-		baseSecurityManager.createAndPersistAuthentication(ident, "LDAP", BaseSecurity.DEFAULT_ISSUER, ident.getName() + "anIdentity", null, null);
+		baseSecurityManager.createAndPersistAuthentication(ident, "LDAP", BaseSecurity.DEFAULT_ISSUER, null, ident.getName() + "anIdentity", null, null);
 		dbInstance.commitAndCloseSession();
 
 		// ultimate tests
@@ -494,7 +494,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertEquals(1, userList.size());
 
 		// 3) two fields wheras only one matches to one single user
-		baseSecurityManager.createAndPersistAuthentication(id1.getIdentity(), "mytest_p", BaseSecurity.DEFAULT_ISSUER, id1.getLogin(), "sdf", Encoder.Algorithm.sha512);
+		baseSecurityManager.createAndPersistAuthentication(id1.getIdentity(), "mytest_p", BaseSecurity.DEFAULT_ISSUER, null, id1.getLogin(), "sdf", Encoder.Algorithm.sha512);
 		String[] myProviders = new String[] {"mytest_p", "non-prov"};
 		for (int i = 0; i < myProviders.length; i++) {
 			Assert.assertTrue("Provider name.length must be <= 8", myProviders[i].length() <= 8);
@@ -523,7 +523,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		User onePropUser = UserManager.getInstance().createUser("onepropuser", "onepropuser", one + "@lustig.com");
 		onePropUser.setProperty(UserConstants.FIRSTNAME, "one");		
 		Identity onePropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(null, oneUsername, null, onePropUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, oneUsername, "ppp", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, oneUsername, "ppp", null);
 		Assert.assertNotNull(onePropIdentity);
 		
 		String two = "two" + UUID.randomUUID().toString().replace("-", "");
@@ -533,7 +533,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		twoPropUser.setProperty(UserConstants.FIRSTNAME, "two");
 		twoPropUser.setProperty(UserConstants.LASTNAME, "prop");
 		Identity twoPropIdentity = baseSecurityManager.createAndPersistIdentityAndUser(null, twoUsername, null, twoPropUser,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, twoUsername, "ppp", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, twoUsername, "ppp", null);
 		Assert.assertNotNull(twoPropIdentity);
 		dbInstance.commitAndCloseSession();
 
@@ -639,7 +639,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, multiInst);		
 		user.setProperty(UserConstants.CITY, "züri");		
 		Identity identity = baseSecurityManager.createAndPersistIdentityAndUser(null, multiUsername, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, multiUsername, "ppp", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, multiUsername, "ppp", null);
 		Assert.assertNotNull(identity);
 		
 		// commit
@@ -801,7 +801,8 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 			User user = UserManager.getInstance().createUser(loginName+"_Firstname", loginName + "_Lastname", loginName + "@lustig.com");
 			user.setProperty(UserConstants.INSTITUTIONALNAME, "unizh2");
 			user.setProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, "12-345-678-908");
-			ident = baseSecurityManager.createAndPersistIdentityAndUser(null, loginName, null, user, authProvider, BaseSecurity.DEFAULT_ISSUER, loginName, "ppp", null);
+			ident = baseSecurityManager.createAndPersistIdentityAndUser(null, loginName, null, user,
+					authProvider, BaseSecurity.DEFAULT_ISSUER, null, loginName, "ppp", null);
 			return ident;
 		}
 	}

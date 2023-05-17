@@ -19,11 +19,15 @@
  */
 package org.olat.modules.bigbluebutton.ui;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.modules.bigbluebutton.BigBlueButtonServer;
 
 /**
@@ -37,13 +41,19 @@ implements SortableFlexiTableDataModel<BigBlueButtonServer> {
 	
 	private static final ConfigServerCols[] COLS = ConfigServerCols.values();
 	
-	public BigBlueButtonConfigurationServersTableModel(FlexiTableColumnModel columnsModel) {
+	private final Locale locale;
+	
+	public BigBlueButtonConfigurationServersTableModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
+		this.locale = locale;
 	}
 
 	@Override
-	public void sort(SortKey sortKey) {
-		//
+	public void sort(SortKey orderBy) {
+		if(orderBy != null) {
+			List<BigBlueButtonServer> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+			super.setObjects(rows);
+		}
 	}
 
 	@Override

@@ -92,6 +92,9 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@Column(name="hashalgorithm", nullable=true, insertable=true, updatable=true)
 	private String algorithm;
 	
+	@Column(name="externalid", nullable=true, insertable=true, updatable=true)
+	private String externalId;
+	
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="identity_fk", nullable=false, insertable=true, updatable=false)
 	private Identity identity;
@@ -103,20 +106,12 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	//  
 	}
 	
-	AuthenticationImpl(Identity identity, String provider, String issuer, String authusername, String credentials) {
-		
-		if (provider.length() > 8) {
-			// this implementation allows only 8 characters, as defined in hibernate file
-			throw new AssertException("Authentication provider '" + provider + "' to long, only 8 characters supported!");
-		}
-		this.identity = identity;
-		this.provider = provider;
-		this.issuer = issuer;
-		this.authusername = authusername;
-		this.credential = credentials;
+	AuthenticationImpl(Identity identity, String provider, String issuer, String externalId,
+			String authusername, String credentials) {
+		this(identity, provider, issuer, externalId, authusername, credentials, null, null);
 	}
 
-	AuthenticationImpl(Identity identity, String provider, String issuer,
+	AuthenticationImpl(Identity identity, String provider, String issuer, String externalId,
 			String authusername, String credential, String salt, String algorithm) {
 		
 		if (provider.length() > 8) {
@@ -126,6 +121,7 @@ public class AuthenticationImpl implements Persistable, Authentication {
 		this.identity = identity;
 		this.provider = provider;
 		this.issuer = issuer;
+		this.externalId = externalId;
 		this.authusername = authusername;
 		this.credential = credential;
 		this.salt = salt;
@@ -158,6 +154,15 @@ public class AuthenticationImpl implements Persistable, Authentication {
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	@Override
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	/**

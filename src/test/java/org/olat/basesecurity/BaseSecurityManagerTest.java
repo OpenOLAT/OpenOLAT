@@ -81,7 +81,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@frentix.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -102,7 +102,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, name, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -122,7 +122,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		String name = "createid-" + UUID.randomUUID().toString();
 		User user = userManager.createUser("first" + name, "last" + name, name + "@openolat.com");
 		Identity identity = securityManager.createAndPersistIdentityAndUserWithOrganisation(name, name, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, name, "secret", null, null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, name, "secret", null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(identity);
@@ -148,7 +148,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		user.setProperty(UserConstants.COUNTRY, "");
 		user.setProperty(UserConstants.CITY, "Basel");
 		Identity identity = securityManager.createAndPersistIdentityAndUser(null, nickName, null, user,
-				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, authusername, "secret", null);
+				BaseSecurityModule.getDefaultAuthProviderIdentifier(), BaseSecurity.DEFAULT_ISSUER, null, authusername, "secret", null);
 		dbInstance.commitAndCloseSession();
 		
 		//reload and update
@@ -723,7 +723,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAuthentication() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
-		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER,
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER, null,
 				identity.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
@@ -741,7 +741,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	@Test
 	public void deleteAuthentication_checkTransactionSurvive() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsUser("auth-del-" + UUID.randomUUID().toString());
-		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER,
+		Authentication auth = securityManager.createAndPersistAuthentication(identity, "del-test", BaseSecurity.DEFAULT_ISSUER, null,
 				identity.getName(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(auth);
@@ -764,17 +764,17 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Identity identity = identityWithLogin.getIdentity();
 		User user = identity.getUser();
 		String email = user.getEmail();
-		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, "OLAT", BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, "del-mail", BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, "del-mail", BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_HA1_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
-		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(identity, WebDAVAuthManager.PROVIDER_WEBDAV_INSTITUTIONAL_EMAIL, BaseSecurity.DEFAULT_ISSUER, null,
 				email, "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		
@@ -831,9 +831,9 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 	public void findAuthenticationNameLDAP() {
 		IdentityWithLogin id = JunitTestHelper.createAndPersistRndUser("auth-0");
 		String ldapAuthusername = UUID.randomUUID().toString();
-		securityManager.createAndPersistAuthentication(id.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(id.getIdentity(), LDAPAuthenticationController.PROVIDER_LDAP, BaseSecurity.DEFAULT_ISSUER, null,
 				ldapAuthusername, null, null);
-		securityManager.createAndPersistAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1, BaseSecurity.DEFAULT_ISSUER,
+		securityManager.createAndPersistAuthentication(id.getIdentity(), WebDAVAuthManager.PROVIDER_HA1, BaseSecurity.DEFAULT_ISSUER, null,
 				UUID.randomUUID().toString(), "secret", Encoder.Algorithm.sha512);
 		dbInstance.commitAndCloseSession();
 		

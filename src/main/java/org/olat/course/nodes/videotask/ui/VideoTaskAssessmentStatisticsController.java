@@ -63,20 +63,20 @@ import org.olat.modules.video.VideoTaskSession;
  */
 public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSessionListController {
 
-	private FormLink resetButton;
+	private FormLink deleteButton;
 	
-	private final boolean canReset;
+	private final boolean canDelete;
 	private final IdentitiesList assessedIdentities;
 	
-	private VideoTaskDeleteDataController resetDataCtrl;
+	private VideoTaskDeleteDataController deleteDataCtrl;
 
 	public VideoTaskAssessmentStatisticsController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseEnvironment courseEnv,
-			IdentitiesList assessedIdentities, VideoTaskCourseNode courseNode, boolean canReset) {
+			IdentitiesList assessedIdentities, VideoTaskCourseNode courseNode, boolean canDelete) {
 		super(ureq, wControl, "assessment_statistics", stackPanel, courseNode, courseEnv);
 		setTranslator(Util.createPackageTranslator(QTI21AssessmentTestStatisticsController.class, getLocale(), getTranslator()));
 
-		this.canReset = canReset;
+		this.canDelete = canDelete;
 		this.assessedIdentities = assessedIdentities;
 		
 		initForm(ureq);
@@ -90,9 +90,9 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(canReset) {
-			resetButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON); 
-			resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
+		if(canDelete) {
+			deleteButton = uifactory.addFormLink("tool.delete.data", formLayout, Link.BUTTON);
+			deleteButton.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
 		super.initForm(formLayout, listener, ureq);
 	}
@@ -145,7 +145,7 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(resetDataCtrl == source) {
+		if(deleteDataCtrl == source) {
 			
 			cmc.deactivate();
 			cleanUp();
@@ -155,15 +155,15 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 
 	@Override
 	protected void cleanUp() {
-		removeAsListenerAndDispose(resetDataCtrl);
-		resetDataCtrl = null;
+		removeAsListenerAndDispose(deleteDataCtrl);
+		deleteDataCtrl = null;
 		super.cleanUp();
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(resetButton == source) {
-			doConfirmResetData(ureq);
+		if(deleteButton == source) {
+			doConfirmDeleteAllData(ureq);
 		} 
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -185,14 +185,14 @@ public class VideoTaskAssessmentStatisticsController extends AbstractVideoTaskSe
 		return new UserCourseEnvironmentImpl(ienv, courseEnv);
 	}
 	
-	private void doConfirmResetData(UserRequest ureq) {
+	private void doConfirmDeleteAllData(UserRequest ureq) {
 		List<Identity> identities = getIdentities();
-		resetDataCtrl = new VideoTaskDeleteDataController(ureq, getWindowControl(),
+		deleteDataCtrl = new VideoTaskDeleteDataController(ureq, getWindowControl(),
 				courseEnv, identities, courseNode);
-		listenTo(resetDataCtrl);
+		listenTo(deleteDataCtrl);
 		
-		String title = translate("reset.test.data.title");
-		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+		String title = translate("delete.data.title");
+		cmc = new CloseableModalController(getWindowControl(), null, deleteDataCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

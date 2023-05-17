@@ -12,6 +12,19 @@
 <fieldset class="o_sel_group_members_mgmt">
 	<legend>
 		$r.translate("group.edit.tab.members")</legend>
+	
+	#if($r.visible("override.member") || $r.visible("unoverride.member"))
+	<div class="o_warning">
+		$r.translate("override.member.hint")
+		<div class="o_button_group">
+		#if($r.visible("override.member"))
+			$r.render("override.member")
+		#elseif($r.visible("unoverride.member"))
+			$r.render("unoverride.member")
+		#end
+		</div>
+	</div>
+	#end
 	<div class="o_button_group o_button_group_right o_sel_group_members_buttons">
 		#if($r.visible("addMembers") && $r.visible("addmore"))
 		<div class="btn-group">

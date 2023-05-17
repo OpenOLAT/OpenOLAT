@@ -228,6 +228,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	private JqtiExtensionManager jqtiExtensionManager;
 	private XsltStylesheetManager xsltStylesheetManager;
 	private InfinispanXsltStylesheetCache xsltStylesheetCache;
+	private CacheWrapper<Long,QTI21DeliveryOptions> deliveryOptionsCache;
 	private CacheWrapper<File,ResolvedAssessmentTest> assessmentTestsCache;
 	private CacheWrapper<File,ResolvedAssessmentItem> assessmentItemsCache;
 	private CacheWrapper<AssessmentTestSession,TestSessionController> testSessionControllersCache;
@@ -255,6 +256,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
         jqtiExtensionManager.init();
 
         Cacher cacher = coordinatorManager.getInstance().getCoordinator().getCacher();
+        deliveryOptionsCache = cacher.getCache("QTIWorks", "deliveryOptions");
         assessmentTestsCache = cacher.getCache("QTIWorks", "assessmentTests");
         assessmentItemsCache = cacher.getCache("QTIWorks", "assessmentItems");
         testSessionControllersCache = cacher.getCache("QTIWorks", "testSessionControllers");
@@ -293,24 +295,30 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
     }
 	
 	@Override
-	public QTI21DeliveryOptions getDeliveryOptions(RepositoryEntry testEntry) {
-		FileResourceManager frm = FileResourceManager.getInstance();
-		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
-		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
-		
-		QTI21DeliveryOptions config;
-		if(configXml.exists()) {
-			config = (QTI21DeliveryOptions)configXstream.fromXML(configXml);
-		} else {
-			//set default config
-			config = QTI21DeliveryOptions.defaultSettings();
-			setDeliveryOptions(testEntry, config);
-		}
-		return config;
+	public QTI21DeliveryOptions getDeliveryOptions(final RepositoryEntry testEntry) {
+		return deliveryOptionsCache.computeIfAbsent(testEntry.getKey(), key -> {
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
+			File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);
+			QTI21DeliveryOptions config;
+			if(configXml.exists()) {
+				config = (QTI21DeliveryOptions)configXstream.fromXML(configXml);
+			} else {
+				//set default config
+				config = QTI21DeliveryOptions.defaultSettings();
+				internalSaveDeliveryOptions(testEntry, config);
+			}
+			return config;
+		});
 	}
 
 	@Override
 	public void setDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options) {
+		internalSaveDeliveryOptions(testEntry, options);
+		deliveryOptionsCache.remove(testEntry.getKey());
+	}
+	
+	private void internalSaveDeliveryOptions(RepositoryEntry testEntry, QTI21DeliveryOptions options) {
 		FileResourceManager frm = FileResourceManager.getInstance();
 		File reFolder = frm.getFileResourceRoot(testEntry.getOlatResource());
 		File configXml = new File(reFolder, PACKAGE_CONFIG_FILE_NAME);

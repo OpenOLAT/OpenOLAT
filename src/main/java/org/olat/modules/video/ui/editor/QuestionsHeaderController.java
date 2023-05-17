@@ -129,8 +129,8 @@ public class QuestionsHeaderController extends FormBasicController {
 		nextQuestionButton.setIconRightCSS("o_icon o_icon_start");
 		nextQuestionButton.setForceOwnDirtyFormWarning(true);
 
-		addQuestionButton = uifactory.addFormLink("addQuestion", "form.question.add",
-				"form.question.add", formLayout, Link.BUTTON);
+		addQuestionButton = uifactory.addFormLink("addQuestion", "form.add", "form.add", formLayout, Link.BUTTON);
+		addQuestionButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);

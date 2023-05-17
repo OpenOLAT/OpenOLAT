@@ -70,7 +70,7 @@ public class RestSecurityBeanImpl implements RestSecurityBean {
 		
 		Authentication auth = securityManager.findAuthentication(identity, REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER);
 		if(auth == null) {
-			securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER,
+			securityManager.createAndPersistAuthentication(identity, REST_AUTH_PROVIDER, BaseSecurity.DEFAULT_ISSUER, null,
 					identity.getName(), token, null);
 		} else {
 			authenticationDao.updateCredential(auth, token);

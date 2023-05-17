@@ -87,6 +87,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("\"use strict\";")
 		  .append("jQuery(function() {\n")
 		  .append(" try {\n")
+		  .append("  var count = 0;\n")
 		  .append("  var calendarEl = jQuery('#").append(id).append("').get(0);\n")
 		  .append("  var calendar = new FullCalendar.Calendar(calendarEl, {\n")
 		  .append("   customButtons: {\n");
@@ -167,7 +168,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("   ],\n")
 		  .append("   eventDidMount: function(info) {\n")
-		  .append("     info.el.setAttribute('id', 'o_cev_' + info.view.type + '_' + info.event.id);\n")
+		  .append("     info.el.setAttribute('id', 'o_cev_' + info.view.type + '_' + info.event.id + '-' + (++count));\n")
 		  .append("     if(info.view.type.lastIndexOf('list', 0) === 0) {\n")
 		  .append("       if(info.event.extendedProps.location !== 'undefined' && info.event.extendedProps.location != null && info.event.extendedProps.location.length > 0) {\n")
 		  .append("         jQuery(info.el).append('<td class=\"fc-list-event-location\"><span><i class=\"o_icon o_icon_home\"> </i> ' + info.event.extendedProps.location + '</span></td>');\n")
@@ -209,7 +210,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		  .append("   },\n")
 		  .append("   eventClick: function(info) {\n")
 		  .append(FormJSHelper.generateXHRFnCallVariables(rootForm, formId, 1))
-		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false, false, true, 'evSelect', info.event.id, 'evDomId', 'o_cev_' + info.view.type + '_' + info.event.id);\n")
+		  .append("     o_ffXHREvent(formNam, dispIdField, dispId, eventIdField, eventInt, true, false, false, true, 'evSelect', info.event.id, 'evDomId', info.el.id);\n")
 		  .append("   }\n")
 		  .append("  });\n")
 		  .append("  o_info.calendar = calendar;\n")

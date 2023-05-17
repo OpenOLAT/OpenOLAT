@@ -83,14 +83,14 @@ public class SynchronizedCalendarUrlController extends FormBasicController {
 			try {
 				String host = new URL(url).getHost();
 				if(host == null) {
-					importUrl.setErrorKey("cal.import.url.invalid", null);
+					importUrl.setErrorKey("cal.import.url.invalid");
 				}
 			} catch (MalformedURLException e) {
-				importUrl.setErrorKey("cal.import.url.invalid", null);
+				importUrl.setErrorKey("cal.import.url.invalid");
 				allOk &= false;
 			}
 		} else {
-			importUrl.setErrorKey("cal.import.url.empty.error", null);
+			importUrl.setErrorKey("cal.import.url.empty.error");
 			allOk &= false;
 		}
 

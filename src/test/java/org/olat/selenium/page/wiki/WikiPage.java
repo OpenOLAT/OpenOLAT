@@ -22,6 +22,7 @@ package org.olat.selenium.page.wiki;
 import java.util.List;
 
 import org.junit.Assert;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.portfolio.MediaPage;
 import org.openqa.selenium.By;
@@ -125,5 +126,22 @@ public class WikiPage {
 		browser.findElement(collectBy).click();
 		OOGraphene.waitModalDialog(browser);
 		return new MediaPage(browser);
+	}
+	
+	public WikiPage changeStatus(RepositoryEntryStatusEnum status) {
+		By statusMenuBy = By.cssSelector("ul.o_repo_tools_status");
+		if(!browser.findElement(statusMenuBy).isDisplayed()) {
+			By statusMenuCaret = By.cssSelector("a.o_repo_tools_status");
+			browser.findElement(statusMenuCaret).click();
+			OOGraphene.waitElement(statusMenuBy, browser);
+		}
+		
+		By statusBy = By.cssSelector("ul.o_repo_tools_status>li>a.o_repo_status_" + status.name());
+		browser.findElement(statusBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By statusViewBy = By.xpath("//li[contains(@class,'o_tool_dropdown')]/a[contains(@class,'o_repo_tools_status')]/span[contains(@class,'o_repo_status_" + status + "')]");
+		OOGraphene.waitElement(statusViewBy, browser);
+		return this;
 	}
 }

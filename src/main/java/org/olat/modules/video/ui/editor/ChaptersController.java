@@ -133,8 +133,8 @@ public class ChaptersController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		addChapterButton = uifactory.addFormLink("addChapter", "form.chapter.add",
-				"form.chapter.add", formLayout, Link.BUTTON);
+		addChapterButton = uifactory.addFormLink("addChapter", "form.add", "form.add", formLayout, Link.BUTTON);
+		addChapterButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ChapterTableModel.ChapterTableCols.start,

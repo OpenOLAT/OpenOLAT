@@ -133,12 +133,7 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 			templateEl.select("custom", true);
 		} else {
 			templateEl.select("template", true);
-			String correctionMode = config.getStringValue(IQEditController.CONFIG_CORRECTION_MODE);
-			if(IQEditController.CORRECTION_AUTO.equals(correctionMode)) {
-				text = translate("confirmation.mail.content.auto");
-			} else {
-				text = translate("confirmation.mail.content.manual");
-			}
+			text = IQEditController.getDefaultConfirmationEmailText(config, getLocale());
 		}
 		
 		emailEl = uifactory.addRichTextElementForStringDataMinimalistic("confirmation.mail.body", "confirmation.mail.body", text, 10, 60, formLayout, getWindowControl());
@@ -153,6 +148,11 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
+	protected void loadDefaultEmailText() {
+		String defaultText = IQEditController.getDefaultConfirmationEmailText(config, getLocale());
+		emailTemplateEl.setValue(defaultText);
+	}
+	
 	private void updateUI() {
 		boolean enabled = enableEl.isOn();
 		emailCopyEl.setVisible(enabled);
@@ -163,8 +163,8 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 		templateEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
 		boolean customBody = templateEl.isOneSelected() && "custom".equals(templateEl.getSelectedKey());
-		emailEl.setVisible(enabled &&customBody);
-		emailTemplateEl.setVisible(enabled &&!customBody);
+		emailEl.setVisible(enabled && customBody);
+		emailTemplateEl.setVisible(enabled && !customBody);
 	}
 
 	@Override

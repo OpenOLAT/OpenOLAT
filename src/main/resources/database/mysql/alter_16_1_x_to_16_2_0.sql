@@ -8,7 +8,7 @@ alter table o_as_mode_course add column a_safeexambrowserconfig_dload bool not n
 alter table o_as_entry modify column a_user_visibility bit null;
 
 -- VFS metadata
-alter table o_vfs_metadata add column f_expiration_date timestamp default null;
+alter table o_vfs_metadata add column f_expiration_date timestamp;
 create index f_exp_date_idx on o_vfs_metadata (f_expiration_date);
 
 -- Task
@@ -23,7 +23,7 @@ alter table o_im_roster_entry add column r_ressubpath varchar(255) default null;
 alter table o_im_roster_entry add column r_channel varchar(255) default null;
 alter table o_im_roster_entry add column r_persistent bool not null default false;
 alter table o_im_roster_entry add column r_active bool not null default true;
-alter table o_im_roster_entry add column r_read_upto timestamp default null;
+alter table o_im_roster_entry add column r_read_upto timestamp;
 
 create index idx_im_rost_sub_idx on o_im_roster_entry (r_resid,r_resname,r_ressubpath);
 

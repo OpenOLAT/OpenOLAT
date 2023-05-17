@@ -108,8 +108,8 @@ public class AnnotationsHeaderController extends FormBasicController {
 		nextAnnotationButton.setIconRightCSS("o_icon o_icon_start");
 		nextAnnotationButton.setForceOwnDirtyFormWarning(true);
 
-		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.annotation.add",
-				"form.annotation.add", formLayout, Link.BUTTON);
+		addAnnotationButton = uifactory.addFormLink("addAnnotation", "form.add", "form.add", formLayout, Link.BUTTON);
+		addAnnotationButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 
 		commandsButton = uifactory.addFormLink("commands", "", "", formLayout,
 				Link.BUTTON | Link.NONTRANSLATED | Link.LINK_CUSTOM_CSS);

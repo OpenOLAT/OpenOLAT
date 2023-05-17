@@ -20,6 +20,7 @@
 package org.olat.login.oauth;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -252,34 +253,45 @@ public class OAuthDispatcher implements Dispatcher {
 	}
 	
 	private void login(OAuthUser infos, OAuthRegistration registration) {
-		String id = infos.getId();
-		//has an identifier
-		Authentication auth = null;
-		if(StringHelper.containsNonWhitespace(id)) {
-			auth = securityManager.findAuthenticationByAuthusername(id, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER);
-			if(auth == null) {
-				String email = infos.getEmail();
-				if(StringHelper.containsNonWhitespace(email)) {
-					Identity identity = userManager.findUniqueIdentityByEmail(email);
-					if(identity == null) {
-						identity = securityManager.findIdentityByLogin(id);
-					}
-					if(identity == null) {
-						identity = securityManager.findIdentityByNameCaseInsensitive(id);
-					}
-					if(identity == null) {
-						identity = securityManager.findIdentityByNickName(id);
-					}
-					if(identity != null) {
-						securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, id, null, null);
-						registration.setIdentity(identity);
-					} else {
-						log.error("OAuth Login failed, user with user name {} not found. OAuth user: {}", email, infos);
-					}
+		final String id = infos.getId();
+		// Need an identifier at least
+		if(!StringHelper.containsNonWhitespace(id)) {
+			return;
+		}
+		
+		final List<String> authenticationExternalIds = infos.getAuthenticationExternalIds();
+		final List<Authentication> auths = securityManager.findAuthentications(id, authenticationExternalIds, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER);
+		if(auths.isEmpty()) {
+			final String email = infos.getEmail();
+			final String institutionalEmail = infos.getInstitutionalEmail();
+			if(StringHelper.containsNonWhitespace(email) || StringHelper.containsNonWhitespace(institutionalEmail)) {
+				Identity identity = null;
+				if(StringHelper.containsNonWhitespace(institutionalEmail)) {
+					identity = userManager.findUniqueIdentityByEmail(institutionalEmail);
 				}
-			} else {
-				registration.setIdentity(auth.getIdentity());
+				if(identity == null && StringHelper.containsNonWhitespace(email)) {
+					identity = userManager.findUniqueIdentityByEmail(email);
+				}
+				if(identity == null) {
+					identity = securityManager.findIdentityByLogin(id);
+				}
+				if(identity == null) {
+					identity = securityManager.findIdentityByNameCaseInsensitive(id);
+				}
+				if(identity == null) {
+					identity = securityManager.findIdentityByNickName(id);
+				}
+				if(identity != null) {
+					securityManager.createAndPersistAuthentication(identity, registration.getAuthProvider(), BaseSecurity.DEFAULT_ISSUER, null, id, null, null);
+					registration.setIdentity(identity);
+				} else {
+					log.error("OAuth Login failed, user with user name {} not found. OAuth user: {}", email, infos);
+				}
 			}
+		} else if(auths.size() == 1) {
+			registration.setIdentity(auths.get(0).getIdentity());
+		} else {
+			log.warn("Several authentications found for id: {} and external ids: {}", id, authenticationExternalIds);
 		}
 	}
 	

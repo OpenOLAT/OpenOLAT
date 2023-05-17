@@ -359,7 +359,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUser(String legacyName, String nickName, String externalId,
-			User user, String provider, String issuer, String authusername, String credential, Date expirationDate) {
+			User user, String provider, String issuer, String authenticationExternalId,
+			String authusername, String credential, Date expirationDate) {
 		IdentityImpl iimpl = new IdentityImpl();
 		iimpl.setCreationDate(new Date());
 		iimpl.setUser(user);
@@ -379,7 +380,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		dbInstance.getCurrentEntityManager().persist(iimpl);
 
 		if (provider != null) { 
-			createAndPersistAuthenticationIntern(iimpl, provider, issuer, authusername, credential, loginModule.getDefaultHashAlgorithm());
+			createAndPersistAuthenticationIntern(iimpl, provider, issuer, authenticationExternalId, authusername, credential, loginModule.getDefaultHashAlgorithm());
 		}
 		notifyNewIdentityCreated(iimpl);
 		return iimpl;
@@ -398,13 +399,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 */
 	@Override
 	public Identity createAndPersistIdentityAndUserWithOrganisation(String legacyName, String nickName, String externalId, User newUser,
-			String provider, String issuer, String authusername, String pwd, Organisation organisation, Date expirationDate) {
+			String provider, String issuer, String authenticationExternalId, String authusername, String pwd, Organisation organisation, Date expirationDate) {
 		Identity ident;
 		if (pwd == null) {
-			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, issuer, authusername, null, expirationDate);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, issuer, authenticationExternalId, authusername, null, expirationDate);
 			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={}) but no password", provider, authusername, nickName);
  		} else {
-			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, issuer, authusername, pwd, expirationDate);
+			ident = createAndPersistIdentityAndUser(legacyName, nickName, externalId, newUser, provider, issuer, authenticationExternalId, authusername, pwd, expirationDate);
 			log.info(Tracing.M_AUDIT, "Create an identity with {} authentication (login={},authusername={})", provider, authusername, nickName);
 		}
 		
@@ -809,13 +810,13 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String issuer,
+	public Authentication createAndPersistAuthentication(final Identity ident, final String provider, final String issuer, final String externalId,
 			final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
 		OLATResourceable resourceable = OresHelper.createOLATResourceableInstanceWithoutCheck(provider, ident.getKey());
 		return CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(resourceable, () -> {
 			Authentication auth = findAuthentication(ident, provider, issuer);
 			if(auth == null) {
-				auth = createAndPersistAuthenticationIntern(ident, provider, issuer, authUserName, credentials, algorithm);
+				auth = createAndPersistAuthenticationIntern(ident, provider, issuer, externalId, authUserName, credentials, algorithm);
 			}
 			return auth;
 		});
@@ -831,14 +832,14 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 * @return
 	 */
 	private Authentication createAndPersistAuthenticationIntern(final Identity ident, final String provider, final String issuer,
-			final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
+			final String externalId, final String authUserName, final String credentials, final Encoder.Algorithm algorithm) {
 		AuthenticationImpl auth;
 		if(algorithm != null && credentials != null) {
 			String salt = algorithm.isSalted() ? Encoder.getSalt() : null;
 			String hash = Encoder.encrypt(credentials, salt, algorithm);
-			auth = new AuthenticationImpl(ident, provider, issuer, authUserName, hash, salt, algorithm.name());
+			auth = new AuthenticationImpl(ident, provider, issuer, externalId, authUserName, hash, salt, algorithm.name());
 		} else {
-			auth = new AuthenticationImpl(ident, provider, issuer, authUserName, credentials);
+			auth = new AuthenticationImpl(ident, provider, issuer, externalId, authUserName, credentials);
 		}
 		auth.setCreationDate(new Date());
 		auth.setLastModified(auth.getCreationDate());
@@ -1090,6 +1091,11 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 	
 	@Override
+	public List<Authentication> findAuthentications(String authusername, List<String> externalIds, String provider, String issuer) {
+		return authenticationDao.getAuthentications(authusername, externalIds, provider, issuer);
+	}
+
+	@Override
 	public List<Authentication> findAuthenticationsByAuthusername(String authusername, List<String> providers) {
 		if(providers == null || providers.isEmpty()) {
 			return authenticationDao.getAuthenticationsByAuthusername(authusername);
@@ -1321,7 +1327,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			// Create it lazy on demand
 			User guestUser = UserManager.getInstance().createUser(trans.translate("user.guest"), null, null);
 			guestUser.getPreferences().setLanguage(locale.toString());
-			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null, null, null);
+			guestIdentity = createAndPersistIdentityAndUser(guestUsername, guestUsername, null, guestUser, null, null, null, null, null, null);
 			organisationService.addMember(guestIdentity, OrganisationRoles.guest);
 		} else if (!guestIdentity.getUser().getProperty(UserConstants.FIRSTNAME, locale).equals(trans.translate("user.guest"))) {
 			//Check if guest name has been updated in the i18n tool
