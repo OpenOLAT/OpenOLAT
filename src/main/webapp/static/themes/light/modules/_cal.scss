@@ -203,6 +203,13 @@ $o-cal-sec-border-width: 5px;
 	content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"
 }
 
+.o_cal .fc {
+	.fc-toolbar {
+		flex-wrap: wrap;
+		gap: 5px;
+	}
+}
+
 /* 
  * fullcalendar bootstrapify
  */
