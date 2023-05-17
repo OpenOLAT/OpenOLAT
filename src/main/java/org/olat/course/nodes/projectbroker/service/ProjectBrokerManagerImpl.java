@@ -688,7 +688,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		reloadedProject.getCustomfields().clear();
 		reloadedProject.getCustomfields().putAll(((ProjectImpl)project).getCustomfields());
 		reloadedProject.setAttachedFileName(project.getAttachmentFileName());
-		dbInstance.updateObject(reloadedProject);
+		dbInstance.getCurrentEntityManager().merge(reloadedProject);
 		// invalide with removing from cache
 		projectCache.remove(project.getProjectBroker().getKey().toString());
 	}

@@ -30,10 +30,10 @@ import java.util.List;
 
 import jakarta.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 
@@ -201,6 +201,6 @@ public class LifeCycleManager {
 	}
 
 	private void updateLifeCycleEntry(LifeCycleEntry entry) {
-		DBFactory.getInstance().updateObject(entry);
+		DBFactory.getInstance().getCurrentEntityManager().merge(entry);
 	}
 }
