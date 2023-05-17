@@ -159,8 +159,7 @@ public class TaskRevisionDateImpl implements CreateInfo, Persistable, TaskRevisi
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskRevisionDateImpl) {
-			TaskRevisionDateImpl rev = (TaskRevisionDateImpl)obj;
+		if(obj instanceof TaskRevisionDateImpl rev) {
 			return key != null && key.equals(rev.getKey());
 		}
 		return super.equals(obj);

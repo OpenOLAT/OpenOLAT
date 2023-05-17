@@ -336,4 +336,11 @@ create index idx_qm_audit_ident_idx on o_qual_audit_log (fk_identity);
 update o_as_message set a_publication_type='asap' where a_publication_type='0';
 update o_as_message set a_publication_type='scheduled' where a_publication_type='1';
 
+update o_gta_task set g_submission_drole='coach' where g_submission_drole='0';
+update o_gta_task set g_submission_drole='user' where g_submission_drole='1';
+update o_gta_task set g_submission_drole='auto' where g_submission_drole='2';
+
+update o_gta_task set g_submission_revisions_drole='coach' where g_submission_revisions_drole='0';
+update o_gta_task set g_submission_revisions_drole='user' where g_submission_revisions_drole='1';
+update o_gta_task set g_submission_revisions_drole='auto' where g_submission_revisions_drole='2';
 

@@ -23,6 +23,8 @@ import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -89,12 +91,14 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionDate;
+	@Enumerated(EnumType.STRING)
 	@Column(name="g_submission_drole", nullable=true, insertable=true, updatable=true)
 	private Role submissionDoerRole;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="g_submission_revisions_date", nullable=true, insertable=true, updatable=false)
 	private Date submissionRevisionsDate;
+	@Enumerated(EnumType.STRING)
 	@Column(name="g_submission_revisions_drole", nullable=true, insertable=true, updatable=true)
 	private Role submissionRevisionsDoerRole;
 	
@@ -411,8 +415,7 @@ public class TaskDueDateImpl implements TaskDueDate, CreateInfo, Persistable, Mo
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskDueDateImpl) {
-			TaskDueDateImpl task = (TaskDueDateImpl)obj;
+		if(obj instanceof TaskDueDateImpl task) {
 			return key != null && key.equals(task.getKey());
 		}
 		return false;

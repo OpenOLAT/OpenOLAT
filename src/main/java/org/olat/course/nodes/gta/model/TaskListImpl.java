@@ -132,8 +132,7 @@ public class TaskListImpl implements TaskList, CreateInfo, Persistable, Modified
 		if(obj == this) {
 			return true;
 		}
-		if(obj instanceof TaskListImpl) {
-			TaskListImpl task = (TaskListImpl)obj;
+		if(obj instanceof TaskListImpl task) {
 			return key != null && key.equals(task.getKey());
 		}
 		return false;

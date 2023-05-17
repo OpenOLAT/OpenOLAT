@@ -193,8 +193,7 @@ public class TaskRevisionImpl implements TaskRevision, CreateInfo, Persistable, 
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof TaskRevisionImpl) {
-			TaskRevisionImpl rev = (TaskRevisionImpl)obj;
+		if(obj instanceof TaskRevisionImpl rev) {
 			return getKey() != null && getKey().equals(rev.getKey());
 		}
 		return false;
