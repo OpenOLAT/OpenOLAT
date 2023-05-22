@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.upgrade;
@@ -26,7 +26,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
+import jakarta.persistence.TypedQuery;
+
 import org.apache.logging.log4j.Logger;
+import org.olat.commons.info.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.logging.Tracing;
@@ -47,18 +50,22 @@ import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * Initial date: 25 Nov 2022<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * @author uhensler, urs.hensler@frentix.com, https://www.frentix.com
  *
  */
-public class OLATUpgrade_17_3_0 extends OLATUpgrade {
+public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_17_3_0.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_18_0_0.class);
 
-	private static final String VERSION = "OLAT_17.3.0";
+	private static final int BATCH_SIZE = 1000;
+
+	private static final String VERSION = "OLAT_18.0.0";
+	private static final String INIT_INFO_MESSAGES_SCHEDULER_UPDATE = "INIT INFO MESSAGES SCHEDULER UPDATE";
+
 	private static final String INIT_PROJECTS_CONFIGS = "INIT PROJECTS CONFIG";
-	
+
 	private static final String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
 	private static final String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
 	private static final String CERTIFICATE_TEMPLATE = "CERTIFICATE_TEMPLATE";
@@ -83,10 +90,10 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 
-	public OLATUpgrade_17_3_0() {
+	public OLATUpgrade_18_0_0() {
 		super();
 	}
-	
+
 	@Override
 	public String getVersion() {
 		return VERSION;
@@ -101,18 +108,53 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 		} else if (uhd.isInstallationComplete()) {
 			return false;
 		}
-		
+
 		boolean allOk = true;
 		allOk &= initProjectsConfigs(upgradeManager, uhd);
 		allOk &= initMigrateCertificateConfiguration(upgradeManager, uhd);
+		allOk &= initInfoMessageSchedulerUpdate(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_17_3_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_18_0_0 successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_17_3_0 not finished, try to restart OpenOlat!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_18_0_0 not finished, try to restart OpenOlat!");
 		}
+		return allOk;
+	}
+
+	private boolean initInfoMessageSchedulerUpdate(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(INIT_INFO_MESSAGES_SCHEDULER_UPDATE)) {
+			try {
+				log.info("Start updating infoMessages with new scheduler columns");
+
+				int counter = 0;
+				List<InfoMessage> infoMessages;
+				do {
+					infoMessages = getInfoMessages(counter, BATCH_SIZE);
+					for (InfoMessage infoMessage : infoMessages) {
+						//set initial value to true, because there was no scheduler option before
+						infoMessage.setPublished(true);
+						//set initial value to creationDate, because there was no scheduler option before
+						infoMessage.setPublishDate(infoMessage.getCreationDate());
+					}
+					counter += infoMessages.size();
+					log.info(Tracing.M_AUDIT, "Updated infoMessages: {} total processed ({})", infoMessages.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				log.info("Update for infoMessages with scheduler update finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(INIT_INFO_MESSAGES_SCHEDULER_UPDATE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
 		return allOk;
 	}
 
@@ -140,7 +182,7 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 		}
 		return allOk;
 	}
-	
+
 
 	private boolean initMigrateCertificateConfiguration(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
@@ -158,7 +200,7 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 					}
 				}
 				dbInstance.commitAndCloseSession();
-				
+
 				log.info("Courses certificates configuration migration finished.");
 			} catch (Exception e) {
 				log.error("", e);
@@ -238,5 +280,22 @@ public class OLATUpgrade_17_3_0 extends OLATUpgrade {
 				.createQuery(sb.toString(), Long.class)
 				.getResultList();
 	}
-	
+
+	private List<InfoMessage> getInfoMessages(int firstResult, int maxResults) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select msg from infomessage as msg");
+
+		TypedQuery<InfoMessage> query = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), InfoMessage.class);
+
+		if(firstResult >= 0) {
+			query.setFirstResult(firstResult);
+		}
+		if(maxResults > 0) {
+			query.setMaxResults(maxResults);
+		}
+
+		return query.getResultList();
+	}
+
 }

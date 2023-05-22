@@ -57,6 +57,7 @@ import org.olat.course.run.GoToEvent;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupStatusEnum;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
@@ -160,7 +161,7 @@ public class InfoRunController extends BasicController {
 		}	
 		
 		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
-		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
+		infoDisplayController.setSendSubscriberOption(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.owner, translate("wizard.step1.send_option.owner")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach, translate("wizard.step1.send_option.coach")));
 		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.participant, translate("wizard.step1.send_option.participant")));
@@ -171,7 +172,9 @@ public class InfoRunController extends BasicController {
 		groupRolesToSend.add(GroupRoles.owner);
 		
 		for (BusinessGroup group : cgm.getAllBusinessGroups()) {
-			infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, groupRolesToSend));
+			if (group.getGroupStatus().equals(BusinessGroupStatusEnum.active)) {
+				infoDisplayController.addGroupMailOption(new SendMailGroupOption(group, groupRolesToSend));
+			}
 		}
 		
 		List<CurriculumRoles> curriculumRolesToSend = new ArrayList<>();

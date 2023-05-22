@@ -24,13 +24,26 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
+import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
+import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.curriculum.CurriculumElement;
 
 public interface InfoMessageManager {
 	
 	public InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
+
+	/**
+	 * retrieve all infoMessages, which are not published yet (thus have a publishDate in the past)
+	 *
+	 * @param firstResult The first result
+	 * @param maxResults The maximum number of returned entries
+	 * @return list of unpublished infoMessages
+	 */
+	List<InfoMessage> loadUnpublishedInfoMessages(int firstResult, int maxResults);
 	
 	public void saveInfoMessage(InfoMessage infoMessage);
 	
@@ -45,4 +58,52 @@ public interface InfoMessageManager {
 	
 	public int countInfoMessageByResource(OLATResourceable ores, String subPath, String businessPath,
 			Date after, Date before);
+
+	/**
+	 * create a new entry for an infoMessageToGroup
+	 *
+	 * @param infoMessage new entry belongs to this specific infoMessage
+	 * @param businessGroup new entry is linked to this specific group
+	 * @return InfoMessageToGroup object
+	 */
+	InfoMessageToGroup createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup);
+
+	/**
+	 * retrieve all infoMessageToGroup objects with given group
+	 *
+	 * @param group query object
+	 * @return list with infoMessageToGroupImpl objects containing param
+	 */
+	List<InfoMessageToGroupImpl> loadInfoMessageToGroupByGroup(BusinessGroup group);
+
+	/**
+	 * remove specific infoMessageToGroup object from database
+	 *
+	 * @param infoMessageToGroup object to remove
+	 */
+	void deleteInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup);
+
+	/**
+	 * create a new entry for an infoMessageToCurriculumElement
+	 *
+	 * @param infoMessage new entry belongs to this specific infoMessage
+	 * @param curriculumElement new entry is linked to this specific curriculumElement
+	 * @return infoMessageToCurriculumElement object
+	 */
+	InfoMessageToCurriculumElement createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement);
+
+	/**
+	 * retrieve all infoMessageToCurriculumElement objects with given group
+	 *
+	 * @param curriculumElement query object
+	 * @return list with infoMessageToCurriculumElementImpl objects containing param
+	 */
+	List<InfoMessageToCurriculumElementImpl> loadInfoMessageToCurriculumElementByCurEl(CurriculumElement curriculumElement);
+
+	/**
+	 * remove specific infoMessageToCurriculumElement object from database
+	 *
+	 * @param infoMessageToCurriculumElement object to remove
+	 */
+	void deleteInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement);
 }

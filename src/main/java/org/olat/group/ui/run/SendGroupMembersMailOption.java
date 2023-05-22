@@ -20,6 +20,7 @@
 package org.olat.group.ui.run;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.info.ui.SendMailOption;
@@ -56,6 +57,6 @@ public class SendGroupMembersMailOption implements SendMailOption {
 
 	@Override
 	public List<Identity> getSelectedIdentities() {
-		return CoreSpringFactory.getImpl(BusinessGroupService.class).getMembers(businessGroup, role.name());
+		return Objects.requireNonNull(CoreSpringFactory.getImpl(BusinessGroupService.class)).getMembers(businessGroup, role.name());
 	}
 }

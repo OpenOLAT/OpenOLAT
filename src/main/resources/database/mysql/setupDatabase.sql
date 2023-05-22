@@ -4027,6 +4027,22 @@ create table o_jup_deployment (
    primary key (id)
 );
 
+-- infoMessage connection to groups
+create table o_info_message_to_group (
+   id bigint not null auto_increment,
+   fk_info_message_id bigint not null,
+   fk_group_id bigint not null,
+   primary key (id)
+);
+
+-- infoMessage connection to curriculumElements
+create table o_info_message_to_cur_el (
+   id bigint not null auto_increment,
+   fk_info_message_id bigint not null,
+   fk_cur_element_id bigint not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -5313,6 +5329,10 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
+
+alter table o_info_message add column publishdate datetime default null;
+alter table o_info_message add column published bool not null default false;
+alter table o_info_message add column sendmailto varchar(255);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

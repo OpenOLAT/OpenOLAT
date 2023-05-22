@@ -26,29 +26,31 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
- * 
  * Description:<br>
  * A small wrapper for all informations about an info message.
- * 
- * <P>
+ *
+ * <p>
  * Initial Date:  14 déc. 2010 <br>
+ *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class InfoMessageForDisplay {
-	
+
 	private final Long key;
 	private final String title;
 	private final String message;
 	private final String infos;
 	private final String modifier;
+	private final boolean isPublished;
 	private final List<VFSLeaf> attachments;
-	
-	public InfoMessageForDisplay(Long key, String title, String message, List<VFSLeaf> attachments, String infos, String modifier) {
+
+	public InfoMessageForDisplay(Long key, String title, String message, List<VFSLeaf> attachments, String infos, String modifier, boolean isPublished) {
 		this.key = key;
 		this.title = title;
 		this.infos = infos;
 		this.message = message;
 		this.modifier = modifier;
+		this.isPublished = isPublished;
 		this.attachments = attachments;
 	}
 
@@ -63,11 +65,11 @@ public class InfoMessageForDisplay {
 	public String getMessage() {
 		return message;
 	}
-	
+
 	public String getInfos() {
 		return infos;
 	}
-	
+
 	public List<VFSLeaf> getAttachments() {
 		return attachments;
 	}
@@ -78,5 +80,9 @@ public class InfoMessageForDisplay {
 
 	public String getModifier() {
 		return modifier;
+	}
+
+	public boolean isPublished() {
+		return isPublished;
 	}
 }

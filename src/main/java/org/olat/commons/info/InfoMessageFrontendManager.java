@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.info.manager.MailFormatter;
@@ -34,6 +35,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
+import org.olat.modules.curriculum.CurriculumElement;
 
 /**
  * 
@@ -61,7 +63,7 @@ public interface InfoMessageFrontendManager {
 	 * @param tos The list of recipients of the mail
 	 * @return
 	 */
-	public boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, List<Identity> tos);
+	public boolean sendInfoMessage(InfoMessage msgs, MailFormatter mailFormatter, Locale locale, Identity from, Set<Identity> tos);
 	
 	public void saveInfoMessage(InfoMessage msg);
 	
@@ -72,6 +74,13 @@ public interface InfoMessageFrontendManager {
 	public void deleteAttachments(Collection<String> paths);
 	
 	public void deleteStorage(OLATResourceable ores);
+
+	/**
+	 * Method checks if there are any infoMessages which have to be published
+	 * and if so, then send out eMails to all applicable recipients
+	 * Getting called by a scheduler Job "SendInfoMessageJob"
+	 */
+	void sendScheduledInfoMessages();
 	
 	public void deleteInfoMessage(InfoMessage infoMessage);
 	
@@ -91,4 +100,33 @@ public interface InfoMessageFrontendManager {
 	
 	public List<File> getAttachmentFiles(InfoMessage msg);
 
+	/**
+	 * create new entry for infoMessage linked to a businessGroup
+	 *
+	 * @param infoMessage   object linked to a businessGroup
+	 * @param businessGroup object linked to infoMessage
+	 */
+	void createInfoMessageToGroup(InfoMessage infoMessage, BusinessGroup businessGroup);
+
+	/**
+	 * remove specific infoMessageToGroup object from DB
+	 *
+	 * @param infoMessageToGroup
+	 */
+	void deleteInfoMessageToGroup(InfoMessageToGroup infoMessageToGroup);
+
+	/**
+	 * create new entry for infoMessage linked to a curriculumElement
+	 *
+	 * @param infoMessage       object linked to a curriculumElement
+	 * @param curriculumElement object linked to infoMessage
+	 */
+	void createInfoMessageToCurriculumElement(InfoMessage infoMessage, CurriculumElement curriculumElement);
+
+	/**
+	 * remove specific infoMessageToCurriculumElement object from DB
+	 *
+	 * @param infoMessageToCurriculumElement object to remove
+	 */
+	void deleteInfoMessageToCurriculumElement(InfoMessageToCurriculumElement infoMessageToCurriculumElement);
 }

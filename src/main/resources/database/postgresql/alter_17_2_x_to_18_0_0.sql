@@ -363,5 +363,22 @@ update o_gta_task set g_submission_revisions_drole='coach' where g_submission_re
 update o_gta_task set g_submission_revisions_drole='user' where g_submission_revisions_drole='1';
 update o_gta_task set g_submission_revisions_drole='auto' where g_submission_revisions_drole='2';
 
-	
+alter table o_info_message add column publishdate timestamp default null;
+alter table o_info_message add column published bool not null default false;
+alter table o_info_message add column sendmailto varchar(255);
 
+-- infoMessage connection to groups
+create table o_info_message_to_group (
+   id bigserial,
+   fk_info_message_id bigserial not null,
+   fk_group_id bigserial not null,
+   primary key (id)
+);
+
+-- infoMessage connection to curriculumElements
+create table o_info_message_to_cur_el (
+   id bigserial,
+   fk_info_message_id bigserial not null,
+   fk_cur_element_id bigserial not null,
+   primary key (id)
+);

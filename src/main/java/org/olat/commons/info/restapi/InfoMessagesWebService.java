@@ -1,5 +1,6 @@
+
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +15,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -61,7 +62,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * 
  * <P>
  * Initial Date:  29 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 @Tag(name = "Infomessages")
 @Component
@@ -138,7 +139,7 @@ public class InfoMessagesWebService {
 		InfoMessage msg = messageManager.createInfoMessage(ores, resSubPath, businessPath, author);
 		msg.setTitle(title);
 		msg.setMessage(message);
-		messageManager.sendInfoMessage(msg, null, ureq.getLocale(), ureq.getIdentity(), Collections.<Identity>emptyList());
+		messageManager.sendInfoMessage(msg, null, ureq.getLocale(), ureq.getIdentity(), Collections.emptySet());
 		InfoMessageVO infoVO = new InfoMessageVO(msg);
 		return Response.ok(infoVO).build();
 	}

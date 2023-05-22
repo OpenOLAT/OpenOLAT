@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 package org.olat.group.ui.run;
@@ -86,7 +86,7 @@ public class InfoGroupRunController extends BasicController {
 		InfoSecurityCallback secCallback = new InfoGroupSecurityCallback(getIdentity(), canAddAndEdit, isAdmin);
 		infoDisplayController = new InfoDisplayController(ureq, wControl, secCallback, businessGroup, resSubPath, businessPath);
 		SendMailOption subscribers = new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale());
-		infoDisplayController.addSendMailOptions(subscribers);
+		infoDisplayController.setSendSubscriberOption(subscribers);
 		SendMailOption coaches = new SendGroupMembersMailOption(businessGroup, GroupRoles.coach, translate("sendtochooser.form.radio.owners"));
 		infoDisplayController.addSendMailOptions(coaches);
 		SendMailOption participants = new SendGroupMembersMailOption(businessGroup, GroupRoles.participant, translate("sendtochooser.form.radio.partip"));

@@ -502,9 +502,15 @@ public interface CurriculumService {
 	 * @param master If the relation is the master one
 	 */
 	public void addRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry, boolean master);
-	
 
-	public void removeRepositoryEntry(CurriculumElement element, RepositoryEntryRef entry);
+
+	/**
+	 * remove linked relation between curriculumElement and repositoryEntry
+	 *
+	 * @param element
+	 * @param entry
+	 */
+	void removeRepositoryEntry(CurriculumElement element, RepositoryEntry entry);
 	
 	/**
 	 * Remove the repository entry from all the curriculum elements.

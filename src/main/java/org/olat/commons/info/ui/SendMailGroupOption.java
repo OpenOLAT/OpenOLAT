@@ -20,6 +20,7 @@
 package org.olat.commons.info.ui;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
@@ -29,16 +30,21 @@ import org.olat.group.BusinessGroupService;
 
 /**
  * Initial Date: 18.03.2020
+ *
  * @author aboeckle, alexander.boeckle@frentix.com, www.frentix.com
  */
 public class SendMailGroupOption implements SendMailOption {
 
 	private final List<GroupRoles> roles;
-	private BusinessGroup businessGroup;
-	
+	private final BusinessGroup businessGroup;
+
 	public SendMailGroupOption(BusinessGroup businessGroup, List<GroupRoles> roles) {
 		this.roles = roles;
 		this.businessGroup = businessGroup;
+	}
+
+	public BusinessGroup getBusinessGroup() {
+		return businessGroup;
 	}
 
 	@Override
@@ -48,7 +54,7 @@ public class SendMailGroupOption implements SendMailOption {
 
 	@Override
 	public String getOptionName() {
-		return businessGroup.getName();
+		return businessGroup.getName() + " (" + getSelectedIdentities().size() + ")";
 	}
 
 	@Override
@@ -57,7 +63,7 @@ public class SendMailGroupOption implements SendMailOption {
 		for (int i = 0; i < roles.size(); i++) {
 			rolesArray[i] = roles.get(i).name();
 		}
-		
-		return CoreSpringFactory.getImpl(BusinessGroupService.class).getMembers(businessGroup, rolesArray);
+
+		return Objects.requireNonNull(CoreSpringFactory.getImpl(BusinessGroupService.class)).getMembers(businessGroup, rolesArray);
 	}
 }

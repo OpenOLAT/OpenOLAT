@@ -1186,3 +1186,16 @@ div.o_correction_navigation {
 	}
 }
 
+.o_infomsg {
+	.o_labeled {
+		margin-bottom: 6px;
+		&.o_status_scheduled {
+			background-color:$o-repo-review-color;
+			border-color: $o-repo-review-color;
+			color: $o-repo-status-color-bright;
+		}
+	}
+	.o_title {
+		display: inline;
+	}
+}

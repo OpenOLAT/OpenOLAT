@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,7 +14,7 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
@@ -31,6 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
@@ -39,19 +40,24 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * 
  * <P>
  * Initial Date:  27 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class CreateInfoStepController extends StepFormBasicController {
 	
 	private final StepsRunContext runContext;
 	private final InfoEditFormController editForm;
 	private final InfoMessage message;
+	private final OLATResourceable ores;
+	private final String resSubPath;
 	
-	public CreateInfoStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm, InfoMessage message) {
+	public CreateInfoStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm,
+									InfoMessage message, OLATResourceable ores, String subPath) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		
 		this.runContext = runContext;
 		this.message = message;
+		this.ores = ores;
+		this.resSubPath = subPath;
 		editForm = new InfoEditFormController(ureq, wControl, rootForm, true, message);
 		listenTo(editForm);
 		
@@ -71,10 +77,8 @@ public class CreateInfoStepController extends StepFormBasicController {
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(source == editForm) {
-			if(event == Event.CHANGED_EVENT) {
-				if (message != null && message.getKey() == null) {
+			if(event == Event.CHANGED_EVENT && (message != null && message.getKey() == null)) {
 					runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
-				} 
 			}
 		}
 		super.event(ureq, source, event);
@@ -90,6 +94,10 @@ public class CreateInfoStepController extends StepFormBasicController {
 		runContext.put(WizardConstants.MSG, editForm.getInfoMessage());
 		runContext.put(WizardConstants.PATH_TO_DELETE, editForm.getAttachmentPathToDelete());
 		runContext.put(WizardConstants.ATTACHEMENTS, editForm.getAttachements());
+		runContext.put(WizardConstants.PUBLICATION_DATE_TYPE, editForm.getPublicationDateSelection());
+		runContext.put(WizardConstants.PUBLICATION_DATE, editForm.getPublicationDateEl());
+		runContext.put("ores", ores);
+		runContext.put("subPath", resSubPath);
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

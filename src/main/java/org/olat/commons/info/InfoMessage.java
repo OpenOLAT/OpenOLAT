@@ -1,5 +1,5 @@
 /**
- * <a href="http://www.openolat.org">
+ * <a href="https://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License"); <br>
@@ -14,13 +14,14 @@
  * limitations under the License.
  * <p>
  * Initial code contributed and copyrighted by<br>
- * frentix GmbH, http://www.frentix.com
+ * frentix GmbH, https://www.frentix.com
  * <p>
  */
 
 package org.olat.commons.info;
 
 import java.util.Date;
+import java.util.Set;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -29,7 +30,7 @@ import org.olat.core.id.OLATResourceable;
  * 
  * <P>
  * Initial Date:  27 jul. 2010 <br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public interface InfoMessage {
 	
@@ -60,6 +61,62 @@ public interface InfoMessage {
 	public String getResSubPath();
 
 	public String getBusinessPath();
+
+	/**
+	 * retrieve status of infoMessage, if it is published or not
+	 *
+	 * @return true/false
+	 */
+	boolean isPublished();
+
+	/**
+	 * set published status of infoMessage
+	 *
+	 * @param published true/false
+	 */
+	void setPublished(boolean published);
+
+	/**
+	 * retrieve Date on which the infoMessage got published
+	 *
+	 * @return date
+	 */
+	Date getPublishDate();
+
+	/**
+	 * set date on which the infoMessage got published
+	 *
+	 * @param publishDate
+	 */
+	void setPublishDate(Date publishDate);
+
+	/**
+	 * retrieve list of recipients to whom the infoMessage should be sent to via email
+	 *
+	 * @return Comma separated string. Possible values: {null, subscriber, owner, coach, participant}
+	 */
+	String getSendMailTo();
+
+	/**
+	 * sett of recipients to whom the infoMessage should be sent to via email
+	 *
+	 * @param sendMailTo Comma separated string. Possible values: {null, subscriber, owner, coach, participant}
+	 */
+	void setSendMailTo(String sendMailTo);
+
+	/**
+	 * retrieve a set of InfoMessageToGroup objects which belong to a specific infoMessage
+	 *
+	 * @return set of infoMessageToGroup
+	 */
+	Set<InfoMessageToGroup> getGroups();
+
+	/**
+	 * retrieve a set of InfoMessageToCurriculumElement objects which belong to a specific infoMessage
+	 *
+	 * @return set of InfoMessageToCurriculumElement
+	 */
+	Set<InfoMessageToCurriculumElement> getCurriculumElements();
 
 	public Identity getAuthor();
 	
