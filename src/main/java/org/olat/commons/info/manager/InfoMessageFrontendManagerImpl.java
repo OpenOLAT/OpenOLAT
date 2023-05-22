@@ -44,7 +44,6 @@ import org.olat.commons.info.InfoSubscriptionManager;
 import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.commons.info.model.InfoMessageToCurriculumElementImpl;
 import org.olat.commons.info.model.InfoMessageToGroupImpl;
-import org.olat.commons.info.ui.InfoDisplayController;
 import org.olat.commons.info.ui.SendInfoMailFormatter;
 import org.olat.commons.info.ui.WizardConstants;
 import org.olat.core.commons.persistence.DBFactory;
@@ -72,6 +71,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodes.info.InfoRunController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
@@ -310,7 +310,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 				for (InfoMessage infoMessage : infoMessages) {
 					String langPrefs = infoMessage.getAuthor().getUser().getPreferences().getLanguage();
 					Locale locale = i18nManager.getLocaleOrDefault(langPrefs);
-					Translator translator = Util.createPackageTranslator(InfoDisplayController.class, locale);
+					Translator translator = Util.createPackageTranslator(InfoRunController.class, locale);
 					ICourse course = CourseFactory.loadCourse(infoMessage.getResId());
 					MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), infoMessage.getBusinessPath(), translator);
 					Set<Identity> sendTo = new HashSet<>();

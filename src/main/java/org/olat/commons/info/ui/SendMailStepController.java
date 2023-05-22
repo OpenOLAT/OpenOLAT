@@ -199,8 +199,7 @@ public class SendMailStepController extends StepFormBasicController {
 
 		// select if all subscribers should receive e-mails
 		sendSubscriberSelection = uifactory.addCheckboxesVertical("indi.subscribers", formLayout, sendSubscriberOptionKeys, sendSubscriberOptionValues, 1);
-		if (!infoMessage.isPublished()
-				&& infoMessage.getSendMailTo() != null
+		if (infoMessage.getSendMailTo() != null
 				&& infoMessage.getSendMailTo().contains(WizardConstants.SEND_MAIL_SUBSCRIBERS)) {
 			// pre-select checkbox, if this ui is shown while editing infoMessage, and it was selected before
 			notificationEl.select(SEND_TO_SUBS_AND_MAILS, true);
@@ -210,8 +209,7 @@ public class SendMailStepController extends StepFormBasicController {
 
 		// selection checkboxes for which course member roles should receive an e-mail
 		sendCourseMemberSelection = uifactory.addCheckboxesVertical("indi.course.member", formLayout, sendCourseRolesOptionKeys, sendCourseRolesOptionValues, 1);
-		if (!infoMessage.isPublished()
-				&& infoMessage.getSendMailTo() != null) {
+		if (infoMessage.getSendMailTo() != null) {
 			// pre-select checkboxes, if this ui is shown while editing infoMessage, and it was selected before
 			List<String> sendMailsTo = Arrays.stream(sendCourseRolesOptionKeys).filter(infoMessage.getSendMailTo()::contains).toList();
 			if (!sendMailsTo.isEmpty()) {
