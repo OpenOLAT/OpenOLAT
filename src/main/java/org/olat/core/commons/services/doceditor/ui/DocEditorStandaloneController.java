@@ -72,7 +72,7 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 			VFSMetadata metaInfo = configs.getVfsLeaf().getMetaInfo();
 			title = title + " - " + (StringHelper.containsNonWhitespace(metaInfo.getTitle())? metaInfo.getTitle(): metaInfo.getFilename());
 		}
-		getWindow().setTitle(getTranslator(), title);
+		getWindow().setTitle(getTranslator(), StringHelper.escapeHtml(title));
 	}
 
 	@Override
