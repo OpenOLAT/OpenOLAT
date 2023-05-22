@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -36,9 +35,6 @@ import org.junit.runner.RunWith;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.CalendarPage;
 import org.olat.selenium.page.core.IMPage;
@@ -66,8 +62,7 @@ import org.openqa.selenium.WebElement;
 @RunWith(Arquillian.class)
 public class BusinessGroupTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 
@@ -116,8 +111,9 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void groupMembersVisibility(@Drone @Participant WebDriver participantBrowser)
+	public void groupMembersVisibility()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Aoi");
@@ -281,8 +277,10 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createGroupWithWaitingList(@Drone @Participant WebDriver participantBrowser)
+	public void createGroupWithWaitingList()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("Selena");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO student = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
@@ -383,10 +381,12 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void confirmMembershipByGroup(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver participantBrowser,
-			@Drone @Student WebDriver reiBrowser)
+	public void confirmMembershipByGroup()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
+		WebDriver participantBrowser = getWebDriver(2);
+		WebDriver reiBrowser = getWebDriver(3);
+		
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser();
@@ -475,9 +475,11 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void groupChat(@Drone @Participant WebDriver kanuBrowser,
-			@Drone @User WebDriver ryomouBrowser)
+	public void groupChat()
 	throws IOException, URISyntaxException {
+		WebDriver kanuBrowser = getWebDriver(1);
+		WebDriver ryomouBrowser = getWebDriver(2);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -704,10 +706,12 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void enrollmentWithWaitingList(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver reiBrowser,
-			@Drone @Student WebDriver kanuBrowser)
+	public void enrollmentWithWaitingList()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
+		WebDriver reiBrowser = getWebDriver(2);
+		WebDriver kanuBrowser = getWebDriver(3);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -922,10 +926,11 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void enrollment(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver reiBrowser,
-			@Drone @Student WebDriver kanuBrowser)
+	public void enrollment()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
+		WebDriver reiBrowser = getWebDriver(2);
+		WebDriver kanuBrowser = getWebDriver(3);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -1055,11 +1060,12 @@ public class BusinessGroupTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void enrollmentWithUnlimitedBusinessGroups(@Drone @User WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver reiBrowser,
-			@Drone @Student WebDriver kanuBrowser)
+	public void enrollmentWithUnlimitedBusinessGroups()
 	throws IOException, URISyntaxException {
-		
+		WebDriver ryomouBrowser = getWebDriver(1);
+		WebDriver reiBrowser = getWebDriver(2);
+		WebDriver kanuBrowser = getWebDriver(3);
+			
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");

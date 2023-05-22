@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -41,12 +40,8 @@ import org.olat.course.CourseModule;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.modules.invitation.restapi.InvitationVO;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.selenium.page.Author;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.BookingPage;
 import org.olat.selenium.page.core.CalendarPage;
@@ -97,8 +92,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class CourseTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -400,8 +394,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void concurrentEditCourse(@Drone @Participant WebDriver coAuthorBrowser)
+	public void concurrentEditCourse()
 	throws IOException, URISyntaxException {
+		WebDriver coAuthorBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO coAuthor = new UserRestClient(deploymentUrl).createAuthor("Rei");
@@ -504,8 +499,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void concurrentVisitAndPublish(@Drone @User WebDriver ryomouBrowser)
+	public void concurrentVisitAndPublish()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1026,8 +1022,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseBooking(@Drone @User WebDriver ryomouBrowser)
+	public void courseBooking()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1122,8 +1119,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseFreeBooking(@Drone @User WebDriver userBrowser)
+	public void courseFreeBooking()
 	throws IOException, URISyntaxException {
+		WebDriver userBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
@@ -1327,8 +1325,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void coursePassword(@Drone @User WebDriver ryomouBrowser)
+	public void coursePassword()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1515,8 +1514,9 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseAccessRules(@Drone @Student WebDriver reiBrowser)
+	public void courseAccessRules()
 	throws IOException, URISyntaxException {
+		WebDriver reiBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
@@ -1668,9 +1668,10 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void confirmMembershipForCourse(@Drone @Author WebDriver authorBrowser,
-			@Drone @Participant WebDriver participantBrowser)
+	public void confirmMembershipForCourse()
 	throws IOException, URISyntaxException {
+		WebDriver authorBrowser = getWebDriver(1);
+		WebDriver participantBrowser = getWebDriver(2);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -2076,8 +2077,10 @@ public class CourseTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseInvitationRestExternalUser(@Drone @User WebDriver externalUserBrowser)
+	public void courseInvitationRestExternalUser()
 	throws IOException, URISyntaxException {
+		WebDriver externalUserBrowser = getWebDriver(1);
+		
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage
 			.loginAs("administrator", "openolat")

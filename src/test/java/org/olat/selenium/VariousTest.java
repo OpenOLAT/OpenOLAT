@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -41,10 +40,10 @@ import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.course.CourseSettingsPage;
 import org.olat.selenium.page.course.PublisherPageFragment;
 import org.olat.selenium.page.repository.AuthoringEnvPage;
+import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.repository.OAIPMHClient;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
 import org.olat.selenium.page.repository.UserAccess;
-import org.olat.selenium.page.repository.AuthoringEnvPage.ResourceType;
 import org.olat.selenium.page.wiki.WikiPage;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
@@ -60,8 +59,8 @@ import org.openqa.selenium.WebDriver;
 @RunWith(Arquillian.class)
 public class VariousTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
+	
 	@ArquillianResource
 	private URL deploymentUrl;
 

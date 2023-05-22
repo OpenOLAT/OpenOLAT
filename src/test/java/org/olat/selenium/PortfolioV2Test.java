@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -36,7 +35,6 @@ import org.junit.runner.RunWith;
 import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
@@ -76,8 +74,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class PortfolioV2Test extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -543,9 +540,9 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void binderInvitation(@Drone @User WebDriver inviteeBrowser)
+	public void binderInvitation()
 			throws IOException, URISyntaxException {
-		
+		WebDriver inviteeBrowser = getWebDriver(1);
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 
 		LoginPage
@@ -642,9 +639,9 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void binderAssessment(@Drone @User WebDriver reiBrowser)
+	public void binderAssessment()
 			throws IOException, URISyntaxException {
-		
+		WebDriver reiBrowser = getWebDriver(1);
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
 
