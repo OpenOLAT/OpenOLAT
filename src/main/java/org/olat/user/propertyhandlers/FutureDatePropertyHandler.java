@@ -51,7 +51,7 @@ public class FutureDatePropertyHandler extends DatePropertyHandler {
 		if (isDateInTheFuture(((DateChooser) formItem).getDate())) {
 			return true;
 		} else {
-			formItem.setErrorKey("form.name.date.future.error", null);
+			formItem.setErrorKey("form.name.date.future.error");
 			return false;
 		}
 	}

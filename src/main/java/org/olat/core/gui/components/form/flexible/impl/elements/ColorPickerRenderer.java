@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
@@ -50,7 +51,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		ColorPickerElement.Color selectedColor = colorChooserElement.getColor();
 		String cssPrefix = colorChooserElement.getCssPrefix() == null ? "o_color_" : colorChooserElement.getCssPrefix();
 
-				String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
+		boolean hasChangeListener = colorChooserElement.getAction() == FormEvent.ONCHANGE;
+
+		String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
 		String buttonId = "o_" + CodeHelper.getRAMUniqueID();
 		String inputId = "o_cp" + colorPickerComponent.getDispatchID();
 
@@ -81,14 +84,12 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("<i class='o_icon o_icon-fw o_icon_caret o_color_picker_icon'></i>");
 
-		// In standard form submission mode, this element needs to act as a regular input element, which we achieve
-		// with a hidden <input> element.
-		if (!colorChooserElement.isAjaxOnlyMode()) {
-			sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
-					.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
-		} else {
+		if (hasChangeListener) {
 			sb.append("<div id='").append(inputId).append("' data-color='")
 					.append(selectedColor != null ? selectedColor.getId() : "").append("'></div>");
+		} else {
+			sb.append("<input type='hidden' id='").append(inputId).append("' name='").append(inputId)
+					.append("' value='").append(selectedColor != null ? selectedColor.getId() : "").append("'>");
 		}
 
 		sb.append("</button>");
@@ -110,10 +111,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 					dropdownId + "', '" +
 					colorChooserElement.getRootForm().getDispatchFieldId() + "', '" +
 					cssPrefix + "', " +
-					(colorChooserElement.isAjaxOnlyMode() ? "true" : "false") + "); ";
+					(hasChangeListener ? "true" : "false") + "); ";
 
-			if (colorChooserElement.isAjaxOnlyMode()) {
-				// In ajax-only mode, selecting sends an event to the server:
+			if (hasChangeListener) {
 				String functionCall = updateFunctionCall +
 						FormJSHelper.getXHRFnCallFor(colorChooserElement.getRootForm(),
 						colorPickerComponent.getFormDispatchId(), 1, false, false,
@@ -123,9 +123,6 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
 				sb.append("onKeyPress=\"if (event.keyCode === 13) ").append(functionCall).append("\"");
 			} else {
-				// In form submission mode, selecting updates the UI and the hidden input element:
-
-				// o_cp_set_color(color.id, color.text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix);
 				sb.append("onclick=\"").append(updateFunctionCall).append(";\" ");
 				sb.append("onKeyDown=\"if (event.keyCode === 32) { ").append(updateFunctionCall).append("; ")
 						.append("jQuery('#").append(dropdownId).append("').trigger('click.bs.dropdown'); }\" ");
@@ -147,9 +144,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("</div>"); // o_color_picker_wrapper
 
 		sb.append("<script>");
-		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix, ajaxOnly) {\n");
+		sb.append("function o_cp_set_color(colorId, text, buttonId, inputId, dropdownId, formDispatchFieldId, cssPrefix, hasChangeListener) {\n");
 		sb.append("  let oldColorId = null;\n");
-		sb.append("  if (ajaxOnly) {\n");
+		sb.append("  if (hasChangeListener) {\n");
 		sb.append("    const dataDiv = jQuery('#' + inputId);\n");
 		sb.append("    oldColorId = dataDiv.data('color');\n");
 		sb.append("    dataDiv.data('color', colorId);\n");

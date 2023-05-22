@@ -155,7 +155,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				null, getLocale(), CalendarColors.getColorsList());
 		colorPickerElement.setColor(row.getColor());
 		colorPickerElement.setCssPrefix("o_cal");
-		colorPickerElement.setAjaxOnlyMode(true);
+		colorPickerElement.addActionListener(FormEvent.ONCHANGE);
 		colorPickerElement.setUserObject(row);
 		row.setColorPickerElement(colorPickerElement);
 

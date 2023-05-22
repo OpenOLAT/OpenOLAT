@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.Util;
 
@@ -39,7 +40,6 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final ColorPickerComponent component;
 	private Color color;
 	private final List<Color> colors;
-	private boolean ajaxOnlyMode = false;
 	private String nonSelectedText;
 	private String cssPrefix;
 
@@ -50,16 +50,6 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		component = new ColorPickerComponent(id, this);
 		setTranslator(Util.createPackageTranslator(ColorServiceImpl.class, locale));
 		this.colors = colors.stream().map(this::getColorFromColorId).toList();
-	}
-
-	@Override
-	public boolean isAjaxOnlyMode() {
-		return ajaxOnlyMode;
-	}
-
-	@Override
-	public void setAjaxOnlyMode(boolean ajaxOnlyMode) {
-		this.ajaxOnlyMode = ajaxOnlyMode;
 	}
 
 	public String getNonSelectedText() {
@@ -99,7 +89,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		Form form = getRootForm();
 
 		if (isEnabled()) {
-			if (isAjaxOnlyMode()) {
+			if (getAction() == FormEvent.ONCHANGE) {
 				String dispatchuri = form.getRequestParameter("dispatchuri");
 				if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
 					String colorId = form.getRequestParameter("colorId");

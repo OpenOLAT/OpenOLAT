@@ -98,7 +98,7 @@ public class UserDataExportController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!exportEl.isAtLeastSelected(1)) {
-			exportEl.setErrorKey("form.legende.mandatory", null);
+			exportEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		

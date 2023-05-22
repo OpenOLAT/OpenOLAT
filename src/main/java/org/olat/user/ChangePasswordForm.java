@@ -126,7 +126,7 @@ public class ChangePasswordForm extends FormBasicController {
 
 		newCredConfirmationEl.clearError();
 		if (!newCredEl.getValue().equals(newCredConfirmationEl.getValue())) {
-			newCredConfirmationEl.setErrorKey("error.password.nomatch", null);
+			newCredConfirmationEl.setErrorKey("error.password.nomatch");
 			allOk &= false;
 		}
 		
