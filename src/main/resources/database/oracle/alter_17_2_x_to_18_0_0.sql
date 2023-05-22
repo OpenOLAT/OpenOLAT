@@ -362,8 +362,8 @@ update o_gta_task set g_submission_revisions_drole='coach' where g_submission_re
 update o_gta_task set g_submission_revisions_drole='user' where g_submission_revisions_drole='1';
 update o_gta_task set g_submission_revisions_drole='auto' where g_submission_revisions_drole='2';
 
-alter table o_info_message add publishdate date default null;
-alter table o_info_message add published number default 0 not null,
+alter table o_info_message add publishdate timestamp default null;
+alter table o_info_message add published number default 0 not null;
 alter table o_info_message add sendmailto varchar(255);
 
 -- infoMessage connection to groups
@@ -391,3 +391,5 @@ alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg
 create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
 alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
 create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
+
+

@@ -363,6 +363,8 @@ update o_gta_task set g_submission_revisions_drole='coach' where g_submission_re
 update o_gta_task set g_submission_revisions_drole='user' where g_submission_revisions_drole='1';
 update o_gta_task set g_submission_revisions_drole='auto' where g_submission_revisions_drole='2';
 
+
+-- Info messages
 alter table o_info_message add column publishdate timestamp default null;
 alter table o_info_message add column published bool not null default false;
 alter table o_info_message add column sendmailto varchar(255);
@@ -370,8 +372,8 @@ alter table o_info_message add column sendmailto varchar(255);
 -- infoMessage connection to groups
 create table o_info_message_to_group (
    id bigserial,
-   fk_info_message_id bigserial not null,
-   fk_group_id bigserial not null,
+   fk_info_message_id int8 not null,
+   fk_group_id int8 not null,
    primary key (id)
 );
 
@@ -383,8 +385,8 @@ create index idx_o_info_message_to_group_group_idx on o_info_message_to_group (f
 -- infoMessage connection to curriculumElements
 create table o_info_message_to_cur_el (
    id bigserial,
-   fk_info_message_id bigserial not null,
-   fk_cur_element_id bigserial not null,
+   fk_info_message_id int8 not null,
+   fk_cur_element_id int8 not null,
    primary key (id)
 );
 
@@ -392,3 +394,5 @@ alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg
 create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
 alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
 create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
+
+

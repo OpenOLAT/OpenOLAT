@@ -809,6 +809,7 @@ CREATE TABLE o_userrating (
   PRIMARY KEY (rating_id)
 );
 
+-- Info Messages
 CREATE TABLE o_info_message (
   info_id number(20)  NOT NULL,
   version number(20) NOT NULL,
@@ -821,9 +822,26 @@ CREATE TABLE o_info_message (
   resid number(20) NOT NULL,
   ressubpath varchar2(2048 char),
   businesspath varchar2(2048 char),
+  publishdate date default null,
+  published number default 0 not null,
+  sendmailto varchar(255),
   fk_author_id number(20),
   fk_modifier_id number(20),
   PRIMARY KEY (info_id)
+);
+
+create table o_info_message_to_group (
+    id number(20) generated always as identity,
+    fk_info_message_id number(20) not null,
+    fk_group_id number(20) not null,
+    primary key (id)
+);
+
+create table o_info_message_to_cur_el (
+    id number(20) generated always as identity,
+    fk_info_message_id number(20) not null,
+    fk_cur_element_id number(20) not null,
+    primary key (id)
 );
 
 create table o_bs_invitation (
@@ -4094,22 +4112,6 @@ create table o_jup_deployment (
    primary key (id)
 );
 
--- infoMessage connection to groups
-create table o_info_message_to_group (
-    id number(20) generated always as identity,
-    fk_info_message_id number(20) not null,
-    fk_group_id number(20) not null,
-    primary key (id)
-);
-
--- infoMessage connection to curriculumElements
-create table o_info_message_to_cur_el (
-    id number(20) generated always as identity,
-    fk_info_message_id number(20) not null,
-    fk_cur_element_id number(20) not null,
-    primary key (id)
-);
-
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4658,6 +4660,18 @@ alter table o_info_message add constraint FKF85553465A4FA5EF foreign key (fk_mod
 create index imsg_modifier_idx on o_info_message (fk_modifier_id);
 
 create index imsg_resid_idx on o_info_message (resid);
+
+-- infoMessageToGroup
+alter table o_info_message_to_group add constraint o_info_message_to_group_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_group_msg_idx on o_info_message_to_group (fk_info_message_id);
+alter table o_info_message_to_group add constraint o_info_message_to_group_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_o_info_message_to_group_group_idx on o_info_message_to_group (fk_group_id);
+
+-- infoMessageToCurEl
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
+create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
 
 -- db course
 alter table o_co_db_entry add constraint FKB60B1BA5F7E870XY foreign key (identity) references o_bs_identity;
@@ -5556,22 +5570,6 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
 
--- infoMessage
-alter table o_info_message add publishdate date default null;
-alter table o_info_message add published number default 0 not null;
-alter table o_info_message add sendmailto varchar(255);
-
--- infoMessageToGroup
-alter table o_info_message_to_group add constraint o_info_message_to_group_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
-create index idx_o_info_message_to_group_msg_idx on o_info_message_to_group (fk_info_message_id);
-alter table o_info_message_to_group add constraint o_info_message_to_group_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
-create index idx_o_info_message_to_group_group_idx on o_info_message_to_group (fk_group_id);
-
--- infoMessageToCurEl
-alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
-create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
-alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
-create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
 
 commit
 /

@@ -20,6 +20,7 @@
 
 package org.olat.commons.info;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -410,13 +411,20 @@ public class InfoManagerTest extends OlatTestCase {
 		infoMessageManager.saveInfoMessage(msg);
 		infoMessageManager.saveInfoMessage(msg2);
 		dbInstance.commitAndCloseSession();
+		
+		sleep(100);
 
 		// load and assert that only one infoMessage was retrieved, because other one is already published
 		List<InfoMessage> infoMessages = infoMessageManager.loadUnpublishedInfoMessages(0, -1);
-		assertEquals(1, infoMessages.size());
-		assertEquals(infoMessages.get(0), msg2);
+		assertThat(infoMessages)
+			.hasSizeGreaterThanOrEqualTo(1)
+			.contains(msg2)
+			.map(InfoMessage::isPublished)
+			.allMatch(published -> !published);
+	
 		// set message2 published true, so it won't interfere in next test run (basically doing what scheduler job would do)
 		infoMessages.forEach(im -> im.setPublished(true));
+		dbInstance.commitAndCloseSession();
 	}
 	
 	@Test
