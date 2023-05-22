@@ -5472,5 +5472,17 @@ alter table o_info_message add column publishdate timestamp default null;
 alter table o_info_message add column published bool not null default false;
 alter table o_info_message add column sendmailto varchar(255);
 
+-- infoMessageToGroup
+alter table o_info_message_to_group add constraint o_info_message_to_group_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_group_msg_idx on o_info_message_to_group (fk_info_message_id);
+alter table o_info_message_to_group add constraint o_info_message_to_group_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
+create index idx_o_info_message_to_group_group_idx on o_info_message_to_group (fk_group_id);
+
+-- infoMessageToCurEl
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg_idx foreign key (fk_info_message_id) references o_info_message (info_id);
+create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (fk_info_message_id);
+alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
+create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
+
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );
