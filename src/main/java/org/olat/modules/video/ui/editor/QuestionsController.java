@@ -167,23 +167,13 @@ public class QuestionsController extends BasicController {
 		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
 		long currentTime = getCurrentTime();
 
-		VideoQuestion firstQuestion = null;
 		for (QuestionItemView item : items) {
-			VideoQuestion importedQuestion = doCopyQItem(item, assessmentDir, currentTime);
-			if (firstQuestion == null && importedQuestion != null) {
-				firstQuestion = importedQuestion;
-			}
+			doCopyQItem(item, assessmentDir, currentTime);
 			currentTime += 10L;
 		}
 
 		questionsHeaderController.setQuestions(questions);
 		reloadQuestions(ureq);
-		if (firstQuestion != null) {
-			String questionId = firstQuestion.getId();
-			showQuestion(questionId);
-			questionController.setQuestion(question);
-			fireEvent(ureq, new EditQuestionEvent(questionId, repositoryEntry));
-		}
 	}
 
 	private VideoQuestion doCopyQItem(QuestionItemView item, File assessmentDir, long begin) {
