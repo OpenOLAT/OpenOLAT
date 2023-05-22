@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -36,8 +35,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.user.RegistrationPage;
@@ -57,8 +54,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class LoginTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 
@@ -164,10 +160,10 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void maintenanceMessage(@Drone @Participant WebDriver reiBrowser,
-			@Drone @Student WebDriver kanuBrowser)
+	public void maintenanceMessage()
 	throws IOException, URISyntaxException {
-		
+		WebDriver reiBrowser = getWebDriver(1);
+		WebDriver kanuBrowser = getWebDriver(2);
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		

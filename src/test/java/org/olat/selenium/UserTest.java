@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -35,7 +34,6 @@ import org.junit.runner.RunWith;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.CoursePageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.group.GroupsPage;
@@ -69,8 +67,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class UserTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 
@@ -752,7 +749,8 @@ public class UserTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void deleteUser(@Drone @User WebDriver userBrowser) {
+	public void deleteUser() {
+		WebDriver userBrowser = getWebDriver(1);
 		
 		//login
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);

@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -37,9 +36,6 @@ import org.junit.runner.RunWith;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentCEConfigurationPage;
 import org.olat.selenium.page.course.AssessmentModePage;
 import org.olat.selenium.page.course.AssessmentPage;
@@ -78,8 +74,7 @@ import org.openqa.selenium.WebElement;
 @RunWith(Arquillian.class)
 public class AssessmentTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 
@@ -99,8 +94,9 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void scormCourseWithAssessment(@Drone @User WebDriver ryomouBrowser)
+	public void scormCourseWithAssessment()
 	throws IOException, URISyntaxException {
+		WebDriver ryomouBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -228,10 +224,11 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void assessmentMode_manual(@Drone @Student WebDriver ryomouBrowser,
-			@Drone @Participant WebDriver kanuBrowser)
+	public void assessmentMode_manual()
 	throws IOException, URISyntaxException {
-
+		WebDriver ryomouBrowser = getWebDriver(1);
+		WebDriver kanuBrowser = getWebDriver(2);
+			
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -957,9 +954,10 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithGroupsAndStandardSettings(@Drone @User WebDriver participantBrowser)
+	public void taskWithGroupsAndStandardSettings()
 	throws IOException, URISyntaxException {
-			
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1154,9 +1152,10 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividualScoreAndRevision(@Drone @User WebDriver ryomouBrowser)
+	public void taskWithIndividualScoreAndRevision()
 	throws IOException, URISyntaxException {
-						
+		WebDriver ryomouBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
@@ -1333,9 +1332,10 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithoutAssignment(@Drone @User WebDriver ryomouBrowser)
+	public void taskWithoutAssignment()
 	throws IOException, URISyntaxException {
-						
+		WebDriver ryomouBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
@@ -1492,9 +1492,10 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividualScoreNoRevision(@Drone @User WebDriver ryomouBrowser)
+	public void taskWithIndividualScoreNoRevision()
 	throws IOException, URISyntaxException {
-						
+		WebDriver ryomouBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
@@ -1777,9 +1778,10 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskOptionalWithIndividualScore(@Drone @User WebDriver ryomouBrowser)
+	public void taskOptionalWithIndividualScore()
 	throws IOException, URISyntaxException {
-						
+		WebDriver ryomouBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");

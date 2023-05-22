@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -40,9 +39,6 @@ import org.olat.modules.ceditor.model.ContainerLayout;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.Student;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.ContactPage;
 import org.olat.selenium.page.core.FolderPage;
@@ -103,8 +99,7 @@ import com.dumbster.smtp.SmtpMessage;
 @RunWith(Arquillian.class)
 public class CourseElementTest extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -560,8 +555,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithBlog_multipleUsers(@Drone @Participant WebDriver participantDrone)
+	public void courseWithBlog_multipleUsers()
 	throws IOException, URISyntaxException {
+		WebDriver participantDrone = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -762,8 +758,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithDialog(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithDialog()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
@@ -1175,8 +1172,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithParticipantFolder(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithParticipantFolder()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
@@ -1403,9 +1402,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithForum_concurrent(@Drone @Participant WebDriver kanuBrowser,
-			@Drone @Student WebDriver reiBrowser)
+	public void courseWithForum_concurrent()
 	throws IOException, URISyntaxException {
+		WebDriver kanuBrowser = getWebDriver(1);
+		WebDriver reiBrowser = getWebDriver(2);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
@@ -1560,8 +1560,9 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithForum_guest(@Drone @User WebDriver guestBrowser)
+	public void courseWithForum_guest()
 	throws IOException, URISyntaxException {
+		WebDriver guestBrowser = getWebDriver(1);
 
 		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
@@ -2645,9 +2646,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithAppointmentRecurring(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithAppointmentRecurring()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
@@ -2768,9 +2770,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithAppointmentFinding(@Drone @Participant WebDriver participantBrowser)
+	public void courseWithAppointmentFinding()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Alfred");
 
@@ -2883,9 +2886,10 @@ public class CourseElementTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void courseWithCheckboxWithScore(@Drone @User WebDriver participantBrowser)
+	public void courseWithCheckboxWithScore()
 	throws IOException, URISyntaxException {
-						
+		WebDriver participantBrowser = getWebDriver(1);
+		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("nezuko");
 

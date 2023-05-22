@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -38,8 +37,6 @@ import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
 import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
-import org.olat.selenium.page.Participant;
-import org.olat.selenium.page.User;
 import org.olat.selenium.page.course.AssessmentToolPage;
 import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.course.CoursePageFragment;
@@ -66,8 +63,7 @@ import org.openqa.selenium.WebElement;
 @RunWith(Arquillian.class)
 public class ImsQTI21Test extends Deployments {
 
-	@Drone
-	private WebDriver browser;
+	private WebDriver browser = getWebDriver(0);
 	@ArquillianResource
 	private URL deploymentUrl;
 	
@@ -1073,8 +1069,9 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21CourseTestCockpitProgress(@Drone @User WebDriver participantBrowser)
+	public void qti21CourseTestCockpitProgress()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
@@ -1202,8 +1199,9 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21CourseTestCorrectionWorkflow(@Drone @User WebDriver participantBrowser)
+	public void qti21CourseTestCorrectionWorkflow()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
@@ -1343,9 +1341,10 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21CourseTestGradingWorkflow(@Drone @Participant WebDriver participantBrowser,
-		@Drone @User WebDriver graderBrowser)
+	public void qti21CourseTestGradingWorkflow()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		WebDriver graderBrowser = getWebDriver(2);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
@@ -1522,9 +1521,10 @@ public class ImsQTI21Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21CourseTestGradingAfterwardsAssignment(@Drone @Participant WebDriver participantBrowser,
-		@Drone @User WebDriver graderBrowser)
+	public void qti21CourseTestGradingAfterwardsAssignment()
 	throws IOException, URISyntaxException {
+		WebDriver participantBrowser = getWebDriver(1);
+		WebDriver graderBrowser = getWebDriver(2);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Hakufu");
