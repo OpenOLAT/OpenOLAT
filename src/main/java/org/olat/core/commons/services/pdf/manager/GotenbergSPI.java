@@ -114,6 +114,7 @@ public class GotenbergSPI extends AbstractPdfSPI {
 			
 			HttpEntity entity = MultipartEntityBuilder.create()
 					.addTextBody("url", Settings.getServerContextPathURI() + "/pdfd/" + key + "/" + rootFilename)
+					.addTextBody("preferCssPageSize", "true")
 					.build();
 			post.setEntity(entity);
 
