@@ -55,7 +55,7 @@ public class HeaderCommandsController extends BasicController {
 		if (withImport) {
 			importLink = LinkFactory.createLink("form.common.import", "import", getTranslator(), mainVC, this,
 					Link.LINK);
-			importLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+			importLink.setIconLeftCSS("o_icon o_icon-fw o_mi_qpool_import");
 			mainVC.put("import", importLink);
 		}
 
