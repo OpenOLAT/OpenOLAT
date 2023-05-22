@@ -102,7 +102,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 
 		qb.append("select msg from infomessage as msg")
 				.and().append("msg.published=false")
-				.and().append("msg.publishDate>=:before");
+				.and().append("msg.publishDate<=:before");
 
 		TypedQuery<InfoMessage> query = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), InfoMessage.class);

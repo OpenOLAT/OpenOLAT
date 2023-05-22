@@ -37,11 +37,12 @@ public interface InfoMessageManager {
 	public InfoMessage createInfoMessage(OLATResourceable ores, String subPath, String businessPath, Identity author);
 
 	/**
-	 * retrieve all infoMessages, which are not published yet (thus have a publishDate in the past)
+	 * retrieve all infoMessages, which are not published yet and have a publishDate in the past
+	 * for publishing those infoMessages. Made for scheduler job
 	 *
 	 * @param firstResult The first result
 	 * @param maxResults The maximum number of returned entries
-	 * @return list of unpublished infoMessages
+	 * @return list of unpublished infoMessages, which have to be published
 	 */
 	List<InfoMessage> loadUnpublishedInfoMessages(int firstResult, int maxResults);
 	

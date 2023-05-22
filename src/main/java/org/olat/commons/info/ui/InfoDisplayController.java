@@ -562,10 +562,6 @@ public class InfoDisplayController extends FormBasicController {
 				msg.setPublished(true);
 			}
 
-			if (!identities.isEmpty()) {
-				infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
-			}
-
 			// create link entries between infoMessage and groups
 			Set<InfoMessageToGroup> infoMessageToGroups = msg.getGroups() != null ? msg.getGroups() : new HashSet<>();
 			// check if group already is saved for given message, if not then create an entry
@@ -602,6 +598,12 @@ public class InfoDisplayController extends FormBasicController {
 						infoMessageManager.deleteInfoMessageToCurriculumElement(infoCurEl);
 					}
 				}
+			}
+
+			if (!identities.isEmpty()) {
+				infoMessageManager.sendInfoMessage(msg, sendMailFormatter, ureq.getLocale(), ureq.getIdentity(), identities);
+			} else {
+				infoMessageManager.saveInfoMessage(msg);
 			}
 
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.INFO_MESSAGE_CREATED, getClass(),

@@ -41,7 +41,6 @@ import org.olat.commons.info.model.InfoMessageToGroupImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.DateUtils;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.curriculum.Curriculum;
@@ -407,7 +406,7 @@ public class InfoManagerTest extends OlatTestCase {
 		msg.setPublishDate(msg.getCreationDate());
 		assertNotNull(msg2);
 		// msg2 is not published yet
-		msg2.setPublishDate(DateUtils.addSeconds(msg2.getCreationDate(), 1));
+		msg2.setPublishDate(new Date());
 		infoMessageManager.saveInfoMessage(msg);
 		infoMessageManager.saveInfoMessage(msg2);
 		dbInstance.commitAndCloseSession();
@@ -416,6 +415,8 @@ public class InfoManagerTest extends OlatTestCase {
 		List<InfoMessage> infoMessages = infoMessageManager.loadUnpublishedInfoMessages(0, -1);
 		assertEquals(1, infoMessages.size());
 		assertEquals(infoMessages.get(0), msg2);
+		// set message2 published true, so it won't interfere in next test run (basically doing what scheduler job would do)
+		infoMessages.forEach(im -> im.setPublished(true));
 	}
 	
 	@Test
