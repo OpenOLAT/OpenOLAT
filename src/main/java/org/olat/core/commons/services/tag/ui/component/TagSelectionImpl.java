@@ -73,7 +73,6 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 	private TagSelectionController selectionCtrl;
 	
 	private final List<? extends TagInfo> allTags;
-	private final Set<Long> initialSelectedKeys;
 	private Set<Long> selectedKeys;
 	private Set<String> newTags = new HashSet<>(1);
 	private boolean dirtyCheck = true;
@@ -82,9 +81,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 		super(name);
 		this.wControl = wControl;
 		this.allTags = allTags;
-		this.initialSelectedKeys = allTags.stream().filter(TagInfo::isSelected).map(TagInfo::getKey).collect(Collectors.toSet());
-		this.selectedKeys = new HashSet<>();
-		this.selectedKeys.addAll(initialSelectedKeys);
+		this.selectedKeys = new HashSet<>(allTags.stream().filter(TagInfo::isSelected).map(TagInfo::getKey).collect(Collectors.toSet()));
 		this.component = new TagSelectionComponent(name, this);
 		
 		String dispatchId = component.getDispatchID();
@@ -239,7 +236,7 @@ public class TagSelectionImpl extends FormItemImpl implements TagSelection, Form
 	}
 	
 	private void doOpenSelection(UserRequest ureq) {
-		selectionCtrl = new TagSelectionController(ureq, wControl, allTags, initialSelectedKeys, selectedKeys, newTags);
+		selectionCtrl = new TagSelectionController(ureq, wControl, allTags, selectedKeys, newTags);
 		selectionCtrl.addControllerListener(this);
 
 		calloutCtrl = new CloseableCalloutWindowController(ureq, wControl, selectionCtrl.getInitialComponent(),

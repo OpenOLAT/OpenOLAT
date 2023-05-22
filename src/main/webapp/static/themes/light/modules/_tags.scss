@@ -3,6 +3,7 @@
 	margin-right: 2px;
 	margin-bottom: 2px;
 	font-weight: 450;
+	font-size: 12px;
 	text-align: center;
 	white-space: nowrap;
 	border-radius: 1em;
@@ -63,11 +64,7 @@
 
 /** Tag selection element **/
 .o_tag_selection_button {
-	font-size: 12px;
 	display: flex;
-	&>span {
-		width: 100%;
-	}
 	.o_icon {
 		margin: auto 0 auto auto;
 	}
@@ -76,7 +73,6 @@
 			background-color: #ffffff;
 			color: $o-competences-font-color;
 			border-color: $o-competences-color; 
-			border-radius: 0.5em;
 			margin: 0;
 		}
 	}
@@ -113,6 +109,9 @@
 	border-color: $o-tag-selection-border-color;
 	background-color: $o-tag-selection-background-color;
 	color: $o-tag-selection-font-color;
+	.o_tag_count {
+		font-size: 85%;
+	}
 	
 	&.o_tag_in_button {
 		border-color: $o-tag-selection-selected-border-color;

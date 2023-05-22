@@ -31,7 +31,7 @@ public class TagItem {
 
 	private Long key;
 	private String displayValue;
-	private Long count;
+	private long count;
 	private boolean selected;
 	private FormLink link;
 	
@@ -51,11 +51,11 @@ public class TagItem {
 		this.displayValue = displayValue;
 	}
 	
-	public Long getCount() {
+	public long getCount() {
 		return count;
 	}
 	
-	public void setCount(Long count) {
+	public void setCount(long count) {
 		this.count = count;
 	}
 	

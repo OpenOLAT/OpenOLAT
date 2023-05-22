@@ -133,7 +133,7 @@ public class TagFilterSelectionController extends FormBasicController {
 		TagItem tagItem = new TagItem();
 		tagItem.setKey(tagInfo.getKey());
 		tagItem.setDisplayValue(tagInfo.getDisplayName());
-		tagItem.setCount(tagInfo.getCount());
+		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
 		tagItem.setSelected(selectedKeys.contains(tagInfo.getKey()));
 		
 		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont,  Link.NONTRANSLATED);
@@ -146,8 +146,7 @@ public class TagFilterSelectionController extends FormBasicController {
 	
 	
 	private String getDisplayTag(TagItem tagItem) {
-		long effCount = tagItem.getCount().longValue();
-		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(effCount));
+		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(tagItem.getCount()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {

@@ -22,7 +22,6 @@ package org.olat.core.commons.services.tag.ui.component;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,20 +64,18 @@ public class TagSelectionController extends FormBasicController {
 	private FormLink createLink;
 	
 	private final List<? extends TagInfo> allTags;
-	private final Set<Long> initialSelectedKeys;
-	private final Set<Long> selectedKeys;
+	private final Set<Long> currentSelectionKeys;
 	private final Set<String> initialNewTags;
 	private List<TagItem> tagItems;
 	private int counter;
 
 
 	public TagSelectionController(UserRequest ureq, WindowControl wControl, List<? extends TagInfo> allTags,
-			Set<Long> initialSelectedKeys, Set<Long> currentSelectionKeys, Set<String> initialNewTags) {
+			Set<Long> currentSelectionKeys, Set<String> initialNewTags) {
 		super(ureq, wControl, "tag_selection", Util.createPackageTranslator(TagUIFactory.class, ureq.getLocale()));
 		this.allTags = allTags;
-		this.initialSelectedKeys = initialSelectedKeys;
+		this.currentSelectionKeys = currentSelectionKeys;
 		this.initialNewTags = initialNewTags;
-		this.selectedKeys = new HashSet<>(currentSelectionKeys);
 		this.comparator = createComparator();
 		
 		initForm(ureq);
@@ -118,7 +115,7 @@ public class TagSelectionController extends FormBasicController {
 		resetQuickSearchButton.setIconLeftCSS("o_icon o_icon_remove_filters");
 		resetQuickSearchButton.setDomReplacementWrapperRequired(false);
 		
-		selectButton = uifactory.addFormLink("select", formLayout, Link.BUTTON_SMALL);
+		selectButton = uifactory.addFormLink("select", "apply", null, formLayout, Link.BUTTON_SMALL);
 		
 		tagsCont = FormLayoutContainer.createCustomFormLayout("tags", getTranslator(), velocity_root + "/tag_selection_tags.html");
 		tagsCont.setRootForm(mainForm);
@@ -151,11 +148,11 @@ public class TagSelectionController extends FormBasicController {
 		TagItem tagItem = new TagItem();
 		tagItem.setKey(tagInfo.getKey());
 		tagItem.setDisplayValue(tagInfo.getDisplayName());
-		tagItem.setCount(tagInfo.getCount());
-		tagItem.setSelected(selectedKeys.contains(tagInfo.getKey()));
+		tagItem.setCount(tagInfo.getCount() != null? tagInfo.getCount().longValue(): 0l);
+		tagItem.setSelected(currentSelectionKeys.contains(tagInfo.getKey()));
 		
 		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont,  Link.NONTRANSLATED);
-		link.setElementCssClass(getTagLinkCss(selectedKeys.contains(tagInfo.getKey())));
+		link.setElementCssClass(getTagLinkCss(currentSelectionKeys.contains(tagInfo.getKey())));
 		link.setDomReplacementWrapperRequired(false);
 		tagItem.setLink(link);
 		link.setUserObject(tagItem);
@@ -165,7 +162,7 @@ public class TagSelectionController extends FormBasicController {
 	private TagItem createNewTagItem(String tag) {
 		TagItem tagItem = new TagItem();
 		tagItem.setDisplayValue(tag);
-		tagItem.setCount(Long.valueOf(1));
+		tagItem.setCount(1l);
 		tagItem.setSelected(true);
 		
 		FormLink link = uifactory.addFormLink("tag_" + counter++, CMD_TOGGLE, getDisplayTag(tagItem), null, tagsCont,  Link.NONTRANSLATED);
@@ -177,18 +174,7 @@ public class TagSelectionController extends FormBasicController {
 	}
 	
 	private String getDisplayTag(TagItem tagItem) {
-		long effCount = tagItem.getCount().longValue();
-		
-		Long key = tagItem.getKey();
-		if (key != null) {
-			if (selectedKeys.contains(key) && !initialSelectedKeys.contains(key)) {
-				effCount++;
-			} else if (!selectedKeys.contains(key) && initialSelectedKeys.contains(key)) {
-				effCount--;
-			}
-		}
-		
-		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(effCount));
+		return translate("tag.count", tagItem.getDisplayValue(), String.valueOf(tagItem.getCount()));
 	}
 	
 	private String getTagLinkCss(boolean selected) {
@@ -232,11 +218,15 @@ public class TagSelectionController extends FormBasicController {
 	}
 	
 	private void doSelect(UserRequest ureq) {
+		Set<Long> selectionKeys = tagItems.stream()
+				.filter(item -> item.getKey() != null && item.isSelected())
+				.map(TagItem::getKey)
+				.collect(Collectors.toSet());
 		Set<String> newTags = tagItems.stream()
-				.filter(item -> item.getKey() == null)
+				.filter(item -> item.getKey() == null && item.isSelected())
 				.map(TagItem::getDisplayValue)
 				.collect(Collectors.toSet());
-		fireEvent(ureq, new TagSelectionEvent(selectedKeys, newTags));
+		fireEvent(ureq, new TagSelectionEvent(selectionKeys, newTags));
 	}
 	
 	private void doCreateTag() {
@@ -245,24 +235,20 @@ public class TagSelectionController extends FormBasicController {
 		tagItems.sort(comparator);
 		createLink.setVisible(false);
 		selectButton.setFocus(true);
+		doResetQuickSearch();
 	}
 	
 	private void doToggleTag(FormLink link) {
 		if (link.getUserObject() instanceof TagItem tagItem) {
 			boolean selected = !tagItem.isSelected();
-			if (tagItem.getKey() != null) {
-				tagItem.setSelected(selected);
-				if (selected) {
-					selectedKeys.add(tagItem.getKey());
-				} else {
-					selectedKeys.remove(tagItem.getKey());
-				}
-				link.setI18nKey(getDisplayTag(tagItem));
-				link.setElementCssClass(getTagLinkCss(selected));
+			tagItem.setSelected(selected);
+			if (selected) {
+				tagItem.setCount(tagItem.getCount() + 1);
 			} else {
-				tagItems.removeIf(item -> item.getKey() == null && item.getLink() == link);
-				tagsCont.setDirty(true);
+				tagItem.setCount(tagItem.getCount() - 1);
 			}
+			link.setI18nKey(getDisplayTag(tagItem));
+			link.setElementCssClass(getTagLinkCss(selected));
 		}
 	}
 
