@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>6.0.9</org.springframework.version>
-		<org.hibernate.version>6.2.2.Final</org.hibernate.version>
+		<org.hibernate.version>6.2.3.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.2</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.1</apache.cxf>
@@ -77,8 +77,8 @@
 		<org.slf4j>2.0.7</org.slf4j>
 		<org.bouncycastle>1.70</org.bouncycastle>
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
-		<io.undertow>2.3.5.Final</io.undertow>
-		<jackson.version>2.15.0</jackson.version>
+		<io.undertow>2.3.6.Final</io.undertow>
+		<jackson.version>2.15.1</jackson.version>
 		<swagger.ui.version>4.18.2</swagger.ui.version>
 		<com.mysql.version>8.0.33</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
@@ -1715,7 +1715,7 @@
 			<!-- Used by at least commons-fileupload, webdriver -->
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.11.0</version>
+			<version>2.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
