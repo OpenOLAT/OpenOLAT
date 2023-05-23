@@ -96,6 +96,7 @@ public class InfoMessageManagerImpl implements InfoMessageManager {
 		}
 	}
 
+	@Override
 	public List<InfoMessage> loadUnpublishedInfoMessages(int firstResult, int maxResults) {
 		QueryBuilder qb = new QueryBuilder();
 		Date currentDate = new Date();

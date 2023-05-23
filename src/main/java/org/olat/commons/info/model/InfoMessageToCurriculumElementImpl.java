@@ -44,6 +44,8 @@ import org.olat.modules.curriculum.model.CurriculumElementImpl;
 @Table(name = "o_info_message_to_cur_el")
 public class InfoMessageToCurriculumElementImpl implements Persistable, InfoMessageToCurriculumElement {
 
+	private static final long serialVersionUID = -8796942355694828531L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", nullable = false, unique = true, updatable = false)
@@ -80,6 +82,22 @@ public class InfoMessageToCurriculumElementImpl implements Persistable, InfoMess
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? -67876 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof InfoMessageToCurriculumElementImpl info) {
+			return getKey() != null && getKey().equals(info.getKey());
+		}
+		return false;
 	}
 
 	@Override

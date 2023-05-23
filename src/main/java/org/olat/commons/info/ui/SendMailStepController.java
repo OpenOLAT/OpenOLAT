@@ -54,6 +54,8 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.DateUtils;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
@@ -99,6 +101,8 @@ public class SendMailStepController extends StepFormBasicController {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private InfoMessageManager infoMessageManager;
+	@Autowired
+	private BusinessGroupService businessGroupService;
 
 
 	public SendMailStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, SendMailOption subscriberOption,
@@ -176,9 +180,15 @@ public class SendMailStepController extends StepFormBasicController {
 		String noOfSubscribersString = String.valueOf(subscribers.size());
 
 		// get courseMembers, to show the size
-		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(ores, true);
-		List<Identity> courseMembers = repositoryEntryRelationDao.getMembers(repositoryEntry, RepositoryEntryRelationType.all,
+		List<Identity> members;
+		if("BusinessGroup".equals(ores.getResourceableTypeName())) {
+			BusinessGroup businessGroup = businessGroupService.loadBusinessGroup(ores.getResourceableId());
+			members = businessGroupService.getMembers(businessGroup, GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
+		} else {
+			RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(ores, true);
+			members = repositoryEntryRelationDao.getMembers(repositoryEntry, RepositoryEntryRelationType.all,
 				GroupRoles.owner.name(), GroupRoles.coach.name(), GroupRoles.participant.name());
+		}
 
 		// notification cards, either only notify subscribers or notify subscriber and send e-mails
 		SelectionValues notificationSV = new SelectionValues();
@@ -191,7 +201,7 @@ public class SendMailStepController extends StepFormBasicController {
 
 		// recipient, either all course members or individual receivers
 		SelectionValues recipientSV = new SelectionValues();
-		recipientSV.add(entry(ALL_COURSE_MEMBERS, translate("wizard.step1.recipient.all", String.valueOf(courseMembers.size()))));
+		recipientSV.add(entry(ALL_COURSE_MEMBERS, translate("wizard.step1.recipient.all", String.valueOf(members.size()))));
 		recipientSV.add(entry(INDIVIDUAL_RECIPIENT, translate("wizard.step1.recipient.individual")));
 		recipientEl = uifactory.addRadiosVertical("wizard.step1.recipient.selection", formLayout, recipientSV.keys(), recipientSV.values());
 		recipientEl.select(ALL_COURSE_MEMBERS, true);

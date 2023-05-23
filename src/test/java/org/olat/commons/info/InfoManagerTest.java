@@ -412,7 +412,7 @@ public class InfoManagerTest extends OlatTestCase {
 		infoMessageManager.saveInfoMessage(msg2);
 		dbInstance.commitAndCloseSession();
 		
-		sleep(100);
+		sleep(1100);
 
 		// load and assert that only one infoMessage was retrieved, because other one is already published
 		List<InfoMessage> infoMessages = infoMessageManager.loadUnpublishedInfoMessages(0, -1);

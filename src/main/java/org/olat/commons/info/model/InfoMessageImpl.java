@@ -293,8 +293,7 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof InfoMessage) {
-			InfoMessage info = (InfoMessage)obj;
+		if(obj instanceof InfoMessage info) {
 			return getKey() != null && getKey().equals(info.getKey());
 		}
 		return false;

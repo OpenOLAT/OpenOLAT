@@ -43,6 +43,9 @@ import org.olat.group.BusinessGroupImpl;
 @Entity(name = "infomessagetogroup")
 @Table(name = "o_info_message_to_group")
 public class InfoMessageToGroupImpl implements Persistable, InfoMessageToGroup {
+	
+	private static final long serialVersionUID = 9124642642066133154L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id", nullable = false, unique = true, insertable = true, updatable = false)
@@ -81,6 +84,22 @@ public class InfoMessageToGroupImpl implements Persistable, InfoMessageToGroup {
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+	
+	@Override
+	public int hashCode() {
+		return getKey() == null ? 789998 : getKey().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof InfoMessageToGroupImpl info) {
+			return getKey() != null && getKey().equals(info.getKey());
+		}
+		return false;
 	}
 
 	@Override

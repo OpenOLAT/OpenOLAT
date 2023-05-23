@@ -115,8 +115,7 @@ public class InfoMessageCEPage {
 	 */
 	public InfoMessageCEPage assertOnMessageTitle(String title) {
 		By titleBy = By.xpath("//div[contains(@class,'o_msg')]//div//h3[contains(text(),'" + title + "')]");
-		String titleEl = browser.findElement(titleBy).getText();
-		Assert.assertTrue(titleEl.contains(title));
+		OOGraphene.waitElement(titleBy, browser);
 		return this;
 	}
 	

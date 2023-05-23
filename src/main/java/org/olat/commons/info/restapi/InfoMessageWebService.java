@@ -20,10 +20,8 @@
 
 package org.olat.commons.info.restapi;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -68,7 +66,7 @@ public class InfoMessageWebService {
 	@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")
 	@ApiResponse(responseCode = "404", description = "Not Found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getMessage(@Context HttpServletRequest request) {
+	public Response getMessage() {
 		InfoMessageVO msgVO = new InfoMessageVO(msg);
 		return Response.ok(msgVO).build();
 	}
