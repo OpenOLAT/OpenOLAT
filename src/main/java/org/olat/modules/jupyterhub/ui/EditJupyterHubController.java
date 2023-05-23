@@ -107,12 +107,14 @@ public class EditJupyterHubController extends FormBasicController {
 		String imageCheckingServiceUrl = jupyterHub != null ? jupyterHub.getImageCheckingServiceUrl() : "";
 		imageCheckingServiceUrlEl = uifactory.addTextElement("jupyterHub.imageCheckingServiceUrl",
 				"form.hub.imageCheckingServiceUrl", 255, imageCheckingServiceUrl, formLayout);
+		imageCheckingServiceUrlEl.setExampleKey("form.hub.imageCheckingServiceUrl.example", null);
 
 		String infoText = jupyterHub != null ? jupyterHub.getInfoText() : "";
 		infoTextEl = uifactory.addRichTextElementVeryMinimalistic("jupyterHub.infoText",
 				"form.hub.infoText", infoText, 3, -1, true, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		infoTextEl.getEditorConfiguration().disableImageAndMovie();
+		infoTextEl.getEditorConfiguration().disableMathEditor();
 		infoTextEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 
 		uifactory.addSpacerElement("jupyterHub.spacer", formLayout, false);
@@ -121,11 +123,11 @@ public class EditJupyterHubController extends FormBasicController {
 		jupyterHubUrlEl = uifactory.addTextElement("jupyterHub.url", "form.hub.url", 255, jupyterHubUrl, formLayout);
 		jupyterHubUrlEl.setMandatory(true);
 
-		String ltiKey = jupyterHub != null && jupyterHub.getLtiKey() != null ? jupyterHub.getLtiKey() : "";
-		ltiKeyEl = uifactory.addTextElement("jupyterHub.ltiKey", "form.hub.ltiKey", 255, ltiKey, formLayout);
+//		String ltiKey = jupyterHub != null && jupyterHub.getLtiKey() != null ? jupyterHub.getLtiKey() : "";
+//		ltiKeyEl = uifactory.addTextElement("jupyterHub.ltiKey", "form.hub.ltiKey", 255, ltiKey, formLayout);
 
-		accessTokenEl = uifactory.addStaticTextElement("jupyterHub.accessToken", "form.hub.accessToken", accessToken, formLayout);
-		accessTokenEl.setElementCssClass("text-muted");
+//		accessTokenEl = uifactory.addStaticTextElement("jupyterHub.accessToken", "form.hub.accessToken", accessToken, formLayout);
+//		accessTokenEl.setElementCssClass("text-muted");
 
 		clientEl = uifactory.addStaticTextElement("jupyterHub.clientId", "table.header.hub.clientId", clientId, formLayout);
 		clientEl.setElementCssClass("text-muted");
@@ -237,7 +239,7 @@ public class EditJupyterHubController extends FormBasicController {
 		double cpuAsDouble = Double.parseDouble(cpuEl.getValue());
 		String imageCheckingServiceUrl = imageCheckingServiceUrlEl.getValue();
 		String infoText = infoTextEl.getValue();
-		String ltiKey = ltiKeyEl.getValue();
+//		String ltiKey = ltiKeyEl.getValue();
 		JupyterHub.AgreementSetting agreementSetting = JupyterHub.AgreementSetting.valueOf(dataTransmissionAgreementEl.getSelectedKey());
 
 		if (jupyterHub == null) {
@@ -251,7 +253,7 @@ public class EditJupyterHubController extends FormBasicController {
 
 		jupyterHub.setImageCheckingServiceUrl(imageCheckingServiceUrl);
 		jupyterHub.setInfoText(infoText);
-		jupyterHub.setLtiKey(ltiKey);
+//		jupyterHub.setLtiKey(ltiKey);
 
 		jupyterManager.updateJupyterHub(jupyterHub);
 

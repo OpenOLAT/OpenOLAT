@@ -98,6 +98,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		enabledKV.add(SelectionValues.entry("on", translate("on")));
 		initForm(ureq);
 		loadModel();
+		updateUi();
 	}
 
 	@Override
@@ -237,11 +238,20 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 
 	private void updateUi() {
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
+
+		if (enabledEl.isAtLeastSelected(1)) {
+			hubsTable.setVisible(true);
+			addJupyterHubButton.setVisible(true);
+		} else {
+			hubsTable.setVisible(false);
+			addJupyterHubButton.setVisible(false);
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (enabledEl == source) {
+			loadModel();
 			doSetEnabled();
 		} else if (addJupyterHubButton == source) {
 			doAdd(ureq);
@@ -269,6 +279,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 			jupyterHubModule.setEnabled(false);
 			jupyterHubModule.setEnabledForCourseElement(false);
 		}
+		updateUi();
 	}
 
 	private void doAdd(UserRequest ureq) {
