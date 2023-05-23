@@ -75,7 +75,7 @@ public class SendMailStepController extends StepFormBasicController {
 	private static final String ALL_COURSE_MEMBERS = "all.course.members";
 	private static final String INDIVIDUAL_RECIPIENT = "individual";
 	private static final String ONLY_NOTIFY_SUBS = "only.notify.subs";
-	private static final String SEND_TO_SUBS_AND_MAILS = "send.to.subs.mail";
+	protected static final String SEND_TO_SUBS_AND_MAILS = "send.to.subs.mail";
 
 	private final String[] sendSubscriberOptionKeys;
 	private final String[] sendSubscriberOptionValues;
@@ -305,6 +305,7 @@ public class SendMailStepController extends StepFormBasicController {
 		// only if the option to notify subscribers and send mails is selected, it is necessary to add the selected options for sending mails
 		// otherwise, nothing to do here
 		if (notificationEl.isKeySelected(SEND_TO_SUBS_AND_MAILS)) {
+			addToRunContext(WizardConstants.PUBLICATION_NOTIFICATION_TYPE, SEND_TO_SUBS_AND_MAILS);
 			if (sendSubscriberSelection != null) {
 				addToRunContext(WizardConstants.SEND_MAIL_SUBSCRIBERS, sendSubscriberSelection.isKeySelected(WizardConstants.SEND_MAIL_SUBSCRIBERS));
 			}
@@ -324,6 +325,8 @@ public class SendMailStepController extends StepFormBasicController {
 			if (sendCurriculumMemberSelection != null) {
 				addToRunContext(WizardConstants.SEND_CURRICULA, sendCurriculumMemberSelection.getSelectedKeys());
 			}
+		} else {
+			addToRunContext(WizardConstants.PUBLICATION_NOTIFICATION_TYPE, ONLY_NOTIFY_SUBS);
 		}
 
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

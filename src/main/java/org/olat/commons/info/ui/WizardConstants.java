@@ -40,6 +40,6 @@ public class WizardConstants {
 	public static final String PUBLICATION_DATE_TYPE ="pubSelection";
 	public static final String PUBLICATION_DATE ="pubDate";
 	public static final String PUBLICATION_DATE_SELECT_INDIVIDUAL = "edit.publication.individual";
-
+	public static final String PUBLICATION_NOTIFICATION_TYPE = "publicationNotificationType";
 
 }
