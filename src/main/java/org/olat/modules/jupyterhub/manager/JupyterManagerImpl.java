@@ -200,9 +200,10 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		toolDeployment.setDisplayWidth("auto");
 		toolDeployment.setDisplayHeight("auto");
 		toolDeployment.setParticipantRoles("Learner");
-		toolDeployment.setCoachRoles("TeachingAssistant,Instructor,Mentor");
-		toolDeployment.setAuthorRoles("ContentDeveloper,Administrator,TeachingAssistant,Instructor,Mentor");
+		toolDeployment.setCoachRoles("Instructor,Learner");
+		toolDeployment.setAuthorRoles("Instructor,Learner");
 		toolDeployment.setSendUserAttributesList(List.of("email", "firstName", "lastName"));
+		toolDeployment.setNameAndRolesProvisioningServicesEnabled(true);
 		setCustomAttributes(toolDeployment, jupyterHub, image);
 		return lti13Service.updateToolDeployment(toolDeployment);
 	}

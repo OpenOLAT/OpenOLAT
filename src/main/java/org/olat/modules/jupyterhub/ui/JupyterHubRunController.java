@@ -124,7 +124,7 @@ public class JupyterHubRunController extends BasicController {
 
 	private void initLti(UserRequest ureq, WindowControl wControl) {
 		ltiCtrl = new LTI13DisplayController(ureq, wControl, jupyterDeployment.getLtiToolDeployment(),
-				false, false, true);
+				userCourseEnv.isAdmin(), userCourseEnv.isCoach(), userCourseEnv.isParticipant());
 		listenTo(ltiCtrl);
 	}
 
