@@ -19,6 +19,7 @@
  */
 package org.olat.modules.jupyterhub.manager;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,7 +58,7 @@ public class JupyterDeploymentDAOTest extends OlatTestCase {
 		String subIdent = "12345678";
 		String image = "jupyter/minimal-notebook";
 		JupyterHub jupyterHub = jupyterManager.createJupyterHub("Test hub",
-				"https://jupyterhub.openolat.org", clientId, "3 GB", 3,
+				"https://jupyterhub.openolat.org", clientId, "3 G", BigDecimal.valueOf(3),
 				JupyterHub.AgreementSetting.configurableByAuthor);
 		LTI13ToolDeployment toolDeployment = jupyterManager.createLtiToolDeployment(jupyterHub.getLtiTool(), entry,
 				subIdent, jupyterHub, image);

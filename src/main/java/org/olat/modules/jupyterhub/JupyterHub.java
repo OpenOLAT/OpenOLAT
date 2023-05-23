@@ -19,6 +19,8 @@
  */
 package org.olat.modules.jupyterhub;
 
+import java.math.BigDecimal;
+
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.util.StringHelper;
@@ -45,9 +47,14 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 
 	void setRam(String ram);
 
-	long getCpu();
+	/**
+	 * The number of CPUs that the JupyterHub runtime is allowed to use per user. Can be a fractional value.
+	 *
+	 * @return The CPU value as a BigDecimal with scale 2 to represent numbers such as 0.25.
+	 */
+	BigDecimal getCpu();
 
-	void setCpu(long cpu);
+	void setCpu(BigDecimal cpu);
 
 	String getImageCheckingServiceUrl();
 
@@ -93,12 +100,12 @@ public interface JupyterHub extends ModifiedInfo, CreateInfo {
 		}
 
 		ram = ram.toUpperCase();
-		return ram.matches("[. 0-9]+(KB|MB|GB)");
+		return ram.matches("[. 0-9]+(K|M|G|T)");
 	}
 
 	static String standardizeRam(String ram) {
 		if (ram == null) {
-			return "0MB";
+			return "0M";
 		}
 		ram = ram.toUpperCase();
 		return ram.replace(" ", "");

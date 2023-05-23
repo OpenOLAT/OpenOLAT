@@ -19,6 +19,7 @@
  */
 package org.olat.modules.jupyterhub;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.olat.core.gui.components.util.SelectionValues;
@@ -43,7 +44,7 @@ public interface JupyterManager {
 
 	List<JupyterHubDAO.JupyterHubApplication> getJupyterHubApplications(Long key);
 
-	JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, long cpu,
+	JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, BigDecimal cpu,
 								JupyterHub.AgreementSetting agreementSetting);
 
 	boolean isInUse(JupyterHub jupyterHub);

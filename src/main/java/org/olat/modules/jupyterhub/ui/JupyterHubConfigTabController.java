@@ -127,7 +127,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 	}
 
 	private void setValues(String image, Boolean suppressDataTransmissionAgreement) {
-		cpuEl.setValue("" + jupyterHub.getCpu());
+		cpuEl.setValue(jupyterHub.getCpu().stripTrailingZeros().toPlainString());
 		ramEl.setValue(jupyterHub.getRam());
 		if (StringHelper.containsNonWhitespace(jupyterHub.getInfoText())) {
 			infoTextEl.setValue(jupyterHub.getInfoText());

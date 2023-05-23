@@ -19,6 +19,7 @@
  */
 package org.olat.modules.jupyterhub.ui;
 
+import java.math.BigDecimal;
 import java.net.URL;
 
 import org.olat.core.gui.UserRequest;
@@ -93,13 +94,15 @@ public class EditJupyterHubController extends FormBasicController {
 		nameEl = uifactory.addTextElement("jupyterHub.name", "table.header.hub.name", 255, name, formLayout);
 		nameEl.setMandatory(true);
 
-		String cpu = jupyterHub != null ? jupyterHub.getCpu() + "" : "1";
+		String cpu = jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1";
 		cpuEl = uifactory.addTextElement("jupyterHub.cpu", "table.header.hub.cpu", 4, cpu, formLayout);
 		cpuEl.setMandatory(true);
+		cpuEl.setExampleKey("form.hub.cpu.example", null);
 
-		String ram = jupyterHub != null ? jupyterHub.getRam() : "1 GB";
+		String ram = jupyterHub != null ? jupyterHub.getRam() : "1 G";
 		ramEl = uifactory.addTextElement("jupyterHub.ram", "table.header.hub.ram", 32, ram, formLayout);
 		ramEl.setMandatory(true);
+		ramEl.setExampleKey("form.hub.ram.example", null);
 
 		String imageCheckingServiceUrl = jupyterHub != null ? jupyterHub.getImageCheckingServiceUrl() : "";
 		imageCheckingServiceUrlEl = uifactory.addTextElement("jupyterHub.imageCheckingServiceUrl",
@@ -169,8 +172,8 @@ public class EditJupyterHubController extends FormBasicController {
 	private boolean validateCpu() {
 		cpuEl.clearError();
 		try {
-			long cpu = Long.parseLong(cpuEl.getValue());
-			if (cpu <= 0 || cpu > 32) {
+			double cpuDouble = Double.parseDouble(cpuEl.getValue());
+			if (cpuDouble <= 0 || cpuDouble > 32) {
 				throw new IllegalArgumentException("Invalid CPU value");
 			}
 		} catch (Exception e) {
@@ -231,19 +234,19 @@ public class EditJupyterHubController extends FormBasicController {
 		String name = nameEl.getValue();
 		String jupyterHubUrl = jupyterHubUrlEl.getValue();
 		String ram = ramEl.getValue();
-		long cpu = Long.parseLong(cpuEl.getValue());
+		double cpuAsDouble = Double.parseDouble(cpuEl.getValue());
 		String imageCheckingServiceUrl = imageCheckingServiceUrlEl.getValue();
 		String infoText = infoTextEl.getValue();
 		String ltiKey = ltiKeyEl.getValue();
 		JupyterHub.AgreementSetting agreementSetting = JupyterHub.AgreementSetting.valueOf(dataTransmissionAgreementEl.getSelectedKey());
 
 		if (jupyterHub == null) {
-			jupyterHub = jupyterManager.createJupyterHub(name, jupyterHubUrl, clientId, ram, cpu, agreementSetting);
+			jupyterHub = jupyterManager.createJupyterHub(name, jupyterHubUrl, clientId, ram, BigDecimal.valueOf(cpuAsDouble), agreementSetting);
 		} else {
 			jupyterHub.setName(nameEl.getValue());
 			jupyterHub.setJupyterHubUrl(jupyterHubUrl);
 			jupyterHub.setRam(ram);
-			jupyterHub.setCpu(cpu);
+			jupyterHub.setCpu(BigDecimal.valueOf(cpuAsDouble));
 		}
 
 		jupyterHub.setImageCheckingServiceUrl(imageCheckingServiceUrl);

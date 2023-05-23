@@ -19,6 +19,7 @@
  */
 package org.olat.modules.jupyterhub.manager;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +52,8 @@ import org.springframework.stereotype.Service;
 public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDeletable {
 
 	private static final String JUPYTER_PROFILE_SUFFIX = " (Jupyter Hub Profile)";
-	private static final String JUPYTER_HUB_INITIATE_LOGIN_URL_SUFFIX = "/hub/oauth_login";
-	private static final String JUPYTER_REDIRECT_URL_SUFFIX = "/hub/oauth_callback";
+	private static final String JUPYTER_HUB_INITIATE_LOGIN_URL_SUFFIX = "/hub/lti13/oauth_login";
+	private static final String JUPYTER_REDIRECT_URL_SUFFIX = "/hub/lti13/oauth_callback";
 	private static final String JUPYTER_PUBLIC_KEY_URL_SUFFIX = "/hub/lti13/jwks";
 
 	@Autowired
@@ -98,7 +99,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 	}
 
 	@Override
-	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, long cpu,
+	public JupyterHub createJupyterHub(String name, String jupyterHubUrl, String clientId, String ram, BigDecimal cpu,
 									   JupyterHub.AgreementSetting agreementSetting) {
 		LTI13Tool ltiTool = createLtiTool(name, jupyterHubUrl, clientId);
 		return jupyterHubDAO.createJupyterHub(name, ram, cpu, ltiTool, agreementSetting);
@@ -223,10 +224,10 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 		CustomAttributesBuilder builder = new CustomAttributesBuilder();
 		builder
 				.add("singleuser_image", StringHelper.blankIfNull(image))
-				.add("memory_guaranteed", "128MB")
-				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1GB")
-				.add("56567cpu_guaranteed", "1")
-				.add("567567cpu_limit", jupyterHub != null ? Long.toString(jupyterHub.getCpu()) : "1")
+				.add("memory_guarantee", "128M")
+				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1G")
+				.add("cpu_guarantee", "1")
+				.add("cpu_limit", jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1")
 				.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
 				.add("course_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_ID)
 				.add("course_url", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_URL)

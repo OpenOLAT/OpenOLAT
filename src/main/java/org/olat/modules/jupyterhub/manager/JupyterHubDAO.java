@@ -19,6 +19,7 @@
  */
 package org.olat.modules.jupyterhub.manager;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,7 +45,7 @@ public class JupyterHubDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public JupyterHub createJupyterHub(String name, String ram, long cpu, LTI13Tool ltiTool,
+	public JupyterHub createJupyterHub(String name, String ram, BigDecimal cpu, LTI13Tool ltiTool,
 									   JupyterHub.AgreementSetting agreementSetting) {
 		JupyterHubImpl jupyterHub = new JupyterHubImpl();
 		jupyterHub.setCreationDate(new Date());
