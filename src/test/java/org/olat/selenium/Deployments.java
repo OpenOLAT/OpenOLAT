@@ -41,6 +41,7 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
 
@@ -111,6 +112,13 @@ public class Deployments {
 			return drivers.get(0);
 		}
 		
+		WebDriver driver = createWebDriver(id);
+		drivers.add(driver);
+		driver.manage().window().setSize(new Dimension(1024,800));
+		return driver;
+	}
+	
+	protected WebDriver createWebDriver(int id) {
 		String browser = System.getProperty("webdriver.browser");
 		WebDriver driver;
 		if("safari".equals(browser) && id == 0) {
@@ -118,13 +126,15 @@ public class Deployments {
 		} else if("edge".equals(browser)) {
 			driver = new EdgeDriver(new EdgeOptions());
 		} else if("firefox".equals(browser)) {
-			driver = new FirefoxDriver(new FirefoxOptions());
+			FirefoxOptions options = new FirefoxOptions();
+			FirefoxProfile profile = new FirefoxProfile();
+			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
+			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
+			options.setProfile(profile);
+			driver = new FirefoxDriver(options);
 		} else {
 			driver = new ChromeDriver(new ChromeOptions());
 		}
-		
-		drivers.add(driver);
-		driver.manage().window().setSize(new Dimension(1024,800));
 		return driver;
 	}
 }
