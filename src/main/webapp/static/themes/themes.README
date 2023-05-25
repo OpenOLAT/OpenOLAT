@@ -125,16 +125,17 @@ the system will work with the selected right away.
 Don't forget to tweet @openolat to report your success together with a screenshot of your new theme!
 
 
-Installing SASS
+Install SASS
 ======================
-installing on a Fedora-like-System
-ensure, that "/etc/yum.repos.d/fedora.repo" includes "Everything"
-yum install ruby
-yum install ruby-devel
-yum install rubygem-rake
-gem install sass
+OpenOlat requires Dart Sass > 1.33.
 
-Note OpenOLAT requires SASS > 3.3
+Install on macOS with brew:
+brew install sass/sass/sass
+
+Install on Windows with choco:
+choco install sass
+
+For more information, visit https://sass-lang.com/install.
 
 
 Advanced Features
