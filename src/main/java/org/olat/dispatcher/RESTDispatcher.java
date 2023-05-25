@@ -202,7 +202,7 @@ public class RESTDispatcher implements Dispatcher {
 						//error, redirect to login screen
 						DispatcherModule.redirectToDefaultDispatcher(response);
 					}
-				} else if (Windows.getWindows(usess).getChiefController(ureq) == null) {
+				} else if (Windows.getWindows(ureq).getChiefController(ureq) == null) {
 					redirectAuthenticatedTo(usess, ureq, encodedRestPart);
 					return;
 				}

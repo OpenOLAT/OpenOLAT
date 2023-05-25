@@ -26,6 +26,7 @@ import java.net.URLDecoder;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
@@ -46,6 +47,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
@@ -90,6 +92,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		}
 		
 		UserRequest ureq = null;
+		final String pathInfo = request.getPathInfo();
 		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
 		try{
 			uriPrefix = uriPrefix + identifier.getType() + "/";
@@ -101,13 +104,27 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		}
 		
 		UserSession usess = ureq.getUserSession();
-		if (usess.isAuthenticated()) {
-			dispatchAuthenticated(response, identifier, ureq, usess);
+		if(pathInfo != null && pathInfo.contains("close-window")) {
+			DispatcherModule.setNotContent(pathInfo, response);
+		} else if (usess.isAuthenticated()) {
+			if(persistentAuthenticatedRequest(identifier, ureq) && ureq.isValidDispatchURI()) {
+				dispatchValidUnauthenticated(ureq);
+			} else {
+				dispatchAuthenticated(response, identifier, ureq, usess);
+			}
 		} else if (ureq.isValidDispatchURI()) {
 			dispatchValidUnauthenticated(ureq);
 		} else {
-			dispatchUnautenticated(ureq, identifier, uriPrefix);
+			dispatchUnautenticated(ureq, request, identifier, uriPrefix);
 		}
+	}
+	
+	/**
+	 * Started an evaluation form unauthenticated but authenticated later (use the /survey/ dispatcher and not the authenticated)
+	 * and can access a persistent window (persistent across user session and which stick to the HTTP session)
+	 */
+	private boolean persistentAuthenticatedRequest(EvaluationFormParticipationIdentifier identifier, UserRequest ureq) {
+		return identifier.getKey().contains(":") && Windows.hasPersistentWindow(ureq);
 	}
 
 	private void dispatchAuthenticated(HttpServletResponse response, EvaluationFormParticipationIdentifier identifier,
@@ -119,14 +136,14 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				.getProvider(participation.getSurvey().getIdentifier().getOLATResourceable());
 		if (participation.getExecutor().equals(usess.getIdentity()) && standaloneProvider.hasBusinessPath(participation)) {
 			String path = standaloneProvider.getBusinessPath(participation);
-			dispatchAuthenticated(ureq, usess, path);
+			dispatchAuthenticated(ureq, path);
 		} else {
 			DispatcherModule.redirectToDefaultDispatcher(response);
 		}
 	}
 	
-	private void dispatchAuthenticated(UserRequest ureq, UserSession usess, String path) {
-		ChiefController chiefController = Windows.getWindows(usess).getChiefController(ureq);
+	private void dispatchAuthenticated(UserRequest ureq, String path) {
+		ChiefController chiefController = Windows.getWindows(ureq).getChiefController(ureq);
 		if(chiefController == null) {
 			// not yet checked
 			String requestUri = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
@@ -156,12 +173,25 @@ public class EvaluationFormDispatcher implements Dispatcher {
 	private void dispatchValidUnauthenticated(UserRequest ureq) {
 		Windows windows = Windows.getWindows(ureq);
 		Window window = windows.getWindow(ureq);
-		window.dispatchRequest(ureq);
-		log.debug("Dispatch survey request by window {}", window.getInstanceId());
+		if(window == null) {
+			DispatcherModule.redirectToDefaultDispatcher(ureq.getHttpResp());
+		} else {
+			window.dispatchRequest(ureq);
+			log.debug("Dispatch survey request by window {}", window.getInstanceId());
+		}
 	}
 	
-	private void dispatchUnautenticated(UserRequest ureq, EvaluationFormParticipationIdentifier identifier, String uriPrefix) {
+	private void dispatchUnautenticated(UserRequest ureq, HttpServletRequest request, EvaluationFormParticipationIdentifier identifier, String uriPrefix) {
 		UserSession usess = ureq.getUserSession();
+		if(usess.getSessionInfo() == null) {
+			HttpSession session = request.getSession();
+			SessionInfo sinfo = new SessionInfo(null, session);
+			sinfo.setFromIP(ureq.getHttpReq().getRemoteAddr());
+			sinfo.setUserAgent(ureq.getHttpReq().getHeader("User-Agent"));
+			sinfo.setSecure(ureq.getHttpReq().isSecure());
+			sinfo.setLastClickTime();
+			usess.setSessionInfo(sinfo);
+		}
 		
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
@@ -171,7 +201,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 		ControllerCreator controllerCreator = new StandaloneExecutionCreator(identifier);
 		bfwcParts.setContentControllerCreator(controllerCreator);
 		
-		Windows windows = Windows.getWindows(usess);
+		Windows windows = Windows.getWindows(ureq);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 		if (!windowHere) {
 			synchronized (windows) {
@@ -179,7 +209,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				Window window = cc.getWindow();
 				window.setUriPrefix(uriPrefix);
 				ureq.overrideWindowComponentID(window.getDispatchID());
-				windows.registerWindow(cc);
+				windows.registerPersistentWindow(cc, request.getSession());
 			}
 		}
 

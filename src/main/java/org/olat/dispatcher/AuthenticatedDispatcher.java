@@ -344,7 +344,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			return;
 		}
 		
-		Windows windows = Windows.getWindows(usess);
+		Windows windows = Windows.getWindows(ureq);
 		ChiefController chiefController = windows.getChiefController(ureq);
 		if(chiefController == null && !usess.isAuthenticated()) {
 			redirectToDefaultDispatcher(ureq.getHttpReq(), ureq.getHttpResp());
@@ -384,7 +384,7 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			}
 			Window window = chiefController.getWindow();
 			window.setUriPrefix(ureq.getUriPrefix());
-			Windows.getWindows(usess).registerWindow(chiefController);
+			Windows.getWindows(ureq).registerWindow(chiefController);
 		}
 		
 		// If no client side window detected => open in new window, create new server side window

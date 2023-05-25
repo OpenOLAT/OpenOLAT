@@ -103,6 +103,10 @@ public class FIFOMap<T,U> {
 	public synchronized List<U> values() {
 		return new ArrayList<>(lhm.values());
 	}
+	
+	public synchronized List<T> keys() {
+		return new ArrayList<>(lhm.keySet());
+	}
 
 	/**
 	 * @return A copy of the entries

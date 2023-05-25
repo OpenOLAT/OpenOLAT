@@ -178,7 +178,7 @@ public class NewControllerFactory {
 		OLATResourceable ores = mainCe.getOLATResourceable();
 		
 		UserSession usess = ureq.getUserSession();
-		Window window = Windows.getWindows(usess).getWindow(ureq);
+		Window window = Windows.getWindows(ureq).getWindow(ureq);
 		if (window == null) {
 			log.debug("Found no window for jumpin => take WindowBackOffice");
 			window = wControl.getWindowBackOffice().getWindow();
