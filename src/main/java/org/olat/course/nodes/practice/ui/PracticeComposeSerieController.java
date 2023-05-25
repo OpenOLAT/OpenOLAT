@@ -42,7 +42,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableSingleSelectionFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
@@ -51,7 +50,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.PracticeCourseNode;
 import org.olat.course.nodes.practice.PlayMode;
@@ -184,7 +182,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 		correctValues.add(SelectionValues.entry("25-50", translate("filter.correct", "25", "50")));
 		correctValues.add(SelectionValues.entry("50-75", translate("filter.correct", "50", "75")));
 		correctValues.add(SelectionValues.entry("75-100", translate("filter.correct", "75", "100")));
-		filters.add(new FlexiTableSingleSelectionFilter(translate("filter.correct.label"),
+		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.correct.label"),
 				FILTER_CORRECT, correctValues, true));
 		
 		tableEl.setFilters(true, filters, false, false);
@@ -238,15 +236,17 @@ public class PracticeComposeSerieController extends FormBasicController {
 			levels = ((FlexiTableMultiSelectionFilter)levelFilter).getLongValues();
 		}
 		
-		Double correctFrom = null;
-		Double correctTo = null;
+		List<CorrectRange> scoreRanges = new ArrayList<>();
 		FlexiTableFilter correctFilter = FlexiTableFilter.getFilter(filters, FILTER_CORRECT);
-		if(correctFilter != null) {
-			String filterVal = correctFilter.getValue();
-			if(StringHelper.containsNonWhitespace(filterVal)) {
-				int index = filterVal.indexOf('-');
-				correctFrom = Double.parseDouble(filterVal.substring(0, index)) / 100.0d;
-				correctTo = Double.parseDouble(filterVal.substring(index + 1)) / 100.0d;
+		if(correctFilter instanceof FlexiTableMultiSelectionFilter multiCorrectFilter) {
+			List<String> filterValues = multiCorrectFilter.getValues();
+			if(filterValues != null && !filterValues.isEmpty()) {
+				for(String filterValue:filterValues) {
+					int index = filterValue.indexOf('-');
+					double correctFrom = Double.parseDouble(filterValue.substring(0, index)) / 100.0d;
+					double correctTo = Double.parseDouble(filterValue.substring(index + 1)) / 100.0d;
+					scoreRanges.add(new CorrectRange(correctFrom, correctTo));
+				}
 			}
 		}
 		
@@ -261,7 +261,7 @@ public class PracticeComposeSerieController extends FormBasicController {
 			}
 		}
 		
-		tableModel.filter(searchString, notAnswered, taxonomyLevelsKeyPath, includeWithoutTaxonomy, levels, correctFrom, correctTo);
+		tableModel.filter(searchString, notAnswered, taxonomyLevelsKeyPath, includeWithoutTaxonomy, levels, scoreRanges);
 		tableEl.reset(true, true, true);
 	}
 	
@@ -289,16 +289,15 @@ public class PracticeComposeSerieController extends FormBasicController {
 		if(newSerieButton == source) {
 			doStartSelectedItems(ureq);
 		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("play".equals(se.getCommand())) {
 					PracticeComposeItemRow row = tableModel.getObject(se.getIndex());
 					doStartSingleItem(ureq, row.getItem());
 				}
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				filterModel(null);
-			} else if(event instanceof FlexiTableSearchEvent) {
-				filterModel(((FlexiTableSearchEvent)event).getFilters());
+			} else if(event instanceof FlexiTableSearchEvent ftse) {
+				filterModel(ftse.getFilters());
 			}
 		}
 		
