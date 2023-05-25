@@ -227,7 +227,7 @@ public class JupyterManagerImpl implements JupyterManager, RepositoryEntryDataDe
 				.add("singleuser_image", StringHelper.blankIfNull(image))
 				.add("memory_guarantee", "128M")
 				.add("memory_limit", jupyterHub != null ? JupyterHub.standardizeRam(jupyterHub.getRam()) : "1G")
-				.add("cpu_guarantee", "1")
+				.add("cpu_guarantee", "0.5")
 				.add("cpu_limit", jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1")
 				.add("username", LTIManager.USER_PROPS_PREFIX + LTIManager.USER_NAME_PROP)
 				.add("course_id", LTIManager.COURSE_INFO_PREFIX + LTIManager.COURSE_INFO_COURSE_ID)
