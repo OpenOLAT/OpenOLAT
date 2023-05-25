@@ -173,7 +173,7 @@ public class ResourceInfoDispatcher implements Dispatcher {
 			ControllerCreator controllerCreator = (uureq, wControl) -> new RepositoryEntryPublicInfosController(uureq, wControl, entry);
 			bfwcParts.setContentControllerCreator(controllerCreator);
 
-			Windows windows = Windows.getWindows(usess);
+			Windows windows = Windows.getWindows(ureq);
 			boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 			if (!windowHere) {
 				synchronized (windows) {

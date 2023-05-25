@@ -185,7 +185,7 @@ public class LibraryDispatcher  implements Dispatcher {
 	}
 	
 	private String getRedirectToURL(UserSession usess, UserRequest ureq) {
-		ChiefController cc = Windows.getWindows(usess).getChiefController(ureq);
+		ChiefController cc = Windows.getWindows(ureq).getChiefController(ureq);
 		Window w = cc.getWindow();
 		
 		try(StringOutput sout = new StringOutput(30)) {

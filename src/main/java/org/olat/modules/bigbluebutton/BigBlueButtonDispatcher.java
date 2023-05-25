@@ -110,7 +110,7 @@ public class BigBlueButtonDispatcher implements Dispatcher {
 		ControllerCreator controllerCreator = new BigBlueButtonGuestCreator(meeting);
 		bfwcParts.setContentControllerCreator(controllerCreator);
 		
-		Windows windows = Windows.getWindows(usess);
+		Windows windows = Windows.getWindows(ureq);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 		if (!windowHere) {
 			synchronized (windows) {

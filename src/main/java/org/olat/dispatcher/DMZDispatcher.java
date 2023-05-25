@@ -187,8 +187,7 @@ public class DMZDispatcher implements Dispatcher {
 				// chief controller creator for sub path, e.g. 
 				subPathccc = dmzServicesByPath.get(sub);
 				if(subPathccc != null) {
-					UserSession usess = ureq.getUserSession();
-					Windows ws = Windows.getWindows(usess);
+					Windows ws = Windows.getWindows(ureq);
 					synchronized (ws) { //o_clusterOK by:fj per user session
 						ChiefController occ = subPathccc.createChiefController(ureq);
 						Window window = occ.getWindow();
@@ -201,7 +200,7 @@ public class DMZDispatcher implements Dispatcher {
 			}//else a /olat/dmz/ request
 
 			UserSession usess = ureq.getUserSession();
-			Windows ws = Windows.getWindows(usess);
+			Windows ws = Windows.getWindows(ureq);
 			//sync over the UserSession Instance as the Windows can be recreated in the synchronize block
 			//and make it useless under heavily load or 2 concurrent requests
 			synchronized (usess) { //o_clusterOK by:fj per user session
@@ -225,7 +224,7 @@ public class DMZDispatcher implements Dispatcher {
 					I18nManager.updateLocaleInfoToThread(usess);//update locale infos
 					
 					// request new windows since it is a new usersession, the old one was purged
-					ws = Windows.getWindows(usess);
+					ws = Windows.getWindows(ureq);
 				} else if (validDispatchUri) {
 					window = ws.getWindow(ureq);
 				} else if (dmzOnly) {
@@ -246,7 +245,7 @@ public class DMZDispatcher implements Dispatcher {
 					} 
 					
 					// request new windows since it is a new usersession, the old one was purged
-					ws = Windows.getWindows(usess);
+					ws = Windows.getWindows(ureq);
 				} else {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 					return;

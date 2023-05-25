@@ -319,7 +319,7 @@ public class LTI13ToolDispatcherDelegate {
 		ControllerCreator controllerCreator = new LTI13Creator();
 		bfwcParts.setContentControllerCreator(controllerCreator);
 		
-		Windows windows = Windows.getWindows(usess);
+		Windows windows = Windows.getWindows(ureq);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 		if (!windowHere) {
 			synchronized (windows) {

@@ -123,9 +123,7 @@ public class ContactTracingDispatcher implements Dispatcher {
 	}
 
 	private void dispatch(UserRequest ureq) {
-		UserSession usess = ureq.getUserSession();
-		Windows windows = Windows.getWindows(usess);
-
+		Windows windows = Windows.getWindows(ureq);
 		ChiefController chiefController = windows.getChiefController(ureq);
 		try {
 			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
@@ -141,7 +139,7 @@ public class ContactTracingDispatcher implements Dispatcher {
 		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
 		I18nManager.updateLocaleInfoToThread(usess);
 
-		Windows windows = Windows.getWindows(usess);
+		Windows windows = Windows.getWindows(ureq);
 		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
 		if (windowHere) {
 			dispatch(ureq);
