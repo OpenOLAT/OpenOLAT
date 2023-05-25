@@ -69,4 +69,8 @@ public interface JupyterManager {
 	void deleteJupyterHub(RepositoryEntry repositoryEntry, String subIdent);
 
 	void updateJupyterDeployment(JupyterDeployment jupyterDeployment);
+
+	CheckConnectionResponse checkConnection(String ltiKey, String clientId, String ltiMessageHint);
+
+	record CheckConnectionResponse(boolean success, String message) {}
 }

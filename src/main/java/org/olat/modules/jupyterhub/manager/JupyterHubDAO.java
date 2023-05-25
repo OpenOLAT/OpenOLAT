@@ -65,7 +65,7 @@ public class JupyterHubDAO {
 	}
 
 	public List<JupyterHub> getJupyterHubs() {
-		String query = "select hub from jupyterhub hub";
+		String query = "select hub from jupyterhub hub order by status asc, name asc";
 		return dbInstance.getCurrentEntityManager().createQuery(query, JupyterHub.class).getResultList();
 	}
 
@@ -74,7 +74,7 @@ public class JupyterHubDAO {
 				" (select count(deployment.key) from jupyterdeployment as deployment" +
 				" where deployment.jupyterHub.key = hub.key" +
 				" ) as numberOfApplications " +
-				"from jupyterhub as hub";
+				"from jupyterhub as hub order by hub.status asc, hub.name asc";
 		return dbInstance
 				.getCurrentEntityManager()
 				.createQuery(queryString, Object[].class)

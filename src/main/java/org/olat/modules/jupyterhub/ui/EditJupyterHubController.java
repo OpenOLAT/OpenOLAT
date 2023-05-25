@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
@@ -30,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
@@ -263,5 +265,23 @@ public class EditJupyterHubController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == checkConnectionButton) {
+			doCheckConnection();
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doCheckConnection() {
+		JupyterManager.CheckConnectionResponse response = jupyterManager.checkConnection(
+				jupyterHubUrlEl.getValue(), clientId, getIdentity().getKey().toString());
+		if (response.success()) {
+			showInfo("jupyterHub.checkConnection.ok", jupyterHubUrlEl.getValue());
+		} else {
+			showError("jupyterHub.checkConnection.error", new String[] { jupyterHubUrlEl.getValue(), response.message() });
+		}
 	}
 }
