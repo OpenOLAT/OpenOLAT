@@ -529,7 +529,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		postImportCopyConditions(envMapper);
-		postCopyExceptionalObligations(envMapper);
+		postImportCopyExceptionalObligations(envMapper);
 		postCopyGradeScale(sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent(),
 				course.getCourseEnvironment().getCourseGroupManager().getCourseEntry(), getIdent());
 		
@@ -589,6 +589,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		postImportCopyConditions(envMapper);
+		postImportCopyExceptionalObligations(envMapper);
 	}
 	
 	/**
@@ -779,7 +780,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		}
 	}
 	
-	private void postCopyExceptionalObligations(CourseEnvironmentMapper envMapper) {
+	private void postImportCopyExceptionalObligations(CourseEnvironmentMapper envMapper) {
 		if (!envMapper.isLearningPathNodeAccess()) {
 			return;
 		}
@@ -792,8 +793,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		LearningPathConfigs learningPathConfigs = learningPathService.getConfigs(this);
 		learningPathConfigs.getExceptionalObligations().forEach(obl -> {
-			if (obl instanceof BusinessGroupExceptionalObligation) {
-				BusinessGroupExceptionalObligation bgeo = (BusinessGroupExceptionalObligation)obl;
+			if (obl instanceof BusinessGroupExceptionalObligation bgeo) {
 				BusinessGroupRef oblGroup = bgeo.getBusinessGroupRef();
 				if (oblGroup != null) {
 					Optional<BusinessGroupReference> mappedGroup = envMapper.getGroups().stream().filter(group -> group.getOriginalKey().equals(oblGroup.getKey())).findFirst();
