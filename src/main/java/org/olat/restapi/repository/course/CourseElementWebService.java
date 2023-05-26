@@ -354,7 +354,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Path("singlepage/{nodeId}")
-	@Operation(summary = "Update a Single Page Element on course", description = "This updates a Single Page Element onto a given course")
+	@Operation(summary = "Update an HTML page element on course", description = "This updates an HTML page element onto a given course")
 	@ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
 		@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
 		@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) })
