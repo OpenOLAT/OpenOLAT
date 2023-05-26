@@ -30,8 +30,8 @@ import java.util.List;
  */
 public interface PageProvider {
 	
-	public List<? extends PageElement> getElements();
+	List<? extends PageElement> getElements();
 
-	public List<? extends PageElementHandler> getAvailableHandlers();
+	List<? extends PageElementHandler> getAvailableHandlers();
 
 }

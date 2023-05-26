@@ -21,6 +21,7 @@ package org.olat.modules.ceditor.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.Transient;
 
@@ -48,10 +49,10 @@ public class ContainerSettings {
 		this.type = type;
 	}
 	
-	public void updateType(ContainerLayout type) {
-		setType(type);
+	public void updateType(ContainerLayout newType) {
+		setType(newType);
 		
-		int numOfBlocks = type.numberOfBlocks();
+		int numOfBlocks = newType.numberOfBlocks();
 		if(columns != null && columns.size() >= numOfBlocks) {
 			ContainerColumn lastColumn = columns.get(numOfBlocks - 1);
 			for(int i=numOfBlocks; i<columns.size(); i++) {
@@ -191,6 +192,20 @@ public class ContainerSettings {
 		ContainerColumn column = getColumn(elementId);
 		if(column != null) {
 			column.moveDown(elementId);
+		}
+	}
+	
+	public void remapElementIds(Map<String,String> mapKeys) {
+		List<ContainerColumn> columnList = getColumns();
+		for(ContainerColumn column:columnList) {
+			List<String> elementsIds = column.getElementIds();
+			for(int i=elementsIds.size(); i-->0; ) {
+				String elementId = elementsIds.get(i);
+				if(mapKeys.containsKey(elementId)) {
+					String newElementId = mapKeys.get(elementId);
+					elementsIds.set(i, newElementId);
+				}	
+			}
 		}
 	}
 	

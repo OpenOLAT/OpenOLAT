@@ -56,12 +56,12 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ContentElement;
 import org.olat.modules.invitation.InvitationService;
 import org.olat.modules.invitation.InvitationTypeEnum;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.AccessRightChange;
@@ -187,7 +187,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		if(StringHelper.containsNonWhitespace(invitation.getMail()) && MailHelper.isValidEmailAddress(invitation.getMail())) {
 			List<Identity> shareWithIdentities = userManager.findIdentitiesByEmail(Collections.singletonList(invitation.getMail()));
 			if (isAtLeastOneUser(shareWithIdentities)) {
-				mailEl.setErrorKey("map.share.with.mail.error.olatUser", new String[]{ invitation.getMail() });
+				mailEl.setErrorKey("map.share.with.mail.error.olatUser", invitation.getMail());
 			}
 		}
 			
@@ -234,8 +234,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			sectionRow.getPages().add(pageRow);
 		}
 		
-		if(formLayout instanceof FormLayoutContainer) {
-			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
 			layoutCont.contextPut("binderRow", binderRow);
 		}
 		
@@ -382,7 +381,7 @@ public class InvitationEditRightsController extends FormBasicController {
 	
 	private void doRemoveInvitation() {
 		portfolioService.removeAccessRights(binder, invitee,
-				PortfolioRoles.invitee, PortfolioRoles.readInvitee);
+				ContentRoles.invitee, ContentRoles.readInvitee);
 		invitationService.deleteInvitation(invitation);
 	}
 
@@ -419,7 +418,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		
 		private final List<SectionAccessRightsRow> sections = new ArrayList<>();
 
-		public BinderAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element) {
+		public BinderAccessRightsRow(MultipleSelectionElement accessEl, ContentElement element) {
 			super(accessEl, element, null);
 		}
 
@@ -446,9 +445,9 @@ public class InvitationEditRightsController extends FormBasicController {
 		@Override
 		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
 			if(isAccessible()) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, true));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, getElement(), identity, true));
 			} else if(accessRight != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, getElement(), identity, false));
 			}
 		}
 	}
@@ -457,7 +456,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		
 		private final List<PortfolioElementAccessRightsRow> pages = new ArrayList<>();
 		
-		public SectionAccessRightsRow(MultipleSelectionElement accessEl, PortfolioElement element, BinderAccessRightsRow parentRow) {
+		public SectionAccessRightsRow(MultipleSelectionElement accessEl, ContentElement element, BinderAccessRightsRow parentRow) {
 			super(accessEl, element, parentRow);
 		}
 		
@@ -477,9 +476,9 @@ public class InvitationEditRightsController extends FormBasicController {
 		@Override
 		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
 			if(isAccessible() && !getParentRow().isAccessible()) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, true));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, getElement(), identity, true));
 			} else if(accessRight != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, getElement(), identity, false));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, getElement(), identity, false));
 			}
 		}
 		
@@ -490,14 +489,14 @@ public class InvitationEditRightsController extends FormBasicController {
 	
 	public static class PortfolioElementAccessRightsRow {
 		
-		private final PortfolioElement element;
+		private final ContentElement element;
 		private final MultipleSelectionElement accessEl;
 		
 		protected AccessRights accessRight;
 		private final PortfolioElementAccessRightsRow parentRow;
 		
 		public PortfolioElementAccessRightsRow(MultipleSelectionElement accessEl,
-				PortfolioElement element, PortfolioElementAccessRightsRow parentRow) {
+				ContentElement element, PortfolioElementAccessRightsRow parentRow) {
 			this.element = element;
 			this.accessEl = accessEl;
 			this.parentRow = parentRow;
@@ -510,9 +509,9 @@ public class InvitationEditRightsController extends FormBasicController {
 		
 		public void appendChanges(List<AccessRightChange> changes, Identity identity) {
 			if(accessEl.isAtLeastSelected(1) && !parentRow.isAccessible() && !parentRow.getParentRow().isAccessible()) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, element, identity, true));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, element, identity, true));
 			} else if(accessRight != null) {
-				changes.add(new AccessRightChange(PortfolioRoles.readInvitee, element, identity, false));
+				changes.add(new AccessRightChange(ContentRoles.readInvitee, element, identity, false));
 			}
 		}
 		
@@ -535,7 +534,7 @@ public class InvitationEditRightsController extends FormBasicController {
 		}
 		
 		public void applyRight(AccessRights right) {
-			if(right.getRole().equals(PortfolioRoles.readInvitee)) {
+			if(right.getRole().equals(ContentRoles.readInvitee)) {
 				accessEl.select("xx", true);
 				accessRight = right;
 			}
@@ -549,7 +548,7 @@ public class InvitationEditRightsController extends FormBasicController {
 			return parentRow;
 		}
 
-		public PortfolioElement getElement() {
+		public ContentElement getElement() {
 			return element;
 		}
 

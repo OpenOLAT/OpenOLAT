@@ -655,6 +655,9 @@ $o-portfolio-lead-ended-background-color			: lighten($brand-danger, 30%) !defaul
 $o-portfolio-lead-ended-border-color				: darken($o-portfolio-lead-ended-background-color	,10%) !default;
 $o-portfolio-page-summary-font-size					: $font-size-large !default;
 
+/* Page editor */
+$o-editor-edit-background-color						: #E7E7E7;
+
 /* Editor */
 $o-editor-settings-bg								: #f9f9f9 !default;
 $o-editor-title-dark								: #000 !default;

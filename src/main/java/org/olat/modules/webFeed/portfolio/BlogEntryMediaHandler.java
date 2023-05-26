@@ -36,14 +36,14 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.user.manager.ManifestBuilder;
@@ -66,7 +66,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	@Autowired
 	private FeedManager feedManager;
 	@Autowired
-	private PortfolioFileStorage fileStorage;
+	private ContentEditorFileStorage fileStorage;
 	
 	public BlogEntryMediaHandler() {
 		super(BLOG_ENTRY_HANDLER);

@@ -39,8 +39,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAO;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
-import org.olat.modules.portfolio.manager.PortfolioPageToTaxonomyCompetenceDAO;
 import org.olat.modules.quality.manager.QualityDataCollectionDAO;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -88,17 +88,17 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDao;
 	@Autowired
+	private QualityDataCollectionDAO dataCollectionDao;
+	@Autowired
 	private TaxonomyLevelTypeToTypeDAO taxonomyLevelTypeToTypeDao;
+	@Autowired
+	private PageToTaxonomyCompetenceDAO pageToTaxonomyCompetenceDAO;
 	@Autowired
 	private TaxonomyCompetenceAuditLogDAO taxonomyCompetenceAuditLogDao;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
 	@Autowired
-	private QualityDataCollectionDAO dataCollectionDao;
-	@Autowired
 	private CurriculumElementToTaxonomyLevelDAO curriculumElementToTaxonomyLevelDao;
-	@Autowired
-	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
 	
 	@Override
 	public Taxonomy createTaxonomy(String identifier, String displayName, String description, String externalId) {
@@ -342,7 +342,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 	
 	public void checkLevelTypeCompetences(TaxonomyLevelType levelType) {
 		if (!levelType.isAllowedAsCompetence()) {			
-			portfolioPageToTaxonomyCompetenceDAO.deleteRelationsByLevelType(levelType);
+			pageToTaxonomyCompetenceDAO.deleteRelationsByLevelType(levelType);
 		}
 	}
 
@@ -452,7 +452,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public void removeTaxonomyLevelCompetence(TaxonomyCompetence competence) {
-		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(competence);
+		pageToTaxonomyCompetenceDAO.deleteRelation(competence);
 		taxonomyCompetenceDao.deleteCompetence(competence);
 	}
 

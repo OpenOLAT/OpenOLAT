@@ -38,19 +38,19 @@ import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.MessageLight;
 import org.olat.modules.fo.manager.ForumManager;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +72,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
-	private PortfolioFileStorage fileStorage;
+	private ContentEditorFileStorage fileStorage;
 	
 	public ForumMediaHandler() {
 		super(FORUM_HANDLER);
@@ -111,17 +111,15 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		Message message = null;
-		if(mediaObject instanceof Message) {
-			message = (Message)mediaObject;//reload the message
-			message = forumManager.loadMessage(message.getKey());
-		} else if(mediaObject instanceof MessageLight) {
-			MessageLight messageLight = (MessageLight)mediaObject;
+		if(mediaObject instanceof Message msg) {
+			message = forumManager.loadMessage(msg.getKey());
+		} else if(mediaObject instanceof MessageLight messageLight) {
 			message = forumManager.loadMessage(messageLight.getKey());
 		}
 		
 		String content = message.getBody();
 		Media media = mediaDao.createMedia(title, description, content, FORUM_HANDLER, businessPath, null, 70, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		
 		File messageDir = forumManager.getMessageDirectory(message.getForum().getKey(), message.getKey(), false);

@@ -22,7 +22,7 @@ package org.olat.modules.portfolio.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 
 /**

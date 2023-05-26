@@ -22,7 +22,7 @@ package org.olat.modules.portfolio.model;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 
 /**

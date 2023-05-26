@@ -28,13 +28,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
@@ -67,6 +65,28 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentStatus;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentElementType;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.PageImageAlign;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.PageStatus;
+import org.olat.modules.ceditor.manager.AssignmentDAO;
+import org.olat.modules.ceditor.manager.CategoryDAO;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.manager.PageSearchOptions;
+import org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAO;
+import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -75,29 +95,13 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.portfolio.AssessmentSection;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentStatus;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderDeliveryOptions;
 import org.olat.modules.portfolio.BinderLight;
 import org.olat.modules.portfolio.BinderRef;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.CategoryToElement;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.PageImageAlign;
-import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PageUserStatus;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
@@ -109,13 +113,9 @@ import org.olat.modules.portfolio.model.AssessedBinder;
 import org.olat.modules.portfolio.model.AssessedPage;
 import org.olat.modules.portfolio.model.AssessmentSectionChange;
 import org.olat.modules.portfolio.model.AssessmentSectionImpl;
-import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.CategoryLight;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SectionKeyRef;
@@ -126,11 +126,8 @@ import org.olat.modules.portfolio.model.export.SectionXML;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
-import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
 import org.olat.modules.taxonomy.TaxonomyLevel;
-import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
-import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryManager;
@@ -171,8 +168,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
-	private MediaDAO mediaDao;
-	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
 	private CommentDAO commentDao;
@@ -189,7 +184,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private SharedWithMeQueries sharedWithMeQueries;
 	@Autowired
-	private PortfolioFileStorage portfolioFileStorage;
+	private ContentEditorFileStorage portfolioFileStorage;
 	@Autowired
 	private AssessmentSectionDAO assessmentSectionDao;
 	@Autowired
@@ -197,8 +192,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
-	private PortfolioPageToTaxonomyCompetenceDAO portfolioPageToTaxonomyCompetenceDAO;
-
+	private PageToTaxonomyCompetenceDAO pageToTaxonomyCompetenceDao;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -208,18 +202,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Autowired
 	private BinderUserInformationsDAO binderUserInformationsDao;
 	@Autowired
-	private TaxonomyLevelDAO taxonomyLevelDAO;
-	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	
-	@Autowired
-	private List<MediaHandler> mediaHandlers;
 	
 	@Override
 	public Binder createNewBinder(String title, String summary, String imagePath, Identity owner) {
 		BinderImpl portfolio = binderDao.createAndPersist(title, summary, imagePath, null);
 		if(owner != null) {
-			groupDao.addMembershipTwoWay(portfolio.getBaseGroup(), owner, PortfolioRoles.owner.name());
+			groupDao.addMembershipTwoWay(portfolio.getBaseGroup(), owner, ContentRoles.owner.name());
 		}
 		return portfolio;
 	}
@@ -233,7 +223,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public void createAndPersistBinderTemplate(Identity owner, RepositoryEntry entry, Locale locale) {
 		BinderImpl binder = binderDao.createAndPersist(entry.getDisplayname(), entry.getDescription(), null, entry);
 		if(owner != null) {
-			groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
+			groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, ContentRoles.owner.name());
 		}
 		//add section
 		Translator pt = Util.createPackageTranslator(PortfolioHomeController.class, locale);
@@ -496,14 +486,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public List<Assignment> getSectionsAssignments(PortfolioElement element, String searchString) {
-		if(element.getType() == PortfolioElementType.binder) {
+	public List<Assignment> getSectionsAssignments(ContentElement element, String searchString) {
+		if(element.getType() == ContentElementType.binder) {
 			return assignmentDao.loadAssignments((BinderRef)element, searchString);
 		}
-		if(element.getType() == PortfolioElementType.section) {
+		if(element.getType() == ContentElementType.section) {
 			return assignmentDao.loadAssignments((SectionRef)element, searchString);
 		}
-		if(element.getType() == PortfolioElementType.page) {
+		if(element.getType() == ContentElementType.page) {
 			return assignmentDao.loadAssignments((Page)element, searchString);
 		}
 		return null;
@@ -635,11 +625,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public Assignment getAssignment(PageBody body) {
-		return assignmentDao.loadAssignment(body);
-	}
-
-	@Override
 	public SectionRef appendNewSection(String title, String description, Date begin, Date end, BinderRef binder) {
 		Binder reloadedBinder = binderDao.loadByKey(binder.getKey());
 		SectionImpl newSection = binderDao.createSection(title, description, begin, end, reloadedBinder);
@@ -691,7 +676,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public List<Page> getPages(PortfolioServiceSearchOptions options) {
+	public List<Page> getPages(PageSearchOptions options) {
 		return pageDao.getPages(options);
 	}
 
@@ -802,7 +787,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline) {
 		BinderImpl reloadedTemplate = (BinderImpl)binderDao.loadByKey(templateBinder.getKey());
 		BinderImpl binder = binderDao.createCopy(reloadedTemplate, entry, subIdent);
-		groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, PortfolioRoles.owner.name());
+		groupDao.addMembershipTwoWay(binder.getBaseGroup(), owner, ContentRoles.owner.name());
 		return binder;
 	}
 
@@ -835,8 +820,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	@Override
 	public boolean isBinderVisible(IdentityRef identity, BinderRef binder) {
 		return binderDao.isMember(binder, identity,
-				PortfolioRoles.owner.name(), PortfolioRoles.coach.name(),
-				PortfolioRoles.reviewer.name(), PortfolioRoles.invitee.name());
+				ContentRoles.owner.name(), ContentRoles.coach.name(),
+				ContentRoles.reviewer.name(), ContentRoles.invitee.name());
 	}
 
 	@Override
@@ -870,7 +855,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public void addAccessRights(PortfolioElement element, Identity identity, PortfolioRoles role) {
+	public void addAccessRights(ContentElement element, Identity identity, ContentRoles role) {
 		Group baseGroup = element.getBaseGroup();
 		if(!groupDao.hasRole(baseGroup, identity, role.name())) {
 			groupDao.addMembershipTwoWay(baseGroup, identity, role.name());
@@ -898,10 +883,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 	
 	@Override
-	public void removeAccessRights(Binder binder, Identity identity, PortfolioRoles... roles) {
-		Set<PortfolioRoles> roleSet = new HashSet<>();
+	public void removeAccessRights(Binder binder, Identity identity, ContentRoles... roles) {
+		Set<ContentRoles> roleSet = new HashSet<>();
 		if(roles != null && roles.length > 0) {
-			for(PortfolioRoles role:roles) {
+			for(ContentRoles role:roles) {
 				if(role != null) {
 					roleSet.add(role);
 				}
@@ -915,14 +900,14 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 		List<AccessRights> rights = getAccessRights(binder, identity);
 		for(AccessRights right:rights) {
-			PortfolioRoles role = right.getRole();
+			ContentRoles role = right.getRole();
 			if(roleSet.contains(role)) {
 				Group baseGroup;
-				if(right.getType() == PortfolioElementType.binder) {
+				if(right.getType() == ContentElementType.binder) {
 					baseGroup = binderDao.loadByKey(right.getBinderKey()).getBaseGroup();
-				} else if(right.getType() == PortfolioElementType.section) {
+				} else if(right.getType() == ContentElementType.section) {
 					baseGroup = binderDao.loadSectionByKey(right.getSectionKey()).getBaseGroup();
-				} else if(right.getType() == PortfolioElementType.page) {
+				} else if(right.getType() == ContentElementType.page) {
 					baseGroup = pageDao.loadByKey(right.getPageKey()).getBaseGroup();
 				} else {
 					continue;
@@ -935,21 +920,21 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 	}
 
-	private Group getGroup(PortfolioElement element) {
-		if(element instanceof Page) {
-			return pageDao.getGroup((Page)element);
+	private Group getGroup(ContentElement element) {
+		if(element instanceof Page page) {
+			return pageDao.getGroup(page);
 		}
-		if(element instanceof SectionRef) {
-			return binderDao.getGroup((SectionRef)element);
+		if(element instanceof SectionRef section) {
+			return binderDao.getGroup(section);
 		}
-		if(element instanceof BinderRef) {
-			return binderDao.getGroup((BinderRef)element);
+		if(element instanceof BinderRef binder) {
+			return binderDao.getGroup(binder);
 		}
 		return null;
 	}
 
 	@Override
-	public List<Category> getCategories(PortfolioElement element) {
+	public List<Category> getCategories(ContentElement element) {
 		OLATResourceable ores = getOLATResoucreable(element);
 		return categoryDao.getCategories(ores);
 	}
@@ -970,44 +955,18 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public void updateCategories(PortfolioElement element, List<String> categories) {
+	public void updateCategories(ContentElement element, List<String> categories) {
 		OLATResourceable ores = getOLATResoucreable(element);
-		updateCategories(ores, categories);
+		categoryDao.updateCategories(ores, categories);
 	}
 	
-	private OLATResourceable getOLATResoucreable(PortfolioElement element) {
+	private OLATResourceable getOLATResoucreable(ContentElement element) {
 		switch(element.getType()) {
 			case binder: return OresHelper.createOLATResourceableInstance(Binder.class, element.getKey());
 			case section: return OresHelper.createOLATResourceableInstance(Section.class, element.getKey());
 			case page: return OresHelper.createOLATResourceableInstance(Page.class, element.getKey());
 			default: return null;
 		}
-	}
-
-	private void updateCategories(OLATResourceable oresource, List<String> categories) {
-		List<Category> existingCategories = categoryDao.getCategories();
-		Map<String, Category> existingCategoriesMap = existingCategories.stream().collect(Collectors.toMap(Category::getName, category -> category, (cat1, cat2) -> cat1));
-		
-		List<Category> currentCategories = categoryDao.getCategories(oresource);
-		Map<String,Category> currentCategoryMap = currentCategories.stream().collect(Collectors.toMap(Category::getName, category -> category, (cat1, cat2) -> cat1));
-		
-		List<String> newCategories = new ArrayList<>(categories);
-		for(String newCategory:newCategories) {
-			if(!existingCategoriesMap.containsKey(newCategory)) {
-				Category category = categoryDao.createAndPersistCategory(newCategory);
-				categoryDao.appendRelation(oresource, category);
-			} else if (!currentCategoryMap.containsKey(newCategory)) {
-				categoryDao.appendRelation(oresource, existingCategoriesMap.get(newCategory));
-			}
-		}
-		
-		for(Category currentCategory:currentCategories) {
-			String name = currentCategory.getName();
-			if(!newCategories.contains(name)) {
-				categoryDao.removeRelation(oresource, currentCategory);
-			}
-		}
-		
 	}
 
 	@Override
@@ -1117,13 +1076,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		Page page = pageDao.createAndPersist(title, summary, imagePath, align, editable, reloadedSection, pageDelegate);
 		if(pageDelegate != null) {
-			for (TaxonomyCompetence competence : portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(pageDelegate, false)) {
-				portfolioPageToTaxonomyCompetenceDAO.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration(), TaxonomyCompetenceLinkLocations.PORTFOLIO));
+			for (TaxonomyCompetence competence : pageToTaxonomyCompetenceDao.getCompetencesToPage(pageDelegate, false)) {
+				pageToTaxonomyCompetenceDao.createRelation(page, taxonomyCompetenceDAO.createTaxonomyCompetence(competence.getCompetenceType(), competence.getTaxonomyLevel(), competence.getIdentity(), competence.getExpiration(), TaxonomyCompetenceLinkLocations.PORTFOLIO));
 			}
 			updateCategories(page, getCategories(pageDelegate).stream().map(Category::getName).toList());
 		}
 		
-		groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, PortfolioRoles.owner.name());
+		if(owner != null) {
+			groupDao.addMembershipTwoWay(page.getBaseGroup(), owner, ContentRoles.owner.name());
+		}
 		return page;
 	}
 
@@ -1167,94 +1128,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	public File getPosterImage(Page page) {
-		String imagePath = page.getImagePath();
-		if(StringHelper.containsNonWhitespace(imagePath)) {
-			File bcroot = portfolioFileStorage.getRootDirectory();
-			return new File(bcroot, imagePath);
-		}
-		return null;
-	}
-
-	@Override
-	public String addPosterImageForPage(File file, String filename) {
-		File dir = portfolioFileStorage.generatePageSubDirectory();
-		File destinationFile = new File(dir, filename);
-		String renamedFile = FileUtils.rename(destinationFile);
-		if(renamedFile != null) {
-			destinationFile = new File(dir, renamedFile);
-		}
-		FileUtils.copyFileToFile(file, destinationFile, false);
-		return portfolioFileStorage.getRelativePath(destinationFile);
-	}
-
-	@Override
-	public void removePosterImage(Page page) {
-		String imagePath = page.getImagePath();
-		if(StringHelper.containsNonWhitespace(imagePath)) {
-			File bcroot = portfolioFileStorage.getRootDirectory();
-			File file = new File(bcroot, imagePath);
-			FileUtils.deleteFile(file);
-		}
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <U extends PagePart> U appendNewPagePart(Page page, U part) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		return (U)pageDao.persistPart(body, part);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <U extends PagePart> U appendNewPagePartAt(Page page, U part, int index) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		return (U)pageDao.persistPart(body, part, index);
-	}
-
-	@Override
-	public void removePagePart(Page page, PagePart part) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.removePart(body, part);
-	}
-
-	@Override
-	public void moveUpPagePart(Page page, PagePart part) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.moveUpPart(body, part);
-	}
-
-	@Override
-	public void moveDownPagePart(Page page, PagePart part) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.moveDownPart(body, part);
-	}
-
-	@Override
-	public void movePagePart(Page page, PagePart partToMove, PagePart sibling, boolean after) {
-		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.movePart(body, partToMove, sibling, after);
-	}
-
-	@Override
-	public Page removePage(Page page) {
-		// will take care of the assignments
-		return pageDao.removePage(page);
-	}	
-
-	@Override
-	public void deletePage(Page page) {
-		Page reloadedPage = pageDao.loadByKey(page.getKey());
-		pageDao.deletePage(reloadedPage);
-		pageUserInfosDao.delete(page);
-	}
-
-	@Override
-	public List<PagePart> getPageParts(Page page) {
-		return pageDao.getParts(page.getBody());
-	}
-
-	@Override
 	public int countSharedPageBody(Page page) {
 		return pageDao.getCountSharedPageBody(page);
 	}
@@ -1265,76 +1138,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public <U extends PagePart> U updatePart(U part) {
-		U mergedPart = (U)pageDao.merge(part);
-		if(mergedPart instanceof MediaPart) {
-			// Prevent lazy loading issues
-			Media media = ((MediaPart)mergedPart).getMedia();
-			if(media != null) {
-				media.getMetadataXml();
-			}
-		}
-		return mergedPart;
-	}
-
-	@Override
-	public MediaHandler getMediaHandler(String type) {
-		if(mediaHandlers != null) {
-			for(MediaHandler handler:mediaHandlers) {
-				if(type.equals(handler.getType())) {
-					return handler;
-				}
-			}
-		}
-		return null;
-	}
-
-	@Override
-	public List<MediaHandler> getMediaHandlers() {
-		return new ArrayList<>(mediaHandlers);
-	}
-
-	@Override
-	public Media updateMedia(Media media) {
-		return mediaDao.update(media);
-	}
-
-	@Override
-	public void deleteMedia(Media media) {
-		mediaDao.deleteMedia(media);
-	}
-
-	@Override
-	public void updateCategories(Media media, List<String> categories) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
-		updateCategories(ores, categories);
-	}
-
-	@Override
-	public List<Category> getCategories(Media media) {
-		OLATResourceable ores = OresHelper.createOLATResourceableInstance(Media.class, media.getKey());
-		return categoryDao.getCategories(ores);
-	}
-
-	@Override
-	public List<CategoryLight> getMediaCategories(IdentityRef owner) {
-		return categoryDao.getMediaCategories(owner);
-	}
-
-	@Override
-	public List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString, List<String> tagNames) {
-		return mediaDao.searchByAuthor(author, searchString, tagNames);
-	}
-
-	@Override
-	public Media getMediaByKey(Long key) {
-		return mediaDao.loadByKey(key);
-	}
-
-	@Override
 	public List<BinderPageUsage> getUsedInBinders(MediaLight media) {
-		return mediaDao.usedInBinders(media);
+		return binderDao.usedInBinders(media);
 	}
 
 	@Override
@@ -1373,7 +1178,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(page.getBody()));
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(PageService.getSurveyIdent(page.getBody()));
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.finishSession(session);
@@ -1391,7 +1196,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(page.getBody()));
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(PageService.getSurveyIdent(page.getBody()));
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.reopenSession(session);
@@ -1434,7 +1239,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private List<Identity> getOwners(Page page, Section section) {
 		Assignment assignment = assignmentDao.loadAssignment(page.getBody());
 		if(assignment != null && assignment.getAssignmentType() == AssignmentType.form) {
-			return getMembers(section.getBinder(), PortfolioRoles.owner.name());
+			return getMembers(section.getBinder(), ContentRoles.owner.name());
 		}
 		return new ArrayList<>();
 	}
@@ -1500,7 +1305,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		if(binder.getEntry() == null) return;
 
 		RepositoryEntry entry = binder.getEntry();
-		List<Identity> assessedIdentities = getMembers(binder, PortfolioRoles.owner.name());
+		List<Identity> assessedIdentities = getMembers(binder, ContentRoles.owner.name());
 
 		//order status from the entry / section
 		if("CourseModule".equals(entry.getOlatResource().getResourceableTypeName())) {
@@ -1687,16 +1492,12 @@ public class PortfolioServiceImpl implements PortfolioService {
 	
 	@Override
 	public EvaluationFormSurvey loadOrCreateSurvey(PageBody body, RepositoryEntry formEntry) {
-		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdent(body);
+		EvaluationFormSurveyIdentifier surveyIdent = PageService.getSurveyIdent(body);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
 			survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
 		}
 		return survey;
-	}
-
-	private OLATResourceable getOLATResourceableForEvaluationForm(PageBody body) {
-		return OresHelper.createOLATResourceableInstance("portfolio-evaluation", body.getKey());
 	}
 
 	@Override
@@ -1712,87 +1513,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 		}
 		return session;
 	}
-
-	@Override
-	public void deleteSurvey(PageBody body) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(body));
-		if (survey != null) {
-			evaluationFormManager.deleteSurvey(survey);
-		}
-	}
 	
-	private EvaluationFormSurveyIdentifier getSurveyIdent(PageBody body) {
-		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
-		return EvaluationFormSurveyIdentifier.of(ores);
+	@Override
+	public Map<TaxonomyLevel, Long> getCompetencesAndUsage(Section section) {
+		return pageToTaxonomyCompetenceDao.getCompetencesAndUsage(section);
 	}
 	
 	@Override
-	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesToPortfolioPage(page, fetchTaxonomies);
-	}
-	
-	@Override
-	public Page getPageToCompetence(TaxonomyCompetence competence) {
-		return portfolioPageToTaxonomyCompetenceDAO.getPageToCompetence(competence);
-	}
-	
-	@Override
-	public void linkCompetence(Page page, TaxonomyCompetence competence) {
-		portfolioPageToTaxonomyCompetenceDAO.createRelation(page, competence);
-		
-	}
-	
-	@Override
-	public void unlinkCompetence(Page page, TaxonomyCompetence competence) {
-		portfolioPageToTaxonomyCompetenceDAO.deleteRelation(page, competence);
-		
-	}
-	
-	@Override
-	public void linkCompetences(Page page, Identity identity, Set<? extends TaxonomyLevelRef> taxonomyLevels) {
-		List<TaxonomyCompetence> relatedCompetences = getRelatedCompetences(page, true);
-		List<TaxonomyLevel> relatedCompetenceLevels = relatedCompetences.stream().map(TaxonomyCompetence::getTaxonomyLevel).collect(Collectors.toList());
-		
-		List<Long> newTaxonomyLevelKeys = taxonomyLevels.stream()
-				.map(TaxonomyLevelRef::getKey)
-				.collect(Collectors.toList());
-		
-		List<TaxonomyLevel> newTaxonomyLevels = taxonomyLevelDAO.loadLevelsByKeys(newTaxonomyLevelKeys);
-		
-		// Remove old competences
-		for (TaxonomyCompetence competence : relatedCompetences) {
-			if (!newTaxonomyLevels.contains(competence.getTaxonomyLevel())) {
-				unlinkCompetence(page, competence);
-			}
-		}
-		
-		// Create new competences
-		for (TaxonomyLevel newLevel : newTaxonomyLevels) {
-			if (!relatedCompetenceLevels.contains(newLevel)) {
-				TaxonomyCompetence competence = taxonomyCompetenceDAO.createTaxonomyCompetence(TaxonomyCompetenceTypes.have, newLevel, identity, null, TaxonomyCompetenceLinkLocations.PORTFOLIO);
-				linkCompetence(page, competence);
-			}
-		}		
-	}
-	
-	@Override
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(Section section) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesAndUsage(section);
-	}
-	
-	@Override
-	public LinkedHashMap<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages) {
-		return portfolioPageToTaxonomyCompetenceDAO.getCompetencesAndUsage(pages);
-	}
-	
-	@Override
-	public LinkedHashMap<Category, Long> getCategoriesAndUsage(Section section) {
+	public Map<Category, Long> getCategoriesAndUsage(Section section) {
 		return categoryDao.getCategoriesAndUsage(section);
-	}
-	
-	@Override
-	public LinkedHashMap<Category, Long> getCategoriesAndUsage(List<Page> pages) {
-		return categoryDao.getCategoriesAndUsage(pages);
 	}
 	
 	@Override

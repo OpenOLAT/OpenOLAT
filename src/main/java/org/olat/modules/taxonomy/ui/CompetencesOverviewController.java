@@ -60,8 +60,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageService;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceAuditLog;
@@ -102,9 +102,9 @@ public class CompetencesOverviewController extends FormBasicController implement
 	private CloseableCalloutWindowController ccc;
 
 	@Autowired
-	private TaxonomyService taxonomyService;
+	private PageService pageService;
 	@Autowired
-	private PortfolioService portfolioService;
+	private TaxonomyService taxonomyService;
 
 	public CompetencesOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Identity assessedIdentity, boolean canModify, boolean usedAsPersonalTool) {
 		super(ureq, wControl, "identity_competences");
@@ -123,10 +123,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 	private void loadModel() {
 		List<TaxonomyCompetence> competences = taxonomyService.getTaxonomyCompetences(assessedIdentity);
 		List<CompetencesOverviewTableRow> rows = new ArrayList<>();
-		
-		List<TaxonomyLevel> taxonomyLevels = new ArrayList<>();
-		List<Taxonomy> taxonomies = new ArrayList<>();
-		
+
 		Map<Taxonomy, CompetencesOverviewTableRow> taxonomyRows = new HashMap<>();						// Root rows
 		Map<Taxonomy, List<CompetencesOverviewTableRow>> taxonomyToLevelRows = new HashMap<>();			// Level to a taxonomy
 		Map<TaxonomyLevel, List<CompetencesOverviewTableRow>> levelToCompetenceRows = new HashMap<>();	// Competences to a level
@@ -136,13 +133,13 @@ public class CompetencesOverviewController extends FormBasicController implement
 		int linkCounter = 0;
 		
 		// Load taxonomy levels to competences
-		taxonomyLevels = competences.stream()
+		List<TaxonomyLevel> taxonomyLevels = competences.stream()
 				.map(TaxonomyCompetence::getTaxonomyLevel)
 				.distinct()
 				.collect(Collectors.toList());
 		
 		// Load taxonomies
-		taxonomies = competences.stream()
+		List<Taxonomy> taxonomies = competences.stream()
 				.map(competence -> competence.getTaxonomyLevel().getTaxonomy())
 				.distinct()
 				.collect(Collectors.toList());
@@ -194,7 +191,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 			competenceRow.setTaxonomy(competence.getTaxonomyLevel().getTaxonomy());
 			
 			if (competence.getLinkLocation().equals(TaxonomyCompetenceLinkLocations.PORTFOLIO)) {
-				competenceRow.setPortfolioLocation(portfolioService.getPageToCompetence(competence));
+				competenceRow.setPortfolioLocation(pageService.getPageToCompetence(competence));
 			}
 			if (competenceRow.hasDescription()) {
 				FormLink detailsLink = uifactory.addFormLink(linkCounter++ + "_" + competenceRow.getKey().toString(), OPEN_INFO, "competences.details.link", tableEl, Link.LINK);
@@ -325,8 +322,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		} else if(addTargetButton == source) {
 			doSelectTaxonomyLevelsToAdd(ureq, TaxonomyCompetenceTypes.target);
 		} else if (source == tableEl) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				CompetencesOverviewTableRow row = tableModel.getObject(se.getIndex());
 					
 				if(REMOVE.equals(se.getCommand())) {
@@ -340,18 +336,17 @@ public class CompetencesOverviewController extends FormBasicController implement
 						showInfo("competence.without.link");
 					}
 				} 
-			} else if (event instanceof FlexiTableSearchEvent) {
+			} else if (event instanceof FlexiTableSearchEvent ftse) {
 				if (event.getCommand().equals(FlexiTableSearchEvent.QUICK_SEARCH)) {
 					tableModel.openAll();
-					tableModel.filter(((FlexiTableSearchEvent) event).getSearch(), null);
+					tableModel.filter(ftse.getSearch(), null);
 					tableEl.reloadData();
 				} else if (event.getCommand().equals(FormEvent.RESET.getCommand())) {
 					tableModel.filter(null, null);
 					tableEl.reloadData();
 				}
 			}
-		} else if (source instanceof FormLink) {
-			FormLink sFl = (FormLink) source;
+		} else if (source instanceof FormLink sFl) {
 			if (sFl.getCmd().equals(OPEN_INFO)) {
 				CompetencesOverviewTableRow row = (CompetencesOverviewTableRow) sFl.getUserObject();
 				if (row.isCompetence()) {
@@ -464,7 +459,7 @@ public class CompetencesOverviewController extends FormBasicController implement
 		String title = translate("remove");
 		String competence = translate(row.getCompetence().getCompetenceType().name());
 		String levelDisplayName = StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), row.getLevel()));
-		String text = translate("confirmation.remove.competence", new String[] { competence, levelDisplayName });
+		String text = translate("confirmation.remove.competence", competence, levelDisplayName);
 		removeCompentenceConfirmationCtrl = activateOkCancelDialog(ureq, title, text, removeCompentenceConfirmationCtrl);
 		removeCompentenceConfirmationCtrl.setUserObject(row);
 	}

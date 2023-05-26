@@ -20,7 +20,7 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.PageStatus;
+import org.olat.modules.ceditor.PageStatus;
 
 /**
  * 

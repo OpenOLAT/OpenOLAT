@@ -33,14 +33,14 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
+import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -88,8 +88,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public MediaInformations getInformations(Object mediaObject) {
 		String title = null;
-		if(mediaObject instanceof WikiPage) {
-			WikiPage page = (WikiPage)mediaObject;
+		if(mediaObject instanceof WikiPage page) {
 			title = page.getPageName();
 		}
 		return new Informations(title, null);
@@ -98,12 +97,11 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
 		String content = null;
-		if(mediaObject instanceof WikiPage) {
-			WikiPage page = (WikiPage)mediaObject;
+		if(mediaObject instanceof WikiPage page) {
 			content = page.getContent();
 		}
 		Media media = mediaDao.createMedia(title, description, content, WIKI_HANDLER, businessPath, null, 70, author);
-		ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		return media;
 	}

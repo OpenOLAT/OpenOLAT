@@ -22,6 +22,7 @@ package org.olat.modules.portfolio;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.Page;
 
 /**
  * 

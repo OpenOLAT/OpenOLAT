@@ -22,7 +22,7 @@ package org.olat.modules.portfolio.ui.model;
 import java.io.File;
 import java.util.List;
 
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.ceditor.Assignment;
 
 /**
  * 

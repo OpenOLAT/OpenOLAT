@@ -25,11 +25,19 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.model.BinderImpl;
+import org.olat.modules.portfolio.model.BinderPageUsage;
 import org.olat.modules.portfolio.model.BinderStatistics;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -45,6 +53,10 @@ public class BinderDAOTest extends OlatTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private PageDAO pageDao;
+	@Autowired
+	private MediaDAO mediaDao;
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
@@ -214,5 +226,30 @@ public class BinderDAOTest extends OlatTestCase {
 		Assert.assertEquals(binder.getKey(), stats.getKey());
 		Assert.assertEquals("open", stats.getStatus());
 		Assert.assertEquals("My statistical binder", stats.getTitle());
+	}
+	
+	@Test
+	public void usedInBinders() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
+		Binder binder = portfolioService.createNewBinder("Binder p2", "A binder with 2 page", null, author);
+		Section section = binderDao.createSection("Section", "First section", null, null, binder);
+		dbInstance.commitAndCloseSession();
+		
+		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
+		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
+		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commitAndCloseSession();
+
+		MediaPart mediaPart = new MediaPart();
+		mediaPart.setMedia(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		//reload
+		List<BinderPageUsage> binders = binderDao.usedInBinders(media);
+		Assert.assertNotNull(binders);
+		Assert.assertEquals(1, binders.size());
+		Assert.assertTrue(binders.get(0).getBinderKey().equals(binder.getKey()));
 	}
 }

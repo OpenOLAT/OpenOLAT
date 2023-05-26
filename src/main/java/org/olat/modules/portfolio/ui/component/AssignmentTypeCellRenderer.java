@@ -25,7 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.AssignmentType;
 
 /**
  * 

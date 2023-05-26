@@ -36,10 +36,10 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.ui.MediaMetadataController;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedFileStorge;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BlogEntryMediaController extends BasicController {
 	
 	@Autowired
-	private PortfolioFileStorage fileStorage;
+	private ContentEditorFileStorage fileStorage;
 	
 	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);

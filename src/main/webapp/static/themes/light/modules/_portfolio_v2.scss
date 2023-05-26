@@ -152,7 +152,7 @@
 	padding: $o-portfolio-lead-space-sm * 2;
 	
 	h2 {
-		margin-bottom: 5px;
+		margin-bottom: 5px 0 5px 0;
 	}
 	.o_portfolio_page_meta {
 		margin-bottom: 5px;
@@ -177,12 +177,16 @@
 	
 	.o_portfolio_status_block {
 		border-top: 1px solid $o-portfolio-lead-border-color;
-		padding-top: 1em;
-		margin-bottom: -1em; /* push at bottom of lead block */
+		padding: 5px 0 0 0;
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: baseline;
 	}
+	
 	.o_edit_page_meta {
 		padding-right: 2em;
 	}
+	
 	.o_portfolio_status {
 		display: inline-block;
 		padding-right: 2em;
@@ -1000,4 +1004,13 @@
 	margin-left: 0;
 	margin-right: 0;
 	text-align: center;
+}
+
+.o_ce_edit_wrapper .o_portfolio_reference_warning {
+	padding-top: 10px;
+	background-color: $o-editor-edit-background-color;
+}
+
+.o_ce_edit_wrapper .o_portfolio_reference_warning .alert {
+	margin-bottom: 10px;
 }

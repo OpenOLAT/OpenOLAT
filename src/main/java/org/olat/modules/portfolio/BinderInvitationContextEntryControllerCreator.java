@@ -29,6 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.ui.PortfolioInvitationController;
 
@@ -86,7 +87,7 @@ public class BinderInvitationContextEntryControllerCreator extends DefaultContex
 		}
 		
 		final PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-		return portfolioService.isMember(binder, ureq.getIdentity(), PortfolioRoles.invitee.name());
+		return portfolioService.isMember(binder, ureq.getIdentity(), ContentRoles.invitee.name());
 	}
 	
 	/**

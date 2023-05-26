@@ -22,6 +22,7 @@ package org.olat.modules.portfolio;
 import java.util.Date;
 
 import org.olat.core.id.OLATResourceable;
+import org.olat.modules.ceditor.ContentElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -31,7 +32,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Binder extends BinderLight, PortfolioElement, OLATResourceable {
+public interface Binder extends BinderLight, ContentElement, OLATResourceable {
 	
 	public Date getLastModified();
 	

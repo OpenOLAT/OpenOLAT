@@ -34,7 +34,7 @@ public class MSCourseNodeIndexer extends AbstractCourseNodeIndexer {
 	
 	public static final String TYPE = "type.course.node.ms";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.MSCourseNode";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.MSCourseNode";
 	
 	public MSCourseNodeIndexer() {
 		super(TYPE, SUPPORTED_TYPE_NAME);

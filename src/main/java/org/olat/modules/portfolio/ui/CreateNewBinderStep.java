@@ -62,15 +62,13 @@ public class CreateNewBinderStep extends BasicStep {
 
 	private class CreateNewBinderStepController extends StepFormBasicController {
 
-		private PortfolioImportEntriesContext context; 
-		
 		private BinderMetadataEditController binderMetadataEditController;
 		
 		public CreateNewBinderStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 			
-			context = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
-			binderMetadataEditController = new BinderMetadataEditController(ureq, wControl, rootForm, context);
+			PortfolioImportEntriesContext entriesContext = (PortfolioImportEntriesContext) runContext.get(PortfolioImportEntriesContext.CONTEXT_KEY);
+			binderMetadataEditController = new BinderMetadataEditController(ureq, wControl, rootForm, entriesContext);
 			
 			initForm(ureq);
 		}
@@ -82,7 +80,6 @@ public class CreateNewBinderStep extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);				
 		}
 
@@ -90,6 +87,5 @@ public class CreateNewBinderStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			formLayout.add("binderController", binderMetadataEditController.getInitialFormItem());			
 		}
-		
 	}
 }

@@ -46,13 +46,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.io.SystemFilenameFilter;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.AssignmentTemplatesDataModel.TemplateCols;
 import org.olat.modules.portfolio.ui.component.AssignmentTypeCellRenderer;
 import org.olat.modules.portfolio.ui.event.OpenPageEvent;
@@ -82,7 +82,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private PortfolioFileStorage portfolioFileStorage;
+	private ContentEditorFileStorage portfolioFileStorage;
 	
 	public AssignmentTemplatesListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			BinderSecurityCallback secCallback, Binder binder) {

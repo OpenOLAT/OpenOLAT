@@ -56,11 +56,11 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.PortfolioService;
@@ -68,6 +68,7 @@ import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.AssessedPage;
 import org.olat.modules.portfolio.model.SearchSharePagesParameters;
 import org.olat.modules.portfolio.ui.PageRunController;
+import org.olat.modules.portfolio.ui.PageSettings;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
@@ -347,7 +348,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 		
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, false);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.all(), false);
 		listenTo(pageCtrl);
 		
 		if(row.getIdentityKey() != null) {

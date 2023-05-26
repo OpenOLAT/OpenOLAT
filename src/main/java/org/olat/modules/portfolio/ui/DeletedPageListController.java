@@ -43,11 +43,11 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.CategoryToElement;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.BinderConfiguration;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.CategoryToElement;
-import org.olat.modules.portfolio.Page;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 
 /**
@@ -149,13 +149,11 @@ public class DeletedPageListController extends AbstractPageListController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof FlexiTableRenderEvent) {
-				FlexiTableRenderEvent se = (FlexiTableRenderEvent)event;
+			if(event instanceof FlexiTableRenderEvent se) {
 				deleteButton.setVisible(se.getRendererType() == FlexiTableRendererType.classic
 						&& model.getRowCount() > 0);
 				tableEl.setSelectAllEnable(tableEl.getRendererType() == FlexiTableRendererType.classic);
-			} else if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			} else if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				if("select-page".equals(cmd)) {
 					PortfolioElementRow row = model.getObject(se.getIndex());
@@ -190,9 +188,7 @@ public class DeletedPageListController extends AbstractPageListController {
 			showWarning("page.atleastone");
 		} else if (rows.size() == 1) {
 			String title = translate("delete.def.page.confirm.title");
-			String text = translate("delete.def.page.confirm.descr", new String[]{
-					StringHelper.escapeHtml(rows.get(0).getPage().getTitle())
-				});
+			String text = translate("delete.def.page.confirm.descr", StringHelper.escapeHtml(rows.get(0).getPage().getTitle()));
 			confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 			confirmDeleteCtrl.setUserObject(rows);
 		} else {
@@ -202,8 +198,8 @@ public class DeletedPageListController extends AbstractPageListController {
 				names.append(StringHelper.escapeHtml(row.getPage().getTitle()));
 			}
 			
-			String title = translate("delete.def.pages.confirm.title", new String[] { Integer.toString(rows.size()) });
-			String text = translate("delete.def.pages.confirm.descr", new String[]{ names.toString() });
+			String title = translate("delete.def.pages.confirm.title", Integer.toString(rows.size()));
+			String text = translate("delete.def.pages.confirm.descr", names.toString());
 			confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 			confirmDeleteCtrl.setUserObject(rows);
 		}
@@ -211,7 +207,7 @@ public class DeletedPageListController extends AbstractPageListController {
 	
 	private void doDelete(UserRequest ureq, List<PortfolioElementRow> rows) {
 		for(PortfolioElementRow row:rows) {
-			portfolioService.deletePage(row.getPage());
+			pageService.deletePage(row.getPage());
 		}
 		loadModel(ureq, null);
 	}

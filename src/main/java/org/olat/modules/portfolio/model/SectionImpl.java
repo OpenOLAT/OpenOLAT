@@ -43,10 +43,12 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentElementType;
+import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
 
@@ -156,8 +158,8 @@ public class SectionImpl implements Persistable, CreateInfo, Section {
 	
 	@Override
 	@Transient
-	public PortfolioElementType getType() {
-		return PortfolioElementType.section;
+	public ContentElementType getType() {
+		return ContentElementType.section;
 	}
 
 	@Override

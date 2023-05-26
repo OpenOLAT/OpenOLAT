@@ -1,12 +1,14 @@
-$r.render("meta")
-
-#if($pageIsReferenced)
-<div class="row o_portfolio_reference_warning">
-	<div class="alert alert-warning col-xs-12 col-md-offset-4 col-md-4">$r.translate("page.referenced.warning")</div>
+<div class="o_ce_wrapper #if($r.isTrue($edited)) o_ce_edit_wrapper #end">
+	$r.render("meta")
+	#if($pageIsReferenced)
+	<div class="row o_portfolio_reference_warning">
+		<div class="alert alert-warning col-xs-12 col-md-offset-4 col-md-4">$r.translate("page.referenced.warning")</div>
+	</div>
+	#end
+	
+	<div class="o_pf_content o_page_content clearfix">$r.render("page")</div>
 </div>
-#end
 
-<div class="o_pf_content o_page_content clearfix">$r.render("page")</div>
 #if($r.available("comments"))
 <div class="o_pf_comments clearfix">$r.render("comments")</div>
 #end

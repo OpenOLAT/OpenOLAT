@@ -39,12 +39,13 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.model.BinderRefImpl;
@@ -221,7 +222,7 @@ public class PortfolioHomeController extends BasicController implements Activate
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Binder".equalsIgnoreCase(resName)) {
 			BinderRef binder = new BinderRefImpl(entries.get(0).getOLATResourceable().getResourceableId());
-			if(portfolioService.isMember(binder, getIdentity(), PortfolioRoles.owner.name())) {
+			if(portfolioService.isMember(binder, getIdentity(), ContentRoles.owner.name())) {
 				doOpenMyBinders(ureq).activate(ureq, entries, entries.get(0).getTransientState());
 			} else {
 				doOpenSharedWithMe(ureq).activate(ureq, entries, entries.get(0).getTransientState());

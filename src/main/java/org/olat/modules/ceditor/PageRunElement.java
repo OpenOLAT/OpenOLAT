@@ -36,8 +36,8 @@ public interface PageRunElement {
 	/**
 	 * @return The component to be rendered on the page.
 	 */
-	public Component getComponent();
+	Component getComponent();
 	
-	public boolean validate(UserRequest ureq, List<ValidationMessage> messages);
+	boolean validate(UserRequest ureq, List<ValidationMessage> messages);
 
 }

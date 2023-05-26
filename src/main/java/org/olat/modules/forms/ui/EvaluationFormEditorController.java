@@ -123,7 +123,7 @@ public class EvaluationFormEditorController extends BasicController implements T
 		helpLink = provider.getHelpPageLink(ureq, translate("help"), translate("show.help.tooltip"),
 				"o_icon o_icon-lg o_icon_help", "o_chelp", "manual_user/forms/Forms_in_the_ePortfolio_template/");
 		
-		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : new FullEditorSecurityCallback();
+		PageEditorSecurityCallback secCallback = restrictedEdit ? new RestrictedEditorSecurityCallback() : FullEditorSecurityCallback.all();
 		pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(), new FormPageEditorProvider(), secCallback, getTranslator());
 		listenTo(pageEditCtrl);
 		

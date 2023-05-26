@@ -24,7 +24,7 @@ import java.util.Date;
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.modules.portfolio.PageBody;
+import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.repository.RepositoryEntry;
 

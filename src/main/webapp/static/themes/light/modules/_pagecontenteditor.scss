@@ -7,6 +7,7 @@
 	
 	.o_container_part.o_page_layout {
 		grid-gap: 0;
+		background-color: white;
 	}
 }
 
@@ -575,6 +576,38 @@ table.o_ce_table {
 			}
 		}
 	}
+}
+
+.o_page_lead.o_page_reduced {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: baseline;
+	column-gap: 20px;
+	padding: 20px 20px 10px 20px;
+}
+
+.o_page_lead.o_page_reduced.o_page_with_title {
+	grid-template-columns: auto 1fr auto;
+}
+
+.o_ce_wrapper.o_ce_edit_wrapper {
+	.o_page_lead {
+		margin-bottom: 0;
+		border: none;
+		border-radius: 0;
+		border-bottom: 1px $o-portfolio-lead-border-color solid;
+	}
+	
+
+	
+	.o_pf_content {
+		padding: 10px;
+		background-color: $o-editor-edit-background-color;
+	}
+	
+	border-radius: $o-portfolio-lead-border-radius;
+	border: 1px $o-portfolio-lead-border-color solid;
+	
 }
 
 

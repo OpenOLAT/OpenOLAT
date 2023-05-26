@@ -46,7 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.modules.portfolio.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.webFeed.Item;
 import org.olat.user.UserDataExportable;
 import org.olat.user.manager.ManifestBuilder;

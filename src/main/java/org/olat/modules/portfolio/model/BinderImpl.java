@@ -45,10 +45,11 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentElementType;
+import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
-import org.olat.modules.portfolio.PortfolioElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -186,8 +187,8 @@ public class BinderImpl implements Persistable, ModifiedInfo, CreateInfo, Binder
 
 	@Override
 	@Transient
-	public PortfolioElementType getType() {
-		return PortfolioElementType.binder;
+	public ContentElementType getType() {
+		return ContentElementType.binder;
 	}
 
 	@Override

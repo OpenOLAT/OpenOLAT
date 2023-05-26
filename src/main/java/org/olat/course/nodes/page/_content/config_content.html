@@ -1,0 +1,17 @@
+<fieldset class="o_sel_single_page_file_settings">
+	<legend>
+		$r.contextHelpWithWrapper("manual_user/course_elements/Course_Element_Single_Page/")
+		$r.translate("pane.tab.cepconfig")
+	</legend>
+	<div>
+	#if($itemAvailable)
+		<div class="o_button_group o_button_group_right">
+			$r.render("preview")
+		</div>
+		$r.render("item.available")
+	#else
+		$r.render("item.not.available")
+	#end
+	</div>
+</fieldset>
+$r.render("rights")

@@ -181,6 +181,24 @@
 		<class>org.olat.modules.catalog.model.CatalogLauncherImpl</class>
 		<class>org.olat.modules.catalog.model.CatalogLauncherToOrganisationImpl</class>
 		<class>org.olat.modules.catalog.model.CatalogFilterImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageUserInformationsImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageBodyImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.AbstractPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.HTMLPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.MathPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.ParagraphPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.ContainerPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.TitlePart</class>
+		<class>org.olat.modules.ceditor.model.jpa.MediaPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.SpacerPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.TablePart</class>
+		<class>org.olat.modules.ceditor.model.jpa.EvaluationFormPart</class>
+		<class>org.olat.modules.ceditor.model.jpa.CategoryImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.CategoryToElementImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.AssignmentImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageToTaxonomyCompetenceImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>
@@ -233,26 +251,9 @@
 		<class>org.olat.modules.openmeetings.model.OpenMeetingsRoomReference</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
-		<class>org.olat.modules.portfolio.model.PageImpl</class>
 		<class>org.olat.modules.portfolio.model.PageUserInformationsImpl</class>
-		<class>org.olat.modules.portfolio.model.PageBodyImpl</class>
-		<class>org.olat.modules.portfolio.model.AbstractPart</class>
-		<class>org.olat.modules.portfolio.model.MediaImpl</class>
-		<class>org.olat.modules.portfolio.model.HTMLPart</class>
-		<class>org.olat.modules.portfolio.model.MathPart</class>
-		<class>org.olat.modules.portfolio.model.ParagraphPart</class>
-		<class>org.olat.modules.portfolio.model.ContainerPart</class>
-		<class>org.olat.modules.portfolio.model.TitlePart</class>
-		<class>org.olat.modules.portfolio.model.MediaPart</class>
-		<class>org.olat.modules.portfolio.model.SpacerPart</class>
-		<class>org.olat.modules.portfolio.model.TablePart</class>
-		<class>org.olat.modules.portfolio.model.EvaluationFormPart</class>
-		<class>org.olat.modules.portfolio.model.CategoryImpl</class>
-		<class>org.olat.modules.portfolio.model.CategoryToElementImpl</class>
 		<class>org.olat.modules.portfolio.model.AssessmentSectionImpl</class>
-		<class>org.olat.modules.portfolio.model.AssignmentImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderUserInfosImpl</class>
-		<class>org.olat.modules.portfolio.model.PortfolioPageToTaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.project.model.ProjActivityImpl</class>
 		<class>org.olat.modules.project.model.ProjAppointmentImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactImpl</class>

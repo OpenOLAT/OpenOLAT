@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageElement;
+import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
 import org.olat.modules.ceditor.ui.ImageRunController;
@@ -55,7 +56,6 @@ import org.olat.modules.forms.ui.model.EvaluationFormControllerReportElement;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
-import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 
 /**
  * 

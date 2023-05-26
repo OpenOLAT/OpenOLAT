@@ -1,5 +1,6 @@
 /**
 
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -62,6 +63,7 @@ public class PageController extends BasicController {
 			handlerMap.put(handler.getType(), handler);
 		}
 		fragmentsCmp = new PageFragmentsComponent("page_fragments");
+		fragmentsCmp.setTranslator(getTranslator());
 		putInitialPanel(fragmentsCmp);
 	}
 

@@ -44,14 +44,14 @@ import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.MediaLight;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.handler.AbstractMediaHandler;
-import org.olat.modules.portfolio.manager.MediaDAO;
-import org.olat.modules.portfolio.ui.media.StandardEditMediaController;
+import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.handler.AbstractMediaHandler;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +112,7 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 		if (mediaObject instanceof EfficiencyStatement statement) {
 			String xml = EfficiencyStatementManager.toXML(statement); 
 			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, null, 90, author);
-			ThreadLocalUserActivityLogger.log(PortfolioLoggingAction.PORTFOLIO_MEDIA_ADDED, getClass(),
+			ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 					LoggingResourceable.wrap(media));
 		}
 		return media;

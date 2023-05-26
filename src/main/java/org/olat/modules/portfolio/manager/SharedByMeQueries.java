@@ -29,9 +29,9 @@ import jakarta.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderStatus;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,20 +53,20 @@ public class SharedByMeQueries {
 		  .append(" inner join fetch binder.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" left join fetch binder.entry as entry")
-		  .append(" where membership.identity.key=:identityKey and membership.role='").append(PortfolioRoles.owner.name()).append("'")
+		  .append(" where membership.identity.key=:identityKey and membership.role='").append(ContentRoles.owner.name()).append("'")
 		  .append(" and (exists (select binderMembership.key from bgroupmember as binderMembership")
-		  .append("   where binderMembership.group.key=baseGroup.key and binderMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
+		  .append("   where binderMembership.group.key=baseGroup.key and binderMembership.role in ('").append(ContentRoles.coach.name()).append("','").append(ContentRoles.reviewer.name()).append("')")
 		  .append(" )")
 		  .append(" or exists (select section.key from pfsection as section")
 		  .append("   inner join section.baseGroup as sectionGroup")
 		  .append("   inner join sectionGroup.members as sectionMembership")
-		  .append("   where section.binder.key=binder.key and sectionMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
+		  .append("   where section.binder.key=binder.key and sectionMembership.role in ('").append(ContentRoles.coach.name()).append("','").append(ContentRoles.reviewer.name()).append("')")
 		  .append(" )")
 		  .append(" or exists (select page.key from pfpage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
 		  .append("   inner join page.section as pageSection")
 		  .append("   inner join pageGroup.members as pageMembership")
-		  .append("   where pageSection.binder.key=binder.key and pageMembership.role in ('").append(PortfolioRoles.coach.name()).append("','").append(PortfolioRoles.reviewer.name()).append("')")
+		  .append("   where pageSection.binder.key=binder.key and pageMembership.role in ('").append(ContentRoles.coach.name()).append("','").append(ContentRoles.reviewer.name()).append("')")
 		  .append(" ))")
 		  .append(" and (binder.status is null or binder.status='").append(BinderStatus.open.name()).append("')");
 		if(StringHelper.containsNonWhitespace(searchString)) {

@@ -23,6 +23,8 @@ import java.util.Locale;
 
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.manager.AssignmentDAO;
+import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.forms.EvaluationFormReadyToDelete;
 import org.olat.modules.portfolio.ui.BinderRuntimeController;
 import org.olat.repository.ErrorList;

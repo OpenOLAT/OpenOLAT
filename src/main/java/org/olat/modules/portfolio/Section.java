@@ -23,6 +23,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.ModifiedInfo;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentElement;
 
 /**
  * 
@@ -30,7 +33,7 @@ import org.olat.core.id.ModifiedInfo;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Section extends SectionRef, PortfolioElement, ModifiedInfo {
+public interface Section extends SectionRef, ContentElement, ModifiedInfo {
 
 	public void setTitle(String title);
 	

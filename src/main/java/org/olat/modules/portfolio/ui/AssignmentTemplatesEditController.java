@@ -48,12 +48,12 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.forms.handler.EvaluationFormResource;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.ui.AssignmentTemplatesDataModel.TemplateCols;
 import org.olat.modules.portfolio.ui.component.AssignmentTypeCellRenderer;
 import org.olat.modules.portfolio.ui.model.AssignmentTemplateRow;
@@ -88,7 +88,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private PortfolioFileStorage portfolioFileStorage;
+	private ContentEditorFileStorage portfolioFileStorage;
 	
 	public AssignmentTemplatesEditController(UserRequest ureq, WindowControl wControl, Binder binder) {
 		super(ureq, wControl, "templates_edit");

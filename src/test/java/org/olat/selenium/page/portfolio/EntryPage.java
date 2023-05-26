@@ -91,7 +91,7 @@ public class EntryPage {
 	}
 	
 	public ContentEditorPage openEditor() {
-		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
+		By closeBy = By.cssSelector("a.o_sel_page_edit");
 		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
@@ -99,7 +99,7 @@ public class EntryPage {
 	}
 	
 	public ContentViewPage closeEditor() {
-		By closeBy = By.cssSelector("a.o_sel_pf_edit_page");
+		By closeBy = By.cssSelector("a.o_sel_page_edit");
 		OOGraphene.waitElement(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);

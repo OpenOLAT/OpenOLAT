@@ -20,8 +20,8 @@
 package org.olat.modules.portfolio.model;
 
 import org.olat.core.id.Identity;
-import org.olat.modules.portfolio.PortfolioElement;
-import org.olat.modules.portfolio.PortfolioRoles;
+import org.olat.modules.ceditor.ContentElement;
+import org.olat.modules.ceditor.ContentRoles;
 
 /**
  * 
@@ -31,23 +31,23 @@ import org.olat.modules.portfolio.PortfolioRoles;
  */
 public class AccessRightChange {
 	
-	private final PortfolioRoles role;
-	private final PortfolioElement element;
+	private final ContentRoles role;
+	private final ContentElement element;
 	private final Identity identity;
 	private final boolean add;
 	
-	public AccessRightChange(PortfolioRoles role, PortfolioElement element, Identity identity, boolean add) {
+	public AccessRightChange(ContentRoles role, ContentElement element, Identity identity, boolean add) {
 		this.role = role;
 		this.element = element;
 		this.identity = identity;
 		this.add = add;
 	}
 	
-	public PortfolioRoles getRole() {
+	public ContentRoles getRole() {
 		return role;
 	}
 	
-	public PortfolioElement getElement() {
+	public ContentElement getElement() {
 		return element;
 	}
 	

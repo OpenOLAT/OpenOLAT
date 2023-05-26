@@ -172,6 +172,7 @@
 		<property name="indexerList">
 			<list>
 				<ref bean="spCourseNodeIndexer" />
+				<ref bean="pageCourseNodeIndexer" />
 				<ref bean="documentCourseNodeIndexer" />
 				<ref bean="foCourseNodeIndexer"	/>
 				<ref bean="stCourseNodeIndexer"	/>
@@ -220,6 +221,7 @@
 	<bean id="enCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.ENCourseNodeIndexer" />
 	<bean id="goToMeetingCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.GoToMeetingCourseNodeIndexer" />
 	<bean id="gtaCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.GTACourseNodeIndexer" />
+	<bean id="pageCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.PageCourseNodeIndexer" />
 	<bean id="iqsurvCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQSURVCourseNodeIndexer" />
 	<bean id="iqselfCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQSELFCourseNodeIndexer" />
 	<bean id="iqtestCourseNodeIndexer" class="org.olat.search.service.indexer.repository.course.IQTESTCourseNodeIndexer" />

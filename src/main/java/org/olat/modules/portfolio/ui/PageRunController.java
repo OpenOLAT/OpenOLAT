@@ -31,14 +31,15 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityC
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.help.HelpLinkSPI;
-import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplate;
+import org.olat.core.commons.services.help.HelpLinkSPI;
+import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.link.LinkPopupSettings;
@@ -68,8 +69,11 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageEditorProvider;
+import org.olat.modules.ceditor.PageEditorSecurityCallback;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
@@ -78,43 +82,44 @@ import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageLayoutHandler;
+import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
+import org.olat.modules.ceditor.handler.ContainerHandler;
+import org.olat.modules.ceditor.handler.EvaluationFormHandler;
+import org.olat.modules.ceditor.handler.HTMLRawPageElementHandler;
+import org.olat.modules.ceditor.handler.MathPageElementHandler;
+import org.olat.modules.ceditor.handler.ParagraphPageElementHandler;
+import org.olat.modules.ceditor.handler.SpacerElementHandler;
+import org.olat.modules.ceditor.handler.TablePageElementHandler;
+import org.olat.modules.ceditor.handler.TitlePageElementHandler;
 import org.olat.modules.ceditor.model.ContainerLayout;
+import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
+import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.ceditor.ui.FullEditorSecurityCallback;
 import org.olat.modules.ceditor.ui.PageController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.ceditor.ui.ValidationMessage;
 import org.olat.modules.ceditor.ui.event.ImportEvent;
-import org.olat.modules.portfolio.Assignment;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.handler.CreateFileHandler;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PagePart;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.handler.ContainerHandler;
-import org.olat.modules.portfolio.handler.CreateFileHandler;
-import org.olat.modules.portfolio.handler.EvaluationFormHandler;
-import org.olat.modules.portfolio.handler.HTMLRawPageElementHandler;
-import org.olat.modules.portfolio.handler.MathPageElementHandler;
-import org.olat.modules.portfolio.handler.ParagraphPageElementHandler;
-import org.olat.modules.portfolio.handler.SpacerElementHandler;
-import org.olat.modules.portfolio.handler.TablePageElementHandler;
-import org.olat.modules.portfolio.handler.TitlePageElementHandler;
-import org.olat.modules.portfolio.model.ExtendedMediaRenderingHints;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.model.StandardMediaRenderingHints;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.event.EditPageMetadataEvent;
-import org.olat.modules.portfolio.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.ui.event.PageChangedEvent;
 import org.olat.modules.portfolio.ui.event.PageDeletedEvent;
 import org.olat.modules.portfolio.ui.event.PageRemovedEvent;
@@ -147,7 +152,7 @@ public class PageRunController extends BasicController implements TooledControll
 	protected final TooledStackedPanel stackPanel;
 	
 	private CloseableModalController cmc;
-	private PageMetadataController pageMetaCtrl;
+	private FormBasicController pageMetaCtrl;
 	private PageController pageCtrl;
 	private PageEditorV2Controller pageEditCtrl;
 	private RestorePageController restorePageCtrl;
@@ -161,6 +166,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private Page page;
 	private LockResult lockEntry;
 	private OLATResourceable lockOres;
+	private final PageSettings settings;
 	private List<Assignment> assignments;
 	private final UserSession userSession;
 	private boolean dirtyMarker = false;
@@ -172,6 +178,10 @@ public class PageRunController extends BasicController implements TooledControll
 	@Autowired
 	private HelpModule helpModule;
 	@Autowired
+	private PageService pageService;
+	@Autowired
+	private MediaService mediaService;
+	@Autowired
 	private CoordinatorManager coordinator;
 	@Autowired
 	private PortfolioService portfolioService;
@@ -181,9 +191,10 @@ public class PageRunController extends BasicController implements TooledControll
 	private UserManager userManager;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			BinderSecurityCallback secCallback, Page page, boolean openEditMode) {
+			BinderSecurityCallback secCallback, Page page, PageSettings settings, boolean openEditMode) {
 		super(ureq, wControl);
 		this.page = page;
+		this.settings = settings;
 		this.stackPanel = stackPanel;
 		
 		this.secCallback = secCallback;
@@ -206,8 +217,9 @@ public class PageRunController extends BasicController implements TooledControll
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq, false);
-		stackPanel.addListener(this);
-		
+		if(stackPanel != null) {
+			stackPanel.addListener(this);
+		}
 		previousPageLink = LinkFactory.createButton("page.paging.previous", mainVC, this);
 		previousPageLink.setVisible(false);
 		previousPageLink.setIconLeftCSS("o_icon o_icon_move_left");
@@ -223,8 +235,9 @@ public class PageRunController extends BasicController implements TooledControll
 		putInitialPanel(mainVC);
 		
 		if(openInEditMode) {
+			PageEditorSecurityCallback editorSecCallback = FullEditorSecurityCallback.all();
 			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
-					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), new FullEditorSecurityCallback(),
+					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), editorSecCallback,
 					getTranslator());
 			listenTo(pageEditCtrl);
 			if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
@@ -251,49 +264,52 @@ public class PageRunController extends BasicController implements TooledControll
 	@Override
 	public void initTools() {
 		editLink(!openInEditMode);
-		stackPanel.addTool(editLink, Align.left);
-
-		editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-		editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-		editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments) && page == null);
-		stackPanel.addTool(editMetadataLink, Align.left);
 		
-		if(secCallback.canExportBinder()) {
-			Dropdown exportTools = new Dropdown("export.page", "export.page", false, getTranslator());
-			exportTools.setElementCssClass("o_sel_pf_export_tools");
-			exportTools.setIconCSS("o_icon o_icon_download");
-			stackPanel.addTool(exportTools, Align.left);
+		if(stackPanel != null) {
+			stackPanel.addTool(editLink, Align.left);
+	
+			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
+			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
+			editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments) && page == null);
+			stackPanel.addTool(editMetadataLink, Align.left);
 			
-			if(pdfModule.isEnabled()) {
-				exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
-				exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
-				exportTools.addComponent(exportPageAsPdfLink);
+			if(secCallback.canExportBinder()) {
+				Dropdown exportTools = new Dropdown("export.page", "export.page", false, getTranslator());
+				exportTools.setElementCssClass("o_sel_pf_export_tools");
+				exportTools.setIconCSS("o_icon o_icon_download");
+				stackPanel.addTool(exportTools, Align.left);
+				
+				if(pdfModule.isEnabled()) {
+					exportPageAsPdfLink = LinkFactory.createToolLink("export.page.pdf", translate("export.page.pdf"), this);
+					exportPageAsPdfLink.setIconLeftCSS("o_icon o_filetype_pdf");
+					exportTools.addComponent(exportPageAsPdfLink);
+				}
+				
+				printLink = LinkFactory.createToolLink("export.page.onepage", translate("export.page.onepage"), this);
+				printLink.setIconLeftCSS("o_icon o_icon_print");
+				printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
+				exportTools.addComponent(printLink);
 			}
 			
-			printLink = LinkFactory.createToolLink("export.page.onepage", translate("export.page.onepage"), this);
-			printLink.setIconLeftCSS("o_icon o_icon_print");
-			printLink.setPopup(new LinkPopupSettings(950, 750, "binder"));
-			exportTools.addComponent(printLink);
-		}
-		
-		moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
-		moveToTrashLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-		moveToTrashLink.setElementCssClass("o_sel_pf_move_page_to_trash");
-		moveToTrashLink.setVisible(secCallback.canDeletePage(page));
-		stackPanel.addTool(moveToTrashLink, Align.right);
-		
-		if(secCallback.canRestorePage(page)) {
-			restoreLink = LinkFactory.createToolLink("restore.page", translate("restore.page"), this);
-			restoreLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
-			stackPanel.addTool(restoreLink, Align.left);
+			moveToTrashLink = LinkFactory.createToolLink("delete.page", translate("delete.page"), this);
+			moveToTrashLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+			moveToTrashLink.setElementCssClass("o_sel_pf_move_page_to_trash");
+			moveToTrashLink.setVisible(secCallback.canDeletePage(page));
+			stackPanel.addTool(moveToTrashLink, Align.right);
 			
-			deleteLink = LinkFactory.createToolLink("delete.def.page", translate("delete.def.page"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-			deleteLink.setElementCssClass("o_sel_pf_delete_page");
-			stackPanel.addTool(deleteLink, Align.left);
+			if(secCallback.canRestorePage(page)) {
+				restoreLink = LinkFactory.createToolLink("restore.page", translate("restore.page"), this);
+				restoreLink.setIconLeftCSS("o_icon o_icon-lg o_icon_restore");
+				stackPanel.addTool(restoreLink, Align.left);
+				
+				deleteLink = LinkFactory.createToolLink("delete.def.page", translate("delete.def.page"), this);
+				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+				deleteLink.setElementCssClass("o_sel_pf_delete_page");
+				stackPanel.addTool(deleteLink, Align.left);
+			}
+			
+			stackPanel.addTool(helpLink, Align.rightEdge, false, "o_chelp_wrapper");
 		}
-		
-		stackPanel.addTool(helpLink, Align.rightEdge, false, "o_chelp_wrapper");
 	}
 	
 	/**
@@ -304,7 +320,7 @@ public class PageRunController extends BasicController implements TooledControll
 		if(page.isEditable()) {
 			if(editLink == null) {
 				editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-				editLink.setElementCssClass("o_sel_pf_edit_page");
+				editLink.setElementCssClass("o_sel_page_edit");
 			}
 			if(edit) {
 				editLink.setCustomDisplayText(translate("edit.page"));
@@ -316,9 +332,15 @@ public class PageRunController extends BasicController implements TooledControll
 			editLink.setVisible(secCallback.canEditPage(page) && page == null);
 			editLink.setUserObject(edit);
 			
-			if(pageMetaCtrl != null) {
-				pageMetaCtrl.editLink(edit);
+			if(pageMetaCtrl instanceof PageMetadataController metadataCtrl) {
+				metadataCtrl.editLink(edit);
+			} else if(pageMetaCtrl instanceof PageMetadataCompactController metadataReducedCtrl) {
+				metadataReducedCtrl.updateEditLink(edit);
 			}
+			
+			mainVC.contextPut("edited", Boolean.valueOf(!edit));
+		} else {
+			mainVC.contextPut("edited", Boolean.FALSE);	
 		}
 		return editLink;
 	}
@@ -366,9 +388,11 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void loadMeta(UserRequest ureq) {
 		removeAsListenerAndDispose(pageMetaCtrl);
-		
-		mainVC.contextPut("pageTitle", page.getTitle());
-		pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, openInEditMode);
+		if(settings.isReduced()) {
+			pageMetaCtrl = new PageMetadataCompactController(ureq, getWindowControl(), secCallback, page, settings, openInEditMode);
+		} else {
+			pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, settings, openInEditMode);
+		}
 		listenTo(pageMetaCtrl);
 		mainVC.put("meta", pageMetaCtrl.getInitialComponent());
 	}
@@ -397,8 +421,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof PageChangedEvent) {
-			PageChangedEvent pce = (PageChangedEvent)event;
+		if(event instanceof PageChangedEvent pce) {
 			if(!pce.isMe(getIdentity()) && page.getKey().equals(pce.getPageKey())) {
 				dirtyMarker = false;
 				pageCtrl.loadElements(new SyntheticUserRequest(getIdentity(), getLocale(), userSession));
@@ -538,23 +561,23 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmMoveToTrash(UserRequest ureq) {
 		String title = translate("delete.page.confirm.title");
-		String text = translate("delete.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("delete.page.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		confirmMoveToTrashCtrl = activateYesNoDialog(ureq, title, text, confirmMoveToTrashCtrl);
 	}
 	
 	private void doMoveToTrash(UserRequest ureq) {
-		Page floatingPage = portfolioService.removePage(page);
+		Page floatingPage = pageService.removePage(page);
 		fireEvent(ureq, new PageRemovedEvent(floatingPage));
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
 		String title = translate("delete.def.page.confirm.title");
-		String text = translate("delete.def.page.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("delete.def.page.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		portfolioService.deletePage(page);
+		pageService.deletePage(page);
 		fireEvent(ureq, new PageDeletedEvent());
 	}
 	
@@ -563,7 +586,7 @@ public class PageRunController extends BasicController implements TooledControll
 		pageCtrl.validateElements(ureq, messages);
 		
 		String title = translate("publish.confirm.title");
-		String text = translate("publish.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("publish.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		
 		if(!messages.isEmpty()) {
 			StringBuilder sb = new StringBuilder();
@@ -589,7 +612,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmRevision(UserRequest ureq) {
 		String title = translate("revision.confirm.title");
-		String text = translate("revision.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("revision.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		confirmRevisionCtrl = activateYesNoDialog(ureq, title, text, confirmRevisionCtrl);
 	}
 	
@@ -603,7 +626,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmClose(UserRequest ureq) {
 		String title = translate("close.confirm.title");
-		String text = translate("close.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("close.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		confirmCloseCtrl = activateYesNoDialog(ureq, title, text, confirmCloseCtrl);
 	}
 	
@@ -638,7 +661,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doConfirmReopen(UserRequest ureq) {
 		String title = translate("reopen.confirm.title");
-		String text = translate("reopen.confirm.descr", new String[]{ StringHelper.escapeHtml(page.getTitle()) });
+		String text = translate("reopen.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
 		confirmReopenCtrl = activateYesNoDialog(ureq, title, text, confirmReopenCtrl);
 	}
 	
@@ -692,7 +715,7 @@ public class PageRunController extends BasicController implements TooledControll
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
 						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
-						new FullEditorSecurityCallback(), getTranslator());
+						FullEditorSecurityCallback.all(), getTranslator());
 				if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 					showWarning("page.is.referenced");
 				}
@@ -802,17 +825,17 @@ public class PageRunController extends BasicController implements TooledControll
 			MathPageElementHandler mathHandler = new MathPageElementHandler();
 			handlers.add(mathHandler);
 			
-			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
-				if(mediaHandler instanceof PageElementHandler) {
-					handlers.add((PageElementHandler)mediaHandler);
+				if(mediaHandler instanceof PageElementHandler pageHandler) {
+					handlers.add(pageHandler);
 				}
 			}
 		}
 
 		@Override
 		public List<? extends PageElement> getElements() {
-			return portfolioService.getPageParts(page);
+			return pageService.getPageParts(page);
 		}
 
 		@Override
@@ -850,13 +873,13 @@ public class PageRunController extends BasicController implements TooledControll
 				CreateFileHandler createFileHandler = new CreateFileHandler();
 				creationHandlers.add(createFileHandler);
 			}
-			List<MediaHandler> mediaHandlers = portfolioService.getMediaHandlers();
+			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
-				if(mediaHandler instanceof PageElementHandler) {
-					handlers.add((PageElementHandler)mediaHandler);
-					if(mediaHandler instanceof InteractiveAddPageElementHandler
-							|| mediaHandler instanceof SimpleAddPageElementHandler) {
-						creationHandlers.add((PageElementHandler)mediaHandler);
+				if(mediaHandler instanceof PageElementHandler pageHandler) {
+					handlers.add(pageHandler);
+					if(pageHandler instanceof InteractiveAddPageElementHandler
+							|| pageHandler instanceof SimpleAddPageElementHandler) {
+						creationHandlers.add(pageHandler);
 					}
 				}
 			}
@@ -897,7 +920,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public List<? extends PageElement> getElements() {
-			return portfolioService.getPageParts(page);
+			return pageService.getPageParts(page);
 		}
 
 		@Override
@@ -917,15 +940,15 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public int indexOf(PageElement element) {
-			List<PagePart> elements = portfolioService.getPageParts(page);
+			List<PagePart> elements = pageService.getPageParts(page);
 			return elements.indexOf(element);
 		}
 
 		@Override
 		public PageElement appendPageElement(PageElement element) {
 			PagePart part = null;
-			if(element instanceof PagePart) {
-				part = portfolioService.appendNewPagePart(page, (PagePart)element);
+			if(element instanceof PagePart pagePart) {
+				part = pageService.appendNewPagePart(page, pagePart);
 			}
 			return part;
 		}
@@ -933,8 +956,8 @@ public class PageRunController extends BasicController implements TooledControll
 		@Override
 		public PageElement appendPageElementAt(PageElement element, int index) {
 			PagePart part = null;
-			if(element instanceof PagePart) {
-				part = portfolioService.appendNewPagePartAt(page, (PagePart)element, index);
+			if(element instanceof PagePart pagePart) {
+				part = pageService.appendNewPagePartAt(page, pagePart, index);
 			}
 			return part;
 		}
@@ -951,35 +974,35 @@ public class PageRunController extends BasicController implements TooledControll
 
 		@Override
 		public void removePageElement(PageElement element) {
-			if(element instanceof PagePart) {
-				portfolioService.removePagePart(page, (PagePart)element);
+			if(element instanceof PagePart pagePart) {
+				pageService.removePagePart(page, pagePart);
 			}
 		}
 
 		@Override
 		public void moveUpPageElement(PageElement element) {
-			if(element instanceof PagePart) {
-				portfolioService.moveUpPagePart(page, (PagePart)element);
+			if(element instanceof PagePart pagePart) {
+				pageService.moveUpPagePart(page, pagePart);
 			}
 		}
 
 		@Override
 		public void moveDownPageElement(PageElement element) {
-			if(element instanceof PagePart) {
-				portfolioService.moveDownPagePart(page, (PagePart)element);
+			if(element instanceof PagePart pagePart) {
+				pageService.moveDownPagePart(page, pagePart);
 			}
 		}
 
 		@Override
 		public void movePageElement(PageElement elementToMove, PageElement sibling, boolean after) {
-			if(elementToMove instanceof PagePart && (sibling == null || sibling instanceof PagePart)) {
-				portfolioService.movePagePart(page, (PagePart)elementToMove, (PagePart)sibling, after);
+			if(elementToMove instanceof PagePart pagePartToMove && (sibling == null || sibling instanceof PagePart)) {
+				pageService.movePagePart(page, pagePartToMove, (PagePart)sibling, after);
 			}
 		}
 		
 		@Override
 		public String getImportButtonKey() {
-			return page.getBody().getUsage() <= 1 ? "import.content" : null;
+			return settings.isWithImportContent() && page.getBody().getUsage() <= 1 ? "import.content" : null;
 		}
 	}
 	
@@ -1056,8 +1079,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		@Override
 		protected void event(UserRequest ureq, Controller source, Event event) {
-			if(event instanceof MediaSelectionEvent) {
-				MediaSelectionEvent mse = (MediaSelectionEvent)event;
+			if(event instanceof MediaSelectionEvent mse) {
 				if(mse.getMedia() != null) {
 					doAddMedia(mse.getMedia());
 					fireEvent(ureq, Event.DONE_EVENT);

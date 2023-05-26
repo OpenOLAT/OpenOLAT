@@ -37,10 +37,10 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.ui.MediaMetadataController;
-import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,7 +57,7 @@ public class ForumMessageMediaController extends BasicController {
 
 	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 
 		VelocityContainer mainVC = createVelocityContainer("messageDetails");
 		mainVC.contextPut("text", media.getContent());
@@ -76,8 +76,7 @@ public class ForumMessageMediaController extends BasicController {
 			List<VFSItem> attachmentsToShow = new ArrayList<>();
 			int i=1; //vc-shift!
 			for (VFSItem attachment : attachments) {
-				if(attachment instanceof VFSLeaf) {
-					VFSLeaf file = (VFSLeaf)attachment;
+				if(attachment instanceof VFSLeaf file) {
 					DownloadComponent downlC = new DownloadComponent("download"+i, file, true,
 							file.getName() + " (" + String.valueOf(file.getSize() / 1024) + " KB)", null,
 							CSSHelper.createFiletypeIconCssClassFor(file.getName()));

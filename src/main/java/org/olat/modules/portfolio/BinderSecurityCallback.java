@@ -22,6 +22,9 @@ package org.olat.modules.portfolio;
 import java.util.List;
 
 import org.olat.modules.assessment.Role;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.ContentElement;
 
 /**
  * 
@@ -116,13 +119,13 @@ public interface BinderSecurityCallback {
 	
 	
 	
-	public boolean canEditAccessRights(PortfolioElement element);
+	public boolean canEditAccessRights(ContentElement element);
 	
-	public boolean canViewAccessRights(PortfolioElement element);
+	public boolean canViewAccessRights(ContentElement element);
 	
 	public boolean canViewAccessRights();
 	
-	public boolean canViewElement(PortfolioElement element);
+	public boolean canViewElement(ContentElement element);
 	
 	
 	/**
@@ -130,19 +133,19 @@ public interface BinderSecurityCallback {
 	 * @param element
 	 * @return
 	 */
-	public boolean canViewTitleOfElement(PortfolioElement element);
+	public boolean canViewTitleOfElement(ContentElement element);
 	
 	public boolean canViewPendingAssignments(Section section);
 	
 	public boolean canViewEmptySection(Section section);
 	
-	public boolean canComment(PortfolioElement element);
+	public boolean canComment(ContentElement element);
 	
-	public boolean canReview(PortfolioElement element);
+	public boolean canReview(ContentElement element);
 	
-	public boolean canAssess(PortfolioElement element);
+	public boolean canAssess(ContentElement element);
 	
-	public boolean canViewAssess(PortfolioElement element);
+	public boolean canViewAssess(ContentElement element);
 	
 	public boolean canViewAssessment();
 	

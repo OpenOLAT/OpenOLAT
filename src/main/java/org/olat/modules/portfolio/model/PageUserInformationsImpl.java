@@ -38,7 +38,8 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
-import org.olat.modules.portfolio.Page;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.portfolio.PageUserInformations;
 import org.olat.modules.portfolio.PageUserStatus;
 

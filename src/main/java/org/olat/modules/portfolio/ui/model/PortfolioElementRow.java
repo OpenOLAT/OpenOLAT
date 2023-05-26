@@ -32,11 +32,11 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.portfolio.AssessmentSection;
-import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionStatus;
@@ -73,9 +73,11 @@ public class PortfolioElementRow {
 
 	private long numOfComments;
 
-	private FormLink commentFormLink, openFormLink,
-		newFloatingEntryLink, newEntryLink, importLink,
-		closeSectionLink, reopenSectionLink;
+	private FormLink importLink;
+	private FormLink openFormLink;
+	private FormLink newEntryLink;
+	private FormLink commentFormLink;
+	private FormLink newFloatingEntryLink;
 	// assignment
 	private FormLink newAssignmentLink, editAssignmentLink, deleteAssignmentLink,
 		instantiateAssignmentLink, upAssignmentLink, downAssignmentLink, moveAssignmentLink;
@@ -509,22 +511,6 @@ public class PortfolioElementRow {
 	public boolean isSectionEnded() {
 		return section != null && section.getEndDate() != null && new Date().after(section.getEndDate());
 	}
-
-	public FormLink getCloseSectionLink() {
-		return closeSectionLink;
-	}
-
-	public void setCloseSectionLink(FormLink closeSectionLink) {
-		this.closeSectionLink = closeSectionLink;
-	}
-
-	public FormLink getReopenSectionLink() {
-		return reopenSectionLink;
-	}
-
-	public void setReopenSectionLink(FormLink reopenSectionLink) {
-		this.reopenSectionLink = reopenSectionLink;
-	}
 	
 	public boolean isRepresentingOtherPages() {
 		return representsOtherPages;
@@ -576,11 +562,11 @@ public class PortfolioElementRow {
 	@Override
 	public int hashCode() {
 		if (page != null) {
-			return page.getTitle().hashCode() + page.getBody().hashCode();
-		} else if (section != null) {
-			return section.getKey().hashCode();
-		} else {
-			return -58796;
+			return page.hashCode();
 		}
+		if (section != null) {
+			return section.hashCode();
+		}
+		return -58796;
 	}
 }

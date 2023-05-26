@@ -66,7 +66,7 @@ public class HtmlDocument extends FileDocument {
 			// Remove all HTML and &nbsp; Tags
 			HtmlContent output = new HtmlFilter().filter(is);
 			if (log.isDebugEnabled())
-				log.debug("HTML content without tags :" + output);
+				log.debug("HTML content without tags :{}", output);
 	
 			return new FileContent(output.getTitle(), output.getContent());
 		} catch(Exception e) {

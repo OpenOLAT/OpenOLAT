@@ -35,10 +35,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.MediaInformations;
-import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,11 +64,12 @@ public class CollectArtefactController extends FormBasicController {
 	private final MediaInformations prefillInfos;
 	
 	@Autowired
-	private PortfolioService portfolioService;
+	private MediaService mediaService;
 
 	public CollectArtefactController(UserRequest ureq, WindowControl wControl, Object mediaObject, MediaHandler handler, String businessPath) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(),
+				Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator())));
 		this.handler = handler;
 		this.mediaObject = mediaObject; 
 		this.businessPath = businessPath;
@@ -105,13 +107,6 @@ public class CollectArtefactController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", "save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
-	
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-
-		return allOk;
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -123,7 +118,7 @@ public class CollectArtefactController extends FormBasicController {
 
 		if(mediaReference != null) {
 			List<String> updatedCategories = categoriesEl.getValueList();
-			portfolioService.updateCategories(mediaReference, updatedCategories);
+			mediaService.updateCategories(mediaReference, updatedCategories);
 		} else {
 			showError("ERROR");
 		}

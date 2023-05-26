@@ -29,6 +29,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -38,7 +39,7 @@ import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.portfolio.Category;
+import org.olat.modules.ceditor.Category;
 
 /**
  * Reusable controller to show the list of categories / tags and edit them with
@@ -60,8 +61,8 @@ public class CategoriesEditController extends FormBasicController {
 	private List<TextBoxItem> categoriesNames = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
-	public CategoriesEditController(UserRequest ureq, WindowControl wControl, List<Category> categories) {
-		super(ureq, wControl, "categories_edit");
+	public CategoriesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Category> categories) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "categories_edit", mainForm);
 		this.categories = categories;
 		for(Category category:categories) {
 			categoriesNames.add(new TextBoxItemImpl(category.getName(), category.getName()));

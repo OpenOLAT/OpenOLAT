@@ -38,10 +38,12 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.model.BinderImpl;
 import org.olat.modules.portfolio.ui.export.ExportBinderAsCPResource;
@@ -72,6 +74,8 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
+	private MediaService mediaService;
+	@Autowired
 	private PortfolioService portfolioService;
 	
 	@Override
@@ -101,7 +105,7 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 				continue;// this is a template
 			}
 
-			List<Identity> owners = binderDao.getMembers(ownedBinder, PortfolioRoles.owner.name());
+			List<Identity> owners = binderDao.getMembers(ownedBinder, ContentRoles.owner.name());
 			if(owners.size() == 1 && owners.get(0).getKey().equals(identity.getKey())) {
 				try {
 					portfolioService.deleteBinder(ownedBinder);
@@ -118,7 +122,7 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 			if(mediaDao.isUsed(media)) {
 				log.info(Tracing.M_AUDIT, "Cannot delete media because used: {}", media.getKey());
 			} else {
-				portfolioService.deleteMedia(media);
+				mediaService.deleteMedia(media);
 			}
 		}
 	}
@@ -143,7 +147,7 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 		List<Media> medias = mediaDao.load(identity);
 		dbInstance.commitAndCloseSession();
 		for(Media media:medias) {
-			MediaHandler handler = portfolioService.getMediaHandler(media.getType());
+			MediaHandler handler = mediaService.getMediaHandler(media.getType());
 			handler.export(media, manifest, mediasArchive, locale);
 		}
 	}

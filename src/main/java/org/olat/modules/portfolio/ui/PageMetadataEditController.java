@@ -59,23 +59,25 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageImageAlign;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaHandler;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageImageAlign;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
-import org.olat.modules.portfolio.model.MediaPart;
 import org.olat.modules.portfolio.model.SectionKeyRef;
-import org.olat.modules.portfolio.ui.media.UploadMedia;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -142,11 +144,15 @@ public class PageMetadataEditController extends FormBasicController {
 	private List<TextBoxItem> categories = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	private Map<String,Assignment> assignmentTemplatesMap = new HashMap<>();
-	
+
+	@Autowired
+	private PageService pageService;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private PortfolioFileStorage portfolioFileStorage;
+	private ContentEditorFileStorage portfolioFileStorage;
 	@Autowired
 	private PortfolioV2Module portfolioV2Module;
 	@Autowired 
@@ -259,7 +265,7 @@ public class PageMetadataEditController extends FormBasicController {
 		}
 		
 		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
-		File posterImg = portfolioService.getPosterImage(pageDelegate);
+		File posterImg = pageService.getPosterImage(pageDelegate);
 		if(posterImg != null) {
 			imageUpload.setInitialFile(posterImg);
 		}
@@ -324,7 +330,7 @@ public class PageMetadataEditController extends FormBasicController {
 		imageUpload.limitToMimeType(imageMimeTypes, "error.mimetype", new String[]{ imageMimeTypes.toString()} );
 		imageUpload.setMaxUploadSizeKB(picUploadlimitKB, null, null);
 		if(page != null) {
-			File posterImg = portfolioService.getPosterImage(page);
+			File posterImg = pageService.getPosterImage(page);
 			if(posterImg != null) {
 				imageUpload.setInitialFile(posterImg);
 			}
@@ -350,7 +356,7 @@ public class PageMetadataEditController extends FormBasicController {
 		
 		if (taxonomyLinkingEnabled) {
 			Set<TaxonomyLevel>  existingCompetences = page != null
-					? portfolioService.getRelatedCompetences(page, true)
+					? pageService.getRelatedCompetences(page, true)
 							.stream()
 							.map(TaxonomyCompetence::getTaxonomyLevel)
 							.collect(Collectors.toSet())
@@ -652,7 +658,7 @@ public class PageMetadataEditController extends FormBasicController {
 			String summary = summaryEl.getValue();
 			SectionRef selectSection = getSelectedSection();
 			if (imageUpload.getUploadFile() != null) {
-				imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
+				imagePath = pageService.addPosterImageForPage(imageUpload.getUploadFile(),
 						imageUpload.getUploadFileName());
 			} else if(pageDelegate != null && imageUpload.getInitialFile() != null) {
 				imagePath = pageDelegate.getImagePath();// reuse
@@ -684,12 +690,12 @@ public class PageMetadataEditController extends FormBasicController {
 			page.setSummary(summaryEl.getValue());
 
 			if (imageUpload.getUploadFile() != null) {
-				imagePath = portfolioService.addPosterImageForPage(imageUpload.getUploadFile(),
+				imagePath = pageService.addPosterImageForPage(imageUpload.getUploadFile(),
 						imageUpload.getUploadFileName());
 				page.setImagePath(imagePath);
 			} else if (imageUpload.getInitialFile() == null) {
 				page.setImagePath(null);
-				portfolioService.removePosterImage(page);
+				pageService.removePosterImage(page);
 			}
 
 			SectionRef selectSection = getSelectedSection();
@@ -707,7 +713,7 @@ public class PageMetadataEditController extends FormBasicController {
 		portfolioService.updateCategories(page, updatedCategories);
 		
 		if (taxonomyLinkingEnabled) {
-			portfolioService.linkCompetences(page, getIdentity(), competencesEl.getSelection());
+			pageService.linkCompetences(page, getIdentity(), competencesEl.getSelection());
 		}
 		
 		if (editModeEl != null && editModeEl.getSelectedKey().equals(editKeys[1])) {
@@ -721,7 +727,7 @@ public class PageMetadataEditController extends FormBasicController {
 					portfolioService.updatePage(sharing, null);
 					portfolioService.updateCategories(sharing, updatedCategories);
 					if (taxonomyLinkingEnabled) {
-						portfolioService.linkCompetences(sharing, getIdentity(), competencesEl.getSelection());
+						pageService.linkCompetences(sharing, getIdentity(), competencesEl.getSelection());
 					}
 				}
 			}
@@ -734,7 +740,7 @@ public class PageMetadataEditController extends FormBasicController {
 		if(assignmentTemplate.getAssignmentType() != AssignmentType.document || documents.isEmpty()) return;
 
 		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		List<MediaHandler> availableHandlers = portfolioService.getMediaHandlers();
+		List<MediaHandler> availableHandlers = mediaService.getMediaHandlers();
 
 		for(FileInfos document:documents) {
 			MediaHandler handler = null;
@@ -753,7 +759,7 @@ public class PageMetadataEditController extends FormBasicController {
 				Media media = handler.createMedia(document.getName(), "", mObject, businessPath, getIdentity());
 				MediaPart part = new MediaPart();
 				part.setMedia(media);
-				portfolioService.appendNewPagePart(thePage, part);
+				pageService.appendNewPagePart(thePage, part);
 			} else {
 				showWarning("warning.unkown.media");
 			}

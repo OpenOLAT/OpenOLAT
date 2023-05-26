@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.portfolio.MediaLight;
+import org.olat.modules.cemedia.MediaLight;
 
 /**
  * 

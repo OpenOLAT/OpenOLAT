@@ -48,10 +48,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Category;
 import org.olat.modules.portfolio.PortfolioLoggingAction;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -161,7 +161,7 @@ public class BinderMetadataEditController extends FormBasicController {
 			if(binder == null || binder.getKey() == null) {
 				sb.append(userManager.getUserDisplayName(getIdentity()));
 			} else {
-				List<Identity> owners = portfolioService.getMembers(binder, PortfolioRoles.owner.name());
+				List<Identity> owners = portfolioService.getMembers(binder, ContentRoles.owner.name());
 				for(Identity owner:owners) {
 					if(sb.length() > 0) sb.append(", ");
 					sb.append(userManager.getUserDisplayName(owner));

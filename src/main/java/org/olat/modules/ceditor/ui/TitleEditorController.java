@@ -28,7 +28,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementStore;
@@ -106,16 +105,5 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		title.setContent(content);
 		title = store.savePageElement(title);
 		fireEvent(ureq, new ChangePartEvent(title));
-	}
-
-	private String contentOrExample(String content) {
-		String text = FilterFactory.getHtmlTagsFilter().filter(content);
-		String staticContent;
-		if (!StringHelper.containsNonWhitespace(text)) {
-			staticContent = getTranslator().translate("title.example");
-		} else {
-			staticContent = TitleElement.toHtml(content, title.getTitleSettings());
-		}
-		return staticContent;
 	}
 }

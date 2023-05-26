@@ -1,0 +1,9 @@
+<div class="o_page_lead o_page_reduced#if($r.isTrue($withTitle)) o_page_with_title#end">
+	#if($r.isTrue($withTitle))
+	<h2><i class="o_icon o_page_icon"> </i> $r.escapeHtml($pageTitle)</h2>
+	#end
+	<small class="o_portfolio_publication_date text-muted o_small">$r.translate("meta.last.modified", $r.formatDateAndTime($lastModified)) - $r.translate("binder.by",$owners)</small>
+	#if($r.visible("edit.page"))
+	<span class="o_edit_page">$r.render("edit.page", "label") $r.render("edit.page")</span>
+	#end
+</div>

@@ -59,13 +59,13 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.forms.handler.EvaluationFormResource;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
-import org.olat.modules.portfolio.manager.PortfolioFileStorage;
 import org.olat.modules.portfolio.model.SectionKeyRef;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
@@ -124,11 +124,11 @@ public class AssignmentEditController extends FormBasicController {
 	private int maxNumOfDocuments = Integer.MAX_VALUE;
 	
 	@Autowired
-	private PortfolioFileStorage fileStorage;
+	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private PortfolioFileStorage portfolioFileStorage;
+	private ContentEditorFileStorage portfolioFileStorage;
 	
 	public AssignmentEditController(UserRequest ureq, WindowControl wControl, Binder binder) {
 		super(ureq, wControl);

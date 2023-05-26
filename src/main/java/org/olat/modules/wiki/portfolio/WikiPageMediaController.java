@@ -37,10 +37,10 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.MediaRenderingHints;
-import org.olat.modules.portfolio.ui.MediaMetadataController;
-import org.olat.modules.portfolio.ui.PortfolioHomeController;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,7 +59,7 @@ public class WikiPageMediaController extends BasicController {
 
 	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
 		VelocityContainer mainVC = createVelocityContainer("details");
 		String wikiText = getContent(media.getContent());

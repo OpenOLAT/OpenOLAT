@@ -36,7 +36,7 @@ public class IQTESTCourseNodeIndexer extends AbstractCourseNodeIndexer {
 	
 	public static final String TYPE = "type.course.node.iqtest";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.IQTESTCourseNode";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.IQTESTCourseNode";
 	
 	public IQTESTCourseNodeIndexer() {
 		super(TYPE, SUPPORTED_TYPE_NAME);

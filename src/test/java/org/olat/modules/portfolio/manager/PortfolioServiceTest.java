@@ -35,22 +35,27 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.resource.OresHelper;
-import org.olat.modules.portfolio.Assignment;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.AssignmentType;
+import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.manager.AssignmentDAO;
+import org.olat.modules.ceditor.manager.CategoryDAO;
+import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
-import org.olat.modules.portfolio.Category;
-import org.olat.modules.portfolio.Media;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PageBody;
-import org.olat.modules.portfolio.PortfolioRoles;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.portfolio.model.AccessRights;
 import org.olat.modules.portfolio.model.BinderStatistics;
-import org.olat.modules.portfolio.model.MediaPart;
-import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.modules.portfolio.model.SectionImpl;
 import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.repository.RepositoryEntry;
@@ -81,6 +86,8 @@ public class PortfolioServiceTest extends OlatTestCase {
 	private BinderDAO binderDao;
 	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
@@ -132,7 +139,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		AccessRights ownerRight = rights.get(0);
 		Assert.assertEquals(binder.getKey(), ownerRight.getBinderKey());
 		Assert.assertEquals(owner, ownerRight.getIdentity());
-		Assert.assertEquals(PortfolioRoles.owner, ownerRight.getRole());
+		Assert.assertEquals(ContentRoles.owner, ownerRight.getRole());
 	}
 
 	@Test
@@ -149,12 +156,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
-		portfolioService.addAccessRights(section, coach, PortfolioRoles.coach);
+		portfolioService.addAccessRights(section, coach, ContentRoles.coach);
 		
 		dbInstance.commit();
 		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
-		portfolioService.addAccessRights(page, reviewer, PortfolioRoles.reviewer);
+		portfolioService.addAccessRights(page, reviewer, ContentRoles.reviewer);
 
 		// load right
 		List<AccessRights> rights = portfolioService.getAccessRights(binder);
@@ -166,11 +173,11 @@ public class PortfolioServiceTest extends OlatTestCase {
 		boolean foundReviewer = false;
 		
 		for(AccessRights right:rights) {
-			if(PortfolioRoles.owner.equals(right.getRole()) && owner.equals(right.getIdentity())) {
+			if(ContentRoles.owner.equals(right.getRole()) && owner.equals(right.getIdentity())) {
 				foundOwner = true;
-			} else if(PortfolioRoles.coach.equals(right.getRole()) && coach.equals(right.getIdentity())) {
+			} else if(ContentRoles.coach.equals(right.getRole()) && coach.equals(right.getIdentity())) {
 				foundCoach = true;
-			} else if(PortfolioRoles.reviewer.equals(right.getRole()) && reviewer.equals(right.getIdentity())) {
+			} else if(ContentRoles.reviewer.equals(right.getRole()) && reviewer.equals(right.getIdentity())) {
 				foundReviewer = true;
 			}
 		}
@@ -193,12 +200,12 @@ public class PortfolioServiceTest extends OlatTestCase {
 		List<Section> sections = portfolioService.getSections(binder);
 		Section section = sections.get(0);
 		portfolioService.appendNewPage(owner, "Reviewed page", "", null, null, section);
-		portfolioService.addAccessRights(section, identity, PortfolioRoles.coach);
+		portfolioService.addAccessRights(section, identity, ContentRoles.coach);
 		
 		dbInstance.commit();
 		List<Page> pages = portfolioService.getPages(section);
 		Page page = pages.get(0);
-		portfolioService.addAccessRights(page, identity, PortfolioRoles.reviewer);
+		portfolioService.addAccessRights(page, identity, ContentRoles.reviewer);
 
 		// load right
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, identity);
@@ -1195,14 +1202,14 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Binder deletedBinder = portfolioService.getBinderByKey(binder.getKey());
 		Assert.assertNull(deletedBinder);
 		// the media
-		Media deletedMedia = portfolioService.getMediaByKey(media.getKey());
+		Media deletedMedia = mediaService.getMediaByKey(media.getKey());
 		Assert.assertNull(deletedMedia);
 		
 		// check that the method doesn't delete stuff of other users
 		Binder reloadedPermanentBinder = portfolioService.getBinderByKey(permanentBinder.getKey());
 		Assert.assertNotNull(reloadedPermanentBinder);
 		// the media
-		Media reloadedPermanentMedia = portfolioService.getMediaByKey(permanentMedia.getKey());
+		Media reloadedPermanentMedia = mediaService.getMediaByKey(permanentMedia.getKey());
 		Assert.assertNotNull(reloadedPermanentMedia);
 	}
 	

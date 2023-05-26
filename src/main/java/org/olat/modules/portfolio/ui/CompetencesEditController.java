@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
@@ -35,8 +36,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.portfolio.Page;
-import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageService;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -65,14 +66,14 @@ public class CompetencesEditController extends FormBasicController {
 	private final Page page;
 
 	@Autowired
-	private PortfolioService portfolioService;
-	@Autowired
-	private PortfolioV2Module portfolioModule;
+	private PageService pageService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 	
-	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Page page) {
-		super(ureq, wControl, "competences_edit");
+	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, Page page) {
+		super(ureq, wControl, LAYOUT_CUSTOM, "competences_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.page = page;
 		
@@ -86,7 +87,7 @@ public class CompetencesEditController extends FormBasicController {
 		formLayout.setElementCssClass("o_sel_pf_edit_entry_tags_form");
 		
 		Set<TaxonomyLevel>  existingCompetences = page != null
-				? portfolioService.getRelatedCompetences(page, true)
+				? pageService.getRelatedCompetences(page, true)
 						.stream()
 						.map(TaxonomyCompetence::getTaxonomyLevel)
 						.collect(Collectors.toSet())

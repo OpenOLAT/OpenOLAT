@@ -29,7 +29,7 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.modules.portfolio.MediaHandler;
+import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 
 /**

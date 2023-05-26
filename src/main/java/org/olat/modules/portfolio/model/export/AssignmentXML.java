@@ -20,8 +20,8 @@
 package org.olat.modules.portfolio.model.export;
 
 import org.olat.core.util.StringHelper;
-import org.olat.modules.portfolio.AssignmentStatus;
-import org.olat.modules.portfolio.AssignmentType;
+import org.olat.modules.ceditor.AssignmentStatus;
+import org.olat.modules.ceditor.AssignmentType;
 
 /**
  * 

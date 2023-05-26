@@ -565,7 +565,7 @@ public class NodeRightsController extends FormBasicController {
 			Date start = nodeRightGrantRow.getStartEl().getDate();
 			Date end = nodeRightGrantRow.getEndEl().getDate();
 			if (start != null && end != null && start.after(end)) {
-				wrapper.getTableEl().setErrorKey("error.end.after.start", null);
+				wrapper.getTableEl().setErrorKey("error.end.after.start");
 				return false;
 			}
 		}
