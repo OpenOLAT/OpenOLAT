@@ -494,8 +494,7 @@ public class CourseReminderListController extends FormBasicController
 		@Override
 		protected void event(UserRequest ureq, Component source, Event event) {
 			fireEvent(ureq, Event.DONE_EVENT);
-			if(source instanceof Link) {
-				Link link = (Link)source;
+			if(source instanceof Link link) {
 				String cmd = link.getCommand();
 				
 				toolsCalloutCtrl.deactivate();

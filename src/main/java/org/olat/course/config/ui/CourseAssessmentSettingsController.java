@@ -52,6 +52,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseAssessmentSettingsController extends BasicController {
 	
+	private final VelocityContainer mainVC;
+	
 	private Controller scoreCtrl;
 	private Controller efficiencyStatementCtrl;
 	private CourseReminderListController remindersCtrl;
@@ -91,7 +93,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 			}
 		}
 		
-		VelocityContainer mainVC = createVelocityContainer("assessment_settings");
+		mainVC = createVelocityContainer("assessment_settings");
 		
 		if (!nodeAccessService.isScoreCalculatorSupported(courseConfig.getNodeAccessType())) {
 			scoreCtrl = new CourseScoreController(ureq, wControl, entry, editableAndLocked);
@@ -124,12 +126,14 @@ public class CourseAssessmentSettingsController extends BasicController {
 		RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(entry);
 		boolean certificationWithValidityEnabled = (certificateConfig.isAutomaticCertificationEnabled()
 				|| certificateConfig.isManualCertificationEnabled()) && certificateConfig.isValidityEnabled();
+		boolean recertification = certificationWithValidityEnabled && certificateConfig.isRecertificationEnabled();
 	
 		recertificationCtrl.getInitialComponent().setVisible(certificationWithValidityEnabled);
-		remindersCtrl.getInitialComponent().setVisible(certificationWithValidityEnabled);
-		if(certificationWithValidityEnabled) {
+		remindersCtrl.getInitialComponent().setVisible(recertification);
+		if(recertification) {
 			remindersCtrl.reload(ureq);
 		}
+		mainVC.setDirty(true);
 	}
 
 	@Override

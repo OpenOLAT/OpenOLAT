@@ -682,7 +682,9 @@ div.o_assessment_mode_row {
 
 div.panel.o_assessment_mini_overview {
 	display: grid;
-	grid-template-columns: auto auto;
+	align-items: center;
+	grid-template-columns: fit-content(200px) auto auto;
+	padding-left: 10px;
 	
 	.o_button_group {
 		justify-self: end;
@@ -699,6 +701,7 @@ div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
 	display: grid;
 	align-items: center;
 	grid-template-columns: 80px fit-content(200px) auto auto;
+	padding-left: 0;
 }
 
 /* BigBlueButton */

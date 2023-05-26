@@ -741,6 +741,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 		return nextRecertificationWindow(startRecertification, certificateConfig);
 	}
 
+	@Override
 	public Date nextRecertificationWindow(Date nextCertificationDate, RepositoryEntryCertificateConfiguration certificateConfig) {
 		if(nextCertificationDate != null && certificateConfig.isRecertificationLeadTimeEnabled()) {
 			int leadTime = certificateConfig.getRecertificationLeadTimeInDays();

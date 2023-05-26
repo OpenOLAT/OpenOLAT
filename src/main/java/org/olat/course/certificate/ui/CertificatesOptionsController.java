@@ -24,11 +24,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Date;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -53,6 +55,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -297,7 +300,9 @@ public class CertificatesOptionsController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
+
+		certificateConfig = certificatesManager.getConfiguration(entry);
 		
 		pdfCertificatesEl.clearError();
 		if (pdfCertificatesEl.isVisible()) {
@@ -308,19 +313,22 @@ public class CertificatesOptionsController extends FormBasicController {
 		}
 		
 		validityCont.clearError();
-		if (validityTimelapseEl.isVisible()) {
+		if(!validityTimelapseUnitEl.isOneSelected()) {
+			validityCont.setErrorKey("form.mandatory.hover");
+			allOk &= false;
+		} else if (validityTimelapseEl.isVisible()) {
 			if (!StringHelper.containsNonWhitespace(validityTimelapseEl.getValue())) {
 				validityCont.setErrorKey("form.mandatory.hover");
 				allOk &= false;
-			} else {
-				allOk &= validateInt(validityTimelapseEl, validityCont);
+			} else if(!validateTimelapse(ureq, validityTimelapseEl, validityCont)) {
+				allOk &= false;
 			}
 		}
 		
 		return allOk;
 	}
 	
-	private boolean validateInt(TextElement el, FormItem errorEl) {
+	private boolean validateTimelapse(UserRequest ureq, TextElement el, FormItem errorEl) {
 		boolean allOk = true;
 		
 		if(el.isVisible()) {
@@ -331,6 +339,16 @@ public class CertificatesOptionsController extends FormBasicController {
 					if (intValue.intValue() < 0) {
 						allOk = false;
 						errorEl.setErrorKey("error.positive.int");
+					} else if(certificateConfig.isRecertificationEnabled() && certificateConfig.isRecertificationLeadTimeEnabled()) {
+						String selectedUnit = validityTimelapseUnitEl.getSelectedKey();
+						CertificationTimeUnit timeUnit = CertificationTimeUnit.valueOf(selectedUnit);
+						Date nextRecertification = timeUnit.toDate(ureq.getRequestTimestamp(), intValue);
+						nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+						long nextRecertificationInDays = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertification);
+						if(certificateConfig.getRecertificationLeadTimeInDays() >= nextRecertificationInDays) {
+							validityCont.setErrorKey("error.recertication.time");
+							allOk &= false;
+						}
 					}
 				} catch(Exception e) {
 					allOk = false;

@@ -106,8 +106,7 @@ public class IdentityPassedController extends BasicController {
 		completionItem.setRenderSize(RenderSize.small);
 		mainVC.put("completion", completionItem);
 		
-		Overridable<Boolean> passedOverridable = courseAssessmentService.getRootPassed(assessedUserCourseEnv);
-		updateUI(passedOverridable);
+		refresh();
 		putInitialPanel(mainVC);
 	}
 	
@@ -130,7 +129,7 @@ public class IdentityPassedController extends BasicController {
 		AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
 		Double completion = assessmentEvaluation.getCompletion();
 		if(completion != null) {
-			BarColor barColor = passed ? BarColor.success : BarColor.danger;
+			BarColor barColor = failed ? BarColor.danger : BarColor.success;
 			completionItem.setBarColor(barColor);
 			completionItem.setActual(completion.floatValue() * 100f);
 		}
@@ -164,11 +163,11 @@ public class IdentityPassedController extends BasicController {
 		if (passedOverridable.isOverridden()) {
 			String messageOriginal;
 			if (passedOverridable.getOriginal() == null) {
-				messageOriginal = translate("passed.manually.message.null");
+				messageOriginal = translate("passed.manually.message.original.null");
 			} else if (passedOverridable.getOriginal().booleanValue()) {
-				messageOriginal = translate("passed.manually.message.passed");
+				messageOriginal = translate("passed.manually.message.original.passed");
 			} else {
-				messageOriginal = translate("passed.manually.message.failed");
+				messageOriginal = translate("passed.manually.message.original.failed");
 			}
 			
 			String[] args = new String[] {
@@ -180,16 +179,17 @@ public class IdentityPassedController extends BasicController {
 					? translate("passed.manually.message.overriden.passed", args)
 					: translate("passed.manually.message.overriden.failed", args);
 		} else {
+			AssessmentEvaluation evaluation = courseAssessmentService.getAssessmentEvaluation(assessedUserCourseEnv
+					.getCourseEnvironment().getRunStructure().getRootNode(), assessedUserCourseEnv);
 			String[] args = new String[] {
-					userManager.getUserDisplayName(passedOverridable.getModBy()),
-					formatter.formatDateAndTime(passedOverridable.getModDate())
+					formatter.formatDateAndTime(evaluation.getAssessmentDone())
 			};
 			if (passedOverridable.getCurrent() == null) {
-				message = translate("passed.manually.message.original.null", args);
+				message = translate("passed.manually.message.null", args);
 			} else if (passedOverridable.getCurrent().booleanValue()) {
-				message = translate("passed.manually.message.original.passed", args);
+				message = translate("passed.manually.message.passed", args);
 			} else {
-				message = translate("passed.manually.message.original.failed", args);
+				message = translate("passed.manually.message.failed", args);
 			}
 		}
 		return message;

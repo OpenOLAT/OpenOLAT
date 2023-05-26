@@ -15,7 +15,8 @@
 	#end
 	$r.render("recertification")
 #end
-#if($r.available("reminders"))
+
+#if($r.visible("reminders"))
 <div class="o_form form"><div class="form-group clearfix">
 	<div class="col-sm-offset-3 col-sm-9">
 		<div class="panel panel-default">

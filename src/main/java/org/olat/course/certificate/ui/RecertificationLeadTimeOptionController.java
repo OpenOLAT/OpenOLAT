@@ -19,6 +19,9 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.Date;
+
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -27,7 +30,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.course.certificate.CertificationTimeUnit;
+import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 
 /**
  * 
@@ -39,14 +45,20 @@ public class RecertificationLeadTimeOptionController extends FormBasicController
 
 	private TextElement reCertificationTimelapseEl;
 	
-	public RecertificationLeadTimeOptionController(UserRequest ureq, WindowControl wControl) {
+	private RepositoryEntryCertificateConfiguration certificateConfig;
+	
+	public RecertificationLeadTimeOptionController(UserRequest ureq, WindowControl wControl, RepositoryEntryCertificateConfiguration certificateConfig) {
 		super(ureq, wControl);
+		this.certificateConfig = certificateConfig;
 		
 		initForm(ureq);
 	}
 	
 	public int getLeadTimeInDays() {
-		return Integer.parseInt(reCertificationTimelapseEl.getValue());
+		if(StringHelper.isLong(reCertificationTimelapseEl.getValue())) {
+			return Math.abs(Integer.parseInt(reCertificationTimelapseEl.getValue()));
+		}
+		return 0;
 	}
 
 	@Override
@@ -65,15 +77,22 @@ public class RecertificationLeadTimeOptionController extends FormBasicController
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		reCertificationTimelapseEl.clearError();
-		if(!StringHelper.containsNonWhitespace(reCertificationTimelapseEl.getValue())) {
-			reCertificationTimelapseEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		} else {
+		if(StringHelper.containsNonWhitespace(reCertificationTimelapseEl.getValue())) {
 			try {
 				Integer days = Integer.parseInt(reCertificationTimelapseEl.getValue());
 				if(days.intValue() < 0) {
 					reCertificationTimelapseEl.setErrorKey("form.error.positive.integer");
 					allOk &= false;
+				} else {
+					int time = certificateConfig.getValidityTimelapse();
+					CertificationTimeUnit timeUnit = certificateConfig.getValidityTimelapseUnit();
+					Date nextRecertification = timeUnit.toDate(ureq.getRequestTimestamp(), time);
+					nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+					long nextRecertificationInDays = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertification);
+					if(days >= nextRecertificationInDays) {
+						reCertificationTimelapseEl.setErrorKey("error.recertication.time");
+						allOk &= false;
+					}
 				}
 			} catch (NumberFormatException e) {
 				logDebug("Wrong format: " + reCertificationTimelapseEl.getValue());
@@ -84,6 +103,7 @@ public class RecertificationLeadTimeOptionController extends FormBasicController
 
 		return allOk;
 	}
+
 
 	@Override
 	protected void formOK(UserRequest ureq) {

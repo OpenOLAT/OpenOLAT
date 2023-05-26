@@ -1,12 +1,15 @@
 #if($r.available("identityInfos"))
 	$r.render("identityInfos")
 #end
+<fieldset>
+	<legend>$r.translate("title.assessment")</legend>
 #if($r.available("passed"))
 	$r.render("passed")
 #end
 #if($r.available("courseOverview"))
 	$r.render("courseOverview")
 #end
+</fieldset>
 #if($r.available("certificateInfos"))
 	$r.render("certificateInfos")
 #end

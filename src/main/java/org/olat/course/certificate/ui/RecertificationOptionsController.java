@@ -19,8 +19,10 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.Date;
 import java.util.List;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -34,8 +36,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.reminder.rule.NextRecertificationDateSPI;
 import org.olat.modules.reminder.Reminder;
@@ -145,6 +149,40 @@ public class RecertificationOptionsController extends FormBasicController {
 		confirmDisableCtrl = null;
 		cmc = null;
 	}
+	
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		certificateConfig = certificatesManager.getConfiguration(entry);
+
+		reCertificationTimelapseEl.clearError();
+		if(StringHelper.containsNonWhitespace(reCertificationTimelapseEl.getValue())) {
+			try {
+				Integer days = Integer.parseInt(reCertificationTimelapseEl.getValue());
+				if(days.intValue() < 0) {
+					reCertificationTimelapseEl.setErrorKey("form.error.positive.integer");
+					allOk &= false;
+				} else {
+					int time = certificateConfig.getValidityTimelapse();
+					CertificationTimeUnit timeUnit = certificateConfig.getValidityTimelapseUnit();
+					Date nextRecertification = timeUnit.toDate(ureq.getRequestTimestamp(), time);
+					nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+					long nextRecertificationInDays = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertification);
+					if(days >= nextRecertificationInDays) {
+						reCertificationTimelapseEl.setErrorKey("error.recertication.time");
+						allOk &= false;
+					}
+				}
+			} catch (NumberFormatException e) {
+				logDebug("Wrong format: " + reCertificationTimelapseEl.getValue());
+				reCertificationTimelapseEl.setErrorKey("form.error.positive.integer");
+				allOk &= false;
+			}
+		}
+
+		return allOk;
+	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
@@ -166,7 +204,7 @@ public class RecertificationOptionsController extends FormBasicController {
 	
 	private void confirmDisable(UserRequest ureq) {
 		removeAsListenerAndDispose(confirmDisableCtrl);
-		confirmDisableCtrl = new ConfirmDisableRecertificationController(ureq, getWindowControl());
+		confirmDisableCtrl = new ConfirmDisableRecertificationController(ureq, getWindowControl(), entry);
 		listenTo(confirmDisableCtrl);
 		
 		String title = translate("confirm.disable.recertification.title");
@@ -184,7 +222,7 @@ public class RecertificationOptionsController extends FormBasicController {
 	
 	private void confirmLeadTime(UserRequest ureq) {
 		removeAsListenerAndDispose(confirmLeadTimeCtrl);
-		confirmLeadTimeCtrl = new RecertificationLeadTimeOptionController(ureq, getWindowControl());
+		confirmLeadTimeCtrl = new RecertificationLeadTimeOptionController(ureq, getWindowControl(), certificateConfig);
 		listenTo(confirmLeadTimeCtrl);
 		
 		String title = translate("confirm.activate.recertification.title");
@@ -270,7 +308,10 @@ public class RecertificationOptionsController extends FormBasicController {
 		
 		certificateConfig.setRecertificationEnabled(enabledEl.isOn());
 		if (enabledEl.isOn()) {
-			int timelapse = Integer.parseInt(reCertificationTimelapseEl.getValue());
+			int timelapse = 0;
+			if(StringHelper.isLong(reCertificationTimelapseEl.getValue())) {
+				timelapse = Math.abs(Integer.parseInt(reCertificationTimelapseEl.getValue()));
+			}
 			certificateConfig.setRecertificationLeadTimeInDays(timelapse);
 			certificateConfig.setRecertificationLeadTimeEnabled(timelapse > 0);
 		} else {

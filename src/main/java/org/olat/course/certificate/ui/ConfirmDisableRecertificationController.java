@@ -19,6 +19,11 @@
  */
 package org.olat.course.certificate.ui;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -26,6 +31,15 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.course.reminder.CourseNodeRuleSPI;
+import org.olat.modules.reminder.ReminderModule;
+import org.olat.modules.reminder.ReminderRule;
+import org.olat.modules.reminder.ReminderService;
+import org.olat.modules.reminder.RuleSPI;
+import org.olat.modules.reminder.model.ReminderInfos;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -35,8 +49,16 @@ import org.olat.core.gui.control.WindowControl;
  */
 public class ConfirmDisableRecertificationController extends FormBasicController {
 	
-	public ConfirmDisableRecertificationController(UserRequest ureq, WindowControl wControl) {
+	private RepositoryEntry repositoryEntry;
+	
+	@Autowired
+	private ReminderModule reminderModule;
+	@Autowired
+	private ReminderService reminderService;
+	
+	public ConfirmDisableRecertificationController(UserRequest ureq, WindowControl wControl, RepositoryEntry repositoryEntry) {
 		super(ureq, wControl, "confirm_disable_recertification");
+		this.repositoryEntry = repositoryEntry;
 		
 		initForm(ureq);
 	}
@@ -44,8 +66,9 @@ public class ConfirmDisableRecertificationController extends FormBasicController
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			int reminders = 0;
-			String text = translate("confirm.disable.recertification.text", Integer.toString(reminders));
+			long reminders = getNumberOfReminders();
+			String i18nKey = reminders > 1 ? "confirm.disable.recertification.text.plural" : "confirm.disable.recertification.text.singular";
+			String text = translate(i18nKey, Long.toString(reminders));
 			layoutCont.contextPut("msg", text);
 		}
 		
@@ -61,5 +84,32 @@ public class ConfirmDisableRecertificationController extends FormBasicController
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private long getNumberOfReminders() {
+		final CertificateReminderProvider reminderProvider = new CertificateReminderProvider();
+		List<ReminderInfos> reminders = reminderService.getReminderInfos(repositoryEntry);
+		return reminders.stream().filter(reminder -> isVisible(reminder, reminderProvider)).count();
+	}
+	
+	private boolean isVisible(ReminderInfos reminder, CertificateReminderProvider reminderProvider) {
+		String configuration = reminder.getConfiguration();
+		if (StringHelper.containsNonWhitespace(configuration)) {
+			List<ReminderRule> rules = reminderService.toRules(configuration).getRules();
+			if(rules != null && !rules.isEmpty()) {
+				List<String> nodeIdents = new ArrayList<>(1);
+				Set<String> ruleTypes = new HashSet<>();
+				for (ReminderRule rule : rules) {
+					RuleSPI ruleSPI = reminderModule.getRuleSPIByType(rule.getType());
+					if (ruleSPI instanceof CourseNodeRuleSPI courseNodeRuleSPI) {
+						nodeIdents.add(courseNodeRuleSPI.getCourseNodeIdent(rule));
+					}
+					ruleTypes.add(rule.getType());
+				}
+				return reminderProvider.filter(nodeIdents, ruleTypes);
+			}
+		}
+		
+		return false;
 	}
 }
