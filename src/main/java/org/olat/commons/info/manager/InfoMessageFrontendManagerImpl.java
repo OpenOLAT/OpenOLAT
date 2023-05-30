@@ -293,7 +293,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 
 	@Override
 	public void sendScheduledInfoMessages() {
-		log.info(Tracing.M_AUDIT, "starting infoMessage cronjob to send emails");
+		log.debug(Tracing.M_AUDIT, "starting infoMessage cronjob to send emails");
 		WorkThreadInformations.setLongRunningTask("sendInfoMessages");
 		List<CurriculumRoles> curriculumRolesToSend = new ArrayList<>();
 		curriculumRolesToSend.add(CurriculumRoles.participant);
@@ -369,7 +369,7 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 
 		// done, purge last entry
 		WorkThreadInformations.unsetLongRunningTask("sendInfoMessages");
-		log.info("infoMessage cronjob to send emails finished.");
+		log.debug("infoMessage cronjob to send emails finished.");
 	}
 	
 	@Override
