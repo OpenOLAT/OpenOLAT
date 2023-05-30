@@ -45,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.FileUtils;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
@@ -334,7 +335,13 @@ public class QuestionsHeaderController extends FormBasicController {
 			return;
 		}
 
+		List<VideoQuestion> questionsToRemove = questions.getQuestions().stream().filter(q -> q.getId().equals(questionId)).toList();
 		questions.getQuestions().removeIf(q -> q.getId().equals(questionId));
+		File assessmentDir = videoManager.getAssessmentDirectory(repositoryEntry.getOlatResource());
+		questionsToRemove.forEach(q -> {
+			File itemDirectory = new File(assessmentDir, q.getQuestionRootPath());
+			FileUtils.deleteDirsAndFiles(itemDirectory, true, true);
+		});
 		if (questions.getQuestions().isEmpty()) {
 			questionId = null;
 		} else {
