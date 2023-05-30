@@ -27,7 +27,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.util.Util;
 
@@ -89,19 +88,17 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 		Form form = getRootForm();
 
 		if (isEnabled()) {
-			if (getAction() == FormEvent.ONCHANGE) {
-				String dispatchuri = form.getRequestParameter("dispatchuri");
-				if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
-					String colorId = form.getRequestParameter("colorId");
-					if (colorId != null) {
-						setColor(colorId);
-					}
-				}
-			} else {
-				String colorId = form.getRequestParameter("o_cp" + component.getDispatchID());
+			String dispatchuri = form.getRequestParameter("dispatchuri");
+			if (dispatchuri != null && dispatchuri.equals(component.getFormDispatchId())) {
+				String colorId = form.getRequestParameter("colorId");
 				if (colorId != null) {
 					setColor(colorId);
+					return;
 				}
+			}
+			String colorId = form.getRequestParameter(DISPPREFIX + component.getDispatchID());
+			if (colorId != null) {
+				setColor(colorId);
 			}
 		}
 	}
