@@ -721,11 +721,13 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(metadata == null) {// fallback and generated the needed database entries
 					metadata = getMetadataFor(file);
 				}
-				thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
+				if(isThumbnailAvailable(file, metadata)) {
+					thumbnailLeaf = generateThumbnail(file, metadata, fill, maxWidth, maxHeight);
+				}
 			} else {
 				VFSItem item = parentContainer.resolve(thumbnail.getFilename());
-				if(item instanceof VFSLeaf) {
-					thumbnailLeaf = (VFSLeaf)item;
+				if(item instanceof VFSLeaf leaf) {
+					thumbnailLeaf = leaf;
 				} else if(item == null) {
 					thumbnailDao.removeThumbnail(thumbnail);
 					dbInstance.commit();// free lock ASAP
@@ -744,8 +746,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		if(thumbnailLeaf == null) {
 			// ooops, a thumbnail without a database entry
 			VFSItem thumbnailItem = parentContainer.resolve(thumbnailName);
-			if(thumbnailItem instanceof VFSLeaf) {
-				thumbnailLeaf = (VFSLeaf)thumbnailItem;
+			if(thumbnailItem instanceof VFSLeaf leaf) {
+				thumbnailLeaf = leaf;
 				String suffix = FileUtils.getFileSuffix(thumbnailLeaf.getName());
 				Size finalSize = imageService.getSize(thumbnailLeaf, suffix);
 				if(finalSize != null) {
