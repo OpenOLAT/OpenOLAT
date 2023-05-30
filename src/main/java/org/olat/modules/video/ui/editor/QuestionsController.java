@@ -217,12 +217,7 @@ public class QuestionsController extends BasicController {
 		}  else {
 			sb.append(QTI21QuestionType.unkown.name());
 		}
-
-		if (StringHelper.containsNonWhitespace(qItem.getIdentifier())) {
-			sb.append(qItem.getIdentifier().replace("-", ""));
-		} else {
-			sb.append(UUID.randomUUID().toString().replace("-", ""));
-		}
+		sb.append(UUID.randomUUID().toString().replace("-", ""));
 		return sb.toString();
 	}
 
