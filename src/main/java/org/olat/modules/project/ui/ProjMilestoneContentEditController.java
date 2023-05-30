@@ -61,6 +61,8 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	private DropdownItem statusEl;
 	private FormLink statusLink;
 	private ColorPickerElement colorPickerEl;
+	private String color;
+	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
 	private final ProjMilestone milestone;
@@ -101,13 +103,16 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		updateStatusUI();
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 		if (milestone.getColor() != null && CalendarColors.getColorsList().contains(milestone.getColor())) {
-			colorPickerEl.setColor(milestone.getColor());
+			color = milestone.getColor();
 		} else {
-			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_MILESTONE));
+			color = null;
 		}
 		colorPickerEl.setCssPrefix("o_cal");
-		
+		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
+		updateColor();
+
 		descriptionEl = uifactory.addTextAreaElement("description", "milestone.edit.description", -1, 3, 40, true,
 				false, milestone.getDescription(), formLayout);
 	}
@@ -125,11 +130,26 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 			statusLink.setIconLeftCSS("o_icon o_icon_fw " + ProjectUIFactory.getMilestoneStatusIconCss(ProjMilestoneStatus.open));
 		}
 	}
-	
+
+	private void updateColor() {
+		colorResetLink.setVisible(color != null);
+		if (color != null) {
+			colorPickerEl.setColor(color);
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_MILESTONE));
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == statusLink) {
 			doToggleStatus();
+		} else if (source == colorPickerEl) {
+			color = colorPickerEl.getColor().getId();
+			updateColor();
+		} else if (source == colorResetLink) {
+			color = null;
+			updateColor();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -161,7 +181,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	}
 	
 	private String getColor() {
-		return colorPickerEl.getColor().getId();
+		return color;
 	}
 	
 	private void doToggleStatus() {

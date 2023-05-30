@@ -36,6 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
@@ -43,6 +44,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -71,6 +73,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private DateChooser recurrenceEndEl;
 	private TextElement locationEl;
 	private ColorPickerElement colorPickerEl;
+	private String color;
+	private FormLink colorResetLink;
 	private TextAreaElement descriptionEl;
 	
 	private final ProjAppointment appointment;
@@ -155,12 +159,15 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, appointment.getLocation(), formLayout);
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
+		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
 		if (appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
-			colorPickerEl.setColor(appointment.getColor());
+			color = appointment.getColor();
 		} else {
-			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
+			color = null;
 		}
 		colorPickerEl.setCssPrefix("o_cal");
+		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
+		updateColor();
 
 		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, appointment.getDescription(), formLayout);
 	}
@@ -174,6 +181,15 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private void updateReccurenceUI() {
 		boolean reccurend = recurrenceRuleEl.isOneSelected() && !RECURRENCE_NONE.equals(recurrenceRuleEl.getSelectedKey());
 		recurrenceEndEl.setVisible(reccurend );
+	}
+
+	private void updateColor() {
+		colorResetLink.setVisible(color != null);
+		if (color != null) {
+			colorPickerEl.setColor(color);
+		} else {
+			colorPickerEl.setColor(CalendarColors.colorFromColorClass(ProjectUIFactory.COLOR_APPOINTMENT));
+		}
 	}
 
 	private void syncEndDate() {
@@ -197,6 +213,12 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			syncEndDate();
 		} else if (source == recurrenceRuleEl) {
 			updateReccurenceUI();
+		} else if (source == colorPickerEl) {
+			color = colorPickerEl.getColor().getId();
+			updateColor();
+		} else if (source == colorResetLink) {
+			color = null;
+			updateColor();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -267,7 +289,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	}
 	
 	public String getColor() {
-		return colorPickerEl.getColor().getId();
+		return color;
 	}
 	
 	public boolean isAllDay() {

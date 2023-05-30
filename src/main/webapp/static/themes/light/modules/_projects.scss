@@ -518,10 +518,31 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 			margin-bottom: 0;
 		}
 	}
-	.o_proj_status_color {
+	.o_proj_status_color_reset {
 		display: grid;
 		gap: 10px;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: 1fr 1fr 1fr;
+		.btn {
+			width: 100%;
+		}
+		p {
+			margin-top: 25px;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+	}
+	.o_proj_color_reset {
+		display: grid;
+		gap: 10px;
+		grid-template-columns: 2fr 1fr;
+		.btn {
+			width: 100%;
+		}
+		p {
+			margin-top: 25px;
+			padding-top: 0;
+			padding-bottom: 0;
+		}
 	}
 }
 .o_proj_appointment_preview {
