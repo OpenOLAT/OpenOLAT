@@ -62,12 +62,12 @@ public class HeaderCommandsController extends BasicController {
 		if (withExport) {
 			exportLink = LinkFactory.createLink("tools.export.pool", "export", getTranslator(), mainVC, this,
 					Link.LINK);
-			exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+			exportLink.setIconLeftCSS("o_icon o_icon-fw o_mi_qpool_import");
 			mainVC.put("export", exportLink);
 
 			exportAllLink = LinkFactory.createLink("tools.export.all.pool", "exportAll", getTranslator(), mainVC, this,
 					Link.LINK);
-			exportAllLink.setIconLeftCSS("o_icon o_icon-fw o_icon_table");
+			exportAllLink.setIconLeftCSS("o_icon o_icon-fw o_mi_qpool_import");
 			mainVC.put("exportAll", exportAllLink);
 		}
 
