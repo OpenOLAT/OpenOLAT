@@ -58,6 +58,7 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	private static final Logger log = Tracing.createLoggerFor(ContentEditorFragmentComponent.class);
 	private static final ContentEditorFragmentComponentRenderer RENDERER = new ContentEditorFragmentComponentRenderer();
 	
+	private boolean create = false;
 	private boolean editMode = false;
 	private boolean moveable = false;
 	private boolean cloneable = false;
@@ -133,7 +134,17 @@ public class ContentEditorFragmentComponent extends AbstractComponent implements
 	public void setMoveable(boolean enable) {
 		this.moveable = enable;
 	}
-	
+
+	@Override
+	public boolean isCreate() {
+		return create;
+	}
+
+	@Override
+	public void setCreate(boolean enable) {
+		create = enable;
+	}
+
 	@Override
 	public boolean isEditable() {
 		return editorPart != null || inspectorPart != null;

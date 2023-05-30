@@ -813,6 +813,7 @@ public class PageEditorV2Controller extends BasicController {
 		cmp.setCloneable(secCallback.canCloneElement() && cloneHandlerMap.containsKey(element.getType()));
 		cmp.setDeleteable(secCallback.canDeleteElement());
 		cmp.setMoveable(secCallback.canMoveUpAndDown());
+		cmp.setCreate(!provider.getCreateHandlers().isEmpty());
 		cmp.addListener(this);
 		return cmp;
 	}
