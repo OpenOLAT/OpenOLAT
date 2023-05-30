@@ -52,7 +52,7 @@ public class VFSTranscodingJob extends JobWithDB {
 	private boolean doExecute() {
 		VFSTranscodingService transcodingService = CoreSpringFactory.getImpl(VFSTranscodingService.class);
 		if (transcodingService == null || !transcodingService.isLocalTranscodingEnabled()) {
-			log.info("Skipping execution of VFS transcoding job. Local VFS transcoding disabled");
+			log.debug("Skipping execution of VFS transcoding job. Local VFS transcoding disabled");
 			return false;
 		}
 
