@@ -497,7 +497,7 @@ public class PFManager {
 	}
 	
 	private static String toFileSystem(String s) {
-		return s.replace('/', '_');
+		return s.replaceAll("[/*]", "_");
 	}
 	
 	/**
