@@ -51,24 +51,28 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		}
 	}
 	
-	protected void renderAddAbove(StringOutput sb, Component cmp, URLBuilder ubu, Translator translator) {
-		sb.append("<a id='o_ccaab_").append(cmp.getDispatchID()).append("' ")
-			  .append("href='javascript:;' onclick=\"");// add elements directly in container
-		ubu.buildXHREvent(sb, "", false, true,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_above"),
-				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-		sb.append(" return false;\" class='o_sel_add_element_above' title='").append(translator.translate("add.element"))
-		  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.above")).append("</a>");
+	protected void renderAddAbove(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isCreate()) {
+			sb.append("<a id='o_ccaab_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_above"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_add_element_above' title='").append(translator.translate("add.element"))
+			  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.above")).append("</a>");
+		}
 	}
 	
-	protected void renderAddBelow(StringOutput sb, Component cmp, URLBuilder ubu, Translator translator) {
-		sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
-			  .append("href='javascript:;' onclick=\"");// add elements directly in container
-		ubu.buildXHREvent(sb, "", false, true,
-				new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_below"),
-				new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
-		sb.append(" return false;\" class='o_sel_add_element_below' title='").append(translator.translate("add.element.below"))
-		  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.below")).append("</a>");
+	protected void renderAddBelow(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(cmp.isCreate()) {
+			sb.append("<a id='o_ccabe_").append(cmp.getDispatchID()).append("' ")
+				  .append("href='javascript:;' onclick=\"");// add elements directly in container
+			ubu.buildXHREvent(sb, "", false, true,
+					new NameValuePair(VelocityContainer.COMMAND_ID, "add_element_below"),
+					new NameValuePair("fragment", cmp.getComponentName())); // EditorFragment cmpFragment.getCmpId()
+			sb.append(" return false;\" class='o_sel_add_element_below' title='").append(translator.translate("add.element.below"))
+			  .append("'><i class='o_icon o_icon_add'> </i> ").append(translator.translate("add.element.below")).append("</a>");
+		}
 	}
 	
 	protected void renderClose(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
@@ -154,7 +158,9 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		  .append("<i class='o_icon o_icon-fw o_icon_move'> </i></button></a>");
 	}
 	
-	protected void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+	protected final void renderMoreMenu(StringOutput sb, ContentEditorFragment cmp, URLBuilder ubu, Translator translator) {
+		if(!cmp.isDeleteable() && !cmp.isCreate()) return;
+		
 		// More button
 		sb.append("<button id='o_cmore_").append(cmp.getDispatchID()).append("' tabindex='0' type='button' class='dropdown-toggle' data-toggle='dropdown' aria-expanded='false'")
 		  .append(" title='").append(translator.translate("more.title")).append("'>")
@@ -162,20 +168,20 @@ public abstract class AbstractContentEditorComponentRenderer extends DefaultComp
 		// Menu
 		sb.append("<ul class='dropdown-menu dropdown-menu-right' role='menu' style=''>");
 		
-		sb.append("<li>");
-		renderAddAbove(sb, cmp, ubu, translator);
-		sb.append("</li>");
+		if(cmp.isCreate()) {
+			sb.append("<li>");
+			renderAddAbove(sb, cmp, ubu, translator);
+			sb.append("</li><li>");
+			renderAddBelow(sb, cmp, ubu, translator);
+			sb.append("</li>");
+		}
 		
-		sb.append("<li>");
-		renderAddBelow(sb, cmp, ubu, translator);
-		sb.append("</li>");
-		sb.append("<li class='divider'></li>");
-		
-		sb.append("<li>");
-		renderDelete(sb, cmp, ubu, translator);
-		sb.append("</li>");
-		
+		if(cmp.isDeleteable()) {
+			sb.append("<li class='divider'></li>")
+			  .append("<li>");
+			renderDelete(sb, cmp, ubu, translator);
+			sb.append("</li>");
+		}
 		sb.append("</ul>");
-
 	}
 }
