@@ -82,6 +82,13 @@ public interface AssessmentConfig {
 	public boolean isAutoGrade();
 	
 	/**
+	 * @return true if the min and max score have to been taken from the grade scale
+	 *         instead if the getMinScore() and getMaxScore() to calculate the
+	 *         GradeScoreRanges
+	 */
+	public boolean isGradeMinMaxFromScale();
+	
+	/**
 	 * @return if this course node produces a passed variable for the learner
 	 */
 	public Mode getPassedMode();

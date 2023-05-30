@@ -649,6 +649,7 @@ import org.junit.runners.Suite;
 	org.olat.course.nodes.st.assessment.STLastModificationsEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STLearningPathStatusEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STObligationEvaluatorTest.class,
+	org.olat.course.nodes.st.assessment.STRootGradeEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STRootPassedEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.WithoutSequenceBlockerTest.class,
 	org.olat.course.run.scoring.AverageCompletionEvaluatorTest.class,

@@ -149,6 +149,11 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return false;
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		Mode mode = Mode.none;
 		

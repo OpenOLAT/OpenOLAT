@@ -6,6 +6,9 @@
 #if($r.available("passed"))
 	$r.render("passed")
 #end
+#if($r.available("conventionlScore"))
+	$r.render("conventionlScore")
+#end
 #if($r.available("courseOverview"))
 	$r.render("courseOverview")
 #end

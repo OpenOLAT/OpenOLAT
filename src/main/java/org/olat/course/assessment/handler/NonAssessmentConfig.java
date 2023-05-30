@@ -76,6 +76,11 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public boolean isAutoGrade() {
 		return false;
 	}
+	
+	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return false;
+	}
 
 	@Override
 	public Mode getPassedMode() {

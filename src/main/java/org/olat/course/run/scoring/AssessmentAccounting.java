@@ -43,6 +43,7 @@ import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
+import org.olat.course.run.scoring.RootPassedEvaluator.GradePassed;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ObligationOverridable;
@@ -253,8 +254,11 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		if (courseNode.getParent() == null) {
 			RootPassedEvaluator rootPassedEvaluator = evaluators.getRootPassedEvaluator();
-			Boolean rootPassed = rootPassedEvaluator.getPassed(result, courseNode, this, getCourseEntry());
-			result.getPassedOverridable().setCurrent(rootPassed);
+			GradePassed gradePassed = rootPassedEvaluator.getPassed(result, courseNode, this, getCourseEntry(), getIdentity());
+			result.setGrade(gradePassed.getGrade());
+			result.setGradeSystemIdent(gradePassed.getGradeSystemIdent());
+			result.setPerformanceClassIdent(gradePassed.getPerformanceClassIdent());
+			result.getPassedOverridable().setCurrent(gradePassed.getPassed());
 		}
 		
 		// Always set the user visibility if it is not editable to correct present values
@@ -283,6 +287,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setScore(score);
 		BigDecimal maxScore = result.getMaxScore() != null? new BigDecimal(result.getMaxScore()): null;
 		entry.setMaxScore(maxScore);
+		entry.setGrade(result.getGrade());
+		entry.setGradeSystemIdent(result.getGradeSystemIdent());
+		entry.setPerformanceClassIdent(result.getPerformanceClassIdent());
 		entry.setPassedOverridable(result.getPassedOverridable());
 		entry.setUserVisibility(result.getUserVisible());
 		entry.setCompletion(result.getCompletion());

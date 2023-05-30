@@ -707,16 +707,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkDoneButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 			tableEl.addBatchButton(bulkDoneButton);
 			
-			if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
-					&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
-				bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
-				bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
-				bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
-				String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
-				bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
-				bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
-				tableEl.addBatchButton(bulkApplyGradeButton);
-			}
+			initBulkApplyGradeTool(formLayout);
 			
 			if (canEditUserVisibility) {
 				bulkVisibleButton = uifactory.addFormLink("bulk.visible", formLayout, Link.BUTTON);
@@ -731,6 +722,19 @@ public class IdentityListCourseNodeController extends FormBasicController
 				bulkHiddenButton.setVisible(!coachCourseEnv.isCourseReadOnly());
 				tableEl.addBatchButton(bulkHiddenButton);
 			}
+		}
+	}
+
+	protected void initBulkApplyGradeTool(FormLayoutContainer formLayout) {
+		if (gradeModuel.isEnabled() && Mode.none != assessmentConfig.getScoreMode() && assessmentConfig.hasGrade() && !assessmentConfig.isAutoGrade() 
+				&& (coachCourseEnv.isAdmin() || coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_COACH_GRADE_APPLY))) {
+			bulkApplyGradeButton = uifactory.addFormLink("bulk.apply.grade", "", null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+			bulkApplyGradeButton.setElementCssClass("o_sel_assessment_apply_grade");
+			bulkApplyGradeButton.setIconLeftCSS("o_icon o_icon-fw o_icon_grade");
+			String gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeService.getGradeSystem(courseEntry, courseNode.getIdent()));
+			bulkApplyGradeButton.setI18nKey(translate("grade.apply.label", gradeSystemLabel));
+			bulkApplyGradeButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+			tableEl.addBatchButton(bulkApplyGradeButton);
 		}
 	}
 	
@@ -1584,7 +1588,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			getWindowControl().pushAsModalDialog(gradeScaleEditCtrl.getInitialComponent());
 		} else {
 			gradeScaleViewCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry,
-					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), false);
+					courseNode.getIdent(), assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), false, false);
 			listenTo(gradeScaleViewCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), translate("close"),

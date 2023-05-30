@@ -933,7 +933,7 @@ public class QTI21EditForm extends FormBasicController {
 		}
 		
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minValue, maxValue, true);
+				minValue, maxValue, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

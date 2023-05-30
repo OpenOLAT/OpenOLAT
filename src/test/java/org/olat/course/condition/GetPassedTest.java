@@ -87,7 +87,7 @@ public class GetPassedTest extends OlatTestCase {
 		STCourseNode st_1 = new STCourseNode();
 		root.addChild(st_1);
 		STCourseNode st_1_1 = new STCourseNode();
-		st_1_1.getScoreCalculator().setExpertMode(true);
+		st_1_1.getScoreCalculator().setPassedExpertMode(true);
 		st_1.addChild(st_1_1);
 		CheckListCourseNode cl_1_1_1 = new CheckListCourseNode();
 		cl_1_1_1.getModuleConfiguration().setBooleanEntry(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, true);

@@ -86,6 +86,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return false;
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true)? Mode.setByNode: Mode.none;
 	}

@@ -42,6 +42,9 @@ public class AccountingResult extends AssessmentEvaluation {
 	private ObligationOverridable evaluatedObligation;
 	private Float evaluatedScore;
 	private Float evaluatedMaxScore;
+	private String evaluatedGrade;
+	private String evaluatedGradeSystemIdent;
+	private String evaluatedPerformanceClassIdent;
 	private Overridable<Boolean> evaluatedPassedOverridable;
 	private Boolean evaluatedUserVisible;
 	private Double evaluatedCompletion;
@@ -59,6 +62,9 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
 		this.evaluatedMaxScore = origin.getMaxScore();
+		this.evaluatedGrade = origin.getGrade();
+		this.evaluatedGradeSystemIdent = origin.getGradeSystemIdent();
+		this.evaluatedPerformanceClassIdent = origin.getPerformanceClassIdent();
 		this.evaluatedPassedOverridable = origin.getPassedOverridable().clone();
 		this.evaluatedUserVisible = origin.getUserVisible();
 		this.evaluatedCompletion = origin.getCompletion();
@@ -120,6 +126,33 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public void setMaxScore(Float maxMaxScore) {
 		this.evaluatedMaxScore = maxMaxScore;
+	}
+
+	@Override
+	public String getGrade() {
+		return evaluatedGrade;
+	}
+
+	public void setGrade(String grade) {
+		this.evaluatedGrade = grade;
+	}
+
+	@Override
+	public String getGradeSystemIdent() {
+		return evaluatedGradeSystemIdent;
+	}
+
+	public void setGradeSystemIdent(String gradeSystemIdent) {
+		this.evaluatedGradeSystemIdent = gradeSystemIdent;
+	}
+
+	@Override
+	public String getPerformanceClassIdent() {
+		return evaluatedPerformanceClassIdent;
+	}
+
+	public void setPerformanceClassIdent(String performanceClassIdent) {
+		this.evaluatedPerformanceClassIdent = performanceClassIdent;
 	}
 
 	@Override
@@ -207,6 +240,9 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getUserVisible(), evaluatedUserVisible)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)
 				|| !Objects.equals(origin.getMaxScore(), evaluatedMaxScore)
+				|| !Objects.equals(origin.getGrade(), evaluatedGrade)
+				|| !Objects.equals(origin.getGradeSystemIdent(), evaluatedGradeSystemIdent)
+				|| !Objects.equals(origin.getPerformanceClassIdent(), evaluatedPerformanceClassIdent)
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)
 				|| !Objects.equals(origin.getLastUserModified(), evaluatedLastUserModified)
 				|| !Objects.equals(origin.getLastCoachModified(), evaluatedLastCoachModified)

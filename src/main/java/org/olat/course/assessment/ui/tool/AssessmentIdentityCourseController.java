@@ -90,6 +90,7 @@ public class AssessmentIdentityCourseController extends BasicController
 	
 	private IdentityCertificatesController certificateCtrl;
 	private IdentityPassedController passedCtrl;
+	private IdentityConditionalScoreController conventionlScoreCtrl;
 	private StepsMainRunController resetDataCtrl;
 	private AssessedIdentityLargeInfosController infosController;
 	private IdentityAssessmentOverviewController treeOverviewCtrl;
@@ -148,13 +149,18 @@ public class AssessmentIdentityCourseController extends BasicController
 			
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		boolean certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
+				|| certificateConfig.isManualCertificationEnabled()
+				|| course.getCourseConfig().isEfficencyStatementEnabled();
 		if (learningPath && (passedManually || coachCourseEnv.isAdmin())) {
-			boolean certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
-					|| certificateConfig.isManualCertificationEnabled()
-					|| course.getCourseConfig().isEfficencyStatementEnabled();
 			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv, certificateAndEfficiencyLink);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
+		}
+		if (!learningPath && (coachCourseEnv.isCoach() || coachCourseEnv.isAdmin())) {
+			conventionlScoreCtrl = new IdentityConditionalScoreController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv, certificateAndEfficiencyLink);
+			identityAssessmentVC.put("conventionlScore", conventionlScoreCtrl.getInitialComponent());
+			listenTo(conventionlScoreCtrl);
 		}
 
 		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, nodeSelectable, false, true);
@@ -215,6 +221,9 @@ public class AssessmentIdentityCourseController extends BasicController
 				if (passedCtrl != null) {
 					passedCtrl.refresh();
 				}
+				if (conventionlScoreCtrl != null) {
+					conventionlScoreCtrl.reload();
+				}
 				if (certificateCtrl != null) {
 					certificateCtrl.loadModel();
 				}
@@ -229,6 +238,14 @@ public class AssessmentIdentityCourseController extends BasicController
 				fireEvent(ureq, event);
 			}
 		} else if (source == passedCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				treeOverviewCtrl.loadModel();
+				if (certificateCtrl != null) {
+					certificateCtrl.loadModel();
+				}
+				fireEvent(ureq, event);
+			}
+		} else if (source == conventionlScoreCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
 				if (certificateCtrl != null) {

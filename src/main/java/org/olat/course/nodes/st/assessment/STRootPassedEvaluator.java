@@ -24,6 +24,7 @@ import java.util.Date;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateUtils;
 import org.olat.course.nodes.CourseNode;
@@ -58,14 +59,14 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 	}
 
 	@Override
-	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
+	public GradePassed getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			ScoreAccounting scoreAccounting, RepositoryEntry courseEntry, Identity assessedIdentity) {
 		Boolean currentPassed = currentEvaluation.getPassedOverridable().isOverridden()
 				? currentEvaluation.getPassedOverridable().getOriginal()
 				: currentEvaluation.getPassedOverridable().getCurrent();
 		if (currentPassed != null && currentPassed.booleanValue()) {
 			// Never reset a passed course to null or failed
-			return currentPassed;
+			return GradePassed.of(currentPassed);
 		}
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -74,7 +75,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 		if (config.getBooleanSafe(STCourseNode.CONFIG_PASSED_PROGRESS)) {
 			Boolean fullyAssessed = currentEvaluation.getFullyAssessed();
 			if (fullyAssessed != null && fullyAssessed.booleanValue()) {
-				return Boolean.TRUE;
+				return GradePassed.passedTrue();
 			}
 		}
 		
@@ -84,7 +85,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 			if (score != null) {
 				int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_POINTS_CUT, Integer.MAX_VALUE);
 				if (score.floatValue() >= cutValue) {
-					return Boolean.TRUE;
+					return GradePassed.passedTrue();
 				}
 			}
 		}
@@ -94,7 +95,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 			int cutValue = config.getIntegerSafe(STCourseNode.CONFIG_PASSED_NUMBER_CUT, Integer.MAX_VALUE);
 			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassed() >= cutValue) {
-				return Boolean.TRUE;
+				return GradePassed.passedTrue();
 			}
 		}
 		
@@ -103,13 +104,13 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 			Counts counts = passCounter.getCounts(courseEntry, courseNode, scoreAccounting);
 			if (counts.getPassable() > 0) {
 				if (counts.isAllAssessed() && counts.getPassable() == counts.getPassed()) {
-					return Boolean.TRUE;
+					return GradePassed.passedTrue();
 				}
 				if (counts.getFailed() > 0 && getActivePassedConfigs(config) == 1) {
-					return Boolean.FALSE;
+					return GradePassed.passedFalse();
 				}
 				if (getActivePassedConfigs(config) == 1 && !isFullyAssessed(currentEvaluation)) {
-					return null;
+					return GradePassed.none();
 				}
 			}
 		}
@@ -120,7 +121,7 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 				
 				// Failed if course is fully assessed
 				if (isFullyAssessed(currentEvaluation)) {
-					return Boolean.FALSE;
+					return GradePassed.passedFalse();
 				}
 			
 				// Failed if course end date is over
@@ -128,13 +129,13 @@ public class STRootPassedEvaluator implements RootPassedEvaluator {
 				if (lifecycle != null && lifecycle.getValidTo() != null) {
 					Date validTo =  DateUtils.setTime(lifecycle.getValidTo(), 23, 59, 59);
 					if (validTo.before(new Date())) {
-						return Boolean.FALSE;
+						return GradePassed.passedFalse();
 					}
 				}
 			}
 		}
 		
-		return currentPassed;
+		return GradePassed.of(currentPassed);
 	}
 	
 	private boolean isFullyAssessed(AssessmentEvaluation currentEvaluation) {

@@ -162,6 +162,9 @@
 		&:last-child {
 			margin-right: 0;		
 		}
+		&.a_button_bottom {
+			margin-bottom: 0;
+		}
 	}
 	.btn-group {
 		a, input, button {

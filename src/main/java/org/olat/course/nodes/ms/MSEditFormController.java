@@ -584,7 +584,7 @@ public class MSEditFormController extends FormBasicController {
 		}
 		
 		gradeScaleCtrl = new GradeScaleEditController(ureq, getWindowControl(), courseEntry, courseNode.getIdent(),
-				minScore, maxScore, true);
+				minScore, maxScore, false, true);
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");

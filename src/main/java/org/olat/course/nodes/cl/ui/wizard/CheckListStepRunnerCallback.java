@@ -160,7 +160,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		} else {
 			sc.setSumOfScoreNodes(null);
 		}
-		sc.setExpertMode(false);
+		sc.setScoreExpertMode(false);
 
 		if(data.isPassed()) {
 			Float cutValue = data.getCutValue();
@@ -174,6 +174,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		} else {
 			sc.setPassedType(ScoreCalculator.PASSED_TYPE_NONE);
 		}
+		sc.setPassedExpertMode(false);
 
 		sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
 		sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());

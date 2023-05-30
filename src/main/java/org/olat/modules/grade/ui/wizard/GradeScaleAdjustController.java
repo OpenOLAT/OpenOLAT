@@ -62,7 +62,8 @@ public class GradeScaleAdjustController extends StepFormBasicController {
 		
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
 		gradeScaleEditCtrl = new GradeScaleEditController(ureq, wControl, form, courseEntry, courseNode.getIdent(),
-				assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(), scoreStatistics);
+				assessmentConfig.getMinScore(), assessmentConfig.getMaxScore(),
+				assessmentConfig.isGradeMinMaxFromScale(), scoreStatistics);
 		listenTo(gradeScaleEditCtrl);
 		
 		initForm(ureq);

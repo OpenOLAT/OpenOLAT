@@ -136,6 +136,9 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
+		super.initGradeScaleEditButton(formLayout);
+		super.initBulkApplyGradeTool(formLayout);
+		
 		if(courseNode.getParent() == null && pdfModule.isEnabled()) {
 			pdfButton = uifactory.addFormLink("bulk.pdf", formLayout, Link.BUTTON); 
 			pdfButton.setIconLeftCSS("o_icon o_icon_tool_pdf");

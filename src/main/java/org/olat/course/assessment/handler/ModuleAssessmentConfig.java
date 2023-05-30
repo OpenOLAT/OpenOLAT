@@ -83,6 +83,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
+	public boolean isGradeMinMaxFromScale() {
+		return false;
+	}
+	
+	@Override
 	public Mode getPassedMode() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD)? Mode.setByNode: Mode.none;
 	}

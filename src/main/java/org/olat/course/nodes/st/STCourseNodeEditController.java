@@ -25,15 +25,12 @@
 
 package org.olat.course.nodes.st;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.olat.core.commons.controllers.filechooser.LinkFileCombiCalloutController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -63,7 +60,6 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.sp.SecuritySettingsForm;
-import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.tools.CourseToolLinkTreeModel;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -86,7 +82,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private static final Set<String> UPLOAD_MIME_TYPE = Set.of("text/html", "application/zip");
 	private static final String[] SELECTION_SUFFIX = new String[] { "html", "htm" };
 	
-	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
+	public static final String PANE_TAB_ST_CONVENTIONAL_ASSESSMENT = "pane.tab.conventional.assessment";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
 	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
@@ -124,20 +120,16 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	// key to store the number of columns
 	public static final String CONFIG_KEY_COLUMNS = "columns";	
 	
-	private static final String[] paneKeys = { PANE_TAB_ST_SCORECALCULATION, PANE_TAB_ST_CONFIG };
+	private static final String[] paneKeys = { PANE_TAB_ST_CONVENTIONAL_ASSESSMENT, PANE_TAB_ST_CONFIG };
 
 	private STCourseNode stNode;
-	private EditScoreCalculationExpertForm scoreExpertForm;
-	private EditScoreCalculationEasyForm scoreEasyForm;
 	private List<CourseNode> assessableChildren;
 	private STCourseNodeDisplayConfigFormController nodeDisplayConfigFormController;
+	private STConventionalAssessmentConfigController conventionalAssessmentConfigCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 
 	
-	private VelocityContainer score, configvc;
-	private Link activateEasyModeButton;
-	private Link activateExpertModeButton;
-
+	private VelocityContainer configvc;
 	private final CourseConfig courseConfig;
 	private VFSContainer courseFolderContainer;
 	private String chosenFile;
@@ -214,90 +206,14 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		
 		
 		if (nodeAccessService.isScoreCalculatorSupported(NodeAccessType.of(course))) {
-			score = createVelocityContainer("scoreedit");
-			activateEasyModeButton = LinkFactory.createButtonSmall("cmd.activate.easyMode", score, this);
-			activateExpertModeButton = LinkFactory.createButtonSmall("cmd.activate.expertMode", score, this);
-			
-			ScoreCalculator scoreCalc = stNode.getScoreCalculator();
-			if (scoreCalc != null) {
-				if (scoreCalc.isExpertMode() && scoreCalc.getPassedExpression() == null && scoreCalc.getScoreExpression() == null) {
-					scoreCalc = null;
-				} else if (!scoreCalc.isExpertMode() && scoreCalc.getPassedExpressionFromEasyModeConfiguration() == null
-						&& scoreCalc.getScoreExpressionFromEasyModeConfiguration() == null) {
-					scoreCalc = null;
-				}
-			}
-
-			if (assessableChildren.isEmpty() && scoreCalc == null) {
-				// show only the no assessable children message, if no previous score
-				// config exists.
-				score.contextPut("noAssessableChildren", Boolean.TRUE);
-			} else {
-				score.contextPut("noAssessableChildren", Boolean.FALSE);
-			}
-
-			// Init score calculator form
-			if (scoreCalc != null && scoreCalc.isExpertMode()) {
-				initScoreExpertForm(ureq);
-			} else {
-				initScoreEasyForm(ureq);
-			}
+			conventionalAssessmentConfigCtrl = new STConventionalAssessmentConfigController(ureq, wControl, euce, stNode, assessableChildren);
+			listenTo(conventionalAssessmentConfigCtrl);
 		}
-	}
-
-	/**
-	 * Initialize an easy mode score calculator form and push it to the score
-	 * velocity container
-	 */
-	private void initScoreEasyForm(UserRequest ureq) {
-		removeAsListenerAndDispose(scoreEasyForm);
-		scoreEasyForm = new EditScoreCalculationEasyForm(ureq, getWindowControl(), stNode.getScoreCalculator(), assessableChildren);
-		listenTo(scoreEasyForm);
-		score.put("scoreForm", scoreEasyForm.getInitialComponent());
-		score.contextPut("isExpertMode", Boolean.FALSE);
-	}
-
-	/**
-	 * Initialize an expert mode score calculator form and push it to the score
-	 * velocity container
-	 */
-	private void initScoreExpertForm(UserRequest ureq) {
-		removeAsListenerAndDispose(scoreExpertForm);
-		scoreExpertForm = new EditScoreCalculationExpertForm(ureq, getWindowControl(), stNode.getScoreCalculator(), euce, assessableChildren);
-		listenTo(scoreExpertForm);
-		scoreExpertForm.setScoreCalculator(stNode.getScoreCalculator());
-		score.put("scoreForm", scoreExpertForm.getInitialComponent());
-		score.contextPut("isExpertMode", Boolean.TRUE);
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == activateEasyModeButton) {
-			initScoreEasyForm(ureq);
-		} else if (source == activateExpertModeButton){
-			initScoreExpertForm(ureq);
-		}
-	}
-	
-	/**
-	 * 
-	 * @param nodeDescriptions
-	 * @return the warning message if any, null otherwise
-	 */
-	
-	private String getWarningMessage(List<String> nodeDescriptions) {
-		if(nodeDescriptions.size()>0) {			
-			String invalidNodeTitles = "";
-			Iterator<String> titleIterator = nodeDescriptions.iterator();
-			while(titleIterator.hasNext()) {
-				if(!invalidNodeTitles.equals("")) {
-					invalidNodeTitles += "; ";
-				}
-				invalidNodeTitles += titleIterator.next();
-			}	
-			return translate("scform.error.configuration") + ": " + invalidNodeTitles;
-		}
-		return null;
+		//
 	}
 
 	@Override
@@ -344,58 +260,10 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 				}
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-			
-		} else if (source == scoreEasyForm) {			
-			if (event == Event.DONE_EVENT) {	
-				//show warning if the score might be wrong because of the invalid nodes used for calculation
-				List<String> testElemWithNoResource = scoreEasyForm.getInvalidNodeDescriptions();
-				String msg = getWarningMessage(testElemWithNoResource);
-				if(msg!=null) {								
-					showWarning(msg);
-				}
-
-				ScoreCalculator sc = scoreEasyForm.getScoreCalulator();
-				/*
-				 * OLAT-1144 bug fix if Calculation Score -> NO and Calculate passing
-				 * score -> NO we get a ScoreCalculator == NULL !
-				 */
-				if (sc != null) {
-					sc.setPassedExpression(sc.getPassedExpressionFromEasyModeConfiguration());
-					sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
-				}
-				// ..setScoreCalculator(sc) can handle NULL values!
-				stNode.setScoreCalculator(sc);
-				initScoreEasyForm(ureq); // reload form, remove deleted nodes
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
-				updateHighscoreTab();
-			} else if (event == Event.CANCELLED_EVENT) { // reload form
-				initScoreEasyForm(ureq);
-			}
-		} else if (source == scoreExpertForm) {
-			if (event == Event.DONE_EVENT) {
-        //show warning if the score might be wrong because of the invalid nodes used for calculation
-				List<String> testElemWithNoResource = scoreExpertForm.getInvalidNodeDescriptions();
-				String msg = getWarningMessage(testElemWithNoResource);
-				if(msg!=null) {								
-					getWindowControl().setWarning(msg);
-				}
-				
-				ScoreCalculator sc = scoreExpertForm.getScoreCalulator();
-				/*
-				 * OLAT-1144 bug fix if a ScoreCalculator == NULL !
-				 */
-				if (sc != null) {
-					sc.clearEasyMode();
-				}
-				// ..setScoreCalculator(sc) can handle NULL values!
-				stNode.setScoreCalculator(sc);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-				fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
-				updateHighscoreTab();
-			} else if (event == Event.CANCELLED_EVENT) { // reload form
-				initScoreExpertForm(ureq);
-			}
+		} else if (source == conventionalAssessmentConfigCtrl) {
+			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			fireEvent(ureq, NodeEditController.REMINDER_VISIBILITY_EVENT);
+			updateHighscoreTab();
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -467,8 +335,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), "o_sel_st_config", configvc);
-		if (score != null) {
-			tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), "o_sel_st_score", score);
+		if (conventionalAssessmentConfigCtrl != null) {
+			tabbedPane.addTab(translate("pane.tab.st_scorecalculation"), "o_sel_st_score", conventionalAssessmentConfigCtrl.getInitialComponent());
 		}
 		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE), highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();

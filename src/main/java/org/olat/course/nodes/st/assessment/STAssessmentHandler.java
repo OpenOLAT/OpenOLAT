@@ -81,7 +81,8 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final MaxScoreEvaluator SUM_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(false);
 	private static final MaxScoreEvaluator AVG_MAX_SCORE_EVALUATOR = new CumulatingMaxScoreEvaluator(true);
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
-	private static final RootPassedEvaluator ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
+	private static final RootPassedEvaluator LEARNING_PATH_ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
+	private static final RootPassedEvaluator GRADE_ROOT_PASSED_EVALUATOR = new STRootGradeEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new STConditionStatusEvaluator();
 	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STLearningPathStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
@@ -136,7 +137,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
 					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
-					.withRootPassedEvaluator(ROOT_PASSED_EVALUATOR);
+					.withRootPassedEvaluator(LEARNING_PATH_ROOT_PASSED_EVALUATOR);
 			CompletionEvaluator completionEvaluator = CompletionType.duration.equals(courseConfig.getCompletionType())
 					? new AverageCompletionEvaluator(DURATION_WEIGHTED)
 					: new AverageCompletionEvaluator(UNWEIGHTED);
@@ -165,13 +166,19 @@ public class STAssessmentHandler implements AssessmentHandler {
 			}
 			return builder.build();
 		}
-		return AccountingEvaluatorsBuilder.builder()
+		
+		// Conventional course
+		AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 				.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
-				.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
 				.withCompletionEvaluator(new ConventionalSTCompletionEvaluator())
 				.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
-				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
-				.build();
+				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
+		if (courseNode.getModuleConfiguration().getBooleanEntry(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
+			builder.withRootPassedEvaluator(GRADE_ROOT_PASSED_EVALUATOR);
+		} else {
+			builder.withPassedEvaluator(CONDITION_PASSED_EVALUATOR);
+		}
+		return builder.build();
 	}
 
 	@Override

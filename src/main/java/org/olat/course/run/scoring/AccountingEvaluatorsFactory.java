@@ -231,9 +231,9 @@ public class AccountingEvaluatorsFactory {
 	private static class UnchangingRootPassedEvaluator implements RootPassedEvaluator {
 		
 		@Override
-		public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-				ScoreAccounting scoreAccounting, RepositoryEntry courseEntry) {
-			return currentEvaluation.getPassed();
+		public GradePassed getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				ScoreAccounting scoreAccounting, RepositoryEntry courseEntry, Identity assessedIdentity) {
+			return GradePassed.of(currentEvaluation.getPassed());
 		}
 	}
 	

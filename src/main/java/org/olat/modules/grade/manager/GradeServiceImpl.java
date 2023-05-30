@@ -290,7 +290,9 @@ public class GradeServiceImpl implements GradeService {
 	
 	@Override
 	public List<String> getGrades(GradeSystem gradeSystem, BigDecimal minScore, BigDecimal maxScore) {
-		if (gradeSystem == null || GradeSystemType.numeric != gradeSystem.getType()) return Collections.emptyList();
+		if (gradeSystem == null || GradeSystemType.numeric != gradeSystem.getType() || minScore == null || maxScore == null)  {
+			return Collections.emptyList();
+		}
 		
 		return gradeCalculator
 				.createNumericalRanges(gradeSystem.getIdentifier(),

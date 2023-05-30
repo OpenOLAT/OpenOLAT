@@ -25,6 +25,8 @@
 
 package org.olat.course.nodes.st;
 
+import static org.olat.course.assessment.ui.tool.AssessmentParticipantViewController.gradeSystem;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -109,7 +111,8 @@ public class STCourseNodeRunController extends BasicController {
 		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode();
 		if (se != null && (hasScore || hasPassed)) {
 			removeAsListenerAndDispose(assessmentParticipantViewCtrl);
-			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se, assessmentConfig, null, null, null);
+			assessmentParticipantViewCtrl = new AssessmentParticipantViewController(ureq, getWindowControl(), se,
+					assessmentConfig, null, gradeSystem(userCourseEnv, stCourseNode), null);
 			listenTo(assessmentParticipantViewCtrl);
 			myContent.put("assessment", assessmentParticipantViewCtrl.getInitialComponent());
 			
