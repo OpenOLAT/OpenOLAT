@@ -35,6 +35,8 @@ public interface ColorPickerElement extends FormItem {
 
 	void setCssPrefix(String cssPrefix);
 
+	void setResetButtonId(String resetButtonId);
+
 	class Color {
 		private final String id;
 		private final String text;
