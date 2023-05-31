@@ -41,6 +41,7 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 	private final List<Color> colors;
 	private String nonSelectedText;
 	private String cssPrefix;
+	private String resetButtonId;
 
 	public ColorPickerElementImpl(String name, List<String> colors, Locale locale) {
 		super(name);
@@ -81,6 +82,15 @@ public class ColorPickerElementImpl extends FormItemImpl implements ColorPickerE
 			return cssPrefix;
 		}
 		return cssPrefix.concat("_");
+	}
+
+	@Override
+	public void setResetButtonId(String resetButtonId) {
+		this.resetButtonId = resetButtonId;
+	}
+
+	public String getResetButtonId() {
+		return resetButtonId;
 	}
 
 	@Override

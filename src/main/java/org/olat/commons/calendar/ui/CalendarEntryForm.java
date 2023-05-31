@@ -386,6 +386,7 @@ public class CalendarEntryForm extends FormBasicController {
 		colorPicker.addActionListener(FormEvent.ONCHANGE);
 
 		colorResetLink = uifactory.addFormLink("cal.form.event.color.reset", colorLinks, Link.BUTTON);
+		colorPicker.setResetButtonId(colorResetLink.getFormDispatchId());
 		doUpdateColor(event);
 
 		boolean managedDates = CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);

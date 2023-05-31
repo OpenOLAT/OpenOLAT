@@ -138,6 +138,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("  jQuery('#' + dropdownId + ' li[data-color=\"' + colorId + '\"]').addClass('o_selected');\n");
 		sb.append("  setFlexiFormDirty(formDispatchFieldId);\n");
 		sb.append("}\n");
+		if (colorPickerEl.getResetButtonId() != null) {
+			sb.append("jQuery('#").append(colorPickerEl.getResetButtonId()).append("').on('click', function() { o_info.lastFormFocusEl = '").append(buttonId).append("'; });\n");
+		}
 		sb.append("</script>");
 	}
 
