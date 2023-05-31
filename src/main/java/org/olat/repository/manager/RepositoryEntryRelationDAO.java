@@ -359,7 +359,7 @@ public class RepositoryEntryRelationDAO {
 	
 	public Map<String, Long> getRoleToCountMemebers(RepositoryEntryRef re) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select members.role, count(distinct members.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
+		sb.append("select members.role, count(distinct members.identity.id) from ").append(RepositoryEntry.class.getName()).append(" as v")
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as members")

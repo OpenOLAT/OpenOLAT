@@ -223,8 +223,10 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Organisation organisation1 = organisationService.createOrganisation(random(), null, random(), null, null);
 		Organisation organisation2 = organisationService.createOrganisation(random(), null, random(), organisation1, null);
 		Organisation organisation3 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
+		Organisation organisation4 = organisationService.createOrganisation(random(), null, random(), organisation2, null);
 		RepositoryEntry repositoryEntry = repositoryService.create(null, random(), random(), random(), null, null,
 				RepositoryEntryStatusEnum.published, organisation2);
+		repositoryService.addOrganisation(repositoryEntry, organisation4);
 		dbInstance.commitAndCloseSession();
 		
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
@@ -232,17 +234,20 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		Identity author3 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		Identity author4 = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		repositoryEntryRelationDao.addRole(participant1, repositoryEntry, GroupRoles.participant.name());
 		repositoryEntryRelationDao.addRole(participant2, repositoryEntry, GroupRoles.participant.name());
 		organisationService.addMember(organisation1, author1, OrganisationRoles.author);
 		organisationService.addMember(organisation2, author2, OrganisationRoles.author);
 		organisationService.addMember(organisation3, author3, OrganisationRoles.author);
+		organisationService.addMember(organisation1, author4, OrganisationRoles.author);
+		organisationService.addMember(organisation4, author4, OrganisationRoles.author);
 		dbInstance.commitAndCloseSession();
 		
 		Map<String,Long> roleToCountMemebers = repositoryEntryRelationDao.getRoleToCountMemebers(repositoryEntry);
 		
 		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(GroupRoles.participant.name()));
-		Assert.assertEquals(Long.valueOf(2), roleToCountMemebers.get(OrganisationRoles.author.name()));
+		Assert.assertEquals(Long.valueOf(3), roleToCountMemebers.get(OrganisationRoles.author.name()));
 	}
 	
 	@Test
