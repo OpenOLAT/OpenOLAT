@@ -173,7 +173,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 				.withCompletionEvaluator(new ConventionalSTCompletionEvaluator())
 				.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
 				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
-		if (courseNode.getModuleConfiguration().getBooleanEntry(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
+		if (courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
 			builder.withRootPassedEvaluator(GRADE_ROOT_PASSED_EVALUATOR);
 		} else {
 			builder.withPassedEvaluator(CONDITION_PASSED_EVALUATOR);
