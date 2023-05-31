@@ -281,8 +281,10 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
+		}
+		
 		List<StatusDescription> statusDescs = validateInternalConfiguration(null);
 		ModuleConfiguration config = getModuleConfiguration();
 		StatusDescription sd = StatusDescription.NOERROR;
@@ -319,7 +321,7 @@ public class STCourseNode extends AbstractAccessableCourseNode {
 		List<StatusDescription> sdList = new ArrayList<>(1);
 		
 		if (cev != null) {
-			if (getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
+			if (getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED) && CoreSpringFactory.getImpl(GradeModule.class).isEnabled()) {
 				GradeService gradeService = CoreSpringFactory.getImpl(GradeService.class);
 				GradeScale gradeScale = gradeService.getGradeScale(cev.getCourseGroupManager().getCourseEntry(), getIdent());
 				if (gradeScale == null) {
