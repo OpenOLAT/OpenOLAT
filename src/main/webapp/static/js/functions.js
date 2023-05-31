@@ -2066,7 +2066,8 @@ function o_ffSetFocus(formId, formItemId) {
 	var applyFocus = function(el) {
 		var tagName = el.tagName;
 		var focusApplied = false;
-		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION") {
+		var buttonWithFocus = tagName == "BUTTON" && el.classList.contains('o_can_have_focus');
+		if(tagName == "INPUT" || tagName == "SELECT" || tagName == "TEXTAREA" || tagName == "OPTION" || buttonWithFocus) {
 			
 			if(el.classList.contains('o_date_day')) {
 				var jLastEl = jQuery(el);

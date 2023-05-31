@@ -31,7 +31,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -50,9 +49,9 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		ColorPickerElement.Color selectedColor = colorPickerEl.getColor();
 		String cssPrefix = colorPickerEl.getCssPrefix() == null ? "o_color_" : colorPickerEl.getCssPrefix();
 
-		String dropdownId = "o_" + CodeHelper.getRAMUniqueID();
-		String buttonId = "o_" + CodeHelper.getRAMUniqueID();
-		String inputId = colorPickerEl.DISPPREFIX + colorPickerComponent.getDispatchID();
+		String inputId = colorPickerEl.getFormDispatchId();
+		String dropdownId = inputId + "_D";
+		String buttonId = inputId + "_B";
 
 		sb.append("<div class='o_color_picker_wrapper'>");
 
@@ -61,9 +60,10 @@ public class ColorPickerRenderer extends DefaultComponentRenderer {
 		sb.append("'>");
 
 		sb.append("<button style='padding-left: ").append(selectedColor != null ? "32" : "12")
-				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button' type='button' ")
+				.append("px;' class='btn btn-default dropdown-toggle o_color_picker_button o_can_have_focus' type='button' ")
 				.append("id='").append(buttonId).append("' data-toggle='dropdown' ")
 				.append("aria-haspopup='true' aria-expanded='true'")
+				.append("onfocus=\"o_info.lastFormFocusEl='").append(buttonId).append("';\" ")
 				.append(!colorPickerEl.isEnabled() ? " disabled" : "").append(">");
 		if (selectedColor != null) {
 			sb.append("<i class='o_color_picker_colored_area o_icon o_icon_lg o_icon_fa6_a ")
