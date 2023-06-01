@@ -124,7 +124,10 @@ public class Deployments {
 		if("safari".equals(browser) && id == 0) {
 			driver = new SafariDriver(new SafariOptions());
 		} else if("edge".equals(browser)) {
-			driver = new EdgeDriver(new EdgeOptions());
+			EdgeOptions options = new EdgeOptions();
+			options.addArguments("--disable-features=msHubApps", "--disable-infobars");
+			options.setExperimentalOption("excludeSwitches", List.of("enable-automation"));
+			driver = new EdgeDriver(options);
 		} else if("firefox".equals(browser)) {
 			FirefoxOptions options = new FirefoxOptions();
 			FirefoxProfile profile = new FirefoxProfile();

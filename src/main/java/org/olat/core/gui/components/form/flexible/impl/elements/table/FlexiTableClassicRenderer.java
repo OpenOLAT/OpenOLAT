@@ -317,7 +317,7 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 			if(!selectable) {
 				target.append(" disabled='disabled'");
 			}
-			target.append("/></td>");
+			target.append("></td>");
 		}
 		
 		if(ftE.hasDetailsRenderer()) {

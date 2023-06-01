@@ -107,7 +107,7 @@ public class GroupsPage {
 	 */
 	public BookingPage bookGroup(String name) {
 		try {
-			By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/a[contains(@class,'o_sel_group_access')]");
+			By accessBy = By.xpath("//div[contains(@class,'o_group_list')]//tr[td/a[text()[contains(.,'" + name + "')]]]/td/div/a[contains(@class,'o_sel_group_access')]");
 			OOGraphene.waitElement(accessBy, browser);
 			browser.findElement(accessBy).click();
 			By tokenEntryBy = By.className("o_sel_accesscontrol_token_entry");
