@@ -772,3 +772,17 @@ ul.o_color_picker_dropdown {
 	}
 }
 
+/* Selection Display Element */
+
+.o_selection_display {
+	display: flex;
+	.o_icon {
+		margin: auto 0 auto auto;
+	}
+	&:is(.form-group *) {
+		width: 100%;
+		max-width: 100%;
+		min-height: $input-height-base;
+	}
+}
+

@@ -17,41 +17,61 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.core.commons.services.tag.ui.component;
+package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
  * 
- * Initial date: 6 Mar 2023<br>
+ * Initial date: 31 May 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class TagSelectionComponent extends FormBaseComponentImpl { 
+public class SelectionDisplayComponent extends FormBaseComponentImpl {
+
+	private final FormItem element;
+	private static final ComponentRenderer RENDERER = new SelectionDisplayRenderer();
 	
-	private static final ComponentRenderer RENDERER = new TagSelectionRenderer();
+	private String value;
+	private boolean ariaExpanded = false;
 
-	private final TagSelectionImpl tagSelection;
-
-	public TagSelectionComponent(String name, TagSelectionImpl tagSelection) {
-		super(name);
-		this.tagSelection = tagSelection;
-	}
-
-	@Override
-	public TagSelectionImpl getFormItem() {
-		return tagSelection;
-	}
-
-	@Override
-	protected void doDispatchRequest(UserRequest ureq) {
-		//
+	public SelectionDisplayComponent(FormItem element) {
+		super(element.getFormItemId(), element.getName());
+		this.element = element;
 	}
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
 	}
+
+	@Override
+	public FormItem getFormItem() {
+		return element;
+	}
+	
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		if (this.value != value) {
+			setDirty(true);
+		}
+		this.value = value;
+	}
+
+	public boolean isAriaExpanded() {
+		return ariaExpanded;
+	}
+
+	public void setAriaExpanded(boolean ariaExpanded) {
+		if (this.ariaExpanded != ariaExpanded) {
+			setDirty(true);
+		}
+		this.ariaExpanded = ariaExpanded;
+	}
+
 }

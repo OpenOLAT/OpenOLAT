@@ -35,11 +35,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
@@ -234,8 +236,9 @@ public class TagSelectionController extends FormBasicController {
 		tagItems.add(tagItem);
 		tagItems.sort(comparator);
 		createLink.setVisible(false);
-		selectButton.setFocus(true);
 		doResetQuickSearch();
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getForId());
+		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 	
 	private void doToggleTag(FormLink link) {

@@ -63,25 +63,6 @@
 
 
 /** Tag selection element **/
-.o_tag_selection_button {
-	display: flex;
-	.o_icon {
-		margin: auto 0 auto auto;
-	}
-	.o_tag_selection_tags {
-		.o_tag {
-			background-color: #ffffff;
-			color: $o-competences-font-color;
-			border-color: $o-competences-color; 
-			margin: 0;
-		}
-	}
-	&:is(.form-group *) {
-		width: 100%;
-		max-width: 100%;
-		min-height: $input-height-base;
-	}
-}
 .o_tag_selection_button_tags {
 	display: flex;
 	flex-wrap: wrap;
@@ -111,11 +92,6 @@
 	color: $o-tag-selection-font-color;
 	.o_tag_count {
 		font-size: 85%;
-	}
-	
-	&.o_tag_in_button {
-		border-color: $o-tag-selection-selected-border-color;
-		color: $o-tag-selection-selected-border-color;
 	}
 	
 	&.o_tag_clickable {
