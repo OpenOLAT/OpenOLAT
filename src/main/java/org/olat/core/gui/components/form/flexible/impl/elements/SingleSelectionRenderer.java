@@ -59,7 +59,7 @@ public class SingleSelectionRenderer extends DefaultComponentRenderer {
 		if(stF.singleCheckWithoutValue() || FormLayout.LAYOUT_TABLE_CONDENSED.layout().equals(layout)) {
 			return super.renderOpenFormComponent(sb, source, layout, item);
 		}
-		return renderOpenFormComponent(sb, "fieldset", source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		return renderOpenFormComponent(sb, "fieldset", source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning());
 	}
 
 	@Override

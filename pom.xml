@@ -178,6 +178,7 @@
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
+										<exclude>**/milkdown/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -220,6 +221,7 @@
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
+										<exclude>**/milkdown/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -306,6 +308,7 @@
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
+										<exclude>**/milkdown/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>
@@ -353,6 +356,7 @@
 										<exclude>**/scorm/*</exclude>
 										<exclude>**/tinymce4/**/*</exclude>
 										<exclude>**/recordrtc/**/*</exclude>
+										<exclude>**/milkdown/**/*</exclude>
 									</excludes>
 								</configuration>
 							</execution>

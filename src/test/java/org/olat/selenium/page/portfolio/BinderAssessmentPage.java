@@ -43,7 +43,7 @@ public class BinderAssessmentPage {
 	}
 	
 	public BinderAssessmentPage passed(String section) {
-		By checkBy = By.xpath("//div[contains(@class,'o_table_edit')]//tr[td[contains(text(),'" + section +"')]]/td/div/label/input[@type='checkbox']");
+		By checkBy = By.xpath("//div[contains(@class,'o_table_edit')]//tr[td[contains(text(),'" + section +"')]]/td/div/div/label/input[@type='checkbox']");
 		WebElement checkEl = browser.findElement(checkBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
@@ -58,7 +58,7 @@ public class BinderAssessmentPage {
 	}
 	
 	public BinderAssessmentPage close(String section) {
-		By checkBy = By.xpath("//div[contains(@class,'o_table_edit')]//tr[td[contains(text(),'" + section +"')]]/td/a[contains(@class,'o_sel_pf_close_section')]");
+		By checkBy = By.xpath("//div[contains(@class,'o_table_edit')]//tr[td[contains(text(),'" + section +"')]]/td/div/a[contains(@class,'o_sel_pf_close_section')]");
 		browser.findElement(checkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

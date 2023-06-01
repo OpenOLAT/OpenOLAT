@@ -63,6 +63,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 			case "vertical":
 			case "horizontal":
 			case "minimal":
+			case "tablecell":
 				renderMinimalLayout(renderer, sb, source, layout, ubu, translator, renderResult, args);
 				break;
 			case "label":
@@ -114,6 +115,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 				case "vertical":
 				case "horizontal":
 				case "minimal":
+				case "tablecell":
 					component.setLayout(arg);
 					return arg;
 				case "label":
@@ -227,18 +229,20 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		} else {
 			tag = "div";
 		}
-		return renderOpenFormComponent(sb, tag, source, item.getElementCssClass(), item.hasError(), item.hasWarning());
+		return renderOpenFormComponent(sb, tag, source, layout, item.getElementCssClass(), item.hasError(), item.hasWarning());
 	}
 	
 	protected final String renderOpenFormComponent(StringOutput sb, String tag, Component component,
-			String elementCssClass,  boolean hasError, boolean hasWarning) {
+			String layout, String elementCssClass, boolean hasError, boolean hasWarning) {
 		boolean domReplacementWrapperRequired = component.isDomReplacementWrapperRequired();
 		sb.append("<").append(tag);
 		if(!domReplacementWrapperRequired) {
 			sb.append(" id='o_c").append(component.getDispatchID()).append("'");
 		}
-		sb.append(" class='form-group clearfix");
-
+		sb.append(" class='");
+		if(!layout.equals("tablecell")) {
+			sb.append("form-group");
+		}
 		if(StringHelper.containsNonWhitespace(elementCssClass)) {
 			sb.append(" ").append(elementCssClass);
 		}
@@ -247,7 +251,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		} else if(hasWarning) {
 			sb.append(" has-feedback has-warning");
 		}
-		sb.append("'>");
+		sb.append(" clearfix'>");
 		return tag;
 	}
 	

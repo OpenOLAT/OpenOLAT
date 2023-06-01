@@ -56,7 +56,7 @@ public class FlexiFiltersComponentRenderer extends DefaultComponentRenderer {
 			.append(" o_table_filters_large_on", " o_table_filters_large_off", largeSearch).append("'>");
 		if(expanded) {
 			sb.append("<div class='o_table_filters_row'>")
-			  .append("<ul class='nav nav-pills o_table_filters' role='navigation'>");
+			  .append("<ul class='nav nav-pills o_table_filters'>");
 			List<FlexiFilterButton> filterButtons = ffE.getFiltersButtons();
 			for(FlexiFilterButton filterButton:filterButtons) {
 				renderFormItem(renderer, sb, filterButton.getButton(), "", args);
