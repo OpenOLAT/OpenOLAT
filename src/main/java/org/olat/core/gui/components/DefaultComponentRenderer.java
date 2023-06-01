@@ -141,7 +141,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		Item item = new Item(source);
 		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 
-		if(item.hasLabel()) {
+		if(item.hasLabel() && !"tablecell".equals(layout)) {
 			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId() } );
 		}
 		renderComponent(renderer, sb, source, ubu, translator, renderResult, args);
