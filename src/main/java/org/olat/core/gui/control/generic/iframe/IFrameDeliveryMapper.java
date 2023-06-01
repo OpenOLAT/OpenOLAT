@@ -630,7 +630,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJQuery2Cond() {
-			appendStaticJs("js/jquery/jquery-3.6.0.min.js");
+			appendStaticJs("js/jquery/jquery-3.7.0.min.js");
 		}
 
 		public void appendPrototype() {
