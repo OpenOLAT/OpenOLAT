@@ -37,7 +37,7 @@ public class ToDoDueCellRenderer extends ToDoDueWarnCellRenderer {
 
 	@Override
 	protected String getValue(Translator translator, ToDoTaskRow toDoTaskRow) {
-		return toDoTaskRow.isOverdue()? toDoTaskRow.getDue(): "";
+		return toDoTaskRow.isOverdue() != null? toDoTaskRow.getDue(): "";
 	}
 	
 }

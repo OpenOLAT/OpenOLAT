@@ -112,7 +112,7 @@ public class ToDoUIFactory {
 	
 	public static Due getDue(Translator translator, LocalDate dueDate, LocalDate now, ToDoStatus status) {
 		if (dueDate == null || now == null) {
-			return new Due(translator.translate("task.due.anytime"), false);
+			return new Due(translator.translate("task.due.anytime"), null);
 		}
 		
 		long days = ChronoUnit.DAYS.between(now, dueDate);
@@ -121,15 +121,15 @@ public class ToDoUIFactory {
 		} else if (days == -1) {
 			return new Due(translator.translate("yesterday"), ToDoStatus.STATUS_OVERDUE.contains(status));
 		} else if (days == 0) {
-			return new Due(translator.translate("today"), false);
+			return new Due(translator.translate("today"), Boolean.FALSE);
 		} else if (days == 1) {
-			return new Due(translator.translate("tomorrow"), false);
+			return new Due(translator.translate("tomorrow"), Boolean.FALSE);
 		} else {
-			return new Due(translator.translate("task.due.left.days", String.valueOf(days)), false);
+			return new Due(translator.translate("task.due.left.days", String.valueOf(days)), Boolean.FALSE);
 		}
 	}
 	
-	public static record Due(String name, boolean overdue) { }
+	public static record Due(String name, Boolean overdue) { }
 
 	public static String formatLong(Translator translator, ToDoExpenditureOfWork expenditureOfWork) {
 		if (expenditureOfWork == null) return translator.translate("task.expenditure.of.work.not.available");

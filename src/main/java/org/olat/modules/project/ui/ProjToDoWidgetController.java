@@ -113,6 +113,11 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	}
 	
 	@Override
+	protected String getEmptyMessageI18nKey() {
+		return "todo.widget.empty.message";
+	}
+
+	@Override
 	protected void applyFilters(List<ToDoTaskRow> rows) {
 		applyFilterMy(rows);
 	}

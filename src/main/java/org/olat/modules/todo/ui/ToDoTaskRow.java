@@ -54,7 +54,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private final Date startDate;
 	private final Date dueDate;
 	private String due;
-	private boolean overdue;
+	private Boolean overdue;
 	private final Date doneDate;
 	private final String type;
 	private String translatedType;
@@ -193,11 +193,11 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		this.due = due;
 	}
 
-	public boolean isOverdue() {
+	public Boolean isOverdue() {
 		return overdue;
 	}
 
-	public void setOverdue(boolean overdue) {
+	public void setOverdue(Boolean overdue) {
 		this.overdue = overdue;
 	}
 

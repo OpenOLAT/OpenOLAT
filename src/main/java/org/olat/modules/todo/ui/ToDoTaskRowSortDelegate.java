@@ -28,6 +28,7 @@ import java.util.Locale;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ui.ToDoTaskDataModel.ToDoTaskCols;
 
 /**
@@ -51,6 +52,7 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 			case expenditureOfWork: Collections.sort(rows, new ExpenditureOfWorkComporator()); break;
 			case dueDate: Collections.sort(rows, new DueDateComporator()); break;
 			case due: Collections.sort(rows, new DueComporator()); break;
+			case priority: Collections.sort(rows, new PriorityComporator()); break;
 			default: {
 				super.sort(rows);
 			}
@@ -84,6 +86,19 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 			Date dueDate1 = r1.isOverdue()? r1.getDueDate(): null;
 			Date dueDate2 = r2.isOverdue()? r2.getDueDate(): null;
 			return compareDateAndTimestamps(dueDate1, dueDate2, false);
+		}
+	}
+	
+	private class PriorityComporator implements Comparator<ToDoTaskRow> {
+		@Override
+		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
+			ToDoPriority priority1 = r1.getPriority();
+			ToDoPriority priority2 = r2.getPriority();
+			
+			int order1 = priority1 != null? -priority1.ordinal(): -99;
+			int order2 = priority2 != null? -priority2.ordinal(): -99;
+			
+			return compareInts(order1, order2);
 		}
 	}
 

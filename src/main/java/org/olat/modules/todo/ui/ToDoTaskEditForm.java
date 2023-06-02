@@ -136,6 +136,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		}
 		
 		doEl = uifactory.addCheckboxesHorizontal("task.do", formLayout, new String[] {"do"}, new String[] {""});
+		doEl.setElementCssClass("o_todo_task_check");
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (toDoTask != null && ToDoStatus.done == toDoTask.getStatus()) {
 			doEl.select(doEl.getKey(0), true);
@@ -170,6 +171,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		statusSV.add(getSVEntry(ToDoStatus.inProgress));
 		statusSV.add(getSVEntry(ToDoStatus.done));
 		statusEl = uifactory.addDropdownSingleselect("task.status", formLayout, statusSV.keys(), statusSV.values(), statusSV.icons());
+		statusEl.addActionListener(FormEvent.ONCHANGE);
 		if (toDoTask != null) {
 			statusEl.select(toDoTask.getStatus().name(), true);
 		}
@@ -303,6 +305,8 @@ public class ToDoTaskEditForm extends FormBasicController {
 			doSelectAssignee(ureq);
 		} else if (source == delegateeAddLink) {
 			doSelectDelegatee(ureq);
+		} else if (source == statusEl) {
+			doToogleDo();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -350,6 +354,11 @@ public class ToDoTaskEditForm extends FormBasicController {
 		} else {
 			statusEl.select(ToDoStatus.open.name(), true);
 		}
+	}
+
+	private void doToogleDo() {
+		ToDoStatus status = ToDoStatus.valueOf(statusEl.getSelectedKey());
+		doEl.select(doEl.getKey(0), ToDoStatus.done == status);
 	}
 
 	private void doSelectAssignee(UserRequest ureq) {

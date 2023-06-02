@@ -182,6 +182,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 		return true;
 	}
 	
+	protected String getEmptyMessageI18nKey() {
+		return "task.empty.message";
+	}
+	
 	protected boolean isShowDetails() {
 		return true;
 	}
@@ -300,10 +304,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.due"), ToDoTaskFilter.due.name(), dueValues, true));
 		
 		SelectionValues statusValues = new SelectionValues();
-		addStatusSVEntry(priorityValues, ToDoStatus.open);
-		addStatusSVEntry(priorityValues, ToDoStatus.inProgress);
-		addStatusSVEntry(priorityValues, ToDoStatus.done);
-		addStatusSVEntry(priorityValues, ToDoStatus.deleted);
+		addStatusSVEntry(statusValues, ToDoStatus.open);
+		addStatusSVEntry(statusValues, ToDoStatus.inProgress);
+		addStatusSVEntry(statusValues, ToDoStatus.done);
+		addStatusSVEntry(statusValues, ToDoStatus.deleted);
 		filters.add(new FlexiTableMultiSelectionFilter(translate("task.status"), ToDoTaskFilter.status.name(), statusValues, true));
 		
 		List<String> contextTypes = getFilterContextTypes();
@@ -410,9 +414,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 	
 	protected void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (getSecurityCallback().canCreateToDoTasks() && (tabDeleted == null || tabDeleted != tab)) {
-			tableEl.setEmptyTableSettings("task.empty.message", null, "o_icon_todo_task", "task.create", "o_icon_add", false);
+			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task", "task.create", "o_icon_add", false);
 		} else {
-			tableEl.setEmptyTableSettings("task.empty.message", null, "o_icon_todo_task");
+			tableEl.setEmptyTableSettings(getEmptyMessageI18nKey(), null, "o_icon_todo_task");
 		}
 	}
 	
@@ -429,7 +433,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		List<ToDoTask> toDoTasks = toDoService.getToDoTasks(searchParams);
 		Map<ToDoTask, List<ToDoTaskTag>> toDoTaskToTags = toDoService.getToDoTaskTags(searchParams).stream()
 				.collect(Collectors.groupingBy(ToDoTaskTag::getToDoTask));
-		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ASSIGNEE_DELEGATEE);
+		Map<Long, ToDoTaskMembers> toDoTaskGroupKeyToMembers = toDoService.getToDoTaskGroupKeyToMembers(toDoTasks, ToDoRole.ALL);
 		
 		List<ToDoTaskRow> rows = new ArrayList<>(toDoTasks.size());
 		for (ToDoTask toDoTask : toDoTasks) {
@@ -652,6 +656,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 		
 		MultipleSelectionElement doEl = uifactory.addCheckboxesHorizontal("task.do." + counter++, null, flc, new String[] {"do"}, new String[] {""});
+		doEl.setElementCssClass("o_todo_task_check");
 		doEl.setAjaxOnly(true);
 		doEl.addActionListener(FormEvent.ONCHANGE);
 		if (ToDoStatus.done == row.getStatus()) {
@@ -662,18 +667,26 @@ public abstract class ToDoTaskListController extends FormBasicController
 	}
 
 	private void forgeTitleItem(ToDoTaskRow row) {
-		String title = ToDoStatus.deleted == row.getStatus()
-				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
-				: row.getDisplayName	();
-		
 		if (row.canEdit()) {
-			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-			link.setI18nKey(title);
+			FormLink link = uifactory.addFormLink("select_" + counter++, CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);	
 			link.setUserObject(row);
 			row.setTitleItem(link);
 		} else {
-			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, title, flc);
+			StaticTextElement titleItem = uifactory.addStaticTextElement("title_" + counter++, "", flc);
 			row.setTitleItem(titleItem);
+		}
+		updateTitleItemUI(row);
+	}
+	
+	private void updateTitleItemUI(ToDoTaskRow row) {
+		String title = ToDoStatus.done == row.getStatus() || ToDoStatus.deleted == row.getStatus()
+				? "<span class=\"o_todo_title_done_cell\">" + row.getDisplayName() + "</span>"
+				: row.getDisplayName	();
+		if (row.getTitleItem() instanceof FormLink link) {
+			link.setI18nKey(title);
+		}
+		if (row.getTitleItem() instanceof StaticTextElement ele) {
+			ele.setValue(title);
 		}
 	}
 	
@@ -888,9 +901,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 		provider.upateStatus(getIdentity(), row, row.getOriginId(), row.getOriginSubPath(), status);
 		row.setStatus(status);
 		row.getDoItem().select(row.getDoItem().getKey(0), done);
+		updateTitleItemUI(row);
 		tableEl.reset(false, false, true);
 	}
-
 	
 	private void doConfirmDelete(UserRequest ureq, ToDoTaskRef toDoTaskRef) {
 		if (guardModalController(deleteConfirmationCtrl)) return;

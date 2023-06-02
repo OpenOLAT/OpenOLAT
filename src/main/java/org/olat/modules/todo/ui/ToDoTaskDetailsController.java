@@ -135,10 +135,10 @@ public class ToDoTaskDetailsController extends FormBasicController {
 				progressBar.setActual(100);
 			} else if (toDoTask.getStartDate() != null) {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())));
+				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getStartDate()), LocalDate.now()));
 			} else {
 				progressBar.setMax(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), DateUtils.toLocalDate(toDoTask.getDueDate())));
-				progressBar.setActual(ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())));
+				progressBar.setActual(ChronoUnit.DAYS.between(DateUtils.toLocalDate(toDoTask.getCreationDate()), LocalDate.now()));
 			}
 		}
 		

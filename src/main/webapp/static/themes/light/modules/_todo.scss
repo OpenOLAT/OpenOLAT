@@ -1,15 +1,10 @@
 .o_todo_task_edit {
 	// The do check and the title have to be on the same line
 	.o_todo_task_do_row {
-		.checkbox-inline {
-			input {
-				height: $input-height-base;
-			}
-		}
 		// What a hack!
 		>div:nth-child(2) {
-			padding-left: 40px;
-			margin-top: -55px;
+			padding-left: 45px;
+			margin-top: -69px;
 		}
 	}
 	// Expenditure of work needs rounded corners on the right
@@ -34,6 +29,25 @@
 	}
 }
 
+.o_todo_task_check {
+	.checkbox-inline {
+		font-size: 20px;
+		min-width: 40px;
+		max-width: 40px;
+		display: grid;
+		grid-template-columns: 1em auto;
+		&.checkbox-inline {
+			input {
+				position: initial;
+			}
+		}
+	}
+	.checkbox-inline:is(table *) {
+		input {
+			margin: 0;
+		}
+	}
+}
 .o_todo_overdue {
 	color: $o-todo-overdue-color
 }
