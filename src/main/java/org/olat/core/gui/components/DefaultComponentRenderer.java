@@ -241,7 +241,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		}
 		sb.append(" class='");
 		if(!layout.equals("tablecell")) {
-			sb.append("form-group");
+			sb.append("form-group clearfix");
 		}
 		if(StringHelper.containsNonWhitespace(elementCssClass)) {
 			sb.append(" ").append(elementCssClass);
@@ -251,7 +251,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		} else if(hasWarning) {
 			sb.append(" has-feedback has-warning");
 		}
-		sb.append(" clearfix'>");
+		sb.append("'>");
 		return tag;
 	}
 	

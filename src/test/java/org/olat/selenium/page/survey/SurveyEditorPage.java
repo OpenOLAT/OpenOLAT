@@ -83,7 +83,7 @@ public class SurveyEditorPage extends ContentEditorPage {
 		browser.findElement(addButtonBy).click();
 		OOGraphene.waitBusy(browser);
 		
-		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/input[@type='text']");
+		By choiceBy = By.xpath("//div[contains(@class,'o_evaluation_editor_form')]//table[contains(@class,'table-condensed')]/tbody/tr[" + pos + "]/td/div/input[@type='text']");
 		OOGraphene.waitElement(choiceBy, browser);
 		browser.findElement(choiceBy).clear();
 		OOGraphene.waitBusy(browser);

@@ -31,6 +31,12 @@
 			display: flex;
 			justify-content: space-between;
 		}
+		
+		.o_error {
+			margin-top: 1px;
+			margin-bottom: 0;
+			padding: 10px;
+		}
 	}
 	
 	&.o_table_edit table tbody {
