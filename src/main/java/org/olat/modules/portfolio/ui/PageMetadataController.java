@@ -148,8 +148,11 @@ public class PageMetadataController extends FormBasicController {
 		}
 		
 		initForm(ureq);
-		editLink(openInEditMode);
-		editMetaDataLink();
+		if(openInEditMode) {
+			editLink.toggleOn();
+		} else {
+			editLink.toggleOff();
+		}
 	}
 
 	@Override
@@ -159,7 +162,7 @@ public class PageMetadataController extends FormBasicController {
 			initFormMetadata(layoutCont, ureq);
 			initFormAssignments(layoutCont, ureq);
 			initFormTaxonomyCompetences(layoutCont);
-			initFormStatus(layoutCont);
+			initFormStatusAndButtons(layoutCont);
 		}
 	}
 
@@ -332,7 +335,7 @@ public class PageMetadataController extends FormBasicController {
 		}
 	}
 
-	private void initFormStatus(FormLayoutContainer layoutCont) {
+	private void initFormStatusAndButtons(FormLayoutContainer layoutCont) {
 		if(page.getSection() != null && page.getSection().getBinder() != null) {
 			layoutCont.contextPut("statusEnabled", Boolean.TRUE);
 			
@@ -366,32 +369,21 @@ public class PageMetadataController extends FormBasicController {
 				reopenButton.setElementCssClass("o_sel_pf_reopen_entry");
 			}
 		}
+
+		editLink = uifactory.addToggleButton("edit.page", "edit.page", translate("off"), flc, null, null);
+		editLink.setElementCssClass("o_sel_page_edit");
+		editLink.setUserObject(Boolean.FALSE);
+		editLink.setLabel(translate("edit.page.toggle"), null);
+		editLink.setVisible(page.isEditable() && secCallback.canEditPage(page));
+		
+		editMetaDataLink = uifactory.addFormLink("edit.page.meta", "edit.page.metadata", null, flc, Link.BUTTON_SMALL);
+		editMetaDataLink.setElementCssClass("o_sel_pf_edit_metadata_page");
+		editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
+		editMetaDataLink.setVisible(page.isEditable() && secCallback.canEditPageMetadata(page, assignments));
 	}
 	
-	protected FormToggle editLink(boolean edit) {
-		if(page.isEditable()) {
-			if(editLink == null) {
-				String onOff = edit ? translate("on") : translate("off");
-				editLink = uifactory.addToggleButton("edit.page", "edit.page", onOff, flc, null, null);
-				editLink.setElementCssClass("o_sel_page_edit");
-				editLink.setUserObject(Boolean.valueOf(edit));
-				editLink.setLabel(translate("edit.page.toggle"), null);
-			}
-			editLink.setVisible(secCallback.canEditPage(page));
-		}
-		return editLink;
-	}
-	
-	protected FormToggle editMetaDataLink() {
-		if(page.isEditable() && secCallback.canEditPageMetadata(page, assignments)) {
-			if(editMetaDataLink == null) {
-				editMetaDataLink = uifactory.addFormLink("edit.page.meta", "edit.page.metadata", null, flc, Link.BUTTON_SMALL);
-				editMetaDataLink.setElementCssClass("o_sel_pf_edit_metadata_page");
-				editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
-			}
-			editLink.setVisible(secCallback.canEditPage(page));
-		}
-		return editLink;
+	public void updateEditLink(boolean edit) {
+		editLink.setI18nKey(edit ? translate("off") : translate("on"));
 	}
 	
 	@Override
@@ -412,7 +404,7 @@ public class PageMetadataController extends FormBasicController {
 		} else if(bookmarkButton == source) {
 			toogleBookmark();
 		} else if(editLink == source) {
-			editLink.setI18nKey(editLink.isOn() ? translate("on") : translate("off"));
+			editLink.setI18nKey(editLink.isOn() ? translate("off") : translate("on"));
 			fireEvent(ureq, new ToggleEditPageEvent());
 		} else if(editMetaDataLink == source) {
 			fireEvent(ureq, new EditPageMetadataEvent());

@@ -261,8 +261,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				SharedPageRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -271,15 +270,13 @@ public class SharedPagesController extends FormBasicController implements Activa
 						activeateable.activate(ureq, null, null);
 					}
 				}
-			} else if(event instanceof FlexiTableSearchEvent) {
-				FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
+			} else if(event instanceof FlexiTableSearchEvent se) {
 				if(FlexiTableReduceEvent.QUICK_SEARCH.equals(se.getCommand())
 						|| FormEvent.RESET.getCommand().equals(se.getCommand())) {
 					loadModel(true, true);
 				}
 			}
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			if("mark".equals(link.getCmd())) {
 				SharedPageRow row = (SharedPageRow)link.getUserObject();
 				toggleBookmark(row);
@@ -291,8 +288,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == pageCtrl) {
 					loadModel(false, false);
 					if(pageCtrl != null && pageCtrl.getPage() != null) {
@@ -348,7 +344,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 		
 		List<AccessRights> rights = portfolioService.getAccessRights(binder, getIdentity());
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForCoach(binder, rights);
-		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.all(), false);
+		pageCtrl = new PageRunController(ureq, swControl, stackPanel, secCallback, reloadedPage, PageSettings.full(), false);
 		listenTo(pageCtrl);
 		
 		if(row.getIdentityKey() != null) {
@@ -377,8 +373,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 			if(this == obj) {
 				return true;
 			}
-			if(obj instanceof SharedPageAuthor) {
-				SharedPageAuthor spa = (SharedPageAuthor)obj;
+			if(obj instanceof SharedPageAuthor spa) {
 				return pageKey.equals(spa.pageKey);
 			}
 			return false;

@@ -31,20 +31,20 @@ public class PageSettings {
 	private boolean withCategories;
 	private boolean withBookmarks;
 	private boolean withTitle;
-	private boolean reduced;
 	private boolean withImportContent;
+	private MetadataHeader metadataHeader;
 	
 	private PageSettings() {
 		//
 	}
 	
-	public static PageSettings all() {
+	public static PageSettings full() {
 		PageSettings settings = new PageSettings();
 		settings.setWithCategories(true);
 		settings.setWithTaxonomy(true);
 		settings.setWithBookmarks(true);
 		settings.setWithImportContent(true);
-		settings.setReduced(false);
+		settings.setMetadataHeader(MetadataHeader.FULL);
 		return settings;
 	}
 	
@@ -55,7 +55,18 @@ public class PageSettings {
 		settings.setWithBookmarks(false);
 		settings.setWithTitle(withTitle);
 		settings.setWithImportContent(withImportContent);
-		settings.setReduced(true);
+		settings.setMetadataHeader(MetadataHeader.REDUCED);
+		return settings;
+	}
+	
+	public static PageSettings noHeader() {
+		PageSettings settings = new PageSettings();
+		settings.setWithCategories(false);
+		settings.setWithTaxonomy(false);
+		settings.setWithBookmarks(false);
+		settings.setWithTitle(false);
+		settings.setWithImportContent(false);
+		settings.setMetadataHeader(MetadataHeader.NONE);
 		return settings;
 	}
 	
@@ -91,12 +102,12 @@ public class PageSettings {
 		this.withTitle = withTitle;
 	}
 
-	public boolean isReduced() {
-		return reduced;
+	public MetadataHeader getMetadataHeader() {
+		return metadataHeader;
 	}
 
-	public void setReduced(boolean reduced) {
-		this.reduced = reduced;
+	public void setMetadataHeader(MetadataHeader metadataHeader) {
+		this.metadataHeader = metadataHeader;
 	}
 
 	public boolean isWithImportContent() {
@@ -105,5 +116,11 @@ public class PageSettings {
 
 	public void setWithImportContent(boolean withImportContent) {
 		this.withImportContent = withImportContent;
+	}
+	
+	public enum MetadataHeader {
+		FULL,
+		REDUCED,
+		NONE
 	}
 }

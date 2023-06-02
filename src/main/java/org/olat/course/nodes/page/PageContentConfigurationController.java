@@ -46,6 +46,8 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.noderight.ui.NodeRightsController;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.PageCourseNode;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.portfolio.BinderSecurityCallback;
@@ -71,6 +73,7 @@ public class PageContentConfigurationController extends BasicController {
 	
 	private Page page;
 	private final PageCourseNode courseNode;
+	private final UserCourseEnvironment userCourseEnv;
 	
 	private NodeRightsController nodeRightCtrl;
 	private PageRunController pageCtrl;
@@ -82,9 +85,10 @@ public class PageContentConfigurationController extends BasicController {
 	private CourseNodeFactory courseNodeFactory;
 	
 	public PageContentConfigurationController(UserRequest ureq, WindowControl wControl,
-			ICourse course, PageCourseNode courseNode) {
+			UserCourseEnvironment userCourseEnv, ICourse course, PageCourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		this.userCourseEnv = userCourseEnv;
 		
 		if(courseNode.getPageReferenceKey() != null) {
 			page = pageService.getPageByKey(courseNode.getPageReferenceKey());
@@ -178,20 +182,29 @@ public class PageContentConfigurationController extends BasicController {
 	
 	private void doShowPreview(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getReadOnlyCallback();
-		PageSettings pageSettings = PageSettings.reduced(true, false);
-		doShowPage(ureq, pageSettings, secCallback, false);
+		PageSettings pageSettings = PageSettings.noHeader();
+
+		page = pageService.getFullPageByKey(page.getKey());
+		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
+				 secCallback, page, pageSettings, false);
+		listenTo(pageCtrl);
+		
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
+		pageCtrl.initTools();
+		
+		previewLayoutCtr = new LayoutMain3ColsBackController(ureq, getWindowControl(), null, ctrl.getInitialComponent(), null);
+		previewLayoutCtr.addDisposableChildController(pageCtrl);
+		previewLayoutCtr.activate();
+		listenTo(previewLayoutCtr);
 	}
 	
 	private void doEdit(UserRequest ureq) {
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCallbackForMyPageList();
 		PageSettings pageSettings = PageSettings.reduced(true, false);
-		doShowPage(ureq, pageSettings, secCallback, true);
-	}
-		
-	private void doShowPage(UserRequest ureq, PageSettings pageSettings, BinderSecurityCallback secCallback, boolean openEditMode) {
+
 		page = pageService.getFullPageByKey(page.getKey());
 		pageCtrl = new PageRunController(ureq, getWindowControl(), null,
-				 secCallback, page, pageSettings, openEditMode);
+				 secCallback, page, pageSettings, true);
 		listenTo(pageCtrl);
 		pageCtrl.initTools();
 		

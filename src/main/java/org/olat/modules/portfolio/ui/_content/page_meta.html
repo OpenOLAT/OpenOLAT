@@ -16,14 +16,14 @@
 		</div>
 		#end
 		#if($r.isNotNull($lastPublicationDate))
-		<div class="o_portfolio_publication_date text-muted o_small">
+		<div class="o_ce_publication_date text-muted o_small">
 			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.publication")"> </i>
 			 $r.translate("meta.last.publication", $r.formatDateAndTime($lastPublicationDate))
 			 ,
 		</div>
 		#end
 		
-		<div class="o_portfolio_last_modified text-muted o_small">
+		<div class="o_ce_last_modified text-muted o_small">
 			<i class="o_icon o_icon_fw o_icon_time" title="$r.translateInAttribute("meta.last.modified")"> </i>
 			 $r.translate("meta.last.modified", $r.formatDateAndTime($lastModified))
 		</div>
@@ -81,17 +81,10 @@
 				</span>
 			</div>
 			#end
-			
-			#if($r.available("edit.page.meta"))
 			<span class="o_edit_page_meta">
-				#if($r.available("edit.page.meta"))
+				#if($r.visible("edit.page.meta"))
 					$r.render("edit.page.meta")
 				#end
-			</span>
-			#end
-			
-			<span class="o_button_group">
-				<span class="btn-group">
 				#if($r.available("publish"))
 					$r.render("publish")
 				#end
@@ -104,7 +97,6 @@
 				#if($r.available("reopen.page"))
 					$r.render("reopen.page")
 				#end
-				</span>
 			</span>
 		</div>
 		<div>

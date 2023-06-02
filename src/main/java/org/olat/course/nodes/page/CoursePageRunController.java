@@ -23,10 +23,13 @@ package org.olat.course.nodes.page;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.PageCourseNode;
+import org.olat.course.nodes.TitledWrapperHelper;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
@@ -46,7 +49,7 @@ public class CoursePageRunController extends BasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public CoursePageRunController(UserRequest ureq, WindowControl wControl, PageCourseNode courseNode, boolean canEdit) {
+	public CoursePageRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, PageCourseNode courseNode, boolean canEdit) {
 		super(ureq, wControl);
 		
 		Long pageKey = courseNode.getPageReferenceKey();
@@ -55,12 +58,13 @@ public class CoursePageRunController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("run");
 
 		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCoursePageCallback(canEdit);
-		PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null,
-				 secCallback, page, PageSettings.reduced(false, false), false);
+		PageSettings settings = canEdit ? PageSettings.reduced(false, false) : PageSettings.noHeader();
+		PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		
-		putInitialPanel(mainVC);
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
+		putInitialPanel(ctrl.getInitialComponent());
 		pageCtrl.initTools();
 	}
 

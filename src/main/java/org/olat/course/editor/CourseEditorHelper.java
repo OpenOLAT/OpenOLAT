@@ -112,11 +112,10 @@ public class CourseEditorHelper {
 		// user chose a position to insert a new node
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(newNodeType);
 		CourseNode createdNode = newNodeConfig.getInstance();
-		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
-
 		// Set some default values
 		String title = newNodeConfig.getLinkText(translator.getLocale());
 		createdNode.setLongTitle(title);
+		createdNode.updateModuleConfigDefaults(true, selectedNode, NodeAccessType.of(course));
 		createdNode.setNoAccessExplanation(translator.translate("form.noAccessExplanation.default"));
 		
 		// Add node

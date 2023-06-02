@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.PageCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -48,10 +49,11 @@ public class PageEditController extends ActivateableTabbableDefaultController {
 	private TabbedPane myTabbedPane;
 	private final PageContentConfigurationController contentCtrl;
 	
-	public PageEditController(UserRequest ureq, WindowControl wControl, ICourse course, PageCourseNode courseNode) {
+	public PageEditController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			ICourse course, PageCourseNode courseNode) {
 		super(ureq, wControl);
 		
-		contentCtrl = new PageContentConfigurationController(ureq, getWindowControl(), course, courseNode);
+		contentCtrl = new PageContentConfigurationController(ureq, getWindowControl(), userCourseEnv, course, courseNode);
 		listenTo(contentCtrl);
 	}
 

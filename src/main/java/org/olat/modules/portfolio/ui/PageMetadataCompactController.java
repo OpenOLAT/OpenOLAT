@@ -34,9 +34,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.modules.ceditor.Page;
-import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
@@ -96,10 +95,6 @@ public class PageMetadataCompactController extends FormBasicController {
 			}
 			layoutCont.contextPut("owners", ownerSb.toString());
 			layoutCont.contextPut("pageTitle", page.getTitle());
-			layoutCont.contextPut("pageSummary", page.getSummary());
-			layoutCont.contextPut("status", page.getPageStatus());
-			layoutCont.contextPut("statusIconCss", page.getPageStatus() == null ? PageStatus.draft.iconClass() : page.getPageStatus().iconClass());
-			layoutCont.contextPut("statusCssClass", page.getPageStatus() == null ? PageStatus.draft.statusClass() : page.getPageStatus().statusClass());
 			layoutCont.contextPut("lastModified", page.getLastModified());
 			layoutCont.contextPut("withTitle",  Boolean.valueOf(pageSettings.isWithTitle()));
 		}
@@ -112,6 +107,7 @@ public class PageMetadataCompactController extends FormBasicController {
 	
 	public void updateEditLink(boolean edit) {
 		editLink.setI18nKey(edit ? translate("off") : translate("on"));
+		flc.contextPut("edit", Boolean.valueOf(edit));
 	}
 	
 	@Override

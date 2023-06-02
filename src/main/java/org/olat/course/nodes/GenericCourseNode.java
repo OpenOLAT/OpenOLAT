@@ -282,27 +282,27 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public String getType() {
+	public final String getType() {
 		return type;
 	}
 
 	@Override
-	public void setLongTitle(String longTitle) {
+	public final void setLongTitle(String longTitle) {
 		this.longTitle = longTitle;
 	}
 
 	@Override
-	public void setShortTitle(String shortTitle) {
+	public final void setShortTitle(String shortTitle) {
 		this.shortTitle = shortTitle;
 	}
 	
 	@Override
-	public void setDisplayOption(String displayOption) {
+	public final void setDisplayOption(String displayOption) {
 		this.displayOption = displayOption;
 	}
 	
 	@Override
-	public String getDescription() {
+	public final String getDescription() {
 		if (StringHelper.containsNonWhitespace(learningObjectives)) {
 			return learningObjectives; // legacy fallback
 		}
@@ -310,17 +310,17 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public final void setDescription(String description) {
 		this.description = description;
 	}
 
 	@Override
-	public String getObjectives() {
+	public final String getObjectives() {
 		return objectives;
 	}
 
 	@Override
-	public void setObjectives(String objectives) {
+	public final void setObjectives(String objectives) {
 		this.objectives = objectives;
 	}
 

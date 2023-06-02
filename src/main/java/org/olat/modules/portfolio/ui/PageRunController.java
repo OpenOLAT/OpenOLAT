@@ -117,6 +117,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
+import org.olat.modules.portfolio.ui.PageSettings.MetadataHeader;
 import org.olat.modules.portfolio.ui.event.ClosePageEvent;
 import org.olat.modules.portfolio.ui.event.DonePageEvent;
 import org.olat.modules.portfolio.ui.event.EditPageMetadataEvent;
@@ -333,7 +334,7 @@ public class PageRunController extends BasicController implements TooledControll
 			editLink.setUserObject(edit);
 			
 			if(pageMetaCtrl instanceof PageMetadataController metadataCtrl) {
-				metadataCtrl.editLink(edit);
+				metadataCtrl.updateEditLink(edit);
 			} else if(pageMetaCtrl instanceof PageMetadataCompactController metadataReducedCtrl) {
 				metadataReducedCtrl.updateEditLink(edit);
 			}
@@ -388,13 +389,20 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void loadMeta(UserRequest ureq) {
 		removeAsListenerAndDispose(pageMetaCtrl);
-		if(settings.isReduced()) {
+		pageMetaCtrl = null;
+		
+		if(settings.getMetadataHeader() == MetadataHeader.REDUCED) {
 			pageMetaCtrl = new PageMetadataCompactController(ureq, getWindowControl(), secCallback, page, settings, openInEditMode);
-		} else {
+		} else if(settings.getMetadataHeader() == MetadataHeader.FULL) {
 			pageMetaCtrl = new PageMetadataController(ureq, getWindowControl(), secCallback, page, settings, openInEditMode);
 		}
-		listenTo(pageMetaCtrl);
-		mainVC.put("meta", pageMetaCtrl.getInitialComponent());
+		
+		if(pageMetaCtrl != null) {
+			listenTo(pageMetaCtrl);
+			mainVC.put("meta", pageMetaCtrl.getInitialComponent());
+		} else {
+			mainVC.remove("meta");
+		}
 	}
 	
 	public Page getPage() {

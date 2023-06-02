@@ -232,8 +232,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 
 		@Override
 		public File getFile(StoredData storedData) {
-			File mediaDir = new File(FolderConfig.getCanonicalRoot(), storedData.getStoragePath());
-			return new File(mediaDir, storedData.getRootFilename());
+			if(StringHelper.containsNonWhitespace(storedData.getStoragePath()) && StringHelper.containsNonWhitespace(storedData.getRootFilename())) {
+				File mediaDir = new File(FolderConfig.getCanonicalRoot(), storedData.getStoragePath());
+				return new File(mediaDir, storedData.getRootFilename());
+			}
+			return null;
 		}
 
 		@Override

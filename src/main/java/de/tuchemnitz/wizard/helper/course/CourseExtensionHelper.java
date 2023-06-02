@@ -131,15 +131,15 @@ public class CourseExtensionHelper {
 		// create a node with default data
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode node = nodeConfig.getInstance();
-		node.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
 		node.setShortTitle(shortTitle);
 		node.setLongTitle(longTitle);
+		node.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
 
 		// append node to course
 		course.getEditorTreeModel().addCourseNode(node, rootNode);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		if(log.isDebugEnabled()) log.debug("Created new course node: " + nodeConfig.getAlias());
+		if(log.isDebugEnabled()) log.debug("Created new course node: {}", nodeConfig.getAlias());
 		return node;
 	}
 }

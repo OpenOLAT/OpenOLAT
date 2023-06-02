@@ -38,6 +38,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
@@ -95,10 +96,10 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			DB dbInstance = CoreSpringFactory.getImpl(DB.class);
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-			Page page = portfolioService.appendNewPage(null, getShortTitle(), null, null, null, null);
-			dbInstance.commit();
+			String pageTitle = StringHelper.containsNonWhitespace(getShortTitle()) ? getShortTitle() : getLongTitle();
+			Page page = portfolioService.appendNewPage(null, pageTitle, null, null, null, null);
+			CoreSpringFactory.getImpl(DB.class).commit();
 			setPageReferenceKey(page.getKey());
 		}
 		
@@ -108,7 +109,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		PageEditController childTabCntrllr = new PageEditController(ureq, wControl, course, this);
+		PageEditController childTabCntrllr = new PageEditController(ureq, wControl, euce, course, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, stackPanel, course, chosenNode, euce, childTabCntrllr);
 		// special case: listen to sp edit controller, must be informed when the short title is being modified
@@ -126,7 +127,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd,
 			VisibilityFilter visibilityFilter) {
 		boolean canEdit = canEdit(userCourseEnv);
-		CoursePageRunController runController = new CoursePageRunController(ureq, wControl, this, canEdit);
+		CoursePageRunController runController = new CoursePageRunController(ureq, wControl, userCourseEnv, this, canEdit);
 		return new NodeRunConstructionResult(runController);
 	}
 

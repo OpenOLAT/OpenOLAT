@@ -1,5 +1,7 @@
 <div class="o_ce_wrapper #if($r.isTrue($edited)) o_ce_edit_wrapper #end">
-	$r.render("meta")
+	#if($r.visible("meta"))
+		$r.render("meta")
+	#end
 	#if($pageIsReferenced)
 	<div class="row o_portfolio_reference_warning">
 		<div class="alert alert-warning col-xs-12 col-md-offset-4 col-md-4">$r.translate("page.referenced.warning")</div>

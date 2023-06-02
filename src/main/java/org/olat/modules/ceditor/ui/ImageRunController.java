@@ -67,8 +67,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		ImageSettings settings = media.getImageSettings();
 		if(settings != null) {
 			DublinCoreMetadata meta = null;
-			if(media.getStoredData() instanceof DublinCoreMetadata) {
-				meta = (DublinCoreMetadata)media.getStoredData();
+			if(media.getStoredData() instanceof DublinCoreMetadata dcMetadata) {
+				meta = dcMetadata;
 			}
 			updateImageSettings(settings, meta);
 		}
@@ -80,19 +80,22 @@ public class ImageRunController extends BasicController implements PageRunElemen
 
 		mainVC = createVelocityContainer("image");
 		mainVC.setDomReplacementWrapperRequired(false);
-		File mediaFile = dataStorage.getFile(storedData);
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
-		imageCmp.setMedia(mediaFile);
 		imageCmp.setDivImageWrapper(false);
 		imageCmp.setPreventBrowserCaching(false);
 		
-		mainVC.put("image", imageCmp);
-		mainVC.contextPut("imageSizeStyle", "none");
-		Size imageSize = imageCmp.getRealSize();
-		if(imageSize != null) {
-			mainVC.contextPut("imageSize", imageSize);
+		File mediaFile = dataStorage.getFile(storedData);
+		if(mediaFile != null) {
+			imageCmp.setMedia(mediaFile);
+			
+			mainVC.put("image", imageCmp);
+			mainVC.contextPut("imageSizeStyle", "none");
+			Size imageSize = imageCmp.getRealSize();
+			if(imageSize != null) {
+				mainVC.contextPut("imageSize", imageSize);
+			}
+			mainVC.contextPut("media", storedData);
 		}
-		mainVC.contextPut("media", storedData);
 		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
 
 		boolean showCaption = StringHelper.containsNonWhitespace(storedData.getDescription());
@@ -183,8 +186,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		if(source instanceof ModalInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
 			PageElement media = cpe.getElement();
-			if(media instanceof ImageElement) {
-				doUpdate((ImageElement) media);
+			if(media instanceof ImageElement image) {
+				doUpdate(image);
 				mainVC.setDirty(true);
 			}
 		}
@@ -195,8 +198,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		ImageSettings settings = element.getImageSettings();
 		if(settings != null) {
 			DublinCoreMetadata meta = null;
-			if(element.getStoredData() instanceof DublinCoreMetadata) {
-				meta = (DublinCoreMetadata)element.getStoredData();
+			if(element.getStoredData() instanceof DublinCoreMetadata dcMetadata) {
+				meta = dcMetadata;
 			}
 			updateImageSettings(settings, meta);
 		}
