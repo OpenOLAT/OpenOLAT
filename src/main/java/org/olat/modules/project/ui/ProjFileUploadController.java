@@ -81,7 +81,7 @@ public class ProjFileUploadController extends FormBasicController {
 		fileEl.setMandatory(true, "form.mandatory.hover");
 		fileEl.addActionListener(FormEvent.ONCHANGE);
 		
-		filenameEl = uifactory.addTextElement("file.filename", 100, null, formLayout);
+		filenameEl = uifactory.addTextElement("file.filename", 256, null, formLayout);
 		filenameEl.setMandatory(true);
 		
 		fileEditCtrl = new ProjFileContentController(ureq, getWindowControl(), mainForm, project, null);
@@ -117,6 +117,7 @@ public class ProjFileUploadController extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		String filename = filenameEl.getValue();
+		
 		filenameEl.clearError();
 		if (!StringHelper.containsNonWhitespace(filename)) {
 			filenameEl.setErrorKey("form.mandatory.hover");

@@ -87,8 +87,10 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactInfoParams;
 import org.olat.modules.project.ProjFile;
@@ -151,6 +153,8 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	@Autowired
 	protected ProjectService projectService;
+	@Autowired
+	private VFSLockManager vfsLockManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
@@ -438,26 +442,39 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 	
 	private void forgeSelectLink(ProjFileRow row, ProjFile file, VFSMetadata vfsMetadata, Roles roles) {
 		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
-		link.setI18nKey(row.getDisplayName());
+		FormLink classicLink = uifactory.addFormLink("selectc_" + row.getKey(), CMD_SELECT, "", null, flc, Link.LINK + Link.NONTRANSLATED);
+		
 		link.setElementCssClass("o_link_plain");
+		
+		link.setI18nKey(row.getDisplayName());
+		classicLink.setI18nKey(row.getDisplayName());
+		
 		String iconCSS = CSSHelper.createFiletypeIconCssClassFor(vfsMetadata.getFilename());
 		link.setIconLeftCSS("o_icon " + iconCSS);
-		if (vfsMetadata.isLocked()) {
-			link.setIconRightCSS("o_icon o_icon_locked");
-		}
+		
 		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
 		if (vfsItem instanceof VFSLeaf vfsLeaf) {
+			LockInfo lock = vfsLockManager.getLock(vfsLeaf);
+			if (lock != null && lock.isLocked()) {
+				link.setIconRightCSS("o_icon o_icon_locked");
+				classicLink.setIconRightCSS("o_icon o_icon_locked");
+			}
 			if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
 				link.setNewWindow(true, true, false);
+				classicLink.setNewWindow(true, true, false);
 				row.setOpenInNewWindow(true);
 			} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
 				link.setNewWindow(true, true, false);
+				classicLink.setNewWindow(true, true, false);
 				row.setOpenInNewWindow(true);
 			}
 			
 		}
+		
 		link.setUserObject(row);
+		classicLink.setUserObject(row);
 		row.setSelectLink(link);
+		row.setSelectClassicLink(classicLink);
 	}
 	
 	private void forgeToolsLink(ProjFileRow row) {
@@ -700,7 +717,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		
 		String message = translate("file.delete.confirmation.message", ProjectUIFactory.getDisplayName(file));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"file.delete.confirmation.confirm", "file.delete.confirmation.button");
+				"file.delete.confirmation.confirm", "file.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(file);
 		listenTo(deleteConfirmationCtrl);
 		
@@ -781,7 +798,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 					}
 					
 					if (secCallback.canEditFile(file)) {
-						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit", false);
+						addLink("edit.metadata", CMD_METADATA, "o_icon o_icon_edit_metadata", false);
 					}
 					
 					addLink("download", CMD_DOWNLOAD, "o_icon o_icon_download", false);

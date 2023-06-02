@@ -489,7 +489,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		int numOfMembers = projectService.countMembers(project);
 		String message = translate("project.set.status.done.message", Integer.toString(numOfMembers));
 		doneConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.done.confirm", "project.set.status.done.button");
+				"project.set.status.done.confirm", "project.set.status.done.button", false);
 		listenTo(doneConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", doneConfirmationCtrl.getInitialComponent(),
@@ -513,7 +513,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		int numOfMembers = projectService.countMembers(project);
 		String message = translate("project.set.status.deleted.message", Integer.toString(numOfMembers));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.deleted.confirm", "project.set.status.deleted.button");
+				"project.set.status.deleted.confirm", "project.set.status.deleted.button", true);
 		listenTo(deleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),

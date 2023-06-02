@@ -678,7 +678,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		
 		String message = translate("milestone.delete.confirmation.message", ProjectUIFactory.getDisplayName(getTranslator(), milestone));
 		milestoneDeleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"milestone.delete.confirmation.confirm", "milestone.delete.confirmation.button");
+				"milestone.delete.confirmation.confirm", "milestone.delete.confirmation.button", true);
 		milestoneDeleteConfirmationCtrl.setUserObject(milestone);
 		listenTo(milestoneDeleteConfirmationCtrl);
 		

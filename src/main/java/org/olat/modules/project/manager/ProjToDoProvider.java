@@ -111,7 +111,7 @@ public class ProjToDoProvider implements ToDoProvider {
 	public Controller createDeleteConfirmationController(UserRequest ureq, WindowControl wControl, Locale locale, ToDoTask toDoTask) {
 		Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
 		String message = translator.translate("todo.delete.confirmation.message", toDoTask.getTitle());
-		return new ProjConfirmationController(ureq, wControl, message, "todo.delete.confirmation.confirm", "todo.delete.confirmation.button");
+		return new ProjConfirmationController(ureq, wControl, message, "todo.delete.confirmation.confirm", "todo.delete.confirmation.button", true);
 	}
 	
 }

@@ -21,6 +21,7 @@ package org.olat.modules.project.ui;
 
 import org.olat.core.commons.controllers.activity.ActivityLogController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -30,6 +31,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSLockManager;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjFile;
 import org.olat.user.UserManager;
@@ -51,6 +56,10 @@ public class ProjFileMetadataController extends FormBasicController {
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private VFSLockManager vfsLockManager;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 
 	public ProjFileMetadataController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjFile file) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
@@ -66,7 +75,7 @@ public class ProjFileMetadataController extends FormBasicController {
 		setFormStyle("o_proj_metadata");
 		
 		String type = FileUtils.getFileSuffix(vfsMetadata.getFilename());
-		if (StringHelper.containsNonWhitespace(type)) {
+		if (!StringHelper.containsNonWhitespace(type)) {
 			type = translate("file.type.unknown");
 		}
 		uifactory.addStaticTextElement("file.type", type, formLayout);
@@ -84,8 +93,13 @@ public class ProjFileMetadataController extends FormBasicController {
 				userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy()));
 		uifactory.addStaticTextElement("file.modified", modifiedDateBy, formLayout);
 		
-		String lockedBy = vfsMetadata.isLocked()
-				? userManager.getUserDisplayName(vfsMetadata.getLockedBy())
+		VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+		LockInfo lock = vfsItem instanceof VFSLeaf vfsLeaf
+				? vfsLockManager.getLock(vfsLeaf)
+				: null;
+		
+		String lockedBy = lock != null && lock.isLocked()
+				? userManager.getUserDisplayName(lock.getLockedBy())
 				: translate("file.locked.not");
 		uifactory.addStaticTextElement("file.locked.by", lockedBy, formLayout);
 		

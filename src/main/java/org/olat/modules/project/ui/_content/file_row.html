@@ -11,11 +11,6 @@
 				<div class="o_visual_not_available"></div>
 			#end
 		</div>
-		#if($row.formattedTags)
-			<div class="o_proj_file_tags o_nowrap">
-				$row.formattedTags
-			</div>
-		#end
 	</div>
 	<div class="o_proj_card_meta o_proj_file_meta">
 		<div class="o_flex_first_grow_base">
@@ -30,6 +25,11 @@
 			<div class="o_nowrap">
 				$row.modified
 			</div>
+		</div>
+		<div class="o_proj_file_tags o_proj_card_tags">
+			#if($r.isNotEmpty($row.formattedTags))
+				$row.formattedTags
+			#end
 		</div>
 	</div>
 </div>

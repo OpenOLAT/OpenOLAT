@@ -276,7 +276,7 @@ public class ProjNoteController extends BasicController {
 		
 		String message = translate("note.delete.confirmation.message", note.getTitle());
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"note.delete.confirmation.confirm", "note.delete.confirmation.button");
+				"note.delete.confirmation.confirm", "note.delete.confirmation.button", true);
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		

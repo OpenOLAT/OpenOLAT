@@ -440,7 +440,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		
 		String message = translate("reference.delete.message", row.getDisplayName());
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"reference.delete.confirm", "reference.delete.button");
+				"reference.delete.confirm", "reference.delete.button", true);
 		deleteConfirmationCtrl.setUserObject(row);
 		listenTo(deleteConfirmationCtrl);
 		

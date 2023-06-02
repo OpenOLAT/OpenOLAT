@@ -49,6 +49,7 @@ public class ProjFileRow implements ProjFileRef {
 	private String thumbnailUrl;
 	private boolean openInNewWindow;
 	private FormLink selectLink;
+	private FormLink selectClassicLink;
 	private FormLink toolsLink;
 	
 	public ProjFileRow(ProjFile file) {
@@ -151,6 +152,14 @@ public class ProjFileRow implements ProjFileRef {
 
 	public void setSelectLink(FormLink selectLink) {
 		this.selectLink = selectLink;
+	}
+
+	public FormLink getSelectClassicLink() {
+		return selectClassicLink;
+	}
+
+	public void setSelectClassicLink(FormLink selectClassicLink) {
+		this.selectClassicLink = selectClassicLink;
 	}
 	
 	public String getToolsLinkName() {

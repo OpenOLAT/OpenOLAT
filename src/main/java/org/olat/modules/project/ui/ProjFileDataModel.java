@@ -27,7 +27,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 
 /**
  * 
@@ -48,7 +47,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<ProjFileRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
+		List<ProjFileRow> rows = new ProjFileRowSortDelegate(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 
@@ -62,7 +61,7 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 	public Object getValueAt(ProjFileRow row, int col) {
 		switch(COLS[col]) {
 		case id: return row.getKey();
-		case displayName: return row.getDisplayName();
+		case displayName: return row.getSelectClassicLink();
 		case tags: return row.getFormattedTags();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getLastModifiedDate();
