@@ -240,8 +240,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();
@@ -973,7 +973,9 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 	
 	public boolean isOptional(CourseEnvironment coursEnv, UserCourseEnvironment userCourseEnv) {
 		NodeAccessType nodeAccessType = NodeAccessType.of(coursEnv);
-		updateModuleConfigDefaults(false, getParent(), nodeAccessType);
+		
+		Identity doer = userCourseEnv != null ? userCourseEnv.getIdentityEnvironment().getIdentity() : null;
+		updateModuleConfigDefaults(false, getParent(), nodeAccessType, doer);
 		if (userCourseEnv != null && LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
 			AssessmentEvaluation evaluation = userCourseEnv.getScoreAccounting().evalCourseNode(this);
 			if (evaluation != null && evaluation.getObligation() != null && evaluation.getObligation().getCurrent() != null) {

@@ -373,3 +373,25 @@ alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_msg
 alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
 
 
+-- Content editor
+create table o_ce_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_action varchar(32),
+   p_before mediumtext,
+   p_after mediumtext,
+   fk_doer bigint,
+   fk_page bigint,
+   primary key (id)
+);
+alter table o_ce_audit_log ENGINE = InnoDB;
+
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
+
+
+
+
+

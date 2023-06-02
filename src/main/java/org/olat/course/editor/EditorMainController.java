@@ -546,7 +546,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		//create the alternative node
 		CourseNodeConfiguration newConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(selectAlternative);
 		CourseNode newNode = newConfig.getInstance();
-		newNode.updateModuleConfigDefaults(true, parentNode, NodeAccessType.of(course));
+		newNode.updateModuleConfigDefaults(true, parentNode, NodeAccessType.of(course), getIdentity());
 		//copy configurations
 		chosenNode.copyConfigurationTo(newNode, course, getIdentity());
 		//insert the node
@@ -625,7 +625,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
 		if (cnConfig.isEnabled()) {
 			CourseEditorTreeNode parent = (CourseEditorTreeNode) cetm.getNodeById(chosenNode.getIdent());
-			chosenNode.updateModuleConfigDefaults(false, parent, nodeAccessType);
+			chosenNode.updateModuleConfigDefaults(false, parent, nodeAccessType, getIdentity());
 			nodeEditCntrllr = chosenNode.createEditController(ureq, getWindowControl(), stackPanel, course, euce);
 			listenTo(nodeEditCntrllr);
 			nodeEditCntrllr.addTabs(tabbedNodeConfig);
@@ -987,7 +987,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		ICourse course = CourseFactory.getCourseEditSession(ores.getResourceableId());
 		TreeNode tn = menuTree.getSelectedNode();
 		CourseEditorTreeNode cetn = tn == null ? null : cetm.getCourseEditorNodeById(tn.getIdent());
-		CourseNode newNode = CourseEditorHelper.createAndInsertNewNode(type, course, cetn, getTranslator());
+		CourseNode newNode = CourseEditorHelper.createAndInsertNewNode(type, course, cetn, getIdentity(), getTranslator());
 		doPostInsert(ureq, newNode);
 		showInfo("quickadd.success", newNode.getShortName());
 		quickAddCtr.resetAutocompleter();

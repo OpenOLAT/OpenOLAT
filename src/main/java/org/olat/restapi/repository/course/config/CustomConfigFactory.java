@@ -24,6 +24,7 @@
 */
 package org.olat.restapi.repository.course.config;
 
+import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.iq.IQEditController;
@@ -52,7 +53,7 @@ public class CustomConfigFactory {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			moduleConfig.set(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY, testRepoEntry.getSoftkey());
 			if (QTIResourceTypeModule.isQtiWorks(testRepoEntry.getOlatResource())) {
 				moduleConfig.set(IQEditController.CONFIG_KEY_TYPE_QTI, IQEditController.CONFIG_VALUE_QTI21);

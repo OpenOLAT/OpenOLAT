@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
@@ -231,8 +232,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 * @return the loaded forum
 	 */
 	public Forum loadOrCreateForum(final CourseEnvironment courseEnv) {
-		CourseNode parent = this.getParent() instanceof CourseNode? (CourseNode)this.getParent(): null;
-		updateModuleConfigDefaults(false, parent, NodeAccessType.of(courseEnv));
+		CourseNode parent = getParent() instanceof CourseNode pNode ? pNode : null;
+		updateModuleConfigDefaults(false, parent, NodeAccessType.of(courseEnv), null);
 
 		Forum forum = null;
 		List<Property> forumKeyProps = courseEnv.getCoursePropertyManager().findCourseNodeProperties(this, null, null,
@@ -522,8 +523,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 *                  previous behaviour
 	 */
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		int version = config.getConfigurationVersion();

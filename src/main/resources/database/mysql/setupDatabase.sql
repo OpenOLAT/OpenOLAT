@@ -2567,6 +2567,17 @@ create table o_pf_page_to_tax_competence (
    primary key (id)
 );
 
+create table o_ce_audit_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_action varchar(32),
+   p_before mediumtext,
+   p_after mediumtext,
+   fk_doer bigint,
+   fk_page bigint,
+   primary key (id)
+);
 
 -- evaluation form
 create table o_eva_form_survey (
@@ -4334,6 +4345,7 @@ alter table o_pf_assessment_section ENGINE = InnoDB;
 alter table o_pf_assignment ENGINE = InnoDB;
 alter table o_pf_binder_user_infos ENGINE = InnoDB;
 alter table o_pf_page_to_tax_competence ENGINE = InnoDB;
+alter table o_ce_audit_log ENGINE = InnoDB;
 alter table o_eva_form_participation ENGINE = InnoDB;
 alter table o_eva_form_session ENGINE = InnoDB;
 alter table o_eva_form_response ENGINE = InnoDB;
@@ -4961,6 +4973,9 @@ alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign
 
 alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
 alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
+
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);

@@ -395,4 +395,22 @@ create index idx_o_info_message_to_cur_el_msg_idx on o_info_message_to_cur_el (f
 alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_curel_idx foreign key (fk_cur_element_id) references o_cur_curriculum_element (id);
 create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
 
+-- Content editor
+create table o_ce_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_action varchar(32),
+   p_before text,
+   p_after text,
+   fk_doer int8,
+   fk_page int8,
+   primary key (id)
+);
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
+
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
+
+
 

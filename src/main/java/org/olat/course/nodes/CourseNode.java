@@ -442,7 +442,7 @@ public interface CourseNode extends INode, ShortName {
 	 * otherwise the editortree.xml and runstructure.xml of old courses would no longer be compatible. 
 	 *  
 	 */
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer);
 	
 	/**
 	 * Calculate the access and the visibility in the conventional node access type.

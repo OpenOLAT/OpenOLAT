@@ -91,14 +91,18 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType) {
-		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType);
+	public void updateModuleConfigDefaults(boolean isNewNode, INode parent, NodeAccessType nodeAccessType, Identity doer) {
+		super.updateModuleConfigDefaults(isNewNode, parent, nodeAccessType, doer);
 		
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
 			String pageTitle = StringHelper.containsNonWhitespace(getShortTitle()) ? getShortTitle() : getLongTitle();
 			Page page = portfolioService.appendNewPage(null, pageTitle, null, null, null, null);
+			
+			PageService pageService = CoreSpringFactory.getImpl(PageService.class);
+			pageService.createLog(page, doer);
+			
 			CoreSpringFactory.getImpl(DB.class).commit();
 			setPageReferenceKey(page.getKey());
 		}

@@ -119,7 +119,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		String shortTitle = random();
 		defaults.setShortTitle(shortTitle);
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 		dbInstance.commitAndCloseSession();
 		
@@ -184,7 +184,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		IQTESTCourseNodeContext defaults = new IQTESTCourseNodeContext();
 
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 
 		INode lastNode = TreeHelper.getLastNode(course.getEditorTreeModel().getRootNode());
@@ -211,7 +211,7 @@ public class CourseWizardServiceTest extends OlatTestCase {
 		defaults.setModuleConfig(defaultModuleConfig);
 
 		ICourse course = sut.startCourseEditSession(entry);
-		sut.createIQTESTCourseNode(course, defaults);
+		sut.createIQTESTCourseNode(course, defaults, null);
 		sut.finishCourseEditSession(course);
 
 		INode lastNode = TreeHelper.getLastNode(course.getEditorTreeModel().getRootNode());

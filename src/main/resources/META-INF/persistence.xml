@@ -198,6 +198,7 @@
 		<class>org.olat.modules.ceditor.model.jpa.CategoryToElementImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.AssignmentImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.PageToTaxonomyCompetenceImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.ContentAuditLogImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>

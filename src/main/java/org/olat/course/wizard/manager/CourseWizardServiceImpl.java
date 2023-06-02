@@ -258,8 +258,8 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 	}
 	
 	@Override
-	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults) {
-		CourseNode node = createCourseNode(course, IQTESTCourseNode.TYPE, defaults);
+	public void createIQTESTCourseNode(ICourse course, IQTESTCourseNodeDefaults defaults, Identity doer) {
+		CourseNode node = createCourseNode(course, IQTESTCourseNode.TYPE, defaults, doer);
 		ModuleConfiguration moduleConfig = node.getModuleConfiguration();
 		
 		if (defaults.getModuleConfig() != null) {
@@ -272,12 +272,12 @@ public class CourseWizardServiceImpl implements CourseWizardService {
 		}
 	}
 	
-	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext context) {
+	private CourseNode createCourseNode(ICourse course, String nodeType, CourseNodeTitleContext context, Identity doer) {
 		CourseEditorTreeModel cetm = course.getEditorTreeModel();
 		CourseNode rootNode = cetm.getCourseNode(cetm.getRootNode().getIdent());
 		CourseNodeConfiguration nodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(nodeType);
 		CourseNode createdNode = nodeConfig.getInstance();
-		createdNode.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course));
+		createdNode.updateModuleConfigDefaults(true, cetm.getRootNode(), NodeAccessType.of(course), doer);
 		createdNode.setLongTitle(context.getLongTitle());
 		createdNode.setShortTitle(context.getShortTitle());
 		createdNode.setDescription(context.getDescription());

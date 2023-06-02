@@ -165,6 +165,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private SelectPageListController selectPageController;
 	
 	private Page page;
+	private int changes = 0;
 	private LockResult lockEntry;
 	private OLATResourceable lockOres;
 	private final PageSettings settings;
@@ -420,11 +421,20 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		if (lockEntry != null && lockEntry.isSuccess()) {
 			// release lock
-			coordinator.getCoordinator().getLocker().releaseLock(lockEntry);
-			lockEntry = null;
+			doReleaseLock();
 		}
 		coordinator.getCoordinator().getEventBus().deregisterFor(this, lockOres);
         super.doDispose();
+	}
+	
+	private void doReleaseLock() {
+		coordinator.getCoordinator().getLocker().releaseLock(lockEntry);
+		lockEntry = null;
+		
+		if(changes > 0) {
+			pageService.updateLog(page, getIdentity());
+			changes = 0;
+		}
 	}
 
 	@Override
@@ -452,6 +462,7 @@ public class PageRunController extends BasicController implements TooledControll
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(pageEditCtrl == source) {
 			if(event == Event.CHANGED_EVENT) {
+				changes++;
 				dirtyMarker = true;
 				coordinator.getCoordinator().getEventBus()
 					.fireEventToListenersOf(new PageChangedEvent(getIdentity().getKey(), page.getKey()), lockOres);
@@ -708,7 +719,7 @@ public class PageRunController extends BasicController implements TooledControll
 		removeAsListenerAndDispose(pageEditCtrl);
 		if(Boolean.FALSE.equals(editLink.getUserObject())) {
 			if(lockEntry != null && lockEntry.isSuccess()) {
-				coordinator.getCoordinator().getLocker().releaseLock(lockEntry);
+				doReleaseLock();
 			}
 			
 			doRunPage(ureq);

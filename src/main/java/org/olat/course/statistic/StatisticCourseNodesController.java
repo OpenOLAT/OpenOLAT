@@ -128,8 +128,8 @@ public class StatisticCourseNodesController extends BasicController implements A
 	
 	@Override
 	public void initTools() {
-		if(currentCtrl instanceof TooledController) {
-			((TooledController)currentCtrl).initTools();
+		if(currentCtrl instanceof TooledController tooledCtrl) {
+			tooledCtrl.initTools();
 		}
 	}
 	
@@ -167,8 +167,7 @@ public class StatisticCourseNodesController extends BasicController implements A
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == courseTree) {
-			if(event instanceof TreeEvent) {
-				TreeEvent te = (TreeEvent)event;
+			if(event instanceof TreeEvent te) {
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(te.getCommand())) {
 					String ident = te.getNodeId();
 					TreeNode selectedNode = courseTree.getTreeModel().getNodeById(ident);
@@ -202,14 +201,13 @@ public class StatisticCourseNodesController extends BasicController implements A
 		
 		if(selectedNode != null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstanceWithoutCheck(selectedNode.getIdent(), 0l), null);
-			if(selectedNode instanceof StatisticResourceNode) {
-				StatisticResourceNode node = (StatisticResourceNode)selectedNode;
-				node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType);
+			if(selectedNode instanceof StatisticResourceNode node) {
+				node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType, ureq.getIdentity());
 				currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, node);
 			} else {
 				StatisticResourceNode node = getStatisticNodeInParentLine(selectedNode);
 				if(node != null) {
-					node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType);
+					node.getCourseNode().updateModuleConfigDefaults(false, node.getCourseNode().getParent(), nodeAccessType, ureq.getIdentity());
 					currentCtrl = node.getResult().getController(ureq, swControl, stackPanel, selectedNode);
 				}
 			}
@@ -231,8 +229,8 @@ public class StatisticCourseNodesController extends BasicController implements A
 		for( ; parent!= null && !(parent instanceof StatisticResourceNode); ) {
 			parent = parent.getParent();
 		}
-		if(parent instanceof StatisticResourceNode) {
-			return (StatisticResourceNode)parent;
+		if(parent instanceof StatisticResourceNode parentNode) {
+			return parentNode;
 		}
 		return null;
 	}

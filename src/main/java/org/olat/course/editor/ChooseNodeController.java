@@ -133,7 +133,7 @@ public class ChooseNodeController extends BasicController {
 	
 	private void doCreateNode(String type) {
 		ICourse course = CourseFactory.getCourseEditSession(courseOres.getResourceableId());
-		createdNode = CourseEditorHelper.createAndInsertNewNode(type, course, currentNode, getTranslator());
+		createdNode = CourseEditorHelper.createAndInsertNewNode(type, course, currentNode, getIdentity(), getTranslator());
 	}
 	
 	public static class CourseNodeTypesGroup {

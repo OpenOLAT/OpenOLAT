@@ -40,6 +40,8 @@ import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.Category;
+import org.olat.modules.ceditor.ContentAuditLog;
+import org.olat.modules.ceditor.ContentAuditLog.Action;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
@@ -91,6 +93,8 @@ public class PageServiceImpl implements PageService {
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDAO;
+	@Autowired
+	private ContentAuditLogDAO contentAuditLogDao;
 	@Autowired
 	private TaxonomyCompetenceDAO taxonomyCompetenceDAO;
 	@Autowired
@@ -305,7 +309,22 @@ public class PageServiceImpl implements PageService {
 	public Assignment getAssignment(PageBody body) {
 		return assignmentDao.loadAssignment(body);
 	}
+
+	@Override
+	public void createLog(Page page, Identity doer) {
+		contentAuditLogDao.create(Action.CREATE, page, doer);
+	}
+
+	@Override
+	public void updateLog(Page page, Identity doer) {
+		contentAuditLogDao.create(Action.UPDATE, page, doer);
+	}
 	
+	@Override
+	public ContentAuditLog lastChange(Page page) {
+		return contentAuditLogDao.lastChange(page);
+	}
+
 	@Override
 	public List<TaxonomyCompetence> getRelatedCompetences(Page page, boolean fetchTaxonomies) {
 		return pageToTaxonomyCompetenceDao.getCompetencesToPage(page, fetchTaxonomies);

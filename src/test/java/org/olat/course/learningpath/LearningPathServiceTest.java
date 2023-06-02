@@ -115,7 +115,7 @@ public class LearningPathServiceTest extends OlatTestCase {
 
 	private CourseNode createCourseNode(String type, CourseNode parent) {
 		CourseNode courseNode = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type).getInstance();
-		courseNode.updateModuleConfigDefaults(true, parent, NODE_ACCESS_TYPE);
+		courseNode.updateModuleConfigDefaults(true, parent, NODE_ACCESS_TYPE, null);
 		return courseNode;
 	}
 

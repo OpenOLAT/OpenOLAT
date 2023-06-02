@@ -84,7 +84,7 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		
 		if (runContext.containsKey(RUN_CONTEXT_TEST)) {
 			IQTESTCourseNodeContext defaults = (IQTESTCourseNodeContext) runContext.get(RUN_CONTEXT_TEST);
-			courseWizardService.createIQTESTCourseNode(course, defaults);
+			courseWizardService.createIQTESTCourseNode(course, defaults, ureq.getIdentity());
 			courseWizardService.createAssessmentMode(course, defaults);
 		}
 		
@@ -95,7 +95,7 @@ public class CourseWizardCallback implements StepRunnerCallback {
 		
 		if (runContext.containsKey(RUN_CONTEXT_RETEST)) {
 			IQTESTCourseNodeContext defaults = (IQTESTCourseNodeContext) runContext.get(RUN_CONTEXT_RETEST);
-			courseWizardService.createIQTESTCourseNode(course, defaults);
+			courseWizardService.createIQTESTCourseNode(course, defaults, ureq.getIdentity());
 			courseWizardService.createAssessmentMode(course, defaults);
 		}
 		

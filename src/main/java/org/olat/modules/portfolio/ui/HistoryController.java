@@ -83,13 +83,12 @@ public class HistoryController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (!ureq.getUserSession().getRoles().isGuestOnly()) {			
 			subsContext = new SubscriptionContext(PortfolioNotificationsHandler.TYPE_NAME, binder.getKey(), PortfolioNotificationsHandler.TYPE_NAME);
-			if (subsContext != null) {
-				String businessPath = "[Binder:" + binder.getKey() + "]";
-				PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
-				cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
-				listenTo(cSubscriptionCtrl);
-				flc.put("subscription", cSubscriptionCtrl.getInitialComponent());
-			}
+
+			String businessPath = "[Binder:" + binder.getKey() + "]";
+			PublisherData data = new PublisherData(PortfolioNotificationsHandler.TYPE_NAME, null, businessPath);
+			cSubscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(), subsContext, data);
+			listenTo(cSubscriptionCtrl);
+			flc.put("subscription", cSubscriptionCtrl.getInitialComponent());
 		}
 		
 		dateChooser = uifactory.addDateChooser("dateChooser", "changes.since", null, formLayout);
@@ -127,13 +126,9 @@ public class HistoryController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(dateChooser == source) {
 			updateChangeLog();
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
-			Object uobject = link.getUserObject();
-			if(uobject instanceof String) {
-				String businessPath = (String)uobject;
-				doSelectByContextEntry(ureq, businessPath);
-			}	
+		} else if(source instanceof FormLink link
+				&& link.getUserObject() instanceof String businessPath) {
+			doSelectByContextEntry(ureq, businessPath);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

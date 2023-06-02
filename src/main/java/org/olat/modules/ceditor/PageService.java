@@ -139,6 +139,15 @@ public interface PageService {
 	 */
 	Assignment getAssignment(PageBody body);
 	
+	
+	
+	void createLog(Page page, Identity doer);
+	
+	void updateLog(Page page, Identity doer);
+	
+	ContentAuditLog lastChange(Page page);
+	
+	
 	/**
 	 * Get all related taxonomy competences to one page
 	 * 

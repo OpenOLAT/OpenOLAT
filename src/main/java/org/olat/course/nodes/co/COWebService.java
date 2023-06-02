@@ -55,6 +55,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailHelper;
 import org.olat.course.ICourse;
@@ -314,7 +315,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 		}
 
 		@Override
-		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig) {
+		public void configure(ICourse course, CourseNode newNode, ModuleConfiguration moduleConfig, Identity doer) {
 			/**
 			 * if deprecated config is used
 			 */

@@ -393,3 +393,20 @@ alter table o_info_message_to_cur_el add constraint o_info_message_to_cur_el_cur
 create index idx_o_info_message_to_cur_el_curel_idx on o_info_message_to_cur_el (fk_cur_element_id);
 
 
+-- Content editor
+create table o_ce_audit_log (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_action varchar(32),
+   p_before CLOB,
+   p_after CLOB,
+   fk_doer number(20),
+   fk_page number(20),
+   primary key (id)
+);
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
+
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
+

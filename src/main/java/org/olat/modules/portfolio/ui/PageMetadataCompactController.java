@@ -20,9 +20,6 @@
  */
 package org.olat.modules.portfolio.ui;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -32,12 +29,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
-import org.olat.modules.ceditor.ContentRoles;
+import org.olat.modules.ceditor.ContentAuditLog;
 import org.olat.modules.ceditor.Page;
+import org.olat.modules.ceditor.PageService;
 import org.olat.modules.portfolio.BinderSecurityCallback;
-import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.ui.event.ToggleEditPageEvent;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserManager;
@@ -61,7 +57,7 @@ public class PageMetadataCompactController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private PortfolioService portfolioService;
+	private PageService pageService;
 	
 	public PageMetadataCompactController(UserRequest ureq, WindowControl wControl, BinderSecurityCallback secCallback,
 			Page page, PageSettings pageSettings, boolean openInEditMode) {
@@ -82,20 +78,7 @@ public class PageMetadataCompactController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			Set<Identity> owners = new HashSet<>();
-			if(page.getSection() != null && page.getSection().getBinder() != null) {
-				owners.addAll(portfolioService.getMembers(page.getSection().getBinder(), ContentRoles.owner.name()));
-			}
-			owners.addAll(portfolioService.getMembers(page, ContentRoles.owner.name()));
-		
-			StringBuilder ownerSb = new StringBuilder();
-			for(Identity owner:owners) {
-				if(ownerSb.length() > 0) ownerSb.append(", ");
-				ownerSb.append(userManager.getUserDisplayName(owner));
-			}
-			layoutCont.contextPut("owners", ownerSb.toString());
 			layoutCont.contextPut("pageTitle", page.getTitle());
-			layoutCont.contextPut("lastModified", page.getLastModified());
 			layoutCont.contextPut("withTitle",  Boolean.valueOf(pageSettings.isWithTitle()));
 		}
 		
@@ -108,6 +91,20 @@ public class PageMetadataCompactController extends FormBasicController {
 	public void updateEditLink(boolean edit) {
 		editLink.setI18nKey(edit ? translate("off") : translate("on"));
 		flc.contextPut("edit", Boolean.valueOf(edit));
+		updateLastChange();
+	}
+	
+	public void updateLastChange() {
+		ContentAuditLog lastChange = pageService.lastChange(page);
+		if(lastChange != null) {
+			flc.contextPut("lastModified", lastChange.getLastModified());
+			if(lastChange.getDoer() != null) {
+				String modifier = userManager.getUserDisplayName(lastChange.getDoer());
+				flc.contextPut("modifier", modifier);
+			}
+		} else {
+			flc.contextPut("lastModified", page.getLastModified());
+		}
 	}
 	
 	@Override

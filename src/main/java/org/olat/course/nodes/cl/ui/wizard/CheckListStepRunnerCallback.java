@@ -33,6 +33,7 @@ import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
@@ -90,14 +91,16 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		
 		CourseNode rootNode = ((CourseEditorTreeNode)course.getEditorTreeModel().getRootNode()).getCourseNode();
-		CourseNode structureNode = createCourseNode(rootNode, NodeAccessType.of(course), data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureDescription(), "st");
+		CourseNode structureNode = createCourseNode(rootNode, NodeAccessType.of(course),
+				data.getStructureShortTitle(), data.getStructureTitle(), data.getStructureDescription(), "st", ureq.getIdentity());
 		course.getEditorTreeModel().addCourseNode(structureNode, rootNode);
 		
 		List<CheckListNode> nodes = data.getNodes();
 		List<String> nodesIdent = new ArrayList<>();
 		for(CheckListNode node:nodes) {
 			String title = node.getTitle();
-			CheckListCourseNode checkNode = (CheckListCourseNode)createCourseNode(structureNode, NodeAccessType.of(course), title, title, null, "checklist");
+			CheckListCourseNode checkNode = (CheckListCourseNode)createCourseNode(structureNode, NodeAccessType.of(course),
+					title, title, null, "checklist", ureq.getIdentity());
 			nodesIdent.add(checkNode.getIdent());
 
 			ModuleConfiguration config = checkNode.getModuleConfiguration();
@@ -181,10 +184,10 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 		stNode.setScoreCalculator(sc);
 	}
 	
-	private CourseNode createCourseNode(CourseNode parent, NodeAccessType nodeAccessType, String shortTitle, String title, String description, String type) {
+	private CourseNode createCourseNode(CourseNode parent, NodeAccessType nodeAccessType, String shortTitle, String title, String description, String type, Identity doer) {
 		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration(type);
 		CourseNode newNode = newNodeConfig.getInstance();
-		newNode.updateModuleConfigDefaults(true, parent, nodeAccessType);
+		newNode.updateModuleConfigDefaults(true, parent, nodeAccessType, doer);
 		newNode.setShortTitle(shortTitle);
 		newNode.setLongTitle(title);
 		newNode.setDescription(description);

@@ -40,11 +40,11 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PageImageAlign;
 import org.olat.modules.ceditor.PageStatus;
-import org.olat.modules.ceditor.ContentElementType;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.model.SectionImpl;
 

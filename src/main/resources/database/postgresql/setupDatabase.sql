@@ -2454,6 +2454,18 @@ create table o_pf_page_to_tax_competence (
   primary key (id)
 );
 
+create table o_ce_audit_log (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_action varchar(32),
+   p_before text,
+   p_after text,
+   fk_doer int8,
+   fk_page int8,
+   primary key (id)
+);
+
 -- evaluation form
 create table o_eva_form_survey (
    id bigserial,
@@ -4940,6 +4952,10 @@ alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx for
 create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
 alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
 create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+
+alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
+create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
+create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
 
 -- vfs metadata
 alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_locked_identity) references o_bs_identity (id);

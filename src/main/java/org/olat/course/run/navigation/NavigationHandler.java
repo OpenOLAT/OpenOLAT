@@ -226,7 +226,7 @@ public class NavigationHandler implements Disposable {
 				ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(ores);
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 				CourseNode parent = internCourseNode.getParent() instanceof CourseNode? (CourseNode)internCourseNode.getParent(): null;
-				internCourseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
+				internCourseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv), ureq.getIdentity());
 				nrcr = internCourseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, internNode, nodecmd, filter);
 				// remember as instance variable for next click
 				subtreemodelListener = nrcr.getSubTreeListener();
@@ -379,7 +379,7 @@ public class NavigationHandler implements Disposable {
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
 				CourseNode parent = courseNode.getParent() instanceof CourseNode? (CourseNode)courseNode.getParent(): null;
 				if (previewMode) {
-					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
+					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv), ureq.getIdentity());
 					ncr = new NodeRunConstructionResult(courseNode.createPreviewController(ureq, bwControl, userCourseEnv, newCalledTreeNode));
 				} else {
 					// cleanup already existing controllers with external models for this node first, never disposed otherwise
@@ -392,7 +392,7 @@ public class NavigationHandler implements Disposable {
 						}
 					}
 					
-					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv));
+					courseNode.updateModuleConfigDefaults(false, parent, NodeAccessType.of(userCourseEnv), ureq.getIdentity());
 					ncr = courseNode.createNodeRunConstructionResult(ureq, bwControl, userCourseEnv, newCalledTreeNode, nodecmd, filter);
 
 					// remember as instance variable for next click
