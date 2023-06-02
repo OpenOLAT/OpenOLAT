@@ -46,6 +46,7 @@ import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -68,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class IdentityConditionalScoreController extends BasicController {
 
 	private final VelocityContainer mainVC;
-	private final Link gradeApplyLink;
+	private Link gradeApplyLink;
 	private final Link efficiencyLink;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
@@ -76,7 +77,8 @@ public class IdentityConditionalScoreController extends BasicController {
 	private final RepositoryEntry courseEntry;
 	private final CourseNode courseNode;
 	private final AssessmentConfig assessmentConfig;
-	private final String gradeSystemLabel;
+	private final boolean gradeEnabled;
+	private String gradeSystemLabel;
 	
 	private CloseableModalController cmc;
 	private CertificateAndEfficiencyStatementController certificateAndEfficiencyStatementCtrl;
@@ -102,22 +104,26 @@ public class IdentityConditionalScoreController extends BasicController {
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
 		courseNode = assessedUserCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		assessmentConfig = courseAssessmentService.getAssessmentConfig(
-				courseEntry, courseNode);
+		assessmentConfig = courseAssessmentService.getAssessmentConfig(courseEntry, courseNode);
+		gradeEnabled = gradeModule.isEnabled()
+				&& courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED);
 		
 		mainVC = createVelocityContainer("conditional_score");
 		putInitialPanel(mainVC);
 		
-		AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
-		String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
-				? assessmentEvaluation.getGradeSystemIdent()
-				: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
-		gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident);
+		if (gradeEnabled) {
+			AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(courseNode);
+			String gradeSystemident = StringHelper.containsNonWhitespace(assessmentEvaluation.getGradeSystemIdent())
+					? assessmentEvaluation.getGradeSystemIdent()
+					: gradeService.getGradeSystem(courseEntry, courseNode.getIdent()).toString();
+			gradeSystemLabel = GradeUIFactory.translateGradeSystemLabel(getTranslator(), gradeSystemident);
+			
+			gradeApplyLink = LinkFactory.createCustomLink("grade.apply.button", "grade", "", Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
+			gradeApplyLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
+			gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
+			gradeApplyLink.setElementCssClass("a_button_bottom");
+		}
 		
-		gradeApplyLink = LinkFactory.createCustomLink("grade.apply.button", "grade", "", Link.BUTTON + Link.NONTRANSLATED, mainVC, this);
-		gradeApplyLink.setCustomDisplayText(translate("grade.apply.label", gradeSystemLabel));
-		gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
-		gradeApplyLink.setElementCssClass("a_button_bottom");
 		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), mainVC, this, Link.BUTTON);
 		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
 		efficiencyLink.setElementCssClass("a_button_bottom");
@@ -129,20 +135,23 @@ public class IdentityConditionalScoreController extends BasicController {
 	public void reload() {
 		AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		boolean hasScore = Mode.none != assessmentConfig.getScoreMode() && assessmentEvaluation.getScore() != null;
-		boolean gradeApplied = StringHelper.containsNonWhitespace(assessmentEvaluation.getGrade());
-		gradeApplyLink.setVisible(!readOnly && !gradeApplied && gradeModule.isEnabled() && hasScore);
 		
 		if (hasScore) {
 			String score = AssessmentHelper.getRoundedScore(assessmentEvaluation.getScore());
 			mainVC.contextPut("score", translate("score.value", score));
 		}
 		
-		if (assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled()) {
-			mainVC.contextPut("grade", translate("grade.value", gradeSystemLabel, assessmentEvaluation.getGrade()));
-		}
-		
 		if (Mode.none != assessmentConfig.getPassedMode() && assessmentEvaluation.getPassed() != null) {
 			mainVC.contextPut("passed", assessmentEvaluation.getPassed());
+		}
+		
+		if (gradeApplyLink != null) {
+			boolean gradeApplied = StringHelper.containsNonWhitespace(assessmentEvaluation.getGrade());
+			gradeApplyLink.setVisible(!readOnly && !gradeApplied && hasScore);
+			
+			if (gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled()) {
+				mainVC.contextPut("grade", translate("grade.value", gradeSystemLabel, assessmentEvaluation.getGrade()));
+			}
 		}
 	}
 
@@ -248,6 +257,5 @@ public class IdentityConditionalScoreController extends BasicController {
 		listenTo(cmc);
 		cmc.activate();
 	}
-
 
 }
