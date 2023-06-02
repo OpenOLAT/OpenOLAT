@@ -124,6 +124,7 @@ public class SingleChoiceEditorController extends FormBasicController implements
 			TextElement valueEl = uifactory.addTextElement("o_value_" + CodeHelper.getRAMUniqueID(), null, 255, null, flc);
 			valueEl.setValue(choice.getValue());
 			valueEl.addActionListener(FormEvent.ONCHANGE);
+			valueEl.setDomReplacementWrapperRequired(false);
 			
 			ChoiceRow choiceRow = new ChoiceRow(choice, upDown, valueEl);
 			rows.add(choiceRow);
@@ -141,8 +142,9 @@ public class SingleChoiceEditorController extends FormBasicController implements
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof TextElement) {
+		if (source instanceof TextElement te) {
 			doSave(ureq);
+			te.setErrorKey("form.legende.mandatory");
 		} else if (addChoiceEl == source) {
 			doSave(ureq);
 			doAddChoice();

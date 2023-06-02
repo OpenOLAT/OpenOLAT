@@ -60,7 +60,7 @@ public class DialogConfigurationPage {
 		OOGraphene.waitElement(uploadButtonBy, browser);
 		browser.findElement(uploadButtonBy).click();
 		
-		By rowBy = By.xpath("//table//tr/td/a[contains(text(),'" + file.getName() + "')]");
+		By rowBy = By.xpath("//table//tr/td/div/a[contains(text(),'" + file.getName() + "')]");
 		OOGraphene.waitElement(rowBy, browser);
 		
 		return this;

@@ -128,6 +128,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 				TextElement valueEl = uifactory.addTextElement("o_value_" + choiceId, null, 255, null, flc);
 				valueEl.setValue(choice.getValue());
 				valueEl.addActionListener(FormEvent.ONCHANGE);
+				valueEl.setDomReplacementWrapperRequired(false);
 
 				choiceRow = new ChoiceRow(choice, upDown, valueEl);
 			} else {
@@ -148,14 +149,14 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof TextElement) {
+		if (source instanceof TextElement te) {
 			doSave(ureq);
+			te.setErrorKey("form.legende.mandatory");
 		} else if (addChoiceEl == source) {
 			doAddChoice();
 			doSave(ureq);
 		}  else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				int index = se.getIndex();
 				if (CMD_DELETE.equals(cmd)) {
@@ -168,8 +169,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (event instanceof UpDownEvent) {
-			UpDownEvent ude = (UpDownEvent) event;
+		if (event instanceof UpDownEvent ude) {
 			doMove((Choice)ude.getUserObject(), ude.getDirection());
 			doSave(ureq);
 		}
