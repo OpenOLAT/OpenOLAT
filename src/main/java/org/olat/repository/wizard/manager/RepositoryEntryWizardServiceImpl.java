@@ -201,6 +201,12 @@ public class RepositoryEntryWizardServiceImpl implements RepositoryWizardService
 			if (accessAndProps.getGuestOffer() != null) {
 				acService.save(accessAndProps.getGuestOffer());
 			}
+			
+			if(accessAndProps.getDeletedOffers() != null && !accessAndProps.getDeletedOffers().isEmpty()) {
+				for(Offer offerToDelete:accessAndProps.getDeletedOffers()) {
+					acService.deleteOffer(offerToDelete);
+				}
+			}
 		}
 		
 		if (fireEvents) {

@@ -274,6 +274,53 @@ public class RepositoryEntryInvitationsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(Identity.STATUS_ACTIV, externalUser.getStatus());
 	}
 	
+	/**
+	 * Test that the expiration/inactivation date of existing user
+	 * are not set if an invitation with expiration is created for them.
+	 */
+	@Test
+	public void createInvitationInRepositoryEntryWithExistingUser()
+	throws IOException, URISyntaxException {
+		Identity admin = JunitTestHelper.findIdentityByLogin("administrator");
+		Identity existingInvitee = JunitTestHelper.createAndPersistIdentityAsRndUser("invitee-1");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin, "course-invitation 8",
+				RepositoryEntryStatusEnum.published, false, false);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		Assert.assertNotNull(course);
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		String email = existingInvitee.getUser().getEmail();
+		URI uri = UriBuilder.fromUri(getContextURI())
+				.path("repo").path("entries").path(courseEntry.getKey().toString()).path("invitations")
+				.queryParam("firstName", existingInvitee.getUser().getFirstName())
+				.queryParam("lastName", existingInvitee.getUser().getLastName())
+				.queryParam("email", email)
+				.queryParam("registrationRequired", "false")
+				.queryParam("expiration", "6")
+				.build();
+		
+		HttpPost method = conn.createPost(uri, MediaType.APPLICATION_JSON);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		InvitationVO invitation = conn.parse(response, InvitationVO.class);
+		
+		Assert.assertNotNull(invitation);
+		Assert.assertNotNull(invitation.getToken());
+		Assert.assertEquals(email, invitation.getEmail());
+		Assert.assertNotNull(invitation.getUrl());
+
+		Invitation savedInvitation = invitationService.findInvitation(invitation.getToken());
+		Assert.assertNotNull(savedInvitation);
+		Assert.assertEquals(invitation.getKey(), savedInvitation.getKey());
+		
+		Identity existingUser = savedInvitation.getIdentity();
+		Assert.assertNotNull(existingUser);
+		Assert.assertEquals(existingInvitee, existingUser);
+		Assert.assertNull(existingUser.getExpirationDate());
+	}
+	
 	@Test
 	public void getListOfInvitationsInRepositoryEntry()
 	throws IOException, URISyntaxException {

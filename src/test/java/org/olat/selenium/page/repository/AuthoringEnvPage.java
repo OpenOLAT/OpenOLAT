@@ -317,7 +317,7 @@ public class AuthoringEnvPage {
 	
 	public void editResource(String title) {
 		if(browser instanceof FirefoxDriver) {
-			By toolsMenuCaretBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td[contains(@class,'o_col_action')]/a[i[contains(@class,'o_icon_actions')]]");
+			By toolsMenuCaretBy = By.xpath("//div[contains(@class,'o_coursetable')]//tr[td/a[contains(text(),'" + title + "')]]/td[contains(@class,'o_col_action')]/div/a[i[contains(@class,'o_icon_actions')]]");
 			OOGraphene.waitElement(toolsMenuCaretBy, browser);
 			browser.findElement(toolsMenuCaretBy).click();
 			By toolsMenu = By.cssSelector("ul.o_sel_authoring_tools");

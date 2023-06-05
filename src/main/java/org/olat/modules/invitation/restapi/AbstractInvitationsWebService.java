@@ -29,6 +29,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.Invitation;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.invitation.InvitationModule;
@@ -83,10 +84,14 @@ public abstract class AbstractInvitationsWebService {
 		}
 		if(identity != null && !identity.getStatus().equals(Identity.STATUS_PERMANENT)
 				&& (expirationInHours != null || expirationDate != null)) {
-			if(expirationInHours != null) {
-				expirationDate = DateUtils.addHours(new Date(), expirationInHours.intValue());
+			Roles identityRoles = securityManager.getRoles(identity);
+			boolean isInvitee = identityRoles.isInviteeOnly();
+			if(isInvitee) {
+				if(expirationInHours != null) {
+					expirationDate = DateUtils.addHours(new Date(), expirationInHours.intValue());
+				}
+				securityManager.saveIdentityExpirationDate(identity, expirationDate, doer);
 			}
-			securityManager.saveIdentityExpirationDate(identity, expirationDate, doer);
 		}
 		return invitation;
 	}

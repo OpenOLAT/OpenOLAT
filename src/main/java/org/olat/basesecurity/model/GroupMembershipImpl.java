@@ -55,6 +55,7 @@ import org.olat.core.util.StringHelper;
 @Table(name="o_bs_group_member")
 @NamedQuery(name="membershipsByGroup", query="select membership from bgroupmember as membership where membership.group.key=:groupKey")
 @NamedQuery(name="membershipsByGroupsAndRole", query="select membership from bgroupmember as membership where membership.group.key in :groupKeys and membership.role=:role")
+@NamedQuery(name="countMembershipsByGroupsAndRole", query="select count(distinct membership.key) from bgroupmember as membership where membership.group.key in :groupKeys and membership.role=:role")
 @NamedQuery(name="membershipByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
 @NamedQuery(name="deleteMembershipsByGroupAndRole", query="delete from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
 @NamedQuery(name="membershipsByGroupAndIdentity", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey")
