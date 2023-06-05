@@ -291,6 +291,15 @@ public class GroupDAO {
 			.getResultList();
 	}
 	
+	public long countMemberships(Collection<Group> groups, String role) {
+		List<Long> count = dbInstance.getCurrentEntityManager()
+			.createNamedQuery("countMembershipsByGroupsAndRole", Long.class)
+			.setParameter("groupKeys", groups.stream().map(Group::getKey).toList())
+			.setParameter("role", role)
+			.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0l : count.get(0).longValue();
+	}
+	
 	public List<GroupMembership> getMemberships(Group group, IdentityRef identity) {
 		return dbInstance.getCurrentEntityManager()
 			.createNamedQuery("membershipsByGroupAndIdentity", GroupMembership.class)

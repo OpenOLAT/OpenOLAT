@@ -209,6 +209,10 @@ public class AccessConfigurationController extends FormBasicController {
 				.filter(Offer::isGuestAccess)
 				.findFirst().orElse(null);
 	}
+	
+	public List<Offer> getDeletedOffers() {
+		return deletedOfferList;
+	}
 
 	public void setReStatus(RepositoryEntryStatusEnum reStatus) {
 		this.reStatus = reStatus;

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.basesecurity.Group;
-import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.OrganisationModule;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -362,10 +361,7 @@ public class AuthoringEditAccessShareController extends FormBasicController {
 		List<Group> organisationGroups = organisationService.getOrganisation(getSelectedOrganisations()).stream()
 				.map(Organisation::getGroup)
 				.toList();
-		long authorsCount = groupDao.getMemberships(organisationGroups, OrganisationRoles.author.name()).stream()
-				.map(GroupMembership::getIdentity)
-				.distinct()
-				.count();
+		long authorsCount = groupDao.countMemberships(organisationGroups, OrganisationRoles.author.name());
 		String authorsText = AccessOverviewController.createAuthorsText(
 				getTranslator(),
 				authorsCount,
