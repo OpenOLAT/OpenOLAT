@@ -149,6 +149,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
 		generalCont.setFormTitle(translate("score.fieldset.title"));
+		generalCont.setElementCssClass("o_sel_structure_score");
 		generalCont.setFormContextHelp("manual_user/course_elements/Course_Element_Structure/#score");
 		generalCont.setRootForm(mainForm);
 		formLayout.add(generalCont);
@@ -160,6 +161,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		}
 		configSV.add(SelectionValues.entry(KEY_PASSED_ENABLED, translate("form.configuration.passed")));
 		configEl = uifactory.addCheckboxesVertical("form.configuration", generalCont, configSV.keys(), configSV.values(), 1);
+		configEl.setElementCssClass("o_sel_score_settings");
 		configEl.addActionListener(FormEvent.ONCHANGE);
 		if (StringHelper.containsNonWhitespace(sc.getScoreExpression())) {
 			configEl.select(KEY_SCORE_ENABLED, true);
@@ -187,6 +189,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		scoreExpertHideLink.setIconRightCSS("o_icon o_icon_toggle");
 		
 		scoreCont = FormLayoutContainer.createDefaultFormLayout("score", getTranslator());
+		scoreCont.setElementCssClass("o_sel_score_config");
 		scoreCont.setRootForm(mainForm);
 		formLayout.add(scoreCont);
 		
@@ -229,6 +232,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		passedExpertHideLink.setIconRightCSS("o_icon o_icon_toggle");
 		
 		passedCont = FormLayoutContainer.createDefaultFormLayout("passed", getTranslator());
+		passedCont.setElementCssClass("o_sel_passed_config");
 		passedCont.setRootForm(mainForm);
 		formLayout.add(passedCont);
 		
@@ -316,6 +320,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		gradePassedEl = uifactory.addStaticTextElement("node.grade.passed", "form.passed", "", gradeCont);
 		
 		FormLayoutContainer buttonWrapperCont = FormLayoutContainer.createDefaultFormLayout("buttonWrapper", getTranslator());
+		buttonWrapperCont.setElementCssClass("o_sel_score_buttons");
 		buttonWrapperCont.setRootForm(mainForm);
 		formLayout.add(buttonWrapperCont);
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
