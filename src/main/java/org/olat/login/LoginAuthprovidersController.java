@@ -197,7 +197,7 @@ public class LoginAuthprovidersController extends MainLayoutBasicController impl
 				authLink.setElementCssClass(prov.getName().equals(authProvider.getName()) ? "btn-primary" : "");
 				authLink.setIconLeftCSS("o_icon o_icon-2x " + prov.getIconCssClass());
 				authLink.setUserObject(providerName);
-				
+				authLink.setAjaxEnabled(!providerName.equals("Shib"));
 				StringOutput link = new StringOutput();
 				urlBuilder.buildURI(link, AJAXFlags.MODE_NORMAL,
 						new NameValuePair(VelocityContainer.COMMAND_ID, ACTION_LOGIN),
