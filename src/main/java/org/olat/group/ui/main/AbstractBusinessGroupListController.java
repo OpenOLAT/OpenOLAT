@@ -327,6 +327,10 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 				inactivateButton = uifactory.addFormLink("table.inactivate", TABLE_ACTION_INACTIVATE, "table.inactivate", null, formLayout, Link.BUTTON);
 				tableEl.addBatchButton(inactivateButton);
 				
+				reactivateButton = uifactory.addFormLink("table.reactivate", TABLE_ACTION_REACTIVATE, "table.reactivate", null, formLayout, Link.BUTTON);
+				reactivateButton.setVisible(false);
+				tableEl.addBatchButton(reactivateButton);
+				
 				softDeleteButton = uifactory.addFormLink("table.delete", TABLE_ACTION_SOFT_DELETE, "table.delete", null, formLayout, Link.BUTTON);
 				tableEl.addBatchButton(softDeleteButton);
 			}
@@ -399,8 +403,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 			doMerge(ureq, getSelectedItems());
 		} else if(selectButton == source) {
 			doSelect(ureq, getSelectedItems());
-		} else if(source instanceof FormLink) {
-			FormLink link = (FormLink)source;
+		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			if("mark".equals(cmd)) {
 				BusinessGroupRow row = (BusinessGroupRow)link.getUserObject();

@@ -74,10 +74,11 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
  */
 public class BusinessGroupListController extends AbstractBusinessGroupListController {
 	
-	private FlexiFiltersTab bookmarkTab;
+	private FlexiFiltersTab bookmarksGroupsTab;
 	private FlexiFiltersTab myGroupsTab;
 	private FlexiFiltersTab inactiveGroupsTab;
 	private FlexiFiltersTab openGroupsTab;
+	private FlexiFiltersTab searchGroupsTab;
 	
 	private DefaultFlexiColumnModel leaveCol;
 	private DefaultFlexiColumnModel toolsCol;
@@ -91,8 +92,8 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		super(ureq, wControl, "group_list", false, prefsKey, false, null);
 	}
 	
-	public FlexiFiltersTab getBookmarkTab() {
-		return bookmarkTab;
+	public FlexiFiltersTab getBookmarksGroupsTab() {
+		return bookmarksGroupsTab;
 	}
 	
 	public FlexiFiltersTab getMyGroupsTab() {
@@ -200,11 +201,11 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	protected void initFilterTabs() {
 		List<FlexiFiltersTab> tabs = new ArrayList<>();
 
-		bookmarkTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("marked.groups"),
+		bookmarksGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("Bookmarks", translate("marked.groups"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.MARKED, "marked"),
 						FlexiTableFilterValue.valueOf(BGSearchFilter.STATUS, List.of("active", "inactive"))));
-		bookmarkTab.setElementCssClass("o_sel_group_bookmarked_groups");
-		tabs.add(bookmarkTab);
+		bookmarksGroupsTab.setElementCssClass("o_sel_group_bookmarked_groups");
+		tabs.add(bookmarksGroupsTab);
 		
 		myGroupsTab = FlexiFiltersTabFactory.tabWithImplicitFilters("MyGroups", translate("my.groups"),
 				TabSelectionBehavior.reloadData, List.of(FlexiTableFilterValue.valueOf(BGSearchFilter.ROLE, "all"),
@@ -225,12 +226,12 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		openGroupsTab.setElementCssClass("o_sel_group_open_groups");
 		tabs.add(openGroupsTab);
 		
-		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
-		searchTab.setElementCssClass("o_sel_group_search_groups");
-		searchTab.setPosition(FlexiFilterTabPosition.right);
-		searchTab.setLargeSearch(true);
-		searchTab.setFiltersExpanded(true);
-		tabs.add(searchTab);
+		searchGroupsTab = FlexiFiltersTabFactory.tab("Search", translate("search.generic"), TabSelectionBehavior.clear);
+		searchGroupsTab.setElementCssClass("o_sel_group_search_groups");
+		searchGroupsTab.setPosition(FlexiFilterTabPosition.right);
+		searchGroupsTab.setLargeSearch(true);
+		searchGroupsTab.setFiltersExpanded(true);
+		tabs.add(searchGroupsTab);
 
 		tableEl.setFilterTabs(true, tabs);
 		tableEl.setSearchEnabled(true);
@@ -316,6 +317,10 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 	@Override
 	protected void changeFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
 		boolean openTab = (tab == openGroupsTab);
+		boolean inactiveTab = (tab == inactiveGroupsTab);
+		boolean bookmarksTab = (tab == bookmarksGroupsTab);
+		boolean searchTab = (tab == searchGroupsTab);
+		
 		// special for public groups
 		accessControlLaunchCol.setAlwaysVisible(openTab);
 		tableEl.setColumnModelVisible(accessControlLaunchCol, openTab);
@@ -326,6 +331,13 @@ public class BusinessGroupListController extends AbstractBusinessGroupListContro
 		tableEl.setColumnModelVisible(leaveCol, !openTab);
 		toolsCol.setAlwaysVisible(!openTab);
 		tableEl.setColumnModelVisible(toolsCol, !openTab);
+		
+		if(inactivateButton != null) {
+			inactivateButton.setVisible(!inactiveTab);
+		}
+		if(reactivateButton != null) {
+			reactivateButton.setVisible(inactiveTab || bookmarksTab || searchTab);
+		}
 	}
 
 	@Override
