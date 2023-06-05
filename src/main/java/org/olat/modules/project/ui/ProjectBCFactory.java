@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentRef;
@@ -216,7 +217,7 @@ public class ProjectBCFactory {
 	}
 	
 	public static String getArtefactUrl(ProjProjectRef project, String artefactType, Long key) {
-		switch (artefactType) {
+		switch (StringHelper.blankIfNull(artefactType)) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
 		case ProjToDo.TYPE: return getToDoUrl(project, () -> key);
 		case ProjNote.TYPE: return getNoteUrl(project, () -> key);
@@ -225,5 +226,16 @@ public class ProjectBCFactory {
 		default: return getProjectUrl(project);
 		}
 	}
-
+	
+	public static String getBusinessPath(ProjProjectRef project, String artefactType, Long key) {
+		switch (StringHelper.blankIfNull(artefactType)) {
+		case ProjFile.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createFileCes(project, () -> key));
+		case ProjToDo.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createToDoCes(project, () -> key));
+		case ProjNote.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createNoteCes(project, () -> key));
+		case ProjAppointment.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createAppointmentCes(project, () -> key));
+		case ProjMilestone.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createMilestoneCes(project, () -> key));
+		default: return BusinessControlFactory.getInstance().getBusinessControlString(createProjectCes(project));
+		}
+	}
+	
 }

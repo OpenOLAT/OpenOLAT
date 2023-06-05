@@ -29,6 +29,8 @@ import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -94,6 +96,10 @@ public interface ProjectService {
 	public ProjProjectUserInfo getOrCreateProjectUserInfo(ProjProject project, Identity identity);
 	
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo);
+	
+	public SubscriptionContext getSubscriptionContext(ProjProject project);
+	
+	public PublisherData getPublisherData(ProjProject project);
 	
 	
 	/*

@@ -42,7 +42,10 @@
 			$r.render("users")
 		</div>
 	</div>
-	<div class="o_proj_widgets o_block">
+	<div class="o_block_top clearfix">
+		$r.render("subscription")
+	</div>
+	<div class="o_proj_widgets">
 		<div class="o_proj_widget_col">
 			#if($r.available("quick"))
 				$r.render("quick")

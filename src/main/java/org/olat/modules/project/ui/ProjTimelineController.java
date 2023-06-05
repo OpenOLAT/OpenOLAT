@@ -22,7 +22,6 @@ package org.olat.modules.project.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,7 +65,6 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.render.DomWrapperElement;
-import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
@@ -81,20 +79,19 @@ import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
-import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneSearchParams;
-import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoSearchParams;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
-import org.olat.modules.project.manager.ProjectXStream;
+import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ActivityKey;
+import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ActivityRowData;
+import org.olat.modules.project.ui.ProjTimelineActivityRowsFactory.ProjTimelineUIFactory;
 import org.olat.modules.project.ui.ProjTimelineDataModel.TimelineCols;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoStatus;
-import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ui.ToDoUIFactory;
 import org.olat.user.UserManager;
 import org.olat.user.UsersPortraitsComponent;
@@ -108,7 +105,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ProjTimelineController extends FormBasicController implements FlexiTableComponentDelegate {
+public class ProjTimelineController extends FormBasicController
+		implements ProjTimelineUIFactory, FlexiTableComponentDelegate {
 	
 	private static final String TAB_ID_MY = "My";
 	private static final String TAB_ID_ALL = "All";
@@ -136,6 +134,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 	private final List<Identity> members;
 	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
+	private final ProjTimelineActivityRowsFactory activityRowsFactory;
 	private int counter;
 	
 	@Autowired
@@ -152,6 +151,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		this.members = members;
 		this.avatarMapperKey = avatarMapperKey;
 		this.formatter = Formatter.getInstance(getLocale());
+		this.activityRowsFactory = new ProjTimelineActivityRowsFactory(getTranslator(), formatter, userManager, this);
 		
 		Date today = DateUtils.setTime(new Date(), 0, 0, 1);
 		this.todayDateRange = new DateRange(today, DateUtils.addDays(today, 1));
@@ -366,7 +366,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		row.setMessageItem(link);
 		
 		row.setDate(DateUtils.addSeconds(toDo.getToDoTask().getDueDate(), 4));
-		row.setFormattedDate(getFormattedDate(row.getDate(), false));
+		row.setFormattedDate(activityRowsFactory.getFormattedDate(row.getDate(), false));
 		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.toDo);
 		return row;
@@ -408,7 +408,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		row.setMessageItem(link);
 		
 		row.setDate(DateUtils.addSeconds(kalendarEvent.getBegin(), 5));
-		row.setFormattedDate(getFormattedDate(row.getDate(), !appointment.isAllDay()));
+		row.setFormattedDate(activityRowsFactory.getFormattedDate(row.getDate(), !appointment.isAllDay()));
 		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.appointment);
 		return row;
@@ -443,7 +443,7 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		row.setMessageItem(link);
 		
 		row.setDate(DateUtils.addSeconds(milestone.getDueDate(), 4));
-		row.setFormattedDate(getFormattedDate(row.getDate(), false));
+		row.setFormattedDate(activityRowsFactory.getFormattedDate(row.getDate(), false));
 		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setActionTarget(ActionTarget.milestone);
 		return row;
@@ -532,12 +532,12 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 				.collect(Collectors.groupingBy(this::createActivityKey))
 				.values()
 				.stream()
-				.map(this::createActivityRowData)
+				.map(activityRowsFactory::createActivityRowData)
 				.toList();
 		
 		activities.sort((a1, a2) -> a2.getCreationDate().compareTo(a1.getCreationDate()));
 		for (ActivityRowData activityRowData : activityRowDatas) {
-			addActivityRows(ureq, rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
+			activityRowsFactory.addActivityRows(ureq, rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		}
 		
 		return activities;
@@ -560,266 +560,8 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		}
 	}
 
-	private void addActivityRows(UserRequest ureq, List<ProjTimelineRow> rows, ActivityRowData activityRowData,
-			ProjArtefactItems artefactItems, Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		switch (activityRowData.lastActivity().getActionTarget()) {
-		case project: addActivityProjectRows(ureq, rows, activityRowData);
-		case file: addActivityFileRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case toDo: addActivityToDoRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case note: addActivityNoteRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case appointment: addActivityAppointmentRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		case milestone: addActivityMilestoneRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
-		default: //
-		}
-	}
-
-	private void addActivityProjectRows(UserRequest ureq, List<ProjTimelineRow> rows, ActivityRowData activityRowData) {
-		ProjTimelineRow row = new ProjTimelineRow();
-		
-		ProjActivity activity = activityRowData.lastActivity();
-		String message = null;
-		switch (activity.getAction()) {
-		case projectCreate: message = translate("timeline.activity.project.create"); break;
-		case projectContentUpdate: message = translate("timeline.activity.project.content.update"); break;
-		case projectStatusActive: message = translate("timeline.activity.project.status.active"); break;
-		case projectStatusDone: message = translate("timeline.activity.project.status.done"); break;
-		case projectStatusDelete: message = translate("timeline.activity.project.status.deleted"); break;
-		case projectImageAvatarUpdate: message = translate("timeline.activity.project.image.update.avatar"); break;
-		case projectImageBackgroundUpdate: message = translate("timeline.activity.project.image.update.background"); break;
-		case projectMemberAdd: {
-			Identity member = activity.getMember();
-			if (member != null) {
-				message = translate("timeline.activity.project.member.add", userManager.getUserDisplayName(member.getKey()));
-				addAvatarIcon(ureq, row, member);
-			}
-			break;
-		}
-		case projectMemberRemove: {
-			Identity member = activity.getMember();
-			if (member != null) {
-				message = translate("timeline.activity.project.member.remove", userManager.getUserDisplayName(member.getKey()));
-				addAvatarIcon(ureq, row, member);
-			}
-			break;
-		}
-		default: //
-		}
-		
-		if (message == null) {
-			return;
-		}
-		row.setMessage(getMessageWithCount(message, activityRowData.numActivities()));
-		
-		Set<Long> identityKeys = new HashSet<>(2);
-		identityKeys.addAll(activityRowData.doerKeys);
-		if (activity.getMember() != null) {
-			identityKeys.add(activity.getMember().getKey());
-		}
-		row.setIdentityKeys(identityKeys);
-		
-		row.setDate(activity.getCreationDate());
-		row.setFormattedDate(getFormattedDate(row.getDate(), true));
-		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
-		row.setDoerDisplyName(getDoerDisplayName(activityRowData.doerKeys()));
-		addStaticMessageItem(row);
-		
-		if (row.getIconItem() == null) {
-			addActionIconItem(row, activity, null);
-		}
-		
-		rows.add(row);
-	}
-	
-	private void addActivityFileRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
-			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
-		}
-		ProjFile file = artefactItems.getFile(activity.getArtefact());
-		if (file == null) {
-			return;
-		}
-		
-		String displayName = ProjectUIFactory.getDisplayName(file);
-		String iconCSS = CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename());
-		switch (activity.getAction()) {
-		case fileCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.file.create", displayName), iconCSS); break;
-		case fileUpload: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.file.upload", displayName), iconCSS); break;
-		case fileEdit: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.file.edit", displayName), iconCSS); break;
-		case fileStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.file.delete", displayName), iconCSS); break;
-		case fileContentUpdate: {
-			List<ProjActivity> changedActivities = activityRowData.activities().stream()
-					.filter(a -> {
-						String after = ProjectXStream.fromXml(a.getAfter(), ProjFile.class).getVfsMetadata().getTitle();
-						String before = ProjectXStream.fromXml(a.getBefore(), ProjFile.class).getVfsMetadata().getTitle();
-						return !Objects.equals(after, before);
-					})
-					.collect(Collectors.toList());
-			if (!changedActivities.isEmpty()) {
-				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.file.update.title", displayName), iconCSS);
-				
-			}
-			changedActivities = activityRowData.activities().stream()
-					.filter(a -> {
-						String after = ProjectXStream.fromXml(a.getAfter(), ProjFile.class).getVfsMetadata().getFilename();
-						String before = ProjectXStream.fromXml(a.getBefore(), ProjFile.class).getVfsMetadata().getFilename();
-						return !Objects.equals(after, before);
-					})
-					.collect(Collectors.toList());
-			if (!changedActivities.isEmpty()) {
-				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.file.update.filename", displayName), iconCSS);
-				
-			}
-			break;
-		}
-		default: //
-		}
-	}
-	
-	private void addActivityToDoRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
-			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
-		}
-		ProjToDo toDo = artefactItems.getToDo(activity.getArtefact());
-		if (toDo == null) {
-			return;
-		}
-		
-		String displayName = ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask());
-		switch (activity.getAction()) {
-		case toDoCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.todo.create", displayName)); break;
-		case toDoStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.todo.delete", displayName)); break;
-		case toDoContentUpdate: {
-			List<ProjActivity> changedActivities = activityRowData.activities().stream()
-					.filter(a -> {
-						ToDoTask before = ProjectXStream.fromXml(activity.getBefore(), ProjToDo.class).getToDoTask();
-						ToDoTask after = ProjectXStream.fromXml(activity.getAfter(), ProjToDo.class).getToDoTask();
-						Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
-						Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
-						return !Objects.equals(afterDueDate, beforeDueDate);
-					})
-					.collect(Collectors.toList());
-			if (!changedActivities.isEmpty()) {
-				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.todo.edit.due.date", displayName));
-			}
-			break;
-		}
-		default: //
-		}
-	}
-	
-	private void addActivityNoteRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
-			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
-		}
-		ProjNote note = artefactItems.getNote(activity.getArtefact());
-		if (note == null) {
-			return;
-		}
-		
-		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), note);
-		switch (activity.getAction()) {
-		case noteCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.note.create", displayName)); break;
-		case noteContentUpdate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.note.update.content", displayName)); break;
-		case noteStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.note.delete", displayName)); break;
-		default: //
-		}
-	}
-	
-	private void addActivityAppointmentRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
-			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
-		}
-		ProjAppointment appointment = artefactItems.getAppointment(activity.getArtefact());
-		if (appointment == null) {
-			return;
-		}
-		
-		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), appointment);
-		switch (activity.getAction()) {
-		case appointmentCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.appointment.create", displayName)); break;
-		case appointmentStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.appointment.delete", displayName)); break;
-		default: //
-		}
-	}
-	
-	private void addActivityMilestoneRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
-			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
-		ProjActivity activity = activityRowData.lastActivity();
-		if (activity.getArtefact() == null) {
-			return;
-		}
-		ProjMilestone milestone = artefactItems.getMilestone(activity.getArtefact());
-		if (milestone == null) {
-			return;
-		}
-		
-		String displayName = ProjectUIFactory.getDisplayName(getTranslator(), milestone);
-		switch (activity.getAction()) {
-		case milestoneCreate: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.milestone.create", displayName)); break;
-		case milestoneStatusDelete: addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, translate("timeline.activity.milestone.delete", displayName)); break;
-		case milestoneContentUpdate: {
-			List<ProjActivity> changedActivities = activityRowData.activities().stream()
-					.filter(a -> {
-						Date after = ProjectXStream.fromXml(a.getAfter(), ProjMilestone.class).getDueDate();
-						Date before = ProjectXStream.fromXml(a.getBefore(), ProjMilestone.class).getDueDate();
-						return !Objects.equals(after, before);
-					})
-					.collect(Collectors.toList());
-			if (!changedActivities.isEmpty()) {
-				addArtefactRow(rows, createActivityRowData(changedActivities), artefactKeyToIdentityKeys, translate("timeline.activity.milestone.edit.due.date", displayName));
-			}
-			break;
-		}
-		default: //
-		}
-	}
-	
-	private void addArtefactRow(List<ProjTimelineRow> rows, ActivityRowData activityRowData, Map<Long, Set<Long>> artefactKeyToIdentityKeys, String message) {
-		addArtefactRow(rows, activityRowData, artefactKeyToIdentityKeys, message, null);
-	}
-	
-	private void addArtefactRow(List<ProjTimelineRow> rows, ActivityRowData activityRowData, Map<Long, Set<Long>> artefactKeyToIdentityKeys, String message, String iconCss) {
-		ProjTimelineRow row = new ProjTimelineRow();
-		
-		ProjActivity activity = activityRowData.lastActivity();
-		Set<Long> identityKeys = new HashSet<>(2);
-		identityKeys.addAll(activityRowData.doerKeys);
-		identityKeys.addAll(artefactKeyToIdentityKeys.getOrDefault(activity.getArtefact().getKey(), Set.of()));
-		row.setIdentityKeys(identityKeys);
-		
-		row.setMessage(getMessageWithCount(message, activityRowData.numActivities()));
-		row.setDate(activity.getCreationDate());
-		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
-		row.setFormattedDate(getFormattedDate(row.getDate(), true));
-		row.setDoerDisplyName(getDoerDisplayName(activityRowData.doerKeys()));
-	
-		addArtefactMesssageItem(row,activity.getArtefact());
-		addActionIconItem(row, activity ,iconCss);
-		
-		rows.add(row);
-	}
-
-	private String getDoerDisplayName(Set<Long> doerKeys) {
-		return doerKeys.size() == 1
-				? userManager.getUserDisplayName(new ArrayList<>(doerKeys).get(0))
-				: translate("timeline.doers.multi");
-	}
-	
-	private String getMessageWithCount(String message, int numActivities) {
-		return numActivities == 1
-				? message
-				: translate("timeline.message.num", message, String.valueOf(numActivities));
-	}
-
-	private void addArtefactMesssageItem(ProjTimelineRow row, ProjArtefact artefact) {
+	@Override
+	public void addArtefactMesssageItem(ProjTimelineRow row, ProjArtefact artefact) {
 		if (artefact != null && ProjectStatus.deleted != artefact.getStatus()) {
 			FormLink link = uifactory.addFormLink("art_" + counter++, CMD_ARTEFACT, row.getMessage(), null, flc, Link.LINK + Link.NONTRANSLATED);
 			String url = ProjectBCFactory.getArtefactUrl(project, artefact.getType(), artefact.getKey());
@@ -831,38 +573,27 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 		}
 	}
 
-	private void addStaticMessageItem(ProjTimelineRow row) {
+	@Override
+	public void addStaticMessageItem(ProjTimelineRow row) {
 		StaticTextElement messageItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, row.getMessage(), flc);
 		messageItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setMessageItem(messageItem);
 	}
 
-	private void addActionIconItem(ProjTimelineRow row, ProjActivity activity, String iconCss) {
-		String iconCssClass = iconCss;
-		if (!StringHelper.containsNonWhitespace(iconCssClass)) {
-			iconCssClass = ProjectUIFactory.getActionIconCss(activity.getAction());
-		}
-		String icon = "<i class=\"o_icon o_icon-lg " + iconCssClass +"\"> </i>";
+	@Override
+	public void addActionIconItem(ProjTimelineRow row, ProjActivity activity) {
+		String icon = "<i class=\"o_icon o_icon-lg " + row.getIconCssClass() +"\"> </i>";
 		StaticTextElement iconItem = uifactory.addStaticTextElement("o_tl_" + counter++, null, icon, flc);
 		iconItem.setDomWrapperElement(DomWrapperElement.span);
 		row.setIconItem(iconItem);
 	}
 
-	private void addAvatarIcon(UserRequest ureq, ProjTimelineRow row, Identity member) {
+	@Override
+	public void addAvatarIcon(UserRequest ureq, ProjTimelineRow row, Identity member) {
 		UsersPortraitsComponent portraitComp = UsersPortraitsFactory.create(ureq, "portrair_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
 		portraitComp.setUsers(UsersPortraitsFactory.createPortraitUsers(List.of(member)));
 		portraitComp.setSize(PortraitSize.small);
 		row.setIconItem(new ComponentWrapperElement(portraitComp));
-	}
-	
-	private String getFormattedDate(Date date, boolean todayWithTime) {
-		if (DateUtils.isSameDay(new Date(), date)) {
-			if (todayWithTime) {
-				return translate("today") + "<br>" + formatter.formatTimeShort(date);
-			}
-			return translate("today");
-		}
-		return formatter.formatDate(date);
 	}
 
 	private void resetRangeLinks() {
@@ -1065,15 +796,6 @@ public class ProjTimelineController extends FormBasicController implements Flexi
 				activity.getMember() != null? activity.getMember().getKey(): null);
 	}
 	
-	private static record ActivityKey(ProjActivity.Action action, Date date, Long projectKey, Long artefactKey, Long memeberKey) {}
-	
-	private ActivityRowData createActivityRowData(List<ProjActivity> activities) {
-		activities.sort((a1, a2) -> a2.getCreationDate().compareTo(a1.getCreationDate()));
-		Set<Long> doers = activities.stream().map(activity -> activity.getDoer().getKey()).collect(Collectors.toSet());
-		return new ActivityRowData(activities, activities.get(0), activities.get(activities.size()-1), activities.size(), doers);
-	}
-	
-	private static record ActivityRowData(List<ProjActivity> activities, ProjActivity lastActivity, ProjActivity earliestActivity, int numActivities, Set<Long> doerKeys) {}
 	
 	private final class TimelineRowFilter implements Predicate<ProjTimelineRow> {
 		

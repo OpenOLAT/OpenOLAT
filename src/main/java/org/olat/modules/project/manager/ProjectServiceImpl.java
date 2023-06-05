@@ -51,6 +51,10 @@ import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.services.doceditor.DocEditorService;
 import org.olat.core.commons.services.doceditor.DocumentSavedEvent;
+import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.PublisherData;
+import org.olat.core.commons.services.notifications.Subscriber;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
@@ -124,6 +128,7 @@ import org.olat.modules.project.model.ProjMilestoneInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
 import org.olat.modules.project.model.ProjProjectImpl;
 import org.olat.modules.project.model.ProjToDoInfoImpl;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
 import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
@@ -189,6 +194,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjTagDAO tagDao;
 	@Autowired
 	private TagService tagService;
+	@Autowired
+	private NotificationsManager notificationManager;
 	
 	@PostConstruct
 	private void init() {
@@ -461,6 +468,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			activityDao.create(Action.projectRolesUpdate, rolesBeforeXml, null, doer, project, identity);
 			activityDao.create(Action.projectMemberRemove, null, null, doer, project, identity);
 			
+			Subscriber subscriber = notificationManager.getSubscriber(identity, getSubscriptionContext(project));
+			if (subscriber != null) {
+				notificationManager.deleteSubscriber(subscriber.getKey());
+			}
+			
 			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 			searchParams.setProject(project);
 			milestoneDao.loadMilestones(searchParams).forEach(milestone -> calendarHelper.deleteEvent(milestone, identity));
@@ -493,6 +505,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		if (currentRoles.isEmpty()) {
 			activityDao.create(Action.projectMemberAdd, null, null, doer, project, identity);
+				
+			notificationManager.subscribe(identity, getSubscriptionContext(project), getPublisherData(project));
 			
 			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 			searchParams.setProject(project);
@@ -612,6 +626,16 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public ProjProjectUserInfo updateProjectUserInfo(ProjProjectUserInfo projectUserInfo) {
 		return projectUserInfoDao.save(projectUserInfo);
+	}
+	
+	@Override
+	public SubscriptionContext getSubscriptionContext(ProjProject project) {
+		return new SubscriptionContext(ProjProject.TYPE, project.getResourceableId(), ProjProject.TYPE);
+	}
+	
+	@Override
+	public PublisherData getPublisherData(ProjProject project) {
+		return new PublisherData(ProjProject.TYPE, "", ProjectBCFactory.getBusinessPath(project, null, null));
 	}
 	
 	

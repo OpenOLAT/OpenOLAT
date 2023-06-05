@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
+import org.olat.core.commons.services.notifications.ui.ContextualSubscriptionController;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
@@ -106,6 +107,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjConfirmationController deleteConfirmationCtrl;
 	private DialogBoxController reopenConfirmationCtrl;
 	private ProjMembersManagementController membersManagementCtrl;
+	private ContextualSubscriptionController subscriptionCtrl;
 	private ProjQuickStartWidgetController quickWidgetCtrl;
 	private ProjFileWidgetController fileWidgetCtrl;
 	private ProjFileAllController fileAllCtrl;
@@ -186,6 +188,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 		usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users", mainVC, null, avatarMapperKey);
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setUsers(portraitUsers);
+		
+		subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+				projectService.getSubscriptionContext(project),
+				projectService.getPublisherData(project));
+		listenTo(subscriptionCtrl);
+		mainVC.put("subscription", subscriptionCtrl.getInitialComponent());
 		
 		//Widgets
 		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewNotes()

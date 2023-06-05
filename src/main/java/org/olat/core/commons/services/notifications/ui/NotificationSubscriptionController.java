@@ -62,6 +62,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.project.ProjProject;
 import org.olat.repository.ui.RepositoyUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -229,6 +230,8 @@ public class NotificationSubscriptionController extends FormBasicController {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass("CourseModule"));
 			} else if ("CalendarManager.group".equals(pub.getResName())) {
 				iconCssClass = CSSHelper.getIconCssClassFor(CSSHelper.CSS_CLASS_GROUP);
+			} else if (ProjProject.TYPE.equals(pub.getResName())) {
+				iconCssClass = CSSHelper.getIconCssClassFor("o_icon_proj_project");
 			} else {
 				iconCssClass = CSSHelper.getIconCssClassFor(RepositoyUIFactory.getIconCssClass(pub.getResName()));
 			}
