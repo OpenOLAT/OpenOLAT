@@ -67,7 +67,7 @@
 		
 		<!-- Dependency versions -->
 		<org.springframework.version>6.0.9</org.springframework.version>
-		<org.hibernate.version>6.2.3.Final</org.hibernate.version>
+		<org.hibernate.version>6.2.4.Final</org.hibernate.version>
 		<org.hibernate.validator.version>8.0.0.Final</org.hibernate.validator.version>
 		<org.glassfish.jaxb.runtime>4.0.2</org.glassfish.jaxb.runtime>
 		<apache.cxf>4.0.1</apache.cxf>
@@ -79,10 +79,10 @@
 		<io.jsonwebtoken>0.11.5</io.jsonwebtoken>
 		<io.undertow>2.3.6.Final</io.undertow>
 		<jackson.version>2.15.2</jackson.version>
-		<swagger.ui.version>4.18.2</swagger.ui.version>
+		<swagger.ui.version>4.19.0</swagger.ui.version>
 		<com.mysql.version>8.0.33</com.mysql.version>
 		<org.postgresql.version>42.6.0</org.postgresql.version>
-		<org.infinispan.version>14.0.9.Final</org.infinispan.version>
+		<org.infinispan.version>14.0.10.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>4.9.1</version.selenium>
 		<activemq.artemis.version>2.28.0</activemq.artemis.version>
