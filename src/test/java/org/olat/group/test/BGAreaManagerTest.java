@@ -101,13 +101,27 @@ public class BGAreaManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check by reloading the area
-		BGArea reloadedArea = areaManager.reloadArea(area);
+		BGArea reloadedArea = areaManager.loadArea(area);
 		Assert.assertNotNull(reloadedArea);
 		Assert.assertNotNull(reloadedArea.getCreationDate());
 		Assert.assertNotNull(reloadedArea.getResource());
 		Assert.assertEquals(areaName, reloadedArea.getName());
 		Assert.assertEquals(description, reloadedArea.getDescription());
 		Assert.assertEquals(resource, reloadedArea.getResource());
+	}
+	
+	@Test
+	public void testLoadByKey() {
+		//create a resource with areas
+		OLATResource resource = JunitTestHelper.createRandomResource();
+		String areaName = UUID.randomUUID().toString();
+		BGArea area = areaManager.createAndPersistBGArea("load-21-" + areaName, "description:" + areaName, resource);
+		dbInstance.commitAndCloseSession();
+
+		//check by loading 1 area
+		BGArea loadedArea = areaManager.loadArea(area.getKey());
+		Assert.assertNotNull(loadedArea);
+		Assert.assertEquals(area, loadedArea);
 	}
 	
 	@Test
