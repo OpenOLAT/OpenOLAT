@@ -51,8 +51,6 @@ import org.hibernate.stat.Statistics;
 import org.infinispan.hibernate.cache.v60.InfinispanRegionFactory;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.configuration.Destroyable;
-import org.olat.core.id.Persistable;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.Tracing;
 
@@ -329,11 +327,6 @@ public class DBImpl implements DB, Destroyable {
 		}
 		data.remove();
 	}
-  
-	private boolean contains(Object object) {
-		EntityManager em = getCurrentEntityManager();
-		return em.contains(object);
-	}
 
 	/**
 	 * Delete an object.
@@ -422,74 +415,6 @@ public class DBImpl implements DB, Destroyable {
 
 	private boolean hasTransaction() {
 		return getData().hasTransaction();
-	}
-
-	/**
-	 * see DB.loadObject(Persistable persistable, boolean forceReloadFromDB)
-	 * 
-	 * @param persistable
-	 * @return the loaded object
-	 */
-	@Override
-	public Persistable loadObject(Persistable persistable) {
-		return loadObject(persistable, false);
-	}
-
-	/**
-	 * loads an object if needed. this makes sense if you have an object which had
-	 * been generated in a previous hibernate session AND you need to access a Set
-	 * or a attribute which was defined as a proxy.
-	 * 
-	 * @param persistable the object which needs to be reloaded
-	 * @param forceReloadFromDB if true, force a reload from the db (e.g. to catch
-	 *          up to an object commited by another thread which is still in this
-	 *          thread's session cache
-	 * @return the loaded Object
-	 */
-	@Override
-	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB) {
-		if (persistable == null) throw new AssertException("persistable must not be null");
-
-		EntityManager em = getCurrentEntityManager();
-		Class<? extends Persistable> theClass = persistable.getClass();
-		if (forceReloadFromDB) {
-			// we want to reload it from the database.
-			// there are 3 scenarios possible:
-			// a) the object is not yet in the hibernate cache
-			// b) the object is in the hibernate cache
-			// c) the object is detached and there is an object with the same id in the hibernate cache
-			
-			if (contains(persistable)) {
-				// case b - then we can use evict and load
-				evict(em, persistable, getData());
-				return em.find(theClass, persistable.getKey());
-			} else {
-				// case a or c - unfortunatelly we can't distinguish these two cases
-				// and session.refresh(Object) doesn't work.
-				// the only scenario that works is load/evict/load
-				Persistable attachedObj = em.find(theClass, persistable.getKey());
-				evict(em, attachedObj, getData());
-				return em.find(theClass, persistable.getKey());
-			}
-		} else if (!contains(persistable)) { 
-			// forceReloadFromDB is false - hence it is OK to take it from the cache if it would be there
-			// now this object directly is not in the cache, but it's possible that the object is detached
-			// and there is an object with the same id in the hibernate cache.
-			// therefore the following loadObject can either return it from the cache or load it from the DB
-			return em.find(theClass, persistable.getKey());
-		} else { 
-			// nothing to do, return the same object
-			return persistable;
-		}
-	}
-	
-	private void evict(EntityManager em, Object object, ThreadLocalData localData) {
-		try {
-			getSession(em).evict(object);			
-		} catch (Exception e) {
-			localData.setError(e);
-			throw new DBRuntimeException("Error in evict() Object from Database. ", e);
-		}
 	}
 
 	@Override

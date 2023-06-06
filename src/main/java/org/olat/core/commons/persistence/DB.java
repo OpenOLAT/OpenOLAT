@@ -31,7 +31,6 @@ import jakarta.persistence.EntityManager;
 import org.hibernate.event.spi.PostUpdateEventListener;
 import org.hibernate.stat.Statistics;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.olat.core.id.Persistable;
 
 public interface DB {
 	
@@ -66,28 +65,6 @@ public interface DB {
 	 * @param object
 	 */
 	public void updateObject(Object object);
-
-	/**
-	 * see DB.loadObject(Persistable persistable, boolean forceReloadFromDB)
-	 * 
-	 * @param persistable
-	 * @return the loaded object, never null
-	 */
-	public Persistable loadObject(Persistable persistable);
-
-	/**
-	 * loads an object if needed. this makes sense if you have an object which had
-	 * been generated in a previous hibernate session AND you need to access a Set
-	 * or a attribute which was defined as a proxy.
-	 * 
-	 * @param persistable the object which needs to be reloaded
-	 * @param forceReloadFromDB if true, force a reload from the db (e.g. to catch
-	 *          up to an object commited by another thread which is still in this
-	 *          thread's session cache
-	 * @return the loaded Object, never null
-	 */
-	public Persistable loadObject(Persistable persistable, boolean forceReloadFromDB);
-
 	
 	/**
 	 * Call this to commit current changes.

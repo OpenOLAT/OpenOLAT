@@ -173,9 +173,9 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		Boolean result = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(projectOres, new SyncerCallback<Boolean>() {
 			@Override
 			public Boolean execute() {
-				if ( existsProject( project.getKey() ) ) {
+				if ( existsProject(project.getKey()) ) {
 					// For cluster-safe : reload project object here another node might have changed this in the meantime
-					Project reloadedProject = (Project) dbInstance.loadObject(project, true);					
+					Project reloadedProject = getProject(project.getKey());		
 					
 					if(debug) {
 						log.debug("enrollProjectParticipant: project.getMaxMembers()={}", reloadedProject.getMaxMembers());
@@ -225,7 +225,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 			public Boolean execute() {
 				if ( existsProject( project.getKey() ) ) {
 					// For cluster-safe : reload project object here another node might have changed this in the meantime
-					Project reloadedProject = (Project) dbInstance.loadObject(project, true);					
+					Project reloadedProject = getProject(project.getKey());					
 					// User can only cancel enrollment, when state is 'NOT_ASSIGNED'
 					if (canBeCancelEnrollmentBy(identity, project, moduleConfig)) {
 						businessGroupRelationDao.removeRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
@@ -265,7 +265,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
 		
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
-			Project reloadedProject = (Project) dbInstance.loadObject(project, true);
+			Project reloadedProject = getProject(project.getKey());
 			BusinessGroup projectGroup = reloadedProject.getProjectGroup();
 			// delete first candidate-group, project-group will be deleted after deleting project
 			SecurityGroup candidateGroup = reloadedProject.getCandidateGroup();
@@ -443,7 +443,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		}
 		log.debug("All projects are deleted for ProjectBroker={}", projectBroker);
 		projectGroupManager.deleteAccountManagerGroup(courseEnvironment.getCoursePropertyManager(), courseNode, deletedBy);
-		ProjectBroker reloadedProjectBroker = (ProjectBroker) dbInstance.loadObject(projectBroker, true);		
+		ProjectBroker reloadedProjectBroker = getProjectBroker(projectBroker.getKey());		
 		dbInstance.deleteObject(reloadedProjectBroker);
 		// invalid with removing from cache
 		projectCache.remove(projectBrokerId.toString());
@@ -606,7 +606,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		OLATResourceable projectBrokerOres = OresHelper.createOLATResourceableInstance(this.getClass(),projectBrokerId);
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( projectBrokerOres, () -> {
 			// For cluster-safe : reload project object here another node might have changed this in the meantime
-			Project reloadedProject = (Project) dbInstance.loadObject(project, true);		
+			Project reloadedProject = getProject(project.getKey());		
 			reloadedProject.setState(state);
 			updateProjectAndInvalidateCache(reloadedProject);
 		});	
@@ -675,7 +675,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	private void updateProjectAndInvalidateCache(final Project project) {
 		// avoid hibernate exception : object with same identifier already exist in session.
 		// reload object from db, because project is a detached object but could be already in hibernate session
-		ProjectImpl reloadedProject = (ProjectImpl) dbInstance.loadObject(project, true);
+		ProjectImpl reloadedProject = (ProjectImpl)getProject(project.getKey());
 		// set all value on reloadedProject with values from updated project
 		reloadedProject.setTitle(project.getTitle());
 		reloadedProject.setState(project.getState());

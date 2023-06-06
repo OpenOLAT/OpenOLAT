@@ -61,7 +61,13 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	
 	@Override
 	public BGArea loadArea(Long key) {
-		return dbInstance.getCurrentEntityManager().find(BGAreaImpl.class, key);
+		StringBuilder sb = new StringBuilder();
+		sb.append("select area from ").append(BGAreaImpl.class.getName()).append(" area ")
+		  .append(" where area.key=:areaKey");
+
+		List<BGArea> areas = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BGArea.class)
+				.setParameter("areaKey", key).getResultList();
+		return areas == null || areas.isEmpty() ? null : areas.get(0);
 	}
 
 	@Override
@@ -345,8 +351,9 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	}
 
 	@Override
-	public BGArea reloadArea(BGArea area) {
-		return (BGArea) dbInstance.loadObject(area);
+	public BGArea loadArea(BGArea area) {
+		if(area == null || area.getKey() == null) return null;
+		return this.loadArea(area.getKey());
 	}
 
 	@Override

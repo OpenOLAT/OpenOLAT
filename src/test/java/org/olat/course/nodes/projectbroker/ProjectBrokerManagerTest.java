@@ -47,7 +47,6 @@ import org.junit.Test;
 import org.olat.basesecurity.SecurityGroupImpl;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
@@ -99,7 +98,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 				resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 				log.info("Demo course imported - resourceableId: " + resourceableId);
 			}
-			DBFactory.getInstance().closeSession();
+			dbInstance.commitAndCloseSession();
 		} catch (Exception e) {
 			log.error("", e);
 			fail(e.getMessage());
@@ -304,7 +303,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		ProjectBroker projectBroker = projectBrokerManager.createAndSaveProjectBroker();
 		Long idProjectBroker = projectBroker.getKey();
 		Project testProjectA = createProject("updateTest", id1, idProjectBroker, resourceableId );
-		DBFactory.getInstance().closeSession();
+		dbInstance.commitAndCloseSession();
 		// testProjectA is now a detached-object
 		// Update 1
 		String updateTitle = "thema updateProject-Test update1";
@@ -316,7 +315,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		projectBrokerManager.updateProject(testProjectA);
 		dbInstance.closeSession();
 		// testProjectA is now a detached-object again
-		Project reloadedProject = (Project) dbInstance.loadObject(testProjectA, true);
+		Project reloadedProject = projectBrokerManager.getProject(testProjectA.getKey());
 		assertEquals("Wrong updated title 1",updateTitle,reloadedProject.getTitle());
 		// Update 2
 		String updateTitle2 = "thema updateProject-Test update2";
@@ -348,7 +347,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		testProjectA.setProjectEvent(projectEventHandout);
 		dbInstance.closeSession();
 		
-		reloadedProject = (Project) DBFactory.getInstance().loadObject(testProjectA, true);
+		reloadedProject = projectBrokerManager.getProject(testProjectA.getKey());
 		assertEquals("Wrong updated title 2",updateTitle2,reloadedProject.getTitle());
 		assertEquals("Wrong description",updateDescription,reloadedProject.getDescription());
 		assertEquals("Wrong state",updateState,reloadedProject.getState());
