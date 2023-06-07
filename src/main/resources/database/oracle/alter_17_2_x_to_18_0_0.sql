@@ -410,3 +410,58 @@ create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
 
 create index idx_ce_log_to_page_idx on o_ce_audit_log (fk_page);
 
+
+-- Open Badges
+create table o_badge_template (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_image varchar(256) not null,
+   b_name varchar(256) not null,
+   b_description varchar(1024),
+   b_tags varchar(256),
+   b_category varchar(128),
+   b_scopes varchar(128),
+   b_placeholders varchar(1024),
+   primary key (id)
+);
+
+create table o_badge_class (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_version varchar(32) not null,
+   b_image varchar(256) not null,
+   b_name varchar(256) not null,
+   b_description varchar(1024) not null,
+   b_criteria varchar(1024) not null,
+   b_issuer varchar(1024) not null,
+   b_tags varchar(256),
+   primary key (id)
+);
+
+create table o_badge_assertion (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_recipient varchar(1024) not null,
+   b_verification varchar(256) not null,
+   b_issued_on date not null,
+   b_baked_image varchar(256),
+   b_evidence varchar(256),
+   b_narrative varchar(1024),
+   b_expires date,
+   b_revocation_reason varchar(256),
+   fk_badge_class number(20) not null,
+   primary key (id)
+);
+
+create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
+create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
+
+alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
+create index idx_badge_assertion_class_idx on o_badge_assertion (fk_badge_class);

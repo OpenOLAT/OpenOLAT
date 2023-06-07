@@ -4056,6 +4056,53 @@ create table o_jup_deployment (
    primary key (id)
 );
 
+-- Open Badges
+create table o_badge_template (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_image varchar(256) not null,
+   b_name varchar(256) not null,
+   b_description varchar(1024),
+   b_tags varchar(256),
+   b_category varchar(128),
+   b_scopes varchar(128),
+   b_placeholders varchar(1024),
+   primary key (id)
+);
+create table o_badge_class (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_version varchar(32) not null,
+   b_image varchar(256) not null,
+   b_name varchar(256) not null,
+   b_description varchar(1024) not null,
+   b_criteria varchar(1024) not null,
+   b_issuer varchar(1024) not null,
+   b_tags varchar(256),
+   primary key (id)
+);
+create table o_badge_assertion (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_uuid varchar(36) not null,
+   b_status varchar(256) not null,
+   b_recipient varchar(1024) not null,
+   b_verification varchar(256) not null,
+   b_issued_on datetime not null,
+   b_baked_image varchar(256),
+   b_evidence varchar(256),
+   b_narrative varchar(1024),
+   b_expires datetime,
+   b_revocation_reason varchar(256),
+   fk_badge_class bigint not null,
+   primary key (id)
+);
+
 -- user view
 create view o_bs_identity_short_v as (
    select
@@ -4438,6 +4485,9 @@ alter table o_proj_milestone ENGINE = InnoDB;
 alter table o_proj_activity ENGINE = InnoDB;
 alter table o_jup_hub ENGINE = InnoDB;
 alter table o_jup_deployment ENGINE = InnoDB;
+alter table o_badge_template ENGINE = InnoDB;
+alter table o_badge_class ENGINE = InnoDB;
+alter table o_badge_assertion ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -5354,6 +5404,12 @@ create index idx_jup_deployment_hub_idx on o_jup_deployment (fk_hub);
 
 alter table o_jup_deployment add constraint jup_deployment_tool_deployment_idx foreign key (fk_lti_tool_deployment_id) references o_lti_tool_deployment (id);
 create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_tool_deployment_id);
+
+-- Open Badges
+create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
+create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
+
+alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 
 
 -- Hibernate Unique Key
