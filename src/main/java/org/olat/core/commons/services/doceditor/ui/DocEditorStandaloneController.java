@@ -69,7 +69,7 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		editorCtrl.activate(ureq, entries, state);
 		String title = getWindowTitle(getTranslator(), configs);
-		getWindow().setTitle(getTranslator(), StringHelper.escapeHtml(title));
+		getWindow().setTitle(getTranslator(), title);
 	}
 	
 	public static String getWindowTitle(Translator translator, DocEditorConfigs editorConfigs) {
