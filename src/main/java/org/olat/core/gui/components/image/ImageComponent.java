@@ -160,6 +160,8 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 					realSize = CoreSpringFactory.getImpl(ImageService.class).getSize(media, suffix);
 				} else if(suffix.equalsIgnoreCase("mp4") || suffix.equalsIgnoreCase("m4v") || suffix.equalsIgnoreCase("flv"))  {
 					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);
+				} else if(suffix.equalsIgnoreCase("svg+xml")) {
+					realSize = CoreSpringFactory.getImpl(MovieService.class).getSize(media, suffix);
 				}
 			}
 		}
@@ -341,6 +343,9 @@ public class ImageComponent extends AbstractComponent implements Disposable {
 		}
 		if(contentType.indexOf("flv") >= 0) {
 			return "flv";
+		}
+		if(contentType.indexOf("svg+xml") >= 0) {
+			return "svg+xml";
 		}
 		return null;
 	}
