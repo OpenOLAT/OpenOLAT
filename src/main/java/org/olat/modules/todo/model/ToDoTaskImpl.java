@@ -89,7 +89,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@Column(name="t_done_date", nullable=true, insertable=true, updatable=true)
 	private Date doneDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="p_deleted_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="t_deleted_date", nullable=true, insertable=true, updatable=true)
 	private Date deletedDate;
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
@@ -106,7 +106,7 @@ public class ToDoTaskImpl implements ToDoTask, Persistable {
 	@Column(name="t_origin_deleted", nullable=false, insertable=true, updatable=true)
 	private boolean originDeleted;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="p_origin_deleted_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="t_origin_deleted_date", nullable=true, insertable=true, updatable=true)
 	private Date originDeletedDate;
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_origin_deleted_by", nullable=false, insertable=true, updatable=true)
