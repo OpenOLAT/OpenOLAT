@@ -1,0 +1,15 @@
+<style>
+	.o_badge_assertions .table-condensed > tbody > tr > td {
+		vertical-align: middle;
+	}
+	.o_badge_assertions .o_image {
+		padding: 6px;
+	}
+</style>
+<fieldset class="o_form o_badge_assertions">
+	<div class="o_hint">$r.translate("admin.assertions.hint")</div>
+	$r.render("assertions")
+	<div class="o_button_group">
+		$r.render("add")
+	</div>
+</fieldset>
