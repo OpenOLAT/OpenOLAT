@@ -84,6 +84,12 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	private boolean templatePrivate;
 	@Column(name="p_template_public", nullable=false, insertable=true, updatable=true)
 	private boolean templatePublic;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="p_deleted_date", nullable=true, insertable=true, updatable=true)
+	private Date deletedDate;
+	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
+	@JoinColumn(name="fk_deleted_by", nullable=false, insertable=true, updatable=true)
+	private Identity deletedBy;
 	
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=false)
 	@JoinColumn(name="fk_creator", nullable=false, insertable=true, updatable=false)
@@ -145,6 +151,7 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 		return status;
 	}
 
+	@Override
 	public void setStatus(ProjectStatus status) {
 		this.status = status;
 	}
@@ -207,6 +214,26 @@ public class ProjProjectImpl implements ProjProject, Persistable  {
 	@Override
 	public void setTemplatePublic(final boolean templatePublic) {
 		this.templatePublic = templatePublic;
+	}
+
+	@Override
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	@Override
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	@Override
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	@Override
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
 	}
 
 	@Override

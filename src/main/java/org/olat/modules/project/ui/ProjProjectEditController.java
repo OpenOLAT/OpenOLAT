@@ -425,7 +425,7 @@ public class ProjProjectEditController extends FormBasicController {
 		} else if (copyArtefacts && avatarImageEl.getInitialFile() != null) {
 			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.avatar, avatarImageEl.getInitialFile(), avatarImageEl.getInitialFile().getName());
 		} else if (avatarImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(null, targetProject, ProjProjectImageType.avatar);
+			projectService.deleteProjectImage(getIdentity(), targetProject, ProjProjectImageType.avatar);
 		}
 		
 		if (backgroundImageEl.getUploadFile() != null) {
@@ -433,7 +433,7 @@ public class ProjProjectEditController extends FormBasicController {
 		} else if (copyArtefacts && backgroundImageEl.getInitialFile() != null) {
 			projectService.storeProjectImage(getIdentity(), targetProject, ProjProjectImageType.background, backgroundImageEl.getInitialFile(), backgroundImageEl.getInitialFile().getName());
 		} else if (backgroundImageEl.getInitialFile() == null) {
-			projectService.deleteProjectImage(null, targetProject, ProjProjectImageType.background);
+			projectService.deleteProjectImage(getIdentity(), targetProject, ProjProjectImageType.background);
 		}
 		
 		if (copyArtefacts) {

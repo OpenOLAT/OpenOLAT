@@ -21,7 +21,6 @@ package org.olat.modules.openbadges;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Initial date: 2023-05-16<br>

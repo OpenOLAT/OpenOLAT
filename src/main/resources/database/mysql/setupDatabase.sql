@@ -914,10 +914,14 @@ create table o_todo_task (
    t_due_date datetime,
    t_done_date datetime,
    t_type varchar(50),
+   t_deleted_date datetime,
+   fk_deleted_by bigint,
    t_origin_id bigint,
    t_origin_subpath varchar(100),
    t_origin_title varchar(500),
    t_origin_deleted bool default false not null,
+   t_origin_deleted_date datetime,
+   fk_origin_deleted_by bigint,
    fk_group bigint not null,
    primary key (id)
 );
@@ -3902,6 +3906,8 @@ create table o_proj_project (
    p_avatar_css_class varchar(32),
    p_template_private bool default false not null,
    p_template_public bool default false not null,
+   p_deleted_date datetime,
+   fk_deleted_by bigint,
    fk_creator bigint not null,
    fk_group bigint not null,
    primary key (id)
@@ -3929,6 +3935,8 @@ create table o_proj_artefact (
    p_type varchar(32),
    p_content_modified_date datetime not null,
    fk_content_modified_by bigint not null,
+   p_deleted_date datetime,
+   fk_deleted_by bigint,
    p_status varchar(32),
    fk_project bigint not null,
    fk_creator bigint not null,

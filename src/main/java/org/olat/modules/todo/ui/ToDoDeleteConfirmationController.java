@@ -57,7 +57,7 @@ public class ToDoDeleteConfirmationController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layout = (FormLayoutContainer)formLayout;
-			layout.contextPut("message", translate("task.delete.conformation.message", toDoTask.getTitle()));
+			layout.contextPut("message", translate("task.delete.conformation.message", ToDoUIFactory.getDisplayName(getTranslator(), toDoTask)));
 			
 			FormLayoutContainer confirmCont = FormLayoutContainer.createDefaultFormLayout("confirm", getTranslator());
 			formLayout.add("confirm", confirmCont);

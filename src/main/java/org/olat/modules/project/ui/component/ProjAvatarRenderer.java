@@ -51,6 +51,8 @@ public class ProjAvatarRenderer extends DefaultComponentRenderer implements Comp
 				sb.append("o_proj_avatar_large ");
 			} else if (Size.medium == avatar.getSize()) {
 				sb.append("o_proj_avatar_medium ");
+			} else if (Size.small == avatar.getSize()) {
+				sb.append("o_proj_avatar_small ");
 			}
 			sb.append("\">");
 			if (isImageAvailable) {

@@ -90,6 +90,7 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldUpdate() {
+		Identity deletedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ToDoTask toDoTask = createRandomToDoTask();
 		
 		String title = random();
@@ -106,6 +107,9 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		toDoTask.setStartDate(startDate);
 		Date dueDate= DateUtils.addDays(new Date(), 2);
 		toDoTask.setDueDate(dueDate);
+		Date deletedDate = DateUtils.addDays(new Date(), 1);
+		toDoTask.setDeletedDate(deletedDate);
+		toDoTask.setDeletedBy(deletedBy);
 		
 		sut.save(toDoTask);
 		dbInstance.commitAndCloseSession();
@@ -121,6 +125,8 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(reloaded.getExpenditureOfWork()).isEqualTo(expenditureOfWork);
 		assertThat(reloaded.getStartDate()).isCloseTo(startDate, 1000);
 		assertThat(reloaded.getDueDate()).isCloseTo(dueDate, 1000);
+		assertThat(reloaded.getDeletedDate()).isCloseTo(deletedDate, 1000);
+		assertThat(reloaded.getDeletedBy()).isEqualTo(deletedBy);
 	}
 	
 	@Test
@@ -152,14 +158,27 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		ToDoTask toDoTask1 = sut.create(identity, type, originId, originSubPath, null);
 		dbInstance.commitAndCloseSession();
 		
-		sut.save(type, originId, originSubPath, true);
+		Date originDeletedDate = DateUtils.addDays(new Date(), 1);
+		sut.save(type, originId, originSubPath, true, originDeletedDate, identity);
 		dbInstance.commitAndCloseSession();
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setToDoTasks(List.of(toDoTask1));
-		List<ToDoTask> toDoTasks = sut.loadToDoTasks(searchParams);
+		ToDoTask reloaded = sut.loadToDoTasks(searchParams).get(0);
 		
-		assertThat(toDoTasks.get(0).isOriginDeleted()).isTrue();
+		assertThat(reloaded.isOriginDeleted()).isTrue();	
+		assertThat(reloaded.getOriginDeletedDate()).isCloseTo(originDeletedDate, 1000);
+		assertThat(reloaded.getOriginDeletedBy()).isEqualTo(identity);
+		
+		// Undelete
+		sut.save(type, originId, originSubPath, false, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		reloaded = sut.loadToDoTasks(searchParams).get(0);
+		
+		assertThat(reloaded.isOriginDeleted()).isFalse();
+		assertThat(reloaded.getOriginDeletedDate()).isNull();
+		assertThat(reloaded.getOriginDeletedBy()).isNull();
 	}
 	
 	@Test

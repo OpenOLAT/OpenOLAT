@@ -26,6 +26,7 @@ import static org.olat.test.JunitTestHelper.random;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -84,12 +85,17 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 	}
 	
 	public void shouldUpdate() {
+		Identity deletedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjArtefact artefact = createRandomArtefact();
 		
-		artefact.setContentModifiedDate(new Date());
+		Date contentModifiedDate = DateUtils.addDays(new Date(), 1);
+		artefact.setContentModifiedDate(contentModifiedDate);
 		Identity contentModifiedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(miniRandom());
 		artefact.setContentModifiedBy(contentModifiedBy);
 		artefact.setStatus(ProjectStatus.deleted);
+		Date deletedDate = DateUtils.addDays(new Date(), 1);
+		artefact.setDeletedDate(deletedDate);
+		artefact.setDeletedBy(deletedBy);
 		artefact = sut.save(artefact);
 		
 		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
@@ -97,7 +103,10 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		ProjArtefact reloadedArtefact = sut.loadArtefacts(searchParams).get(0);
 		
 		assertThat(reloadedArtefact.getContentModifiedBy()).isEqualTo(contentModifiedBy);
+		assertThat(reloadedArtefact.getContentModifiedDate()).isCloseTo(contentModifiedDate, 1000);
 		assertThat(reloadedArtefact.getStatus()).isEqualTo(ProjectStatus.deleted);
+		assertThat(reloadedArtefact.getDeletedDate()).isCloseTo(deletedDate, 1000);
+		assertThat(reloadedArtefact.getDeletedBy()).isEqualTo(deletedBy);
 	}
 	
 	@Test
@@ -197,6 +206,24 @@ public class ProjArtefactDAOTest extends OlatTestCase {
 		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project, doer);
 		
 		assertThat(artefacts).containsExactlyInAnyOrder(artefact);
+	}
+	
+	@Test
+	public void shouldLoadQuickSearchArtefacts_groupActivites() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
+		ProjProject project = projectService.createProject(doer, doer);
+		ProjArtefact artefact1 = sut.create(miniRandom(), project, doer);
+		createActivity(doer, project, artefact1, new Date(), Action.noteContentUpdate);
+		createActivity(doer, project, artefact1, new Date(), Action.noteContentUpdate);
+		createActivity(doer, project, artefact1, new Date(), Action.noteContentUpdate);
+		ProjArtefact artefact2 = sut.create(miniRandom(), project, doer);
+		createActivity(doer, project, artefact2, new Date(), Action.noteContentUpdate);
+		dbInstance.commitAndCloseSession();
+		
+		List<ProjArtefact> artefacts = sut.loadQuickSearchArtefacts(project, doer);
+	
+		// artefact1 has only to be loaded once.
+		assertThat(artefacts).containsExactlyInAnyOrder(artefact1, artefact2);
 	}
 	
 	@Test

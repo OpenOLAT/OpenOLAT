@@ -43,6 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.DateUtils;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjMilestone;
@@ -155,12 +156,14 @@ public class ProjCalendarWidgetController extends FormBasicController {
 					milestoneRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
-							true));
+							true
+							, ProjectUIFactory.COLOR_MILESTONE));
 				} else if (!inFutureFound && milestone.getDueDate().after(now)) {
 					milestoneRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), milestone),
 							"<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(milestone.getDueDate()),
-							false));
+							false
+							, ProjectUIFactory.COLOR_MILESTONE));
 					inFutureFound = true;
 				}
 			}
@@ -190,17 +193,20 @@ public class ProjCalendarWidgetController extends FormBasicController {
 					todayRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + getTranslator().translate("all.day"),
-							false));
+							false,
+							getEventColorCss(event)));
 				} else if (event.getBegin().before(todayStart)) {
 					todayRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(todayStart),
-							false));
+							false,
+							getEventColorCss(event)));
 				} else {
 					todayRows.add(new CalendarWidgetRow(
 							ProjectUIFactory.getDisplayName(getTranslator(), event), 
 							"<i class=\"o_icon o_icon-fw o_icon_time\"> </i> " + formatter.formatTimeShort(event.getBegin()),
-							false));
+							false,
+							getEventColorCss(event)));
 				}
 			} else if(nextRows.size() < 5 && todayEnd.before(event.getBegin())) {
 				String dueName = "<i class=\"o_icon o_icon-fw o_icon_calendar\"> </i> " + formatter.formatDate(event.getBegin());
@@ -210,11 +216,16 @@ public class ProjCalendarWidgetController extends FormBasicController {
 				nextRows.add(new CalendarWidgetRow(
 						ProjectUIFactory.getDisplayName(getTranslator(), event),
 						dueName,
-						false));
+						false,
+						getEventColorCss(event)));
 			}
 		}
 		flc.contextPut("todayRows", todayRows);
 		flc.contextPut("nextRows", nextRows);
+	}
+
+	private String getEventColorCss(KalendarEvent event) {
+		return StringHelper.containsNonWhitespace(event.getColor())? "o_cal_" + event.getColor(): ProjectUIFactory.COLOR_APPOINTMENT;
 	}
 
 	@Override
@@ -301,11 +312,13 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		private final String displayName;
 		private final String dueName;
 		private final boolean warning;
+		private final String colorCssClass;
 		
-		public CalendarWidgetRow(String displayName, String dueName, boolean warning) {
+		public CalendarWidgetRow(String displayName, String dueName, boolean warning, String colorCssClass) {
 			this.displayName = displayName;
 			this.dueName = dueName;
 			this.warning = warning;
+			this.colorCssClass = colorCssClass;
 		}
 
 		public String getDisplayName() {
@@ -318,6 +331,10 @@ public class ProjCalendarWidgetController extends FormBasicController {
 
 		public boolean isWarning() {
 			return warning;
+		}
+
+		public String getColorCssClass() {
+			return colorCssClass;
 		}
 		
 	}

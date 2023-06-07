@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.olat.basesecurity.Group;
 import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 
 /**
@@ -67,7 +68,19 @@ public interface ToDoTask extends ToDoTaskRef, ToDoContext, CreateInfo, Modified
 
 	public Date getDoneDate();
 	
+	public Date getDeletedDate();
+	
+	public void setDeletedDate(Date deletedDate);
+	
+	public Identity getDeletedBy();
+	
+	public void setDeletedBy(Identity deletedBy);
+	
 	public boolean isOriginDeleted();
+	
+	public Date getOriginDeletedDate();
+	
+	public Identity getOriginDeletedBy();
 	
 	public Group getBaseGroup();
 	

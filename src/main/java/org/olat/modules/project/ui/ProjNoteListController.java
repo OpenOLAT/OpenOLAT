@@ -99,7 +99,6 @@ import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitSize;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
 import org.olat.user.UsersPortraitsFactory;
-import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -186,7 +185,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoteCols.lastModifiedBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, NoteCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(NoteCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
@@ -314,8 +315,13 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			
 			String modifiedDate = formatter.formatDateRelative(info.getNote().getArtefact().getContentModifiedDate());
 			String modifiedBy = userManager.getUserDisplayName(info.getNote().getArtefact().getContentModifiedBy().getKey());
+			row.setContentModifiedByName(modifiedBy);
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
+			
+			if (row.getDeletedBy() != null) {
+				row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+			}
 			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));

@@ -34,7 +34,6 @@ import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneRef;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjNoteRef;
-import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoRef;
@@ -50,6 +49,7 @@ public class ProjectBCFactory {
 	
 	public static final String TYPE_PROJECTS = "Projects";
 	public static final String TYPE_MEMBERS_MANAGEMENT = "MembersMgmt";
+	public static final String TYPE_PROJECT = "Project";
 	public static final String TYPE_FILES = "Files";
 	public static final String TYPE_FILE = "Projectfile";
 	public static final String TYPE_TODOS = "ToDos";
@@ -68,7 +68,7 @@ public class ProjectBCFactory {
 	
 	private static List<ContextEntry> createProjectCes(ProjProjectRef ref) {
 		List<ContextEntry> ces = createProjectsCes();
-		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(ProjProject.TYPE, ref.getKey())));
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_PROJECT, ref.getKey())));
 		return ces;
 	}
 	

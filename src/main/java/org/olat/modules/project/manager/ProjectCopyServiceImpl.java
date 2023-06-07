@@ -30,6 +30,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjActivity.Action;
@@ -41,6 +42,7 @@ import org.olat.modules.project.ProjArtefactToArtefactSearchParams;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjTag;
 import org.olat.modules.project.ProjTagSearchParams;
@@ -93,6 +95,15 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		
 		List<Organisation> organisations = organisationService.getOrganisations(doer, OrganisationRoles.user);
 		projectService.updateProjectOrganisations(doer, projectCopy, organisations);
+		
+		VFSLeaf backgroundImage = projectService.getProjectImage(project, ProjProjectImageType.background);
+		if (backgroundImage instanceof LocalFileImpl file) {
+			projectService.storeProjectImage(doer, projectCopy, ProjProjectImageType.background, file.getBasefile(), backgroundImage.getName());
+		}
+		VFSLeaf avatarImage = projectService.getProjectImage(project, ProjProjectImageType.avatar);
+		if (avatarImage instanceof LocalFileImpl file) {
+			projectService.storeProjectImage(doer, projectCopy, ProjProjectImageType.avatar, file.getBasefile(), avatarImage.getName());
+		}
 		
 		copyProjectArtefacts(doer, project, projectCopy);
 		

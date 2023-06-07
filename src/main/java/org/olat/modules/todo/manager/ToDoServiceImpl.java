@@ -20,6 +20,7 @@
 package org.olat.modules.todo.manager;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -130,8 +131,8 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted) {
-		toDoTaskDao.save(type, originId, originSubPath, deleted);
+	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy) {
+		toDoTaskDao.save(type, originId, originSubPath, deleted, originDeletedDate, originDeletedBy);
 	}
 
 	@Override

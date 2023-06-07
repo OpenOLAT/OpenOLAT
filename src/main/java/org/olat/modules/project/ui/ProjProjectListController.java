@@ -83,7 +83,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -92,6 +91,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjActivitySearchParams;
 import org.olat.modules.project.ProjProject;
+import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjProjectSearchParams;
 import org.olat.modules.project.ProjProjectSecurityCallback;
@@ -102,6 +102,8 @@ import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjProjectDataModel.ProjectCols;
+import org.olat.modules.project.ui.component.ProjAvatarComponent;
+import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UserManager;
@@ -172,6 +174,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private final boolean canCreateProject;
 	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
+	private final ProjProjectImageMapper projectImageMapper;
+	private final String projectMapperUrl;
 
 	@Autowired
 	private ProjectModule projectModule;
@@ -193,6 +197,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		this.canCreateProject = projectModule.canCreateProject(ureq.getUserSession().getRoles());
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.formatter = Formatter.getInstance(getLocale());
+		this.projectImageMapper = new ProjProjectImageMapper(projectService);
+		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
+				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 	}
 	
 	protected abstract boolean isCreateFromTemplateEnabled();
@@ -238,6 +245,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.status, new ProjectStatusRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.lastAcitivityDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.owners));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectCols.deletedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.template));
 		if (isColumnCreateFromTemplateEnabled()) {
 			DefaultFlexiColumnModel createFromTemplateColumn = new DefaultFlexiColumnModel(
@@ -427,9 +436,12 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
-		List<Component> cmps = new ArrayList<>(3);
+		List<Component> cmps = new ArrayList<>(4);
 		if (rowObject instanceof ProjProjectRow) {
 			ProjProjectRow projRow = (ProjProjectRow)rowObject;
+			if (projRow.getProjAvatar() != null) {
+				cmps.add(projRow.getProjAvatar());
+			}
 			if (projRow.getUserPortraits() != null) {
 				cmps.add(projRow.getUserPortraits());
 			}
@@ -460,6 +472,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			ProjProjectRow row = new ProjProjectRow(project);
 			
 			row.setTranslatedStatus(ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
+			if (row.getDeletedBy() != null) {
+				row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+			}
 			
 			List<Identity> owners = projectKeyToOwners.get(project.getBaseGroup().getKey());
 			if (owners != null && !owners.isEmpty()) {
@@ -479,8 +494,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				row.setModified(modified);
 			}
 			
-			String path = "[Projects:0][Project:" + row.getKey() + "]";
-			String url = BusinessControlFactory.getInstance().getAuthenticatedURLFromBusinessPathString(path);
+			String url = ProjectBCFactory.getProjectUrl(project);
 			row.setUrl(url);
 			
 			row.setTemplate(project.isTemplatePrivate() || project.isTemplatePublic());
@@ -491,6 +505,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			
 			List<Identity> members = projectKeyToMembers.getOrDefault(project.getBaseGroup().getKey(), List.of());
 			row.setMemberKeys(members.stream().map(Identity::getKey).collect(Collectors.toSet()));
+			forgeProjAvatar(row, project);
 			forgeUsersPortraits(ureq, row, members);
 			forgeSelectLink(row);
 			forgeCreateFormTemplateLink(row, project);
@@ -573,6 +588,12 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 	}
 	
+	private void forgeProjAvatar(ProjProjectRow row, ProjProject project) {
+		String avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		ProjAvatarComponent projAvatar = new ProjAvatarComponent("avatar", project, avatarUrl, Size.small, false);
+		row.setProjAvatar(projAvatar);
+	}
+	
 	private void forgeUsersPortraits(UserRequest ureq, ProjProjectRow row, List<Identity> members) {
 		if (members == null || members.isEmpty()) {
 			return;
@@ -624,7 +645,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				selectFilterTab(ureq, tab);
 			} else {
 				selectFilterTab(ureq, tabAll);
-				if (ProjProject.TYPE.equals(type)) {
+				if (ProjectBCFactory.TYPE_PROJECT.equals(type)) {
 					selectFilterTab(ureq, tabAll);
 					Long key = entry.getOLATResourceable().getResourceableId();
 					ProjProjectRow row = dataModel.getObjectByKey(key);

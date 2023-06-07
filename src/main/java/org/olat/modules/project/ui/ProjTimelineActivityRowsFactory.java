@@ -132,7 +132,7 @@ public class ProjTimelineActivityRowsFactory {
 		row.setFormattedDate(getFormattedDate(row.getDate(), true));
 		row.setToday(DateUtils.isSameDay(new Date(), row.getDate()));
 		row.setDoerDisplyName(getDoerDisplayName(activityRowData.doerKeys()));
-		row.setIconCssClass("o_proj_project");
+		row.setIconCssClass("o_icon_proj_project");
 
 		if (uifactory != null) {
 			uifactory.addStaticMessageItem(row);
@@ -211,8 +211,8 @@ public class ProjTimelineActivityRowsFactory {
 		case toDoContentUpdate: {
 			List<ProjActivity> changedActivities = activityRowData.activities().stream()
 					.filter(a -> {
-						ToDoTask before = ProjectXStream.fromXml(activity.getBefore(), ProjToDo.class).getToDoTask();
-						ToDoTask after = ProjectXStream.fromXml(activity.getAfter(), ProjToDo.class).getToDoTask();
+						ToDoTask before = ProjectXStream.fromXml(a.getBefore(), ProjToDo.class).getToDoTask();
+						ToDoTask after = ProjectXStream.fromXml(a.getAfter(), ProjToDo.class).getToDoTask();
 						Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
 						Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
 						return !Objects.equals(afterDueDate, beforeDueDate);

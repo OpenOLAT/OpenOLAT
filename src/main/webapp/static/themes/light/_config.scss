@@ -1128,8 +1128,47 @@ $o-print-header-logo-width		: 5cm !default;
 $o-bookmark-color				: #bc2d0c !default;
 $o-imagebg-text-background		: rgba(255, 255, 255, 0.8) !default;
 $o-progress-marker-color		: rgb(255, 0, 0) !default; /* danger color */
-$o-cal-desc-background-color	: $o-toolbar-bg-color !default;
 
+/* Calendar */
+$o-cal-color-width 					: 20px !default;
+$o-cal-sec-border-width				: 5px !default;
+$o-cal-desc-background-color			: $o-toolbar-bg-color !default;
+$o-cal-orange-bg					: #ffc266 !default;
+$o-cal-orange-border-color			: #ff9900 !default;
+$o-cal-orange-color					: #575757 !default;
+$o-cal-green-bg						: #66c266 !default;
+$o-cal-green-border-color			: #009900 !default;
+$o-cal-green-color					: #424242 !default;
+$o-cal-blue-bg						: #4d6e9f !default;
+$o-cal-blue-border-color				: #2e5894 !default;
+$o-cal-blue-color					: #FFF !default;
+$o-cal-yellow-bg					: #ffe066 !default;
+$o-cal-yellow-border-color			: #ffcc00 !default;
+$o-cal-yellow-color					: #5D5D5D !default;
+$o-cal-red-bg						: #c26666 !default;
+$o-cal-red-border-color				: #990000 !default;
+$o-cal-red-color					: #191919 !default;
+$o-cal-rebeccapurple-bg				: #663399 !default;
+$o-cal-rebeccapurple-border-color	: #663399 !default;
+$o-cal-rebeccapurple-color			: #FFF!default;
+$o-cal-fuchsia-bg					: #FF00FF !default;
+$o-cal-fuchsia-border-color			: #dd00dd !default;
+$o-cal-fuchsia-color				: #2B2B2B !default;
+$o-cal-olive-bg						: #7A7A00 !default;
+$o-cal-olive-border-color			: #636300 !default;
+$o-cal-olive-color					: #FFF !default;
+$o-cal-navy-bg						: #000080 !default;
+$o-cal-navy-border-color				: #000057 !default;
+$o-cal-navy-color					: #FFF !default;
+$o-cal-maroon-bg					: #800000 !default;
+$o-cal-maroon-border-color			: #740000 !default;
+$o-cal-maroon-color					: #FFF !default;
+$o-cal-lime-bg						: #00FF00 !default;
+$o-cal-lime-border-color				: #00e200 !default;
+$o-cal-lime-color					: #004d00 !default;
+$o-cal-grey-bg						: #DDDAAA !default;
+$o-cal-grey-border-color				: #5D5D5D !default;
+$o-cal-grey-color					: #5E5E5E !default;
 
 /* Files and Folders */
 $o-files-size-okay					: #61E868;
@@ -1294,6 +1333,8 @@ $o-proj-avatar-size-large					: 120px !default;
 $o-proj-avatar-font-size-large				: calc($o-proj-avatar-size-large / 2) !default;
 $o-proj-avatar-size-medium					: 60px !default;
 $o-proj-avatar-font-size-medium				: calc($o-proj-avatar-size-medium / 2) !default;
+$o-proj-avatar-size-small					: 30px !default;
+$o-proj-avatar-font-size-small				: calc($o-proj-avatar-size-small / 2) !default;
 $o-proj-avatar-border-radius					: 12px !default;
 $o-proj-avatar-color						: #fff !default;
 $o-proj-avatar-dark-blue-bg-color			: #000080 !default;

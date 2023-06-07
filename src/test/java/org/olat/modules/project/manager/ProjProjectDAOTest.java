@@ -23,9 +23,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.miniRandom;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.OrganisationService;
@@ -83,6 +85,7 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSaveProject() {
+		Identity deletedBy = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		ProjProject project = createRandomProject();
 		
 		String externalRef = random();
@@ -97,6 +100,9 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		project.setAvatarCssClass(avatarCssClass);
 		project.setTemplatePrivate(true);
 		project.setTemplatePublic(true);
+		Date deletedDate = DateUtils.addDays(new Date(), 1);
+		project.setDeletedDate(deletedDate);
+		project.setDeletedBy(deletedBy);
 		sut.save(project);
 		dbInstance.commitAndCloseSession();
 		
@@ -111,6 +117,8 @@ public class ProjProjectDAOTest extends OlatTestCase {
 		assertThat(project.getAvatarCssClass()).isEqualTo(avatarCssClass);
 		assertThat(project.isTemplatePrivate()).isTrue();
 		assertThat(project.isTemplatePublic()).isTrue();
+		assertThat(project.getDeletedDate()).isCloseTo(deletedDate, 1000);
+		assertThat(project.getDeletedBy()).isEqualTo(deletedBy);
 	}
 	
 	@Test

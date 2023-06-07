@@ -41,6 +41,10 @@ public class ProjFileRow implements ProjFileRef {
 	private final Date creationDate;
 	private final Date lastModifiedDate;
 	private final Identity lastModifiedBy;
+	private String lastModifiedByName;
+	private final Date deletedDate;
+	private final Identity deletedBy;
+	private String deletedByName;
 	private Set<Long> memberKeys;
 	private String modified;
 	private Set<Long> tagKeys;
@@ -59,6 +63,8 @@ public class ProjFileRow implements ProjFileRef {
 		this.creationDate = file.getVfsMetadata().getCreationDate();
 		this.lastModifiedDate = file.getArtefact().getContentModifiedDate();
 		this.lastModifiedBy = file.getArtefact().getContentModifiedBy();
+		this.deletedDate = file.getArtefact().getDeletedDate();
+		this.deletedBy = file.getArtefact().getDeletedBy();
 	}
 
 	@Override
@@ -84,6 +90,30 @@ public class ProjFileRow implements ProjFileRef {
 
 	public Identity getLastModifiedBy() {
 		return lastModifiedBy;
+	}
+
+	public String getLastModifiedByName() {
+		return lastModifiedByName;
+	}
+
+	public void setLastModifiedByName(String lastModifiedByName) {
+		this.lastModifiedByName = lastModifiedByName;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
 	}
 
 	public Set<Long> getMemberKeys() {

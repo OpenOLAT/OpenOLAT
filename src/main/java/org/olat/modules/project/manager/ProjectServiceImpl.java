@@ -126,7 +126,6 @@ import org.olat.modules.project.model.ProjFileInfoImpl;
 import org.olat.modules.project.model.ProjMemberInfoImpl;
 import org.olat.modules.project.model.ProjMilestoneInfoImpl;
 import org.olat.modules.project.model.ProjNoteInfoImpl;
-import org.olat.modules.project.model.ProjProjectImpl;
 import org.olat.modules.project.model.ProjToDoInfoImpl;
 import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.todo.ToDoPriority;
@@ -210,6 +209,9 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		ProjProject project = projectDao.create(doer, baseGroup, ProjProjectImageType.getRandmonAvatarCssClass());
 		String after = ProjectXStream.toXml(project);
 		activityDao.create(Action.projectCreate, null, after, doer, project);
+		
+		notificationManager.subscribe(owner, getSubscriptionContext(project), getPublisherData(project));
+		
 		return project;
 	}
 	
@@ -276,11 +278,16 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		if (ProjectStatus.active == reloadedProject.getStatus()) {
 			String before = ProjectXStream.toXml(reloadedProject);
 			
-			((ProjProjectImpl)reloadedProject).setStatus(ProjectStatus.done);
+			reloadedProject.setDeletedDate(null);
+			reloadedProject.setDeletedBy(null);
+			reloadedProject.setStatus(ProjectStatus.done);
 			reloadedProject = projectDao.save(reloadedProject);
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusDone, before, after, doer, reloadedProject);
+			
+			// Update to-dos
+			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, false, null, null);
 		}
 		return reloadedProject;
 	}
@@ -291,11 +298,16 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		if (ProjectStatus.done == reloadedProject.getStatus()) {
 			String before = ProjectXStream.toXml(reloadedProject);
 			
-			((ProjProjectImpl)reloadedProject).setStatus(ProjectStatus.active);
+			reloadedProject.setDeletedDate(null);
+			reloadedProject.setDeletedBy(null);
+			reloadedProject.setStatus(ProjectStatus.active);
 			reloadedProject = projectDao.save(reloadedProject);
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusActive, before, after, doer, reloadedProject);
+			
+			// Update to-dos
+			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, false, null, null);
 		}
 		return reloadedProject;
 	}
@@ -325,14 +337,17 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			
 			String before = ProjectXStream.toXml(reloadedProject);
 			
-			((ProjProjectImpl)reloadedProject).setStatus(ProjectStatus.deleted);
+			Date now = new Date();
+			reloadedProject.setDeletedDate(now);
+			reloadedProject.setDeletedBy(doer);
+			reloadedProject.setStatus(ProjectStatus.deleted);
 			reloadedProject = projectDao.save(reloadedProject);
 			
 			String after = ProjectXStream.toXml(reloadedProject);
 			activityDao.create(Action.projectStatusDelete, before, after, doer, reloadedProject);
 			
 			// Update to-dos
-			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, true);
+			toDoService.updateOriginDeleted(ProjToDoProvider.TYPE, project.getKey(), null, true, now, doer);
 		}
 		return reloadedProject;
 	}
@@ -980,8 +995,10 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		artefactDao.save(artefact);
 	}
 	
-	private void deleteArtefactSoftly(ProjArtefact artefact) {
+	private void deleteArtefactSoftly(Identity doer, ProjArtefact artefact) {
 		if (ProjectStatus.deleted != artefact.getStatus()) {
+			artefact.setDeletedDate(new Date());
+			artefact.setDeletedBy(doer);
 			artefact.setStatus(ProjectStatus.deleted);
 			artefactDao.save(artefact);
 		}
@@ -1063,7 +1080,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 		String before = ProjectXStream.toXml(reloadedFile);
 		
-		deleteArtefactSoftly(reloadedFile.getArtefact());
+		deleteArtefactSoftly(doer, reloadedFile.getArtefact());
 		
 		String after = ProjectXStream.toXml(reloadedFile);
 		activityDao.create(Action.fileStatusDelete, before, after, null, doer, reloadedFile.getArtefact());
@@ -1246,10 +1263,13 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		ToDoTask toDoTask = reloadedToDo.getToDoTask();
 		toDoTask.setStatus(ToDoStatus.deleted);
-		toDoTask.setContentModifiedDate(new Date());
+		Date now = new Date();
+		toDoTask.setContentModifiedDate(now);
+		toDoTask.setDeletedDate(now);
+		toDoTask.setDeletedBy(doer);
 		toDoService.update(doer, toDoTask);
 		
-		deleteArtefactSoftly(reloadedToDo.getArtefact());
+		deleteArtefactSoftly(doer, reloadedToDo.getArtefact());
 		
 		reloadedToDo = getToDo(toDo, false);
 		String after = ProjectXStream.toXml(reloadedToDo);
@@ -1372,7 +1392,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 		String before = ProjectXStream.toXml(reloadedNote);
 		
-		deleteArtefactSoftly(reloadedNote.getArtefact());
+		deleteArtefactSoftly(doer, reloadedNote.getArtefact());
 		
 		reloadedNote = getNote(note);
 		String after = ProjectXStream.toXml(reloadedNote);
@@ -1728,7 +1748,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private void deleteReloadedAppointmentSoftly(Identity doer, ProjAppointment reloadedAppointment) {
 		String before = ProjectXStream.toXml(reloadedAppointment);
 		
-		deleteArtefactSoftly(reloadedAppointment.getArtefact());
+		deleteArtefactSoftly(doer, reloadedAppointment.getArtefact());
 		
 		ProjAppointment deletedAppointment = getAppointment(reloadedAppointment);
 		String after = ProjectXStream.toXml(deletedAppointment);
@@ -1917,7 +1937,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private void deleteReloadedMilestone(Identity doer, ProjMilestone reloadedMilestone) {
 		String before = ProjectXStream.toXml(reloadedMilestone);
 		
-		deleteArtefactSoftly(reloadedMilestone.getArtefact());
+		deleteArtefactSoftly(doer, reloadedMilestone.getArtefact());
 		
 		ProjMilestone deletedMilestone = getMilestone(reloadedMilestone);
 		String after = ProjectXStream.toXml(deletedMilestone);

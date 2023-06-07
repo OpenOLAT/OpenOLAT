@@ -108,10 +108,12 @@ public class ToDoTaskDAO {
 		query.executeUpdate();
 	}
 	
-	public void save(String type, Long originId, String originSubPath, boolean originDeleted) {
+	public void save(String type, Long originId, String originSubPath, boolean originDeleted, Date originDeletedDate, Identity originDeletedBy) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("update todotask toDoTask");
 		sb.append("   set toDoTask.originDeleted = :originDeleted");
+		sb.append("     , toDoTask.originDeletedDate = :originDeletedDate");
+		sb.append("     , toDoTask.originDeletedBy = :originDeletedBy");
 		sb.append("     , toDoTask.lastModified = :now");
 		sb.and().append("toDoTask.type = :type");
 		sb.and().append("toDoTask.originId = :originId");
@@ -124,6 +126,8 @@ public class ToDoTaskDAO {
 				.setParameter("type", type)
 				.setParameter("originId", originId)
 				.setParameter("originDeleted", originDeleted)
+				.setParameter("originDeletedDate", originDeletedDate)
+				.setParameter("originDeletedBy", originDeletedBy)
 				.setParameter("now", new Date());
 		if (StringHelper.containsNonWhitespace(originSubPath)) {
 			query.setParameter("originSubPath", originSubPath);

@@ -20,6 +20,7 @@
 package org.olat.modules.todo;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ public interface ToDoService {
 
 	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle);
 	
-	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted);
+	public void updateOriginDeleted(String type, Long originId, String originSubPath, boolean deleted, Date originDeletedDate, Identity originDeletedBy);
 	
 	public void deleteToDoTaskPermanently(ToDoTask toDoTask);
 	

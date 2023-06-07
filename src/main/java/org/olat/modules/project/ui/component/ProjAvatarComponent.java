@@ -34,7 +34,7 @@ import org.olat.modules.project.ProjProject;
  */
 public class ProjAvatarComponent extends AbstractComponent {
 	
-	public enum Size { large, medium }
+	public enum Size { large, medium, small }
 	private static final ComponentRenderer RENDERER = new ProjAvatarRenderer();
 	
 	private final String imageUrl;

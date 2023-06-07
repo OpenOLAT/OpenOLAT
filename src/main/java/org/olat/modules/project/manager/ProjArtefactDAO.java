@@ -158,11 +158,18 @@ public class ProjArtefactDAO {
 	public List<ProjArtefact> loadQuickSearchArtefacts(ProjProjectRef project, Identity identity) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select artefact");
-		sb.append("  from projactivity activity");
-		sb.append("       inner join activity.artefact");
-		sb.and().append("activity.project.key = :projectKey");
-		sb.and().append("activity.doer.key = :identityKey");
-		sb.and().append("activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.append("  from projartefact artefact");
+		sb.append("       inner join (");
+		sb.append("         select activity.artefact.key as artefactKey");
+		sb.append("              , max(activity.creationDate) as creationDate");
+		sb.append("           from projactivity activity");
+		sb.append("          where activity.project.key = :projectKey");
+		sb.append("            and activity.artefact.key is not null");
+		sb.append("            and activity.doer.key = :identityKey");
+		sb.append("            and activity.action").in(ProjActivity.QUICK_START_ACTIONS);
+		sb.append("          group by activity.artefact.key");
+		sb.append("       ) as latestactivity on latestactivity.artefactKey = artefact.key ");
+		sb.and().append("artefact.project.key = :projectKey");
 		sb.and().append("artefact.status = '").append(ProjectStatus.active.name()).append("'");
 		sb.and();
 		sb.append("(");
@@ -175,7 +182,7 @@ public class ProjArtefactDAO {
 		sb.append("   and membership.identity.key = :identityKey");
 		sb.append(")");
 		sb.append(")");
-		sb.orderBy().append(" activity.creationDate desc");
+		sb.orderBy().append(" latestactivity.creationDate desc");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), ProjArtefact.class)

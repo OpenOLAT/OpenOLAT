@@ -55,9 +55,12 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private final Date dueDate;
 	private String due;
 	private Boolean overdue;
-	private final Date doneDate;
+	private Date doneDate;
 	private final String type;
 	private String translatedType;
+	private Date deletedDate;
+	private Identity deletedBy;
+	private String deletedByName;
 	private final Long originId;
 	private final String originSubPath;
 	private final String originTitle;
@@ -157,6 +160,10 @@ public class ToDoTaskRow implements ToDoTaskRef {
 		return doneDate;
 	}
 
+	public void setDoneDate(Date doneDate) {
+		this.doneDate = doneDate;
+	}
+
 	public String getType() {
 		return type;
 	}
@@ -167,6 +174,30 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setTranslatedType(String translatedType) {
 		this.translatedType = translatedType;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public void setDeletedDate(Date deletedDate) {
+		this.deletedDate = deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public void setDeletedBy(Identity deletedBy) {
+		this.deletedBy = deletedBy;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
 	}
 
 	public Long getOriginId() {

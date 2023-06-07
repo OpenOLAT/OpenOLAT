@@ -104,7 +104,6 @@ import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjFileDataModel.FileCols;
 import org.olat.user.UserManager;
-import org.olat.user.ui.UserDisplayNameCellRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -191,7 +190,9 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy, UserDisplayNameCellRenderer.get()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(FileCols.lastModifiedBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, FileCols.deletedBy));
 		StickyActionColumnModel toolsCol = new StickyActionColumnModel(FileCols.tools);
 		toolsCol.setAlwaysVisible(true);
 		toolsCol.setSortable(false);
@@ -329,8 +330,13 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 			
 			String modifiedDate = formatter.formatDateRelative(vfsMetadata.getFileLastModified());
 			String modifiedBy = userManager.getUserDisplayName(vfsMetadata.getFileLastModifiedBy());
+			row.setLastModifiedByName(modifiedBy);
 			String modified = translate("date.by", modifiedDate, modifiedBy);
 			row.setModified(modified);
+			
+			if (row.getDeletedBy() != null) {
+				row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+			}
 			
 			row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
 			row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));

@@ -124,7 +124,6 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private final MapperKey avatarMapperKey;
 	private final ProjProjectImageMapper projectImageMapper;
 	private final String projectMapperUrl;
-
 	private Date lastVisitDate;
 	
 	@Autowired

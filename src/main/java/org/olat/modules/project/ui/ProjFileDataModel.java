@@ -65,7 +65,9 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		case tags: return row.getFormattedTags();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getLastModifiedDate();
-		case lastModifiedBy: return row.getLastModifiedBy();
+		case lastModifiedBy: return row.getLastModifiedByName();
+		case deletedDate: return row.getDeletedDate();
+		case deletedBy: return row.getDeletedByName();
 		case tools: return row.getToolsLink();
 		default: return null;
 		}
@@ -78,6 +80,8 @@ public class ProjFileDataModel extends DefaultFlexiTableDataModel<ProjFileRow> i
 		creationDate("created"),
 		lastModifiedDate("last.modified.date"),
 		lastModifiedBy("last.modified.by"),
+		deletedBy("deleted.by"),
+		deletedDate("deleted.date"),
 		tools("tools");
 		
 		private final String i18nKey;

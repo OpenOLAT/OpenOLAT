@@ -93,7 +93,7 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 	}
 	
 	@Override
-	protected boolean isVisible(@SuppressWarnings("unused") ToDoTaskCols col) {
+	protected boolean isVisible(ToDoTaskCols col) {
 		return COLS.contains(col);
 	}
 

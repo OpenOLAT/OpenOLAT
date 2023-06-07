@@ -82,8 +82,15 @@ public class ProjectsSiteController extends BasicController implements Activatea
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		doOpenMy(ureq);
-		myCtrl.activate(ureq, entries, state);
+		if (entries != null && entries.size() > 0) {
+			String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if (ProjectBCFactory.TYPE_PROJECT.equalsIgnoreCase(resName)) {
+				doOpenMy(ureq);
+				myCtrl.activate(ureq, entries, state);
+			}
+		} else if (myCtrl == null) {
+			doOpenMy(ureq);
+		}
 	}
 
 	@Override

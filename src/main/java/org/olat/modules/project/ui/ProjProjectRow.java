@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.id.Identity;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectRef;
 import org.olat.modules.project.ProjectStatus;
@@ -41,6 +42,9 @@ public class ProjProjectRow implements ProjProjectRef {
 	private final String title;
 	private final String teaser;
 	private final ProjectStatus status;
+	private final Date deletedDate;
+	private final Identity deletedBy;
+	private String deletedByName;
 	private String translatedStatus;
 	private Date lastActivityDate;
 	private String modified;
@@ -49,6 +53,7 @@ public class ProjProjectRow implements ProjProjectRef {
 	private String url;
 	private boolean template;
 	private String templateName;
+	private Component projAvatar;
 	private Component userPortraits;
 	private FormLink selectLink;
 	private FormLink createFromTemplateLink;
@@ -60,6 +65,8 @@ public class ProjProjectRow implements ProjProjectRef {
 		this.title = project.getTitle();
 		this.teaser = project.getTeaser();
 		this.status = project.getStatus();
+		this.deletedDate = project.getDeletedDate();
+		this.deletedBy = project.getDeletedBy();
 	}
 
 	@Override
@@ -89,6 +96,22 @@ public class ProjProjectRow implements ProjProjectRef {
 
 	public void setTranslatedStatus(String translatedStatus) {
 		this.translatedStatus = translatedStatus;
+	}
+
+	public Date getDeletedDate() {
+		return deletedDate;
+	}
+
+	public Identity getDeletedBy() {
+		return deletedBy;
+	}
+
+	public String getDeletedByName() {
+		return deletedByName;
+	}
+
+	public void setDeletedByName(String deletedByName) {
+		this.deletedByName = deletedByName;
 	}
 
 	public Date getLastActivityDate() {
@@ -145,6 +168,18 @@ public class ProjProjectRow implements ProjProjectRef {
 
 	public void setTemplateName(String templateName) {
 		this.templateName = templateName;
+	}
+	
+	public String getProjAvatarName() {
+		return projAvatar != null? projAvatar.getComponentName(): null;
+	}
+	
+	public Component getProjAvatar() {
+		return projAvatar;
+	}
+
+	public void setProjAvatar(Component projAvatar) {
+		this.projAvatar = projAvatar;
 	}
 
 	public String getUserPortraitsName() {
