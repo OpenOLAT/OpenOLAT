@@ -737,7 +737,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		SelectionValues oerValues = new SelectionValues();
 		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.released.name(), translate("filter.released")));
 		oerValues.add(SelectionValues.entry(SearchAuthorRepositoryEntryViewParams.OERRelease.notReleased.name(), translate("filter.not.released")));
-		filters.add(new FlexiTableSingleSelectionFilter("Freigabe externer OER Katalog",
+		filters.add(new FlexiTableSingleSelectionFilter(translate("details.index.metadata"),
 				AuthorSourceFilter.OERRELASE.name(), oerValues, false));
 		
 		// taxonomy
