@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -67,12 +68,17 @@ public class DocEditorStandaloneController extends BasicController implements Ac
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		editorCtrl.activate(ureq, entries, state);
-		String title = translate("window.title");
-		if (configs != null && configs.getVfsLeaf() != null && configs.getVfsLeaf().getMetaInfo() != null) {
-			VFSMetadata metaInfo = configs.getVfsLeaf().getMetaInfo();
+		String title = getWindowTitle(getTranslator(), configs);
+		getWindow().setTitle(getTranslator(), StringHelper.escapeHtml(title));
+	}
+	
+	public static String getWindowTitle(Translator translator, DocEditorConfigs editorConfigs) {
+		String title = translator.translate("window.title");
+		if (editorConfigs != null && editorConfigs.getVfsLeaf() != null && editorConfigs.getVfsLeaf().getMetaInfo() != null) {
+			VFSMetadata metaInfo = editorConfigs.getVfsLeaf().getMetaInfo();
 			title = title + " - " + (StringHelper.containsNonWhitespace(metaInfo.getTitle())? metaInfo.getTitle(): metaInfo.getFilename());
 		}
-		getWindow().setTitle(getTranslator(), StringHelper.escapeHtml(title));
+		return StringHelper.escapeHtml(title);
 	}
 
 	@Override
