@@ -141,7 +141,7 @@ public class InfoDisplayController extends FormBasicController {
 		initForm(ureq);	
 		
 		// now load with configuration
-		loadMessages();		
+		loadMessages(ureq);
 	}
 	
 	public InfoDisplayController(UserRequest ureq, WindowControl wControl, int maxResults, int duration,
@@ -184,7 +184,7 @@ public class InfoDisplayController extends FormBasicController {
 		}
 		
 		// now load with configuration
-		loadMessages();
+		loadMessages(ureq);
 	}
 
 	public void setSendSubscriberOption(SendMailOption sendSubscriberOption) {
@@ -211,7 +211,7 @@ public class InfoDisplayController extends FormBasicController {
 	 * This is the main method which push the messages in the layout container,
 	 * and clean-up old links.
 	 */
-	protected void loadMessages() {
+	protected void loadMessages(UserRequest ureq) {
 		//first clear the current message if any
 		for(Long key:previousDisplayKeys) {
 			flc.contextRemove("info.date." + key);
@@ -229,6 +229,9 @@ public class InfoDisplayController extends FormBasicController {
 		List<InfoMessageForDisplay> infoDisplays = new ArrayList<>(msgs.size());
 		Map<String, VFSLeaf> keysToDisplay = new HashMap<>();
 		for(InfoMessage info:msgs) {
+			if (!info.isPublished() && !ureq.getIdentity().equals(info.getAuthor())) {
+				continue;
+			}
 			previousDisplayKeys.add(info.getKey());
 			InfoMessageForDisplay infoDisplay = createInfoMessageForDisplay(info);
 			infoDisplays.add(infoDisplay);
@@ -340,7 +343,7 @@ public class InfoDisplayController extends FormBasicController {
 				getWindowControl().pop();
 			} else if (event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
-				loadMessages();
+				loadMessages(ureq);
 			}	else if (event == Event.DONE_EVENT){
 				showError("failed");
 			}
@@ -349,7 +352,7 @@ public class InfoDisplayController extends FormBasicController {
 				getWindowControl().pop();
 			} else if (event == Event.CHANGED_EVENT) {
 				getWindowControl().pop();
-				loadMessages();
+				loadMessages(ureq);
 			}	else if (event == Event.DONE_EVENT){
 				showError("failed");
 			}
@@ -365,7 +368,7 @@ public class InfoDisplayController extends FormBasicController {
 						LoggingResourceable.wrap(msgToDelete.getOLATResourceable(), OlatResourceableType.infoMessage));
 				
 				infoMessageManager.deleteInfoMessage(msgToDelete);
-				loadMessages();
+				loadMessages(ureq);
 			}
 			confirmDelete.setUserObject(null);
 			
@@ -396,11 +399,11 @@ public class InfoDisplayController extends FormBasicController {
 		} else if(source == oldMsgsLink) {
 			maxResults = -1;
 			after = null;
-			loadMessages();
+			loadMessages(ureq);
 		} else if(source == newMsgsLink) {
 			maxResults = maxResultsConfig;
 			after = afterConfig;
-			loadMessages();
+			loadMessages(ureq);
 		} else if(source == flc) {
 			doGoTo(ureq);
 		} else {
@@ -433,7 +436,7 @@ public class InfoDisplayController extends FormBasicController {
 				showWarning("already.deleted");
 				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 				lockEntry = null;
-				loadMessages();
+				loadMessages(ureq);
 			} else {
 				String title = StringHelper.escapeHtml(msg.getTitle());
 				String confirmDeleteText = translate("edit.confirm_delete", new String[]{ title });
@@ -454,7 +457,7 @@ public class InfoDisplayController extends FormBasicController {
 				showWarning("already.deleted");
 				CoordinatorManager.getInstance().getCoordinator().getLocker().releaseLock(lockEntry);
 				lockEntry = null;
-				loadMessages();
+				loadMessages(ureq);
 			} else {
 				removeAsListenerAndDispose(editInfoWizard);
 

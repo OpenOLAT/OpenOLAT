@@ -22,6 +22,7 @@ package org.olat.commons.info.ui;
 
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -164,13 +165,31 @@ public class SendMailStepController extends StepFormBasicController {
 		publicationTextEl = uifactory.addStaticTextElement("wizard.step1.publication", translate("wizard.step1.publication.immediately"), formLayout);
 		// == because fixed memory addresses of constants and null safe
 		if (getFromRunContext(WizardConstants.PUBLICATION_DATE_TYPE) == WizardConstants.PUBLICATION_DATE_SELECT_INDIVIDUAL) {
+			DateFormat dateFormat = new SimpleDateFormat("HH:mm");
 			// if publication is not immediately, calculate date difference and show in publication info
 			DateChooser publishDate = (DateChooser) getFromRunContext(WizardConstants.PUBLICATION_DATE);
 			String dayAsString = new SimpleDateFormat("EEEE", getLocale()).format(publishDate.getDate());
-			String dateAsString = dayAsString + " " + publishDate.getValue();
+			String dateAsString = dayAsString + " "
+					+ publishDate.getValue()
+					+ " "
+					+ translate("publication.at.time")
+					+ " "
+					+ dateFormat.format(publishDate.getDate());
 			long daysBetween = ChronoUnit.DAYS.between(DateUtils.toLocalDate(new Date()), DateUtils.toLocalDate(publishDate.getDate()));
 
-			publicationTextEl.setValue(translate("wizard.step1.publication.individual", String.valueOf(daysBetween), dateAsString));
+			// check if date is for today or later
+			// change message accordingly
+			String in;
+			String inDays;
+			if (daysBetween < 1) {
+				in = "";
+				inDays = translate("publication.today");
+			} else {
+				in = translate("publication.in.days");
+				inDays = daysBetween + " " + translate("publication.later.days");
+			}
+
+			publicationTextEl.setValue(translate("wizard.step1.publication.individual", in, inDays, dateAsString));
 		}
 
 		// retrieve enabled subscribers of infoMessage courseElement
@@ -197,7 +216,7 @@ public class SendMailStepController extends StepFormBasicController {
 		notificationEl = uifactory.addCardSingleSelectHorizontal("wizard.step1.notification", "wizard.step1.notification", formLayout, notificationSV);
 		notificationEl.select(ONLY_NOTIFY_SUBS, true);
 		notificationEl.addActionListener(FormEvent.ONCHANGE);
-		notificationEl.setWidthInPercent(100, true);
+		notificationEl.setElementCssClass("o_radio_cards_lg");
 
 		// recipient, either all course members or individual receivers
 		SelectionValues recipientSV = new SelectionValues();
