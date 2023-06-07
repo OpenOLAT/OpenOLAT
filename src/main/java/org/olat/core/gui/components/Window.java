@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -254,10 +255,14 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	 * @param newTitle The new title of this window (for browser history)
 	 */
 	public void setTitle(Translator translator, String newTitle) {
+		if(!StringHelper.containsNonWhitespace(newTitle)) {
+			return;
+		}
+		
 		newTitle = StringHelper.escapeJavaScript(newTitle);
 		// When current title is null we don't need to update via JS, we are in initial
 		// page load
-		if (title.getValue() != null) {			
+		if (title.getValue() != null && !Objects.equals(title.getValue(), newTitle)) {			
 			StringBuilder sb = new StringBuilder();
 			sb.append("document.title = \"");
 			sb.append(newTitle);

@@ -23,7 +23,6 @@ import static org.olat.core.gui.components.util.SelectionValues.VALUE_ASC;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -1456,22 +1455,32 @@ public class AuthorListController extends FormBasicController implements Activat
 	
 	private void doSendMail(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		if(guardModalController(sendMailCtrl)) return;
-
-		removeAsListenerAndDispose(userSearchCtr);
-		sendMailCtrl = new SendMailController(ureq, getWindowControl(), rows);
-		listenTo(sendMailCtrl);
 		
-		String title = translate("tools.send.mail");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), sendMailCtrl.getInitialComponent(),
-				true, title);
-		listenTo(cmc);
-		cmc.activate();
+		rows.removeIf(row -> !canManage(row));
+		
+		if(rows.isEmpty()) {
+			showWarning("bulk.update.nothing.applicable.selected");
+		} else {
+			sendMailCtrl = new SendMailController(ureq, getWindowControl(), rows);
+			listenTo(sendMailCtrl);
+			
+			String title = translate("tools.send.mail");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), sendMailCtrl.getInitialComponent(),
+					true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	private void doModifyStatus(UserRequest ureq, List<AuthoringEntryRow> rows) {
 		if(guardModalController(modifyStatusCtrl)) return;
 		
-		Collection<Long> rowKeys = rows.stream().map(AuthoringEntryRow::getKey).collect(Collectors.toSet());
+		List<Long> rowKeys = new ArrayList<>(rows.size());
+		for(AuthoringEntryRow row:rows) {
+			if(canManage(row)) {
+				rowKeys.add(row.getKey());
+			}
+		}
 		List<RepositoryEntry> entries = repositoryManager.lookupRepositoryEntries(rowKeys);
 		if(entries.isEmpty()) {
 			showWarning("bulk.update.nothing.applicable.selected");

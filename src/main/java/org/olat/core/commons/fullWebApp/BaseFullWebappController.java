@@ -884,7 +884,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 		setCurrent(null, dtabi);
 		setGuiStack(dtabi.getGuiStackHandle());
 		// set description as page title, getTitel() might contain trucated values
-		getWindow().setTitle(getTranslator(), dtabi.getNavElement().getDescription());
+		getWindow().setTitle(getTranslator(), dtabi.getNavElement().getTitle());
 		// set data-* values on body for css and javascript customizations
 		OLATResourceable ores = dtabi.getOLATResourceable();
 		String restype = (ores == null ? null : ores.getResourceableTypeName());
