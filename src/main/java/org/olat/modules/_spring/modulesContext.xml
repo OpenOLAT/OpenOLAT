@@ -32,6 +32,7 @@
 	<import resource="classpath:/org/olat/modules/audiovideorecording/_spring/audioVideoRecordingContext.xml"/>
 	<import resource="classpath:/org/olat/modules/oaipmh/_spring/oaipmhContext.xml"/>
 	<import resource="classpath:/org/olat/modules/jupyterhub/_spring/jupyterHubContext.xml"/>
+	<import resource="classpath:/org/olat/modules/openbadges/_spring/openBadgesContext.xml"/>
 
 	<!-- Forum admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
