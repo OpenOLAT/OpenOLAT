@@ -48,6 +48,11 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.text.translate.AggregateTranslator;
+import org.apache.commons.text.translate.CharSequenceTranslator;
+import org.apache.commons.text.translate.EntityArrays;
+import org.apache.commons.text.translate.JavaUnicodeEscaper;
+import org.apache.commons.text.translate.LookupTranslator;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
@@ -78,6 +83,21 @@ public class StringHelper {
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile(WHITESPACE_REGEXP);
 	
 	private static final int LONG_MAX_LENGTH = Long.toString(Long.MAX_VALUE).length();
+
+    public static final CharSequenceTranslator ESCAPE_ECMASCRIPT_ISO_EXTENDED;
+	static {
+		 final Map<CharSequence, CharSequence> escapeEcmaScriptMap = new HashMap<>();
+	        escapeEcmaScriptMap.put("'", "\\'");
+	        escapeEcmaScriptMap.put("\"", "\\\"");
+	        escapeEcmaScriptMap.put("\\", "\\\\");
+	        escapeEcmaScriptMap.put("/", "\\/");
+	        ESCAPE_ECMASCRIPT_ISO_EXTENDED = new AggregateTranslator(
+	                new LookupTranslator(Collections.unmodifiableMap(escapeEcmaScriptMap)),
+	                new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE),
+	                JavaUnicodeEscaper.outsideOf(32, 0xff),
+	                JavaUnicodeEscaper.between(0x80, 0x9b)// between 128 - 155 problems
+	        );
+	}
 	
 	/**
 	 * regex for not allowing
@@ -475,6 +495,17 @@ public class StringHelper {
 		} catch (IOException e) {
 			log.error("Error escaping JavaScript", e);
 		}
+	}
+	
+	/**
+	 * This is the same as @see escapeJavaScript but it doesn't escape the 
+	 * extended ascii part with Umlauts (155 - 255).
+	 * 
+	 * @param str The string to escape
+	 * @return The escaped string
+	 */
+	public static final String escapeJavascriptExtended(String str) {
+		return ESCAPE_ECMASCRIPT_ISO_EXTENDED.translate(str);
 	}
 	
 	public static final String encodeUrlPathSegment(String path) {

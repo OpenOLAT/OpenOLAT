@@ -259,7 +259,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			return;
 		}
 		
-		newTitle = StringHelper.escapeJavaScript(newTitle);
+		newTitle = StringHelper.escapeJavascriptExtended(newTitle);
 		// When current title is null we don't need to update via JS, we are in initial
 		// page load
 		if (title.getValue() != null && !Objects.equals(title.getValue(), newTitle)) {			
