@@ -110,6 +110,8 @@ public interface ProjectService {
 	
 	public void unlinkArtefacts(Identity doer, ProjArtefact artefact1, ProjArtefact artefact2);
 	
+	public void updateLinkedArtefacts(Identity doer, ProjArtefact artefact, Set<ProjArtefact> linkedArtefacts);
+	
 	public List<ProjArtefact> getLinkedArtefacts(ProjArtefact artefact);
 	
 	public ProjArtefactItems getLinkedArtefactItems(ProjArtefact artefact);
@@ -124,7 +126,7 @@ public interface ProjectService {
 	
 	public void updateTags(Identity doer, ProjArtefactRef artefact, List<String> displayNames);
 	
-	public List<TagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact);
+	public List<TagInfo> getTagInfos(ProjProjectRef project, ProjArtefactRef selectionArtefact);
 	
 
 	/*
@@ -165,8 +167,6 @@ public interface ProjectService {
 	public void updateTags(Identity doer, ProjToDoRef toDo, List<String> displayNames);
 
 	public void deleteToDoSoftly(Identity doer, ProjToDoRef toDo);
-	
-	public void deleteToDoPermanent(ProjToDoRef toDo);
 	
 	public ProjToDo getToDo(String identifier);
 
@@ -221,8 +221,6 @@ public interface ProjectService {
 	public void deleteAppointmentSoftly(Identity doer, String identifier, Date occurenceDate);
 
 	public void deleteAppointmentSoftly(Identity doer, ProjAppointmentRef appointment);
-
-	public void deleteAppointmentPermanent(ProjAppointmentRef appointment);
 	
 	public ProjAppointment getAppointment(ProjAppointmentRef appointment);
 
@@ -247,8 +245,6 @@ public interface ProjectService {
 	public void moveMilestone(Identity doer, String identifier, Long days);
 
 	public void deleteMilestoneSoftly(Identity doer, ProjMilestoneRef milestone);
-
-	public void deleteMilestonePermanent(ProjMilestoneRef milestone);
 	
 	public ProjMilestone getMilestone(ProjMilestoneRef milestone);
 	

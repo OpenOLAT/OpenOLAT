@@ -46,6 +46,7 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.todo.ui.ToDoUIFactory;
@@ -70,7 +71,6 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private MultipleSelectionElement appointmentEl;
 	private StaticTextElement noValuesAvailableEl;
 	
-	private final ProjArtefact artefact;
 	private final ProjArtefactItems artefactItems;
 	private final SelectionValues fileSV;
 	private final Set<String> fileSelectedKeys = new HashSet<>();
@@ -84,18 +84,20 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 	
-	public ProjArtefactSelectionController(UserRequest ureq, WindowControl wControl, ProjArtefact artefact) {
+	public ProjArtefactSelectionController(UserRequest ureq, WindowControl wControl, ProjProject project, ProjArtefact artefact) {
 		super(ureq, wControl, "artefact_selection");
 		setTranslator(Util.createPackageTranslator(ToDoUIFactory.class, getLocale(), getTranslator()));
-		this.artefact = artefact;
 		
-		List<ProjArtefact> linkedArtefacts = projectService.getLinkedArtefacts(artefact);
-		Collection<ProjArtefactRef> excludedArtefacts = new HashSet<>(linkedArtefacts.size() + 1);
-		excludedArtefacts.addAll(linkedArtefacts);
-		excludedArtefacts.add(artefact);
+		Collection<ProjArtefactRef> excludedArtefacts = null;
+		if (artefact != null) {
+			List<ProjArtefact> linkedArtefacts = projectService.getLinkedArtefacts(artefact);
+			excludedArtefacts = new HashSet<>(linkedArtefacts.size() + 1);
+			excludedArtefacts.addAll(linkedArtefacts);
+			excludedArtefacts.add(artefact);
+		}
 		
 		ProjArtefactSearchParams searchParams = new ProjArtefactSearchParams();
-		searchParams.setProject(artefact.getProject());
+		searchParams.setProject(project);
 		searchParams.setStatus(List.of(ProjectStatus.active));
 		searchParams.setExcludedArtefacts(excludedArtefacts);
 		artefactItems = projectService.getArtefactItems(searchParams);
@@ -130,6 +132,33 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		}
 		
 		initForm(ureq);
+	}
+	
+	public Set<ProjArtefact> getSelectdArtefacts() {
+		Set<ProjArtefact> selectedArtefacts = new HashSet<>();
+		
+		if (artefactItems.getAppointments() != null) {
+			artefactItems.getAppointments().stream()
+					.filter(appointment -> appointmentSelectedKeys.contains(appointment.getArtefact().getKey().toString()))
+					.forEach(appointment -> selectedArtefacts.add(appointment.getArtefact()));
+		}
+		if (artefactItems.getToDos() != null) {
+			artefactItems.getToDos().stream()
+					.filter(toDo -> toDoSelectedKeys.contains(toDo.getArtefact().getKey().toString()))
+					.forEach(toDo -> selectedArtefacts.add(toDo.getArtefact()));
+		}
+		if (artefactItems.getNotes() != null) {
+			artefactItems.getNotes().stream()
+					.filter(note -> noteSelectedKeys.contains(note.getArtefact().getKey().toString()))
+					.forEach(note -> selectedArtefacts.add(note.getArtefact()));
+		}
+		if (artefactItems.getFiles() != null) {
+			artefactItems.getFiles().stream()
+					.filter(file -> fileSelectedKeys.contains(file.getArtefact().getKey().toString()))
+					.forEach(file -> selectedArtefacts.add(file.getArtefact()));
+		}
+		
+		return selectedArtefacts;
 	}
 
 	@Override
@@ -182,10 +211,10 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	}
 	
 	private void updateUI() {
-		fileEl.setVisible(!fileEl.getKeys().isEmpty());
+		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
 		toDoEl.setVisible(!toDoEl.getKeys().isEmpty());
 		noteEl.setVisible(!noteEl.getKeys().isEmpty());
-		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
+		fileEl.setVisible(!fileEl.getKeys().isEmpty());
 		noValuesAvailableEl.setVisible(!fileEl.isVisible() && !noteEl.isVisible() && !appointmentEl.isVisible());
 		listsCont.setDirty(true);
 	}
@@ -223,27 +252,6 @@ public class ProjArtefactSelectionController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (artefactItems.getFiles() != null) {
-			artefactItems.getFiles().stream()
-					.filter(file -> fileSelectedKeys.contains(file.getArtefact().getKey().toString()))
-					.forEach(file -> projectService.linkArtefacts(getIdentity(), artefact, file.getArtefact()));
-		}
-		if (artefactItems.getToDos() != null) {
-			artefactItems.getToDos().stream()
-					.filter(toDo -> toDoSelectedKeys.contains(toDo.getArtefact().getKey().toString()))
-					.forEach(toDo -> projectService.linkArtefacts(getIdentity(), artefact, toDo.getArtefact()));
-		}
-		if (artefactItems.getNotes() != null) {
-			artefactItems.getNotes().stream()
-					.filter(note -> noteSelectedKeys.contains(note.getArtefact().getKey().toString()))
-					.forEach(note -> projectService.linkArtefacts(getIdentity(), artefact, note.getArtefact()));
-		}
-		if (artefactItems.getAppointments() != null) {
-			artefactItems.getAppointments().stream()
-					.filter(appointment -> appointmentSelectedKeys.contains(appointment.getArtefact().getKey().toString()))
-					.forEach(appointment -> projectService.linkArtefacts(getIdentity(), artefact, appointment.getArtefact()));
-		}
-		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

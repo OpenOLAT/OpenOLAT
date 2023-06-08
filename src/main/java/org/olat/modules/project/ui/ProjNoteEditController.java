@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -41,6 +42,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,7 +64,7 @@ public class ProjNoteEditController extends FormBasicController {
 
 	private final ProjNote note;
 	private final Set<Identity> members;
-	private final boolean withCancel;
+	private final boolean firstEdit;
 	private final boolean withOpenInSameWindow;
 	private LockResult lockEntry;
 	private Boolean referenceOpen = Boolean.FALSE;
@@ -72,11 +74,11 @@ public class ProjNoteEditController extends FormBasicController {
 	@Autowired
 	private ProjectService projectService;
 
-	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjNote note, Set<Identity> members, boolean withCancel, boolean withOpenInSameWindow) {
+	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjNote note, Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
 		this.note = note;
 		this.members = members;
-		this.withCancel = withCancel;
+		this.firstEdit = firstEdit;
 		this.withOpenInSameWindow = withOpenInSameWindow;
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(ProjNote.class, note.getKey());
@@ -85,6 +87,14 @@ public class ProjNoteEditController extends FormBasicController {
 			initForm(ureq);
 		}
 	}
+	
+	public ProjNote getNote() {
+		return note;
+	}
+
+	public boolean isFirstEdit() {
+		return firstEdit;
+	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -92,13 +102,14 @@ public class ProjNoteEditController extends FormBasicController {
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, note.getArtefact(),
-				false, withOpenInSameWindow);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
+				note.getArtefact().getProject(), note.getArtefact(), true, false, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, note.getArtefact(), members);
+		List<Identity> projectMembers = projectService.getMembers(note.getArtefact().getProject(), ProjectRole.PROJECT_ROLES);
+		memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, note.getArtefact());
 		listenTo(memberCtrl);
 		formLayout.add("member", memberCtrl.getInitialFormItem());
 		flc.contextPut("memberOpen", memberOpen);
@@ -110,11 +121,13 @@ public class ProjNoteEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		closeLink = uifactory.addFormLink("close", buttonLayout, Link.BUTTON);
-		closeLink.setPrimary(true);
-		if (withCancel) {
+		if (firstEdit) {
+			closeLink = uifactory.addFormLink("create", buttonLayout, Link.BUTTON);
 			cancelLink = uifactory.addFormLink("cancel", buttonLayout, Link.BUTTON);
+		} else {
+			closeLink = uifactory.addFormLink("close", buttonLayout, Link.BUTTON);
 		}
+		closeLink.setPrimary(true);
 	}
 	
 	@Override

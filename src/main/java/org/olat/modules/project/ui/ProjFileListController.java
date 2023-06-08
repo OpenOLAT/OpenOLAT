@@ -629,7 +629,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileUploadCtrl);
 		
 		String title = translate("file.upload");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileUploadCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUploadCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -641,7 +641,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileCreateCtrl);
 		
 		String title = translate("file.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -681,7 +681,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		listenTo(fileEditCtrl);
 		
 		String title = translate("edit.metadata");
-		cmc = new CloseableModalController(getWindowControl(), "close", fileEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -727,7 +727,7 @@ abstract class ProjFileListController extends FormBasicController  implements Ac
 		deleteConfirmationCtrl.setUserObject(file);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("file.delete"), true);
 		listenTo(cmc);
 		cmc.activate();

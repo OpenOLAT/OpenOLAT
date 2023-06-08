@@ -829,7 +829,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		listenTo(editCtrl);
 		
 		String title = translate("project.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -849,7 +849,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		listenTo(editCtrl);
 		
 		String title = translate("project.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -933,7 +933,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		doneConfirmationCtrl.setUserObject(project);
 		listenTo(doneConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", doneConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
 				true, translate("project.set.status.done.title"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -963,7 +963,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		deleteConfirmationCtrl.setUserObject(project);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("project.set.status.deleted.title"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -1025,7 +1025,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				"project.set.status.done.bulk.confirm", "project.set.status.done.bulk.button", false);
 		listenTo(doneConfirmationBulkCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", doneConfirmationBulkCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationBulkCtrl.getInitialComponent(),
 				true, translate("project.set.status.done.bulk.title"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -1044,7 +1044,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				"project.reopen.bulk.confirm", "project.reopen.bulk.button", false);
 		listenTo(reopenConfirmationBulkCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenConfirmationBulkCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenConfirmationBulkCtrl.getInitialComponent(),
 				true, translate("project.reopen.bulk.title"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -1063,7 +1063,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				"project.set.status.deleted.bulk.confirm", "project.set.status.deleted.bulk.button", true);
 		listenTo(deleteConfirmationBulkCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationBulkCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationBulkCtrl.getInitialComponent(),
 				true, translate("project.set.status.deleted.bulk.title"), true);
 		listenTo(cmc);
 		cmc.activate();

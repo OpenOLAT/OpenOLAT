@@ -102,7 +102,6 @@ public class ToDoServiceImpl implements ToDoService {
 		ToDoTask toDoTask = toDoTaskDao.create(doer, type, originId, originSubPath, originTitle);
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.creator.name());
 		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.modifier.name());
-		groupDao.addMembershipOneWay(toDoTask.getBaseGroup(), doer, ToDoRole.assignee.name());
 		return toDoTask;
 	}
 

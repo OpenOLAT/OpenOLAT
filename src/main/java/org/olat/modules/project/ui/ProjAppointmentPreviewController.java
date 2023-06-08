@@ -118,7 +118,7 @@ public class ProjAppointmentPreviewController extends BasicController {
 			}
 		}
 		
-		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, appointment.getArtefact(), true, false);
+		referencesCtrl = new ProjArtefactReferencesController(ureq, wControl, appointment.getArtefact(), false, true, false);
 		listenTo(referencesCtrl);
 		mainVC.put("references", referencesCtrl.getInitialComponent());
 		

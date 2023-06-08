@@ -487,6 +487,8 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			if (event == Event.DONE_EVENT) {
 				loadModel(ureq, false);
 				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if (event == Event.CANCELLED_EVENT && noteCreateCtrl.isFirstEdit()) {
+				projectService.deleteNotePermanent(noteCreateCtrl.getNote());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -504,6 +506,9 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 			cmc.deactivate();
 			cleanUp();
 		} else if(cmc == source) {
+			if (noteCreateCtrl != null && noteCreateCtrl.isFirstEdit()) {
+				projectService.deleteNotePermanent(noteCreateCtrl.getNote());
+			}
 			loadModel(ureq, false);
 			cleanUp();
 		} else if (toolsCalloutCtrl == source) {
@@ -605,7 +610,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		listenTo(noteCreateCtrl);
 		
 		String title = translate("note.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", noteCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), noteCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -659,7 +664,7 @@ abstract class ProjNoteListController extends FormBasicController implements Act
 		deleteConfirmationCtrl.setUserObject(note);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("note.delete"), true);
 		listenTo(cmc);
 		cmc.activate();

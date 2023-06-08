@@ -234,8 +234,6 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				reload();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if (event == Event.CANCELLED_EVENT && appointmentEditCtrl.isFirstEdit()) {
-				projectService.deleteAppointmentPermanent(appointmentEditCtrl.getAppointment());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -243,8 +241,6 @@ public class ProjCalendarWidgetController extends FormBasicController {
 			if (event == Event.DONE_EVENT) {
 				reload();
 				fireEvent(ureq, Event.CHANGED_EVENT);
-			} else if (event == Event.CANCELLED_EVENT && milestoneEditCtrl.isFirstEdit()) {
-				projectService.deleteMilestonePermanent(milestoneEditCtrl.getMilestone());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -284,12 +280,11 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateAppointment(UserRequest ureq) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project, new Date());
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
 		listenTo(appointmentEditCtrl);
 		
 		String title = translate("appointment.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -297,12 +292,11 @@ public class ProjCalendarWidgetController extends FormBasicController {
 	private void doCreateMilestone(UserRequest ureq) {
 		if (guardModalController(milestoneEditCtrl)) return;
 		
-		ProjMilestone milestone = projectService.createMilestone(getIdentity(), project);
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestone, true);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), project);
 		listenTo(milestoneEditCtrl);
 		
 		String title = translate("milestone.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", milestoneEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), milestoneEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -84,14 +84,13 @@ public class ProjToDoProvider implements ToDoProvider {
 			return null;
 		}
 		
-		ProjToDo toDo = projectService.createToDo(doer, project);
-		return new ProjToDoEditController(ureq, wControl, toDo, true, false);
+		return new ProjToDoEditController(ureq, wControl, project, false);
 	}
 
 	@Override
 	public Controller createEditController(UserRequest ureq, WindowControl wControl, ToDoTask toDoTask) {
 		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
-		return new ProjToDoEditController(ureq, wControl, toDo, false, false);
+		return new ProjToDoEditController(ureq, wControl, toDo, false);
 	}
 
 	@Override

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.project.ui;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.tag.TagInfo;
@@ -29,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -42,30 +44,43 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 
 	private ProjAppointmentContentEditForm appointmentContentEditForm;
 
-	private final ProjAppointment appointment;
+	private final ProjProject project;
+	private ProjAppointment appointment;
+	private final Date initialStartDate;
 	
 	@Autowired
 	private ProjectService projectService;
 
 	public ProjAppointmentContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment) {
+			ProjProject project, ProjAppointment appointment, Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
+		this.project = project;
 		this.appointment = appointment;
+		this.initialStartDate = initialStartDate;
 		
 		initForm(ureq);
+	}
+	
+	public ProjAppointment getAppointment() {
+		return appointment;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		List<TagInfo> tagInfos = projectService.getTagInfos(appointment.getArtefact().getProject(), appointment.getArtefact());
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, appointment != null? appointment.getArtefact(): null);
 		
-		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, tagInfos);
+		Date startDate = appointment != null? appointment.getStartDate(): initialStartDate;
+		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, tagInfos, startDate);
 		listenTo(appointmentContentEditForm);
 		formLayout.add(appointmentContentEditForm.getInitialFormItem());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		if (appointment == null) {
+			appointment = projectService.createAppointment(getIdentity(), project, appointmentContentEditForm.getStartDate());
+		}
+		
 		projectService.updateAppointment(getIdentity(), appointment, 
 				appointmentContentEditForm.getStartDate(),
 				appointmentContentEditForm.getEndDate(),

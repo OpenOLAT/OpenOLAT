@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.DateUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjAppointment;
@@ -258,8 +259,6 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		if (appointmentEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel();
-			} else if (event == Event.CANCELLED_EVENT && appointmentEditCtrl.isFirstEdit()) {
-				projectService.deleteAppointmentPermanent(appointmentEditCtrl.getAppointment());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -308,8 +307,6 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		} else if (milestoneEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				loadModel();
-			} else if (event == Event.CANCELLED_EVENT && milestoneEditCtrl.isFirstEdit()) {
-				projectService.deleteMilestonePermanent(milestoneEditCtrl.getMilestone());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -381,7 +378,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			doCreateMilestone(ureq);
 		} else if (source == calendarEl) {
 			if (event instanceof CalendarGUIAddEvent caEvent) {
-				doCreateAppointment(ureq, caEvent.getStartDate());
+				doCreateAppointment(ureq, DateUtils.copyTime(caEvent.getStartDate(), new Date()));
 			} else if (event instanceof CalendarGUISelectEvent) {
 				CalendarGUISelectEvent selectEvent = (CalendarGUISelectEvent)event;
 				if (selectEvent.getKalendarEvent() != null) {
@@ -468,15 +465,14 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		calloutCtr.activate();
 	}
 
-	private void doCreateAppointment(UserRequest ureq, Date date) {
+	private void doCreateAppointment(UserRequest ureq, Date initialStartDate) {
 		if (guardModalController(appointmentEditCtrl)) return;
 		
-		ProjAppointment appointment = projectService.createAppointment(getIdentity(), project, date);
-		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointment, Set.of(getIdentity()), true, false);
+		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, initialStartDate);
 		listenTo(appointmentEditCtrl);
 		
 		String title = translate("appointment.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -484,12 +480,11 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private void doCreateMilestone(UserRequest ureq) {
 		if (guardModalController(milestoneEditCtrl)) return;
 		
-		ProjMilestone milestone = projectService.createMilestone(getIdentity(), project);
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestone, true);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), project);
 		listenTo(milestoneEditCtrl);
 		
 		String title = translate("milestone.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", milestoneEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), milestoneEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -540,11 +535,11 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
 		
 		appointmentEditCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), appointmentInfo.getAppointment(),
-				appointmentInfo.getMembers(), false, false);
+				appointmentInfo.getMembers(), false);
 		listenTo(appointmentEditCtrl);
 
 		String title = translate("appointment.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentEditCtrl.getInitialComponent(),
 				true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -612,7 +607,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			return;
 		}
 		
-		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestones.get(0), false);
+		milestoneEditCtrl = new ProjMilestoneEditController(ureq, getWindowControl(), milestones.get(0));
 		listenTo(milestoneEditCtrl);
 
 		String title = translate("milestone.edit");
@@ -645,7 +640,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		appointmentDeleteConfirmationCtrl.setUserObject(kalendarEvent);
 		listenTo(appointmentDeleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentDeleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentDeleteConfirmationCtrl.getInitialComponent(),
 				true, translate("appointment.delete"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -682,7 +677,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		milestoneDeleteConfirmationCtrl.setUserObject(milestone);
 		listenTo(milestoneDeleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", milestoneDeleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), milestoneDeleteConfirmationCtrl.getInitialComponent(),
 				true, translate("milestone.delete"), true);
 		listenTo(cmc);
 		cmc.activate();

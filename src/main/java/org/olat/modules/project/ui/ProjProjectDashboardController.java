@@ -455,7 +455,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		listenTo(editCtrl);
 		
 		String title = translate("project.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -476,7 +476,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		listenTo(editCtrl);
 		
 		String title = translate("project.copy");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -499,7 +499,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 				"project.set.status.done.confirm", "project.set.status.done.button", false);
 		listenTo(doneConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", doneConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
 				true, translate("project.set.status.done.title"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -523,7 +523,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 				"project.set.status.deleted.confirm", "project.set.status.deleted.button", true);
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("project.set.status.deleted.title"), true);
 		listenTo(cmc);
 		cmc.activate();

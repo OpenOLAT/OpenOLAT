@@ -83,7 +83,8 @@ public class ProjToDoDetailController extends FormBasicController {
 		listenTo(toDoTaskDetailsCtrl);
 		formLayout.add("toToTask", toDoTaskDetailsCtrl.getInitialFormItem());
 		
-		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm, toDo.getArtefact(), true, true);
+		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
+				toDo.getArtefact().getProject(), toDo.getArtefact(), false, true, true);
 		listenTo(referenceCtrl);
 		formLayout.add("references", referenceCtrl.getInitialFormItem());
 		flc.contextPut("hasReferences", Boolean.valueOf(referenceCtrl.getNumReferences() > 0));

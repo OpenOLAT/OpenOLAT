@@ -85,11 +85,12 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private CalendarManager calendarManager;
 
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment, List<? extends TagInfo> projectTags) {
+			ProjAppointment appointment, List<? extends TagInfo> projectTags, Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "appointment_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.appointment = appointment;
 		this.projectTags = projectTags;
+		this.startDate = initialStartDate;
 		
 		initForm(ureq);
 		updateAllDayUI();
@@ -104,25 +105,23 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		 * - Change ProjAppointment to KalendarEvent
 		 * - Add further stuff from CalendarEntryForm: managed flags, read-only, live stream, ...
 		 * - Make a subclass in projects to set the tags and the mapping from event to appointment
-		 * - and much moore ...
+		 * - and much more ...
 		 */
 		
-		
-		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, appointment.getSubject(), formLayout);
+		String subject = appointment != null? appointment.getSubject(): null;
+		subjectEl = uifactory.addTextElement("subject", "appointment.edit.subject", 256, subject, formLayout);
 		subjectEl.setMandatory(true);
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
 		allDayEl = uifactory.addToggleButton("all.day", null, "&nbsp;&nbsp;", formLayout, null, null);
 		allDayEl.addActionListener(FormEvent.ONCHANGE);
-		if (appointment.isAllDay()) {
+		if (appointment != null && appointment.isAllDay()) {
 			allDayEl.toggleOn();
 		}
 		
-		startDate = appointment.getStartDate();
-		Date endDate = appointment.getEndDate();
-		if (startDate == null && endDate == null) {
-			startDate = new Date();
+		Date endDate = appointment != null? appointment.getEndDate(): null;
+		if (endDate == null) {
 			endDate = DateUtils.addHours(startDate, 1);
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
@@ -143,7 +142,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		recurrenceRuleEl = uifactory.addDropdownSingleselect("recurrence.rule", "cal.form.recurrence", formLayout,
 				recurrenceSV.keys(), recurrenceSV.values());
 		recurrenceRuleEl.addActionListener(FormEvent.ONCHANGE);
-		String recurrence = CalendarUtils.getRecurrence(appointment.getRecurrenceRule());
+		String recurrence = appointment != null? CalendarUtils.getRecurrence(appointment.getRecurrenceRule()): null;
 		if (!StringHelper.containsNonWhitespace(recurrence)) {
 			recurrence = RECURRENCE_NONE;
 		}
@@ -151,16 +150,18 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	
 		recurrenceEndEl = uifactory.addDateChooser("recurrence.end", "cal.form.recurrence.ends", null, formLayout);
 		recurrenceEndEl.setMandatory(true);
-		Date recurrenceEnd = calendarManager.getRecurrenceEndDate(appointment.getRecurrenceRule());
+		String recurrenceRule = appointment != null? appointment.getRecurrenceRule(): null;
+		Date recurrenceEnd = calendarManager.getRecurrenceEndDate(recurrenceRule);
 		if (recurrenceEnd != null) {
 			recurrenceEndEl.setDate(recurrenceEnd);
 		}
 		
-		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, appointment.getLocation(), formLayout);
+		String location =appointment != null?  appointment.getLocation(): null;
+		locationEl = uifactory.addTextElement("location", "cal.form.location", 256, location, formLayout);
 
 		colorPickerEl = uifactory.addColorPickerElement("color", "cal.form.event.color", formLayout, CalendarColors.getColorsList());
 		colorPickerEl.addActionListener(FormEvent.ONCHANGE);
-		if (appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
+		if (appointment != null && appointment.getColor() != null && CalendarColors.getColorsList().contains(appointment.getColor())) {
 			color = appointment.getColor();
 		} else {
 			color = null;
@@ -169,7 +170,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		colorResetLink = uifactory.addFormLink("reset", "cal.form.event.color.reset", "", formLayout, Link.BUTTON);
 		updateColor();
 
-		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, appointment.getDescription(), formLayout);
+		String description = appointment != null? appointment.getDescription(): null;
+		descriptionEl = uifactory.addTextAreaElement("description", "cal.form.description", -1, 3, 40, true, false, description, formLayout);
 	}
 	
 	private void updateAllDayUI() {

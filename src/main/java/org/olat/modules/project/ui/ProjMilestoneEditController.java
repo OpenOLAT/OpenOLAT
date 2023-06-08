@@ -30,6 +30,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjProject;
 
 /**
  * 
@@ -42,34 +43,33 @@ public class ProjMilestoneEditController extends FormBasicController {
 	private ProjMilestoneContentEditController contentCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final ProjProject project;
 	private final ProjMilestone milestone;
-	private final boolean firstEdit;
 	private Boolean metadataOpen = Boolean.FALSE;
-
-	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjMilestone milestone,
-			boolean firstEdit) {
+	
+	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjProject project) {
 		super(ureq, wControl, "edit");
-		this.milestone = milestone;
-		this.firstEdit = firstEdit;
+		this.project = project;
+		this.milestone = null;
 		
 		initForm(ureq);
 	}
 
-	public ProjMilestone getMilestone() {
-		return milestone;
-	}
-
-	public boolean isFirstEdit() {
-		return firstEdit;
+	public ProjMilestoneEditController(UserRequest ureq, WindowControl wControl, ProjMilestone milestone) {
+		super(ureq, wControl, "edit");
+		this.project = milestone.getArtefact().getProject();
+		this.milestone = milestone;
+		
+		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjMilestoneContentEditController(ureq, getWindowControl(), mainForm, milestone);
+		contentCtrl = new ProjMilestoneContentEditController(ureq, getWindowControl(), mainForm, project, milestone);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
-		if (!firstEdit) {
+		if (milestone != null) {
 			metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, milestone.getArtefact());
 			listenTo(metadataCtrl);
 			formLayout.add("metadata", metadataCtrl.getInitialFormItem());
@@ -78,12 +78,12 @@ public class ProjMilestoneEditController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("save", buttonLayout);
-		if (firstEdit) {
-			uifactory.addFormCancelButton("remove", buttonLayout, ureq, getWindowControl());
+		if (milestone != null) {
+			uifactory.addFormSubmitButton("save", buttonLayout);
 		} else {
-			uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+			uifactory.addFormSubmitButton("create", buttonLayout);
 		}
+		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
 	}
 
 	@Override

@@ -65,7 +65,8 @@ public class ProjNoteViewController extends FormBasicController {
 		formLayout.add("content", new ComponentWrapperElement("contentView", contentCtrl.getInitialComponent()));
 		
 		referenceCtrl = new ProjArtefactReferencesController(ureq, getWindowControl(), mainForm,
-				noteInfo.getNote().getArtefact(), true, withOpenInSameWindow);
+				noteInfo.getNote().getArtefact().getProject(), noteInfo.getNote().getArtefact(), true,
+				true, withOpenInSameWindow);
 		listenTo(referenceCtrl);
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);

@@ -680,6 +680,23 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
+	public void updateLinkedArtefacts(Identity doer, ProjArtefact artefact, Set<ProjArtefact> linkedArtefacts) {
+		List<ProjArtefact> currentLinkedArtefacts = getLinkedArtefacts(artefact);
+		
+		for (ProjArtefact linkedArtefact : linkedArtefacts) {
+			if (!currentLinkedArtefacts.contains(linkedArtefact)) {
+				linkArtefacts(doer, artefact, linkedArtefact);
+			}
+		}
+		
+		for (ProjArtefact currentLinkedArtefact : currentLinkedArtefacts) {
+			if (!linkedArtefacts.contains(currentLinkedArtefact)) {
+				unlinkArtefacts(doer, artefact, currentLinkedArtefact);
+			}
+		}
+	}
+	
+	@Override
 	public List<ProjArtefact> getLinkedArtefacts(ProjArtefact artefact) {
 		ProjArtefactToArtefactSearchParams ataSearchParams = new ProjArtefactToArtefactSearchParams();
 		ataSearchParams.setArtefact(artefact);
@@ -704,6 +721,10 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public ProjArtefactItems getLinkedArtefactItems(ProjArtefact artefact) {
+		if (artefact == null) {
+			return new ProjArtefactItemsImpl();
+		}
+		
 		ProjArtefactToArtefactSearchParams ataSearchParams = new ProjArtefactToArtefactSearchParams();
 		ataSearchParams.setArtefact(artefact);
 		Map<String, List<ProjArtefact>> typeToArtefacts = artefactToArtefactDao.loadArtefactToArtefacts(ataSearchParams).stream()
@@ -967,7 +988,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 
 	@Override
-	public List<TagInfo> getTagInfos(ProjProject project, ProjArtefactRef selectionArtefact){
+	public List<TagInfo> getTagInfos(ProjProjectRef project, ProjArtefactRef selectionArtefact){
 		return tagDao.loadProjectTagInfos(project, selectionArtefact);
 	}
 	
@@ -1274,20 +1295,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		reloadedToDo = getToDo(toDo, false);
 		String after = ProjectXStream.toXml(reloadedToDo);
 		activityDao.create(Action.toDoStatusDelete, before, after, null, doer, reloadedToDo.getArtefact());
-	}
-	
-	@Override
-	public void deleteToDoPermanent(ProjToDoRef toDo) {
-		ProjToDo reloadedToDo = getToDo(toDo, false);
-		if (reloadedToDo == null) {
-			return;
-		}
-		
-		ProjArtefact artefact = reloadedToDo.getArtefact();
-		ToDoTask toDoTask = toDoService.getToDoTask(ProjToDoProvider.TYPE, reloadedToDo.getKey(), null);
-		toDoService.deleteToDoTaskPermanently(toDoTask);
-		toDoDao.delete(reloadedToDo);
-		deleteArtefactPermanent(artefact);
 	}
 	
 	public ProjToDo getToDo(ProjToDoRef toDo, boolean active) {
@@ -1759,18 +1766,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 
 	@Override
-	public void deleteAppointmentPermanent(ProjAppointmentRef appointment) {
-		ProjAppointment reloadedAppointment = getAppointment(appointment);
-		if (reloadedAppointment == null) {
-			return;
-		}
-		
-		ProjArtefact artefact = reloadedAppointment.getArtefact();
-		appointmentDao.delete(appointment);
-		deleteArtefactPermanent(artefact);
-	}
-
-	@Override
 	public ProjAppointment getAppointment(ProjAppointmentRef appointment) {
 		return getAppointment(appointment, false);
 	}
@@ -1945,21 +1940,6 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
 		calendarHelper.deleteEvent(deletedMilestone, members);
-	}
-
-	@Override
-	public void deleteMilestonePermanent(ProjMilestoneRef milestone) {
-		ProjMilestone reloadedMilestone = getMilestone(milestone);
-		if (reloadedMilestone == null) {
-			return;
-		}
-		
-		Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
-		calendarHelper.deleteEvent(reloadedMilestone, members);
-		
-		ProjArtefact artefact = reloadedMilestone.getArtefact();
-		milestoneDao.delete(milestone);
-		deleteArtefactPermanent(artefact);
 	}
 
 	@Override
