@@ -181,7 +181,7 @@ public class EdusharingConfigController extends FormBasicController {
 		searchCtrl = new EdusharingSearchController(ureq, getWindowControl());
 		listenTo(searchCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", searchCtrl.getInitialComponent(), true, null);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchCtrl.getInitialComponent(), true, null);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -299,7 +299,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 		listenTo(editRateCtrl);
 		
 		String title = translate("edit.participant.rate");
-		cmc = new CloseableModalController(getWindowControl(), "close", editRateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editRateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

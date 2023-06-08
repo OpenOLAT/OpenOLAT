@@ -260,7 +260,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null);
 		listenTo(newOrganisationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -271,7 +271,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		newOrganisationCtrl = new EditOrganisationController(ureq, getWindowControl(), null, parentOrganisation);
 		listenTo(newOrganisationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newOrganisationCtrl.getInitialComponent(), true, translate("create.organisation"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -301,7 +301,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		moveCtrl = new MoveOrganisationController(ureq, getWindowControl(), Collections.singletonList(organisation));
 		listenTo(moveCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", moveCtrl.getInitialComponent(), true, translate("move.organisation"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveCtrl.getInitialComponent(), true, translate("move.organisation"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -325,7 +325,7 @@ public class OrganisationsStructureAdminController extends FormBasicController i
 		listenTo(confirmDeleteCtrl);
 
 		String title = translate("confirm.delete.organisation.title", new String[] { row.getDisplayName() });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 		

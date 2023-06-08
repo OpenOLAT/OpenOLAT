@@ -105,7 +105,7 @@ public class ErrorLogLevelController extends BasicController {
 
 		logViewerCtr = new LogRealTimeViewerController(ureq, getWindowControl(), toBeViewed, Level.ALL, false);
 		listenTo(logViewerCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", logViewerCtr.getInitialComponent(), true, toBeViewed);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), logViewerCtr.getInitialComponent(), true, toBeViewed);
 		listenTo(cmc);
 		cmc.activate();
 	}

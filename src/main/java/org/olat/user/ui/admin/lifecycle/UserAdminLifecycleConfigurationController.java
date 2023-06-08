@@ -462,7 +462,7 @@ public class UserAdminLifecycleConfigurationController extends FormBasicControll
 		listenTo(translatorCtrl);
 
 		String title = translate("translate.title", new String[] { translate(bundle.getLabelI18nKey()) });
-		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

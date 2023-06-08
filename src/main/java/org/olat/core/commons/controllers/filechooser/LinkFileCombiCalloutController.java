@@ -445,7 +445,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		
 		currentModalController = newModalContentController;
 		listenTo(currentModalController);
-		cmc = new CloseableModalController(getWindowControl(), "close", newModalContentController.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newModalContentController.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

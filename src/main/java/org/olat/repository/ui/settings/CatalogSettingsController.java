@@ -152,7 +152,7 @@ public class CatalogSettingsController extends FormBasicController {
 		
 		catalogAdddController = new CatalogEntryAddController(ureq, getWindowControl(), entry, true, false);
 		listenTo(catalogAdddController);
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				catalogAdddController.getInitialComponent(), true, translate("details.catadd"));
 		listenTo(cmc);
 		cmc.activate();

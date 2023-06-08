@@ -274,7 +274,7 @@ public class ThreadListController extends FormBasicController {
 		listenTo(newThreadCtrl);
 		
 		String title = translate("msg.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", newThreadCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newThreadCtrl.getInitialComponent(), true, title);
 		listenTo(newThreadCtrl);
 		cmc.activate();
 	}

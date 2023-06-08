@@ -624,7 +624,7 @@ public class CheckListConfigurationController extends FormBasicController {
 		listenTo(gradeScaleCtrl);
 		
 		String title = translate("grade.scale.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeScaleCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeScaleCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

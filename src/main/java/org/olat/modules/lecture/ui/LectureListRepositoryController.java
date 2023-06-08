@@ -299,7 +299,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry, block, readOnly);
 		listenTo(editLectureCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -310,7 +310,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
 		listenTo(editLectureCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLectureCtrl.getInitialComponent(), true, translate("add.lecture"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -378,7 +378,7 @@ public class LectureListRepositoryController extends FormBasicController {
 			listenTo(deleteLectureBlocksCtrl);
 			
 			String title = translate("delete.lectures.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", deleteLectureBlocksCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteLectureBlocksCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -390,7 +390,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		listenTo(deleteLectureBlocksCtrl);
 		
 		String title = translate("delete.lectures.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteLectureBlocksCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteLectureBlocksCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

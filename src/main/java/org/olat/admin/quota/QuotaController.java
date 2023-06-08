@@ -158,7 +158,7 @@ public class QuotaController extends BasicController {
 		quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl(), q, false);
 		listenTo(quotaEditCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", quotaEditCtr.getInitialComponent(), true, translate("qf.edit"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), quotaEditCtr.getInitialComponent(), true, translate("qf.edit"));
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -171,7 +171,7 @@ public class QuotaController extends BasicController {
 		quotaEditCtr = new GenericQuotaEditController(ureq, getWindowControl());
 		listenTo(quotaEditCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", quotaEditCtr.getInitialComponent(), true, translate("qf.new"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), quotaEditCtr.getInitialComponent(), true, translate("qf.new"));
 		cmc.activate();
 		listenTo(cmc);
 	}

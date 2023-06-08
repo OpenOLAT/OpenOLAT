@@ -214,7 +214,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		listenTo(confirmDeleteCtrl);
 
 		String title = translate("confirmation.delete.level.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -229,7 +229,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		listenTo(moveLevelCtrl);
 		
 		String title = translate("move.taxonomy.level.title", new String[] {StringHelper.escapeHtml(TaxonomyUIFactory.translateDisplayName(getTranslator(), taxonomyLevel)) });
-		cmc = new CloseableModalController(getWindowControl(), "close", moveLevelCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), moveLevelCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -242,7 +242,7 @@ public class TaxonomyLevelOverviewController extends BasicController implements 
 		createTaxonomyLevelCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), taxonomyLevel, taxonomy);
 		listenTo(createTaxonomyLevelCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", createTaxonomyLevelCtrl.getInitialComponent(), true, translate("add.taxonomy.level"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), createTaxonomyLevelCtrl.getInitialComponent(), true, translate("add.taxonomy.level"));
 		listenTo(cmc);
 		cmc.activate();
 	}

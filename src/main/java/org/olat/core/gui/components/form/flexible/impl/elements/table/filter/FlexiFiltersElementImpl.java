@@ -602,7 +602,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		saveCtrl.addControllerListener(this);
 
 		String title = component.getTranslator().translate("custom.filter.save.title");
-		cmc = new CloseableModalController(wControl, "close", saveCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), saveCtrl.getInitialComponent(), true, title, true);
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}
@@ -612,7 +612,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 		updateCtrl.addControllerListener(this);
 
 		String title = component.getTranslator().translate("custom.filter.update.title");
-		cmc = new CloseableModalController(wControl, "close", updateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), updateCtrl.getInitialComponent(), true, title, true);
 		cmc.activate();
 		cmc.addControllerListener(this);
 	}
@@ -625,7 +625,7 @@ public class FlexiFiltersElementImpl extends FormItemImpl implements FormItemCol
 			deleteCtrl.addControllerListener(this);
 	
 			String title = component.getTranslator().translate("custom.filter.delete.title");
-			cmc = new CloseableModalController(wControl, "close", deleteCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), deleteCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
 			cmc.addControllerListener(this);
 		}

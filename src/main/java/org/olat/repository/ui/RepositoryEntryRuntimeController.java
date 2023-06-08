@@ -974,7 +974,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(confirmCloseCtrl);
 		
 		String title = translate("read.only.header", re.getDisplayname());
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmCloseCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmCloseCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1223,7 +1223,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		listenTo(confirmDeleteCtrl);
 		
 		String title = translate("del.header", re.getDisplayname());
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

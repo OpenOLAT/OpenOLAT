@@ -355,7 +355,7 @@ public class RepositoryEntryDetailsMetadataController extends FormBasicControlle
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("RepositoryEntry", entry.getKey());
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), ores, null, null, secCallback);
 		listenTo(commentsCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), commentsCtrl.getInitialComponent(), true, translate("comments"));
 		listenTo(cmc);
 		cmc.activate();
 	}

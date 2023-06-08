@@ -1082,7 +1082,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				positionMoveCtrl = new CatalogNodeManagerController(ureq, getWindowControl(), rootwControl, catalogEntry, toolbarPanel, isLocalTreeAdmin, true);
 				listenTo(positionMoveCtrl);
 				
-				cmc = new CloseableModalController(getWindowControl(), "close", positionMoveCtrl.getInitialComponent(), true, translate("tools.order.catalog"));
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), positionMoveCtrl.getInitialComponent(), true, translate("tools.order.catalog"));
 				listenTo(cmc);
 				cmc.activate();	
 			} else {
@@ -1163,7 +1163,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 				entrySearchCtrl.doSearchByOwnerLimitAccess(ureq.getIdentity());
 			}
 			// open form in dialog
-			cmc = new CloseableModalController(getWindowControl(), "close", entrySearchCtrl.getInitialComponent(), true, translate("tools.add.catalog.link"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), entrySearchCtrl.getInitialComponent(), true, translate("tools.add.catalog.link"));
 			listenTo(cmc);
 			cmc.activate();	
 		} else {
@@ -1192,7 +1192,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			addEntryCtrl.setElementCssClass("o_sel_catalog_add_category_popup");
 			listenTo(addEntryCtrl);
 
-			cmc = new CloseableModalController(getWindowControl(), "close", addEntryCtrl.getInitialComponent(), true, translate("tools.add.catalog.category"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), addEntryCtrl.getInitialComponent(), true, translate("tools.add.catalog.category"));
 			listenTo(cmc);
 			cmc.activate();	
 		} else {
@@ -1211,7 +1211,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 			listenTo(editEntryCtrl);
 			
 			// open form in dialog
-			cmc = new CloseableModalController(getWindowControl(), "close", editEntryCtrl.getInitialComponent(), true, translate("tools.edit.catalog.category"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editEntryCtrl.getInitialComponent(), true, translate("tools.edit.catalog.category"));
 			listenTo(cmc);
 			
 			cmc.activate();	
@@ -1228,7 +1228,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		if (catModificationLock.isSuccess()) {
 			categoryMoveCtrl= new CatalogEntryMoveController(getWindowControl(), ureq, catalogEntry, getTranslator());					
 			listenTo(categoryMoveCtrl);
-			cmc = new CloseableModalController(getWindowControl(), "close", categoryMoveCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), categoryMoveCtrl.getInitialComponent(),
 					true, translate("tools.move.catalog.entry"));
 			listenTo(cmc);
 			cmc.activate();
@@ -1244,7 +1244,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		if(moveMe != null) {
 			entryResourceMoveCtrl= new CatalogEntryMoveController(getWindowControl(), ureq, moveMe, getTranslator());
 			listenTo(entryResourceMoveCtrl);
-			cmc = new CloseableModalController(getWindowControl(), "close", entryResourceMoveCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), entryResourceMoveCtrl.getInitialComponent(),
 					true, translate("tools.move.catalog.entry"));
 			listenTo(cmc);
 			cmc.activate();
@@ -1278,7 +1278,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		
 		// open form in dialog
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", groupCtrl.getInitialComponent(), true, translate("tools.edit.catalog.category.ownergroup"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCtrl.getInitialComponent(), true, translate("tools.edit.catalog.category.ownergroup"));
 		listenTo(cmc);
 		cmc.activate();	
 	}
@@ -1327,7 +1327,7 @@ public class CatalogNodeManagerController extends FormBasicController implements
 		listenTo(contactCtrl);
 		
 		// open form in dialog
-		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent(), true, translate("contact.caretaker"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(), true, translate("contact.caretaker"));
 		listenTo(cmc);
 		cmc.activate();	
 	}

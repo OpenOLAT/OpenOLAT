@@ -64,7 +64,7 @@ public class GuiDemoCalloutWindowController extends BasicController {
 		Controller sourceview = new SourceViewController(ureq, wControl, this.getClass(), contentVC);
 		contentVC.put("sourceview", sourceview.getInitialComponent());
 		
-		CloseableModalController cmc = new CloseableModalController(wControl, "close", contentVC);
+		CloseableModalController cmc = new CloseableModalController(wControl, translate("close"), contentVC);
 		putInitialPanel(new Panel("sf"));
 
 		cmc.activate();

@@ -977,7 +977,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		quickPublishCtr = new QuickPublishController(ureq, getWindowControl(), course);
 		listenTo(quickPublishCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", quickPublishCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), quickPublishCtr.getInitialComponent(),
 				true, translate("pbl.quick.title"));
 		listenTo(cmc);
 		cmc.activate();

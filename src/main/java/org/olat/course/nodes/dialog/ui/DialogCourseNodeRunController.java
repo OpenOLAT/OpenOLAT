@@ -288,7 +288,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 				FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false, false, false, false, true, false);
 		listenTo(fileUplCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", fileUplCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUplCtr.getInitialComponent(),
 				true, translate("dialog.upload.file"));
 		listenTo(cmc);
 		cmc.activate();
@@ -310,7 +310,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		listenTo(fileCopyCtr);
 		
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", fileCopyCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileCopyCtr.getInitialComponent(),
 				true, translate("dialog.copy.file"));
 		listenTo(cmc);
 		cmc.activate();

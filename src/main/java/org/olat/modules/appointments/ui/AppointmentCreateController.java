@@ -1028,7 +1028,7 @@ public class AppointmentCreateController extends FormBasicController {
 
 		bbbCalendarCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(bbbCalendarCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", bbbCalendarCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bbbCalendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);
@@ -1040,7 +1040,7 @@ public class AppointmentCreateController extends FormBasicController {
 
 		teamsCalendarCtr = new TeamsMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(teamsCalendarCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", teamsCalendarCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), teamsCalendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);

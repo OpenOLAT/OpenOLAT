@@ -957,7 +957,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				courseEditorEnv.getCourseGroupManager(), groupKeys);
 		listenTo(groupChooseC);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseC.getInitialComponent(),
 				true, getTranslator().translate("popupchoosegroups"));
 		listenTo(cmc);
 		cmc.activate();
@@ -978,7 +978,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		RepositoryEntry courseRe = RepositoryManager.getInstance().lookupRepositoryEntry(courseResource, false);
 		groupCreateCtlr = new NewBGController(ureq, getWindowControl(), courseRe, true, null);
 		listenTo(groupCreateCtlr);
-		cmc = new CloseableModalController(getWindowControl(), "close", groupCreateCtlr.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupCreateCtlr.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1005,7 +1005,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 				courseEditorEnv.getCourseGroupManager(), getKeys(easyAreaList));
 		listenTo(areaChooseC);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseC.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseC.getInitialComponent(),
 				true, translate("popupchooseareas"));
 		listenTo(cmc);
 		cmc.activate();
@@ -1026,7 +1026,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		areaCreateCtlr = new NewAreaController(ureq, getWindowControl(), courseResource, true, null);
 		listenTo(areaCreateCtlr);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", areaCreateCtlr.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaCreateCtlr.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

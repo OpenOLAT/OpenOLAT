@@ -161,7 +161,7 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		rootTypeCtrl = new EditOrganisationTypeController(ureq, getWindowControl(), null);
 		listenTo(rootTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", rootTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -173,7 +173,7 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 		editTypeCtrl = new EditOrganisationTypeController(ureq, getWindowControl(), reloadedType);
 		listenTo(editTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTypeCtrl.getInitialComponent(), true, translate("edit.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTypeCtrl.getInitialComponent(), true, translate("edit.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}

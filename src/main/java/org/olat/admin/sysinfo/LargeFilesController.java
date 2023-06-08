@@ -544,7 +544,7 @@ public class LargeFilesController extends FormBasicController implements Extende
 		cmsg.setBodyText(bodyStart + bodyFiles.toString() + bodyEnd);
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent());
 		cmc.activate();
 		listenTo(cmc);
 	}

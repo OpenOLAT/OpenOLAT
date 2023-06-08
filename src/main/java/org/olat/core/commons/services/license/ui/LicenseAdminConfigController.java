@@ -412,7 +412,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		listenTo(translatorCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true,
 				translate("admin.translate"));
 		listenTo(cmc);
 		cmc.activate();
@@ -423,7 +423,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		listenTo(editLicenseTypeCtrl);
 		
 		String title = translate("add.license.type");
-		cmc = new CloseableModalController(getWindowControl(), "close", editLicenseTypeCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLicenseTypeCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -434,7 +434,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		listenTo(editLicenseTypeCtrl);
 
 		String title = translate("edit.license.type");
-		cmc = new CloseableModalController(getWindowControl(), "close", editLicenseTypeCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLicenseTypeCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -491,7 +491,7 @@ public class LicenseAdminConfigController extends FormBasicController {
 		listenTo(licensorConstantCtrl);
 
 		String title = translate("admin.licensor.constant.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", licensorConstantCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), licensorConstantCtrl.getInitialComponent(),
 				true, title, true);
 		listenTo(cmc);
 		cmc.activate();

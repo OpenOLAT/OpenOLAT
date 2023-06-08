@@ -220,7 +220,7 @@ public class GradeSystemListController extends FormBasicController {
 		listenTo(createCtrl);
 		
 		String title = translate("grade.system.add");
-		cmc = new CloseableModalController(getWindowControl(), "close", createCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -232,7 +232,7 @@ public class GradeSystemListController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("grade.system.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

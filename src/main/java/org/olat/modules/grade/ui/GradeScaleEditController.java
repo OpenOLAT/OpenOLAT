@@ -746,8 +746,7 @@ public class GradeScaleEditController extends FormBasicController implements Fle
 		listenTo(gradeSystemSelectionCtrl);
 
 		String title = translate("grade.system.selection.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", gradeSystemSelectionCtrl.getInitialComponent(),
-				true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), gradeSystemSelectionCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

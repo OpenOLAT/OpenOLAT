@@ -170,7 +170,7 @@ public class PaypalCheckoutTransactionsController extends FormBasicController im
 		listenTo(transactionDetailsCtrl);
 		
 		String title = translate("paypal.transaction.title", new String[] { trx.getPaypalOrderId() });
-		cmc = new CloseableModalController(getWindowControl(), "close", transactionDetailsCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), transactionDetailsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

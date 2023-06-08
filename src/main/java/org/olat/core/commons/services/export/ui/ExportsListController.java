@@ -406,7 +406,7 @@ public class ExportsListController extends FormBasicController implements FlexiT
 		listenTo(infosCtrl);
 		
 		String title = translate("export.metadata", row.getTitle());
-		cmc = new CloseableModalController(getWindowControl(), "close", infosCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), infosCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

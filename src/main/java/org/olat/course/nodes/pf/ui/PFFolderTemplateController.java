@@ -251,7 +251,7 @@ public class PFFolderTemplateController extends FormBasicController {
         createFolderTemplateCtrl = new PFCreateFolderTemplateController(ureq, getWindowControl(), folderPath, pfNode);
         listenTo(createFolderTemplateCtrl);
 
-        cmc = new CloseableModalController(getWindowControl(), "close", createFolderTemplateCtrl.getInitialComponent(),
+        cmc = new CloseableModalController(getWindowControl(), translate("close"), createFolderTemplateCtrl.getInitialComponent(),
                 true, translate(TEMPLATE_CREATE_SUBFOLDER));
         listenTo(cmc);
         cmc.activate();

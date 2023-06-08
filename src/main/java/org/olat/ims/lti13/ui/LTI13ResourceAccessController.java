@@ -226,7 +226,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		addDeploymentCtrl = new LTI13EditSharedToolDeploymentController(ureq, getWindowControl(), entry, businessGroup);
 		listenTo(addDeploymentCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addDeploymentCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addDeploymentCtrl.getInitialComponent(),
 				true, translate("add.tool"));
 		cmc.activate();
 		listenTo(cmc);
@@ -243,7 +243,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 			listenTo(editDeploymentCtrl);
 			
 			String title = translate("edit.tool", new String[] { deployment.getPlatform().getIssuer() });
-			cmc = new CloseableModalController(getWindowControl(), "close", editDeploymentCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editDeploymentCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -260,7 +260,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 			listenTo(confirmDeleteCtrl);
 			
 			String title = translate("delete.deployment", new String[] { deployment.getPlatform().getIssuer() });
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -277,7 +277,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 			listenTo(viewDeploymentCtrl);
 			
 			String title = translate("view.deployment.tool", deployment.getPlatform().getIssuer());
-			cmc = new CloseableModalController(getWindowControl(), "close", viewDeploymentCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), viewDeploymentCtrl.getInitialComponent(), true, title);
 			cmc.activate();
 			listenTo(cmc);
 		}
@@ -319,7 +319,7 @@ public class LTI13ResourceAccessController extends FormBasicController {
 		emailCtrl = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(emailCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", emailCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), emailCtrl.getInitialComponent(),
 				true, translate("ask.deployment"));
 		cmc.activate();
 		listenTo(cmc);

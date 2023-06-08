@@ -667,7 +667,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		contactCtr = new ContactFormController(ureq, getWindowControl(), true, false, false, cmsg);
 		listenTo(contactCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", contactCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtr.getInitialComponent(),
 				true, translate("command.mail"), true);
 		listenTo(cmc);
 		cmc.activate(); 
@@ -767,7 +767,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		} else {
 			title = translate("delete.users.data.title", Integer.toString(identities.size()));
 		}
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteUserController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeleteUserController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate(); 
 	}
@@ -815,7 +815,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		} else {
 			title = translate("bulkStatus.title.plural", Integer.toString(identities.size()));
 		}
-		cmc = new CloseableModalController(getWindowControl(), "close", changeStatusController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), changeStatusController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

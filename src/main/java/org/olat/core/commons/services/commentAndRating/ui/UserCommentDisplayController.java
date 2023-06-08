@@ -297,7 +297,7 @@ public class UserCommentDisplayController extends BasicController {
 		
 		String name = userManager.getUserDisplayName(userComment.getCreator());
 		String title = translate("comments.coment.reply.title", new String[]{ name });
-		replyCmc = new CloseableModalController(getWindowControl(), "close", replyCommentFormCtr.getInitialComponent(), true, title);
+		replyCmc = new CloseableModalController(getWindowControl(), translate("close"), replyCommentFormCtr.getInitialComponent(), true, title);
 		listenTo(replyCmc);
 		replyCmc.activate();	
 	}

@@ -331,7 +331,7 @@ public class TaxonomyListAdminController extends FormBasicController implements 
 		editTaxonomyCtrl = new EditTaxonomyController(ureq, getWindowControl(), null);
 		listenTo(editTaxonomyCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editTaxonomyCtrl.getInitialComponent(), true, translate("create.taxonomy"));
 		listenTo(cmc);
 		cmc.activate();
 	}

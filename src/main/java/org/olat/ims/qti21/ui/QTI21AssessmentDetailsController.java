@@ -548,7 +548,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 				assessedUserCourseEnv, courseNode, session);
 		listenTo(reopenForCorrectionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenForCorrectionCtrl.getInitialComponent(),
 				true, translate("reopen.assessment.title"));
 		cmc.activate();
 		listenTo(cmc);
@@ -620,7 +620,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		deleteToolCtrl = new QTI21DeleteDataController(ureq, getWindowControl(), entry, asOptions);
 		listenTo(deleteToolCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteToolCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteToolCtrl.getInitialComponent(),
 				true, translate("table.header.results"));
 		cmc.activate();
 		listenTo(cmc);
@@ -637,7 +637,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		confirmResetDataCtrl = new ConfirmResetDataController(ureq, getWindowControl(), dataContext, null);
 		listenTo(confirmResetDataCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmResetDataCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmResetDataCtrl.getInitialComponent(),
 				true, translate("table.header.results"));
 		cmc.activate();
 		listenTo(cmc);
@@ -720,7 +720,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, false, session,
 				fUnzippedDirRoot, mapperUri, null, QTI21AssessmentResultsOptions.allOptions(), true, true, true);
 		listenTo(resultCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", resultCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), resultCtrl.getInitialComponent(),
 				true, translate("results.report"));
 		cmc.activate();
 		listenTo(cmc);
@@ -741,7 +741,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(invalidateConfirmationCtr);
 
 		String title = translate("invalidate.test.confirm.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", invalidateConfirmationCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), invalidateConfirmationCtr.getInitialComponent(),
 				true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -760,7 +760,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		listenTo(revalidateConfirmationCtr);
 
 		String title = translate("revalidate.test.confirm.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", revalidateConfirmationCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), revalidateConfirmationCtr.getInitialComponent(),
 				true, title);
 		cmc.activate();
 		listenTo(cmc);

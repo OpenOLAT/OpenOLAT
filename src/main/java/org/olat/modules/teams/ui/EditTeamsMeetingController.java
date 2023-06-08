@@ -374,7 +374,7 @@ public class EditTeamsMeetingController extends FormBasicController {
 		// still better than having no overview at all
 		calendarCtr = new TeamsMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(calendarCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", calendarCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), calendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);

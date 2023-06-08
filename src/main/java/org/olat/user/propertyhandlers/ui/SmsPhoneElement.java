@@ -192,7 +192,7 @@ public class SmsPhoneElement extends FormItemImpl implements FormItemCollection,
 			String propLabel = CoreSpringFactory.getImpl(UserManager.class)
 					.getPropertyHandlerTranslator(getTranslator()).translate(handler.i18nFormElementLabelKey());
 			String title = getTranslator().translate("sms.title", propLabel);
-			cmc = new CloseableModalController(wControl, "close", smsPhoneCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), smsPhoneCtrl.getInitialComponent(), true, title);
 			cmc.suppressDirtyFormWarningOnClose();
 			cmc.activate();
 		}

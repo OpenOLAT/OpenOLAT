@@ -164,7 +164,7 @@ public class UrlTemplateListController extends FormBasicController {
 		listenTo(editUrlTemplateCtrl);
 		
 		String title = translate("url.template.add");
-		cmc = new CloseableModalController(getWindowControl(), "close", editUrlTemplateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editUrlTemplateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -174,7 +174,7 @@ public class UrlTemplateListController extends FormBasicController {
 		listenTo(editUrlTemplateCtrl);
 		
 		String title = translate("url.template.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editUrlTemplateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editUrlTemplateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

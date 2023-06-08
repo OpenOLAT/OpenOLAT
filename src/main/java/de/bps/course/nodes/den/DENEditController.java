@@ -130,13 +130,13 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 		if (source == manageDatesButton) {
 			//management of dates
 			DENManageDatesController datesCtr = new DENManageDatesController(ureq, getWindowControl(), ores, courseNode);
-			manageDatesModalCntrll = new CloseableModalController(getWindowControl(), "close", datesCtr.getInitialComponent(), true, translate("config.dates"));
+			manageDatesModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), datesCtr.getInitialComponent(), true, translate("config.dates"));
 			manageDatesModalCntrll.addControllerListener(this);
 			manageDatesModalCntrll.activate();
 		} else if (source == manageParticipantsButton) {
 			//list of participants
 			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode, userCourseEnv.isCourseReadOnly());
-			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
+			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), partsCtr.getInitialComponent(), true, translate("dates.table.list"));
 			listParticipantsModalCntrll.addControllerListener(this);
 			listParticipantsModalCntrll.activate();
 		}

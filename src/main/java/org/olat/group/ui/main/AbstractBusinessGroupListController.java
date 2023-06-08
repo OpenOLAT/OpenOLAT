@@ -670,7 +670,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		
 		contactCtrl = new ContactFormController(ureq, getWindowControl(), true, false, true, msg);
 		listenTo(contactCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", contactCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactCtrl.getInitialComponent(),
 				true, translate("dialog.modal.bg.asktoleave.title"));
 		cmc.activate();
 		listenTo(cmc);

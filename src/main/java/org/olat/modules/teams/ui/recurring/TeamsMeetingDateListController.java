@@ -186,7 +186,7 @@ public class TeamsMeetingDateListController extends StepFormBasicController impl
 		addMeetingController = new AddMeetingController(ureq, getWindowControl(), meetingsContext);
 		listenTo(addMeetingController);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addMeetingController.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addMeetingController.getInitialComponent(),
 				true, translate("add.single.meeting"));
 		cmc.activate();
 		listenTo(cmc);
@@ -202,7 +202,7 @@ public class TeamsMeetingDateListController extends StepFormBasicController impl
 
 		calendarCtr = new TeamsMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(calendarCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", calendarCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), calendarCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);

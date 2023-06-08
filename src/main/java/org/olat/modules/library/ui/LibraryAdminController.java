@@ -223,7 +223,7 @@ public class LibraryAdminController extends FormBasicController {
 		listenTo(chooseFolderCtr);
 		
 		String title = translate("add.shared.folder");
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseFolderCtr.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseFolderCtr.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

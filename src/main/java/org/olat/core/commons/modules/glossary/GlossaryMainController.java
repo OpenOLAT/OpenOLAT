@@ -235,7 +235,7 @@ public class GlossaryMainController extends BasicController implements Activatea
 		listenTo(glossEditCtrl);
 		
 		String title = add ? translate("glossary.add.title") : translate("glossary.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", glossEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), glossEditCtrl.getInitialComponent(), true, title, true);
 		cmc.setContextHelp(getTranslator(), "manual_user/course_operation/Using_Additional_Course_Features/#glossary");
 		cmc.activate();
 		listenTo(cmc);

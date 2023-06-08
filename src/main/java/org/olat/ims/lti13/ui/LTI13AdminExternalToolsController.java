@@ -145,7 +145,7 @@ public class LTI13AdminExternalToolsController extends FormBasicController {
 		editToolCtrl = new LTI13EditToolController(ureq, getWindowControl(), LTI13ToolType.EXT_TEMPLATE);
 		listenTo(editToolCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editToolCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editToolCtrl.getInitialComponent(),
 				true, translate("add.tool"));
 		cmc.activate();
 		listenTo(cmc);
@@ -159,7 +159,7 @@ public class LTI13AdminExternalToolsController extends FormBasicController {
 		listenTo(editToolCtrl);
 		
 		String title = translate("edit.tool", new String[] { row.getToolName() });
-		cmc = new CloseableModalController(getWindowControl(), "close", editToolCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editToolCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

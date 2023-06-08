@@ -1958,7 +1958,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		leaveDialogBox = new ConfirmLeaveController(ureq, getWindowControl(), getRepositoryEntry());
 		listenTo(leaveDialogBox);
-		cmc = new CloseableModalController(getWindowControl(), "close", leaveDialogBox.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
