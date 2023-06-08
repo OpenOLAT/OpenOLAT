@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -228,6 +229,8 @@ public class InfoDisplayController extends FormBasicController {
 		List<InfoMessage> msgs = infoMessageManager.loadInfoMessageByResource(ores, resSubPath, businessPath, after, null, 0, maxResults);
 		List<InfoMessageForDisplay> infoDisplays = new ArrayList<>(msgs.size());
 		Map<String, VFSLeaf> keysToDisplay = new HashMap<>();
+		// sort infoMessages by publishdate
+		msgs.sort(Comparator.comparing(InfoMessage::getPublishDate).reversed());
 		for(InfoMessage info:msgs) {
 			// skip infoMessage, if it is unpublished and the current user is not allowed to manage it
 			if (!info.isPublished() && !secCallback.canEdit(info)) {
