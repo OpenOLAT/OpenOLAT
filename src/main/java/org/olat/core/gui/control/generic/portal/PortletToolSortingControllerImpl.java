@@ -127,12 +127,12 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {	   
 		if(source == autoSorting) {			
-		  closeableModalController = new CloseableModalController(getWindowControl(), "close", portletAutoSortingConfigurator.getInitialComponent(),
+		  closeableModalController = new CloseableModalController(getWindowControl(), translate("close"), portletAutoSortingConfigurator.getInitialComponent(),
 				true,getTranslator().translate("auto.sorting.title"));		  
 		  closeableModalController.addControllerListener(this);
 		  closeableModalController.activate();
 		} else if(source == manualSorting) {
-		  closeableModalController = new CloseableModalController(getWindowControl(), "close", portletManualSortingConfigurator.getInitialComponent(),
+		  closeableModalController = new CloseableModalController(getWindowControl(), translate("close"), portletManualSortingConfigurator.getInitialComponent(),
 						true,getTranslator().translate("manual.sorting.title"));		  
 			closeableModalController.addControllerListener(this);
 			closeableModalController.activate();

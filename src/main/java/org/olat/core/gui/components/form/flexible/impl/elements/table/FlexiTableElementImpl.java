@@ -1800,7 +1800,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		settingsCtrl.addControllerListener(this);
 
 		String title = component.getTranslator().translate("table.settings");
-		cmc = new CloseableModalController(wControl, "close", settingsCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(wControl, component.getTranslator().translate("close"), settingsCtrl.getInitialComponent(), true, title, true);
 		cmc.setCustomWindowCSS("o_offcanvas_right_modal o_table_filters_and_settings");
 		cmc.activate();
 		cmc.addControllerListener(this);

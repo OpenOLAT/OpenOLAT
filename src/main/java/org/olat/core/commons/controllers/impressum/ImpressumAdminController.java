@@ -423,7 +423,7 @@ public class ImpressumAdminController extends FormBasicController {
 		editorCtrl =  WysiwygFactory.createWysiwygController(ureq, getWindowControl(), rootDir, filePath, true, false);
 		editorCtrl.setUserObject(link);
 		listenTo(editorCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", editorCtrl.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editorCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

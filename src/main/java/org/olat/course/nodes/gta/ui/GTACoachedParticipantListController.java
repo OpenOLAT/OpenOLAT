@@ -920,7 +920,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
 		String title = translate("assign.coach.to", fullname);
-		cmc = new CloseableModalController(getWindowControl(), "close", assignCoachCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assignCoachCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -944,7 +944,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		
 		String fullname = userManager.getUserDisplayName(assessedIdentity);
 		String title = translate("duedates.user", fullname);
-		cmc = new CloseableModalController(getWindowControl(), "close", editDueDatesCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editDueDatesCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -971,7 +971,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 			listenTo(editMultipleDueDatesCtrl);
 			
 			String title = translate("duedates.multiple.user");
-			cmc = new CloseableModalController(getWindowControl(), "close", editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editMultipleDueDatesCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}

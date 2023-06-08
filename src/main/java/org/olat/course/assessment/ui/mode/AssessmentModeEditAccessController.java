@@ -517,7 +517,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		areaChooseCtrl = new AreaSelectionController(ureq, getWindowControl(), true, groupManager, areaKeys);
 		listenTo(areaChooseCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", areaChooseCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseCtrl.getInitialComponent(),
 				true, translate("popup.chooseareas"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -531,7 +531,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		groupChooseCtrl = new GroupSelectionController(ureq, getWindowControl(), true, groupManager, groupKeys);
 		listenTo(groupChooseCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", groupChooseCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseCtrl.getInitialComponent(),
 				true, translate("popup.choosegroups"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -545,7 +545,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		curriculumElementChooseCtrl = new CurriculumElementSelectionController(ureq, getWindowControl(), groupManager, curriculumElementKeys);
 		listenTo(curriculumElementChooseCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", curriculumElementChooseCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), curriculumElementChooseCtrl.getInitialComponent(),
 				true, translate("popup.choosecurriculumelements"), true);
 		listenTo(cmc);
 		cmc.activate();

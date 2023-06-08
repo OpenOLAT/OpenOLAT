@@ -222,7 +222,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		rootElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), null);
 		listenTo(rootElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", rootElementTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootElementTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -232,7 +232,7 @@ public class CurriculumElementTypesEditController extends FormBasicController im
 		editElementTypeCtrl = new EditCurriculumElementTypeController(ureq, getWindowControl(), reloadedType);
 		listenTo(editElementTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editElementTypeCtrl.getInitialComponent(), true, translate("edit"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editElementTypeCtrl.getInitialComponent(), true, translate("edit"));
 		listenTo(cmc);
 		cmc.activate();
 	}

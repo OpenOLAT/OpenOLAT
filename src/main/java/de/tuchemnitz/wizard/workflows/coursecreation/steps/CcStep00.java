@@ -146,7 +146,7 @@ public class CcStep00 extends BasicStep {
 				listenTo(formEditEnrol);
 				
 				String title = translate("coursecreation.enrollment.title");
-				cmc = new CloseableModalController(getWindowControl(), "close", formEditEnrol.getInitialComponent(), true, title);
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), formEditEnrol.getInitialComponent(), true, title);
 				listenTo(cmc);
 				cmc.activate();
 			}

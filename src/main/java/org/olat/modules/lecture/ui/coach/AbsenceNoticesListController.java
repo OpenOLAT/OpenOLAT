@@ -469,7 +469,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(authorizeCtrl);
 	
 			String title = translate("absences.batch.authorize");
-			cmc = new CloseableModalController(getWindowControl(), "close", authorizeCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), authorizeCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -536,7 +536,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		listenTo(editNoticeCtrl);
 		
 		String title = translate(AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice()));
-		cmc = new CloseableModalController(getWindowControl(), "close", editNoticeCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editNoticeCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -548,7 +548,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		listenTo(profileCtrl);
 
 		String title = translate("profile");
-		cmc = new CloseableModalController(getWindowControl(), "close", profileCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), profileCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -597,7 +597,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(contactTeachersCtrl);
 			
 			String title = translate("contact.teachers");
-			cmc = new CloseableModalController(getWindowControl(), "close", contactTeachersCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), contactTeachersCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -612,7 +612,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			listenTo(deleteNoticeCtrl);
 			
 			String title = translate("delete");
-			cmc = new CloseableModalController(getWindowControl(), "close", deleteNoticeCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteNoticeCtrl.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		}

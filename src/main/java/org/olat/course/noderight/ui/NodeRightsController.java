@@ -475,7 +475,7 @@ public class NodeRightsController extends FormBasicController {
 		addRolesCtrl = new AddRolesController(ureq, getWindowControl(), wrapper.getType(), wrapper.getNodeRight());
 		listenTo(addRolesCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addRolesCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addRolesCtrl.getInitialComponent(), true,
 				translate("add.roles"));
 		listenTo(cmc);
 		cmc.activate();
@@ -532,7 +532,7 @@ public class NodeRightsController extends FormBasicController {
 		addGroupsCtrl = new AddGroupsController(ureq, getWindowControl(), courseGroupManager, wrapper.getNodeRight());
 		listenTo(addGroupsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addGroupsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addGroupsCtrl.getInitialComponent(), true,
 				translate("add.groups"));
 		listenTo(cmc);
 		cmc.activate();

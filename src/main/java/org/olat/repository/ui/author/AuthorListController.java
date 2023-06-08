@@ -1628,7 +1628,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		listenTo(closeCtrl);
 		
 		String title = translate("read.only.header", entry.getDisplayname());
-		cmc = new CloseableModalController(getWindowControl(), "close", closeCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -608,7 +608,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 				null);
 		videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
 		String title = translate("av.play");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				videoAudioPlayerController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -675,7 +675,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.video");
-		cmc = new CloseableModalController(getWindowControl(), "close", avSubmissionController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avSubmissionController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -687,7 +687,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 		listenTo(avSubmissionController);
 
 		String title = translate("av.record.audio");
-		cmc = new CloseableModalController(getWindowControl(), "close", avSubmissionController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avSubmissionController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -702,7 +702,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 			listenTo(newDocCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), newDocCtrl.getInitialComponent(),
 					translate(createDocButton.getI18nKey()));
 			listenTo(cmc);
 			cmc.activate();
@@ -719,7 +719,7 @@ class SubmitDocumentsController extends FormBasicController implements GenericEv
 					copyEnding);
 			listenTo(copyDocCtrl);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", copyDocCtrl.getInitialComponent(),
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), copyDocCtrl.getInitialComponent(),
 					translate(copyDocButton.getI18nKey()));
 			listenTo(cmc);
 			cmc.activate();

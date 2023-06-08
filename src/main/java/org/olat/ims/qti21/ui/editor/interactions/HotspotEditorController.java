@@ -454,7 +454,7 @@ public class HotspotEditorController extends FormBasicController {
 		listenTo(extendedEditorCtrl);
 		
 		String title = translate("extended.edit.hotspot.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", extendedEditorCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), extendedEditorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

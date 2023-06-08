@@ -295,7 +295,7 @@ public class AppealListRepositoryController extends FormBasicController {
 		listenTo(appealCtrl);
 		
 		String title = translate("appeal.title", new String[]{ rollCall.getLectureBlock().getTitle() });
-		cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appealCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -310,7 +310,7 @@ public class AppealListRepositoryController extends FormBasicController {
 			listenTo(appealCtrl);
 			
 			String title = translate("appeals.update.title", new String[]{ Integer.toString(rollCalls.size()) });
-			cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), appealCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}

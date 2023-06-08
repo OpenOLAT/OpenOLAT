@@ -434,7 +434,7 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		listenTo(shareDocumentsCtrl);
 		
 		String title = translate("meeting.share.documents.of", new String[] { StringHelper.escapeHtml(meeting.getName() )});
-		cmc = new CloseableModalController(getWindowControl(), "close", shareDocumentsCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), shareDocumentsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

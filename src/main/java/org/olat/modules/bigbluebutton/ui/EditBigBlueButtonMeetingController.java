@@ -453,7 +453,7 @@ public class EditBigBlueButtonMeetingController extends FormBasicController {
 		// still better than having no overview at all
 		calCtr = new BigBlueButtonMeetingsCalendarController(ureq, getWindowControl());
 		listenTo(calCtr);
-		cmc = new CloseableModalController(getWindowControl(), "close", calCtr.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), calCtr.getInitialComponent(), true,
 				translate("calendar.open"));
 		cmc.activate();
 		listenTo(cmc);

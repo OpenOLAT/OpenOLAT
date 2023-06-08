@@ -816,7 +816,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 				courseEditorEnv.getCourseGroupManager(), groupKeys);
 		listenTo(groupSelectionCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", groupSelectionCtrl.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), groupSelectionCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -829,7 +829,7 @@ public class GTAWorkflowEditController extends FormBasicController {
 				courseEditorEnv.getCourseGroupManager(), areaKeys);
 		listenTo(areaSelectionCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", areaSelectionCtrl.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), areaSelectionCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -244,7 +244,7 @@ public class PracticeController extends BasicController implements OutcomesAsses
 		listenTo(cancelCtrl);
 		
 		String title = translate("confirm.back.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", cancelCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

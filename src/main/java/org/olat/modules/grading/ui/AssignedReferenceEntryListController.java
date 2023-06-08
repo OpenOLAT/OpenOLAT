@@ -246,7 +246,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		
 		String graderName = userManager.getUserDisplayName(grader);
 		String title = translate("contact.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}
@@ -272,7 +272,7 @@ public class AssignedReferenceEntryListController extends FormBasicController {
 		listenTo(addAbsenceLeaveCtrl);
 		
 		String title = translate("absence.grader.title", new String[] { row.getDisplayname() });
-		cmc = new CloseableModalController(getWindowControl(), "close", addAbsenceLeaveCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addAbsenceLeaveCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}

@@ -152,7 +152,7 @@ public class VideoPosterEditController extends FormBasicController {
 		
 		if(posterSelectionForm.hasProposals()) {
 			String title = translate("video.config.poster.replace");
-			cmc = new CloseableModalController(getWindowControl(), "close", posterSelectionForm.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), posterSelectionForm.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
 		} else {
@@ -166,7 +166,7 @@ public class VideoPosterEditController extends FormBasicController {
 		listenTo(posterUploadForm);
 		
 		String title = translate("video.config.poster.upload");
-		cmc = new CloseableModalController(getWindowControl(), "close", posterUploadForm.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), posterUploadForm.getInitialComponent(),
 				true, title, true);
 		listenTo(cmc);
 		cmc.activate();

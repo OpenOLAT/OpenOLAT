@@ -761,7 +761,7 @@ public class RepositoryEntryListController extends FormBasicController
 		commentsCtrl = new UserCommentsController(ureq, getWindowControl(), row.getRepositoryEntryResourceable(), null, null, secCallback);
 		commentsCtrl.setUserObject(row);
 		listenTo(commentsCtrl);
-		cmc = new CloseableModalController(getWindowControl(), "close", commentsCtrl.getInitialComponent(), true, translate("comments"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), commentsCtrl.getInitialComponent(), true, translate("comments"));
 		listenTo(cmc);
 		cmc.activate();
 	}

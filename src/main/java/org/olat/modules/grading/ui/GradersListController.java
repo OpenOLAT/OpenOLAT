@@ -363,7 +363,7 @@ public class GradersListController extends FormBasicController {
 
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("deactivate.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeactivationCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDeactivationCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -385,7 +385,7 @@ public class GradersListController extends FormBasicController {
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("remove.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmRemoveCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRemoveCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -403,7 +403,7 @@ public class GradersListController extends FormBasicController {
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("contact.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", contactGraderCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), contactGraderCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}
@@ -434,7 +434,7 @@ public class GradersListController extends FormBasicController {
 		
 		String graderName = userManager.getUserDisplayName(row.getGrader());
 		String title = translate("absence.grader.title", new String[] { graderName });
-		cmc = new CloseableModalController(getWindowControl(), "close", addAbsenceLeaveCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addAbsenceLeaveCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}

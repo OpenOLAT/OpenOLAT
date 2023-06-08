@@ -419,7 +419,7 @@ public class QTI21IdentityListCourseNodeToolsController extends AbstractToolsCon
 				assessedUserCourseEnv, (IQTESTCourseNode)courseNode, null);
 		listenTo(reopenForCorrectionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", reopenForCorrectionCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), reopenForCorrectionCtrl.getInitialComponent(),
 				true, translate("reopen.assessment.title"));
 		cmc.activate();
 		listenTo(cmc);

@@ -472,7 +472,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);
-			cmc = new CloseableModalController(getWindowControl(), "close", groupChooseC.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), groupChooseC.getInitialComponent());
 			listenTo(cmc);
 
 			cmc.activate();
@@ -503,7 +503,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 					cev.getCourseGroupManager(), getKeys(easyAreaList));
 			listenTo(areaChooseC);
 
-			cmc = new CloseableModalController(getWindowControl(), "close", areaChooseC.getInitialComponent());
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), areaChooseC.getInitialComponent());
 			listenTo(cmc);
 			cmc.activate();
 			subm.setEnabled(false);

@@ -149,7 +149,7 @@ public class MinimalBaseFullWebappController extends BaseFullWebappController im
 		listenTo(disclaimerCtrl);
 
 		String title = disclaimerCtrl.getAndRemoveTitle();
-		cmc = new CloseableModalController(getWindowControl(), "close", disclaimerCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), disclaimerCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

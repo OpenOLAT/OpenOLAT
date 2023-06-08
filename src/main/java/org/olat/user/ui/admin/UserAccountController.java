@@ -358,7 +358,7 @@ public class UserAccountController extends FormBasicController {
 		listenTo(confirmConversionCtrl);
 		
 		String title = translate("convert.invitee.to.user.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmConversionCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmConversionCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

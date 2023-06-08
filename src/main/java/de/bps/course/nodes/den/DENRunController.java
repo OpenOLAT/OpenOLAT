@@ -183,7 +183,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 			removeAsListenerAndDispose(manageDatesModalCntrll);
 			DENManageDatesController datesCtr = new DENManageDatesController(ureq, getWindowControl(), ores, courseNode);
 			listenTo(datesCtr);
-			manageDatesModalCntrll = new CloseableModalController(getWindowControl(), "close", datesCtr.getInitialComponent(), true, translate("config.dates"));
+			manageDatesModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), datesCtr.getInitialComponent(), true, translate("config.dates"));
 			manageDatesModalCntrll.activate();
 			listenTo(manageDatesModalCntrll);
 			
@@ -192,7 +192,7 @@ public class DENRunController extends BasicController implements GenericEventLis
 			removeAsListenerAndDispose(listParticipantsModalCntrll);
 			DENManageParticipantsController partsCtr = new DENManageParticipantsController(ureq, getWindowControl(), ores, courseNode, !enrollmentEnabled);
 			listenTo(partsCtr);
-			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), "close", partsCtr.getInitialComponent(), true, translate("dates.table.list"));
+			listParticipantsModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), partsCtr.getInitialComponent(), true, translate("dates.table.list"));
 			listParticipantsModalCntrll.activate();
 			listenTo(listParticipantsModalCntrll);
 		}

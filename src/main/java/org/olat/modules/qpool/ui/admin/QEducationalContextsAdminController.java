@@ -168,7 +168,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		listenTo(singleKeyTrnsCtrl);
 
 		removeAsListenerAndDispose(cmc);
-		cmc = new CloseableModalController(getWindowControl(), "close", singleKeyTrnsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), singleKeyTrnsCtrl.getInitialComponent(), true,
 				translate("translation"));
 		listenTo(cmc);
 		cmc.activate();

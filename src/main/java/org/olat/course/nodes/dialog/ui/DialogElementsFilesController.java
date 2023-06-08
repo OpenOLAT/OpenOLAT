@@ -146,7 +146,7 @@ public class DialogElementsFilesController extends BasicController {
 				FolderConfig.getLimitULKB(), Quota.UNLIMITED, null, false, false, false, false, true, false);
 		listenTo(fileUplCtr);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", fileUplCtr.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUplCtr.getInitialComponent(),
 				true, translate("dialog.upload.file"));
 		listenTo(cmc);
 		cmc.activate();

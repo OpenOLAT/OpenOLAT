@@ -330,7 +330,7 @@ public class ZoomConfigurationController extends FormBasicController {
         editZoomProfileCtrl = new ZoomProfileEditController(ureq, getWindowControl());
         listenTo(editZoomProfileCtrl);
 
-        modalCtrl = new CloseableModalController(getWindowControl(), "close", editZoomProfileCtrl.getInitialComponent(), true, translate("zoom.profile.add"));
+        modalCtrl = new CloseableModalController(getWindowControl(), translate("close"), editZoomProfileCtrl.getInitialComponent(), true, translate("zoom.profile.add"));
         modalCtrl.activate();
         listenTo(modalCtrl);
     }
@@ -346,7 +346,7 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(editZoomProfileCtrl);
 
         String title = translate("zoom.profile.edit", zoomProfile.getName());
-        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+        modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
                 editZoomProfileCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
         listenTo(modalCtrl);
@@ -363,7 +363,7 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(showApplicationsCtrl);
 
         String title = translate("zoom.profile.applications", zoomProfile.getName());
-        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+        modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
                 showApplicationsCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
         listenTo(modalCtrl);
@@ -386,7 +386,7 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(profileInUseCtrl);
 
         String title = translate("zoom.profile.in.use.title", zoomProfile.getName());
-        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+        modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
                 profileInUseCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
         listenTo(modalCtrl);
@@ -401,7 +401,7 @@ public class ZoomConfigurationController extends FormBasicController {
         listenTo(confirmDeleteProfileCtrl);
 
         String title = translate("confirm.delete.profile.title", zoomProfile.getName());
-        modalCtrl = new CloseableModalController(getWindowControl(), "close",
+        modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
                 confirmDeleteProfileCtrl.getInitialComponent(), true, title);
         modalCtrl.activate();
         listenTo(modalCtrl);

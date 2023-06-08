@@ -367,7 +367,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 					solution.getFilename(), mode, courseRepoKey);
 			videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
 			String title = translate("av.play");
-			cmc = new CloseableModalController(getWindowControl(), "close",
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
 					videoAudioPlayerController.getInitialComponent(), true, title, true);
 			listenTo(cmc);
 			cmc.activate();
@@ -412,7 +412,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 				htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 		listenTo(newSolutionCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", newSolutionCtrl.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newSolutionCtrl.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -434,7 +434,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		listenTo(avSampleSolutionController);
 
 		String title = translate("av.record.audio");
-		cmc = new CloseableModalController(getWindowControl(), "close", avSampleSolutionController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avSampleSolutionController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -444,7 +444,7 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 		listenTo(avSampleSolutionController);
 
 		String title = translate("av.record.video");
-		cmc = new CloseableModalController(getWindowControl(), "close", avSampleSolutionController.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), avSampleSolutionController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

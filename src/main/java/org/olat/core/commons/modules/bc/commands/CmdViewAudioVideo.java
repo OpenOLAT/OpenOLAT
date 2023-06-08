@@ -98,7 +98,7 @@ public class CmdViewAudioVideo extends BasicController implements FolderCommand 
 				.build(vfsLeaf);
 		videoAudioPlayerController = new VideoAudioPlayerController(ureq, getWindowControl(), configs, null);
 		String title = translator.translate("av.play");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				videoAudioPlayerController.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

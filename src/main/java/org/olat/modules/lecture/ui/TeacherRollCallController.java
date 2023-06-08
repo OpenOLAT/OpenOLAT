@@ -832,7 +832,7 @@ public class TeacherRollCallController extends FormBasicController {
 		closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(closeRollCallCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", closeRollCallCtrl.getInitialComponent(), true, translate("close.lecture.blocks"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), closeRollCallCtrl.getInitialComponent(), true, translate("close.lecture.blocks"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -843,7 +843,7 @@ public class TeacherRollCallController extends FormBasicController {
 		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(cancelRollCallCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", cancelRollCallCtrl.getInitialComponent(), true, translate("cancel.lecture.blocks"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), cancelRollCallCtrl.getInitialComponent(), true, translate("cancel.lecture.blocks"));
 		listenTo(cmc);
 		cmc.activate();
 	}

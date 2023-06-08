@@ -659,7 +659,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		testResourcesListCtrl.selectFilterTab(ureq, testResourcesListCtrl.getMyTab());
 		
 		String title = translate("add.resource.test.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", testResourcesListCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), testResourcesListCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -686,7 +686,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		listenTo(sharesChooserCtrl);
 		
 		String title = translate("add.resource.pool.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", sharesChooserCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), sharesChooserCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

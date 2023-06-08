@@ -274,7 +274,7 @@ public abstract class AbstractToolsController extends BasicController {
 		listenTo(resetAttemptsConfirmationCtrl);
 		
 		String title = translate("tool.reset.attempts");
-		cmc = new CloseableModalController(getWindowControl(), "close", resetAttemptsConfirmationCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), resetAttemptsConfirmationCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -207,7 +207,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("educational.type.add.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -219,7 +219,7 @@ public class EducationalTypeAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("educational.type.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();

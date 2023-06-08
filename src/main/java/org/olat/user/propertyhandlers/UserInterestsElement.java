@@ -96,6 +96,7 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 		}
 		
 		Collections.sort(sortedUserInterestsIDs, new Comparator<String> () {
+			@Override
 			public int compare(String id0, String id1) {
 				String[] levels0 = id0.split("\\.");
 				String[] levels1 = id1.split("\\.");
@@ -176,7 +177,7 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 			userInterestsController = new UserInterestsController(ureq, wControl, getSelectedInterestsIDs(), availableUserInterests);
 			userInterestsController.addControllerListener(this);
 			String title = getTranslator().translate("userinterests.title");
-			modalController = new CloseableModalController(wControl, "close", userInterestsController.getInitialComponent(), true, title);
+			modalController = new CloseableModalController(wControl, component.getTranslator().translate("close"), userInterestsController.getInitialComponent(), true, title);
 			modalController.activate();
 		}
 		

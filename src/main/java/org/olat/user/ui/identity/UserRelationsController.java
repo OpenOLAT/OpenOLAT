@@ -271,7 +271,7 @@ public class UserRelationsController extends FormBasicController {
 			confirmRemoveRelationsCtrl = new ConfirmRemoveRelationController(ureq, getWindowControl(), relationsToRemove);
 			listenTo(confirmRemoveRelationsCtrl);
 			String title = translate("confirm.remove.relation.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", confirmRemoveRelationsCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRemoveRelationsCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}

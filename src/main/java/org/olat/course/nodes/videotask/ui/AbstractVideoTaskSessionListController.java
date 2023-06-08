@@ -446,7 +446,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		listenTo(confirmInvalidateCtrl);
 		
 		String title = translate("confirm.invalidate.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmInvalidateCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmInvalidateCtrl.getInitialComponent(),
 				true, title);
 		cmc.activate();
 		listenTo(cmc);
@@ -485,7 +485,7 @@ abstract class AbstractVideoTaskSessionListController extends FormBasicControlle
 		listenTo(confirmRevalidateCtrl);
 		
 		String title = translate("confirm.revalidate.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmRevalidateCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmRevalidateCtrl.getInitialComponent(),
 				true, title);
 		cmc.activate();
 		listenTo(cmc);

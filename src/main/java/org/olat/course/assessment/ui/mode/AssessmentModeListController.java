@@ -416,7 +416,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			listenTo(stopCtrl);
 			
 			String title = translate("confirm.stop.title");
-			cmc = new CloseableModalController(getWindowControl(), "close", stopCtrl.getInitialComponent(), true, title, true);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), stopCtrl.getInitialComponent(), true, title, true);
 			cmc.activate();
 			listenTo(cmc);
 		}

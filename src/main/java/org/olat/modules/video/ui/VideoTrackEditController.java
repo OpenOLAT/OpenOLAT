@@ -163,7 +163,7 @@ public class VideoTrackEditController extends FormBasicController {
 		trackUploadForm = new VideoTrackUploadForm(ureq, getWindowControl(), videoResource);
 		listenTo(trackUploadForm);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", trackUploadForm.getInitialComponent());
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), trackUploadForm.getInitialComponent());
 		listenTo(cmc);
 		cmc.activate();
 	}

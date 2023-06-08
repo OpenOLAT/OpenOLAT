@@ -348,7 +348,7 @@ public class DocumentConfigController extends BasicController {
 		selectionCtrl = new DocumentSelectionController(ureq, getWindowControl(), VFSManager.getQuotaLeftKB(courseFolderCont));
 		listenTo(selectionCtrl);
 	
-		cmc = new CloseableModalController(getWindowControl(), "close", selectionCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), selectionCtrl.getInitialComponent(), true,
 				translate("config.change.title"));
 		listenTo(cmc);
 		cmc.activate();

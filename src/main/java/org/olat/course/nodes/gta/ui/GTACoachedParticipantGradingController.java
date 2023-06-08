@@ -180,7 +180,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		listenTo(assessmentForm);
 		
 		String title = translate("grading");
-		cmc = new CloseableModalController(getWindowControl(), "close", assessmentForm.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), assessmentForm.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

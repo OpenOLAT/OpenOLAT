@@ -618,7 +618,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		exceptionalObligationCreateCtrl = handler.createCreationController(ureq, getWindowControl(), courseEntry, courseNode);
 		listenTo(exceptionalObligationCreateCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", exceptionalObligationCreateCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), exceptionalObligationCreateCtrl.getInitialComponent(), true,
 				translate("config.exceptional.obligation.add"));
 		listenTo(cmc);
 		cmc.activate();

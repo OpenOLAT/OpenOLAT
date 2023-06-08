@@ -219,7 +219,7 @@ public class ColorCategoryAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("color.category.add.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -230,7 +230,7 @@ public class ColorCategoryAdminController extends FormBasicController {
 		listenTo(editCtrl);
 		
 		String title = translate("color.category.edit.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", editCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true,
 				title, true);
 		listenTo(cmc);
 		cmc.activate();

@@ -118,7 +118,7 @@ public class DENManageDatesController extends BasicController {
 					editSingleDateForm.setDuration(denManager.getDurationAsString(calEvent));
 					
 					removeAsListenerAndDispose(editDateModalCntrll);
-					editDateModalCntrll = new CloseableModalController(getWindowControl(), "close", editSingleDateForm.getInitialComponent(), true, translate("dates.edit"));
+					editDateModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), editSingleDateForm.getInitialComponent(), true, translate("dates.edit"));
 					listenTo(editDateModalCntrll);
 
 				} else if(selectedDates.cardinality() > 1) {
@@ -127,7 +127,7 @@ public class DENManageDatesController extends BasicController {
 					listenTo(editMultipleDatesForm);
 					
 					removeAsListenerAndDispose(editDateModalCntrll);
-					editDateModalCntrll = new CloseableModalController(getWindowControl(), "close", editMultipleDatesForm.getInitialComponent(), true, translate("dates.edit"));
+					editDateModalCntrll = new CloseableModalController(getWindowControl(), translate("close"), editMultipleDatesForm.getInitialComponent(), true, translate("dates.edit"));
 					listenTo(editDateModalCntrll);
 				}
 				//persist dates

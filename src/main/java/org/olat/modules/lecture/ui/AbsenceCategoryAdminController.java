@@ -199,7 +199,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		listenTo(editReasonCtrl);
 		
 		String title = translate("edit.absence.category");
-		cmc = new CloseableModalController(getWindowControl(), "close", editReasonCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editReasonCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -209,7 +209,7 @@ public class AbsenceCategoryAdminController extends FormBasicController {
 		listenTo(editReasonCtrl);
 		
 		String title = translate("add.absence.category");
-		cmc = new CloseableModalController(getWindowControl(), "close", editReasonCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editReasonCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

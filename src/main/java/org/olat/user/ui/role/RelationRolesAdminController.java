@@ -205,7 +205,7 @@ public class RelationRolesAdminController extends FormBasicController {
 		editRoleCtrl = new EditRelationRoleController(ureq, getWindowControl(), null);
 		listenTo(editRoleCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editRoleCtrl.getInitialComponent(), true, translate("add.role"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editRoleCtrl.getInitialComponent(), true, translate("add.role"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -221,7 +221,7 @@ public class RelationRolesAdminController extends FormBasicController {
 			editRoleCtrl = new EditRelationRoleController(ureq, getWindowControl(), role);
 			listenTo(editRoleCtrl);
 			String title = translate("edit.role", new String[] { row.getRole() });
-			cmc = new CloseableModalController(getWindowControl(), "close", editRoleCtrl.getInitialComponent(), true, title);
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), editRoleCtrl.getInitialComponent(), true, title);
 			listenTo(cmc);
 			cmc.activate();
 		}
@@ -232,7 +232,7 @@ public class RelationRolesAdminController extends FormBasicController {
 		translatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, UserModule.class);
 		listenTo(translatorCtrl);
 		String title = translate("translate.title", new String[] { relationRole.getRole() });
-		cmc = new CloseableModalController(getWindowControl(), "close", translatorCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), translatorCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}

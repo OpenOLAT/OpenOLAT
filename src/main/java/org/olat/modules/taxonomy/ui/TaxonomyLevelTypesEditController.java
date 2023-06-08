@@ -226,7 +226,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		rootLevelTypeCtrl = new EditTaxonomyLevelTypeController(ureq, this.getWindowControl(), null, taxonomy);
 		listenTo(rootLevelTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", rootLevelTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), rootLevelTypeCtrl.getInitialComponent(), true, translate("add.root.type"));
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -236,7 +236,7 @@ public class TaxonomyLevelTypesEditController extends FormBasicController implem
 		editLevelTypeCtrl = new EditTaxonomyLevelTypeController(ureq, this.getWindowControl(), reloadedType, taxonomy);
 		listenTo(editLevelTypeCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", editLevelTypeCtrl.getInitialComponent(), true, translate("edit"));
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editLevelTypeCtrl.getInitialComponent(), true, translate("edit"));
 		listenTo(cmc);
 		cmc.activate();
 	}

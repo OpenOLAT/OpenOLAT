@@ -542,7 +542,7 @@ public class CourseOverviewStep extends BasicStep {
 			moveAllDatesController = new MoveAllDatesController(ureq, getWindowControl(), context, getEarliestDate());
 			listenTo(moveAllDatesController);
 			
-			cmc = new CloseableModalController(getWindowControl(), "close", moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), moveAllDatesController.getInitialComponent(), true, translate("shift.all.dates"));
 			listenTo(cmc);
 			cmc.activate();
 		}

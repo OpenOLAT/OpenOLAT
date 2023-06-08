@@ -688,7 +688,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.startDuration);
 		listenTo(addAppointmentsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addAppointmentsCtrl.getInitialComponent(), true,
 				translate("add.appointment.individual"));
 		listenTo(cmc);
 		cmc.activate();
@@ -698,7 +698,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.startEnd);
 		listenTo(addAppointmentsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addAppointmentsCtrl.getInitialComponent(), true,
 				translate("add.appointment.individual"));
 		listenTo(cmc);
 		cmc.activate();
@@ -708,7 +708,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		addAppointmentsCtrl = new AppointmentCreateController(ureq, getWindowControl(), topic, AppointmentInputType.recurring);
 		listenTo(addAppointmentsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", addAppointmentsCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addAppointmentsCtrl.getInitialComponent(), true,
 				translate("add.appointment.recurring"));
 		listenTo(cmc);
 		cmc.activate();
@@ -718,7 +718,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		appointmentEditCtrl = new AppointmentEditController(ureq, getWindowControl(), appointment);
 		listenTo(appointmentEditCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentEditCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentEditCtrl.getInitialComponent(), true,
 				translate("edit.appointment.title"));
 		listenTo(cmc);
 		cmc.activate();
@@ -728,7 +728,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		appointmentDeleteCtrl = new AppointmentDeleteController(ureq, getWindowControl(), appointment);
 		listenTo(appointmentDeleteCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", appointmentDeleteCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentDeleteCtrl.getInitialComponent(),
 				true, translate("confirm.appointment.delete.title"));
 		listenTo(cmc);
 		cmc.activate();
@@ -751,7 +751,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		findingConfirmationCtrl = new FindingConfirmationController(ureq, getWindowControl(), appointment);
 		listenTo(findingConfirmationCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", findingConfirmationCtrl.getInitialComponent(), true,
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), findingConfirmationCtrl.getInitialComponent(), true,
 				translate("edit.appointment.title"));
 		listenTo(cmc);
 		cmc.activate();
@@ -783,7 +783,7 @@ public abstract class AppointmentListController extends FormBasicController impl
 		removeCtrl = new ParticipationRemoveController(ureq, getWindowControl(), appointment);
 		listenTo(removeCtrl);
 
-		cmc = new CloseableModalController(getWindowControl(), "close", removeCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), removeCtrl.getInitialComponent(),
 				true, translate("remove.user.title"));
 		listenTo(cmc);
 		cmc.activate();

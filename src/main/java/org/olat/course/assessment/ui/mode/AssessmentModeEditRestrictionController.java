@@ -350,7 +350,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseElementsCtrl = new ChooseElementsController(ureq, getWindowControl(), elementKeys, courseOres);
 		listenTo(chooseElementsCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseElementsCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseElementsCtrl.getInitialComponent(),
 				true, translate("popup.chooseelements"), true);
 		listenTo(cmc);
 		cmc.activate();
@@ -364,7 +364,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		chooseStartElementCtrl = new ChooseStartElementController(ureq, getWindowControl(), startElementKey, allowedKeys, courseOres);
 		listenTo(chooseStartElementCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", chooseStartElementCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), chooseStartElementCtrl.getInitialComponent(),
 				true, translate("popup.choosestartelement"), true);
 		listenTo(cmc);
 		cmc.activate();

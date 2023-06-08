@@ -383,7 +383,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		listenTo(certificateChooserCtrl);
 		
 		String title = translate("choose.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", certificateChooserCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), certificateChooserCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();	
 	}

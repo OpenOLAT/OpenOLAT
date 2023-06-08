@@ -415,7 +415,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		listenTo(bulkPointsCtrl);
 		
 		String title = mode == Mode.ADD ? translate("point.add.title") : translate("point.set.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", bulkPointsCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), bulkPointsCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -551,7 +551,7 @@ public class CorrectionAssessmentItemListController extends FormBasicController 
 		confirmSaveTestCtrl = new ConfirmSaveTestsController(ureq, getWindowControl(), notCorrectedQuestions > 0);
 		listenTo(confirmSaveTestCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmSaveTestCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmSaveTestCtrl.getInitialComponent(),
 				true, translate("save.tests"));
 		listenTo(cmc);
 		cmc.activate();

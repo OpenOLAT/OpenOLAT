@@ -162,7 +162,7 @@ public class ForumPseudonymsAdminController extends FormBasicController {
 		listenTo(newPseudoCtrl);
 		
 		String title = translate("new.pseudonym");
-		cmc = new CloseableModalController(getWindowControl(), "close", newPseudoCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), newPseudoCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
