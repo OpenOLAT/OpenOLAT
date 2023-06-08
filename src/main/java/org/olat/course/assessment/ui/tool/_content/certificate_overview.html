@@ -1,11 +1,5 @@
-<fieldset class="o_block">
+<fieldset class="o_block #if($r.isNotNull($rowCount) && $rowCount>1) o_certificate_multi #end">
 	<legend>$r.translate("certificate")</legend>
-	#if($r.isNotEmpty($leadTimeMsg))
-	<div class="o_note">
-		#if($r.isNotEmpty($leadTimeMsg))<p><i class="o_icon o_icon-fw o_icon_certificate"> </i> $leadTimeMsg</p>#end
-		#if($r.isNotEmpty($recertficationMsg))<p><i class="o_icon o_icon-fw o_icon_calendar"> </i> $recertficationMsg</p>#end
-	</div>
-	#end
 	#if($r.available("generate.certificate"))
 		<div class="o_button_group o_button_group_right">
 			$r.render("generate.certificate")

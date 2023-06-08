@@ -478,7 +478,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		String details = translate("students.details", displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				entry, student, details, entryIndex, model.getRowCount(), selectedTool, true, false);
+				entry, student, details, entryIndex, model.getRowCount(), selectedTool, false);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(displayName, statementCtrl);

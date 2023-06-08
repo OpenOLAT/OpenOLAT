@@ -1,6 +1,7 @@
 #set($creationDate = $r.formatDate($row.creationDate))
 #set($nextRecertificationDate = $r.formatDate($row.nextRecertificationDate))
 #set($expiredInDays = $row.expiredInDays)
+#set($expired = ${row.hasExpired()})
 <div class="o_export_card">
 	<div class="o_export_type">
 		<span>
@@ -14,20 +15,21 @@
 		</span>
 	</div>
 	<div class="o_export_meta">
-		<a class="o_certificate_download" href="$row.url">$row.filename</a>
+		#if($r.isNotNull($expiredInDays))
+			<div class="o_certificate_expiration">
+			#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
+			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
+			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
+				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
+			#end
+			</div>
+		#end
+		<a class="o_certificate_download #if($expired) o_certificate_download_expired #end" href="$row.url" target="_blank">$row.filename</a>
 		<span>$r.translate("row.created", $creationDate) #if($r.isNotEmpty($nextRecertificationDate)) | $r.translate("row.valid.until", $nextRecertificationDate)#end</span>
 	</div>
-	#if($r.isNotNull($expiredInDays))
-		<div class="o_export_exp">
-		#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
-			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
-		#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
-			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
-		#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
-			<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
-		#end
-		</div>
-	#end
+	
 	<div class="o_export_actions small">
 		<div class="o_actions">
 			$r.render($row.downloadLink)

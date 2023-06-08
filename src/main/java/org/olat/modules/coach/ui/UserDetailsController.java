@@ -44,10 +44,8 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -76,19 +74,20 @@ public class UserDetailsController extends BasicController implements Activateab
 	private TooledStackedPanel stackPanel;
 	private final VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
-	private Link assessmentLink, efficiencyStatementLink, lecturesLink;
+	private Link lecturesLink;
+	private Link assessmentLink;
 
 	private String details;
-	private int entryIndex,  numOfEntries;
-	private Link previousLink, detailsCmp, nextLink;
+	private int entryIndex;
+	private int numOfEntries;
+	private Link previousLink;
+	private Link nextLink;
 	
-	private boolean hasChanged;
 	private boolean inheritTools;
 	private EfficiencyStatementEntry statementEntry;
 	
 	private AssessmentIdentityCourseController assessmentCtrl;
 	private ParticipantLectureBlocksController lectureBlocksCtrl;
-	private CertificateAndEfficiencyStatementController statementCtrl;
 	
 	private final Identity assessedIdentity;
 	
@@ -105,7 +104,7 @@ public class UserDetailsController extends BasicController implements Activateab
 
 	public UserDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 	 	EfficiencyStatementEntry statementEntry, Identity assessedIdentity, String details,
-		int entryIndex, int numOfEntries, Segment selectSegment, boolean showAssessmentTool, boolean inheritTools) {
+		int entryIndex, int numOfEntries, Segment selectSegment, boolean inheritTools) {
 		super(ureq, wControl);
 		
 		this.details = details;
@@ -124,37 +123,29 @@ public class UserDetailsController extends BasicController implements Activateab
 			this.assessedIdentity = assessedIdentity;
 		}
 		
-		if(entry == null) {
-			doOpenEfficiencyStatementController(ureq);
-		} else {
-			try {
-				segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-				if (showAssessmentTool) {
-					assessmentLink = LinkFactory.createLink("details.assessment", mainVC, this);
-					segmentView.addSegment(assessmentLink, selectSegment == Segment.assessment);
-				}
-				
-				efficiencyStatementLink = LinkFactory.createLink("details.statement", mainVC, this);
-				segmentView.addSegment(efficiencyStatementLink, selectSegment == null || selectSegment == Segment.efficiencyStatement);
-				
-				if(lectureService.isRepositoryEntryLectureEnabled(entry)) {
-					lecturesLink = LinkFactory.createLink("details.lectures", mainVC, this);
-					segmentView.addSegment(lecturesLink, selectSegment == Segment.lectures);
-				}
-				
-				if(selectSegment == Segment.assessment) {
-					doOpenAssessmentController(ureq);
-				} else if(lecturesLink != null && selectSegment == Segment.lectures) {
-					doOpenLecturesBlock(ureq);
-				} else if (assessmentLink != null) {
-					doOpenAssessmentController(ureq);
-				} else {
-					doOpenEfficiencyStatementController(ureq);
-				}
-			} catch(CorruptedCourseException e) {
-				logError("", e);
+		try {
+			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+			segmentView.setDontShowSingleSegment(true);
+			
+			assessmentLink = LinkFactory.createLink("details.assessment", mainVC, this);
+			segmentView.addSegment(assessmentLink, selectSegment == Segment.assessment);
+
+			if(lectureService.isRepositoryEntryLectureEnabled(entry)) {
+				lecturesLink = LinkFactory.createLink("details.lectures", mainVC, this);
+				segmentView.addSegment(lecturesLink, selectSegment == Segment.lectures);
 			}
+			
+			if(selectSegment == Segment.assessment) {
+				doOpenAssessmentController(ureq);
+			} else if(lecturesLink != null && selectSegment == Segment.lectures) {
+				doOpenLecturesBlock(ureq);
+			} else {
+				doOpenAssessmentController(ureq);
+			}
+		} catch(CorruptedCourseException e) {
+			logError("", e);
 		}
+
 		putInitialPanel(mainVC);
 	}
 	
@@ -173,7 +164,7 @@ public class UserDetailsController extends BasicController implements Activateab
 			previousLink.setEnabled(entryIndex > 0);
 			stackPanel.addTool(previousLink);
 	
-			detailsCmp = LinkFactory.createToolLink("details.course", StringHelper.escapeHtml(details), this);
+			Link detailsCmp = LinkFactory.createToolLink("details.course", StringHelper.escapeHtml(details), this);
 			detailsCmp.setIconLeftCSS("o_icon o_icon_user");
 			stackPanel.addTool(detailsCmp);
 	
@@ -216,7 +207,6 @@ public class UserDetailsController extends BasicController implements Activateab
 			if(event == Event.CHANGED_EVENT || event instanceof AssessmentFormEvent) {
 				//reload the details
 				efficiencyStatementChanged();
-				hasChanged = true;
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else {
@@ -228,42 +218,15 @@ public class UserDetailsController extends BasicController implements Activateab
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(nextLink == source || previousLink == source) {
 			fireEvent(ureq, event);
-		} else if(source == segmentView && event instanceof SegmentViewEvent) {
-			SegmentViewEvent sve = (SegmentViewEvent)event;
+		} else if(source == segmentView && event instanceof SegmentViewEvent sve) {
 			String segmentCName = sve.getComponentName();
 			Component clickedLink = mainVC.getComponent(segmentCName);
-			if(clickedLink == efficiencyStatementLink) {
-				doOpenEfficiencyStatementController(ureq);
-			} else if(clickedLink == assessmentLink ) {
+			if(clickedLink == assessmentLink ) {
 				doOpenAssessmentController(ureq);
 			} else if(clickedLink == lecturesLink) {
 				doOpenLecturesBlock(ureq);
 			}
 		}
-	}
-	
-	private CertificateAndEfficiencyStatementController doOpenEfficiencyStatementController(UserRequest ureq) {
-		if(statementCtrl == null || hasChanged) {
-			removeAsListenerAndDispose(statementCtrl);
-
-			RepositoryEntry entry = repositoryService.loadBy(statementEntry.getCourse());
-			Long statementKey = statementEntry.getUserEfficiencyStatementKey();
-			EfficiencyStatement efficiencyStatement = null;
-			if(statementKey != null) {
-				efficiencyStatement = efficiencyStatementManager.getEfficiencyStatementByKey(statementKey);
-			}
-			if(efficiencyStatement == null) {
-				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
-			}
-			statementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-					assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, null,
-					true, true, true, true, true);
-			listenTo(statementCtrl);
-			hasChanged = false;
-		}
-		mainVC.put("segmentCmp", statementCtrl.getInitialComponent());
-		segmentView.select(efficiencyStatementLink);
-		return statementCtrl;
 	}
 
 	private void efficiencyStatementChanged() {

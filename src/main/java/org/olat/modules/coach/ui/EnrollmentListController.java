@@ -200,11 +200,8 @@ public class EnrollmentListController extends FormBasicController implements Act
 
 	@Override
 	public void event(Event event) {
-		if(event instanceof CertificateEvent) {
-			CertificateEvent ce = (CertificateEvent)event;
-			if(student.getKey().equals(ce.getOwnerKey())) {
-				updateCertificate(ce.getCertificateKey());
-			}
+		if(event instanceof CertificateEvent ce && student.getKey().equals(ce.getOwnerKey())) {
+			updateCertificate(ce.getCertificateKey());
 		}
 	}
 	
@@ -269,8 +266,7 @@ public class EnrollmentListController extends FormBasicController implements Act
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				EfficiencyStatementEntry selectedRow = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -284,11 +280,8 @@ public class EnrollmentListController extends FormBasicController implements Act
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(stackedPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
-				if(pe.getController() == statementCtrl && hasChanged) {
-					reloadModel();
-				}
+			if(event instanceof PopEvent pe && pe.getController() == statementCtrl && hasChanged) {
+				reloadModel();
 			}
 		}
 		super.event(ureq, source, event);
@@ -344,12 +337,10 @@ public class EnrollmentListController extends FormBasicController implements Act
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		String displayName = entry.getCourseDisplayName();
 		int entryIndex = model.getObjects().indexOf(entry);
-		String details = translate("students.details", new String[] {
-				displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount())
-		});
+		String details = translate("students.details", displayName, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 		
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackedPanel,
-				entry, student, details, entryIndex, model.getRowCount(), selectedTool, false, true);
+				entry, student, details, entryIndex, model.getRowCount(), selectedTool, true);
 		listenTo(statementCtrl);
 		stackedPanel.pushController(displayName, statementCtrl);
 	}

@@ -256,8 +256,7 @@ public class GroupController extends FormBasicController implements Activateable
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				EfficiencyStatementEntry selectedRow = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
@@ -277,8 +276,7 @@ public class GroupController extends FormBasicController implements Activateable
 		} else if(previousGroup == source) {
 			fireEvent(ureq, event);
 		} else if(stackPanel == source) {
-			if(event instanceof PopEvent) {
-				PopEvent pe = (PopEvent)event;
+			if(event instanceof PopEvent pe) {
 				if(pe.getController() == statementCtrl && hasChanged) {
 					reloadModel();
 				}
@@ -357,7 +355,7 @@ public class GroupController extends FormBasicController implements Activateable
 		String details = translate("students.details", display, String.valueOf(entryIndex), String.valueOf(model.getRowCount()));
 
 		statementCtrl = new UserDetailsController(ureq, bwControl, stackPanel,
-				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, true, false);
+				statementEntry, assessedIdentity, details, entryIndex, model.getRowCount(), selectedTool, false);
 		listenTo(statementCtrl);
 		stackPanel.popUpToController(this);
 		stackPanel.pushController(display, statementCtrl);

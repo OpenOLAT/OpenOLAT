@@ -19,6 +19,7 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
@@ -38,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
@@ -46,18 +48,23 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.ui.reset.ResetData1OptionsStep;
 import org.olat.course.assessment.ui.reset.ResetDataContext;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetCourse;
 import org.olat.course.assessment.ui.reset.ResetDataContext.ResetParticipants;
 import org.olat.course.assessment.ui.reset.ResetDataFinishStepCallback;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
+import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
+import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
@@ -86,8 +93,10 @@ public class AssessmentIdentityCourseController extends BasicController
 	private Link nextLink;
 	private Link previousLink;
 	private Link resetDataLink;
+	private Link efficiencyLink;
 	private Link courseNodeSelectionLink;
-	
+
+	private CloseableModalController cmc;
 	private IdentityCertificatesController certificateCtrl;
 	private IdentityPassedController passedCtrl;
 	private IdentityConditionalScoreController conventionlScoreCtrl;
@@ -97,23 +106,29 @@ public class AssessmentIdentityCourseController extends BasicController
 	private AssessmentIdentityCourseNodeController currentNodeCtrl;
 	private CourseNodeSelectionController courseNodeChooserCtrl;
 	private CloseableCalloutWindowController courseNodeChooserCalloutCtrl;
+	private CertificateAndEfficiencyStatementController certificateAndEfficiencyStatementCtrl;
 	
 	private CourseNode currentCourseNode;
 	private final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
+	private final boolean certificateAndEfficiencyLink;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final AssessmentToolSecurityCallback secCallback;
+	private final UserCourseEnvironmentImpl assessedUserCourseEnv;
+	private final RepositoryEntryCertificateConfiguration certificateConfig;
 	
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
 	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementMgr;
 	
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable,
@@ -136,11 +151,11 @@ public class AssessmentIdentityCourseController extends BasicController
 		
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
-		UserCourseEnvironmentImpl assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
+		assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(),
 				coachCourseEnv.getCourseReadOnlyDetails());
 		assessedUserCourseEnv.setUserRoles(false, false, true);
 
-		final RepositoryEntryCertificateConfiguration certificateConfig = certificatesManager.getConfiguration(courseEntry);
+		certificateConfig = certificatesManager.getConfiguration(courseEntry);
 		if(certificateConfig.isAutomaticCertificationEnabled() || certificateConfig.isManualCertificationEnabled()) {
 			certificateCtrl = new IdentityCertificatesController(ureq, wControl, coachCourseEnv, courseEntry, certificateConfig, assessedIdentity);
 			identityAssessmentVC.put("certificateInfos", certificateCtrl.getInitialComponent());
@@ -149,16 +164,20 @@ public class AssessmentIdentityCourseController extends BasicController
 			
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
 		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		boolean certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
+		certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
 				|| certificateConfig.isManualCertificationEnabled()
 				|| course.getCourseConfig().isEfficencyStatementEnabled();
+		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), identityAssessmentVC, this, Link.BUTTON);
+		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
+		efficiencyLink.setVisible(certificateAndEfficiencyLink);
+		initRecertificationMessage();
 		if (learningPath && (passedManually || coachCourseEnv.isAdmin())) {
-			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv, certificateAndEfficiencyLink);
+			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);
 		}
 		if (!learningPath && (coachCourseEnv.isCoach() || coachCourseEnv.isAdmin())) {
-			conventionlScoreCtrl = new IdentityConditionalScoreController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv, certificateAndEfficiencyLink);
+			conventionlScoreCtrl = new IdentityConditionalScoreController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("conventionlScore", conventionlScoreCtrl.getInitialComponent());
 			listenTo(conventionlScoreCtrl);
 		}
@@ -168,6 +187,31 @@ public class AssessmentIdentityCourseController extends BasicController
 		identityAssessmentVC.put("courseOverview", treeOverviewCtrl.getInitialComponent());
 
 		putInitialPanel(identityAssessmentVC);
+	}
+	
+	private void initRecertificationMessage() {
+		if(certificateConfig.isRecertificationEnabled() && certificateCtrl != null) {
+			Date recertificationDate = null;
+			Certificate lastCertificate = certificateCtrl.getLastCertificate();
+			if(lastCertificate != null) {
+				if(lastCertificate.getNextRecertificationDate() != null) {
+					recertificationDate = lastCertificate.getNextRecertificationDate();
+					recertificationDate = certificatesManager.nextRecertificationWindow(recertificationDate, certificateConfig);
+				}
+				if(recertificationDate != null) {
+					String message = translate("msg.recertification.date", Formatter.getInstance(getLocale()).formatDate(recertificationDate));
+					identityAssessmentVC.contextPut("recertificationMsg", message);
+				}
+			}
+			
+			if(certificateConfig.isRecertificationLeadTimeEnabled() && recertificationDate == null) {
+				int numOfDays = certificateConfig.getRecertificationLeadTimeInDays();
+				String message = translate("msg.recertification.with.leadtime", Integer.toString(numOfDays));
+				identityAssessmentVC.contextPut("recertificationMsg", message);
+			}
+		}
+		
+		efficiencyLink.setVisible(certificateAndEfficiencyLink);
 	}
 
 	@Override
@@ -224,9 +268,7 @@ public class AssessmentIdentityCourseController extends BasicController
 				if (conventionlScoreCtrl != null) {
 					conventionlScoreCtrl.reload();
 				}
-				if (certificateCtrl != null) {
-					certificateCtrl.loadModel();
-				}
+				reloadCertificates();
 				if(aee.isClose()) {
 					stackPanel.popController(currentNodeCtrl);
 				}
@@ -240,17 +282,13 @@ public class AssessmentIdentityCourseController extends BasicController
 		} else if (source == passedCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
-				if (certificateCtrl != null) {
-					certificateCtrl.loadModel();
-				}
+				reloadCertificates();
 				fireEvent(ureq, event);
 			}
 		} else if (source == conventionlScoreCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				treeOverviewCtrl.loadModel();
-				if (certificateCtrl != null) {
-					certificateCtrl.loadModel();
-				}
+				reloadCertificates();
 				fireEvent(ureq, event);
 			}
 		} else if(resetDataCtrl == source) {
@@ -258,17 +296,24 @@ public class AssessmentIdentityCourseController extends BasicController
 				getWindowControl().pop();
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					treeOverviewCtrl.loadModel();
-					if (passedCtrl != null) passedCtrl.refresh();
-					if (certificateCtrl != null) {
-						certificateCtrl.loadModel();
+					if (passedCtrl != null) {
+						passedCtrl.refresh();
 					}
+					reloadCertificates();
 				}
 				cleanUp();
 			}
+		} else if(certificateCtrl == source) {
+			initRecertificationMessage();
+		} else if(certificateAndEfficiencyStatementCtrl == source) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
-
+	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(previousLink == source) {
@@ -281,16 +326,29 @@ public class AssessmentIdentityCourseController extends BasicController
 			doExportPdf(ureq);
 		} else if(resetDataLink == source) {
 			doResetData(ureq);
+		} else if(source == efficiencyLink) {
+			doViewEfficiencyStatement(ureq);
 		}
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(resetDataCtrl);
 		removeAsListenerAndDispose(courseNodeChooserCtrl);
 		removeAsListenerAndDispose(courseNodeChooserCalloutCtrl);
+		removeAsListenerAndDispose(certificateAndEfficiencyStatementCtrl);
+		certificateAndEfficiencyStatementCtrl = null;
 		courseNodeChooserCalloutCtrl = null;
 		courseNodeChooserCtrl = null;
 		resetDataCtrl = null;
+		cmc = null;
+	}
+	
+	private void reloadCertificates() {
+		if (certificateCtrl != null) {
+			certificateCtrl.loadModel();
+			initRecertificationMessage();
+		}
 	}
 	
 	private void doSelectCourseNode(UserRequest ureq) {
@@ -439,5 +497,19 @@ public class AssessmentIdentityCourseController extends BasicController
 		listenTo(resetDataCtrl);
 		getWindowControl().pushAsModalDialog(resetDataCtrl.getInitialComponent());
 	}
-
+	
+	private void doViewEfficiencyStatement(UserRequest ureq) {
+		RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
+		EfficiencyStatement efficiencyStatement = efficiencyStatementMgr.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
+		certificateAndEfficiencyStatementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
+				assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, lastCertificate,
+				false, true, true, false, true);
+		listenTo(certificateAndEfficiencyStatementCtrl);
+		
+		String title = translate("show.efficency.statement.title");
+		cmc = new CloseableModalController(getWindowControl(), "close", certificateAndEfficiencyStatementCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 }

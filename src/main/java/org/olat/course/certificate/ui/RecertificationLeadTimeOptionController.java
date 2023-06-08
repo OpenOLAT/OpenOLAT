@@ -86,12 +86,14 @@ public class RecertificationLeadTimeOptionController extends FormBasicController
 				} else {
 					int time = certificateConfig.getValidityTimelapse();
 					CertificationTimeUnit timeUnit = certificateConfig.getValidityTimelapseUnit();
-					Date nextRecertification = timeUnit.toDate(ureq.getRequestTimestamp(), time);
-					nextRecertification = CalendarUtils.endOfDay(nextRecertification);
-					long nextRecertificationInDays = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertification);
-					if(days >= nextRecertificationInDays) {
-						reCertificationTimelapseEl.setErrorKey("error.recertication.time");
-						allOk &= false;
+					if(timeUnit != null) {
+						Date nextRecertification = timeUnit.toDate(ureq.getRequestTimestamp(), time);
+						nextRecertification = CalendarUtils.endOfDay(nextRecertification);
+						long nextRecertificationInDays = DateUtils.countDays(ureq.getRequestTimestamp(), nextRecertification);
+						if(days >= nextRecertificationInDays) {
+							reCertificationTimelapseEl.setErrorKey("error.recertication.time");
+							allOk &= false;
+						}
 					}
 				}
 			} catch (NumberFormatException e) {

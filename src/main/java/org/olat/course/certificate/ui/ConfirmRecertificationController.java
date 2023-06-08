@@ -75,20 +75,15 @@ public class ConfirmRecertificationController extends FormBasicController {
 				Long.toString(days)	
 			};
 			
-			String msg1 = translate("recertification.modal.info.validity", args);
-			String msg2;
-			if(days > 0) {
-				msg2 = translate("recertification.modal.info.days", args);
+			String msg;
+			if(days == 1) {
+				msg = translate("recertification.modal.info.validity.day", args);
+			} else if(days > 1) {
+				msg = translate("recertification.modal.info.validity.days", args);
 			} else {
-				msg2 = translate("recertification.modal.info.invalid", args);
+				msg = translate("recertification.modal.info.invalid", args);
 			}
-			String msg3 = translate("recertification.modal.info.explain", args);
-			String msg4 = translate("recertification.modal.info.confirmation", args);
-			
-			layoutCont.contextPut("msg1", msg1);
-			layoutCont.contextPut("msg2", msg2);
-			layoutCont.contextPut("msg3", msg3);
-			layoutCont.contextPut("msg4", msg4);
+			layoutCont.contextPut("msg", msg);
 		}
 
 		uifactory.addFormSubmitButton("start.recertification", formLayout);

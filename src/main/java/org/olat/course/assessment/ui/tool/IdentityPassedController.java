@@ -29,24 +29,15 @@ import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderSize;
 import org.olat.core.gui.components.progressbar.ProgressBar.RenderStyle;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
-import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Overridable;
-import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,26 +53,18 @@ public class IdentityPassedController extends BasicController {
 	private final Link passLink;
 	private final Link failLink;
 	private final Link resetLink;
-	private final Link efficiencyLink;
 	private final ProgressBar completionItem;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
-	
-	private CloseableModalController cmc;
-	private CertificateAndEfficiencyStatementController certificateAndEfficiencyStatementCtrl;
 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
-	private CertificatesManager certificatesManager;
-	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementMgr;
 
 	protected IdentityPassedController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment coachCourseEnv,
-			UserCourseEnvironment assessedUserCourseEnv, boolean withCertificateAndEfficiencyStatementLink) {
+			UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
@@ -94,9 +77,6 @@ public class IdentityPassedController extends BasicController {
 		failLink.setIconLeftCSS("o_icon o_icon_failed");
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
 		resetLink.setIconLeftCSS("o_icon o_icon_reset_data");
-		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), mainVC, this, Link.BUTTON);
-		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
-		efficiencyLink.setVisible(withCertificateAndEfficiencyStatementLink);
 		
 		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
 		completionItem.setWidthInPercent(true);
@@ -196,24 +176,6 @@ public class IdentityPassedController extends BasicController {
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(certificateAndEfficiencyStatementCtrl == source) {
-			cmc.deactivate();
-			cleanUp();
-		} else if(cmc == source) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(certificateAndEfficiencyStatementCtrl);
-		removeAsListenerAndDispose(cmc);
-		certificateAndEfficiencyStatementCtrl = null;
-		cmc = null;
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == passLink) {
 			doPass(ureq);
@@ -221,8 +183,6 @@ public class IdentityPassedController extends BasicController {
 			doFail(ureq);
 		} else if (source == resetLink) {
 			doReset(ureq);
-		} else if(source == efficiencyLink) {
-			doViewEfficiencyStatement(ureq);
 		}
 	}
 
@@ -246,21 +206,5 @@ public class IdentityPassedController extends BasicController {
 				assessedUserCourseEnv);
 		updateUI(passedOverridable);
 		fireEvent(ureq, Event.CHANGED_EVENT);
-	}
-	
-	private void doViewEfficiencyStatement(UserRequest ureq) {
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
-		EfficiencyStatement efficiencyStatement = efficiencyStatementMgr.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
-		certificateAndEfficiencyStatementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-				assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, lastCertificate,
-				false, false, true, false, false);
-		listenTo(certificateAndEfficiencyStatementCtrl);
-		
-		String title = translate("show.efficency.statement.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", certificateAndEfficiencyStatementCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
 	}
 }

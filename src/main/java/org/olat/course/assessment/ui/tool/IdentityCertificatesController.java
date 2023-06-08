@@ -47,6 +47,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -55,6 +56,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
@@ -67,6 +69,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.ui.CertificateMediaResource;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -128,6 +131,17 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			.registerFor(this, getIdentity(), CertificatesManager.ORES_CERTIFICATE_EVENT);
 		initForm(ureq);
 		loadModel();
+	}
+	
+	public int getNumOfCertificates() {
+		return tableModel.getRowCount();
+	}
+	
+	public Certificate getLastCertificate() {
+		if(tableModel.getRowCount() > 0) {
+			return tableModel.getObject(0).getCertificate();
+		}
+		return null;
 	}
 	
 	@Override
@@ -200,16 +214,19 @@ public class IdentityCertificatesController extends FormBasicController implemen
 			rows.add(row);
 			
 			if(canDelete && !CertificateManagedFlag.isManaged(certificate, CertificateManagedFlag.delete)) {
-				FormLink deleteLink = uifactory.addFormLink("delete." + (++count), "delete", null, flc, Link.LINK);
+				FormLink deleteLink = uifactory.addFormLink("delete." + (++count), "delete", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 				deleteLink.setElementCssClass("o_sel_certificate_delete");
 				deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
+				deleteLink.setTooltip(translate("delete"));
 				deleteLink.setUserObject(row);
 				row.setDeleteLink(deleteLink);
 			}
 
-			FormLink downloadLink = uifactory.addFormLink("download." + (++count), "download", "download.certificate", null, flc, Link.LINK);
+			FormLink downloadLink = uifactory.addFormLink("download." + (++count), "download", "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			downloadLink.setElementCssClass("o_sel_certificate_download");
 			downloadLink.setIconLeftCSS("o_icon o_icon-lg o_icon_download");
+			downloadLink.setTooltip(translate("download.certificate"));
+			downloadLink.setNewWindow(true, false, false);
 			downloadLink.setUserObject(row);
 			row.setDownloadLink(downloadLink);
 		}
@@ -219,19 +236,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
-		
-		Date recertificationDate = null;
-		if(!rows.isEmpty() && certificateConfig.isRecertificationEnabled()
-				&& rows.get(0).getCertificate().getNextRecertificationDate() != null) {
-			recertificationDate = rows.get(0).getCertificate().getNextRecertificationDate();
-			recertificationDate = certificatesManager.nextRecertificationWindow(recertificationDate, certificateConfig);
-		}
-		if(recertificationDate != null) {
-			flc.contextPut("recertficationMsg", translate("info.recertfication.date",
-					Formatter.getInstance(getLocale()).formatDate(recertificationDate)));
-		} else {
-			flc.contextRemove("recertficationMsg");
-		}
+		flc.contextPut("rowCount", Integer.valueOf(tableModel.getRowCount()));
 	}
 	
 	@Override
@@ -247,11 +252,12 @@ public class IdentityCertificatesController extends FormBasicController implemen
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(generateLink == source) {
 			doConfirmGenerateCertificate(ureq) ;
-		} else if(source instanceof Link link) {
-			String cmd = link.getCommand();
+		} else if(source instanceof FormLink link && link.getUserObject() instanceof IdentityCertificateRow certificate) {
+			String cmd = link.getCmd();
 			if("delete".equals(cmd)) {
-				Certificate certificate = (Certificate)link.getUserObject();
-				doConfirmDelete(ureq, certificate);
+				doConfirmDelete(ureq, certificate.getCertificate());
+			} else if("download".equals(cmd)) {
+				doDownload(ureq, certificate.getCertificate());
 			}
 		}
 	}
@@ -268,9 +274,9 @@ public class IdentityCertificatesController extends FormBasicController implemen
 				doGenerateCertificate(ureq);
 			}
 		} else if(confirmDeleteCtrl == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				Certificate certificate = (Certificate)confirmDeleteCtrl.getUserObject();
-				doDelete(certificate);
+			if(DialogBoxUIFactory.isYesEvent(event)
+					&& confirmDeleteCtrl.getUserObject() instanceof Certificate certificate) {
+				doDelete(ureq, certificate);
 			}
 		}
 		super.event(ureq, source, event);
@@ -283,11 +289,19 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		confirmDeleteCtrl.setUserObject(certificate);
 	}
 	
-	private void doDelete(Certificate certificate) {
+	private void doDelete(UserRequest ureq, Certificate certificate) {
 		certificatesManager.deleteCertificate(certificate);
 		loadModel();
 		String displayName = formatter.formatDateAndTime(certificate.getCreationDate());
 		showInfo("confirm.certificate.deleted", displayName);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+	
+	private void doDownload(UserRequest ureq, Certificate certificate) {
+		VFSLeaf certificateLeaf = certificatesManager.getCertificateLeaf(certificate);
+		String name = DownloadCertificateCellRenderer.getName(certificate);
+		MediaResource certificateResource = new CertificateMediaResource(name, certificateLeaf);
+		ureq.getDispatchResult().setResultingMediaResource(certificateResource);
 	}
 
 	private void doConfirmGenerateCertificate(UserRequest ureq) {

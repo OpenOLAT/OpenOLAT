@@ -33,17 +33,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.assessment.manager.EfficiencyStatementManager;
-import org.olat.course.certificate.Certificate;
-import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -70,7 +65,6 @@ public class IdentityConditionalScoreController extends BasicController {
 
 	private final VelocityContainer mainVC;
 	private Link gradeApplyLink;
-	private final Link efficiencyLink;
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
@@ -89,15 +83,10 @@ public class IdentityConditionalScoreController extends BasicController {
 	@Autowired
 	private GradeService gradeService;
 	@Autowired
-	private CertificatesManager certificatesManager;
-	@Autowired
 	private CourseAssessmentService courseAssessmentService;
-	@Autowired
-	private EfficiencyStatementManager efficiencyStatementMgr;
 
 	public IdentityConditionalScoreController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironmentImpl assessedUserCourseEnv,
-			boolean certificateAndEfficiencyLink) {
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironmentImpl assessedUserCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(GradeUIFactory.class, getLocale(), getTranslator()));
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
@@ -123,11 +112,6 @@ public class IdentityConditionalScoreController extends BasicController {
 			gradeApplyLink.setIconLeftCSS("o_icon o_icon_grade");
 			gradeApplyLink.setElementCssClass("a_button_bottom");
 		}
-		
-		efficiencyLink = LinkFactory.createLink("show.efficency.statement", "show.efficency.statement", getTranslator(), mainVC, this, Link.BUTTON);
-		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
-		efficiencyLink.setElementCssClass("a_button_bottom");
-		efficiencyLink.setVisible(certificateAndEfficiencyLink);
 		
 		reload();
 	}
@@ -184,8 +168,6 @@ public class IdentityConditionalScoreController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == gradeApplyLink) {
 			doConfirmApplyGrade(ureq);
-		} else if(source == efficiencyLink) {
-			doViewEfficiencyStatement(ureq);
 		}
 	}
 	
@@ -241,21 +223,4 @@ public class IdentityConditionalScoreController extends BasicController {
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
-	
-	private void doViewEfficiencyStatement(UserRequest ureq) {
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		RepositoryEntry entry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		Certificate lastCertificate = certificatesManager.getLastCertificate(assessedIdentity, entry.getOlatResource().getKey());
-		EfficiencyStatement efficiencyStatement = efficiencyStatementMgr.getUserEfficiencyStatementByCourseRepositoryEntry(entry, assessedIdentity);
-		certificateAndEfficiencyStatementCtrl = new CertificateAndEfficiencyStatementController(getWindowControl(), ureq,
-				assessedIdentity, null, entry.getOlatResource().getKey(), entry, efficiencyStatement, lastCertificate,
-				false, false, true, false, false);
-		listenTo(certificateAndEfficiencyStatementCtrl);
-		
-		String title = translate("show.efficency.statement.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", certificateAndEfficiencyStatementCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
 }

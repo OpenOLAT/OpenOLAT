@@ -221,6 +221,8 @@ public class RecertificationOptionsController extends FormBasicController {
 	}
 	
 	private void confirmLeadTime(UserRequest ureq) {
+		certificateConfig = certificatesManager.getConfiguration(entry);
+		
 		removeAsListenerAndDispose(confirmLeadTimeCtrl);
 		confirmLeadTimeCtrl = new RecertificationLeadTimeOptionController(ureq, getWindowControl(), certificateConfig);
 		listenTo(confirmLeadTimeCtrl);

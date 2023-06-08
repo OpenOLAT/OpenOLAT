@@ -64,6 +64,10 @@ public class IdentityCertificateRow {
 		return certificate.getNextRecertificationDate();
 	}
 	
+	public boolean hasExpired() {
+		return expiredInDays != null && expiredInDays.longValue() > 0l;
+	}
+	
 	public String getExpiredInDays() {
 		return expiredInDays == null || expiredInDays.longValue() < 0l ? "" : expiredInDays.toString();
 	}

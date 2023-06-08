@@ -538,12 +538,40 @@ ul.o_certificates li {
 	width: 37px;
 }
 
+@media (min-width: $screen-md-min) { 
+	.o_certificate_multi {
+		.o_table_body:before, .o_table_body:after {
+			display: none;
+		}
+		.o_table_body {
+			display: grid;
+			column-gap: 50px;
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+}
+
+
 .o_export_card {
 	.o_certificate_download {
 		display: block;
-		font-size: 150%;
 	}
-
+	
+	.o_certificate_expiration {
+		margin: 0 0 3px 0;
+	}
+	
+	.o_certificate_expiration .o_export_expiration.o_labeled {
+		font-weight: bold;
+	}
+	
+	.o_certificate_download_expired {
+		text-decoration: line-through;
+	}
+	
+	.o_sel_certificate_download {
+		margin-right: 1em; 
+	}
 }
 
 
