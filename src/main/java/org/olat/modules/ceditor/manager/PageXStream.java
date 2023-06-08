@@ -41,6 +41,7 @@ import org.olat.modules.ceditor.model.jpa.MathPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageBodyImpl;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
@@ -65,7 +66,7 @@ public class PageXStream {
 				PageImpl.class, Page.class, PageBodyImpl.class, PageBody.class,
 				AbstractPart.class, PagePart.class, Media.class, MediaImpl.class,
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
-				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class
+				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class
 		};
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.aliasType("page", PageImpl.class);

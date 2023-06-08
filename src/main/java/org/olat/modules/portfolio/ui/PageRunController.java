@@ -596,7 +596,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		pageService.deletePage(page);
+		pageService.deletePage(page.getKey());
 		fireEvent(ureq, new PageDeletedEvent());
 	}
 	

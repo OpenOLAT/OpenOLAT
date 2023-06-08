@@ -27,6 +27,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.course.nodes.PageCourseNode;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -54,18 +56,23 @@ public class CoursePageRunController extends BasicController {
 		
 		Long pageKey = courseNode.getPageReferenceKey();
 		Page page = portfolioService.getPageByKey(pageKey);
-		
-		VelocityContainer mainVC = createVelocityContainer("run");
-
-		BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCoursePageCallback(canEdit);
-		PageSettings settings = canEdit ? PageSettings.reduced(false, false) : PageSettings.noHeader();
-		PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
-		listenTo(pageCtrl);
-		mainVC.put("page", pageCtrl.getInitialComponent());
-		
-		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
-		putInitialPanel(ctrl.getInitialComponent());
-		pageCtrl.initTools();
+		if(page == null) {
+			String text = translate("page.not.available.message");
+			MessageController ctrl = MessageUIFactory.createErrorMessage(ureq, wControl, "", text);
+			putInitialPanel(ctrl.getInitialComponent());
+		} else {
+			VelocityContainer mainVC = createVelocityContainer("run");
+	
+			BinderSecurityCallback secCallback = BinderSecurityCallbackFactory.getCoursePageCallback(canEdit);
+			PageSettings settings = canEdit ? PageSettings.reduced(false, false) : PageSettings.noHeader();
+			PageRunController pageCtrl = new PageRunController(ureq, getWindowControl(), null, secCallback, page, settings, false);
+			listenTo(pageCtrl);
+			mainVC.put("page", pageCtrl.getInitialComponent());
+			
+			Controller ctrl = TitledWrapperHelper.getWrapper(ureq, getWindowControl(), pageCtrl, userCourseEnv, courseNode, "o_page_icon");
+			putInitialPanel(ctrl.getInitialComponent());
+			pageCtrl.initTools();
+		}
 	}
 
 	@Override

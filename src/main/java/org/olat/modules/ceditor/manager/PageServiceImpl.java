@@ -43,11 +43,11 @@ import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.ContentAuditLog;
 import org.olat.modules.ceditor.ContentAuditLog.Action;
 import org.olat.modules.ceditor.ContentEditorXStream;
+import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageService;
-import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -169,25 +169,33 @@ public class PageServiceImpl implements PageService {
 		String mediaZipPath = media.getStoragePath();
 		if(StringHelper.containsNonWhitespace(mediaZipPath)) {
 			File mediaDir = fileStorage.generateMediaSubDirectory(importedMedia);
+			String storagePath = fileStorage.getRelativePath(mediaDir);
 			for(Enumeration<? extends ZipEntry> entries=storage.entries(); entries.hasMoreElements(); ) {
 				ZipEntry entry=entries.nextElement();
 				String entryPath = entry.getName();
 				if(entryPath.startsWith(mediaZipPath)) {
-					unzip(mediaZipPath, entry, storage, mediaDir);
+					File mediaFile = unzip(mediaZipPath, entry, storage, mediaDir);
+					if(mediaFile != null) {
+						importedMedia.setStoragePath(storagePath);
+						importedMedia.setRootFilename(mediaFile.getName());
+					}
 				}
-			}	
+			}
+			importedMedia = mediaDao.update(importedMedia);
 		}
 		return importedMedia;
 	}
 	
-	private void unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
+	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
 		try(InputStream in=storage.getInputStream(entry)) {
 			String entryPath = entry.getName();
 			String fileName = entryPath.replace(mediaZipPath, "");
 			File mediaFile = new File(mediaDir, fileName);
 			FileUtils.copyToFile(in, mediaFile, "");
+			return mediaFile;
 		} catch(IOException e) {
 			log.error("", e);
+			return null;
 		}
 	}
 	
@@ -203,10 +211,12 @@ public class PageServiceImpl implements PageService {
 	}
 
 	@Override
-	public void deletePage(Page page) {
-		Page reloadedPage = pageDao.loadByKey(page.getKey());
-		pageDao.deletePage(reloadedPage);
-		pageUserInfosDao.delete(page);
+	public void deletePage(Long pageKey) {
+		Page reloadedPage = pageDao.loadByKey(pageKey);
+		if(reloadedPage != null) {
+			pageDao.deletePage(reloadedPage);
+			pageUserInfosDao.delete(reloadedPage);
+		}
 	}
 	
 	@Override

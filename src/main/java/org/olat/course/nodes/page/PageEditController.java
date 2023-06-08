@@ -84,7 +84,7 @@ public class PageEditController extends ActivateableTabbableDefaultController {
 			if(event == Event.CHANGED_EVENT || event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if(source instanceof NodeEditController editCtrl) {
+		} else if(source instanceof NodeEditController) {
 			if(event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				contentCtrl.updateTitle();
 			}

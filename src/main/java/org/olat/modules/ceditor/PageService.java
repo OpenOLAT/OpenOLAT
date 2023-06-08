@@ -121,7 +121,7 @@ public interface PageService {
 	 */
 	Page removePage(Page page);
 	
-	void deletePage(Page page);
+	void deletePage(Long pageKey);
 	
 	/**
 	 * The list of page fragments

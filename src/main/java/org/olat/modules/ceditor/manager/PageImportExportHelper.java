@@ -78,8 +78,7 @@ public class PageImportExportHelper {
 		ZipEntry entry = zfile.getEntry("page.xml");
 		try(InputStream in=zfile.getInputStream(entry)) {
 			Page page = PageXStream.fromStream(in);
-			pageService.importPage(author, page, zfile);
-			return page;
+			return pageService.importPage(author, page, zfile);
 		} catch(IOException e) {
 			log.error("", e);
 		}

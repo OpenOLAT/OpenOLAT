@@ -31,6 +31,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.WindowControl;
@@ -81,7 +82,6 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final NodeRightType EDIT_PAGE = NodeRightTypeBuilder.ofIdentifier("edit_page")
 			.setLabel(PageEditController.class, "edit.page")
-			.addRole(NodeRightRole.owner, true)
 			.addRole(NodeRightRole.coach, false)
 			.build();
 	public static final List<NodeRightType> NODE_RIGHT_TYPES = List.of(EDIT_PAGE);
@@ -97,7 +97,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
 			PortfolioService portfolioService = CoreSpringFactory.getImpl(PortfolioService.class);
-			String pageTitle = StringHelper.containsNonWhitespace(getShortTitle()) ? getShortTitle() : getLongTitle();
+			String pageTitle = StringHelper.containsNonWhitespace(getLongTitle()) ? getLongTitle() : getShortTitle();
 			Page page = portfolioService.appendNewPage(null, pageTitle, null, null, null, null);
 			
 			PageService pageService = CoreSpringFactory.getImpl(PageService.class);
@@ -141,7 +141,8 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	private boolean canEdit(UserCourseEnvironment userCourseEnv) {
-		return CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, EDIT_PAGE);
+		return userCourseEnv.isAdmin() ||
+				CoreSpringFactory.getImpl(NodeRightService.class).isGranted(getModuleConfiguration(), userCourseEnv, EDIT_PAGE);
 	}
 	
 	@Override
@@ -180,10 +181,8 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		PageService pageService = CoreSpringFactory.getImpl(PageService.class);
-		Page page = pageService.getFullPageByKey(getPageReferenceKey());
-		if(page != null) {
-			pageService.deletePage(page);
-		}
+		pageService.deletePage(getPageReferenceKey());
+		DBFactory.getInstance().commit();
 		super.cleanupOnDelete(course);
 	}
 	
@@ -213,7 +212,10 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 		
 		PageImportExportHelper importHelper = CoreSpringFactory.getImpl(PageImportExportHelper.class);
 		try(ZipFile zfile= new ZipFile(importPage)) {	
-			importHelper.importPage(zfile, owner);
+			Page page = importHelper.importPage(zfile, owner);
+			if(page != null) {
+				setPageReferenceKey(page.getKey());
+			}
 		} catch(IOException e) {
 			log.error("", e);
 		}

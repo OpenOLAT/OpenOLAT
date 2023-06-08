@@ -101,7 +101,7 @@ public class PageContentConfigurationController extends BasicController {
 		
 		fileNotAvailableCmp = EmptyStateFactory.create("item.not.available", contentVC, this);
 		fileNotAvailableCmp.setIconCss("o_icon o_filetype_html");
-		fileNotAvailableCmp.setMessageI18nKey("item.not.available.message");
+		fileNotAvailableCmp.setMessageI18nKey("page.not.available.message");
 		
 		itemCmp = new IconPanel("item.available");
 		itemCmp.setElementCssClass("o_block_bottom");
@@ -131,9 +131,9 @@ public class PageContentConfigurationController extends BasicController {
 	}
 	
 	protected void updateTitle() {
-		String title = courseNode.getShortTitle();
+		String title = courseNode.getLongTitle();
 		if(!StringHelper.containsNonWhitespace(title)) {
-			title = courseNode.getLongTitle();
+			title = courseNode.getShortTitle();
 		}
 		
 		if(StringHelper.containsNonWhitespace(title) && !Objects.equals(title, page.getTitle())) {

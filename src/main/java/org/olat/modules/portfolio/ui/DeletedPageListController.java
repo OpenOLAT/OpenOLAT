@@ -207,7 +207,7 @@ public class DeletedPageListController extends AbstractPageListController {
 	
 	private void doDelete(UserRequest ureq, List<PortfolioElementRow> rows) {
 		for(PortfolioElementRow row:rows) {
-			pageService.deletePage(row.getPage());
+			pageService.deletePage(row.getPage().getKey());
 		}
 		loadModel(ureq, null);
 	}
