@@ -43,16 +43,17 @@ public class BadgeAssertionDAO {
 	private DB dbInstance;
 
 	public void createBadgeAssertion(String uuid, String recipientEmail, BadgeClass badgeClass, String verification,
-									 Date issuedOn, Identity savedBy) {
+									 Date issuedOn, Identity awardedBy) {
 		BadgeAssertionImpl badgeAssertion = new BadgeAssertionImpl();
 		badgeAssertion.setCreationDate(new Date());
 		badgeAssertion.setLastModified(badgeAssertion.getCreationDate());
 		badgeAssertion.setUuid(uuid);
 		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.editing);
-		badgeAssertion.setRecipient(recipientEmail);
-		badgeAssertion.setVerification(verification);
+		badgeAssertion.setRecipientObject(recipientEmail);
+		badgeAssertion.setVerificationObject(verification);
 		badgeAssertion.setIssuedOn(issuedOn);
 		badgeAssertion.setBadgeClass(badgeClass);
+		badgeAssertion.setAwardedBy(awardedBy);
 	}
 
 	public BadgeAssertion getAssertion(String uuid) {

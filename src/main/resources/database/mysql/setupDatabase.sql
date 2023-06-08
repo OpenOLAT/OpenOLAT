@@ -4108,6 +4108,8 @@ create table o_badge_assertion (
    b_expires datetime,
    b_revocation_reason varchar(256),
    fk_badge_class bigint not null,
+   fk_recipient bigint not null,
+   fk_awarded_by bigint,
    primary key (id)
 );
 
@@ -5419,6 +5421,9 @@ create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
 
 alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 
+alter table o_badge_assertion add constraint badge_assertion_recipient_idx foreign key (fk_recipient) references o_bs_identity (id);
+
+alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx foreign key (fk_awarded_by) references o_bs_identity (id);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

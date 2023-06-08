@@ -22,6 +22,8 @@ package org.olat.modules.openbadges.model;
 import java.io.Serial;
 import java.util.Date;
 
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
@@ -70,10 +72,10 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	private BadgeAssertionStatus status;
 
 	@Column(name = "b_recipient", nullable = false, insertable = true, updatable = true)
-	private String recipient;
+	private String recipientObject;
 
 	@Column(name = "b_verification", nullable = false, insertable = true, updatable = true)
-	private String verification;
+	private String verificationObject;
 
 	@Column(name = "b_issued_on", nullable = false, insertable = true, updatable = true)
 	private Date issuedOn;
@@ -96,6 +98,14 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	@ManyToOne(targetEntity = BadgeClassImpl.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_badge_class", nullable = false, insertable = true, updatable = true)
 	private BadgeClass badgeClass;
+
+	@ManyToOne(targetEntity = IdentityImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_recipient", nullable = false, insertable = true, updatable = true)
+	private Identity recipient;
+
+	@ManyToOne(targetEntity = IdentityImpl.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_awarded_by", nullable = true, insertable = true, updatable = true)
+	private Identity awardedBy;
 
 	@Override
 	public Long getKey() {
@@ -144,24 +154,22 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 		this.status = status;
 	}
 
-	@Override
-	public String getRecipient() {
-		return recipient;
+	public String getRecipientObject() {
+		return recipientObject;
+	}
+
+	public void setRecipientObject(String recipientObject) {
+		this.recipientObject = recipientObject;
 	}
 
 	@Override
-	public void setRecipient(String recipient) {
-		this.recipient = recipient;
+	public String getVerificationObject() {
+		return verificationObject;
 	}
 
 	@Override
-	public String getVerification() {
-		return verification;
-	}
-
-	@Override
-	public void setVerification(String verification) {
-		this.verification = verification;
+	public void setVerificationObject(String verificationObject) {
+		this.verificationObject = verificationObject;
 	}
 
 	@Override
@@ -232,6 +240,26 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	@Override
 	public void setBadgeClass(BadgeClass badgeClass) {
 		this.badgeClass = badgeClass;
+	}
+
+	@Override
+	public Identity getRecipient() {
+		return recipient;
+	}
+
+	@Override
+	public void setRecipient(Identity recipient) {
+		this.recipient = recipient;
+	}
+
+	@Override
+	public Identity getAwardedBy() {
+		return awardedBy;
+	}
+
+	@Override
+	public void setAwardedBy(Identity awardedBy) {
+		this.awardedBy = awardedBy;
 	}
 
 	@Override

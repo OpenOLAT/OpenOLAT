@@ -21,6 +21,8 @@ package org.olat.modules.openbadges;
 
 import java.util.Date;
 
+import org.olat.core.id.Identity;
+
 /**
  * Initial date: 2023-06-01<br>
  *
@@ -46,13 +48,13 @@ public interface BadgeAssertion {
 
 	void setStatus(BadgeAssertionStatus status);
 
-	String getRecipient();
+	String getRecipientObject();
 
-	void setRecipient(String recipient);
+	void setRecipientObject(String recipient);
 
-	String getVerification();
+	String getVerificationObject();
 
-	void setVerification(String verification);
+	void setVerificationObject(String verification);
 
 	Date getIssuedOn();
 
@@ -81,4 +83,12 @@ public interface BadgeAssertion {
 	BadgeClass getBadgeClass();
 
 	void setBadgeClass(BadgeClass badgeClass);
+
+	Identity getRecipient();
+
+	void setRecipient(Identity recipient);
+
+	Identity getAwardedBy();
+
+	void setAwardedBy(Identity awardedBy);
 }

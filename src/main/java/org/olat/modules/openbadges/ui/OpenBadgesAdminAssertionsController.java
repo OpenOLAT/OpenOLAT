@@ -156,8 +156,8 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String title = translate("confirm.delete.assertion.title", badgeAssertion.getRecipient());
-		String text = translate("confirm.delete.assertion", badgeAssertion.getRecipient());
+		String title = translate("confirm.delete.assertion.title", badgeAssertion.getRecipientObject());
+		String text = translate("confirm.delete.assertion", badgeAssertion.getRecipientObject());
 		confirmDeleteAssertionCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteAssertionCtrl);
 		confirmDeleteAssertionCtrl.setUserObject(badgeAssertion);
 	}
@@ -190,7 +190,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
 			return switch (Cols.values()[col]) {
-				case recipient -> badgeAssertion.getRecipient();
+				case recipient -> badgeAssertion.getRecipientObject();
 			};
 		}
 	}

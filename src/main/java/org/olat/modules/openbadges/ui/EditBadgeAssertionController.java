@@ -52,7 +52,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 	private StaticTextElement uuidEl;
 	private TextElement recipientEl;
 	private SingleSelection badgeClassDropdown;
-	private SelectionValues badgeClassKV;
+	private final SelectionValues badgeClassKV;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -73,7 +73,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 				UUID.randomUUID().toString().replace("-", "");
 		uuidEl = uifactory.addStaticTextElement("form.uuid", uuid, formLayout);
 
-		String recipient = badgeAssertion != null ? badgeAssertion.getRecipient() : "";
+		String recipient = badgeAssertion != null ? badgeAssertion.getRecipientObject() : "";
 		recipientEl = uifactory.addTextElement("form.recipient", 128, recipient,
 				formLayout);
 		recipientEl.setMandatory(true);
@@ -104,7 +104,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 			openBadgesManager.createBadgeAssertion(uuidEl.getValue(), recipientEl.getValue(), badgeClass,
 					new Date(), getIdentity());
 		} else {
-			badgeAssertion.setRecipient(recipientEl.getValue());
+			badgeAssertion.setRecipientObject(recipientEl.getValue());
 			openBadgesManager.updateBadgeAssertion(badgeAssertion);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
