@@ -184,6 +184,9 @@ public class SendMailStepController extends StepFormBasicController {
 			if (daysBetween < 1) {
 				in = "";
 				inDays = translate("publication.today");
+			} else if (daysBetween == 1) {
+				in = "";
+				inDays = translate("publication.tomorrow");
 			} else {
 				in = translate("publication.in.days");
 				inDays = daysBetween + " " + translate("publication.later.days");

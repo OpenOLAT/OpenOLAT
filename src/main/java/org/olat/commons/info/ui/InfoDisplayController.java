@@ -229,7 +229,8 @@ public class InfoDisplayController extends FormBasicController {
 		List<InfoMessageForDisplay> infoDisplays = new ArrayList<>(msgs.size());
 		Map<String, VFSLeaf> keysToDisplay = new HashMap<>();
 		for(InfoMessage info:msgs) {
-			if (!info.isPublished() && !ureq.getIdentity().equals(info.getAuthor())) {
+			// skip infoMessage, if it is unpublished and the current user is not allowed to manage it
+			if (!info.isPublished() && !secCallback.canEdit(info)) {
 				continue;
 			}
 			previousDisplayKeys.add(info.getKey());
