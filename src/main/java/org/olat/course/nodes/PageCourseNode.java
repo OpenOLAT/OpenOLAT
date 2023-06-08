@@ -224,7 +224,17 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		PageCourseNode pageNode = (PageCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
-		copyPage(this, pageNode, author);
+		Page copiedPage = copyPage(this, pageNode, author);
+		if(copiedPage != null) {
+			String title = pageNode.getLongTitle();
+			if(!StringHelper.containsNonWhitespace(title)) {
+				title = pageNode.getShortTitle();
+			}
+			if(StringHelper.containsNonWhitespace(title)) {
+				copiedPage.setTitle(title);
+				CoreSpringFactory.getImpl(PageService.class).updatePage(copiedPage);
+			}
+		}
 		return pageNode;
 	}
 	
@@ -240,16 +250,18 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 		copyPage((PageCourseNode)sourceCourseNode, this, envMapper.getAuthor());
 	}
 	
-	private void copyPage(PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode, Identity owner) {
+	private Page copyPage(PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode, Identity owner) {
 		Long sourcePageKey = sourceCourseNode.getPageReferenceKey();
 		PageService pageService = CoreSpringFactory.getImpl(PageService.class);
 		Page sourcePage = pageService.getFullPageByKey(sourcePageKey);
+		Page targetPage = null;
 		if(sourcePage != null) {
-			Page targetPage = pageService.copyPage(owner, sourcePage);
+			targetPage = pageService.copyPage(owner, sourcePage);
 			targetCourseNode.setPageReferenceKey(targetPage.getKey());
 		} else {
 			targetCourseNode.removePageReferenceKey();
 		}
+		return targetPage;
 	}
 
 }
