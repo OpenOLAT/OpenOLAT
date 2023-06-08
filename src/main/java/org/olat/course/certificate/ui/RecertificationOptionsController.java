@@ -208,7 +208,7 @@ public class RecertificationOptionsController extends FormBasicController {
 		listenTo(confirmDisableCtrl);
 		
 		String title = translate("confirm.disable.recertification.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmDisableCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmDisableCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}
@@ -228,7 +228,7 @@ public class RecertificationOptionsController extends FormBasicController {
 		listenTo(confirmLeadTimeCtrl);
 		
 		String title = translate("confirm.activate.recertification.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", confirmLeadTimeCtrl.getInitialComponent(), true, title);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), confirmLeadTimeCtrl.getInitialComponent(), true, title);
 		cmc.activate();
 		listenTo(cmc);
 	}

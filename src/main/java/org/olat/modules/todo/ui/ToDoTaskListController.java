@@ -871,7 +871,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		listenTo(toToTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -892,7 +892,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		listenTo(toToTaskEditCtrl);
 		
 		String title = translate("task.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close", toToTaskEditCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toToTaskEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -947,7 +947,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 		
 		listenTo(deleteConfirmationCtrl);
 		
-		cmc = new CloseableModalController(getWindowControl(), "close", deleteConfirmationCtrl.getInitialComponent(),
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
 				true, translate("task.delete"), true);
 		listenTo(cmc);
 		cmc.activate();

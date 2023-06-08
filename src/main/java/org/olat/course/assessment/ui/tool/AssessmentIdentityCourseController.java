@@ -508,7 +508,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		listenTo(certificateAndEfficiencyStatementCtrl);
 		
 		String title = translate("show.efficency.statement.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", certificateAndEfficiencyStatementCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), certificateAndEfficiencyStatementCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

@@ -162,7 +162,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		listenTo(editClassCtrl);
 
 		String title = translate("class.add");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editClassCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -173,7 +173,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		listenTo(editClassCtrl);
 
 		String title = translate("class.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editClassCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

@@ -290,7 +290,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		editJupyterHubController = new EditJupyterHubController(ureq, getWindowControl());
 		listenTo(editJupyterHubController);
 
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				editJupyterHubController.getInitialComponent(), true, translate("jupyterHub.add"));
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -317,7 +317,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(editJupyterHubController);
 
 		String title = translate("jupyterHub.edit", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				editJupyterHubController.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -339,7 +339,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(jupyterHubInUseCtrl);
 
 		String title = translate("jupyterHub.warning.inUse.title", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close", jupyterHubInUseCtrl.getInitialComponent(), true, title);
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"), jupyterHubInUseCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
 	}
@@ -355,7 +355,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(confirmDeleteHubCtrl);
 
 		String title = translate("jupyterHub.confirm.delete.title", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				confirmDeleteHubCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);
@@ -386,7 +386,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		listenTo(showApplicationsCtrl);
 
 		String title = translate("jupyterHub.applications", jupyterHub.getName());
-		modalCtrl = new CloseableModalController(getWindowControl(), "close",
+		modalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				showApplicationsCtrl.getInitialComponent(), true, title);
 		modalCtrl.activate();
 		listenTo(modalCtrl);

@@ -138,7 +138,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		listenTo(editAssertionCtrl);
 
 		String title = translate("assertion.add");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editAssertionCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -149,7 +149,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		listenTo(editAssertionCtrl);
 
 		String title = translate("assertion.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editAssertionCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

@@ -164,7 +164,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		listenTo(editTemplateCtrl);
 
 		String title = translate("template.upload");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editTemplateCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
@@ -175,7 +175,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		listenTo(editTemplateCtrl);
 
 		String title = translate("template.edit");
-		cmc = new CloseableModalController(getWindowControl(), "close",
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editTemplateCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();

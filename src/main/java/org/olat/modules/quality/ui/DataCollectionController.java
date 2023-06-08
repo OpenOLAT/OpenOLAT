@@ -538,7 +538,7 @@ public class DataCollectionController extends BasicController implements TooledC
 		listenTo(toDoCreateCtrl);
 		
 		String title = translate("todo.create");
-		cmc = new CloseableModalController(getWindowControl(), "close", toDoCreateCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
