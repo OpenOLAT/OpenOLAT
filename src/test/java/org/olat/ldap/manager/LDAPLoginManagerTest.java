@@ -681,6 +681,46 @@ public class LDAPLoginManagerTest extends OlatRestTestCase {
 	}
 	
 	@Test
+	public void doSyncSingleUserWithCn() throws Exception {
+		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
+		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
+		
+		// sync the groups first (sync by user only doesn't creates the groups)
+		LDAPError errors = new LDAPError();
+		boolean allOk = ldapManager.doBatchSync(errors);
+		Assert.assertTrue(allOk);
+		
+		// sync single user
+		Identity identity = userManager.findUniqueIdentityByEmail("swalderer@openolat.com");
+		Assert.assertNotNull(identity);
+		Assert.assertNotEquals("swalderer", identity.getName());
+		
+		SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+		params.setIdentity(identity);
+		params.setOwner(true);
+		params.setAttendee(true);
+		List<BusinessGroup> groupsFullSync = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		assertThat(groupsFullSync)
+			.hasSize(1);
+
+		// simple sync
+		ldapManager.doSyncSingleUserWithLoginAttribute(identity);
+		dbInstance.commitAndCloseSession();
+		
+		Identity reloadIdentity = securityManager.loadIdentityByKey(identity.getKey());
+		Assert.assertNotNull(reloadIdentity);
+		
+		//normal bind, should work
+		// Use the upn
+		Identity rIdentity = ldapManager.authenticate("swalderer", "olat", errors);
+		Assert.assertEquals(rIdentity, identity);
+		
+		List<BusinessGroup> groupsSingleSync = businessGroupService.findBusinessGroups(params, null, 0, -1);
+		assertThat(groupsSingleSync)
+			.hasSize(1);
+	}
+	
+	@Test
 	public void syncUserGroups() throws LDAPException {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 		syncConfiguration.setLdapGroupBases(List.of("ou=groups,dc=olattest,dc=org"));
