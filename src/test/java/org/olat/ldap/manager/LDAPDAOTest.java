@@ -70,9 +70,9 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroupsWithMembers(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(5)
+			.hasSize(6)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation")
+			.containsExactlyInAnyOrder("LDAP, with CN", "ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation")
 			// Empty hasn't any member
 			.doesNotContain("ldapempty");
 	}
@@ -85,9 +85,9 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(6)
+			.hasSize(7)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
+			.containsExactlyInAnyOrder("LDAP, with CN", "ldaplearning", "ldapteaching", "ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
 	}
 	
 	@Test
@@ -98,9 +98,9 @@ public class LDAPDAOTest extends OlatTestCase {
 		List<LDAPGroup> onlyGroups = ldapDao.searchGroups(ctx, bases, filter);
 		assertThat(onlyGroups)
 			.isNotNull()
-			.hasSize(4)
+			.hasSize(5)
 			.map(LDAPGroup::getCommonName)
-			.containsExactlyInAnyOrder("ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
+			.containsExactlyInAnyOrder("LDAP, with CN", "ldapcoaching", "ldapopenolat", "ldaporganisation", "ldapempty");
 	}
 	
 	@Test
