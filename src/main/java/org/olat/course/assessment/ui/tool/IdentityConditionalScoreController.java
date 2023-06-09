@@ -125,18 +125,24 @@ public class IdentityConditionalScoreController extends BasicController {
 			mainVC.contextPut("score", translate("score.value", score));
 		}
 		
-		if (Mode.none != assessmentConfig.getPassedMode() && assessmentEvaluation.getPassed() != null) {
+		boolean hasPassed = Mode.none != assessmentConfig.getPassedMode() && assessmentEvaluation.getPassed() != null;
+		if (hasPassed) {
 			mainVC.contextPut("passed", assessmentEvaluation.getPassed());
 		}
 		
+		boolean hasGrade = false;
 		if (gradeApplyLink != null) {
 			boolean gradeApplied = StringHelper.containsNonWhitespace(assessmentEvaluation.getGrade());
 			gradeApplyLink.setVisible(!readOnly && !gradeApplied && hasScore);
 			
-			if (gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled()) {
+			hasGrade = gradeEnabled && assessmentConfig.hasGrade() && gradeApplied && gradeModule.isEnabled();
+			if (hasGrade) {
 				mainVC.contextPut("grade", translate("grade.value", gradeSystemLabel, assessmentEvaluation.getGrade()));
+				mainVC.setVisible(true);
 			}
 		}
+
+		mainVC.setVisible(hasScore || hasPassed || hasGrade || (gradeApplyLink != null && gradeApplyLink.isVisible()));
 	}
 
 	@Override
