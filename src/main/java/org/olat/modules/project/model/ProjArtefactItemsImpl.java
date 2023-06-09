@@ -30,6 +30,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactRef;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -47,6 +48,8 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 	private Map<Long, ProjFile> artefactKeyToFile;
 	private List<ProjToDo> toDos;
 	private Map<Long, ProjToDo> artefactKeyToToDo;
+	private List<ProjDecision> decisions;
+	private Map<Long, ProjDecision> artefactKeyToDecision;
 	private List<ProjNote> notes;
 	private Map<Long, ProjNote> artefactKeyToNote;
 	private List<ProjAppointment> appointments;
@@ -62,6 +65,9 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 		}
 		if (toDos != null) {
 			artefacts.addAll(toDos.stream().map(ProjToDo::getArtefact).toList());
+		}
+		if (decisions != null) {
+			artefacts.addAll(decisions.stream().map(ProjDecision::getArtefact).toList());
 		}
 		if (notes != null) {
 			artefacts.addAll(notes.stream().map(ProjNote::getArtefact).toList());
@@ -111,6 +117,25 @@ public class ProjArtefactItemsImpl implements ProjArtefactItems {
 			}
 		}
 		return artefactKeyToToDo != null? artefactKeyToToDo.get(artefact.getKey()): null;
+	}
+	
+	@Override
+	public List<ProjDecision> getDecisions() {
+		return decisions;
+	}
+	
+	public void setDecisions(List<ProjDecision> decisions) {
+		this.decisions = decisions;
+	}
+	
+	@Override
+	public ProjDecision getDecision(ProjArtefactRef artefact) {
+		if (artefactKeyToDecision == null) {
+			if (decisions != null) {
+				artefactKeyToDecision = decisions.stream().collect(Collectors.toMap(decision -> decision.getArtefact().getKey(), Function.identity()));
+			}
+		}
+		return artefactKeyToDecision != null? artefactKeyToDecision.get(artefact.getKey()): null;
 	}
 	
 	@Override

@@ -66,6 +66,16 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 
 	boolean canDeleteToDo(ProjToDo toDo, IdentityRef identity);
 
+	boolean canViewDecisions();
+
+	boolean canCreateDecisions();
+	
+	boolean canEditDecisions();
+
+	boolean canEditDecision(ProjDecision decision);
+
+	boolean canDeleteDecision(ProjDecision decision, IdentityRef identity);
+	
 	boolean canViewNotes();
 
 	boolean canCreateNotes();

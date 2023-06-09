@@ -17,43 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project;
+package org.olat.modules.project.model;
 
-import java.util.List;
-import java.util.Set;
+import org.olat.modules.project.ProjArtefactInfo;
+import org.olat.modules.project.ProjDecision;
+import org.olat.modules.project.ProjDecisionInfo;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 8 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public class ProjDecisionInfoImpl extends ProjArtefactInfoImpl implements ProjDecisionInfo {
 	
-	public Set<ProjArtefact> getArtefacts();
-	
-	public List<ProjFile> getFiles();
-	
-	public ProjFile getFile(ProjArtefactRef artefact);
-	
-	public List<ProjToDo> getToDos();
+	private ProjDecision decision;
 
-	public ProjToDo getToDo(ProjArtefactRef artefact);
-	
-	public List<ProjDecision> getDecisions();
+	public ProjDecisionInfoImpl(ProjDecision decision, ProjArtefactInfo artefactInfo) {
+		super(artefactInfo);
+		this.decision = decision;
+	}
 
-	public ProjDecision getDecision(ProjArtefactRef artefact);
+	@Override
+	public ProjDecision getDecision() {
+		return decision;
+	}
 
-	public List<ProjNote> getNotes();
-
-	public ProjNote getNote(ProjArtefactRef artefact);
-	
-	public List<ProjAppointment> getAppointments();
-
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
-
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

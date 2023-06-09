@@ -559,6 +559,13 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	overflow-y: auto;
 }
 
+.o_proj_decision_card {
+	.o_proj_decision_title {
+		font-size: 110%;
+		margin: 10px 0px;
+	}
+}
+
 .o_proj_note {
 	.o_proj_note_header {
 		align-items: flex-start;

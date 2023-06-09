@@ -66,7 +66,7 @@ import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.OpenNoteEvent;
 import org.olat.modules.project.ui.event.OpenProjectEvent;
 import org.olat.modules.project.ui.event.OpenToDoEvent;
-import org.olat.modules.project.ui.event.QuickStartEvent;
+import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.olat.user.UserAvatarMapper;
 import org.olat.user.UsersPortraitsComponent;
 import org.olat.user.UsersPortraitsComponent.PortraitUser;
@@ -113,6 +113,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private ProjFileAllController fileAllCtrl;
 	private ProjToDoWidgetController toDoWidgetCtrl;
 	private ProjToDoAllController toDoAllCtrl;
+	private ProjDecisionWidgetController decisionWidgetCtrl;
+	private ProjDecisionAllController decisionAllCtrl;
 	private ProjNoteWidgetController noteWidgetCtrl;
 	private ProjNoteAllController noteAllCtrl;
 	private ProjCalendarWidgetController calendarWidgetCtrl;
@@ -214,6 +216,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 			mainVC.put("toDos", toDoWidgetCtrl.getInitialComponent());
 		}
 		
+		if (secCallback.canViewDecisions()) {
+			decisionWidgetCtrl = new ProjDecisionWidgetController(ureq, wControl, project, secCallback, lastVisitDate, avatarMapperKey);
+			listenTo(decisionWidgetCtrl);
+			mainVC.put("decisions", decisionWidgetCtrl.getInitialComponent());
+		}
+		
 		if (secCallback.canViewNotes()) {
 			noteWidgetCtrl = new ProjNoteWidgetController(ureq, wControl, stackPanel, project, secCallback, lastVisitDate, avatarMapperKey);
 			listenTo(noteWidgetCtrl);
@@ -250,6 +258,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		if (exceptCtrl != toDoWidgetCtrl) {
 			toDoWidgetCtrl.reload(ureq);
+		}
+		if (exceptCtrl != decisionWidgetCtrl) {
+			decisionWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != noteWidgetCtrl) {
 			noteWidgetCtrl.reload(ureq);
@@ -313,6 +324,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				toDoAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
 			}
+		} else if (ProjectBCFactory.TYPE_DECISIONS.equalsIgnoreCase(typeName)) {
+			if (secCallback.canViewDecisions()) {
+				doOpenDecisions(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				decisionAllCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+			}
 		} else if (ProjectBCFactory.TYPE_NOTES.equalsIgnoreCase(typeName)) {
 			if (secCallback.canViewNotes()) {
 				doOpenNotes(ureq);
@@ -357,13 +374,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doReopen(ureq);
 			}
 		} else if (source == quickWidgetCtrl) {
-			if (event == QuickStartEvent.CALENDAR_EVENT) {
+			if (event == QuickStartEvents.CALENDAR_EVENT) {
 				doOpenCalendar(ureq);
-			} else if (event == QuickStartEvent.TODOS_EVENT) {
+			} else if (event == QuickStartEvents.TODOS_EVENT) {
 				doOpenToDos(ureq);
-			} else if (event == QuickStartEvent.NOTES_EVENT) {
+			} else if (event == QuickStartEvents.DECISIONS_EVENT) {
+				doOpenDecisions(ureq);
+			} else if (event == QuickStartEvents.NOTES_EVENT) {
 				doOpenNotes(ureq);
-			} else if (event == QuickStartEvent.FILES_EVENT) {
+			} else if (event == QuickStartEvents.FILES_EVENT) {
 				doOpenFiles(ureq);
 			}
 		} else if (source == fileWidgetCtrl) {
@@ -379,6 +398,12 @@ public class ProjProjectDashboardController extends BasicController implements A
 				reload(ureq, toDoWidgetCtrl);
 			} else if (event instanceof OpenToDoEvent oEvent) {
 				doOpenToDo(ureq, oEvent);
+			}
+		} else if (source == decisionWidgetCtrl) {
+			if (event == SHOW_ALL) {
+				doOpenDecisions(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				reload(ureq, decisionWidgetCtrl);
 			}
 		} else if (source == noteWidgetCtrl) {
 			if (event == SHOW_ALL) {
@@ -568,6 +593,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 		stackPanel.pushController(translate("todo.all.title"), toDoAllCtrl);
 	}
 	
+	private void doOpenDecisions(UserRequest ureq) {
+		removeAsListenerAndDispose(decisionAllCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_DECISIONS), null);
+		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
+		listenTo(decisionAllCtrl);
+		stackPanel.pushController(translate("todo.all.title"), decisionAllCtrl);
+	}
+	
 	private void doOpenNotes(UserRequest ureq) {
 		removeAsListenerAndDispose(noteAllCtrl);
 		
@@ -601,6 +635,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenToDos(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createToDoCe(artefacts.getToDos().get(0)));
 			toDoAllCtrl.activate(ureq, contextEntries, null);
+		} else if (artefacts.getDecisions() != null && !artefacts.getDecisions().isEmpty()) {
+			doOpenDecisions(ureq);
+			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createDecisionCe(artefacts.getDecisions().get(0)));
+			decisionAllCtrl.activate(ureq, contextEntries, null);
 		} else if (artefacts.getNotes() != null && !artefacts.getNotes().isEmpty()) {
 			doOpenNotes(ureq);
 			List<ContextEntry> contextEntries = List.of(ProjectBCFactory.createNoteCe(artefacts.getNotes().get(0)));

@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -176,6 +177,31 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 		return !projectReadOnly 
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
 				&& (hasRole(PROJECT_ADMIN) || creator);
+	}
+	
+	@Override
+	public boolean canViewDecisions() {
+		return canViewArtefacts();
+	}
+	
+	@Override
+	public boolean canCreateDecisions() {
+		return canCreateArtefacts();
+	}
+
+	@Override
+	public boolean canEditDecisions() {
+		return canEditArtefacts();
+	}
+
+	@Override
+	public boolean canEditDecision(ProjDecision decision) {
+		return canEditArtefact(decision.getArtefact());
+	}
+
+	@Override
+	public boolean canDeleteDecision(ProjDecision decision, IdentityRef identity) {
+		return canDeleteArtefact(decision.getArtefact(), identity);
 	}
 	
 	@Override

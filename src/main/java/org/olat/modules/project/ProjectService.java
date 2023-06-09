@@ -176,6 +176,26 @@ public interface ProjectService {
 	
 	public List<ProjToDoInfo> getToDoInfos(ProjToDoSearchParams searchParams, ProjArtefactInfoParams infoParams);
 	
+	
+	/*
+	 * Decisions
+	 */
+	
+	public ProjDecision createDecision(Identity doer, ProjProject project);
+
+	public void updateDecision(Identity doer, ProjDecisionRef decision, String title, String details, Date decisionDate);
+
+	public void deleteDecisionSoftly(Identity doer, ProjDecisionRef decision);
+	
+	public ProjDecision getDecision(ProjDecisionRef decision);
+	
+	public long getDecisionsCount(ProjDecisionSearchParams searchParams);
+	
+	public List<ProjDecision> getDecisions(ProjDecisionSearchParams searchParams);
+	
+	public List<ProjDecisionInfo> getDecisionInfos(ProjDecisionSearchParams searchParams, ProjArtefactInfoParams infoParams);
+	
+	
 	/*
 	 * Notes
 	 */

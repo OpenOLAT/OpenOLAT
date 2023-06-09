@@ -47,6 +47,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
@@ -69,6 +70,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private FormLink fileUploadLink;
 	private FormLink fileCreateLink;
 	private FormLink toDoCreateLink;
+	private FormLink decisionCreateLink;
 	private FormLink noteCreateLink;
 	private FormLink appointmentCreateLink;
 	
@@ -77,6 +79,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private ProjFileUploadController fileUploadCtrl;
 	private ProjFileCreateController fileCreateCtrl;
 	private ProjToDoEditController toDoCreateCtrl;
+	private ProjDecisionEditController decisionCreateCtrl;
 	private ProjNoteEditController noteCreateCtrl;
 	private ProjAppointmentEditController appointmentCreateCtrl;
 	private ProjConfirmationController deleteConfirmationCtrl;
@@ -140,6 +143,8 @@ public class ProjArtefactReferencesController extends FormBasicController {
 			addDropdown.addElement(appointmentCreateLink);
 			toDoCreateLink = uifactory.addFormLink("reference.todo.create", formLayout, Link.LINK);
 			addDropdown.addElement(toDoCreateLink);
+			decisionCreateLink = uifactory.addFormLink("reference.decision.create", formLayout, Link.LINK);
+			addDropdown.addElement(decisionCreateLink);
 			noteCreateLink = uifactory.addFormLink("reference.note.create", formLayout, Link.LINK);
 			addDropdown.addElement(noteCreateLink);
 			fileCreateLink = uifactory.addFormLink("reference.file.create", formLayout, Link.LINK);
@@ -180,6 +185,16 @@ public class ProjArtefactReferencesController extends FormBasicController {
 				artefactRows.addAll(rows);
 			}
 			
+			List<ProjDecision> decisions = artefacts.getDecisions();
+			if (decisions != null && !decisions.isEmpty()) {
+				List<ArtefactRow> rows = new ArrayList<>(decisions.size());
+				for (ProjDecision decision : decisions) {
+					rows.add(createRow(decision));
+				}
+				rows.sort((r1, r2) -> r1.getDisplayName().compareToIgnoreCase(r2.getDisplayName()));
+				artefactRows.addAll(rows);
+			}
+			
 			List<ProjNote> notes = artefacts.getNotes();
 			if (notes != null && !notes.isEmpty()) {
 				List<ArtefactRow> rows = new ArrayList<>(notes.size());
@@ -208,6 +223,12 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private ArtefactRow createRow(ProjToDo toDo) {
 		ArtefactRow artefactRow = new ArtefactRow(toDo.getKey(), toDo.getArtefact());
 		forgeRow(artefactRow, "o_icon_todo_task", ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()), ProjectBCFactory.getToDoUrl(toDo));
+		return artefactRow;
+	}
+
+	private ArtefactRow createRow(ProjDecision decision) {
+		ArtefactRow artefactRow = new ArtefactRow(decision.getKey(), decision.getArtefact());
+		forgeRow(artefactRow, "o_icon_proj_decision", ProjectUIFactory.getDisplayName(getTranslator(), decision), ProjectBCFactory.getDecisionUrl(decision));
 		return artefactRow;
 	}
 
@@ -300,6 +321,14 @@ public class ProjArtefactReferencesController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (decisionCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (decisionCreateCtrl.getDecision() != null) {
+					linkArtefact(decisionCreateCtrl.getDecision().getArtefact());
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if (noteCreateCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				if (noteCreateCtrl.getNote() != null) {
@@ -331,6 +360,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 	private void cleanUp() {
 		removeAsListenerAndDispose(deleteConfirmationCtrl);
 		removeAsListenerAndDispose(appointmentCreateCtrl);
+		removeAsListenerAndDispose(decisionCreateCtrl);
 		removeAsListenerAndDispose(fileUploadCtrl);
 		removeAsListenerAndDispose(fileCreateCtrl);
 		removeAsListenerAndDispose(toDoCreateCtrl);
@@ -339,6 +369,7 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		removeAsListenerAndDispose(cmc);
 		deleteConfirmationCtrl = null;
 		appointmentCreateCtrl = null;
+		decisionCreateCtrl = null;
 		fileUploadCtrl = null;
 		fileCreateCtrl = null;
 		toDoCreateCtrl = null;
@@ -357,6 +388,8 @@ public class ProjArtefactReferencesController extends FormBasicController {
 			doUploadFile(ureq);
 		} else if (source == toDoCreateLink){
 			doCreateToDo(ureq);
+		} else if (source == decisionCreateLink){
+			doCreateDecision(ureq);
 		} else if (source == noteCreateLink){
 			doCreateNote(ureq);
 		} else if (source == appointmentCreateLink){
@@ -428,6 +461,18 @@ public class ProjArtefactReferencesController extends FormBasicController {
 		
 		String title = translate("todo.edit");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	protected void doCreateDecision(UserRequest ureq) {
+		if (guardModalController(decisionCreateCtrl)) return;
+		
+		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false);
+		listenTo(decisionCreateCtrl);
+		
+		String title = translate("decision.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), decisionCreateCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

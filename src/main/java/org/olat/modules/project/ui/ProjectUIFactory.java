@@ -39,6 +39,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.project.ProjActivity.Action;
 import org.olat.modules.project.ProjAppointment;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneStatus;
@@ -88,6 +89,12 @@ public class ProjectUIFactory {
 			return translator.translate("role." + role.name());
 		}
 		return null;
+	}
+	
+	public static String getDisplayName(Translator translator, ProjDecision decision) {
+		return StringHelper.containsNonWhitespace(decision.getTitle())
+				? decision.getTitle()
+				: getNoTitle(translator);
 	}
 	
 	public static String getDisplayName(ProjFile file) {
@@ -201,6 +208,7 @@ public class ProjectUIFactory {
 		case project: return "o_icon_proj_project";
 		case file: return "o_icon_proj_file";
 		case toDo: return "o_icon_todo_task";
+		case decision: return "o_icon_proj_decision";
 		case note: return "o_icon_proj_note";
 		case appointment: return "o_icon_proj_appointment";
 		case milestone: return "o_icon_proj_milestone";

@@ -28,6 +28,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjAppointmentRef;
+import org.olat.modules.project.ProjDecision;
+import org.olat.modules.project.ProjDecisionRef;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjFileRef;
 import org.olat.modules.project.ProjMilestone;
@@ -54,6 +56,8 @@ public class ProjectBCFactory {
 	public static final String TYPE_FILE = "Projectfile";
 	public static final String TYPE_TODOS = "ToDos";
 	public static final String TYPE_TODO = ToDoTaskListController.TYPE_TODO;
+	public static final String TYPE_DECISIONS = "Decisions";
+	public static final String TYPE_DECISION = "Decision";
 	public static final String TYPE_NOTES = "Notes";
 	public static final String TYPE_NOTE = "Note";
 	public static final String TYPE_CALENDAR = "Calendar";
@@ -102,6 +106,22 @@ public class ProjectBCFactory {
 	
 	public static ContextEntry createToDoCe(ProjToDoRef toDoRef) {
 		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_TODO, toDoRef.getKey()));
+	}
+	
+	private static List<ContextEntry> createDecisionsCes(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createProjectCes(projectRef);
+		ces.add(BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableType(TYPE_DECISIONS)));
+		return ces;
+	}
+	
+	private static List<ContextEntry> createDecisionCes(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
+		List<ContextEntry> ces = createDecisionsCes(projectRef);
+		ces.add(createDecisionCe(decisionRef));
+		return ces;
+	}
+	
+	public static ContextEntry createDecisionCe(ProjDecisionRef decisionRef) {
+		return BusinessControlFactory.getInstance().createContextEntry(OresHelper.createOLATResourceableInstance(TYPE_DECISION, decisionRef.getKey()));
 	}
 	
 	private static List<ContextEntry> createNotesCes(ProjProjectRef projectRef) {
@@ -179,6 +199,20 @@ public class ProjectBCFactory {
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
 	}
 	
+	public static String getDecisionsUrl(ProjProjectRef projectRef) {
+		List<ContextEntry> ces = createDecisionsCes(projectRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
+	public static String getDecisionUrl(ProjDecision decision) {
+		return getDecisionUrl(decision.getArtefact().getProject(), decision);
+	}
+	
+	public static String getDecisionUrl(ProjProjectRef projectRef, ProjDecisionRef decisionRef) {
+		List<ContextEntry> ces = createDecisionCes(projectRef, decisionRef);
+		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
+	}
+	
 	public static String getNotesUrl(ProjProjectRef projectRef) {
 		List<ContextEntry> ces = createNotesCes(projectRef);
 		return BusinessControlFactory.getInstance().getAsURIString(ces, false);
@@ -220,6 +254,7 @@ public class ProjectBCFactory {
 		switch (StringHelper.blankIfNull(artefactType)) {
 		case ProjFile.TYPE: return getFileUrl(project, () -> key);
 		case ProjToDo.TYPE: return getToDoUrl(project, () -> key);
+		case ProjDecision.TYPE: return getDecisionUrl(project, () -> key);
 		case ProjNote.TYPE: return getNoteUrl(project, () -> key);
 		case ProjAppointment.TYPE: return getAppointmentUrl(project, () -> key);
 		case ProjMilestone.TYPE: return getMilestoneUrl(project, () -> key);
@@ -231,6 +266,7 @@ public class ProjectBCFactory {
 		switch (StringHelper.blankIfNull(artefactType)) {
 		case ProjFile.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createFileCes(project, () -> key));
 		case ProjToDo.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createToDoCes(project, () -> key));
+		case ProjDecision.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createDecisionCes(project, () -> key));
 		case ProjNote.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createNoteCes(project, () -> key));
 		case ProjAppointment.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createAppointmentCes(project, () -> key));
 		case ProjMilestone.TYPE: return BusinessControlFactory.getInstance().getBusinessControlString(createMilestoneCes(project, () -> key));

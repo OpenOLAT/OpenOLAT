@@ -79,6 +79,9 @@ public interface ProjActivity extends CreateInfo {
 			Action.toDoCreate,
 			Action.toDoContentUpdate,
 			Action.toDoStatusDelete,
+			Action.decisionCreate,
+			Action.decisionContentUpdate,
+			Action.decisionStatusDelete,
 			Action.noteCreate,
 			Action.noteContentUpdate,
 			Action.noteStatusDelete,
@@ -140,6 +143,16 @@ public interface ProjActivity extends CreateInfo {
 		toDoReferenceAdd(ActionTarget.toDo),
 		toDoReferenceRemove(ActionTarget.toDo),
 		toDoStatusDelete(ActionTarget.toDo),
+		decisionCopyInitialized(ActionTarget.decision),
+		decisionCreate(ActionTarget.decision),
+		decisionContentUpdate(ActionTarget.decision),
+		decisionTagsUpdate(ActionTarget.decision),
+		decisionMemberAdd(ActionTarget.decision),
+		decisionMemberRemove(ActionTarget.decision),
+		decisionRolesUpdate(ActionTarget.decision),
+		decisionReferenceAdd(ActionTarget.decision),
+		decisionReferenceRemove(ActionTarget.decision),
+		decisionStatusDelete(ActionTarget.decision),
 		noteCopyInitialized(ActionTarget.note),
 		noteCreate(ActionTarget.note),
 		noteContentUpdate(ActionTarget.note),
@@ -181,6 +194,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileTagsUpdate;
 			case ProjToDo.TYPE: return toDoTagsUpdate;
+			case ProjDecision.TYPE: return decisionTagsUpdate;
 			case ProjNote.TYPE: return noteTagsUpdate;
 			case ProjAppointment.TYPE: return appointmentTagsUpdate;
 			case ProjMilestone.TYPE: return milestoneTagsUpdate;
@@ -193,6 +207,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberAdd;
 			case ProjToDo.TYPE: return toDoMemberAdd;
+			case ProjDecision.TYPE: return decisionMemberAdd;
 			case ProjNote.TYPE: return noteMemberAdd;
 			case ProjAppointment.TYPE: return appointmentMemberAdd;
 			default:
@@ -204,6 +219,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileMemberRemove;
 			case ProjToDo.TYPE: return toDoMemberRemove;
+			case ProjDecision.TYPE: return decisionMemberRemove;
 			case ProjNote.TYPE: return noteMemberRemove;
 			case ProjAppointment.TYPE: return appointmentMemberRemove;
 			default:
@@ -215,6 +231,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileRolesUpdate;
 			case ProjToDo.TYPE: return toDoRolesUpdate;
+			case ProjDecision.TYPE: return decisionRolesUpdate;
 			case ProjNote.TYPE: return noteRolesUpdate;
 			case ProjAppointment.TYPE: return appointmentRolesUpdate;
 			default:
@@ -226,6 +243,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceAdd;
 			case ProjToDo.TYPE: return toDoReferenceAdd;
+			case ProjDecision.TYPE: return decisionReferenceAdd;
 			case ProjNote.TYPE: return noteReferenceAdd;
 			case ProjAppointment.TYPE: return appointmentReferenceAdd;
 			default:
@@ -237,6 +255,7 @@ public interface ProjActivity extends CreateInfo {
 			switch (type) {
 			case ProjFile.TYPE: return fileReferenceRemove;
 			case ProjToDo.TYPE: return toDoReferenceRemove;
+			case ProjDecision.TYPE: return decisionReferenceRemove;
 			case ProjNote.TYPE: return noteReferenceRemove;
 			case ProjAppointment.TYPE: return appointmentReferenceRemove;
 			default:
@@ -268,6 +287,7 @@ public interface ProjActivity extends CreateInfo {
 		project,
 		file,
 		toDo,
+		decision,
 		note,
 		appointment,
 		milestone;

@@ -39,6 +39,7 @@ import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjArtefactToArtefact;
 import org.olat.modules.project.ProjArtefactToArtefactSearchParams;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
@@ -112,7 +113,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 
 	@Override
 	public void copyProjectArtefacts(Identity doer, ProjProjectRef project, ProjProject projectCopy) {
-		List<String> artefactTypes = List.of(ProjFile.TYPE, ProjNote.TYPE, ProjToDo.TYPE);
+		List<String> artefactTypes = List.of(ProjFile.TYPE, ProjNote.TYPE, ProjToDo.TYPE, ProjDecision.TYPE);
 		
 		ProjArtefactSearchParams sarchParams = new ProjArtefactSearchParams();
 		sarchParams.setProject(project);
@@ -144,6 +145,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 			case ProjFile.TYPE: copyFile(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getFile(artefact));
 			case ProjNote.TYPE: copyNote(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getNote(artefact));
 			case ProjToDo.TYPE: copyToDo(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getToDo(artefact));
+			case ProjDecision.TYPE: copyDecision(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getDecision(artefact));
 			default: // do not copy 
 			}
 			
@@ -202,6 +204,17 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 				toDoTask.getDescription());
 		projectService.updateTags(doer, toDoCopy, artefactToTagDisplayNames.getOrDefault(toDo.getArtefact(), List.of()));
 		artefactToArtefactCopy.put(toDo.getArtefact(), toDoCopy.getArtefact());
+	}
+	
+	private void copyDecision(Identity doer, ProjProject projectCopy, Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
+			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjDecision decision) {
+		if (decision == null) return;
+		
+		ProjDecision decisionCopy = projectService.createDecision(doer, projectCopy);
+		activityDao.create(Action.decisionCopyInitialized, null, null, doer, decisionCopy.getArtefact());
+		projectService.updateDecision(doer, decisionCopy, decision.getTitle(), decision.getDetails(), null);
+		projectService.updateTags(doer, decisionCopy.getArtefact(), artefactToTagDisplayNames.getOrDefault(decision.getArtefact(), List.of()));
+		artefactToArtefactCopy.put(decision.getArtefact(), decisionCopy.getArtefact());
 	}
 	
 	private void copyArtefactToArtefact(Identity doer, ProjProjectRef project, Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy) {

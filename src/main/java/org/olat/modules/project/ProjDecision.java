@@ -19,41 +19,33 @@
  */
 package org.olat.modules.project;
 
-import java.util.List;
-import java.util.Set;
+import java.util.Date;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.ModifiedInfo;
 
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 8 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public interface ProjDecision extends ProjDecisionRef, ModifiedInfo, CreateInfo {
 	
-	public Set<ProjArtefact> getArtefacts();
+	public static final String TYPE = "ProjectDecision";
 	
-	public List<ProjFile> getFiles();
-	
-	public ProjFile getFile(ProjArtefactRef artefact);
-	
-	public List<ProjToDo> getToDos();
+	public String getTitle();
 
-	public ProjToDo getToDo(ProjArtefactRef artefact);
+	void setTitle(String title);
 	
-	public List<ProjDecision> getDecisions();
+	public String getDetails();
 
-	public ProjDecision getDecision(ProjArtefactRef artefact);
-
-	public List<ProjNote> getNotes();
-
-	public ProjNote getNote(ProjArtefactRef artefact);
+	void setDetails(String details);
 	
-	public List<ProjAppointment> getAppointments();
+	public Date getDecisionDate();
 
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
+	void setDecisionDate(Date decisionDate);
 	
-	public List<ProjMilestone> getMilestones();
+	public ProjArtefact getArtefact();
 
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

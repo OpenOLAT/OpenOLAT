@@ -180,7 +180,8 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 	}
 
 	@Test
-	public void shouldCopyArtefacts_initToDo() {		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+	public void shouldCopyArtefacts_initToDo() {	
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
 		ProjProject project = projectService.createProject(doer, doer);
 		ProjToDo toDo = projectService.createToDo(doer, project);
 		String title = random();
@@ -222,6 +223,37 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		List<TagInfo> taskTagInfos = toDoService.getTagInfos(toDoTaskSearchParams, toDoTaskCopy);
 		assertThat(taskTagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
 		assertThat(taskTagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+	}
+
+	@Test
+	public void shouldCopyArtefacts_initDecision() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject project = projectService.createProject(doer, doer);
+		ProjDecision decision = projectService.createDecision(doer, project);
+		String title = random();
+		String details = random();
+		Date decisionDate = new Date();
+		projectService.updateDecision(doer, decision, title, details, decisionDate);
+		String tag1 = random();
+		String tag2 = random();
+		projectService.updateTags(doer, decision.getArtefact(), List.of(tag1, tag2));
+		dbInstance.commitAndCloseSession();
+		
+		ProjProject projectCopy = projectService.createProject(doer, doer);
+		sut.copyProjectArtefacts(doer, project, projectCopy);
+		dbInstance.commitAndCloseSession();
+		
+		ProjDecisionSearchParams searchParams = new ProjDecisionSearchParams();
+		searchParams.setProject(projectCopy);
+		List<ProjDecision> decisionCopies = projectService.getDecisions(searchParams);
+		assertThat(decisionCopies).hasSize(1);
+		ProjDecision decisionCopy = decisionCopies.get(0);
+		assertThat(decisionCopy.getTitle()).isEqualTo(title);
+		assertThat(decisionCopy.getDetails()).isEqualTo(details);
+		assertThat(decisionCopy.getDecisionDate()).isNull();
+		List<TagInfo> tagInfos = projectService.getTagInfos(projectCopy, decisionCopy.getArtefact());
+		assertThat(tagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
+		assertThat(tagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
 	}
 
 	@Test

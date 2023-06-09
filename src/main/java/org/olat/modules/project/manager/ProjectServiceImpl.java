@@ -89,6 +89,10 @@ import org.olat.modules.project.ProjArtefactRef;
 import org.olat.modules.project.ProjArtefactSearchParams;
 import org.olat.modules.project.ProjArtefactToArtefact;
 import org.olat.modules.project.ProjArtefactToArtefactSearchParams;
+import org.olat.modules.project.ProjDecision;
+import org.olat.modules.project.ProjDecisionInfo;
+import org.olat.modules.project.ProjDecisionRef;
+import org.olat.modules.project.ProjDecisionSearchParams;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjFileInfo;
 import org.olat.modules.project.ProjFileRef;
@@ -122,6 +126,7 @@ import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjAppointmentInfoImpl;
 import org.olat.modules.project.model.ProjArtefactInfoImpl;
 import org.olat.modules.project.model.ProjArtefactItemsImpl;
+import org.olat.modules.project.model.ProjDecisionInfoImpl;
 import org.olat.modules.project.model.ProjFileInfoImpl;
 import org.olat.modules.project.model.ProjMemberInfoImpl;
 import org.olat.modules.project.model.ProjMilestoneInfoImpl;
@@ -169,6 +174,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private ProjToDoDAO toDoDao;
+	@Autowired
+	private ProjDecisionDAO decisionDao;
 	@Autowired
 	private ToDoService toDoService;
 	@Autowired
@@ -770,6 +777,14 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			artefacts.setToDos(toDos);
 		}
 		
+		List<ProjArtefact> decisionArtefacts = typeToArtefacts.get(ProjDecision.TYPE);
+		if (decisionArtefacts != null) {
+			ProjDecisionSearchParams searchParams = new ProjDecisionSearchParams();
+			searchParams.setArtefacts(decisionArtefacts);
+			List<ProjDecision> decisions = decisionDao.loadDecisions(searchParams);
+			artefacts.setDecisions(decisions);
+		}
+		
 		List<ProjArtefact> noteArtefacts = typeToArtefacts.get(ProjNote.TYPE);
 		if (noteArtefacts != null) {
 			ProjNoteSearchParams searchParams = new ProjNoteSearchParams();
@@ -1340,6 +1355,120 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		
 		return toDos.stream()
 				.map(toDo -> new ProjToDoInfoImpl(toDo, artefactToInfo.get(toDo.getArtefact())))
+				.collect(Collectors.toList());
+	}
+	
+	
+	/*
+	 * Decisions
+	 */
+	
+	@Override
+	public ProjDecision createDecision(Identity doer, ProjProject project) {
+		ProjArtefact artefact = artefactDao.create(ProjDecision.TYPE, project, doer);
+		ProjDecision decision = decisionDao.create(artefact);
+		String after = ProjectXStream.toXml(decision);
+		activityDao.create(Action.decisionCreate, null, after, null, doer, artefact);
+		return decision;
+	}
+	
+	@Override
+	public void updateDecision(Identity doer, ProjDecisionRef decision, String title, String details, Date decisionDate) {
+		ProjDecision reloadedDecision = getDecision(decision, true);
+		if (reloadedDecision == null) {
+			return;
+		}
+		
+		updateReloadedDecision(doer, reloadedDecision, title, details, decisionDate);
+	}
+	
+	private ProjDecision updateReloadedDecision(Identity doer, ProjDecision reloadedDecision, String title,
+			String details, Date decisionDate) {
+		String before = ProjectXStream.toXml(reloadedDecision);
+		
+		boolean contentChanged = false;
+
+
+		String titleCleaned = StringHelper.containsNonWhitespace(title)? title: null;
+		if (!Objects.equals(reloadedDecision.getTitle(), titleCleaned)) {
+			reloadedDecision.setTitle(titleCleaned);
+			contentChanged = true;
+		}
+		String detailsCleaned = StringHelper.containsNonWhitespace(details)? details: null;
+		if (!Objects.equals(reloadedDecision.getDetails(), detailsCleaned)) {
+			reloadedDecision.setDetails(detailsCleaned);
+			contentChanged = true;
+		}
+		Date cleanedDecisionDate = decisionDate != null? DateUtils.truncateSeconds(decisionDate): null;
+		if (!Objects.equals(reloadedDecision.getDecisionDate(), cleanedDecisionDate)) {
+			reloadedDecision.setDecisionDate(cleanedDecisionDate);
+			contentChanged = true;
+		}
+		
+		if (contentChanged) {
+			reloadedDecision = decisionDao.save(reloadedDecision);
+			updateContentModified(reloadedDecision.getArtefact(), doer);
+			
+			String after = ProjectXStream.toXml(reloadedDecision);
+			activityDao.create(Action.decisionContentUpdate, before, after, null, doer, reloadedDecision.getArtefact());
+		}
+		
+		return reloadedDecision;
+	}
+	
+	@Override
+	public void deleteDecisionSoftly(Identity doer, ProjDecisionRef decision) {
+		ProjDecision reloadedDecision = getDecision(decision, true);
+		if (reloadedDecision == null) {
+			return;
+		}
+		
+		deleteReloadedDecision(doer, reloadedDecision);
+	}
+
+	private void deleteReloadedDecision(Identity doer, ProjDecision reloadedDecision) {
+		String before = ProjectXStream.toXml(reloadedDecision);
+		
+		deleteArtefactSoftly(doer, reloadedDecision.getArtefact());
+		
+		ProjDecision deletedDecision = getDecision(reloadedDecision);
+		String after = ProjectXStream.toXml(deletedDecision);
+		activityDao.create(Action.decisionStatusDelete, before, after, null, doer, deletedDecision.getArtefact());
+	}
+
+	@Override
+	public ProjDecision getDecision(ProjDecisionRef decision) {
+		return getDecision(decision, false);
+	}
+	
+	private ProjDecision getDecision(ProjDecisionRef decision, boolean active) {
+		ProjDecisionSearchParams searchParams = new ProjDecisionSearchParams();
+		searchParams.setDecisions(List.of(decision));
+		if (active) {
+			searchParams.setStatus(List.of(ProjectStatus.active));
+		}
+		List<ProjDecision> decisions = decisionDao.loadDecisions(searchParams);
+		return decisions != null && !decisions.isEmpty()? decisions.get(0): null;
+	}
+	
+	@Override
+	public long getDecisionsCount(ProjDecisionSearchParams searchParams) {
+		return decisionDao.loadDecisionsCount(searchParams);
+	}
+	
+	@Override
+	public List<ProjDecision> getDecisions(ProjDecisionSearchParams searchParams) {
+		return decisionDao.loadDecisions(searchParams);
+	}
+	
+	@Override
+	public List<ProjDecisionInfo> getDecisionInfos(ProjDecisionSearchParams searchParams, ProjArtefactInfoParams infoParams) {
+		List<ProjDecision> decisions = getDecisions(searchParams);
+		List<ProjArtefact> artefacts = decisions.stream().map(ProjDecision::getArtefact).toList();
+		Map<ProjArtefact, ProjArtefactInfo> artefactToInfo = getArtefactToInfo(artefacts, infoParams);
+		
+		return decisions.stream()
+				.map(decision -> new ProjDecisionInfoImpl(decision, artefactToInfo.get(decision.getArtefact())))
 				.collect(Collectors.toList());
 	}
 	

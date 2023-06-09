@@ -39,6 +39,7 @@ import org.olat.modules.project.ProjActivity;
 import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -78,6 +79,7 @@ public class ProjTimelineActivityRowsFactory {
 		case project: addActivityProjectRows(ureq, rows, activityRowData);
 		case file: addActivityFileRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case toDo: addActivityToDoRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
+		case decision: addActivityDecisionRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case note: addActivityNoteRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case appointment: addActivityAppointmentRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
 		case milestone: addActivityMilestoneRows(rows, activityRowData, artefactItems, artefactKeyToIdentityKeys);
@@ -223,6 +225,27 @@ public class ProjTimelineActivityRowsFactory {
 			}
 			break;
 		}
+		default: //
+		}
+	}
+	
+	private void addActivityDecisionRows(List<ProjTimelineRow> rows, ActivityRowData activityRowData, ProjArtefactItems artefactItems,
+			Map<Long, Set<Long>> artefactKeyToIdentityKeys) {
+		ProjActivity activity = activityRowData.lastActivity();
+		if (activity.getArtefact() == null) {
+			return;
+		}
+		ProjDecision decision = artefactItems.getDecision(activity.getArtefact());
+		if (decision == null) {
+			return;
+		}
+		
+		Long businessPathKey = decision.getKey();
+		String displayName = ProjectUIFactory.getDisplayName(translator, decision);
+		switch (activity.getAction()) {
+		case decisionCreate: addArtefactRow(rows, activityRowData, businessPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.decision.create", displayName)); break;
+		case decisionContentUpdate: addArtefactRow(rows, activityRowData, businessPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.decision.update.content", displayName)); break;
+		case decisionStatusDelete: addArtefactRow(rows, activityRowData, businessPathKey, artefactKeyToIdentityKeys, translator.translate("timeline.activity.decision.delete", displayName)); break;
 		default: //
 		}
 	}

@@ -46,6 +46,7 @@ import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
+import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
@@ -127,6 +128,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		return switch (artefact.getType()) {
 				case ProjFile.TYPE -> getActivityFilterFileValues();
 				case ProjToDo.TYPE -> getActivityFilterToDoValues();
+				case ProjDecision.TYPE -> getActivityFilterDecisionValues();
 				case ProjNote.TYPE -> getActivityFilterNoteValues();
 				case ProjAppointment.TYPE -> getActivityFilterAppointmentValues();
 				case ProjMilestone.TYPE -> getActivityFilterMilestoneValues();
@@ -138,6 +140,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		switch (activity.getActionTarget()) {
 		case file: addActivityFileRows(rows, activity, artefactReferenceItems);
 		case toDo: addActivityToDoRows(rows, activity, artefactReferenceItems);
+		case decision: addActivityDecisionRows(rows, activity, artefactReferenceItems);
 		case note: addActivityNoteRows(rows, activity, artefactReferenceItems);
 		case appointment: addActivityAppointmentRows(rows, activity, artefactReferenceItems);
 		case milestone: addActivityMilestoneRows(rows, activity);
@@ -271,6 +274,57 @@ public class ProjActivityLogController extends ActivityLogController {
 					addRow(rows, activity, "activity.log.message.todo.task.due.date",
 							formatter.formatDateAndTime(beforeDueDate),
 							formatter.formatDateAndTime(afterDueDate));
+				}
+			}
+			break;
+		}
+		default: //
+		}
+	}
+	
+	private SelectionValues getActivityFilterDecisionValues() {
+		SelectionValues filterSV = new SelectionValues();
+		addActivityFilterValue(filterSV, "activity.log.message.copy.init");
+		addActivityFilterValue(filterSV, "activity.log.message.create");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.title");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.details");
+		addActivityFilterValue(filterSV, "activity.log.message.edit.decision.date");
+		addActivityFilterValue(filterSV, "activity.log.message.member.add");
+		addActivityFilterValue(filterSV, "activity.log.message.member.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.add");
+		addActivityFilterValue(filterSV, "activity.log.message.reference.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
+		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
+		addActivityFilterValue(filterSV, "activity.log.message.delete");
+		return filterSV;
+	}
+	
+	private void addActivityDecisionRows(List<ActivityLogRow> rows, ProjActivity activity, ProjArtefactItems artefactReferenceItems) {
+		switch (activity.getAction()) {
+		case decisionCopyInitialized: addRow(rows, activity, "activity.log.message.copy.init"); break;
+		case decisionCreate: addRow(rows, activity, "activity.log.message.create"); break;
+		case decisionStatusDelete: addRow(rows, activity, "activity.log.message.delete"); break;
+		case decisionMemberAdd: addRow(rows, activity, "activity.log.message.member.add", null, userManager.getUserDisplayName(activity.getMember().getKey())); break;
+		case decisionMemberRemove: addRow(rows, activity, "activity.log.message.member.remove", userManager.getUserDisplayName(activity.getMember().getKey()), null); break;
+		case decisionReferenceAdd: addActivityReferenceAddRow(rows, activity, artefactReferenceItems); break;
+		case decisionReferenceRemove: addActivityReferenceRemoveRow(rows, activity, artefactReferenceItems); break;
+		case decisionTagsUpdate: addActivityTagsUpdateRows(rows, activity); break;
+		case decisionContentUpdate: {
+			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
+				ProjDecision before = ProjectXStream.fromXml(activity.getBefore(), ProjDecision.class);
+				ProjDecision after = ProjectXStream.fromXml(activity.getAfter(), ProjDecision.class);
+				if (!Objects.equals(before.getTitle(), after.getTitle())) {
+					addRow(rows, activity, "activity.log.message.edit.title", before.getTitle(), after.getTitle());
+				}
+				if (!Objects.equals(before.getDetails(), after.getDetails())) {
+					addRow(rows, activity, "activity.log.message.edit.details", before.getDetails(), after.getDetails());
+				}
+				Date beforeDecisionDate = before.getDecisionDate() != null? new Date(before.getDecisionDate().getTime()): null;
+				Date afterDecisionDate = after.getDecisionDate() != null? new Date(after.getDecisionDate().getTime()): null;
+				if (!Objects.equals(beforeDecisionDate, afterDecisionDate)) {
+					addRow(rows, activity, "activity.log.message.edit.decision.date",
+							formatter.formatDateAndTime(beforeDecisionDate),
+							formatter.formatDateAndTime(afterDecisionDate));
 				}
 			}
 			break;

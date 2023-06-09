@@ -46,7 +46,7 @@ import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
-import org.olat.modules.project.ui.event.QuickStartEvent;
+import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +59,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	
 	private FormLink calendarLink;
 	private FormLink toDoTasksLink;
+	private FormLink decisionsLink;
 	private FormLink notesLink;
 	private FormLink filesLink;
 
@@ -96,6 +97,12 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 			toDoTasksLink.setIconLeftCSS("o_icon o_icon_todo_task");
 			toDoTasksLink.setUrl(ProjectBCFactory.getToDosUrl(project));
 			quickStarterNames.add(toDoTasksLink.getComponent().getComponentName());
+		}
+		if (secCallback.canViewDecisions()) {
+			decisionsLink = uifactory.addFormLink("decision.widget.title", formLayout);
+			decisionsLink.setIconLeftCSS("o_icon o_icon_proj_decision");
+			decisionsLink.setUrl(ProjectBCFactory.getDecisionsUrl(project));
+			quickStarterNames.add(decisionsLink.getComponent().getComponentName());
 		}
 		if (secCallback.canViewNotes()) {
 			notesLink = uifactory.addFormLink("note.widget.title", formLayout);
@@ -174,13 +181,15 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == calendarLink) {
-			fireEvent(ureq, QuickStartEvent.CALENDAR_EVENT);
+			fireEvent(ureq, QuickStartEvents.CALENDAR_EVENT);
 		} else if (source == toDoTasksLink) {
-			fireEvent(ureq, QuickStartEvent.TODOS_EVENT);
+			fireEvent(ureq, QuickStartEvents.TODOS_EVENT);
+		} else if (source == decisionsLink) {
+			fireEvent(ureq, QuickStartEvents.DECISIONS_EVENT);
 		} else if (source == notesLink) {
-			fireEvent(ureq, QuickStartEvent.NOTES_EVENT);
+			fireEvent(ureq, QuickStartEvents.NOTES_EVENT);
 		} else if (source == filesLink) {
-			fireEvent(ureq, QuickStartEvent.FILES_EVENT);
+			fireEvent(ureq, QuickStartEvents.FILES_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

@@ -19,41 +19,16 @@
  */
 package org.olat.modules.project;
 
-import java.util.List;
-import java.util.Set;
-
 /**
  * 
- * Initial date: 5 Jan 2023<br>
+ * Initial date: 9 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ProjArtefactItems {
+public enum ProjDecisionFilter {
 	
-	public Set<ProjArtefact> getArtefacts();
-	
-	public List<ProjFile> getFiles();
-	
-	public ProjFile getFile(ProjArtefactRef artefact);
-	
-	public List<ProjToDo> getToDos();
+	my,
+	tag,
+	status;
 
-	public ProjToDo getToDo(ProjArtefactRef artefact);
-	
-	public List<ProjDecision> getDecisions();
-
-	public ProjDecision getDecision(ProjArtefactRef artefact);
-
-	public List<ProjNote> getNotes();
-
-	public ProjNote getNote(ProjArtefactRef artefact);
-	
-	public List<ProjAppointment> getAppointments();
-
-	public ProjAppointment getAppointment(ProjArtefactRef artefact);
-	
-	public List<ProjMilestone> getMilestones();
-
-	public ProjMilestone getMilestone(ProjArtefactRef artefact);
-	
 }

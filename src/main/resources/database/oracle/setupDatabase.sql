@@ -4085,6 +4085,16 @@ create table o_proj_milestone (
    fk_artefact  number(20) not null,
    primary key (id)
 );
+create table o_proj_decision (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_title varchar(2000),
+   p_details CLOB,
+   p_decision_date date,
+   fk_artefact  number(20) not null,
+   primary key (id)
+);
 create table o_proj_activity (
    id number(20) generated always as identity,
    creationdate date not null,
@@ -5618,6 +5628,9 @@ create unique index idx_appointment_ident_idx on o_proj_appointment (p_identifie
 alter table o_proj_milestone add constraint milestone_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
 create index idx_milestone_artefact_idx on o_proj_milestone (fk_artefact);
 create unique index idx_milestone_ident_idx on o_proj_milestone (p_identifier);
+
+alter table o_proj_decision add constraint decision_artefact_idx foreign key (fk_artefact) references o_proj_artefact(id);
+create index idx_decision_artefact_idx on o_proj_file (fk_artefact);
 
 alter table o_proj_activity add constraint activity_doer_idx foreign key (fk_doer) references o_bs_identity(id);
 create index idx_activity_doer_idx on o_proj_activity (fk_doer);

@@ -67,6 +67,7 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private FormLayoutContainer listsCont;
 	private MultipleSelectionElement fileEl;
 	private MultipleSelectionElement toDoEl;
+	private MultipleSelectionElement decisionEl;
 	private MultipleSelectionElement noteEl;
 	private MultipleSelectionElement appointmentEl;
 	private StaticTextElement noValuesAvailableEl;
@@ -76,6 +77,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private final Set<String> fileSelectedKeys = new HashSet<>();
 	private final SelectionValues toDoSV;
 	private final Set<String> toDoSelectedKeys = new HashSet<>();
+	private final SelectionValues decisionSV;
+	private final Set<String> decisionSelectedKeys = new HashSet<>();
 	private final SelectionValues noteSV;
 	private final Set<String> noteSelectedKeys = new HashSet<>();
 	private final SelectionValues appointmentSV;
@@ -116,6 +119,13 @@ public class ProjArtefactSelectionController extends FormBasicController {
 					ToDoUIFactory.getDisplayName(getTranslator(), toDo.getToDoTask()),
 					"o_icon_todo_task")));
 		}
+		decisionSV = new SelectionValues();
+		if (artefactItems.getDecisions() != null) {
+			artefactItems.getDecisions().forEach(decision -> decisionSV.add(createSVEntry(
+					decision.getArtefact(),
+					ProjectUIFactory.getDisplayName(getTranslator(), decision),
+					"o_icon_proj_decision")));
+		}
 		noteSV = new SelectionValues();
 		if (artefactItems.getNotes() != null) {
 			artefactItems.getNotes().forEach(note -> noteSV.add(createSVEntry(
@@ -146,6 +156,11 @@ public class ProjArtefactSelectionController extends FormBasicController {
 			artefactItems.getToDos().stream()
 					.filter(toDo -> toDoSelectedKeys.contains(toDo.getArtefact().getKey().toString()))
 					.forEach(toDo -> selectedArtefacts.add(toDo.getArtefact()));
+		}
+		if (artefactItems.getDecisions() != null) {
+			artefactItems.getDecisions().stream()
+					.filter(decision -> decisionSelectedKeys.contains(decision.getArtefact().getKey().toString()))
+					.forEach(decision -> selectedArtefacts.add(decision.getArtefact()));
 		}
 		if (artefactItems.getNotes() != null) {
 			artefactItems.getNotes().stream()
@@ -188,6 +203,10 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		toDoEl.setEscapeHtml(false);
 		toDoEl.addActionListener(FormEvent.ONCHANGE);
 		
+		decisionEl = uifactory.addCheckboxesVertical("reference.decisions", listsCont, decisionSV.keys(), decisionSV.values(), decisionSV.icons(), 1);
+		decisionEl.setEscapeHtml(false);
+		decisionEl.addActionListener(FormEvent.ONCHANGE);
+		
 		noteEl = uifactory.addCheckboxesVertical("reference.notes", listsCont, noteSV.keys(), noteSV.values(), noteSV.icons(), 1);
 		noteEl.setEscapeHtml(false);
 		noteEl.addActionListener(FormEvent.ONCHANGE);
@@ -213,9 +232,11 @@ public class ProjArtefactSelectionController extends FormBasicController {
 	private void updateUI() {
 		appointmentEl.setVisible(!appointmentEl.getKeys().isEmpty());
 		toDoEl.setVisible(!toDoEl.getKeys().isEmpty());
+		decisionEl.setVisible(!decisionEl.getKeys().isEmpty());
 		noteEl.setVisible(!noteEl.getKeys().isEmpty());
 		fileEl.setVisible(!fileEl.getKeys().isEmpty());
-		noValuesAvailableEl.setVisible(!fileEl.isVisible() && !noteEl.isVisible() && !appointmentEl.isVisible());
+		noValuesAvailableEl.setVisible(!fileEl.isVisible() && !toDoEl.isVisible() && !decisionEl.isVisible()
+				&& !noteEl.isVisible() && !appointmentEl.isVisible());
 		listsCont.setDirty(true);
 	}
 	
@@ -232,6 +253,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 			doSelectItem(fileEl, fileSelectedKeys);
 		} else if (toDoEl == source) {
 			doSelectItem(toDoEl, toDoSelectedKeys);
+		} else if (decisionEl == source) {
+			doSelectItem(decisionEl, decisionSelectedKeys);
 		} else if (noteEl == source) {
 			doSelectItem(noteEl, noteSelectedKeys);
 		} else if (appointmentEl == source) {
@@ -275,6 +298,8 @@ public class ProjArtefactSelectionController extends FormBasicController {
 		quickSearchEl.getComponent().setDirty(false);
 		
 		doQuickSearch(fileEl, fileSV, fileSelectedKeys, searchText);
+		doQuickSearch(toDoEl, toDoSV, toDoSelectedKeys, searchText);
+		doQuickSearch(decisionEl, decisionSV, decisionSelectedKeys, searchText);
 		doQuickSearch(noteEl, noteSV, noteSelectedKeys, searchText);
 		doQuickSearch(appointmentEl, appointmentSV, appointmentSelectedKeys, searchText);
 		updateUI();

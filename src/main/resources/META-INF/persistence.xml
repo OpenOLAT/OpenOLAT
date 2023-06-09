@@ -262,6 +262,7 @@
 		<class>org.olat.modules.project.model.ProjAppointmentImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactImpl</class>
 		<class>org.olat.modules.project.model.ProjArtefactToArtefactImpl</class>
+		<class>org.olat.modules.project.model.ProjDecisionImpl</class>
 		<class>org.olat.modules.project.model.ProjFileImpl</class>
 		<class>org.olat.modules.project.model.ProjMilestoneImpl</class>
 		<class>org.olat.modules.project.model.ProjProjectImpl</class>

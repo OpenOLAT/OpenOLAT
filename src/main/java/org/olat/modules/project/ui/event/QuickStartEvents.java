@@ -27,42 +27,12 @@ import org.olat.core.gui.control.Event;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class QuickStartEvent extends Event {
+public class QuickStartEvents {
 	
-	private static final long serialVersionUID = -3043710614034939494L;
-	
-	public static final Event CALENDAR_EVENT = new QuickStartEvent(true, false, false, false);
-	public static final Event TODOS_EVENT = new QuickStartEvent(false, true, false, false);
-	public static final Event NOTES_EVENT = new QuickStartEvent(false, false, true, false);
-	public static final Event FILES_EVENT = new QuickStartEvent(false, false, false, true);
-	
-	private final boolean calendar;
-	private final boolean todos;
-	private final boolean notes;
-	private final boolean files;
-	
-	private QuickStartEvent(boolean calendar, boolean todos, boolean notes, boolean files) {
-		super("quick-start");
-		this.calendar = calendar;
-		this.todos = todos;
-		this.notes = notes;
-		this.files = files;
-	}
-
-	public boolean isCalendar() {
-		return calendar;
-	}
-
-	public boolean isTodos() {
-		return todos;
-	}
-
-	public boolean isNotes() {
-		return notes;
-	}
-
-	public boolean isFiles() {
-		return files;
-	}
+	public static final Event CALENDAR_EVENT = new Event("quick-start-calendar");
+	public static final Event TODOS_EVENT = new Event("quick-start-todos");
+	public static final Event DECISIONS_EVENT = new Event("quick-start-decisions");
+	public static final Event NOTES_EVENT = new Event("quick-start-notes");
+	public static final Event FILES_EVENT = new Event("quick-start-files");
 
 }
