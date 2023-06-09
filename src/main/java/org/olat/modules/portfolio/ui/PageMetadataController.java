@@ -370,10 +370,9 @@ public class PageMetadataController extends FormBasicController {
 			}
 		}
 
-		editLink = uifactory.addToggleButton("edit.page", "edit.page", translate("off"), flc, null, null);
+		editLink = uifactory.addToggleButton("edit.page", "edit.page.toggle", translate("on"), translate("off"), flc);
 		editLink.setElementCssClass("o_sel_page_edit");
 		editLink.setUserObject(Boolean.FALSE);
-		editLink.setLabel(translate("edit.page.toggle"), null);
 		editLink.setVisible(page.isEditable() && secCallback.canEditPage(page));
 		
 		editMetaDataLink = uifactory.addFormLink("edit.page.meta", "edit.page.metadata", null, flc, Link.BUTTON_SMALL);
@@ -382,8 +381,9 @@ public class PageMetadataController extends FormBasicController {
 		editMetaDataLink.setVisible(page.isEditable() && secCallback.canEditPageMetadata(page, assignments));
 	}
 	
+
 	public void updateEditLink(boolean edit) {
-		editLink.setI18nKey(edit ? translate("off") : translate("on"));
+		//TODO toogle
 	}
 	
 	@Override
@@ -404,7 +404,6 @@ public class PageMetadataController extends FormBasicController {
 		} else if(bookmarkButton == source) {
 			toogleBookmark();
 		} else if(editLink == source) {
-			editLink.setI18nKey(editLink.isOn() ? translate("off") : translate("on"));
 			fireEvent(ureq, new ToggleEditPageEvent());
 		} else if(editMetaDataLink == source) {
 			fireEvent(ureq, new EditPageMetadataEvent());

@@ -114,7 +114,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), projectTags);
 		
-		allDayEl = uifactory.addToggleButton("all.day", null, "&nbsp;&nbsp;", formLayout, null, null);
+		allDayEl = uifactory.addToggleButton("all.day", null, null, null, formLayout);
 		allDayEl.addActionListener(FormEvent.ONCHANGE);
 		if (appointment != null && appointment.isAllDay()) {
 			allDayEl.toggleOn();

@@ -643,7 +643,6 @@ legend.control-label {
 	line-height: $o-toggle-size - 1px;
 	font-size: $o-toggle-size;
 	text-align: left;
-	padding: 0 0.5em 0 1px;
 	margin: 0;
 	@extend %o_undecorated;
 	white-space: nowrap;
@@ -659,9 +658,9 @@ legend.control-label {
 		color: $o-toggle-text-color;
 		text-transform: uppercase;
 	}
-	&.o_on {
+	&[aria-checked="true"] {
 		text-align: right;
-		padding: 0 1px 0 0.5em;
+		padding: 0 0.5em 0 1px;
 		background: $o-toggle-on-bg;
 		border-color: $o-toggle-on-border-color;
 		i {
@@ -672,6 +671,21 @@ legend.control-label {
 			color: $o-toggle-on-text-color;
 		}
 	}
+	&[aria-checked="false"] {
+		padding: 0 1px 0 0.5em;
+	}
+	
+	&[aria-checked="true"]>span.o_off {
+		display: none;
+	}
+	
+	&[aria-checked="false"]>span.o_on {
+		display: none;
+	}
+}
+
+.o_form_cell .o_button_toggle {
+	margin-top: 8px;
 }
 
 /* STATIC TEXTELEMENT */

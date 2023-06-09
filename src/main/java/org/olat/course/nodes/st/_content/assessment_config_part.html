@@ -4,16 +4,15 @@
 			$!off_title
 		</legend>
 	#end
-	#if($r.available("expert.mode.hide") || $r.available("expert.mode.show"))
+	#if($r.available("expert.mode.show"))
 		<div class="o_st_config_toggle o_toggle o_small">
 			<div>
-			#if ($r.visible("expert.mode.hide"))
+			#if(${r.getComponent("expert.mode.show").isOn()})
 				<span>$r.translate("expert.mode.hide")</span>
-				$r.render("expert.mode.hide")
 			#else
 				<span>$r.translate("expert.mode.show")</span>
-				$r.render("expert.mode.show")
 			#end
+			$r.render("expert.mode.show")
 			</div>
 		</div>
 	#end

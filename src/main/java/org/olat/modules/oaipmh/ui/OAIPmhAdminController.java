@@ -126,7 +126,7 @@ public class OAIPmhAdminController extends FormBasicController {
 		// Render the on/off toggle standalone in it's own container. Other containers are visible depending on module activation
 		FormLayoutContainer oaipmhConfigContainer = FormLayoutContainer.createDefaultFormLayout("oaipmhConfigContainer", getTranslator());
 		formLayout.add(oaipmhConfigContainer);
-		oaiPmhEl = uifactory.addToggleButton("oaipmh.module", translate("oaipmh.module"), "&nbsp;&nbsp;", oaipmhConfigContainer, null, null);
+		oaiPmhEl = uifactory.addToggleButton("oaipmh.module", "oaipmh.module", null, null, oaipmhConfigContainer);
 		oaiPmhEl.addActionListener(FormEvent.ONCHANGE);
 
 		if (oaiPmhModule.isEnabled()) {
@@ -210,7 +210,7 @@ public class OAIPmhAdminController extends FormBasicController {
 		searchEngineCont.setFormInfo(translate("searchengine.info"));
 		formLayout.add(searchEngineCont);
 
-		searchEnginePublishEl = uifactory.addToggleButton("searchengine.label", translate("searchengine.label"), "&nbsp;&nbsp;", searchEngineCont, null, null);
+		searchEnginePublishEl = uifactory.addToggleButton("searchengine.label", "searchengine.label", null, null, searchEngineCont);
 		searchEnginePublishEl.setHelpText(translate("searchengine.enable"));
 
 		if (oaiPmhModule.isSearchEngineEnabled()) {

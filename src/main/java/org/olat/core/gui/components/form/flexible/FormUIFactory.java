@@ -1329,19 +1329,8 @@ public class FormUIFactory {
 	 * @param toggledOffCSS a special css class for the off state, or null for default
 	 * @return
 	 */
-	public FormToggle addToggleButton(String name, String i18nLabel, String toggleText, FormItemContainer formLayout, String toggledOnCSS, String toggledOffCSS) {
-		FormToggleImpl fte;
-		if (StringHelper.containsNonWhitespace(toggleText)) {
-			fte = new FormToggleImpl(name, name, toggleText, Link.NONTRANSLATED);
-		} else {
-			fte = new FormToggleImpl(name, name, name);
-		}
-		if (toggledOnCSS != null) {
-			fte.setToggledOnCSS(toggledOnCSS);
-		}
-		if (toggledOffCSS != null) {
-			fte.setToggledOffCSS(toggledOffCSS);
-		}
+	public FormToggle addToggleButton(String name, String i18nLabel, String toggleOnText, String toggleOffText, FormItemContainer formLayout) {
+		FormToggleImpl fte = new FormToggleImpl(name, toggleOnText, toggleOffText);
 		if(formLayout != null) {
 			formLayout.add(fte);
 		}

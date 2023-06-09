@@ -84,7 +84,7 @@ public class IQConfirmationMailConfigurationController extends FormBasicControll
 		
 		SelectionValues onKeyValues = new SelectionValues();
 		onKeyValues.add(SelectionValues.entry("on", ""));
-		enableEl = uifactory.addToggleButton("email.enable", translate("confirmation.mail.enable"), "&nbsp;", formLayout, null, null);
+		enableEl = uifactory.addToggleButton("email.enable", "confirmation.mail.enable", null, null, formLayout);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
 		if(config.getBooleanSafe(IQEditController.CONFIG_KEY_CONFIRMATION_EMAIL_ENABLED, false)) {
 			enableEl.toggleOn();

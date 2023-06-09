@@ -39,7 +39,7 @@ public class RepositoryCertificateSettingsPage {
 	}
 	
 	public RepositoryCertificateSettingsPage enableCertificates(boolean auto) {
-		By enableBy = By.cssSelector("fieldset.o_sel_certificate_settings a.o_button_toggle");
+		By enableBy = By.cssSelector("fieldset.o_sel_certificate_settings button.o_button_toggle");
 		OOGraphene.waitElement(enableBy, browser);
 		browser.findElement(enableBy).click();
 		

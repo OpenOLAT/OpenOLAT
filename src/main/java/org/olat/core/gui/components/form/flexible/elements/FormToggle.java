@@ -48,23 +48,5 @@ public interface FormToggle extends FormItem {
 	 * set state to off and change the layout
 	 */
 	public void toggleOff();
-	
-	/**
-	 * set your custom css for the on-state of the toggle
-	 * @param toggledOnCSS
-	 */
-	public void setToggledOnCSS(String toggledOnCSS);
-	
-	/**
-	 * set your custom css for the off-state of the toggle
-	 * @param toggledOffCSS
-	 */
-	public void setToggledOffCSS(String toggledOffCSS);
-	
-	/**
-	 * set the i18n key
-	 * @param i18n
-	 */
-	public void setI18nKey(String i18n, String... args);
 
 }

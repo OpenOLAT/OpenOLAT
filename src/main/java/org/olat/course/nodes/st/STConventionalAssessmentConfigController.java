@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.FormToggle;
 import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -35,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValues.SelectionValue;
 import org.olat.core.gui.control.Controller;
@@ -83,15 +83,13 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	
 	private MultipleSelectionElement configEl;
 	private FormLayoutContainer scoreConfigCont;
-	private FormLink scoreExpertShowLink;
-	private FormLink scoreExpertHideLink;
+	private FormToggle scoreExpertToggleButton;
 	private FormLayoutContainer scoreCont;
 	private SingleSelection scoreTypeEl;
 	private MultipleSelectionElement scoreNodesEl;
 	private TextElement scoreExpessionEl;
 	private FormLayoutContainer passedConfigCont;
-	private FormLink passedExpertShowLink;
-	private FormLink passedExpertHideLink;
+	private FormToggle passedExpertToggleButton;
 	private FormLayoutContainer passedCont;
 	private SingleSelection passedTypeEl;
 	private IntegerElement passedCutValueEl;
@@ -180,13 +178,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		scoreConfigCont.setRootForm(mainForm);
 		formLayout.add(scoreConfigCont);
 		
-		scoreExpertShowLink = uifactory.addFormLink("expert.mode.show", "off", "off", null, scoreConfigCont, Link.LINK);
-		scoreExpertShowLink.setCustomEnabledLinkCSS("o_button_toggle");
-		scoreExpertShowLink.setIconLeftCSS("o_icon o_icon_toggle");
-		
-		scoreExpertHideLink = uifactory.addFormLink("expert.mode.hide", "on", "on", null, scoreConfigCont, Link.LINK);
-		scoreExpertHideLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		scoreExpertHideLink.setIconRightCSS("o_icon o_icon_toggle");
+		scoreExpertToggleButton = uifactory.addToggleButton("expert.mode.show", null, translate("on"), translate("off"), scoreConfigCont);
 		
 		scoreCont = FormLayoutContainer.createDefaultFormLayout("score", getTranslator());
 		scoreCont.setElementCssClass("o_sel_score_config");
@@ -223,14 +215,8 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		passedConfigCont.setRootForm(mainForm);
 		formLayout.add(passedConfigCont);
 		
-		passedExpertShowLink = uifactory.addFormLink("expert.mode.show", "off", "off", null, passedConfigCont, Link.LINK);
-		passedExpertShowLink.setCustomEnabledLinkCSS("o_button_toggle");
-		passedExpertShowLink.setIconLeftCSS("o_icon o_icon_toggle");
-		
-		passedExpertHideLink = uifactory.addFormLink("expert.mode.hide", "on", "on", null, passedConfigCont, Link.LINK);
-		passedExpertHideLink.setCustomEnabledLinkCSS("o_button_toggle o_on");
-		passedExpertHideLink.setIconRightCSS("o_icon o_icon_toggle");
-		
+		passedExpertToggleButton = uifactory.addToggleButton("expert.mode.show", null, translate("on"), translate("off"), passedConfigCont);
+
 		passedCont = FormLayoutContainer.createDefaultFormLayout("passed", getTranslator());
 		passedCont.setElementCssClass("o_sel_passed_config");
 		passedCont.setRootForm(mainForm);
@@ -418,8 +404,13 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		boolean scoreEnabled = configEl.isKeySelected(KEY_SCORE_ENABLED);
 		
 		scoreConfigCont.setVisible(scoreEnabled);
-		scoreExpertShowLink.setVisible(scoreEnabled && !scoreExpertMode);
-		scoreExpertHideLink.setVisible(scoreEnabled && scoreExpertMode);
+		if(scoreExpertMode) {
+			scoreExpertToggleButton.toggleOn();	
+		} else {
+			scoreExpertToggleButton.toggleOff();
+		}
+		scoreExpertToggleButton.setVisible(scoreEnabled);
+
 		scoreCont.setVisible(scoreEnabled);
 
 		scoreTypeEl.setVisible(scoreEnabled && !scoreExpertMode);
@@ -435,8 +426,13 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		boolean passedEnabled = configEl.isKeySelected(KEY_PASSED_ENABLED);
 		
 		passedConfigCont.setVisible(passedEnabled);
-		passedExpertShowLink.setVisible(passedEnabled && !passedExpertMode);
-		passedExpertHideLink.setVisible(passedEnabled && passedExpertMode);
+		if(passedExpertMode) {
+			passedExpertToggleButton.toggleOn();
+		} else {
+			passedExpertToggleButton.toggleOff();
+			
+		}
+		passedExpertToggleButton.setVisible(passedEnabled);
 		passedCont.setVisible(passedEnabled);
 		
 		boolean passedCut = passedTypeEl.isOneSelected() && passedTypeEl.isKeySelected(ScoreCalculator.PASSED_TYPE_CUTVALUE);
@@ -509,17 +505,11 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == configEl) {
 			updateConfigUI();
-		} else if (source == scoreExpertShowLink) {
-			scoreExpertMode = true;
+		} else if (source == scoreExpertToggleButton) {
+			scoreExpertMode = scoreExpertToggleButton.isOn();
 			updateScoreUI();
-		} else if (source == scoreExpertHideLink) {
-			scoreExpertMode = false;
-			updateScoreUI();
-		} else if (source == passedExpertShowLink) {
-			passedExpertMode = true;
-			updatePassedUI();
-		} else if (source == passedExpertHideLink) {
-			passedExpertMode = false;
+		} else if (source == passedExpertToggleButton) {
+			passedExpertMode = passedExpertToggleButton.isOn();
 			updatePassedUI();
 		} else if (source == passedTypeEl) {
 			updatePassedUI();
@@ -535,7 +525,7 @@ public class STConventionalAssessmentConfigController extends FormBasicControlle
 		
 		scoreNodesEl.clearError();
 		if (scoreNodesEl.isVisible()) {
-			if (scoreNodesEl.getSelectedKeys().size() == 0) {
+			if (scoreNodesEl.getSelectedKeys().isEmpty()) {
 				scoreNodesEl.setErrorKey("scform.scoreNodeIndents.error");
 				allOk &= false;
 			} else if (scoreNodesEl.getSelectedKeys().contains(DELETED_NODE_IDENTIFYER)) {

@@ -27,6 +27,7 @@
 package org.olat.core.gui.components.link;
 
 import org.olat.core.gui.components.ComponentEventListener;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
 
@@ -322,5 +323,14 @@ public class LinkFactory {
 		link.setTarget("_blank");
 		link.setUrl(url);
 		return link;
+	}
+	
+	public static FormToggleComponent createToggle(String name, String toggleOnText, String toggleOffText, VelocityContainer vc, ComponentEventListener listener) {
+		FormToggleComponent toggle = new FormToggleComponent(name, toggleOnText, toggleOffText);
+		toggle.addListener(listener);
+		if (vc != null) {
+			vc.put(toggle.getComponentName(), toggle);
+		}
+		return toggle;
 	}
 }

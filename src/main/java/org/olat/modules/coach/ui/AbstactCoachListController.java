@@ -186,8 +186,7 @@ public abstract class AbstactCoachListController extends FormBasicController imp
     @Override
     public void event(UserRequest ureq, Component source, Event event) {
         if (stackPanel == source) {
-            if (event instanceof PopEvent) {
-                PopEvent pe = (PopEvent) event;
+            if (event instanceof PopEvent pe) {
                 if (pe.getController() == this.userCtrl && hasChanged) {
                     reloadModel();
                 }

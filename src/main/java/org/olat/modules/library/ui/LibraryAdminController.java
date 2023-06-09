@@ -179,7 +179,7 @@ public class LibraryAdminController extends FormBasicController {
 		boolean allOk = true;
 		el.clearError();
 		if(StringHelper.containsNonWhitespace(el.getValue()) && !MailHelper.isValidEmailAddress(el.getValue())) {
-			el.setErrorKey("error.mail.not.valid", null);
+			el.setErrorKey("error.mail.not.valid");
 			allOk &= false;
 		}
 		return allOk;

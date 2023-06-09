@@ -32,7 +32,7 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormToggleComponent;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -49,12 +49,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ContextualSubscriptionController extends BasicController {
 
-	private VelocityContainer myContent;
-	private Link subscribeButton;
-	private Link unsubscribeButton;
+	private final VelocityContainer myContent;
+	private FormToggleComponent subscribeButton;
 	
 	private final boolean optOut;
-	private boolean isSubscribed;
 	private final PublisherData publisherData;
 	private SubscriptionContext subscriptionContext;
 	
@@ -94,22 +92,16 @@ public class ContextualSubscriptionController extends BasicController {
 			return;
 		}
 
-		subscribeButton = LinkFactory.createCustomLink("command.subscribe", "command.subscribe", "off", Link.LINK, myContent, this);
-		subscribeButton.setCustomEnabledLinkCSS("o_noti_subscribe_link o_button_toggle");
-		subscribeButton.setIconLeftCSS("o_icon o_icon_toggle");
-		subscribeButton.setTitle("command.subscribe");
-		
-		unsubscribeButton = LinkFactory.createCustomLink("command.unsubscribe", "command.unsubscribe", "on", Link.LINK, myContent, this);
-		unsubscribeButton.setCustomEnabledLinkCSS("o_noti_unsubscribe_link o_button_toggle o_on");
-		unsubscribeButton.setIconRightCSS("o_icon o_icon_toggle");
-		unsubscribeButton.setTitle("command.unsubscribe");
+		subscribeButton = LinkFactory.createToggle("command.subscribe", translate("on"), translate("off"),  myContent, this);
+		subscribeButton.setElementCssClass("o_noti_subscribe_link");
+		subscribeButton.setAriaLabelledBy("o_sub_label");
 		
 		loadModel();
 		putInitialPanel(myContent);
 	}
 	
 	public boolean isSubscribed() {
-		return isSubscribed;
+		return subscribeButton != null && subscribeButton.isOn();
 	}
 	
 	public void loadModel() {
@@ -117,31 +109,29 @@ public class ContextualSubscriptionController extends BasicController {
 		Subscriber subscriber = notifManager.getSubscriber(getIdentity(), subscriptionContext);
 		if(subscriber == null && optOut) {
 			notifManager.subscribe(getIdentity(), subscriptionContext, publisherData);
-			isSubscribed = true;
+			subscribeButton.toggleOn();
 		} else if(subscriber == null || !subscriber.isEnabled()) {
-			isSubscribed = false;
+			subscribeButton.toggleOff();
 		} else {
-			isSubscribed = true;
+			subscribeButton.toggleOn();
 		}
 		updateUI();
 	}
 
 	private void updateUI() {
-		myContent.contextPut("subscribed", (isSubscribed ? Boolean.TRUE : Boolean.FALSE));
+		myContent.contextPut("subscribed", Boolean.valueOf(isSubscribed()));
 	}
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == subscribeButton) {
-			notifManager.subscribe(ureq.getIdentity(), subscriptionContext, publisherData);
-			isSubscribed = true;
+			if(subscribeButton.isOn()) {
+				notifManager.subscribe(getIdentity(), subscriptionContext, publisherData);
+			} else {
+				notifManager.unsubscribe(getIdentity(), subscriptionContext);
+			}
 			updateUI();
 			fireEvent(ureq, event);
-		} else if (source == unsubscribeButton) {
-			notifManager.unsubscribe(ureq.getIdentity(), subscriptionContext);
-			isSubscribed = false;
-			updateUI();
-			fireEvent(ureq, event);
-		} 
+		}
 	}
 }

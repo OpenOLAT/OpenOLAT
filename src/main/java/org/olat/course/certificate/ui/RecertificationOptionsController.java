@@ -95,7 +95,7 @@ public class RecertificationOptionsController extends FormBasicController {
 		setFormInfo("recertification.options.description");
 		setFormInfoHelp("manual_user/course_create/Course_Settings/#certificate");
 		
-		enabledEl = uifactory.addToggleButton("enabled.recertification", translate("enabled.recertification"), "&nbsp;&nbsp;", formLayout, null, null);
+		enabledEl = uifactory.addToggleButton("enabled.recertification", "enabled.recertification", null, null, formLayout);
 		enabledEl.setEnabled(editable);
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		if(certificateConfig.isRecertificationLeadTimeEnabled()) {

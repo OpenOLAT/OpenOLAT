@@ -142,7 +142,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		
 		boolean managedEff = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.efficencystatement);
 		
-		enabledEl = uifactory.addToggleButton("enabled", translate("issue.certificate"), "&nbsp;&nbsp;", formLayout, null, null);
+		enabledEl = uifactory.addToggleButton("enabled", "issue.certificate", null, null, formLayout);
 		enabledEl.addActionListener(FormEvent.ONCLICK);
 		enabledEl.setEnabled(editable && !managedEff);
 		if (certificateConfig.isAutomaticCertificationEnabled() || certificateConfig.isManualCertificationEnabled()) {

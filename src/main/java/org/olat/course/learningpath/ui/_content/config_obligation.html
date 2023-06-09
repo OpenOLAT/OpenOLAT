@@ -3,11 +3,10 @@
 		<div>
 		#if ($exceptional)
 			<span>$r.translate("config.exceptional.obligation.hide")</span>
-			$r.render("hide.exceptional.obligation")
 		#else
 			<span>$r.translate("config.exceptional.obligation.show")</span>
-			$r.render("show.exceptional.obligation")
 		#end
+		$r.render("show.exceptional.obligation")
 		</div>
 	</div>
 	<div class="o_config">

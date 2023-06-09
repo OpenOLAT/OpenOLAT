@@ -82,14 +82,12 @@ public class PageMetadataCompactController extends FormBasicController {
 			layoutCont.contextPut("withTitle",  Boolean.valueOf(pageSettings.isWithTitle()));
 		}
 		
-		editLink = uifactory.addToggleButton("edit.page", "edit.page", translate("off"), flc, null, null);
+		editLink = uifactory.addToggleButton("edit.page", "edit.page.toggle", translate("on"), translate("off"), flc);
 		editLink.setElementCssClass("o_sel_page_edit");
-		editLink.setLabel(translate("edit.page.toggle"), null);
 		editLink.setVisible(page.isEditable() && secCallback.canEditPage(page));
 	}
 	
 	public void updateEditLink(boolean edit) {
-		editLink.setI18nKey(edit ? translate("off") : translate("on"));
 		flc.contextPut("edit", Boolean.valueOf(edit));
 		updateLastChange();
 	}

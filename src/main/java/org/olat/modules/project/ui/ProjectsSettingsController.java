@@ -75,7 +75,7 @@ public class ProjectsSettingsController extends FormBasicController {
 		settingsCont.setRootForm(mainForm);
 		formLayout.add(settingsCont);
 		
-		enabledEl = uifactory.addToggleButton("admin.enabled", translate("admin.enabled"), "&nbsp;&nbsp;", settingsCont, null, null);
+		enabledEl = uifactory.addToggleButton("admin.enabled", "admin.enabled", null, null, settingsCont);
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 		if (projectModule.isEnabled()) {
 			enabledEl.toggleOn();

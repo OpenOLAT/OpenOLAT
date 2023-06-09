@@ -124,7 +124,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		scoreEl = uifactory.addToggleButton("form.score", translate("form.score"), "&nbsp;&nbsp;", formLayout, null, null);
+		scoreEl = uifactory.addToggleButton("form.score", "form.score", null, null, formLayout);
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		String scoreEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 		if("true".equals(scoreEnabled)) {
@@ -213,7 +213,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 	
 	private void initFormGrading(FormItemContainer formLayout) {
-		gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", translate("node.grade.enabled"), "&nbsp;&nbsp;", formLayout, null, null);
+		gradeEnabledEl = uifactory.addToggleButton("node.grade.enabled", "node.grade.enabled", null, null, formLayout);
 		gradeEnabledEl.setElementCssClass("o_sel_course_video_grade");
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		String gradeEnabled = config.getStringValue(MSCourseNode.CONFIG_KEY_GRADE_ENABLED);
@@ -242,7 +242,7 @@ public class VideoTaskAssessmentEditController extends FormBasicController {
 	}
 	
 	private void initFormPassed(FormItemContainer formLayout) {
-		passedEl = uifactory.addToggleButton("form.passed", translate("form.passed"), "&nbsp;&nbsp;", formLayout, null, null);
+		passedEl = uifactory.addToggleButton("form.passed", "form.passed", null, null, formLayout);
 		passedEl.addActionListener(FormEvent.ONCHANGE);
 		boolean passedField = config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, false);
 		if(passedField) {

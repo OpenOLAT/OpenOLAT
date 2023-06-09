@@ -19,7 +19,6 @@
  */
 package org.olat.modules.coach.ui;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.table.IconCssCellRenderer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.modules.coach.ui.LightedValue.Light;
@@ -28,15 +27,14 @@ import org.olat.modules.coach.ui.LightedValue.Light;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellRenderer {
+public class LightIconRenderer extends IconCssCellRenderer {
 
 	@Override
 	protected String getIconCssClass(Object val) {
 		if(val == null) {
 			return null;
 		}
-		if(val instanceof LightedValue) {
-			LightedValue lightedVal = (LightedValue)val;
+		if(val instanceof LightedValue lightedVal) {
 			Light light = lightedVal.getLight();
 			if(light == null) {
 				return null;
@@ -58,11 +56,11 @@ public class LightIconRenderer extends IconCssCellRenderer implements FlexiCellR
 		if(val == null) {
 			return null;
 		}
-		if(val instanceof LightedValue) {
-			return ((LightedValue)val).getValue();
+		if(val instanceof LightedValue lightedVal) {
+			return lightedVal.getValue();
 		}
-		if(val instanceof Float) {
-			return AssessmentHelper.getRoundedScore((Float)val);
+		if(val instanceof Float fVal) {
+			return AssessmentHelper.getRoundedScore(fVal);
 		}
 		return val.toString();
 	}
