@@ -27,6 +27,8 @@ import org.olat.modules.openbadges.BadgeClass;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -62,6 +64,7 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_uuid", nullable = false, insertable = true, updatable = false)
 	private String uuid;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "b_status", nullable = false, insertable = true, updatable = true)
 	private BadgeClassStatus status;
 
@@ -80,11 +83,11 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_criteria", nullable = false, insertable = true, updatable = true)
 	private String criteria;
 
+	@Column(name = "b_salt", nullable = false, insertable = true, updatable = false)
+	private String salt;
+
 	@Column(name = "b_issuer", nullable = false, insertable = true, updatable = true)
 	private String issuer;
-
-	@Column(name = "b_tags", nullable = false, insertable = true, updatable = true)
-	private String tags;
 
 	public BadgeClassImpl() {
 	}
@@ -187,18 +190,18 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	}
 
 	@Override
+	public String getSalt() {
+		return salt;
+	}
+
+	@Override
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
+	@Override
 	public String getIssuer() {
 		return issuer;
-	}
-
-	@Override
-	public String getTags() {
-		return tags;
-	}
-
-	@Override
-	public void setTags(String tags) {
-		this.tags = tags;
 	}
 
 	@Override

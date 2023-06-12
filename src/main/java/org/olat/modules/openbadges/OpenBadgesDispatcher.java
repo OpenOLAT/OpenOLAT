@@ -23,12 +23,28 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.olat.NewControllerFactory;
+import org.olat.core.commons.fullWebApp.BaseFullWebappController;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.Windows;
+import org.olat.core.gui.components.Window;
+import org.olat.core.gui.control.ChiefController;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.creator.ControllerCreator;
+import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.dispatcher.LocaleNegotiator;
+import org.olat.login.DmzBFWCParts;
+import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.modules.openbadges.v2.Criteria;
 
@@ -58,6 +74,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	public static final String BAKED_PATH = "baked/";
 	public static final String CRITERIA_PATH = "criteria/";
 	public static final String ISSUER_PATH = "issuer/";
+	public static final String WEB_SUFFIX = "/web";
 
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
@@ -79,7 +96,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		log.debug("Method: " + request.getMethod() + ", URI prefix: " + uriPrefix + ", request URI: " + requestUri);
 
 		if (commandUri.startsWith(ASSERTION_PATH)) {
-			handleAssertion(response, commandUri.substring(ASSERTION_PATH.length()));
+			handleAssertion(request, response, commandUri.substring(ASSERTION_PATH.length()));
 		} else if (commandUri.startsWith(CLASS_PATH)) {
 			handleClass(response, commandUri.substring(CLASS_PATH.length()));
 		} else if (commandUri.startsWith(IMAGE_PATH)) {
@@ -89,7 +106,16 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		}
 	}
 
-	private void handleAssertion(HttpServletResponse response, String uuid) {
+	private void handleAssertion(HttpServletRequest request, HttpServletResponse response, String pathOrUuid) {
+		if (pathOrUuid.endsWith(WEB_SUFFIX)) {
+			String uuid = pathOrUuid.substring(0, pathOrUuid.length() - WEB_SUFFIX.length());
+			handleAssertionWeb(request, response, uuid);
+		} else {
+			handleAssertionJson(response, pathOrUuid);
+		}
+	}
+
+	private void handleAssertionWeb(HttpServletRequest request, HttpServletResponse response, String uuid) {
 		BadgeAssertion assertion = openBadgesManager.getBadgeAssertion(uuid);
 		if (assertion == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -97,7 +123,99 @@ public class OpenBadgesDispatcher implements Dispatcher {
 			return;
 		}
 
+		String pathInfo = request.getPathInfo();
+		String uriPrefix = DispatcherModule.getLegacyUriPrefix(request);
+		UserRequest ureq;
 
+		try {
+			ureq = new UserRequestImpl(uriPrefix, request, response);
+		} catch (Exception e) {
+			log.debug("Bad request", e);
+			DispatcherModule.sendBadRequest(pathInfo, response);
+			return;
+		}
+
+		if (pathInfo.contains("close-window")) {
+			DispatcherModule.setNotContent(request.getPathInfo(), response);
+			return;
+		}
+
+		if (ureq.isValidDispatchURI()) {
+			dispatchAssertionWeb(ureq);
+			return;
+		}
+
+		if (ureq.getUserSession().isAuthenticated()) {
+			redirectAssertionWeb(response, uuid, ureq.getIdentity());
+			return;
+		}
+
+		launchAssertionWeb(ureq, uuid, uriPrefix);
+	}
+
+	private void launchAssertionWeb(UserRequest ureq, String uuid, String uriPrefix) {
+		UserSession usess = ureq.getUserSession();
+
+		usess.setLocale(LocaleNegotiator.getPreferedLocale(ureq));
+		I18nManager.updateLocaleInfoToThread(usess);
+
+		Windows windows = Windows.getWindows(ureq);
+		boolean windowHere = windows.isExisting(uriPrefix, ureq.getWindowID());
+		if (!windowHere) {
+			DmzBFWCParts bfwcParts = new DmzBFWCParts();
+			bfwcParts.showTopNav(false);
+			ControllerCreator controllerCreator = (lureq, lwControl) -> new BadgeAssertionPublicController(lureq, lwControl, uuid);
+			bfwcParts.setContentControllerCreator(controllerCreator);
+
+			synchronized (windows) {
+				ChiefController cc = new BaseFullWebappController(ureq, bfwcParts);
+				Window window = cc.getWindow();
+				window.setUriPrefix(uriPrefix);
+				ureq.overrideWindowComponentID(window.getDispatchID());
+				windows.registerWindow(cc);
+			}
+		}
+
+		windows.getWindowManager().setAjaxWanted(ureq);
+		ChiefController chiefController = windows.getChiefController(ureq);
+
+		try {
+			WindowControl wControl = chiefController.getWindowControl();
+			NewControllerFactory.getInstance().launch(ureq, wControl);
+			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
+			w.dispatchRequest(ureq, true);
+			chiefController.resetReload();
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	private void redirectAssertionWeb(HttpServletResponse response, String uuid, Identity identity) {
+		String redirectUrl = Settings.getServerContextPathURI()
+				.concat("/auth/HomeSite/")
+				.concat(identity.getKey().toString())
+				.concat("/badgeassertion/")
+				.concat(uuid);
+		DispatcherModule.redirectTo(response, redirectUrl);
+	}
+
+	private void dispatchAssertionWeb(UserRequest ureq) {
+		Windows windows = Windows.getWindows(ureq);
+		ChiefController chiefController = windows.getChiefController(ureq);
+		try {
+			Window w = chiefController.getWindow().getWindowBackOffice().getWindow();
+			w.dispatchRequest(ureq, false);
+		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+
+	private void handleAssertionJson(HttpServletResponse response, String uuid) {
+		BadgeAssertion assertion = openBadgesManager.getBadgeAssertion(uuid);
+		if (assertion == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			log.warn("Could not find assertion for UUID {}", uuid);
+		}
 	}
 
 	private void handleClass(HttpServletResponse response, String uuid) {

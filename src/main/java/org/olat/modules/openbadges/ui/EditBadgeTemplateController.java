@@ -20,7 +20,10 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
+import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -37,8 +40,8 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.OpenBadgesManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -49,85 +52,90 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditBadgeTemplateController extends FormBasicController {
 
-	private final BadgeTemplate template;
+	private BadgeTemplate badgeTemplate;
 	private ImageFormItem imageEl;
 	private FileElement fileEl;
 	private TextElement nameEl;
 	private TextAreaElement descriptionEl;
-	private TextElement categoryEl;
+	private TagSelection categoriesEl;
 	private MultipleSelectionElement scopeEl;
 	private SelectionValues scopeKV;
+	private List<? extends TagInfo> categories;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public EditBadgeTemplateController(UserRequest ureq, WindowControl wControl, BadgeTemplate template) {
+	public EditBadgeTemplateController(UserRequest ureq, WindowControl wControl, BadgeTemplate badgeTemplate) {
 		super(ureq, wControl);
-		this.template = template;
+		this.badgeTemplate = badgeTemplate;
 
 		scopeKV = new SelectionValues();
 		for (BadgeTemplate.Scope scope : BadgeTemplate.Scope.values()) {
 			scopeKV.add(SelectionValues.entry(scope.name(), translate("template.scope." + scope.name())));
 		}
 
+		categories = openBadgesManager.getCategories(badgeTemplate, null);
+
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (template == null) {
+		if (badgeTemplate == null) {
 			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
+			fileEl.setMandatory(true);
 		} else {
 			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
-			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(template.getImage()));
+			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(badgeTemplate.getImage()));
 			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 			}
 			formLayout.add(imageEl);
 		}
 
-		String name = template != null ? template.getName() : "";
+		String name = badgeTemplate != null ? badgeTemplate.getName() : "";
 		nameEl = uifactory.addTextElement("form.name", 80, name, formLayout);
 		nameEl.setMandatory(true);
 		nameEl.setElementCssClass("o_test_css_class");
 
-		String description = template != null ? template.getDescription() : "";
+		String description = badgeTemplate != null ? badgeTemplate.getDescription() : "";
 		descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 				512, 2, 80, false, false, description, formLayout);
 
-		String category = template != null ? template.getCategory() : "";
-		categoryEl = uifactory.addTextElement("form.category", 80, category, formLayout);
+		categoriesEl = uifactory.addTagSelection("form.categories", "form.categories", formLayout,
+				getWindowControl(), categories);
 
 		scopeEl = uifactory.addCheckboxesVertical("form.scope", formLayout, scopeKV.keys(), scopeKV.values(), 1);
-		if (template != null) {
-			template.getScopesAsCollection().forEach(s -> scopeEl.select(s, true));
+		if (badgeTemplate != null) {
+			badgeTemplate.getScopesAsCollection().forEach(s -> scopeEl.select(s, true));
 		}
 		scopeEl.select("a", true);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
-		String submitLabelKey = template != null ? "save" : "template.upload";
+		String submitLabelKey = badgeTemplate != null ? "save" : "template.upload";
 		uifactory.addFormSubmitButton(submitLabelKey, buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		if (template == null) {
+		if (badgeTemplate == null) {
 			File templateFile = fileEl.getUploadFile();
 			String targetFileName = fileEl.getUploadFileName();
 			if (templateFile != null) {
-				openBadgesManager.createTemplate(nameEl.getValue(), templateFile, targetFileName,
-						descriptionEl.getValue(), categoryEl.getValue(), scopeEl.getSelectedKeys(), getIdentity());
+				badgeTemplate = openBadgesManager.createTemplate(nameEl.getValue(), templateFile, targetFileName,
+						descriptionEl.getValue(), scopeEl.getSelectedKeys(), getIdentity());
 			}
 		} else {
-			template.setName(nameEl.getValue());
-			template.setDescription(descriptionEl.getValue());
-			template.setCategory(categoryEl.getValue());
-			template.setScopesAsCollection(scopeEl.getSelectedKeys());
-			openBadgesManager.updateTemplate(template);
+			badgeTemplate.setName(nameEl.getValue());
+			badgeTemplate.setDescription(descriptionEl.getValue());
+			badgeTemplate.setScopesAsCollection(scopeEl.getSelectedKeys());
+			openBadgesManager.updateTemplate(badgeTemplate);
 		}
+
+		openBadgesManager.updateCategories(badgeTemplate, null, categoriesEl.getDisplayNames());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

@@ -30,6 +30,8 @@ import org.olat.modules.openbadges.BadgeClass;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -68,6 +70,7 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 	@Column(name = "b_uuid", nullable = false, insertable = true, updatable = false)
 	private String uuid;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "b_status", nullable = false, insertable = true, updatable = true)
 	private BadgeAssertionStatus status;
 

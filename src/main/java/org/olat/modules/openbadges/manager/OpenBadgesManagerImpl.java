@@ -39,15 +39,20 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
@@ -55,8 +60,10 @@ import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
+import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -85,7 +92,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Autowired
 	private BadgeAssertionDAO badgeAssertionDAO;
 	@Autowired
+	private BadgeCategoryDAO badgeCategoryDAO;
+	@Autowired
 	private MovieService movieService;
+	@Autowired
+	private TagService tagService;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -117,16 +128,21 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public void createTemplate(String name, File templateFile, String targetFileName, String description,
-							   String category, Collection<String> scopes, Identity savedBy) {
+	public BadgeTemplate createTemplate(String name, File templateFile, String targetFileName, String description,
+										Collection<String> scopes, Identity savedBy) {
 		String templateFileName = copyTemplate(templateFile, targetFileName, savedBy);
 		if (templateFileName != null) {
-			BadgeTemplate template = templateDAO.createTemplate(templateFileName, name);
-			template.setDescription(description);
-			template.setCategory(category);
-			template.setScopesAsCollection(scopes);
-			templateDAO.updateTemplate(template);
+			BadgeTemplate badgeTemplate = templateDAO.createTemplate(templateFileName, name);
+			badgeTemplate.setDescription(description);
+			badgeTemplate.setScopesAsCollection(scopes);
+			return templateDAO.updateTemplate(badgeTemplate);
 		}
+		return null;
+	}
+
+	@Override
+	public BadgeTemplate getTemplate(Long key) {
+		return templateDAO.getTemplate(key);
 	}
 
 	@Override
@@ -160,12 +176,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void deleteTemplate(BadgeTemplate template) {
-		if (getBadgeTemplatesRootContainer().resolve(template.getImage()) instanceof VFSLeaf templateLeaf) {
+	public void deleteTemplate(BadgeTemplate badgeTemplate) {
+		if (getBadgeTemplatesRootContainer().resolve(badgeTemplate.getImage()) instanceof VFSLeaf templateLeaf) {
 			templateLeaf.delete();
 		}
 
-		templateDAO.deleteTemplate(template);
+		badgeCategoryDAO.delete(badgeTemplate);
+		templateDAO.deleteTemplate(badgeTemplate);
 	}
 
 	private String copyTemplate(File sourceFile, String targetFileName, Identity savedBy) {
@@ -191,16 +208,16 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public void createBadgeClass(String uuid, String version, File uploadedFile, String targetFileName,
-								 String name, String description, String criteria, String issuer, String tags,
-								 Identity savedBy) {
-		String badgeClassImageFileName = copyBadgeClassFile(uploadedFile, targetFileName, savedBy);
+	public BadgeClass createBadgeClass(String uuid, String version, File sourceFile, String targetFileName,
+									   String name, String description, String criteria, String salt, String issuer,
+									   Identity savedBy) {
+		String badgeClassImageFileName = copyBadgeClassFile(sourceFile, targetFileName, savedBy);
 		if (badgeClassImageFileName != null) {
 			BadgeClass badgeClass = badgeClassDAO.createBadgeClass(uuid, version, badgeClassImageFileName,
-					name, description, criteria, issuer);
-			badgeClass.setTags(tags);
-			badgeClassDAO.updateBadgeClass(badgeClass);
+					name, description, criteria, salt, issuer);
+			return badgeClassDAO.updateBadgeClass(badgeClass);
 		}
+		return null;
 	}
 
 	@Override
@@ -234,8 +251,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void updateBadgeClass(BadgeClass badgeClass) {
-		badgeClassDAO.updateBadgeClass(badgeClass);
+	public BadgeClass updateBadgeClass(BadgeClass badgeClass) {
+		return badgeClassDAO.updateBadgeClass(badgeClass);
 	}
 
 	@Override
@@ -244,6 +261,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			badgeClassImageLeaf.delete();
 		}
 
+		badgeCategoryDAO.delete(badgeClass);
 		badgeClassDAO.deleteBadgeClass(badgeClass);
 	}
 
@@ -287,10 +305,27 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public void createBadgeAssertion(String uuid, String recipientEmail, BadgeClass badgeClass, Date issuedOn,
-									 Identity awardedBy) {
+	public void createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
+									 Identity recipient, Identity awardedBy) {
 		String verification = "{\"type\":\"hosted\"}";
-		badgeAssertionDAO.createBadgeAssertion(uuid, recipientEmail, badgeClass, verification, issuedOn, awardedBy);
+		String recipientObject = createRecipientObject(recipient, badgeClass.getSalt());
+		if (recipientObject == null) {
+			return;
+		}
+		badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClass, verification, issuedOn, recipient, awardedBy);
+	}
+
+	private String createRecipientObject(Identity recipient, String salt) {
+		if (recipient.getUser() == null || !StringHelper.containsNonWhitespace(recipient.getUser().getEmail())) {
+			log.error("recipient has no email address");
+			return null;
+		}
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("type", "email");
+		jsonObject.put("hashed", true);
+		jsonObject.put("salt", salt);
+		jsonObject.put("identity", "sha256$" + DigestUtils.sha256Hex(recipient.getUser().getEmail() + salt));
+		return jsonObject.toString();
 	}
 
 	@Override
@@ -327,6 +362,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public void updateBadgeAssertion(BadgeAssertion badgeAssertion) {
+		String recipientObject = createRecipientObject(badgeAssertion.getRecipient(), badgeAssertion.getBadgeClass().getSalt());
+		if (recipientObject == null) {
+			return;
+		}
+		badgeAssertion.setRecipientObject(recipientObject);
 		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 	}
 
@@ -337,7 +377,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public BadgeAssertion getBadgeAssertion(String uuid) {
-		return null;
+		return badgeAssertionDAO.getAssertion(uuid);
 	}
 
 	public void bakeBadge(FileType fileType, String templateName) {
@@ -414,5 +454,32 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			}
 		}
 		return null;
+	}
+
+	//
+	// Category
+	//
+	@Override
+	public List<? extends TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass) {
+		return badgeCategoryDAO.readBadgeCategoryTags(badgeTemplate, badgeClass);
+	}
+
+	@Override
+	public void updateCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass, List<String> displayNames) {
+		List<Tag> requiredTags = tagService.getOrCreateTags(displayNames);
+		List<BadgeCategory> badgeCategories = badgeCategoryDAO.readBadgeCategories(badgeTemplate, badgeClass);
+		List<Tag> currentTags = badgeCategories.stream().map(BadgeCategory::getTag).toList();
+
+		for (Tag requiredTag : requiredTags) {
+			if (!currentTags.contains(requiredTag)) {
+				badgeCategoryDAO.create(requiredTag, badgeTemplate, badgeClass);
+			}
+		}
+
+		for (BadgeCategory badgeCategory : badgeCategories) {
+			if (!requiredTags.contains(badgeCategory.getTag())) {
+				badgeCategoryDAO.delete(badgeCategory);
+			}
+		}
 	}
 }

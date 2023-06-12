@@ -107,44 +107,42 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 			segmentView.select(templatesLink);
 		} else if ("Classes".equalsIgnoreCase(type)) {
 			doOpenBadgeClasses(ureq);
+			segmentView.select(badgeClassesLink);
 		} else if ("Assertions".equalsIgnoreCase(type)) {
 			doOpenBadgeAssertions(ureq);
+			segmentView.select(badgeAssertionsLink);
 		}
 	}
 
 	private void doOpenConfiguration(UserRequest ureq) {
-		if (configCtrl == null) {
-			WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0L), null);
-			configCtrl = new OpenBadgesAdminConfigurationController(ureq, windowControl);
-			listenTo(configCtrl);
-		}
+		removeAsListenerAndDispose(configCtrl);
+		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Configuration", 0L), null);
+		configCtrl = new OpenBadgesAdminConfigurationController(ureq, windowControl);
+		listenTo(configCtrl);
 		mainVC.put("segmentCmp", configCtrl.getInitialComponent());
 	}
 
 	private void doOpenTemplates(UserRequest ureq) {
-		if (templatesCtrl == null) {
-			WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Templates", 0L), null);
-			templatesCtrl = new OpenBadgesAdminTemplatesController(ureq, windowControl);
-			listenTo(templatesCtrl);
-		}
+		removeAsListenerAndDispose(templatesCtrl);
+		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Templates", 0L), null);
+		templatesCtrl = new OpenBadgesAdminTemplatesController(ureq, windowControl);
+		listenTo(templatesCtrl);
 		mainVC.put("segmentCmp", templatesCtrl.getInitialComponent());
 	}
 
 	private void doOpenBadgeClasses(UserRequest ureq) {
-		if (classesCtrl == null) {
-			WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Classes", 0L), null);
-			classesCtrl = new OpenBadgesAdminClassesController(ureq, windowControl);
-			listenTo(classesCtrl);
-		}
+		removeAsListenerAndDispose(classesCtrl);
+		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Classes", 0L), null);
+		classesCtrl = new OpenBadgesAdminClassesController(ureq, windowControl);
+		listenTo(classesCtrl);
 		mainVC.put("segmentCmp", classesCtrl.getInitialComponent());
 	}
 
 	private void doOpenBadgeAssertions(UserRequest ureq) {
-		if (badgeAssertionsController == null) {
-			WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Assertions", 0L), null);
-			badgeAssertionsController = new OpenBadgesAdminAssertionsController(ureq, windowControl);
-			listenTo(badgeAssertionsController);
-		}
+		removeAsListenerAndDispose(badgeAssertionsController);
+		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Assertions", 0L), null);
+		badgeAssertionsController = new OpenBadgesAdminAssertionsController(ureq, windowControl);
+		listenTo(badgeAssertionsController);
 		mainVC.put("segmentCmp", badgeAssertionsController.getInitialComponent());
 	}
 }

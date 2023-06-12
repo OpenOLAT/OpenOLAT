@@ -33,6 +33,8 @@ public interface BadgeTemplate {
 		global, courseOnly
 	}
 
+	Long getKey();
+
 	Date getCreationDate();
 
 	Date getLastModified();
@@ -48,14 +50,6 @@ public interface BadgeTemplate {
 	String getDescription();
 
 	void setDescription(String description);
-
-	String getTags();
-
-	void setTags(String tags);
-
-	String getCategory();
-
-	void setCategory(String category);
 
 	String getScopes();
 

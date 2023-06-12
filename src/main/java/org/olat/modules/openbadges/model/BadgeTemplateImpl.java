@@ -72,12 +72,6 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 	@Column(name = "b_description", nullable = true, insertable = true, updatable = true)
 	private String description;
 
-	@Column(name = "b_tags", nullable = true, insertable = true, updatable = true)
-	private String tags;
-
-	@Column(name = "b_category", nullable = true, insertable = true, updatable = true)
-	private String category;
-
 	@Column(name = "b_scopes", nullable = true, insertable = true, updatable = true)
 	private String scopes;
 
@@ -150,26 +144,6 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 	}
 
 	@Override
-	public String getTags() {
-		return tags;
-	}
-
-	@Override
-	public void setTags(String tags) {
-		this.tags = tags;
-	}
-
-	@Override
-	public String getCategory() {
-		return category;
-	}
-
-	@Override
-	public void setCategory(String category) {
-		this.category = category;
-	}
-
-	@Override
 	public String getScopes() {
 		return scopes;
 	}
@@ -177,7 +151,7 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 	@Override
 	public Collection<String> getScopesAsCollection() {
 		if (StringHelper.containsNonWhitespace(getScopes())) {
-			Arrays.stream(getScopes().split(",")).toList();
+			return Arrays.stream(getScopes().split(",")).toList();
 		}
 		return List.of();
 	}

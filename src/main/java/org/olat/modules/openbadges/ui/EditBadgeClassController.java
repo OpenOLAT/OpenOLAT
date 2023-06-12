@@ -20,24 +20,42 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.image.ImageFormItem;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,16 +67,27 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditBadgeClassController extends FormBasicController {
 
-	private final BadgeClass badgeClass;
+	private BadgeClass badgeClass;
+	private boolean templateDecisionMade;
 	private StaticTextElement uuidEl;
+
+	private SingleSelection badgeTemplateDropdown;
+	private SelectionValues badgeTemplateKV;
+	private BadgeTemplate badgeTemplate;
+	private FormLayoutContainer badgeTemplateButtonsContainer;
+	private FormLink useTemplateButton;
+	private FormLink doNotUseTemplateButton;
 	private TextElement versionEl;
 	private ImageFormItem imageEl;
 	private FileElement fileEl;
+	private File tmpImageFile;
 	private TextElement nameEl;
 	private TextAreaElement descriptionEl;
 	private TextAreaElement criteriaEl;
 	private TextAreaElement issuerEl;
-	private TextElement tagsEl;
+	private TagSelection categoriesEl;
+	private List<? extends TagInfo> categories;
+	private FormSubmit submitButton;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -66,7 +95,18 @@ public class EditBadgeClassController extends FormBasicController {
 	public EditBadgeClassController(UserRequest ureq, WindowControl wControl, BadgeClass badgeClass) {
 		super(ureq, wControl);
 		this.badgeClass = badgeClass;
+
+		templateDecisionMade = badgeClass != null;
+
+		badgeTemplateKV = new SelectionValues();
+		for (BadgeTemplate badgeTemplate : openBadgesManager.getTemplates()) {
+			badgeTemplateKV.add(SelectionValues.entry(badgeTemplate.getKey().toString(), badgeTemplate.getName()));
+		}
+
+		categories = openBadgesManager.getCategories(null	, badgeClass);
+
 		initForm(ureq);
+		updateUi();
 	}
 
 	@Override
@@ -75,19 +115,23 @@ public class EditBadgeClassController extends FormBasicController {
 				UUID.randomUUID().toString().replace("-", "");
 		uuidEl = uifactory.addStaticTextElement("form.uuid", uuid, formLayout);
 
+		badgeTemplateDropdown = uifactory.addDropdownSingleselect("form.template", formLayout, badgeTemplateKV.keys(), badgeTemplateKV.values());
+		badgeTemplateButtonsContainer = FormLayoutContainer.createButtonLayout("form.use.template.buttons", getTranslator());
+		badgeTemplateButtonsContainer.setRootForm(mainForm);
+		formLayout.add(badgeTemplateButtonsContainer);
+		useTemplateButton = uifactory.addFormLink("form.use.template", badgeTemplateButtonsContainer, Link.BUTTON);
+		doNotUseTemplateButton = uifactory.addFormLink("form.do.not.use.template", badgeTemplateButtonsContainer, Link.BUTTON);
+
 		String version = badgeClass != null ? badgeClass.getVersion() : "1.0";
 		versionEl = uifactory.addTextElement("form.version", 16, version, formLayout);
+		versionEl.setMandatory(true);
 
-		if (badgeClass == null) {
-			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
-		} else {
-			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
-			imageEl.setMedia(openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage()));
-			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
-				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
-			}
-			formLayout.add(imageEl);
-		}
+		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.gfx");
+		formLayout.add(imageEl);
+
+		fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
+		fileEl.setMandatory(true);
+		fileEl.addActionListener(FormEvent.ONCHANGE);
 
 		String name = badgeClass != null ? badgeClass.getName() : "";
 		nameEl = uifactory.addTextElement("form.name", 128, name, formLayout);
@@ -107,26 +151,87 @@ public class EditBadgeClassController extends FormBasicController {
 		issuerEl = uifactory.addTextAreaElement("class.issuer", "class.issuer",
 				512, 2, 80, false, false, issuer, formLayout);
 
-		String tags = badgeClass != null ? badgeClass.getTags() : "";
-		tagsEl = uifactory.addTextElement("class.tags", 128, tags, formLayout);
+		categoriesEl = uifactory.addTagSelection("form.categories", "form.categories", formLayout,
+				getWindowControl(), categories);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
 		String submitLabelKey = badgeClass != null ? "save" : "class.add";
-		uifactory.addFormSubmitButton(submitLabelKey, buttonCont);
+		submitButton = uifactory.addFormSubmitButton(submitLabelKey, buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
+	}
+
+	void updateUi() {
+		badgeTemplateDropdown.setVisible(!templateDecisionMade);
+		badgeTemplateButtonsContainer.setVisible(!templateDecisionMade);
+
+		versionEl.setVisible(templateDecisionMade);
+		imageEl.setVisible(templateDecisionMade);
+		fileEl.setVisible(templateDecisionMade);
+		if (badgeClass != null) {
+			if (fileEl.getUploadFile() != null) {
+				imageEl.setMedia(fileEl.getUploadFile());
+			} else {
+				imageEl.setMedia(openBadgesManager.getBadgeClassVfsLeaf(badgeClass.getImage()));
+			}
+			fileEl.setLabel("form.image.other", null);
+			fileEl.setMandatory(false);
+		} else {
+			fileEl.setLabel("form.image", null);
+			fileEl.setMandatory(true);
+			if (fileEl.getUploadFile() != null) {
+				File uploadFile = fileEl.getUploadFile();
+				String uploadFileName = fileEl.getUploadFileName();
+				String tmpFileName = UUID.randomUUID() + "." + FileUtils.getFileSuffix(uploadFileName);
+				if (tmpImageFile != null) {
+					tmpImageFile.delete();
+					tmpImageFile = null;
+				}
+				tmpImageFile = new File(WebappHelper.getTmpDir(), tmpFileName);
+				try {
+					Files.copy(uploadFile.toPath(), tmpImageFile.toPath());
+					imageEl.setMedia(tmpImageFile);
+				} catch (IOException e) {
+					logError("", e);
+				}
+			} else if (badgeTemplate != null) {
+				imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(badgeTemplate.getImage()));
+				fileEl.setLabel("form.image.other", null);
+				fileEl.setMandatory(false);
+			} else {
+				imageEl.setVisible(false);
+			}
+		}
+		if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
+			imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
+		}
+		nameEl.setVisible(templateDecisionMade);
+		descriptionEl.setVisible(templateDecisionMade);
+		criteriaEl.setVisible(templateDecisionMade);
+		issuerEl.setVisible(templateDecisionMade);
+		categoriesEl.setVisible(templateDecisionMade);
+
+		submitButton.setVisible(templateDecisionMade);
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if (badgeClass == null) {
-			File uploadedFile = fileEl.getUploadFile();
+			File imageFile = fileEl.getUploadFile();
 			String targetFileName = fileEl.getUploadFileName();
-			if (uploadedFile != null) {
-				openBadgesManager.createBadgeClass(uuidEl.getValue(), versionEl.getValue(), uploadedFile, targetFileName,
-						nameEl.getValue(), descriptionEl.getValue(), criteriaEl.getValue(), issuerEl.getValue(),
-						tagsEl.getValue(), getIdentity());
+			if (imageFile == null && badgeTemplate != null) {
+				VFSLeaf imageLeaf = openBadgesManager.getTemplateVfsLeaf(badgeTemplate.getImage());
+				if (imageLeaf instanceof LocalFileImpl imageLocalFile) {
+					imageFile = imageLocalFile.getBasefile();
+					targetFileName = imageLeaf.getName();
+				}
+			}
+			if (imageFile != null) {
+				String salt = "badgeClass" + Math.abs(uuidEl.getValue().hashCode());
+				badgeClass = openBadgesManager.createBadgeClass(uuidEl.getValue(), versionEl.getValue(), imageFile, targetFileName,
+						nameEl.getValue(), descriptionEl.getValue(), criteriaEl.getValue(), salt, issuerEl.getValue(),
+						getIdentity());
 			}
 		} else {
 			badgeClass.setVersion(versionEl.getValue());
@@ -134,9 +239,10 @@ public class EditBadgeClassController extends FormBasicController {
 			badgeClass.setDescription(descriptionEl.getValue());
 			badgeClass.setCriteria(criteriaEl.getValue());
 			badgeClass.setIssuer(issuerEl.getValue());
-			badgeClass.setTags(tagsEl.getValue());
 			openBadgesManager.updateBadgeClass(badgeClass);
 		}
+
+		openBadgesManager.updateCategories(null, badgeClass, categoriesEl.getDisplayNames());
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -148,7 +254,31 @@ public class EditBadgeClassController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileEl) {
-			validateImageFile();
+			if (validateImageFile()) {
+				updateUi();
+			}
+		} else if (source == useTemplateButton) {
+			templateDecisionMade = true;
+			doUseTemplate();
+			updateUi();
+		} else if (source == doNotUseTemplateButton) {
+			templateDecisionMade = true;
+			updateUi();
+		}
+	}
+
+	private void doUseTemplate() {
+		if (badgeTemplateDropdown.getSelectedKey() != null) {
+			Long badgeTemplateKey = Long.parseLong(badgeTemplateDropdown.getSelectedKey());
+			badgeTemplate = openBadgesManager.getTemplate(badgeTemplateKey);
+			nameEl.setValue(badgeTemplate.getName());
+			descriptionEl.setValue(badgeTemplate.getDescription());
+			Set<Tag> selectedTags = openBadgesManager
+					.getCategories(badgeTemplate, null)
+					.stream()
+					.filter(TagInfo::isSelected)
+					.collect(Collectors.toSet());
+			categoriesEl.setSelectedTags(selectedTags);
 		}
 	}
 
@@ -178,5 +308,14 @@ public class EditBadgeClassController extends FormBasicController {
 
 	private boolean validateSvg(File templateFile) {
 		return true;
+	}
+
+	@Override
+	protected void doDispose() {
+		if (tmpImageFile != null) {
+			tmpImageFile.delete();
+			tmpImageFile = null;
+		}
+		super.doDispose();
 	}
 }

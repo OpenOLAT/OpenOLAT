@@ -19,58 +19,18 @@
  */
 package org.olat.modules.openbadges;
 
-import java.util.Date;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.id.CreateInfo;
 
 /**
- * Initial date: 2023-05-30<br>
+ * Initial date: 2023-06-09<br>
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public interface BadgeClass {
+public interface BadgeCategory extends CreateInfo {
+	Tag getTag();
 
-	enum BadgeClassStatus {
-		preparation, active, inactive, revoked
-	}
+	BadgeTemplate getBadgeTemplate();
 
-	Long getKey();
-
-	Date getCreationDate();
-
-	Date getLastModified();
-
-	void setLastModified(Date lastModified);
-
-	String getUuid();
-
-	BadgeClassStatus getStatus();
-
-	void setStatus(BadgeClassStatus status);
-
-	String getVersion();
-
-	void setVersion(String version);
-
-	String getImage();
-
-	void setImage(String image);
-
-	String getName();
-
-	void setName(String name);
-
-	String getDescription();
-
-	void setDescription(String description);
-
-	String getCriteria();
-
-	void setCriteria(String criteria);
-
-	String getSalt();
-
-	void setSalt(String salt);
-
-	String getIssuer();
-
-	void setIssuer(String issuer);
+	BadgeClass getBadgeClass();
 }

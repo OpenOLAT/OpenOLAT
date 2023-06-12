@@ -41,7 +41,7 @@ public class BadgeClassDAO {
 	private DB dbInstance;
 
 	public BadgeClass createBadgeClass(String uuid, String version, String image, String name, String description,
-									   String criteria, String issuer) {
+									   String criteria, String salt, String issuer) {
 		BadgeClassImpl badgeClass = new BadgeClassImpl();
 		badgeClass.setCreationDate(new Date());
 		badgeClass.setLastModified(badgeClass.getCreationDate());
@@ -52,6 +52,7 @@ public class BadgeClassDAO {
 		badgeClass.setName(name);
 		badgeClass.setDescription(description);
 		badgeClass.setCriteria(criteria);
+		badgeClass.setSalt(salt);
 		badgeClass.setIssuer(issuer);
 		dbInstance.getCurrentEntityManager().persist(badgeClass);
 		return badgeClass;

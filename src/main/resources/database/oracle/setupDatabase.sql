@@ -4150,8 +4150,6 @@ create table o_badge_template (
    b_image varchar(256) not null,
    b_name varchar(256) not null,
    b_description varchar(1024),
-   b_tags varchar(256),
-   b_category varchar(128),
    b_scopes varchar(128),
    b_placeholders varchar(1024),
    primary key (id)
@@ -4167,8 +4165,8 @@ create table o_badge_class (
    b_name varchar(256) not null,
    b_description varchar(1024) not null,
    b_criteria varchar(1024) not null,
+   b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
-   b_tags varchar(256),
    primary key (id)
 );
 create table o_badge_assertion (
@@ -4188,6 +4186,14 @@ create table o_badge_assertion (
    fk_badge_class number(20) not null,
    fk_recipient number(20) not null,
    fk_awarded_by number(20),
+   primary key (id)
+);
+create table o_badge_category (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_tag number(20) not null,
+   fk_template number(20),
+   fk_class number(20),
    primary key (id)
 );
 
@@ -5668,6 +5674,15 @@ create index idx_badge_assertion_recipient_idx on o_badge_assertion (fk_recipien
 
 alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx foreign key (fk_awarded_by) references o_bs_identity (id);
 create index idx_badge_assertion_awarded_by_idx on o_badge_assertion (fk_awarded_by);
+
+alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+create index idx_badge_category_tag_idx on o_badge_category (fk_tag);
+
+alter table o_badge_category add constraint  badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+create index idx_badge_category_template_idx on o_badge_category (fk_template);
+
+alter table o_badge_category add constraint  badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 commit
 /

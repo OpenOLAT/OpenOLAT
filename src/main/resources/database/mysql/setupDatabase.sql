@@ -4082,8 +4082,6 @@ create table o_badge_template (
    b_image varchar(256) not null,
    b_name varchar(256) not null,
    b_description varchar(1024),
-   b_tags varchar(256),
-   b_category varchar(128),
    b_scopes varchar(128),
    b_placeholders varchar(1024),
    primary key (id)
@@ -4099,8 +4097,8 @@ create table o_badge_class (
    b_name varchar(256) not null,
    b_description varchar(1024) not null,
    b_criteria varchar(1024) not null,
+   b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
-   b_tags varchar(256),
    primary key (id)
 );
 create table o_badge_assertion (
@@ -4120,6 +4118,14 @@ create table o_badge_assertion (
    fk_badge_class bigint not null,
    fk_recipient bigint not null,
    fk_awarded_by bigint,
+   primary key (id)
+);
+create table o_badge_category (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_tag bigint not null,
+   fk_template bigint,
+   fk_class bigint,
    primary key (id)
 );
 
@@ -4509,6 +4515,7 @@ alter table o_jup_deployment ENGINE = InnoDB;
 alter table o_badge_template ENGINE = InnoDB;
 alter table o_badge_class ENGINE = InnoDB;
 alter table o_badge_assertion ENGINE = InnoDB;
+alter table o_badge_category ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -5436,6 +5443,12 @@ alter table o_badge_assertion add constraint badge_assertion_class_idx foreign k
 alter table o_badge_assertion add constraint badge_assertion_recipient_idx foreign key (fk_recipient) references o_bs_identity (id);
 
 alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx foreign key (fk_awarded_by) references o_bs_identity (id);
+
+alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+
+alter table o_badge_category add constraint  badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+
+alter table o_badge_category add constraint  badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

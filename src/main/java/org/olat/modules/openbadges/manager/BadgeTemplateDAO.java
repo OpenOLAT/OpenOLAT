@@ -50,6 +50,10 @@ public class BadgeTemplateDAO {
 		return badgeTemplate;
 	}
 
+	public BadgeTemplate getTemplate(Long key) {
+		return dbInstance.getCurrentEntityManager().find(BadgeTemplateImpl.class, key);
+	}
+
 	public List<BadgeTemplate> getTemplates() {
 		String q = "select template from badgetemplate template order by template.name asc";
 		return dbInstance.getCurrentEntityManager().createQuery(q, BadgeTemplate.class).getResultList();

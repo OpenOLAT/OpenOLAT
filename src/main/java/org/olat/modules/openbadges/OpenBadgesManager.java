@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -39,12 +40,14 @@ public interface OpenBadgesManager {
 	// Template
 	//
 
-	void createTemplate(String name, File templateFile, String targetFileName, String description,
-						String category, Collection<String> scopes, Identity savedBy);
+	BadgeTemplate createTemplate(String name, File templateFile, String targetFileName, String description,
+								 Collection<String> scopes, Identity savedBy);
 
 	List<BadgeTemplate> getTemplates();
 
 	List<TemplateWithSize> getTemplatesWithSizes();
+
+	BadgeTemplate getTemplate(Long key);
 
 	VFSLeaf getTemplateVfsLeaf(String templateImage);
 
@@ -57,9 +60,9 @@ public interface OpenBadgesManager {
 	// Class
 	//
 
-	void createBadgeClass(String uuid, String version, File uploadedFile, String targetFileName,
-						  String name, String description, String criteria, String issuer, String tags,
-						  Identity savedBy);
+	BadgeClass createBadgeClass(String uuid, String version, File sourceFile, String targetFileName,
+								String name, String description, String criteria, String salt, String issuer,
+								Identity savedBy);
 
 	List<BadgeClass> getBadgeClasses();
 
@@ -69,7 +72,7 @@ public interface OpenBadgesManager {
 
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
 
-	void updateBadgeClass(BadgeClass badgeClass);
+	BadgeClass updateBadgeClass(BadgeClass badgeClass);
 
 	void deleteBadgeClass(BadgeClass badgeClass);
 
@@ -77,8 +80,8 @@ public interface OpenBadgesManager {
 	// Assertion
 	//
 
-	void createBadgeAssertion(String uuid, String recipientEmail, BadgeClass badgeClass, Date issuedOn,
-							  Identity savedBy);
+	void createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
+							  Identity recipient, Identity savedBy);
 
 	List<BadgeAssertion> getBadgeAssertions();
 
@@ -89,6 +92,14 @@ public interface OpenBadgesManager {
 	void updateBadgeAssertion(BadgeAssertion badgeAssertion);
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
+
+	//
+	// Category
+	//
+
+	List<? extends TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass);
+
+	void updateCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass, List<String> displayNames);
 
 	//
 	// Types
