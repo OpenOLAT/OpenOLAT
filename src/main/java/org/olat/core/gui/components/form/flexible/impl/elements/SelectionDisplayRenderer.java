@@ -47,13 +47,14 @@ public class SelectionDisplayRenderer extends DefaultComponentRenderer {
 		
 		sb.append("<button");
 		sb.append(" id=\"").append(displayItem.getFormDispatchId()).append("\"");
-		sb.append(" class=\"btn btn-default o_selection_display ");
+		sb.append(" class=\"btn btn-default o_selection_display o_can_have_focus ");
 		sb.append("\""); // class
 		sb.append(" aria-expanded=\"").append(dispalyCmp.isAriaExpanded()).append("\"");
 		sb.append(" disabled", !displayItem.isEnabled());
+		sb.append(" onfocus=\"o_info.lastFormFocusEl='").append(displayItem.getFormDispatchId()).append("';\" ");
 		if (displayItem.isEnabled()) {
 			sb.append(" onclick=\"");
-			sb.append(FormJSHelper.getXHRFnCallFor(displayItem, false, false, false,
+			sb.append(FormJSHelper.getXHRFnCallFor(displayItem, false, false, true,
 					new NameValuePair("cid", SelectionDisplayElement.CMD_CLICK)));
 			sb.append("\"");
 		}

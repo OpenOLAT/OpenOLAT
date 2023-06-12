@@ -129,6 +129,9 @@ public class ProjFileContentController extends FormBasicController {
 			if (!StringHelper.containsNonWhitespace(filenameEl.getValue())) {
 				filenameEl.setErrorKey("form.mandatory.hover");
 				allOk &= false;
+			} else if(filenameEl.getValue().length() >= 255) {
+				filenameEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(255) });
+				allOk &= false;
 			} else {
 				// update in GUI so user sees how we optimized
 				String filename = getCleanedFilename();

@@ -83,8 +83,8 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 	private class DueComporator implements Comparator<ToDoTaskRow> {
 		@Override
 		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
-			Date dueDate1 = r1.isOverdue()? r1.getDueDate(): null;
-			Date dueDate2 = r2.isOverdue()? r2.getDueDate(): null;
+			Date dueDate1 = r1.isOverdue() != null? r1.getDueDate(): null;
+			Date dueDate2 = r2.isOverdue() != null? r2.getDueDate(): null;
 			return compareDateAndTimestamps(dueDate1, dueDate2, false);
 		}
 	}

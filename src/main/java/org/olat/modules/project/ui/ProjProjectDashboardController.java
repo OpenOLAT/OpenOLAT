@@ -31,6 +31,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
@@ -251,7 +252,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 			putProjectToVC();
 		}
 		if (exceptCtrl != quickWidgetCtrl) {
-			quickWidgetCtrl.reload();
+			quickWidgetCtrl.reload(ureq);
 		}
 		if (exceptCtrl != fileWidgetCtrl) {
 			fileWidgetCtrl.reload(ureq);
@@ -280,6 +281,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
 		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
+		mainVC.contextPut("deleted", Boolean.valueOf(ProjectStatus.deleted == project.getStatus()));
 		if (secCallback.canViewProjectMetadata()) {
 			mainVC.contextPut("projectTeaser", project.getTeaser());
 		}
@@ -384,6 +386,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 				doOpenNotes(ureq);
 			} else if (event == QuickStartEvents.FILES_EVENT) {
 				doOpenFiles(ureq);
+			} else if (event == FormEvent.CHANGED_EVENT) {
+				reload(ureq, quickWidgetCtrl);
 			}
 		} else if (source == fileWidgetCtrl) {
 			if (event == SHOW_ALL) {

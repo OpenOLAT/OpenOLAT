@@ -78,6 +78,7 @@ public class ProjNoteWidgetController extends ProjNoteListController {
 		createLink.setVisible(secCallback.canCreateNotes());
 		
 		showAllLink = uifactory.addFormLink("note.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		showAllLink.setUrl(url);
 	}
 	
 	@Override

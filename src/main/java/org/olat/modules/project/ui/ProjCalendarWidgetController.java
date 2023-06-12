@@ -135,6 +135,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		}
 		
 		showAllLink = uifactory.addFormLink("calendar.show.all", formLayout);
+		showAllLink.setUrl(url);
 	}
 
 	public void reload() {

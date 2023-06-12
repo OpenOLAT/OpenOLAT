@@ -67,7 +67,7 @@
 			</div>
 			#if($r.isNotEmpty($nextRows))
 				#foreach($row in $nextRows)
-					<div class="o_proj_card">
+					<div class="o_proj_card o_proj_card_cleft $row.getColorCssClass()">
 						<div class="o_proj_card_meta o_flex_first_grow">
 							<div>
 								$row.getDisplayName()

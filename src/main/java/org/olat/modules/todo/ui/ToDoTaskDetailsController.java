@@ -21,7 +21,6 @@ package org.olat.modules.todo.ui;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -129,7 +128,7 @@ public class ToDoTaskDetailsController extends FormBasicController {
 		progressBar.setRenderSize(RenderSize.small);
 		progressBar.setWidthInPercent(true);
 		if (toDoTask.getDueDate() != null) {
-			if (toDoTask.getDueDate().before(new Date())) {
+			if (ChronoUnit.DAYS.between(LocalDate.now(), DateUtils.toLocalDate(toDoTask.getDueDate())) < 0) {
 				progressBar.setBarColor(BarColor.danger);
 				progressBar.setMax(100);
 				progressBar.setActual(100);

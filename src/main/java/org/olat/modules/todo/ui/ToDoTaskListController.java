@@ -116,7 +116,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	public static final String TYPE_TODO = "ToDo";
 	private static final String TAB_ID_MY = "My";
 	private static final String TAB_ID_ALL = "All";
-	private static final String TAB_ID_OVERDUE= "Overdue";
+	private static final String TAB_ID_OVERDUE = "Overdue";
 	private static final String TAB_ID_RECENTLY = "Recently";
 	private static final String TAB_ID_NEW = "New";
 	private static final String TAB_ID_DONE = "Done";
@@ -557,6 +557,8 @@ public abstract class ToDoTaskListController extends FormBasicController
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (dueRanges != null && !dueRanges.isEmpty()) {
+					// copy to prevent loss if filter selection
+					dueRanges = new ArrayList<>(dueRanges);
 					// No due date
 					if (dueRanges.contains(ToDoDueFilter.noDueDate.name())) {
 						searchParams.setDueDateNull(true);
@@ -567,7 +569,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 					dueRanges.removeIf(due -> ToDoDueFilter.noDueDate.name().equals(due));
 					if (!dueRanges.isEmpty()) {
 						Date now = new Date();
-						List<DateRange> dueDateRanges = dueRanges.stream().map(ToDoDueFilter::valueOf).map(due -> due.getDateRange(now)).toList();
+						List<DateRange> dueDateRanges = dueRanges.stream()
+								.map(ToDoDueFilter::valueOf)
+								.map(due -> due.getDateRange(now)).toList();
 						searchParams.setDueDateRanges(dueDateRanges);
 					} else {
 						searchParams.setDueDateRanges(null);
@@ -610,9 +614,9 @@ public abstract class ToDoTaskListController extends FormBasicController
 			}
 			if (ToDoTaskFilter.due.name() == filter.getFilter()) {
 				List<String> dueRanges = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (dueRanges != null && !dueRanges.isEmpty() && dueRanges.contains(ToDoDueFilter.overdue.name())) {
-					Date overdueTo = ToDoDueFilter.overdue.getDateRange(new Date()).getTo();
-					rows.removeIf(row -> row.getDueDate() != null && row.getDueDate().before(overdueTo) && !row.isOverdue());
+				if (dueRanges != null && !dueRanges.isEmpty()) {
+					/// Done task have never a due
+					rows.removeIf(row -> !ToDoStatus.STATUS_OVERDUE.contains(row.getStatus()));
 				}
 			}
 		}

@@ -128,6 +128,9 @@ public class TagSelectionController extends FormBasicController {
 		createLink.setVisible(false);
 		
 		initTagLinks();
+		
+		Command focusCommand = FormJSHelper.getFormFocusCommand(flc.getRootForm().getFormName(), quickSearchEl.getForId());
+		mainForm.getWindowControl().getWindowBackOffice().sendCommandTo(focusCommand);
 	}
 
 	private void initTagLinks() {

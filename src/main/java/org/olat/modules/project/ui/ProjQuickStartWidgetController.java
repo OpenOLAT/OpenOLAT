@@ -24,27 +24,46 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
+import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.winmgr.CommandFactory;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjFileSearchParams;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
+import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.project.ui.event.QuickStartEvents;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,11 +76,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjQuickStartWidgetController extends FormBasicController {
 	
+	private DropdownItem addDropdown;
+	private FormLink noteCreateLink;
+	private FormLink appointmentCreateLink;
+	private FormLink toDoCreateLink;
+	private FormLink decisionCreateLink;
+	private FormLink fileUploadLink;
+	private FormLink fileCreateLink;
 	private FormLink calendarLink;
 	private FormLink toDoTasksLink;
 	private FormLink decisionsLink;
 	private FormLink notesLink;
 	private FormLink filesLink;
+	
+	private CloseableModalController cmc;
+	private ProjNoteEditController noteCreateCtrl;
+	private ProjAppointmentEditController appointmentCreateCtrl;
+	private ProjToDoEditController toDoCreateCtrl;
+	private ProjDecisionEditController decisionCreateCtrl;
+	private ProjFileCreateController fileCreateCtrl;
+	private ProjFileUploadController fileUploadCtrl;
 
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
@@ -70,6 +104,10 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	
 	@Autowired
 	private ProjectService projectService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private DocEditorService docEditorService;
 
 	protected ProjQuickStartWidgetController(UserRequest ureq, WindowControl wControl, ProjProject project,
 			ProjProjectSecurityCallback secCallback) {
@@ -79,11 +117,39 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
-		reload();
+		reload(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (secCallback.canCreateNotes()) {
+			noteCreateLink = uifactory.addFormLink("note.create", formLayout, Link.BUTTON);
+			noteCreateLink.setIconLeftCSS("o_icon o_icon_add");
+		}
+		
+		addDropdown = uifactory.addDropdownMenu("create.dropdown", null, null, formLayout, getTranslator());
+		addDropdown.setOrientation(DropdownOrientation.right);
+		addDropdown.setEmbbeded(true);
+		
+		if (secCallback.canCreateAppointments()) {
+			appointmentCreateLink = uifactory.addFormLink("appointment.create", formLayout, Link.LINK);
+			addDropdown.addElement(appointmentCreateLink);
+		}
+		if (secCallback.canCreateToDos()) {
+			toDoCreateLink = uifactory.addFormLink("todo.create", formLayout, Link.LINK);
+			addDropdown.addElement(toDoCreateLink);
+		}
+		if (secCallback.canCreateDecisions()) {
+			decisionCreateLink = uifactory.addFormLink("decision.create", formLayout, Link.LINK);
+			addDropdown.addElement(decisionCreateLink);
+		}
+		if (secCallback.canCreateFiles()) {
+			fileUploadLink = uifactory.addFormLink("file.upload", formLayout, Link.LINK);
+			addDropdown.addElement(fileUploadLink);
+			fileCreateLink = uifactory.addFormLink("file.create", formLayout, Link.LINK);
+			addDropdown.addElement(fileCreateLink);
+		}
+		
 		List<String> quickStarterNames = new ArrayList<>(4);
 		flc.contextPut("quickStarters", quickStarterNames);
 		if (secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
@@ -118,7 +184,7 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		}
 	}
 
-	public void reload() {
+	public void reload(UserRequest ureq) {
 		keyToArtefact = new HashMap<>(6);
 		List<QuickSearchItem> items = new ArrayList<>(6);
 		flc.contextPut("items", items);
@@ -130,13 +196,19 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 				ProjArtefact artefact = file.getArtefact();
 				keyToArtefact.put(artefact.getKey(), artefact);
 				
+				VFSMetadata vfsMetadata = file.getVfsMetadata();
+				VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+				boolean openInNewWindow = vfsItem instanceof VFSLeaf vfsLeaf 
+						&& docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, vfsMetadata, Mode.VIEW);
+				
 				QuickSearchItem item = new QuickSearchItem(
 						artefact.getKey(),
 						file.getVfsMetadata().getFileLastModified(),
 						getChanged(file.getVfsMetadata().getFileLastModified()),
 						CSSHelper.createFiletypeIconCssClassFor(file.getVfsMetadata().getFilename()),
 						ProjectUIFactory.getDisplayName(file),
-						ProjectBCFactory.getFileUrl(file));
+						ProjectBCFactory.getFileUrl(file),
+						openInNewWindow);
 				items.add(item);
 			}
 		}
@@ -152,7 +224,8 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 						getChanged(artefact.getLastModified()),
 						"o_icon_proj_note",
 						ProjectUIFactory.getDisplayName(getTranslator(), note),
-						ProjectBCFactory.getNoteUrl(note));
+						ProjectBCFactory.getNoteUrl(note),
+						false);
 				items.add(item);
 			}
 		}
@@ -161,6 +234,70 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 
 	private String getChanged(Date lastModified) {
 		return translate("quick.start.changed", formatter.formatDateAndTime(lastModified));
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (fileUploadCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				reload(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (fileCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				reload(ureq);
+				fireEvent(ureq, FormEvent.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (toDoCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, FormEvent.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (decisionCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, FormEvent.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (noteCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				reload(ureq);
+				fireEvent(ureq, FormEvent.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if (appointmentCreateCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				fireEvent(ureq, FormEvent.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(appointmentCreateCtrl);
+		removeAsListenerAndDispose(decisionCreateCtrl);
+		removeAsListenerAndDispose(fileUploadCtrl);
+		removeAsListenerAndDispose(fileCreateCtrl);
+		removeAsListenerAndDispose(toDoCreateCtrl);
+		removeAsListenerAndDispose(noteCreateCtrl);
+		removeAsListenerAndDispose(cmc);
+		appointmentCreateCtrl = null;
+		decisionCreateCtrl = null;
+		fileUploadCtrl = null;
+		fileCreateCtrl = null;
+		toDoCreateCtrl = null;
+		noteCreateCtrl = null;
+		cmc = null;
 	}
 
 	@Override
@@ -171,7 +308,11 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 				Long artefactKey = Long.valueOf(key);
 				ProjArtefact artefact = keyToArtefact.get(artefactKey);
 				if (artefact != null) {
-					fireEvent(ureq, new OpenArtefactEvent(artefact));
+					if (ProjFile.TYPE.equals(artefact.getType())) {
+						doOpenOrDownload(ureq, artefactKey);
+					} else {
+						fireEvent(ureq, new OpenArtefactEvent(artefact));
+					}
 				}
 			}
 		}
@@ -190,6 +331,18 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 			fireEvent(ureq, QuickStartEvents.NOTES_EVENT);
 		} else if (source == filesLink) {
 			fireEvent(ureq, QuickStartEvents.FILES_EVENT);
+		} else if (source == fileUploadLink) {
+			doUploadFile(ureq);
+		} else if (source == fileCreateLink){
+			doCreateFile(ureq);
+		} else if (source == toDoCreateLink){
+			doCreateToDo(ureq);
+		} else if (source == decisionCreateLink){
+			doCreateDecision(ureq);
+		} else if (source == noteCreateLink){
+			doCreateNote(ureq);
+		} else if (source == appointmentCreateLink){
+			doCreateAppointment(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -198,6 +351,134 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		//
 	}
+
+	protected void doUploadFile(UserRequest ureq) {
+		if (guardModalController(fileUploadCtrl)) return;
+		
+		fileUploadCtrl = new ProjFileUploadController(ureq, getWindowControl(), project);
+		listenTo(fileUploadCtrl);
+		
+		String title = translate("file.upload");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileUploadCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateFile(UserRequest ureq) {
+		if (guardModalController(fileCreateCtrl)) return;
+		
+		fileCreateCtrl = new ProjFileCreateController(ureq, getWindowControl(), project);
+		listenTo(fileCreateCtrl);
+		
+		String title = translate("file.create");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), fileCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateToDo(UserRequest ureq) {
+		if (guardModalController(toDoCreateCtrl)) return;
+			
+		toDoCreateCtrl = new ProjToDoEditController(ureq, getWindowControl(), project, false);
+		listenTo(toDoCreateCtrl);
+		
+		String title = translate("todo.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	protected void doCreateDecision(UserRequest ureq) {
+		if (guardModalController(decisionCreateCtrl)) return;
+		
+		decisionCreateCtrl = new ProjDecisionEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false);
+		listenTo(decisionCreateCtrl);
+		
+		String title = translate("decision.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), decisionCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+
+	private void doCreateNote(UserRequest ureq) {
+		if (guardModalController(noteCreateCtrl)) return;
+		
+		ProjNote note = projectService.createNote(getIdentity(), project);
+		noteCreateCtrl = new ProjNoteEditController(ureq, getWindowControl(), note, Set.of(getIdentity()), true, false);
+		listenTo(noteCreateCtrl);
+		
+		String title = translate("note.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), noteCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateAppointment(UserRequest ureq) {
+		if (guardModalController(appointmentCreateCtrl)) return;
+		
+		appointmentCreateCtrl = new ProjAppointmentEditController(ureq, getWindowControl(), project, Set.of(getIdentity()), false, new Date());
+		listenTo(appointmentCreateCtrl);
+		
+		String title = translate("appointment.edit");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOpenOrDownload(UserRequest ureq, Long artefactKey) {
+		ProjFileSearchParams searchParams = new ProjFileSearchParams();
+		searchParams.setArtefactKeys(List.of(artefactKey));
+		searchParams.setStatus(List.of(ProjectStatus.active));
+		List<ProjFile> files = projectService.getFiles(searchParams);
+		
+		if (!files.isEmpty()) {
+			ProjFile file = files.get(0);
+			VFSMetadata vfsMetadata = file.getVfsMetadata();
+			VFSItem vfsItem = vfsRepositoryService.getItemFor(vfsMetadata);
+			if (vfsItem instanceof VFSLeaf) {
+				VFSLeaf vfsLeaf = (VFSLeaf)vfsItem;
+				Roles roles = ureq.getUserSession().getRoles();
+				
+				if (secCallback.canEditFile(file) && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.EDIT)) {
+					doOpenFile(ureq, file, vfsLeaf, Mode.EDIT);
+				} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, vfsMetadata, Mode.VIEW)) {
+					doOpenFile(ureq, file, vfsLeaf, Mode.VIEW);
+				} else {
+					doDownload(ureq, file.getArtefact(), vfsLeaf);
+				}
+			}
+		}
+	}
+	
+	private void doOpenFile(UserRequest ureq, ProjFile file, VFSLeaf vfsLeaf, Mode mode) {
+		VFSContainer projectContainer = projectService.getProjectContainer(project);
+		HTMLEditorConfig htmlEditorConfig = HTMLEditorConfig.builder(projectContainer, vfsLeaf.getName())
+				.withAllowCustomMediaFactory(false)
+				.withDisableMedia(true)
+				.build();
+		DocEditorConfigs configs = DocEditorConfigs.builder()
+				.withMode(mode)
+				.withFireSavedEvent(true)
+				.addConfig(htmlEditorConfig)
+				.build(vfsLeaf);
+		 
+		String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
+		getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		
+		if (Mode.EDIT == mode) {
+			reload(ureq);
+		} else {
+			projectService.createActivityRead(getIdentity(), file.getArtefact());
+		}
+	}
+	
+	private void doDownload(UserRequest ureq, ProjArtefact artefact, VFSLeaf vfsLeaf) {
+		VFSMediaResource resource = new VFSMediaResource(vfsLeaf);
+		resource.setDownloadable(true);
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+		projectService.createActivityDownload(getIdentity(), artefact);
+	}
+	
 	
 	public static final class QuickSearchItem {
 		
@@ -207,14 +488,16 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 		private final String iconCss;
 		private final String displayName;
 		private final String url;
+		private final boolean openInNewWindow;
 		
-		public QuickSearchItem(Long artefactKey, Date changeDate, String changed, String iconCss, String displayName, String url) {
+		public QuickSearchItem(Long artefactKey, Date changeDate, String changed, String iconCss, String displayName, String url, boolean openInNewWindow) {
 			this.artefactKey = artefactKey;
 			this.changeDate = changeDate;
 			this.changed = changed;
 			this.iconCss = iconCss;
 			this.displayName = displayName;
 			this.url = url;
+			this.openInNewWindow = openInNewWindow;
 		}
 
 		public Long getArtefactKey() {
@@ -239,6 +522,10 @@ public class ProjQuickStartWidgetController extends FormBasicController {
 
 		public String getUrl() {
 			return url;
+		}
+
+		public boolean isOpenInNewWindow() {
+			return openInNewWindow;
 		}
 		
 	}

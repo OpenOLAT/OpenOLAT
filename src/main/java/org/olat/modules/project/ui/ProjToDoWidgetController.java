@@ -83,6 +83,7 @@ public class ProjToDoWidgetController extends ProjToDoListController {
 		createLink.setVisible(secCallback.canCreateNotes());
 		
 		showAllLink = uifactory.addFormLink("todo.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		showAllLink.setUrl(url);
 	}
 	
 	@Override

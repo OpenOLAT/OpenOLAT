@@ -75,6 +75,7 @@ public class ProjDecisionWidgetController extends ProjDecisionListController {
 		createLink.setVisible(secCallback.canCreateDecisions());
 		
 		showAllLink = uifactory.addFormLink("decision.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		showAllLink.setUrl(url);
 	}
 	
 	@Override

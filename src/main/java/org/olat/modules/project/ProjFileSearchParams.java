@@ -64,6 +64,10 @@ public class ProjFileSearchParams {
 		return artefactKeys;
 	}
 	
+	public void setArtefactKeys(Collection<Long> artefactKeys) {
+		this.artefactKeys = artefactKeys;
+	}
+
 	public void setArtefacts(Collection<ProjArtefact> artefacts) {
 		this.artefactKeys = artefacts.stream().map(ProjArtefact::getKey).collect(Collectors.toSet());
 	}

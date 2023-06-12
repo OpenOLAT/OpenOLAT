@@ -134,6 +134,10 @@
 		.o_proj_avatar_color {
 			font-size: $o-proj-avatar-font-size-small;
 		}
+		.o_proj_avatar_border,
+		.o_proj_avatar_image {
+			border-radius: $o-proj-avatar-border-radius-small;
+		}
 	}
 	.o_proj_avatar_color {
 		color: $o-proj-avatar-color;	
@@ -461,22 +465,19 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	.o_proj_quick_starters {
 		ul {
 			border-top: 1px solid $o-coursesite-rowelem-border;
-			margin: 0;
 			display: flex;
+			flex-wrap: wrap;
+			margin: 0px -1px -1px 0px;
 			
 			.o_proj_quick_starter {
 				flex: 1;
 				text-align: center;
 				padding: 15px;
-				&:not(:first-child) {
-					border-left: 1px solid $o-coursesite-rowelem-border;
-				}
-				&:not(:lst-child) {
-					border-right: 1px solid $o-coursesite-rowelem-border;
-				}
+				margin: -1px 0px 0px -1px;
+				border: 1px solid $o-coursesite-rowelem-border;
 				i {
 					display: block;
-					font-size: 3em;
+					font-size: 2.5em;
 					margin-bottom: 5px;
 				}
 			}
@@ -521,6 +522,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 				.o_proj_file_meta {
 					position: relative;
 					width: 100%;
+					height: 100%;
 				}
 			}
 		}

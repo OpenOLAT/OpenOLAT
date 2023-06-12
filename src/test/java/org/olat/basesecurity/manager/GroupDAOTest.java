@@ -282,11 +282,13 @@ public class GroupDAOTest extends OlatTestCase {
 		GroupMembership membership1 = groupDao.addMembershipTwoWay(group, id1, "pilot");
 		GroupMembership membership2 = groupDao.addMembershipTwoWay(group, id2, "pilot");
 		GroupMembership membership3 = groupDao.addMembershipTwoWay(group, id3, "copilot");
+		GroupMembership membership4 = groupDao.addMembershipTwoWay(group, id3, "joker");
 		dbInstance.commit();
 		
 		Assert.assertNotNull(membership1);
 		Assert.assertNotNull(membership2);
 		Assert.assertNotNull(membership3);
+		Assert.assertNotNull(membership4);
 		dbInstance.commitAndCloseSession();
 		
 		int numOfMembers = groupDao.countMembers(group);

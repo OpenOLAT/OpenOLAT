@@ -189,7 +189,6 @@ public class ToDoTaskEditForm extends FormBasicController {
 		
 		Date startDate = toDoTask != null? toDoTask.getStartDate(): null;
 		startDateEl = uifactory.addDateChooser("task.start.date", startDate, formLayout);
-		startDateEl.setDefaultTimeAtEndOfDay(true);
 		
 		Date dueDate = toDoTask != null? toDoTask.getDueDate(): null;
 		dueDateEl = uifactory.addDateChooser("task.due.date", dueDate, formLayout);

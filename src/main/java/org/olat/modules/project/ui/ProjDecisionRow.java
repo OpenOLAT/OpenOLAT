@@ -49,7 +49,6 @@ public class ProjDecisionRow implements ProjDecisionRef {
 	private String displayName;
 	private String details;
 	private final Date decisionDate;
-	private String modified;
 	private Set<Long> tagKeys;
 	private String formattedTags;
 	private Component userPortraits;

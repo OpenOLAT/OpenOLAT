@@ -122,6 +122,9 @@ public class ProjFileUploadController extends FormBasicController {
 		if (!StringHelper.containsNonWhitespace(filename)) {
 			filenameEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
+		} else if(filename.length() >= 255) {
+			filenameEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(255) });
+			allOk &= false;
 		} else {
 			filenameEl.setValue(filename);
 			if (invalidFilename(filename)) {

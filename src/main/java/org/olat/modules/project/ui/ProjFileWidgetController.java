@@ -79,6 +79,7 @@ public class ProjFileWidgetController extends ProjFileListController {
 		createLink.setVisible(secCallback.canCreateFiles());
 		
 		showAllLink = uifactory.addFormLink("file.show.all", "", null, formLayout, Link.LINK + Link.NONTRANSLATED);
+		showAllLink.setUrl(url);
 		
 		super.initForm(formLayout, listener, ureq);
 	}

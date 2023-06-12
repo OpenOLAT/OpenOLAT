@@ -5,6 +5,12 @@
 				$r.translate("quick.widget.title")
 			</h3>
 		</div>
+		#if($r.available("note.create"))
+			<div class="btn-group">
+				$r.render("note.create")
+				$r.render("create.dropdown")
+			</div>
+		#end
 	</div>
 	<div class="panel-body">
 		<div class="o_proj_quick_artefacts">
@@ -12,7 +18,11 @@
 				<ul class="list-inline">
 					#foreach($row in $items)
 						<li class="o_proj_quick_artefact">
-							<a href="$row.url" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("select_artefact","$row.artefactKey")}; return false;" )>
+							#if($row.isOpenInNewWindow())
+								<a href="$row.url" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="$f.openFfXHREvent(false, true, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'select_artefact','$row.artefactKey');; return false;" )>
+							#else
+								<a href="$row.url" onmousedown="o_info.preventOnchange=true;" onmouseup="o_info.preventOnchange=false;" onClick="${f.ffXHREvent("select_artefact","$row.artefactKey")}; return false;" )>
+							#end
 								<div class="o_proj_quick_icon o_link">
 									<i class="o_icon $row.iconCss"> </i> 
 								</div>
