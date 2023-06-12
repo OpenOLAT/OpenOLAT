@@ -552,7 +552,22 @@ ul.o_certificates li {
 }
 
 
-.o_export_card {
+.o_certificate_card {
+	display: grid;
+	align-items: end;
+	column-gap: 10px;
+	grid-template-columns: 70px auto 60px;
+	padding: $o-export-area-rowelem-space-md;
+	border-bottom: 1px solid grey;
+	
+	.o_certificate_type {
+		font-size: 60px;
+		line-height: 70px;
+		text-align: center;
+		min-height: 70px;
+		box-sizing: content-box;
+	}
+
 	.o_certificate_download {
 		display: block;
 	}
@@ -561,8 +576,26 @@ ul.o_certificates li {
 		margin: 0 0 3px 0;
 	}
 	
-	.o_certificate_expiration .o_export_expiration.o_labeled {
+	.o_certificate_meta > span {
+		font-size: 90%;
+		color: $o-export-area-meta-color;
+	}
+	
+	.o_certificate_actions {
+		justify-self: end;
+		
+		>a:first-child {
+			margin-right: 1em;
+		}
+	}
+	
+	.o_certificate_expiration.o_labeled {
+		border-color: $alert-warning-text;
+		color: $alert-warning-text;
+		background-color: $alert-warning-bg;
+		text-transform: none;
 		font-weight: bold;
+		display: inline-block;
 	}
 	
 	.o_certificate_download_expired {
@@ -570,7 +603,7 @@ ul.o_certificates li {
 	}
 	
 	.o_sel_certificate_download {
-		margin-right: 1em; 
+		
 	}
 }
 

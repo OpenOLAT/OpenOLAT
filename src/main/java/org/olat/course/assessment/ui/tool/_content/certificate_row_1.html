@@ -2,8 +2,8 @@
 #set($nextRecertificationDate = $r.formatDate($row.nextRecertificationDate))
 #set($expiredInDays = $row.expiredInDays)
 #set($expired = ${row.hasExpired()})
-<div class="o_export_card">
-	<div class="o_export_type">
+<div class="o_certificate_card">
+	<div class="o_certificate_type">
 		<span>
 		#if($row.status == "pending")
 			<i class="o_icon o_icon_pending o_icon-spin"> </i>
@@ -14,15 +14,15 @@
 		#end
 		</span>
 	</div>
-	<div class="o_export_meta">
+	<div class="o_certificate_meta">
 		#if($r.isNotNull($expiredInDays))
 			<div class="o_certificate_expiration">
 			#if($r.isNotEmpty($expiredInDays) && $expiredInDays == 0)
-				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
+				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.today", $expiredInDays)</span>
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays == 1)
-				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
+				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.day", $expiredInDays)</span>
 			#elseif($r.isNotEmpty($expiredInDays) && $expiredInDays > 1)
-				<span class="o_export_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
+				<span class="o_certificate_expiration o_labeled">$r.translate("row.expiration.days", $expiredInDays)</span>
 			#end
 			</div>
 		#end
@@ -30,12 +30,10 @@
 		<span>$r.translate("row.created", $creationDate) #if($r.isNotEmpty($nextRecertificationDate)) | $r.translate("row.valid.until", $nextRecertificationDate)#end</span>
 	</div>
 	
-	<div class="o_export_actions small">
-		<div class="o_actions">
-			$r.render($row.downloadLink)
-			#if($r.available($row.deleteLink.component.componentName))
-				$r.render($row.deleteLink)
-			#end
-		</div>
+	<div class="o_certificate_actions">
+	$r.render($row.downloadLink)
+	#if($r.available($row.deleteLink.component.componentName))
+		$r.render($row.deleteLink)
+	#end
 	</div>
 </div>

@@ -410,7 +410,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		confirmRecertificationCtrl = new ConfirmRecertificationController(ureq, getWindowControl(), courseEnv, courseRepositoryEntry);
 		listenTo(confirmRecertificationCtrl);
 		
-		String title = translate("recertification.title");
+		String title = translate("recertification.modal.title");
 		confirmRecertificationModalCtrl = new CloseableModalController(getWindowControl(), translate("close"),
 				confirmRecertificationCtrl.getInitialComponent(), true, title);
 		listenTo(confirmRecertificationModalCtrl);
