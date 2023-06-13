@@ -175,7 +175,7 @@ public class CoursePageFragment {
 		By restartBy = By.cssSelector("a.btn.o_sel_course_restart");
 		browser.findElement(restartBy).click();
 		OOGraphene.waitBusy(browser);
-		OOGraphene.waitElement(courseRun, 5, browser);
+		OOGraphene.waitElement(courseRun, browser);
 		return this;
 	}
 	

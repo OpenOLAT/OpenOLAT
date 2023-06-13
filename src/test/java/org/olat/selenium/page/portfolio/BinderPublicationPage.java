@@ -64,14 +64,14 @@ public class BinderPublicationPage {
 		browser.findElement(emailBy).sendKeys(email);
 		
 		//save
-		By submitBy = By.cssSelector(".o_sel_pf_invitation_form button.btn-primary");
+		By submitBy = By.cssSelector(".o_sel_pf_invitation_email_form button.btn-primary");
 		browser.findElement(submitBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogWithFieldsetDisappears(browser, "o_sel_pf_invitation_email_form");
 		return this;
 	}
 	
 	public BinderPublicationPage fillInvitation(String firstName, String lastName) {
-		OOGraphene.waitModalDialog(browser);
+		OOGraphene.waitModalDialog(browser, "div.o_portfolio_rights");
 		
 		By firstNameBy = By.cssSelector(".o_sel_pf_invitation_firstname input[type='text']");
 		browser.findElement(firstNameBy).sendKeys(firstName);

@@ -164,10 +164,7 @@ public class InvitationEditRightsController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_pf_invitation_form");
-		FormLayoutContainer inviteeCont = FormLayoutContainer.createDefaultFormLayout("inviteeInfos", getTranslator());
-		inviteeCont.setRootForm(mainForm);
-		formLayout.add("inviteeInfos", inviteeCont);
+		FormLayoutContainer inviteeCont = uifactory.addDefaultFormLayout("inviteeInfos", null, formLayout);
 		
 		firstNameEl = uifactory.addTextElement("firstName", "firstName", 64, invitation.getFirstName(), inviteeCont);
 		firstNameEl.setElementCssClass("o_sel_pf_invitation_firstname");
