@@ -36,12 +36,14 @@ import org.olat.test.ArquillianDeployments;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.firefox.GeckoDriverService;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.safari.SafariOptions;
 
@@ -134,9 +136,9 @@ public class Deployments {
 			profile.setPreference("fission.webContentIsolationStrategy", Integer.valueOf(0));
 			profile.setPreference("fission.bfcacheInParent", Boolean.FALSE);
 			options.setProfile(profile);
-			driver = new FirefoxDriver(options);
+			driver = new FirefoxDriver(GeckoDriverService.createDefaultService(), options);
 		} else {
-			driver = new ChromeDriver(new ChromeOptions());
+			driver = new ChromeDriver(ChromeDriverService.createDefaultService(), new ChromeOptions());
 		}
 		return driver;
 	}
