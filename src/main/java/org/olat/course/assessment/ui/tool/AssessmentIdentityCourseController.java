@@ -163,7 +163,6 @@ public class AssessmentIdentityCourseController extends BasicController
 		}
 			
 		boolean learningPath = LearningPathNodeAccessProvider.TYPE.equals(NodeAccessType.of(course).getType());
-		Boolean passedManually = course.getRunStructure().getRootNode().getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
 		certificateAndEfficiencyLink = certificateConfig.isAutomaticCertificationEnabled()
 				|| certificateConfig.isManualCertificationEnabled()
 				|| course.getCourseConfig().isEfficencyStatementEnabled();
@@ -171,7 +170,7 @@ public class AssessmentIdentityCourseController extends BasicController
 		efficiencyLink.setIconLeftCSS("o_icon o_icon_preview");
 		efficiencyLink.setVisible(certificateAndEfficiencyLink);
 		initRecertificationMessage();
-		if (learningPath && (passedManually || coachCourseEnv.isAdmin())) {
+		if (learningPath ) {
 			passedCtrl = new IdentityPassedController(ureq, wControl, coachCourseEnv, assessedUserCourseEnv);
 			identityAssessmentVC.put("passed", passedCtrl.getInitialComponent());
 			listenTo(passedCtrl);

@@ -289,6 +289,11 @@ alter table o_cer_entry_config add constraint template_config_entry_idx foreign 
 
 alter table o_rem_sent_reminder add column r_run bigint default 1 not null;
 
+
+-- Assessment entry
+alter table o_as_entry add column a_passed_date datetime;
+
+
 -- JupyterHub
 create table o_jup_hub (
    id bigint not null auto_increment,

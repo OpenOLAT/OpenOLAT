@@ -128,7 +128,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//reload
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(savedReminder);
+		List<SentReminder> sentReminders = reminderDao.getAllSendReminders(savedReminder);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(1, sentReminders.size());
 		SentReminder sentReminder = sentReminders.get(0);
@@ -287,7 +287,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//load the sent reminder log
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(savedReminder);
+		List<SentReminder> sentReminders = reminderDao.getSendRemindersInCurrentRun(savedReminder);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(3, sentReminders.size());
 		Assert.assertTrue(sentReminders.contains(sentReminder1));
@@ -427,7 +427,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<SentReminder> sentReminders = reminderDao.getSendReminders(reminderToDelete);
+		List<SentReminder> sentReminders = reminderDao.getAllSendReminders(reminderToDelete);
 		Assert.assertNotNull(sentReminders);
 		Assert.assertEquals(4, sentReminders.size());
 		
@@ -464,10 +464,10 @@ public class ReminderDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check
-		List<SentReminder> sentRemindersToDelete = reminderDao.getSendReminders(reminderToDelete);
+		List<SentReminder> sentRemindersToDelete = reminderDao.getAllSendReminders(reminderToDelete);
 		Assert.assertNotNull(sentRemindersToDelete);
 		Assert.assertEquals(2, sentRemindersToDelete.size());
-		List<SentReminder> survivingSentReminders = reminderDao.getSendReminders(survivingReminder);
+		List<SentReminder> survivingSentReminders = reminderDao.getAllSendReminders(survivingReminder);
 		Assert.assertNotNull(survivingSentReminders);
 		Assert.assertEquals(2, survivingSentReminders.size());
 		
@@ -480,7 +480,7 @@ public class ReminderDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, deletedReminders.size());
 		Assert.assertEquals(survivingReminder, deletedReminders.get(0));
 		//check that the send reminders are deleted but not all
-		List<SentReminder> reloadedSurvivingSentReminders = reminderDao.getSendReminders(survivingReminder);
+		List<SentReminder> reloadedSurvivingSentReminders = reminderDao.getAllSendReminders(survivingReminder);
 		Assert.assertNotNull(reloadedSurvivingSentReminders);
 		Assert.assertEquals(2, reloadedSurvivingSentReminders.size());
 		List<SentReminder> allSurvivingSentReminders = reminderDao.getSendReminders(entry);

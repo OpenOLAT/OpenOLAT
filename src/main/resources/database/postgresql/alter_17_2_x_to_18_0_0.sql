@@ -313,6 +313,11 @@ create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
 
 alter table o_rem_sent_reminder add column r_run int8 default 1 not null;
 
+
+-- Assessment entry
+alter table o_as_entry add column a_passed_date timestamp;
+
+
 -- JupyterHub
 create table o_jup_hub (
    id bigserial,

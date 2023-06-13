@@ -97,9 +97,16 @@ public class ReminderRuleEngine {
 		List<Identity> identities;
 		if(allOk) {
 			identities = getIdentities(reminder.getEntry(), reminder, ruleList, resend);
+			for(Identity identity:identities) {
+				System.out.println("1: " + identity.getUser().getNickName());
+			}
 			
 			if(!identities.isEmpty() && !ruleList.isEmpty()) {
 				filterByRules(reminder.getEntry(),  identities, ruleList);
+			}
+			
+			for(Identity identity:identities) {
+				System.out.println("3: " + identity.getUser().getNickName());
 			}
 
 		} else {

@@ -312,6 +312,11 @@ create index idx_template_config_entry_idx on o_cer_entry_config(fk_template);
 
 alter table o_rem_sent_reminder add r_run number(20) default 1 not null;
 
+
+-- Assessment entry
+alter table o_as_entry add a_passed_date date;
+
+
 -- JupyterHub
 create table o_jup_hub (
    id number(20) generated always as identity,

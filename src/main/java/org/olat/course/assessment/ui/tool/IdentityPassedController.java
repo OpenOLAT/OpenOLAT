@@ -19,6 +19,8 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.util.Date;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,6 +37,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Overridable;
@@ -70,13 +73,19 @@ public class IdentityPassedController extends BasicController {
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
 		
 		mainVC = createVelocityContainer("passed");
-		
+
+		Boolean passedManually = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+				.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		boolean canModify = (passedManually || coachCourseEnv.isAdmin());
 		passLink = LinkFactory.createLink("passed.manually.pass", "assed.manually.pass", getTranslator(), mainVC, this, Link.BUTTON);
 		passLink.setIconLeftCSS("o_icon o_icon_passed");
+		passLink.setVisible(canModify);
 		failLink = LinkFactory.createLink("passed.manually.fail", "assed.manually.fail", getTranslator(), mainVC, this, Link.BUTTON);
 		failLink.setIconLeftCSS("o_icon o_icon_failed");
+		failLink.setVisible(canModify);
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
 		resetLink.setIconLeftCSS("o_icon o_icon_reset_data");
+		resetLink.setVisible(canModify);
 		
 		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
 		completionItem.setWidthInPercent(true);
@@ -161,15 +170,19 @@ public class IdentityPassedController extends BasicController {
 		} else {
 			AssessmentEvaluation evaluation = courseAssessmentService.getAssessmentEvaluation(assessedUserCourseEnv
 					.getCourseEnvironment().getRunStructure().getRootNode(), assessedUserCourseEnv);
-			String[] args = new String[] {
-					formatter.formatDateAndTime(evaluation.getAssessmentDone())
-			};
+			
 			if (passedOverridable.getCurrent() == null) {
-				message = translate("passed.manually.message.null", args);
+				message = translate("passed.manually.message.null");
 			} else if (passedOverridable.getCurrent().booleanValue()) {
-				message = translate("passed.manually.message.passed", args);
+				Date passedDate = passedOverridable.getDate();
+				if(passedDate != null) {
+					message = translate("passed.manually.message.passed.date",
+							formatter.formatDateAndTime(evaluation.getAssessmentDone()));
+				} else {
+					message = translate("passed.manually.message.passed");
+				}
 			} else {
-				message = translate("passed.manually.message.failed", args);
+				message = translate("passed.manually.message.failed");
 			}
 		}
 		return message;

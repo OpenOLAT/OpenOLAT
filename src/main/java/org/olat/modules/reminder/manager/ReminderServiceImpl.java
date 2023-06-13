@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.IdentityRef;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
@@ -169,7 +168,7 @@ public class ReminderServiceImpl implements ReminderService {
 
 	@Override
 	public List<SentReminder> getSentReminders(Reminder reminder) {
-		return reminderDao.getSendReminders(reminder);
+		return reminderDao.getSendRemindersInCurrentRun(reminder);
 	}
 
 	@Override
@@ -239,11 +238,6 @@ public class ReminderServiceImpl implements ReminderService {
 	public MailerResult sendReminder(Reminder reminder, boolean resend) {
 		List<Identity> identitiesToRemind = ruleEngine.evaluate(reminder, resend);
 		return sendReminder(reminder, identitiesToRemind);
-	}
-	
-	@Override
-	public void resetSentReminders(RepositoryEntryRef entry, IdentityRef identity) {
-		reminderDao.deleteSentReminder(entry, identity);
 	}
 
 	@Override

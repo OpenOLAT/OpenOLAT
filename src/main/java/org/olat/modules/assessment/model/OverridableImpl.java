@@ -36,6 +36,7 @@ public class OverridableImpl<T> implements Overridable<T> {
 	private T original;
 	private Identity modBy;
 	private Date modDate;
+	private Date date;
 	
 	public OverridableImpl() {
 		//
@@ -45,11 +46,12 @@ public class OverridableImpl<T> implements Overridable<T> {
 		this.current = current;
 	}
 
-	public OverridableImpl(T current, T original, Identity modBy, Date modDate) {
+	public OverridableImpl(T current, T original, Date date, Identity modBy, Date modDate) {
 		this.current = current;
 		this.original = original;
 		this.modBy = modBy;
 		this.modDate = modDate;
+		this.date = date;
 	}
 
 	@Override
@@ -105,7 +107,12 @@ public class OverridableImpl<T> implements Overridable<T> {
 	public Date getModDate() {
 		return modDate;
 	}
-	
+
+	@Override
+	public Date getDate() {
+		return date;
+	}
+
 	@Override
 	public Overridable<T> clone() {
 		OverridableImpl<T> clone = new OverridableImpl<>();
@@ -113,6 +120,7 @@ public class OverridableImpl<T> implements Overridable<T> {
 		clone.original = this.original;
 		clone.modBy = this.modBy;
 		clone.modDate = this.modDate;
+		clone.date = this.date;
 		return clone;
 	}
 

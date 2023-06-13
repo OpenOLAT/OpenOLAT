@@ -1547,6 +1547,7 @@ create table o_as_entry (
    a_grade_system_ident varchar(64),
    a_performance_class_ident varchar(50),
    a_passed number default null,
+   a_passed_date date,
    a_passed_original number,
    a_passed_mod_date date,
    a_status varchar2(16 char) default null,

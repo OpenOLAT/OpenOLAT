@@ -765,6 +765,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry.setMaxScore(null);
 		assessmentEntry.setPassedOriginal(null);
 		assessmentEntry.setRawPassed(null);
+		assessmentEntry.setPassedDate(null);
 		assessmentEntry.setPassedOverridable(null);
 		assessmentEntry.setPassedModificationDate(null);
 		assessmentEntry.setPassedModificationIdentity(null);

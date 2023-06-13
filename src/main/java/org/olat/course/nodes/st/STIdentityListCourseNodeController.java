@@ -262,6 +262,8 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		} else if(!dataContext.getCourseNodes().isEmpty()) {
 			archiveResource = resetCourseNodeHelper.resetCourseNodes(identities, dataContext.getCourseNodes(), false, getIdentity(), Role.coach);
 		}
+		reload(ureq);
+		
 		if(archiveResource != null) {
 			Command downloadCmd = CommandFactory.createDownloadMediaResource(ureq, archiveResource);
 			getWindowControl().getWindowBackOffice().sendCommandTo(downloadCmd);
