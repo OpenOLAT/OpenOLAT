@@ -74,7 +74,7 @@ public class SurveyDeleteDataConfirmationController extends FormBasicController 
 		
 		confirmationEl.clearError();
 		if(!confirmationEl.isAtLeastSelected(1)) {
-			confirmationEl.setErrorKey("run.command.delete.data.all.confirmation.error", null);
+			confirmationEl.setErrorKey("run.command.delete.data.all.confirmation.error");
 			allOk &= false;
 		}
 		

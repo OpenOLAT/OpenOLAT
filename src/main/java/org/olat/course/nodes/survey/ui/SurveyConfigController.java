@@ -80,7 +80,7 @@ public class SurveyConfigController extends FormBasicController {
 		super(ureq, wControl);
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
 		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, courseEntry);
-		this.survey = surveyManager.loadSurvey(surveyIdent);
+		survey = surveyManager.loadSurvey(surveyIdent);
 		initForm(ureq);
 	}
 
@@ -206,6 +206,7 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
+		survey = surveyManager.loadSurvey(surveyIdent);
 		File formFile = surveyManager.getFormFile(survey);
 		DataStorage storage = surveyManager.loadStorage(survey);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage, null);
