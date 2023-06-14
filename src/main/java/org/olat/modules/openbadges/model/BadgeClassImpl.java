@@ -24,14 +24,18 @@ import java.util.Date;
 
 import org.olat.core.id.Persistable;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.repository.RepositoryEntry;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -88,6 +92,10 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 
 	@Column(name = "b_issuer", nullable = false, insertable = true, updatable = true)
 	private String issuer;
+
+	@ManyToOne(targetEntity = RepositoryEntry.class, fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "fk_entry", nullable = true, insertable = true, updatable = true)
+	private RepositoryEntry entry;
 
 	public BadgeClassImpl() {
 	}
@@ -207,6 +215,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
+	}
+
+	@Override
+	public RepositoryEntry getEntry() {
+		return entry;
+	}
+
+	@Override
+	public void setEntry(RepositoryEntry entry) {
+		this.entry = entry;
 	}
 
 	@Override

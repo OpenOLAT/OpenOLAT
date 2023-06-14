@@ -107,7 +107,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeClassWithSize> classesWithSizes = openBadgesManager.getBadgeClassesWithSizes();
+		List<OpenBadgesManager.BadgeClassWithSize> classesWithSizes = openBadgesManager.getBadgeClassesWithSizes(null);
 		tableModel.setObjects(classesWithSizes);
 		tableEl.reset();
 	}

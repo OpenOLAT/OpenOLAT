@@ -21,6 +21,8 @@ package org.olat.modules.openbadges;
 
 import java.util.Date;
 
+import org.olat.repository.RepositoryEntry;
+
 /**
  * Initial date: 2023-05-30<br>
  *
@@ -73,4 +75,8 @@ public interface BadgeClass {
 	String getIssuer();
 
 	void setIssuer(String issuer);
+
+	RepositoryEntry getEntry();
+
+	void setEntry(RepositoryEntry entry);
 }

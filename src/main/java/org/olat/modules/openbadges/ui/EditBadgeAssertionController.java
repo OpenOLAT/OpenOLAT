@@ -73,7 +73,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 		super(ureq, wControl);
 		this.badgeAssertion = openBadgesManager.getBadgeAssertion(badgeAssertion.getUuid());
 		badgeClassKV = new SelectionValues();
-		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses()) {
+		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses(null)) {
 			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName()));
 		}
 		initForm(ureq);

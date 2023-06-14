@@ -476,6 +476,7 @@ create table o_badge_class (
    b_criteria varchar(1024) not null,
    b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
+   fk_entry int8,
    primary key (id)
 );
 
@@ -522,6 +523,9 @@ create table o_badge_entry_config (
 
 create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
 create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
+
+alter table o_badge_class add constraint badge_class_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_badge_class_entry_idx on o_badge_class (fk_entry);
 
 alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 create index idx_badge_assertion_class_idx on o_badge_assertion (fk_badge_class);

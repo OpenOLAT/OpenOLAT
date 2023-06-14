@@ -4107,6 +4107,7 @@ create table o_badge_class (
    b_criteria varchar(1024) not null,
    b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
+   fk_entry bigint,
    primary key (id)
 );
 create table o_badge_assertion (
@@ -5460,6 +5461,8 @@ create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_
 -- Open Badges
 create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
 create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
+
+alter table o_badge_class add constraint badge_class_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 alter table o_badge_assertion add constraint badge_assertion_class_idx foreign key (fk_badge_class) references o_badge_class (id);
 

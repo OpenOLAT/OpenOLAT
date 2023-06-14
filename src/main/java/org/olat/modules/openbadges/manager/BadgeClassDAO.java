@@ -23,9 +23,12 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.repository.RepositoryEntryRef;
 
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -58,9 +61,18 @@ public class BadgeClassDAO {
 		return badgeClass;
 	}
 
-	public List<BadgeClass> getBadgeClasses() {
-		String q = "select class from badgeclass class order by class.name asc";
-		return dbInstance.getCurrentEntityManager().createQuery(q, BadgeClass.class).getResultList();
+	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select class from badgeclass class ");
+		if (entry != null) {
+			sb.append(" where class.entry.key = :entryKey ");
+		}
+		sb.append("order by class.name asc ");
+		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
+		if (entry != null) {
+			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		return typedQuery.getResultList();
 	}
 
 	public BadgeClass getBadgeClass(String uuid) {

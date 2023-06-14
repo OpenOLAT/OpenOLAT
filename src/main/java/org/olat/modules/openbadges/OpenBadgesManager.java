@@ -65,9 +65,9 @@ public interface OpenBadgesManager {
 								String name, String description, String criteria, String salt, String issuer,
 								Identity savedBy);
 
-	List<BadgeClass> getBadgeClasses();
+	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 
-	List<BadgeClassWithSize> getBadgeClassesWithSizes();
+	List<BadgeClassWithSize> getBadgeClassesWithSizes(RepositoryEntry entry);
 
 	BadgeClass getBadgeClass(String uuid);
 
