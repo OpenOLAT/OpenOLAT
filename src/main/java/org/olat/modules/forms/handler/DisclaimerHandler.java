@@ -64,7 +64,7 @@ public class DisclaimerHandler implements EvaluationFormElementHandler, SimpleAd
 
 	@Override
 	public String getIconCssClass() {
-		return "o_icon_eva_disclaimer";
+		return "o_icon_disclaimer";
 	}
 	
 	@Override
