@@ -78,6 +78,7 @@ public class EditBadgeClassController extends FormBasicController {
 	private FormLink useTemplateButton;
 	private FormLink doNotUseTemplateButton;
 	private TextElement versionEl;
+	private TextElement languageEl;
 	private ImageFormItem imageEl;
 	private FileElement fileEl;
 	private File tmpImageFile;
@@ -126,6 +127,9 @@ public class EditBadgeClassController extends FormBasicController {
 		versionEl = uifactory.addTextElement("form.version", 16, version, formLayout);
 		versionEl.setMandatory(true);
 
+		String language = badgeClass != null && badgeClass.getLanguage() != null ? badgeClass.getLanguage() : getLocale().getLanguage();
+		languageEl = uifactory.addTextElement("form.language", 16, language, formLayout);
+
 		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image.gfx");
 		formLayout.add(imageEl);
 
@@ -167,6 +171,7 @@ public class EditBadgeClassController extends FormBasicController {
 		badgeTemplateButtonsContainer.setVisible(!templateDecisionMade);
 
 		versionEl.setVisible(templateDecisionMade);
+		languageEl.setVisible(templateDecisionMade);
 		imageEl.setVisible(templateDecisionMade);
 		fileEl.setVisible(templateDecisionMade);
 		if (badgeClass != null) {
@@ -229,12 +234,14 @@ public class EditBadgeClassController extends FormBasicController {
 			}
 			if (imageFile != null) {
 				String salt = "badgeClass" + Math.abs(uuidEl.getValue().hashCode());
-				badgeClass = openBadgesManager.createBadgeClass(uuidEl.getValue(), versionEl.getValue(), imageFile, targetFileName,
+				badgeClass = openBadgesManager.createBadgeClass(uuidEl.getValue(), versionEl.getValue(),
+						languageEl.getValue(), imageFile, targetFileName,
 						nameEl.getValue(), descriptionEl.getValue(), criteriaEl.getValue(), salt, issuerEl.getValue(),
 						getIdentity());
 			}
 		} else {
 			badgeClass.setVersion(versionEl.getValue());
+			badgeClass.setLanguage(languageEl.getValue());
 			badgeClass.setName(nameEl.getValue());
 			badgeClass.setDescription(descriptionEl.getValue());
 			badgeClass.setCriteria(criteriaEl.getValue());

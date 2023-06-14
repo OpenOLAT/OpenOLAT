@@ -457,7 +457,7 @@ create table o_badge_template (
    lastmodified timestamp not null,
    b_image varchar(256) not null,
    b_name varchar(256) not null,
-   b_description varchar(1024),
+   b_description text,
    b_scopes varchar(128),
    b_placeholders varchar(1024),
    primary key (id)
@@ -470,6 +470,7 @@ create table o_badge_class (
    b_uuid varchar(36) not null,
    b_status varchar(256) not null,
    b_version varchar(32) not null,
+   b_language varchar(32),
    b_image varchar(256) not null,
    b_name varchar(256) not null,
    b_description varchar(1024) not null,

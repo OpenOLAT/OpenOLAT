@@ -61,7 +61,7 @@ public interface OpenBadgesManager {
 	// Class
 	//
 
-	BadgeClass createBadgeClass(String uuid, String version, File sourceFile, String targetFileName,
+	BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
 								String name, String description, String criteria, String salt, String issuer,
 								Identity savedBy);
 

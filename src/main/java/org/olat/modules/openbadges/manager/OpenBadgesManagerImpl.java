@@ -39,6 +39,7 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -46,6 +47,7 @@ import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -100,6 +102,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private BadgeCategoryDAO badgeCategoryDAO;
 	@Autowired
 	private MovieService movieService;
+	@Autowired
+	private ImageService imageService;
 	@Autowired
 	private TagService tagService;
 	@Autowired
@@ -180,7 +184,31 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private Size sizeForTemplate(BadgeTemplate template) {
-		return movieService.getSize(getTemplateVfsLeaf(template.getImage()), "svg+xml");
+		VFSLeaf imageLeaf = getTemplateVfsLeaf(template.getImage());
+		return sizeForVfsLeaf(imageLeaf);
+	}
+
+	private Size sizeForVfsLeaf(VFSLeaf imageLeaf) {
+		Size imageSize = null;
+
+		if (imageLeaf != null && imageLeaf.exists()) {
+			String suffix = FileUtils.getFileSuffix(imageLeaf.getName());
+			imageSize = imageService.getSize(imageLeaf, suffix);
+			if (imageSize == null) {
+				if (StringHelper.containsNonWhitespace(suffix)) {
+					if ("svg".equalsIgnoreCase(suffix)) {
+						suffix = "svg+xml";
+					}
+				}
+				imageSize = movieService.getSize(imageLeaf, suffix);
+			}
+		}
+
+		if (imageSize == null) {
+			imageSize = new Size(0, 0, false);
+		}
+
+		return imageSize;
 	}
 
 	@Override
@@ -221,13 +249,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public BadgeClass createBadgeClass(String uuid, String version, File sourceFile, String targetFileName,
+	public BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
 									   String name, String description, String criteria, String salt, String issuer,
 									   Identity savedBy) {
 		String badgeClassImageFileName = copyBadgeClassFile(sourceFile, targetFileName, savedBy);
 		if (badgeClassImageFileName != null) {
 			BadgeClass badgeClass = badgeClassDAO.createBadgeClass(uuid, version, badgeClassImageFileName,
 					name, description, criteria, salt, issuer);
+			badgeClass.setLanguage(language);
 			return badgeClassDAO.updateBadgeClass(badgeClass);
 		}
 		return null;
@@ -260,7 +289,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	private Size sizeForBadgeClass(BadgeClass badgeClass) {
-		return movieService.getSize(getBadgeClassVfsLeaf(badgeClass.getImage()), "svg+xml");
+		VFSLeaf imageLeaf = getBadgeClassVfsLeaf(badgeClass.getImage());
+		return sizeForVfsLeaf(imageLeaf);
 	}
 
 	@Override
@@ -353,13 +383,10 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	private Size sizeForBadgeAssertion(BadgeAssertion badgeAssertion) {
 		if (badgeAssertion.getBakedImage() == null) {
-			return null;
+			return new Size(0, 0, false);
 		}
 		VFSLeaf bakedImageLeaf = getBadgeAssertionVfsLeaf(badgeAssertion.getBakedImage());
-		if (bakedImageLeaf != null && bakedImageLeaf.exists()) {
-			return movieService.getSize(bakedImageLeaf, "svg+xml");
-		}
-		return null;
+		return sizeForVfsLeaf(bakedImageLeaf);
 	}
 
 	public VFSLeaf getBadgeAssertionVfsLeaf(String badgeAssertionFile) {

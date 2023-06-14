@@ -52,6 +52,10 @@ public interface BadgeClass {
 
 	void setVersion(String version);
 
+	String getLanguage();
+
+	void setLanguage(String language);
+
 	String getImage();
 
 	void setImage(String image);

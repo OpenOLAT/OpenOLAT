@@ -75,6 +75,9 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_version", nullable = false, insertable = true, updatable = true)
 	private String version;
 
+	@Column(name = "b_language", nullable = true, insertable = true, updatable = true)
+	private String language;
+
 	@Column(name = "b_image", nullable = false, insertable = true, updatable = true)
 	private String image;
 
@@ -155,6 +158,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	@Override
+	public String getLanguage() {
+		return language;
+	}
+
+	@Override
+	public void setLanguage(String language) {
+		this.language = language;
 	}
 
 	@Override
