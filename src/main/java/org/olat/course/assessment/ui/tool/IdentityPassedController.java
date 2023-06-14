@@ -60,6 +60,7 @@ public class IdentityPassedController extends BasicController {
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final boolean readOnly;
+	private final boolean canModify;
 
 	@Autowired
 	private UserManager userManager;
@@ -72,20 +73,18 @@ public class IdentityPassedController extends BasicController {
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
 		this.readOnly = coachCourseEnv.isCourseReadOnly();
 		
+		boolean passedManually = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
+				.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
+		canModify = (passedManually || coachCourseEnv.isAdmin());
+		
 		mainVC = createVelocityContainer("passed");
 
-		Boolean passedManually = coachCourseEnv.getCourseEnvironment().getRunStructure().getRootNode()
-				.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_PASSED_MANUALLY);
-		boolean canModify = (passedManually || coachCourseEnv.isAdmin());
 		passLink = LinkFactory.createLink("passed.manually.pass", "assed.manually.pass", getTranslator(), mainVC, this, Link.BUTTON);
 		passLink.setIconLeftCSS("o_icon o_icon_passed");
-		passLink.setVisible(canModify);
 		failLink = LinkFactory.createLink("passed.manually.fail", "assed.manually.fail", getTranslator(), mainVC, this, Link.BUTTON);
 		failLink.setIconLeftCSS("o_icon o_icon_failed");
-		failLink.setVisible(canModify);
 		resetLink = LinkFactory.createLink("passed.manually.reset", "assed.manually.reset", getTranslator(), mainVC, this, Link.BUTTON);
 		resetLink.setIconLeftCSS("o_icon o_icon_reset_data");
-		resetLink.setVisible(canModify);
 		
 		completionItem = new ProgressBar("completion", 100, 0, Float.valueOf(100), "%");
 		completionItem.setWidthInPercent(true);
@@ -110,9 +109,9 @@ public class IdentityPassedController extends BasicController {
 		Boolean current = passedOverridable.getCurrent();
 		boolean passed = current != null && current.booleanValue();
 		boolean failed = current != null && !current.booleanValue();
-		passLink.setVisible(!readOnly && !passedOverridable.isOverridden() && !passed);
-		failLink.setVisible(!readOnly && !passedOverridable.isOverridden() && !failed);
-		resetLink.setVisible(!readOnly && passedOverridable.isOverridden());
+		passLink.setVisible(!readOnly && canModify && !passedOverridable.isOverridden() && !passed);
+		failLink.setVisible(!readOnly && canModify && !passedOverridable.isOverridden() && !failed);
+		resetLink.setVisible(!readOnly && canModify && passedOverridable.isOverridden());
 		
 		CourseNode rootNode = assessedUserCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		AssessmentEvaluation assessmentEvaluation = assessedUserCourseEnv.getScoreAccounting().getScoreEvaluation(rootNode);
@@ -168,16 +167,14 @@ public class IdentityPassedController extends BasicController {
 					? translate("passed.manually.message.overriden.passed", args)
 					: translate("passed.manually.message.overriden.failed", args);
 		} else {
-			AssessmentEvaluation evaluation = courseAssessmentService.getAssessmentEvaluation(assessedUserCourseEnv
-					.getCourseEnvironment().getRunStructure().getRootNode(), assessedUserCourseEnv);
-			
+			// Not overridden
 			if (passedOverridable.getCurrent() == null) {
 				message = translate("passed.manually.message.null");
 			} else if (passedOverridable.getCurrent().booleanValue()) {
 				Date passedDate = passedOverridable.getDate();
 				if(passedDate != null) {
 					message = translate("passed.manually.message.passed.date",
-							formatter.formatDateAndTime(evaluation.getAssessmentDone()));
+							formatter.formatDateAndTime(passedOverridable.getDate()));
 				} else {
 					message = translate("passed.manually.message.passed");
 				}
