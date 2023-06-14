@@ -8,7 +8,9 @@
 	$r.render("certificate")
 #end
 #if($r.available("badges"))
-	$r.render("badges")
+	#if($r.visible("badges"))
+		$r.render("badges")
+	#end
 #end
 #if($r.available("recertification"))
 	#if($r.visible("recertification"))
