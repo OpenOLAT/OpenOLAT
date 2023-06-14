@@ -128,9 +128,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private static final String TAB_ID_DONE = "Done";
 	private static final String TAB_ID_DELETED = "Deleted";
 	private static final String FILTER_STATUS = "status";
-	private static final String FILTER_TEMPLATE = "template";
-	private static final String FILTER_TEMPLATE_PROJECT = "template.project";
-	private static final String FILTER_TEMPLATE_TEMPLATE = "template.template";
 	private static final String FILTER_ORPHANS = "orphans";
 	private static final String FILTER_ORPHANS_KEY = "orphans.key";
 	private static final String FILTER_MEMBER = "member";
@@ -210,6 +207,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 
 	protected abstract boolean isToolsEnabled();
 	
+	protected abstract boolean isColumnTypeEnabled();
+	
 	protected abstract boolean isColumnCreateFromTemplateEnabled();
 	
 	protected abstract boolean isCustomRendererEnabled();
@@ -223,6 +222,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	protected abstract boolean isFilterMemberEnabled();
 	
 	protected abstract ProjProjectSearchParams createSearchParams();
+	
+	protected abstract Boolean getSearchTemplates();
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -232,7 +233,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		if (isCreateFromTemplateEnabled()) {
-			initCreateFromTemplateLinks(formLayout);
+			initCreateFromTemplateLinks(ureq, formLayout);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -247,7 +248,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.owners));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectCols.deletedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ProjectCols.deletedBy));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.template));
+		if (isColumnTypeEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ProjectCols.type));
+		}
 		if (isColumnCreateFromTemplateEnabled()) {
 			DefaultFlexiColumnModel createFromTemplateColumn = new DefaultFlexiColumnModel(
 					ProjectCols.createFromTemplate.i18nHeaderKey(), ProjectCols.createFromTemplate.ordinal(),
@@ -289,9 +292,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		initFilterTabs(ureq);
 	}
 	
-	private void initCreateFromTemplateLinks(FormItemContainer formLayout) {
+	private void initCreateFromTemplateLinks(UserRequest ureq, FormItemContainer formLayout) {
 		ProjProjectSearchParams templateSearchParams = createSearchParams();
 		templateSearchParams.setTemplate(Boolean.TRUE);
+		templateSearchParams.setTemplateOrganisations(ureq.getUserSession().getRoles().getOrganisations());
 		templateSearchParams.setStatus(List.of(ProjectStatus.active, ProjectStatus.done));
 		List<ProjProject> projects = projectService.getProjects(templateSearchParams);
 		if (projects.isEmpty()) {
@@ -390,11 +394,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		statusValues.add(SelectionValues.entry(ProjectStatus.deleted.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.deleted)));
 		filters.add(new FlexiTableMultiSelectionFilter(translate("status"), FILTER_STATUS, statusValues, true));
 		
-		SelectionValues templateValues = new SelectionValues();
-		templateValues.add(SelectionValues.entry(FILTER_TEMPLATE_PROJECT, translate("project.normal")));
-		templateValues.add(SelectionValues.entry(FILTER_TEMPLATE_TEMPLATE, translate("project.template.template")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("project.template"), FILTER_TEMPLATE, templateValues, true));
-		
 		if (isFilterOrphanEnabled()) {
 			SelectionValues orphansValues = new SelectionValues();
 			orphansValues.add(SelectionValues.entry(FILTER_ORPHANS_KEY, translate("filter.orphans.orphans")));
@@ -457,6 +456,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	protected void loadModel(UserRequest ureq) {
 		ProjProjectSearchParams searchParams = createSearchParams();
+		if (getSearchTemplates() != null) {
+			if (getSearchTemplates()) {
+				searchParams.setTemplate(Boolean.TRUE);
+				searchParams.setTemplateOrganisations(ureq.getUserSession().getRoles().getOrganisations());
+			} else {
+				searchParams.setTemplate(Boolean.FALSE);
+			}
+		}
+		
 		applyFilters(searchParams);
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
@@ -518,9 +526,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		dataModel.setObjects(rows);
 		tableEl.sort(new SortKey(ProjectCols.lastAcitivityDate.name(), false));
 		tableEl.reset(true, true, true);
-		if (createLink != null) {
-			createLink.setVisible(!rows.isEmpty());
-		}
 	}
 
 	private void applyFilters(ProjProjectSearchParams searchParams) {
@@ -534,15 +539,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
 				} else {
 					searchParams.setStatus(null);
-				}
-			}
-			if (FILTER_TEMPLATE.equals(filter.getFilter())) {
-				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && values.size() == 1) {
-					Boolean template = values.contains(FILTER_TEMPLATE_TEMPLATE);
-					searchParams.setTemplate(template);
-				} else {
-					searchParams.setTemplate(null);
 				}
 			}
 			if (FILTER_ORPHANS.equals(filter.getFilter())) {
@@ -620,7 +616,6 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		if (project.isTemplatePrivate() || project.isTemplatePublic()) {
 			FormLink link = uifactory.addFormLink("ctemp_" + row.getKey(), CMD_CREATE_FROM_TEMPLATE, "project.create.from.template", null, flc, Link.LINK);
 			link.setIconRightCSS("o_icon o_icon_start");
-			link.setUrl(row.getUrl());
 			link.setUserObject(row);
 			row.setCreateFromTemplateLink(link);
 		}
@@ -868,7 +863,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			boolean manager = projectService.isInOrganisation(project, ureq.getUserSession().getRoles()
 					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager));
 			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, roles, manager);
-			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback);
+			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback, isCreateForEnabled());
 			listenTo(projectCtrl);
 			String title = Formatter.truncate(project.getTitle(), 50);
 			stackPanel.pushController(title, projectCtrl);

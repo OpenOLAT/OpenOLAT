@@ -90,7 +90,7 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		case status: return row;
 		case lastAcitivityDate: return row.getLastActivityDate();
 		case owners: return row.getOwnersNames();
-		case template: return row.getTemplateName();
+		case type: return row.getTemplateName();
 		case createFromTemplate: return Boolean.valueOf(row.isTemplate());
 		case deletedDate: return row.getDeletedDate();
 		case deletedBy: return row.getDeletedByName();
@@ -107,7 +107,7 @@ public class ProjProjectDataModel extends DefaultFlexiTableDataModel<ProjProject
 		status("status"),
 		lastAcitivityDate("project.last.activity.date"),
 		owners("project.owners"),
-		template("project.template"),
+		type("project.type"),
 		createFromTemplate("project.create.from.template"),
 		deletedBy("deleted.by"),
 		deletedDate("deleted.date"),

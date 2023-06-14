@@ -58,10 +58,15 @@ public class ProjProjectMyController extends ProjProjectListController {
 	protected boolean isToolsEnabled() {
 		return false;
 	}
+
+	@Override
+	protected boolean isColumnTypeEnabled() {
+		return false;
+	}
 	
 	@Override
 	protected boolean isColumnCreateFromTemplateEnabled() {
-		return true;
+		return false;
 	}
 
 	@Override
@@ -94,6 +99,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 		ProjProjectSearchParams searchParams = new ProjProjectSearchParams();
 		searchParams.setIdentity(getIdentity());
 		return searchParams;
+	}
+
+	@Override
+	protected Boolean getSearchTemplates() {
+		return Boolean.FALSE;
 	}
 
 }

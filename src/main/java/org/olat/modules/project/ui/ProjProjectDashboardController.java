@@ -87,6 +87,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private static final String CMD_EDIT_PROJECT = "edit.project";
 	private static final String CMD_EDIT_MEMBER_MANAGEMENT = "member.management";
 	private static final String CMD_COPY_PROJECT = "copy.project";
+	private static final String CMD_TEMPLATE = "template";
 	private static final String CMD_STATUS_DONE = "status.done";
 	private static final String CMD_REOPEN = "reopen";
 	private static final String CMD_STATUS_DELETED = "status.deleted";
@@ -97,6 +98,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private Link editProjectLink;
 	private Link membersManagementLink;
 	private Link copyProjectLink;
+	private Link templateLink;
 	private Link statusDoneLink;
 	private Link reopenLink;
 	private Link statusDeletedLink;
@@ -124,6 +126,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 
 	private ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
+	private final boolean createForEnabled;
 	private final MapperKey avatarMapperKey;
 	private final ProjProjectImageMapper projectImageMapper;
 	private final String projectMapperUrl;
@@ -135,12 +138,13 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private MapperService mapperService;
 
 	public ProjProjectDashboardController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel,
-			ProjProject project, ProjProjectSecurityCallback secCallback) {
+			ProjProject project, ProjProjectSecurityCallback secCallback, boolean createForEnabled) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
 		this.project = project;
 		this.secCallback = secCallback;
+		this.createForEnabled = createForEnabled;
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
 		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
@@ -171,6 +175,9 @@ public class ProjProjectDashboardController extends BasicController implements A
 		
 		copyProjectLink = LinkFactory.createToolLink(CMD_COPY_PROJECT, translate("project.copy"), this, "o_icon_copy");
 		cmdsDropDown.addComponent(copyProjectLink);
+		
+		templateLink = LinkFactory.createToolLink(CMD_TEMPLATE, translate("project.save.template"), this, "o_icon_template");
+		cmdsDropDown.addComponent(templateLink);
 		
 		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate("project.set.status.done"), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
@@ -281,7 +288,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
 		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
-		mainVC.contextPut("deleted", Boolean.valueOf(ProjectStatus.deleted == project.getStatus()));
+		mainVC.contextPut("deleted", ProjectStatus.deleted == project.getStatus());
+		mainVC.contextPut("template", project.isTemplatePrivate() || project.isTemplatePublic());
 		if (secCallback.canViewProjectMetadata()) {
 			mainVC.contextPut("projectTeaser", project.getTeaser());
 		}
@@ -297,6 +305,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		editProjectLink.setVisible(secCallback.canViewProjectMetadata());
 		membersManagementLink.setVisible(secCallback.canEditMembers());
 		copyProjectLink.setVisible(secCallback.canCopyProject());
+		templateLink.setVisible(secCallback.canCreateTemplate());
 		
 		statusDoneLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus());
 		reopenLink.setVisible(secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus());
@@ -451,6 +460,8 @@ public class ProjProjectDashboardController extends BasicController implements A
 			doOpenMembersManagement(ureq);
 		} else if (source == copyProjectLink) {
 			doCopyProject(ureq);
+		} else if (source == templateLink) {
+			doCreateTemplate(ureq);
 		} else if (source == statusDoneLink) {
 			doConfirmStatusDone(ureq);
 		} else if (source == reopenLink) {
@@ -501,10 +512,22 @@ public class ProjProjectDashboardController extends BasicController implements A
 	private void doCopyProject(UserRequest ureq) {
 		if (guardModalController(editCtrl)) return;
 		
-		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), project);
+		editCtrl = ProjProjectEditController.createCopyCtrl(ureq, getWindowControl(), project, createForEnabled);
 		listenTo(editCtrl);
 		
 		String title = translate("project.copy");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doCreateTemplate(UserRequest ureq) {
+		if (guardModalController(editCtrl)) return;
+		
+		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), project);
+		listenTo(editCtrl);
+		
+		String title = translate("project.save.template");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();

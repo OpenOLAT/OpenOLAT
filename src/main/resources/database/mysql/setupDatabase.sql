@@ -3920,6 +3920,13 @@ create table o_proj_project_to_org (
   fk_organisation bigint not null,
   primary key (id)
 );
+create table o_proj_template_to_org (
+  id bigint not null auto_increment,
+  creationdate datetime not null,
+  fk_project bigint not null,
+  fk_organisation bigint not null,
+  primary key (id)
+);
 create table o_proj_project_user_info (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4511,6 +4518,7 @@ alter table o_zoom_profile ENGINE = InnoDB;
 alter table o_zoom_config ENGINE = InnoDB;
 alter table o_proj_project ENGINE = InnoDB;
 alter table o_proj_project_to_org ENGINE = InnoDB;
+alter table o_proj_template_to_org ENGINE = InnoDB;
 alter table o_proj_project_user_info ENGINE = InnoDB;
 alter table o_proj_artefact ENGINE = InnoDB;
 alter table o_proj_artefact_to_artefact ENGINE = InnoDB;
@@ -5401,6 +5409,8 @@ alter table o_proj_project add constraint project_creator_idx foreign key (fk_cr
 alter table o_proj_project add constraint project_group_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_proj_project_to_org add constraint rel_pto_project_idx foreign key (fk_project) references o_proj_project (id);
 alter table o_proj_project_to_org add constraint rel_pto_org_idx foreign key (fk_organisation) references o_org_organisation (id);
+alter table o_proj_template_to_org add constraint rel_tto_project_idx foreign key (fk_project) references o_proj_project (id);
+alter table o_proj_template_to_org add constraint rel_tto_org_idx foreign key (fk_organisation) references o_org_organisation (id);
 alter table o_proj_project_user_info add constraint rel_pui_project_idx foreign key (fk_project) references o_proj_project (id);
 alter table o_proj_project_user_info add constraint rel_pui_identity_idx foreign key (fk_identity) references o_bs_identity(id);
 

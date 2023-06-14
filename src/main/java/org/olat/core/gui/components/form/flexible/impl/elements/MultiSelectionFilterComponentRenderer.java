@@ -47,9 +47,9 @@ public class MultiSelectionFilterComponentRenderer extends DefaultComponentRende
 		if (el.isEnabled()) {
 			renderer.render(button.getComponent(), target, null);
 		} else {
-			target.append("<span class=\"o_mfs_ls_button\">");
+			target.append("<div class=\"o_mfs_ls_button\">");
 			target.append(button.getI18nKey());
-			target.append("</span>");
+			target.append("</div>");
 		}
 	}
 }

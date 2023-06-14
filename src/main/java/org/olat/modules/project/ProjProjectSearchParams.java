@@ -36,6 +36,7 @@ public class ProjProjectSearchParams {
 	
 	private IdentityRef identity;
 	private List<OrganisationRef> projectOrganisations;
+	private List<OrganisationRef> templateOrganisations;
 	private Collection<Long> projectKeys;
 	private Collection<ProjectStatus> status;
 	private Boolean template;
@@ -55,6 +56,14 @@ public class ProjProjectSearchParams {
 
 	public void setProjectOrganisations(List<OrganisationRef> projectOrganisations) {
 		this.projectOrganisations = projectOrganisations;
+	}
+
+	public List<OrganisationRef> getTemplateOrganisations() {
+		return templateOrganisations;
+	}
+
+	public void setTemplateOrganisations(List<OrganisationRef> templateOrganisations) {
+		this.templateOrganisations = templateOrganisations;
 	}
 
 	public Collection<Long> getProjectKeys() {

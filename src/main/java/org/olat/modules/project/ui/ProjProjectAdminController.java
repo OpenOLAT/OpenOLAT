@@ -68,6 +68,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	}
 
 	@Override
+	protected boolean isColumnTypeEnabled() {
+		return true;
+	}
+
+	@Override
 	protected boolean isColumnCreateFromTemplateEnabled() {
 		return false;
 	}
@@ -102,6 +107,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 		ProjProjectSearchParams searchParams = new ProjProjectSearchParams();
 		searchParams.setProjectOrganisations(projectManagerOrganisations);
 		return searchParams;
+	}
+
+	@Override
+	protected Boolean getSearchTemplates() {
+		return null;
 	}
 
 }

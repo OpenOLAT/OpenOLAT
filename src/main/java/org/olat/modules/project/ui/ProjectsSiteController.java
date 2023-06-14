@@ -51,11 +51,14 @@ public class ProjectsSiteController extends BasicController implements Activatea
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myLink;
+	private final Link templatesLink;
 	private Link adminLink;
 	
 	private BreadcrumbedStackedPanel myStackPanel;
+	private BreadcrumbedStackedPanel templatesStackPanel;
 	private BreadcrumbedStackedPanel adminStackPanel;
 	private ProjProjectMyController myCtrl;
+	private ProjProjectTemplatesController templatesCtrl;
 	private ProjProjectAdminController adminCtrl;
 
 	public ProjectsSiteController(UserRequest ureq, WindowControl wControl) {
@@ -69,6 +72,9 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		
 		myLink = LinkFactory.createLink("segment.my", mainVC, this);
 		segmentView.addSegment(myLink, true);
+		
+		templatesLink = LinkFactory.createLink("segment.templates", mainVC, this);
+		segmentView.addSegment(templatesLink, false);
 		
 		if (ureq.getUserSession().getRoles().isProjectManager() || ureq.getUserSession().getRoles().isAdministrator()) {
 			adminLink = LinkFactory.createLink("segment.admin", mainVC, this);
@@ -102,6 +108,8 @@ public class ProjectsSiteController extends BasicController implements Activatea
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == myLink) {
 					doOpenMy(ureq);
+				} else if (clickedLink == templatesLink) {
+					doOpenTemplates(ureq);
 				} else if (clickedLink == adminLink) {
 					doOpenAdmin(ureq);
 				}
@@ -119,6 +127,18 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		
 		mainVC.put("segmentCmp", myStackPanel);
 		segmentView.select(myLink);
+	}
+	
+	public void doOpenTemplates(UserRequest ureq) {
+		removeAsListenerAndDispose(templatesCtrl);
+		
+		templatesStackPanel = new BreadcrumbedStackedPanel("templatestack", getTranslator(), this);
+		templatesCtrl = new ProjProjectTemplatesController(ureq, getWindowControl(), templatesStackPanel);
+		listenTo(templatesCtrl);
+		templatesStackPanel.pushController(translate("project.list.title"), templatesCtrl);
+		
+		mainVC.put("segmentCmp", templatesStackPanel);
+		segmentView.select(templatesLink);
 	}
 	
 	private void doOpenAdmin(UserRequest ureq) {

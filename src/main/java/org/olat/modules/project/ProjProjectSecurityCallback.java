@@ -38,6 +38,8 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canCopyProject();
 	
+	boolean canCreateTemplate();
+	
 	boolean canDeleteProject();
 	
 	boolean canViewMembers();

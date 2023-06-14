@@ -116,6 +116,7 @@ import org.olat.modules.project.ProjProjectToOrganisation;
 import org.olat.modules.project.ProjProjectUserInfo;
 import org.olat.modules.project.ProjTag;
 import org.olat.modules.project.ProjTagSearchParams;
+import org.olat.modules.project.ProjTemplateToOrganisation;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.ProjToDoInfo;
 import org.olat.modules.project.ProjToDoRef;
@@ -158,6 +159,8 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private ProjProjectDAO projectDao;
 	@Autowired
 	private ProjProjectToOrganisationDAO projectToOrganisationDao;
+	@Autowired
+	private ProjTemplateToOrganisationDAO templateToOrganisationDao;
 	@Autowired
 	private ProjProjectUserInfoDAO projectUserInfoDao;
 	@Autowired
@@ -424,6 +427,37 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		List<Long> projectOrganisationKeys = getOrganisations(project).stream().map(Organisation::getKey).toList();
 		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();
 		return !Collections.disjoint(projectOrganisationKeys, organisationKeys);
+	}
+	
+	@Override
+	public void updateTemplateOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations) {
+		List<ProjTemplateToOrganisation> currentRelations = templateToOrganisationDao.loadRelations(project, null);
+		List<Organisation> currentOrganisations = currentRelations.stream()
+				.map(ProjTemplateToOrganisation::getOrganisation)
+				.collect(Collectors.toList());
+		
+		// Create relation for new organisations
+		for (Organisation organisation : organisations) {
+			if (!currentOrganisations.contains(organisation)) {
+				templateToOrganisationDao.createRelation(project, organisation);
+				activityDao.create(Action.projectTemplateOrganisationAdd, null, null, doer, project, organisation);
+			}
+		}
+		
+		// Delete relation of old organisations
+		for (ProjTemplateToOrganisation relation : currentRelations) {
+			if (!organisations.contains(relation.getOrganisation())) {
+				templateToOrganisationDao.delete(relation);
+				activityDao.create(Action.projectTemplateOrganisationRemove, null, null, doer, project, relation.getOrganisation());
+			}
+		}
+	}
+	
+	@Override
+	public List<Organisation> getTemplateOrganisations(ProjProjectRef project) {
+		if (project == null) return List.of();
+		
+		return templateToOrganisationDao.loadOrganisations(project);
 	}
 	
 	@Override

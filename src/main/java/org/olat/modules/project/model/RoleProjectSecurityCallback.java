@@ -89,6 +89,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canCopyProject() {
 		return !template && (manager || roles.contains(ProjectRole.owner));
 	}
+	
+	@Override
+	public boolean canCreateTemplate() {
+		return !template && (manager || roles.contains(ProjectRole.owner));
+	}
 
 	@Override
 	public boolean canDeleteProject() {
@@ -102,7 +107,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canEditMembers() {
-		return !projectReadOnly && (manager || hasRole(PROJECT_ADMIN));
+		return !template && !projectReadOnly && (manager || hasRole(PROJECT_ADMIN));
 	}
 	
 	@Override

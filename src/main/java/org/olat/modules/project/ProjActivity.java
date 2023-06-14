@@ -115,6 +115,8 @@ public interface ProjActivity extends CreateInfo {
 		projectImageBackgroundUpdate(ActionTarget.project),
 		projectOrganisationAdd(ActionTarget.project),
 		projectOrganisationRemove(ActionTarget.project),
+		projectTemplateOrganisationAdd(ActionTarget.project),
+		projectTemplateOrganisationRemove(ActionTarget.project),
 		projectMemberAdd(ActionTarget.project),
 		projectMemberRemove(ActionTarget.project),
 		projectRolesUpdate(ActionTarget.project),

@@ -37,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultiSelectionFilterElement;
-import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextAreaElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -81,7 +81,7 @@ public class ProjProjectEditController extends FormBasicController {
 
 	private StaticTextElement ownerEl;
 	private FormLink ownerSelectLink;
-	private MultipleSelectionElement templateEl;
+	private SingleSelection templateEl;
 	private TextElement titleEl;
 	private TextElement externalRefEl;
 	private TextElement teaserEl;
@@ -89,7 +89,9 @@ public class ProjProjectEditController extends FormBasicController {
 	private FileElement avatarImageEl;
 	private FileElement backgroundImageEl;
 	private FormLayoutContainer orgCont;
+	private FormLayoutContainer templateOrgCont;
 	private MultiSelectionFilterElement organisationsEl;
+	private MultiSelectionFilterElement templateOrganisationsEl;
 	
 	private CloseableModalController cmc;
 	private UserSearchController userSearchCtrl;
@@ -98,9 +100,11 @@ public class ProjProjectEditController extends FormBasicController {
 	private final String initialTitle;
 	private ProjProject targetProject;
 	private final boolean readOnly;
-	private final boolean creatorForEnabled;
+	private final boolean createForEnabled;
+	private final boolean template;
 	private final boolean copyArtefacts;
 	private List<Organisation> organisations;
+	private List<Organisation> templateOrganisations;
 	private Identity owner;
 	
 	@Autowired
@@ -125,7 +129,8 @@ public class ProjProjectEditController extends FormBasicController {
 		this.initialProject = null;
 		this.initialTitle = null;
 		this.readOnly = false;
-		this.creatorForEnabled = createForEnabled;
+		this.createForEnabled = createForEnabled;
+		this.template = false;
 		this.copyArtefacts = false;
 		this.owner = getIdentity();
 		initForm(ureq);
@@ -141,22 +146,28 @@ public class ProjProjectEditController extends FormBasicController {
 		this.initialTitle = project.getTitle();
 		this.targetProject = project;
 		this.readOnly = readOnly;
-		this.creatorForEnabled = false;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
+		this.createForEnabled = false;
 		this.copyArtefacts = false;
 		this.owner = getIdentity();
 		initForm(ureq);
 	}
 	
-	public static ProjProjectEditController createCopyCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
-		return new ProjProjectEditController(ureq, wControl, initialProject);
+	public static ProjProjectEditController createCopyCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject, boolean createForEnabled) {
+		return new ProjProjectEditController(ureq, wControl, initialProject, createForEnabled, false);
 	}
 	
-	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
+	public static ProjProjectEditController createTemplateCtrl(UserRequest ureq, WindowControl wControl, ProjProject initialProject) {
+		return new ProjProjectEditController(ureq, wControl, initialProject, false, true);
+	}
+	
+	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject initialProject, boolean createForEnabled, boolean template) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.initialProject = initialProject;
 		this.initialTitle = translate("project.title.copy", StringHelper.blankIfNull(initialProject.getTitle()));
 		this.readOnly = false;
-		this.creatorForEnabled = true;
+		this.createForEnabled = createForEnabled;
+		this.template = template;
 		this.copyArtefacts = true;
 		this.owner = getIdentity();
 		initForm(ureq);
@@ -164,8 +175,9 @@ public class ProjProjectEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if (creatorForEnabled) {
-			ownerEl = uifactory.addStaticTextElement("project.create.for", "", formLayout);
+		if (createForEnabled) {
+			String forI18nKey = copyArtefacts? "project.copy.for": "project.create.for";
+			ownerEl = uifactory.addStaticTextElement(forI18nKey, "", formLayout);
 			
 			FormLayoutContainer ownerCont = FormLayoutContainer.createButtonLayout("ownerCont", getTranslator());
 			ownerCont.setRootForm(mainForm);
@@ -174,11 +186,35 @@ public class ProjProjectEditController extends FormBasicController {
 			ownerSelectLink = uifactory.addFormLink("project.owner.select", ownerCont, Link.BUTTON);
 		}
 		
-		if (copyArtefacts) {
-			SelectionValues templateSV = new SelectionValues();
-			templateSV.add(SelectionValues.entry(TEMPLATE_KEY, translate("project.template.private")));
-			templateSV.add(SelectionValues.entry(TEMPLATE_PUBLIC_KEY, translate("project.template.public")));
-			templateEl = uifactory.addCheckboxesVertical("project.template", formLayout, templateSV.keys(), templateSV.values(), 1);
+		if (organisationModule.isEnabled()) {
+			if (template) {
+				SelectionValues templateSV = new SelectionValues();
+				templateSV.add(SelectionValues.entry(TEMPLATE_KEY, translate("project.template.private")));
+				templateSV.add(SelectionValues.entry(TEMPLATE_PUBLIC_KEY, translate("project.template.public")));
+				templateEl = uifactory.addRadiosHorizontal("project.template.visibility", formLayout, templateSV.keys(), templateSV.values());
+				templateEl.setEnabled(!readOnly);
+				templateEl.addActionListener(FormEvent.ONCHANGE);
+				templateEl.select(TEMPLATE_KEY, initialProject.isTemplatePrivate());
+				templateEl.select(TEMPLATE_PUBLIC_KEY, initialProject.isTemplatePublic());
+				if (!templateEl.isOneSelected()) {
+					templateEl.select(TEMPLATE_KEY, true);
+				}
+				
+				templateOrgCont = FormLayoutContainer.createVerticalFormLayout("templateOrgCont", getTranslator());
+				templateOrgCont.setRootForm(mainForm);
+				formLayout.add(templateOrgCont);
+				
+				initTemplateOrganisations(ureq);
+				updateTemplateOrganisationUI();
+			}
+			
+			orgCont = FormLayoutContainer.createVerticalFormLayout("orgCont", getTranslator());
+			orgCont.setRootForm(mainForm);
+			formLayout.add(orgCont);
+			
+			if (!createForEnabled) {
+				initOrganisations(ureq);
+			}
 		}
 		
 		titleEl = uifactory.addTextElement("project.title", 100, initialTitle, formLayout);
@@ -225,16 +261,6 @@ public class ProjProjectEditController extends FormBasicController {
 			backgroundImageEl.setInitialFile(localFile.getBasefile());
 		}
 		
-		if (organisationModule.isEnabled()) {
-			orgCont = FormLayoutContainer.createVerticalFormLayout("orgCont", getTranslator());
-			orgCont.setRootForm(mainForm);
-			formLayout.add(orgCont);
-			
-			if (!creatorForEnabled) {
-				initOrganisations(ureq);
-			}
-		}
-		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		if (readOnly) {
@@ -247,9 +273,63 @@ public class ProjProjectEditController extends FormBasicController {
 		updateOwnerUI();
 	}
 
+	private void initTemplateOrganisations(UserRequest ureq) {
+		if (templateOrgCont == null) return;
+		
+		boolean manager = true;
+		
+		// If the doer has a manager organisation, use it...
+		OrganisationRoles[] orgRoles;
+		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
+		if (!createRoles.isEmpty()) {
+			Set<OrganisationRoles> allRoles = new HashSet<>(createRoles);
+			allRoles.addAll(Arrays.asList(ROLES_PROJECT_MANAGER));
+			orgRoles = allRoles.stream().toArray(OrganisationRoles[]::new);
+		} else {
+			orgRoles = ROLES_PROJECT_MANAGER;
+		}
+		templateOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
+		
+		// ... if not, use his user organisation and disable the organisation to change
+		if (templateOrganisations.isEmpty()) {
+			templateOrganisations = organisationService.getOrganisations(owner, OrganisationRoles.user);
+			manager = false;
+		}
+		
+		List<Organisation> projectOrganisations = projectService.getTemplateOrganisations(initialProject);
+		if (!projectOrganisations.isEmpty()) {
+			for (Organisation projectOrganisation : projectOrganisations) {
+				if (projectOrganisation != null && !templateOrganisations.contains(projectOrganisation)) {
+					templateOrganisations.add(projectOrganisation);
+				}
+			}
+		}
+		
+		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(templateOrganisations);
+		templateOrganisationsEl = uifactory.addCheckboxesFilterDropdown("project.template.organisations", "project.template.organisations", templateOrgCont, getWindowControl(), orgSV);
+		templateOrganisationsEl.setMandatory(true);
+		templateOrganisationsEl.setEnabled(manager && !readOnly);
+		
+		// Select the current organisations
+		projectOrganisations.forEach(organisation -> templateOrganisationsEl.select(organisation.getKey().toString(), true));
+		
+		// If it is a new project, select all organisations (usually one, the organisation with role user)
+		if (templateOrganisationsEl.getSelectedKeys().isEmpty() && !manager) {
+			templateOrganisationsEl.getKeys().forEach(key -> templateOrganisationsEl.select(key, true));
+		}
+	}
+	
+	private void updateTemplateOrganisationUI() {
+		boolean visible = templateEl != null && templateEl.isKeySelected(TEMPLATE_PUBLIC_KEY);
+		templateOrganisationsEl.setVisible(visible);
+	}
+
 	private void initOrganisations(UserRequest ureq) {
 		if (orgCont == null) return;
 		
+		boolean manager = true;
+		
+		// If the doer has a manager organisation, use it...
 		OrganisationRoles[] orgRoles;
 		Set<OrganisationRoles> createRoles = projectModule.getCreateRoles();
 		if (!createRoles.isEmpty()) {
@@ -260,8 +340,14 @@ public class ProjProjectEditController extends FormBasicController {
 			orgRoles = ROLES_PROJECT_MANAGER;
 		}
 		organisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(), orgRoles);
-		List<Organisation> projectOrganisations = projectService.getOrganisations(initialProject);
 		
+		// ... if not, use his user organisation and disable the organisation to change
+		if (organisations.isEmpty()) {
+			organisations = organisationService.getOrganisations(owner, OrganisationRoles.user);
+			manager = false;
+		}
+		
+		List<Organisation> projectOrganisations = projectService.getOrganisations(initialProject);
 		if (!projectOrganisations.isEmpty()) {
 			for (Organisation projectOrganisation : projectOrganisations) {
 				if (projectOrganisation != null && !organisations.contains(projectOrganisation)) {
@@ -273,8 +359,15 @@ public class ProjProjectEditController extends FormBasicController {
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
-		organisationsEl.setEnabled(!readOnly);
+		organisationsEl.setEnabled(manager && !readOnly);
+		
+		// Select the current organisations
 		projectOrganisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		
+		// If it is a new project, select all organisations (usually one, the organisation with role user)
+		if (organisationsEl.getSelectedKeys().isEmpty() && !manager) {
+			organisationsEl.getKeys().forEach(key -> organisationsEl.select(key, true));
+		}
 	}
 	
 	private void initUserOrganisations() {
@@ -286,14 +379,14 @@ public class ProjProjectEditController extends FormBasicController {
 		SelectionValues orgSV = OrganisationUIFactory.createSelectionValues(organisations);
 		organisationsEl = uifactory.addCheckboxesFilterDropdown("organisations", "project.organisations", orgCont, getWindowControl(), orgSV);
 		organisationsEl.setMandatory(true);
-		organisationsEl.setEnabled(!readOnly);
-		organisations.forEach(organisation -> organisationsEl.select(organisation.getKey().toString(), true));
+		organisationsEl.setEnabled(true);
+		organisationsEl.getKeys().forEach(key -> organisationsEl.select(key, true));
 	}
 	
 	private void updateOwnerUI() {
 		if (ownerEl != null && owner != null) {
 			ownerEl.setValue(userManager.getUserDisplayName(owner.getKey()));
-			if (creatorForEnabled && organisationModule.isEnabled()) {
+			if (createForEnabled && organisationModule.isEnabled()) {
 				initUserOrganisations();
 			}
 		}
@@ -329,6 +422,8 @@ public class ProjProjectEditController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == ownerSelectLink) {
 			doSelectOwner(ureq);
+		} else if (source == templateEl) {
+			updateTemplateOrganisationUI();
 		} else if (source == avatarImageEl) {
 			if (FileElementEvent.DELETE.equals(event.getCommand())) {
 				avatarImageEl.setInitialFile(null);
@@ -370,6 +465,16 @@ public class ProjProjectEditController extends FormBasicController {
 		avatarImageEl.validate();
 		backgroundImageEl.validate();
 		
+		if (templateOrganisationsEl != null) {
+			templateOrganisationsEl.clearError();
+			if (templateOrganisationsEl.isVisible()) {
+				if (templateOrganisationsEl.getSelectedKeys().isEmpty()) {
+					templateOrganisationsEl.setErrorKey("form.legende.mandatory");
+					allOk &= false;
+				}
+			}
+		}
+		
 		if (organisationsEl != null) {
 			organisationsEl.clearError();
 			if (organisationsEl.getSelectedKeys().isEmpty()) {
@@ -394,10 +499,28 @@ public class ProjProjectEditController extends FormBasicController {
 		
 		boolean templatePrivate = false;
 		boolean templatePublic = false;
-		if (templateEl != null && templateEl.isVisible()) {
-			templatePrivate = templateEl.getSelectedKeys().contains(TEMPLATE_KEY);
-			templatePublic = templateEl.getSelectedKeys().contains(TEMPLATE_PUBLIC_KEY);
+		if (template) {
+			if (templateEl != null) {
+				templatePrivate = templateEl.isOneSelected() && templateEl.isKeySelected(TEMPLATE_KEY);
+				templatePublic =  templateEl.isOneSelected() && templateEl.isKeySelected(TEMPLATE_PUBLIC_KEY);
+			} else {
+				// Organisations not enabled, so it's a private template
+				templatePrivate = true;
+			}
+			
+			if (templateOrganisationsEl != null) {
+				if (templateOrganisationsEl.isVisible()) {
+					Collection<String> selectedOrgKeys = templateOrganisationsEl.getSelectedKeys();
+					List<Organisation> selectedOrganisations = organisations.stream()
+							.filter(org -> selectedOrgKeys.contains(org.getKey().toString()))
+							.collect(Collectors.toList());
+					projectService.updateTemplateOrganisations(getIdentity(), targetProject, selectedOrganisations);
+				} else {
+					projectService.updateTemplateOrganisations(getIdentity(), targetProject, List.of());
+				}
+			}
 		}
+
 		targetProject = projectService.updateProject(getIdentity(), targetProject,
 				externalRefEl.getValue(),
 				titleEl.getValue(),

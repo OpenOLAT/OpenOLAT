@@ -181,6 +181,25 @@ public class ProjProjectDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_templateOrganisations() {
+		Organisation organisation1 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		Organisation organisation2 = organisationService.createOrganisation(random(), random(), random(), null, null);
+		ProjProject project1 = createRandomProject();
+		projectService.updateTemplateOrganisations(project1.getCreator(), project1, List.of(organisation1));
+		ProjProject project2 = createRandomProject();
+		projectService.updateTemplateOrganisations(project2.getCreator(), project2, List.of(organisation1, organisation2));
+		ProjProject project3 = createRandomProject();
+		projectService.updateTemplateOrganisations(project3.getCreator(), project3, List.of(organisation2));
+		createRandomProject();
+		
+		ProjProjectSearchParams params = new ProjProjectSearchParams();
+		params.setTemplateOrganisations(List.of(organisation1));
+		List<ProjProject> projects = sut.loadProjects(params);
+		
+		assertThat(projects).containsExactlyInAnyOrder(project1, project2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_projectKeys() {
 		ProjProject project1 = createRandomProject();
 		ProjProject project2 = createRandomProject();

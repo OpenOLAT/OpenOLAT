@@ -67,6 +67,10 @@ public interface ProjectService {
 
 	public List<Organisation> getOrganisations(ProjProjectRef project);
 	
+	public void updateTemplateOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations);
+
+	public List<Organisation> getTemplateOrganisations(ProjProjectRef project);
+	
 	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations);
 	
 	public void storeProjectImage(Identity doer, ProjProjectRef project, ProjProjectImageType type, File file, String filename);

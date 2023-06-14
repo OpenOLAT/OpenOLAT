@@ -272,6 +272,7 @@
 		<class>org.olat.modules.project.model.ProjProjectUserInfoImpl</class>
 		<class>org.olat.modules.project.model.ProjNoteImpl</class>
 		<class>org.olat.modules.project.model.ProjTagImpl</class>
+		<class>org.olat.modules.project.model.ProjTemplateToOrganisationImpl</class>
 		<class>org.olat.modules.project.model.ProjToDoImpl</class>
 		<class>org.olat.modules.qpool.model.PoolImpl</class>
 		<class>org.olat.modules.qpool.model.PoolToItem</class>

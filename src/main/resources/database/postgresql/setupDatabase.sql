@@ -3931,6 +3931,13 @@ create table o_proj_project_to_org (
    fk_organisation int8 not null,
    primary key (id)
 );
+create table o_proj_template_to_org (
+   id bigserial,
+   creationdate timestamp not null,
+   fk_project int8 not null,
+   fk_organisation int8 not null,
+   primary key (id)
+);
 create table o_proj_project_user_info (
    id bigserial,
    creationdate timestamp not null,
@@ -5506,6 +5513,10 @@ alter table o_proj_project_to_org add constraint rel_pto_project_idx foreign key
 create index idx_rel_pto_project_idx on o_proj_project_to_org (fk_project);
 alter table o_proj_project_to_org add constraint rel_pto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
 create index idx_rel_pto_org_idx on o_proj_project_to_org (fk_organisation);
+alter table o_proj_template_to_org add constraint rel_tto_project_idx foreign key (fk_project) references o_proj_project(id);
+create index idx_rel_tto_project_idx on o_proj_template_to_org (fk_project);
+alter table o_proj_template_to_org add constraint rel_tto_org_idx foreign key (fk_organisation) references o_org_organisation(id);
+create index idx_rel_tto_org_idx on o_proj_template_to_org (fk_organisation);
 alter table o_proj_project_user_info add constraint rel_pui_project_idx foreign key (fk_project) references o_proj_project(id);
 create index idx_rel_pui_project_idx on o_proj_project_user_info (fk_project);
 alter table o_proj_project_user_info add constraint rel_pui_idenity_idx foreign key (fk_identity) references o_bs_identity(id);

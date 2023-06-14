@@ -105,7 +105,7 @@ public class ProjProjectDAO {
 		sb.append("select project");
 		sb.append("  from projproject project");
 		sb.append("       inner join fetch project.creator creator");
-		appendIdentitySubSelect(sb, params.getIdentity(), params.getProjectOrganisations());
+		appendIdentitySubSelect(sb, params.getIdentity(), params.getProjectOrganisations(), params.getTemplateOrganisations());
 		appendQuery(sb, params);
 		
 		TypedQuery<ProjProject> query = dbInstance.getCurrentEntityManager()
@@ -115,8 +115,8 @@ public class ProjProjectDAO {
 		return query.getResultList();
 	}
 
-	private void appendIdentitySubSelect(QueryBuilder sb, IdentityRef identity, List<OrganisationRef> projectOrganisations) {
-		if (identity == null && (projectOrganisations == null || projectOrganisations.isEmpty())) {
+	private void appendIdentitySubSelect(QueryBuilder sb, IdentityRef identity, List<OrganisationRef> projectOrganisations, List<OrganisationRef> templateOrganisations) {
+		if (identity == null && (projectOrganisations == null || projectOrganisations.isEmpty()) && (templateOrganisations == null || templateOrganisations.isEmpty())) {
 			return;
 		}
 		
@@ -141,6 +141,18 @@ public class ProjProjectDAO {
 			sb.append("  from projprojecttoorganisation projtoorg");
 			sb.append(" where projtoorg.organisation.key in :organisationKeys");
 			sb.append(")");
+			or = true;
+		}
+		if (templateOrganisations != null && !templateOrganisations.isEmpty()) {
+			if (or) {
+				sb.append(" or ");
+			}
+			sb.append("project.key in (");
+			sb.append("select distinct temptoorg.project.key");
+			sb.append("  from projtemplatetoorganisation temptoorg");
+			sb.append(" where temptoorg.organisation.key in :templateOrganisationKeys");
+			sb.append(")");
+			or = true;
 		}
 		sb.append(")");
 	}
@@ -178,6 +190,10 @@ public class ProjProjectDAO {
 		if (params.getProjectOrganisations() != null && !params.getProjectOrganisations().isEmpty()) {
 			Set<Long> organisationKeys = params.getProjectOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
 			query.setParameter("organisationKeys", organisationKeys);
+		}
+		if (params.getTemplateOrganisations() != null && !params.getTemplateOrganisations().isEmpty()) {
+			Set<Long> organisationKeys = params.getTemplateOrganisations().stream().map(OrganisationRef::getKey).collect(Collectors.toSet());
+			query.setParameter("templateOrganisationKeys", organisationKeys);
 		}
 		if (params.getProjectKeys() != null && !params.getProjectKeys().isEmpty()) {
 			query.setParameter("projectKeys", params.getProjectKeys());
