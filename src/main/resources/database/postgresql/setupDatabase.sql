@@ -4154,6 +4154,17 @@ create table o_badge_category (
    fk_class int8,
    primary key (id)
 );
+create table o_badge_entry_config (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   b_award_enabled bool default false not null,
+   b_owner_can_award bool default false not null,
+   b_coach_can_award bool default false not null,
+   fk_entry int8 not null,
+   unique(fk_entry),
+   primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -5590,11 +5601,14 @@ create index idx_badge_assertion_awarded_by_idx on o_badge_assertion (fk_awarded
 alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
 create index idx_badge_category_tag_idx on o_badge_category (fk_tag);
 
-alter table o_badge_category add constraint  badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+alter table o_badge_category add constraint badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
 create index idx_badge_category_template_idx on o_badge_category (fk_template);
 
-alter table o_badge_category add constraint  badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+alter table o_badge_category add constraint badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
 create index idx_badge_category_class_idx on o_badge_category (fk_class);
+
+alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

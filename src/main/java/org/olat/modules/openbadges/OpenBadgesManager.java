@@ -28,6 +28,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * Initial date: 2023-05-08<br>
@@ -100,6 +101,15 @@ public interface OpenBadgesManager {
 	List<? extends TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass);
 
 	void updateCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass, List<String> displayNames);
+
+	//
+	// Entry Configuration
+	//
+	BadgeEntryConfiguration getConfiguration(RepositoryEntry entry);
+
+	BadgeEntryConfiguration updateConfiguration(BadgeEntryConfiguration configuration);
+
+	boolean isEnabled();
 
 	//
 	// Types

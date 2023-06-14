@@ -4129,6 +4129,17 @@ create table o_badge_category (
    fk_class bigint,
    primary key (id)
 );
+create table o_badge_entry_config (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_award_enabled bool default false not null,
+   b_owner_can_award bool default false not null,
+   b_coach_can_award bool default false not null,
+   fk_entry bigint not null,
+   unique(fk_entry),
+   primary key (id)
+);
 
 -- user view
 create view o_bs_identity_short_v as (
@@ -4517,6 +4528,7 @@ alter table o_badge_template ENGINE = InnoDB;
 alter table o_badge_class ENGINE = InnoDB;
 alter table o_badge_assertion ENGINE = InnoDB;
 alter table o_badge_category ENGINE = InnoDB;
+alter table o_badge_entry_config ENGINE = InnoDB;
 
 -- rating
 alter table o_userrating add constraint FKF26C8375236F20X foreign key (creator_id) references o_bs_identity (id);
@@ -5447,9 +5459,11 @@ alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx fore
 
 alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
 
-alter table o_badge_category add constraint  badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+alter table o_badge_category add constraint badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
 
-alter table o_badge_category add constraint  badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+alter table o_badge_category add constraint badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+
+alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 -- Hibernate Unique Key
 insert into hibernate_unique_key values ( 0 );

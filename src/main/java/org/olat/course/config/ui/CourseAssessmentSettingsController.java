@@ -40,6 +40,8 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.reminder.ui.CourseReminderListController;
 import org.olat.course.run.RunMainController;
+import org.olat.modules.openbadges.OpenBadgesModule;
+import org.olat.modules.openbadges.ui.OpenBadgesAssessmentSettingsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +60,7 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private Controller efficiencyStatementCtrl;
 	private CourseReminderListController remindersCtrl;
 	private CertificatesOptionsController certificatesCtrl;
+	private OpenBadgesAssessmentSettingsController badgesCtrl;
 	private RecertificationOptionsController recertificationCtrl;
 	
 	private LockResult lockEntry;
@@ -70,6 +73,8 @@ public class CourseAssessmentSettingsController extends BasicController {
 	private NodeAccessService nodeAccessService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private OpenBadgesModule openBadgesModule;
 
 	protected CourseAssessmentSettingsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry entry, CourseConfig courseConfig, boolean editable) {
@@ -108,7 +113,11 @@ public class CourseAssessmentSettingsController extends BasicController {
 		certificatesCtrl = new CertificatesOptionsController(ureq, wControl, entry, editableAndLocked);
 		listenTo(certificatesCtrl);
 		mainVC.put("certificate", certificatesCtrl.getInitialComponent());
-		
+
+		badgesCtrl = new OpenBadgesAssessmentSettingsController(ureq, wControl, entry, editableAndLocked);
+		listenTo(badgesCtrl);
+		mainVC.put("badges", badgesCtrl.getInitialComponent());
+
 		recertificationCtrl = new RecertificationOptionsController(ureq, getWindowControl(), entry, editableAndLocked);
 		listenTo(recertificationCtrl);
 		mainVC.put("recertification", recertificationCtrl.getInitialComponent());
@@ -133,6 +142,10 @@ public class CourseAssessmentSettingsController extends BasicController {
 		if(recertification) {
 			remindersCtrl.reload(ureq);
 		}
+
+		boolean openBadgesEnabled = openBadgesModule.isEnabled();
+		badgesCtrl.getInitialComponent().setVisible(openBadgesEnabled);
+
 		mainVC.setDirty(true);
 	}
 

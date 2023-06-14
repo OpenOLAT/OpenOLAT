@@ -37,7 +37,7 @@ public class OpenBadgesModule extends AbstractSpringModule implements ConfigOnOf
 
 	private static final String OPEN_BADGES_ENABLED = "openBadges.enabled";
 
-	@Value("${jupyterHub.enabled:false}")
+	@Value("${openBadges.enabled:false}")
 	private boolean enabled;
 
 	public OpenBadgesModule(CoordinatorManager coordinatorManager) {

@@ -170,6 +170,9 @@ import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.OpenBadgesRunController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
 import org.olat.modules.zoom.ZoomManager;
@@ -214,7 +217,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	//tools
 	private Link folderLink, coachFolderLink,
-		assessmentLink, archiverLink,
+		assessmentLink, badgesLink, archiverLink,
 		courseStatisticLink, surveyStatisticLink, testStatisticLink,
 		areaLink, dbLink, convertLearningPathLink,
 		//settings
@@ -250,6 +253,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private CourseReminderListController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
+	private OpenBadgesRunController badgesCtrl;
 	private MembersToolRunController participatListCtrl;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
@@ -282,6 +286,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentModule assessmentModule;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private CertificatesManager certificatesManager;
 	@Autowired
@@ -717,7 +723,30 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					listeningAssessmentMode = true;
 				}
 			}
-			
+
+			if (reSecurity.isCoach() || reSecurity.isOwner()) {
+				badgesLink = LinkFactory.createToolLink("badges", translate("command.openbadges"),
+						this, "o_icon_certificate");
+				badgesLink.setUrl(BusinessControlFactory.getInstance()
+						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Badges:0]"));
+				badgesLink.setElementCssClass("o_sel_course_badges");
+				tools.addComponent(badgesLink);
+
+				boolean enabled = openBadgesManager.isEnabled();
+				BadgeEntryConfiguration badgeEntryConfiguration = openBadgesManager.getConfiguration(getRepositoryEntry());
+				badgesLink.setVisible(false);
+				if (enabled && reSecurity.isCoach()) {
+					if (badgeEntryConfiguration.isCoachCanAward()) {
+						badgesLink.setVisible(true);
+					}
+				}
+				if (enabled && reSecurity.isOwner()) {
+					if (badgeEntryConfiguration.isOwnerCanAward()) {
+						badgesLink.setVisible(true);
+					}
+				}
+			}
+
 			if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR)) {
 				coachFolderLink = LinkFactory.createToolLink("coachfolder", translate("command.coachfolder"), this, "o_icon_coursefolder");
 				coachFolderLink.setUrl(BusinessControlFactory.getInstance()
@@ -1306,6 +1335,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if (badgesLink == source) {
+			doBadges(ureq);
 		} else if (convertLearningPathLink == source) {
 			doConvertToLearningPath(ureq);
 		} else if(participantListLink == source) {
@@ -1462,6 +1493,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentSurveyStatistics: doAssessmentSurveyStatistics(ureq); break;
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq); break;
+						case badges: doBadges(ureq); break;
 						case reminders: doReminders(ureq); break;
 						case learningPath: doLearningPath(ureq); break;
 						case learningPaths: doLearningPaths(ureq); break;
@@ -1507,6 +1539,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		removeAsListenerAndDispose(assessmentModeCtrl);
 		removeAsListenerAndDispose(lecturesAdminCtrl);
 		removeAsListenerAndDispose(assessmentToolCtr);
+		removeAsListenerAndDispose(badgesCtrl);
 		removeAsListenerAndDispose(courseFolderCtrl);
 		removeAsListenerAndDispose(statisticsCtrl);
 		removeAsListenerAndDispose(remindersCtrl);
@@ -1522,6 +1555,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeCtrl = null;
 		lecturesAdminCtrl = null;
 		assessmentToolCtr = null;
+		badgesCtrl = null;
 		courseFolderCtrl = null;
 		statisticsCtrl = null;
 		remindersCtrl = null;
@@ -1648,12 +1682,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				activateSubEntries(ureq, doMembers(ureq), entries);	
 			} else if ("assessmentTool".equalsIgnoreCase(type) || "assessmentToolv2".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
-				if(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
+				if (reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
 					try {
 						Activateable2 assessmentCtrl = doAssessmentTool(ureq);
-						if(assessmentCtrl != null) {
+						if (assessmentCtrl != null) {
 							List<ContextEntry> subEntries;
-							if(entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
+							if (entries.size() > 1 && entries.get(1).getOLATResourceable().getResourceableTypeName().equals(type)) {
 								subEntries = entries.subList(2, entries.size());
 							} else {
 								subEntries = entries.subList(1, entries.size());
@@ -1663,6 +1697,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					} catch (OLATSecurityException e) {
 						//the wrong link to the wrong person
 					}
+				}
+			} else if ("Badges".equalsIgnoreCase(type)) {
+				if (badgesLink != null && badgesLink.isVisible()) {
+					activateSubEntries(ureq, doBadges(ureq), entries);
 				}
 			} else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
@@ -2275,6 +2313,24 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		} else {
 			delayedClose = Delayed.assessmentTool;
 		}
+		return null;
+	}
+
+	private Activateable2 doBadges(UserRequest ureq) {
+		if (delayedClose == Delayed.badges || requestForClose(ureq)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("Badges");
+			ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+			WindowControl swControl = addToHistory(ureq, ores, null);
+
+			OpenBadgesRunController runController = new OpenBadgesRunController(ureq, swControl);
+			badgesCtrl = pushController(ureq, translate("command.openbadges"), runController);
+			listenTo(badgesCtrl);
+
+			currentToolCtr = badgesCtrl;
+			setActiveTool(badgesLink);
+			return badgesCtrl;
+		}
+		delayedClose = Delayed.badges;
 		return null;
 	}
 	
@@ -3040,6 +3096,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentSurveyStatistics,
 		assessmentTestStatistics,
 		assessmentTool,
+		badges,
 		reminders,
 		lecturesAdmin,
 		lectures,

@@ -479,6 +479,19 @@ create table o_badge_category (
 );
 alter table o_badge_category ENGINE = InnoDB;
 
+create table o_badge_entry_config (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   b_award_enabled bool default false not null,
+   b_owner_can_award bool default false not null,
+   b_coach_can_award bool default false not null,
+   fk_entry bigint not null,
+   unique(fk_entry),
+   primary key (id)
+);
+alter table o_badge_entry_config ENGINE = InnoDB;
+
 create index o_badge_class_uuid_idx on o_badge_class (b_uuid);
 create index o_badge_assertion_uuid_idx on o_badge_assertion (b_uuid);
 
@@ -490,7 +503,8 @@ alter table o_badge_assertion add constraint badge_assertion_awarded_by_idx fore
 
 alter table o_badge_category add constraint badge_category_tag_idx foreign key (fk_tag) references o_tag_tag (id);
 
-alter table o_badge_category add constraint  badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
+alter table o_badge_category add constraint badge_category_template_idx foreign key (fk_template) references o_badge_template (id);
 
-alter table o_badge_category add constraint  badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
+alter table o_badge_category add constraint badge_category_class_idx foreign key (fk_class) references o_badge_class (id);
 
+alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

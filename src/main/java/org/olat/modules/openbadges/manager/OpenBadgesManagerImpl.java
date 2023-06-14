@@ -38,6 +38,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.ImageInputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -54,11 +55,15 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeCategory;
 import org.olat.modules.openbadges.BadgeClass;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryDAO;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
@@ -97,6 +102,14 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private MovieService movieService;
 	@Autowired
 	private TagService tagService;
+	@Autowired
+	private BadgeEntryConfigurationDAO badgeEntryConfigurationDAO;
+	@Autowired
+	private RepositoryEntryDAO repositoryEntryDao;
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private OpenBadgesModule openBadgesModule;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -481,5 +494,32 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 				badgeCategoryDAO.delete(badgeCategory);
 			}
 		}
+	}
+
+	//
+	// Entry Configuration
+	//
+	@Override
+	public BadgeEntryConfiguration getConfiguration(RepositoryEntry entry) {
+		BadgeEntryConfiguration configuration = badgeEntryConfigurationDAO.getConfiguration(entry);
+		if (configuration == null) {
+			RepositoryEntry reloadedEntry = repositoryEntryDao.loadForUpdate(entry);
+			configuration = badgeEntryConfigurationDAO.getConfiguration(entry);
+			if (configuration == null) {
+				configuration = badgeEntryConfigurationDAO.createConfiguration(reloadedEntry);
+			}
+			dbInstance.commit();
+		}
+		return configuration;
+	}
+
+	@Override
+	public BadgeEntryConfiguration updateConfiguration(BadgeEntryConfiguration configuration) {
+		return badgeEntryConfigurationDAO.updateConfiguration(configuration);
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return openBadgesModule.isEnabled();
 	}
 }
