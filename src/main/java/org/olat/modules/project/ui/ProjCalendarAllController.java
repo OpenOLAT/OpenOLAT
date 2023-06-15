@@ -22,8 +22,10 @@ package org.olat.modules.project.ui;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.Kalendar;
@@ -37,23 +39,54 @@ import org.olat.commons.calendar.ui.events.CalendarGUIMoveEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIResizeEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUISelectEvent;
 import org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent;
+import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilterValue;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.ComponentWrapperElement;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableEmptyNextPrimaryActionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.util.SelectionValues;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ProjAppointment;
@@ -61,6 +94,7 @@ import org.olat.modules.project.ProjAppointmentInfo;
 import org.olat.modules.project.ProjAppointmentRef;
 import org.olat.modules.project.ProjAppointmentSearchParams;
 import org.olat.modules.project.ProjArtefactInfoParams;
+import org.olat.modules.project.ProjCalendarFilter;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneInfo;
 import org.olat.modules.project.ProjMilestoneRef;
@@ -72,6 +106,8 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjAppointmentDeleteConfirmationController.Cascade;
+import org.olat.modules.project.ui.ProjCalendarDataModel.CalendarCols;
+import org.olat.modules.project.ui.ProjNoteDataModel.NoteCols;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 import org.olat.modules.project.ui.event.AppointmentDeleteEvent;
@@ -79,6 +115,11 @@ import org.olat.modules.project.ui.event.AppointmentEditEvent;
 import org.olat.modules.project.ui.event.MilestoneDeleteEvent;
 import org.olat.modules.project.ui.event.MilestoneEditEvent;
 import org.olat.modules.project.ui.event.MilestoneStatusEvent;
+import org.olat.user.UserManager;
+import org.olat.user.UsersPortraitsComponent;
+import org.olat.user.UsersPortraitsComponent.PortraitSize;
+import org.olat.user.UsersPortraitsComponent.PortraitUser;
+import org.olat.user.UsersPortraitsFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,9 +130,25 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ProjCalendarAllController extends FormBasicController implements Activateable2 {
 	
+	private static final String TAB_ID_ALL = "All";
+	private static final String TAB_ID_RECENTLY = "Recently";
+	private static final String TAB_ID_NEW = "New";
+	private static final String TAB_ID_DELETED = "Deleted";
+	private static final String CMD_SELECT = "select";
+	private static final String CMD_EDIT = "edit";
+	private static final String CMD_DELETE = "delete";
+	
 	private FormLink appointmentCreateLink;
 	private FormLink milestoneCreateLink;
+	private FormLink calLink;
+	private FormLink tableLink;
+	private FlexiFiltersTab tabAll;
+	private FlexiFiltersTab tabRecently;
+	private FlexiFiltersTab tabNew;
+	private FlexiFiltersTab tabDeleted;
 	private FullCalendarElement calendarEl;
+	private FlexiTableElement tableEl;
+	private ProjCalendarDataModel dataModel;
 	
 	private CloseableModalController cmc;
 	private CloseableCalloutWindowController calloutCtr;
@@ -103,34 +160,47 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 	private ProjMilestoneEditController milestoneEditCtrl;
 	private ProjMilestonePreviewController milestonePreviewCtrl;
 	private ProjConfirmationController milestoneDeleteConfirmationCtrl;
+	private ToolsController toolsCtrl;
+	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private final ProjProject project;
 	private final ProjProjectSecurityCallback secCallback;
+	private final Date lastVisitDate;
+	private final MapperKey avatarMapperKey;
 	private final String avatarUrl;
+	private final Formatter formatter;
 	private String appointmentReadWriteKalendarId;
-	private String appointmentReadOnlyKalendarId;
 	private String milestoneKalendarId;
+	private Boolean calVisible = Boolean.TRUE;
+	private int counter = 0;
 	
 	@Autowired
 	private ProjectService projectService;
 	@Autowired
 	private CalendarManager calendarManager;
+	@Autowired
+	private UserManager userManager;
 	
 	
 	protected ProjCalendarAllController(UserRequest ureq, WindowControl wControl, ProjProject project,
-			ProjProjectSecurityCallback secCallback) {
+			ProjProjectSecurityCallback secCallback, Date lastVisitDate, MapperKey avatarMapperKey) {
 		super(ureq, wControl, "calendar_all");
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.project = project;
 		this.secCallback = secCallback;
+		this.lastVisitDate = lastVisitDate;
+		this.avatarMapperKey = avatarMapperKey;
 		ProjProjectImageMapper projectImageMapper = new ProjProjectImageMapper(projectService);
 		String projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 		this.avatarUrl = projectImageMapper.getImageUrl(projectMapperUrl, project, ProjProjectImageType.avatar);
+		this.formatter = Formatter.getInstance(getLocale());
 		
 		initForm(ureq);
-		loadModel();
+		updateUI();
+		loadModel(ureq, false);
 	}
+	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.add("avatar", new ComponentWrapperElement(new ProjAvatarComponent("avatar", project, avatarUrl, Size.medium, false)));
@@ -143,19 +213,130 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		milestoneCreateLink.setIconLeftCSS("o_icon o_icon_add");
 		milestoneCreateLink.setVisible(secCallback.canCreateMilestones());
 		
+		calLink = uifactory.addFormLink("cal.show", null, null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+		calLink.setI18nKey("");
+		calLink.setIconLeftCSS("o_icon o_icon o_icon_calendar");
+		calLink.setAriaLabel(translate("calendar.show.calendar"));
+		
+		tableLink = uifactory.addFormLink("table.show", null, null, null, formLayout, Link.BUTTON + Link.NONTRANSLATED);
+		tableLink.setI18nKey("");
+		tableLink.setIconLeftCSS("o_icon o_icon o_icon_table");
+		tableLink.setAriaLabel(translate("calendar.show.table"));
+		
 		calendarEl = new FullCalendarElement(ureq, "calendar", List.of(), getTranslator());
 		formLayout.add("calendar", calendarEl);
+		
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		if (ureq.getUserSession().getRoles().isAdministrator()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.id));
+		}
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.type));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.displayName, CMD_SELECT));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.startDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.endDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.involved));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.creationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.lastModifiedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CalendarCols.lastModifiedBy));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CalendarCols.deletedBy));
+		StickyActionColumnModel toolsCol = new StickyActionColumnModel(CalendarCols.tools);
+		toolsCol.setAlwaysVisible(true);
+		toolsCol.setSortable(false);
+		toolsCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(toolsCol);
+		
+		dataModel = new ProjCalendarDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
+		
+		initFilters();
+		initFilterTabs(ureq);
+		doSelectFilterTab(null);
+	}
+	
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		List<TagInfo> tagInfos = projectService.getTagInfos(project, null);
+		if (!tagInfos.isEmpty()) {
+			filters.add(new FlexiTableTagFilter(translate("tags"), ProjCalendarFilter.tag.name(), tagInfos, true));
+		}
+		
+		SelectionValues statusValues = new SelectionValues();
+		statusValues.add(SelectionValues.entry(ProjectStatus.active.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.active)));
+		statusValues.add(SelectionValues.entry(ProjectStatus.deleted.name(), ProjectUIFactory.translateStatus(getTranslator(), ProjectStatus.deleted)));
+		filters.add(new FlexiTableMultiSelectionFilter(translate("status"), ProjCalendarFilter.status.name(), statusValues, true));
+		
+		tableEl.setFilters(true, filters, false, false);
+	}
+	
+	protected void initFilterTabs(UserRequest ureq) {
+		List<FlexiFiltersTab> tabs = new ArrayList<>(4);
+		
+		tabAll = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_ALL,
+				translate("tab.all"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ProjCalendarFilter.status, ProjectStatus.active.name())));
+		tabs.add(tabAll);
+		
+		tabRecently = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_RECENTLY,
+				translate("tab.recently"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ProjCalendarFilter.status, ProjectStatus.active.name())));
+		tabs.add(tabRecently);
+		
+		tabNew = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_NEW,
+				translate("tab.new"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ProjCalendarFilter.status, ProjectStatus.active.name())));
+		tabs.add(tabNew);
+		
+		tabDeleted = FlexiFiltersTabFactory.tabWithImplicitFilters(
+				TAB_ID_DELETED,
+				translate("tab.deleted"),
+				TabSelectionBehavior.reloadData,
+				List.of(FlexiTableFilterValue.valueOf(ProjCalendarFilter.status, ProjectStatus.deleted.name())));
+		tabs.add(tabDeleted);
+		
+		tableEl.setFilterTabs(true, tabs);
+		tableEl.setSelectedFilterTab(ureq, tabAll);
+	}
+	
+	public void selectFilterTab(UserRequest ureq, FlexiFiltersTab tab) {
+		if (tab == null) return;
+		
+		tableEl.setSelectedFilterTab(ureq, tab);
+		doSelectFilterTab(tab);
+		loadModel(ureq, true);
+	}
+	
+	private void doSelectFilterTab(FlexiFiltersTab tab) {
+		if (secCallback.canCreateNotes() && (tabDeleted == null || tabDeleted != tab)) {
+			tableEl.setEmptyTableSettings("table.search.empty", null, "o_icon_proj_appointment", "appointment.create", "o_icon_add", false);
+		} else {
+			tableEl.setEmptyTableSettings("table.search.empty", null, "o_icon_proj_appointment");
+		}
 	}
 
-	private void loadModel() {
-		List<KalendarRenderWrapper> calendarWrappers = new ArrayList<>(3);
+	private void loadModel(UserRequest ureq, boolean sort) {
+		List<KalendarRenderWrapper> calendarWrappers = calVisible? new ArrayList<>(3): List.of();
+		List<ProjCalendarRow> rows = !calVisible? new ArrayList<>(): List.of();
 		
 		// Appointments
 		if (secCallback.canViewAppointments()) {
 			ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
 			appointmentSearchParams.setProject(project);
-			appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
-			List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.MEMBERS);
+			appointmentSearchParams.setDatesNull(Boolean.FALSE);
+			if (calVisible) {
+				appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
+			} else {
+				applyFilters(appointmentSearchParams);
+			}
+			List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.of(true, false, true));
 			List<ProjAppointment> appointmentReadWrite = new ArrayList<>();
 			List<ProjAppointment> appointmentReadOnly = new ArrayList<>();
 			for (ProjAppointmentInfo appointmentInfo : appointmentInfos) {
@@ -168,113 +349,327 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 			
 			Kalendar appointmentReadWriteKalendar = projectService.getAppointmentsKalendar(appointmentReadWrite);
-			appointmentReadWriteKalendarId = appointmentReadWriteKalendar.getCalendarID();
-			KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
-					translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
-			appointmentReadWriteWrapper.setPrivateEventsVisible(true);
-			appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
-			appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
-			calendarWrappers.add(appointmentReadWriteWrapper);
-			
 			Kalendar appointmentReadOnlyKalendar = projectService.getAppointmentsKalendar(appointmentReadOnly);
-			appointmentReadOnlyKalendarId = appointmentReadOnlyKalendar.getCalendarID();
-			KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
-					translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
-			appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
-			appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
-			appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
-			calendarWrappers.add(appointmentReadOnlyWrapper);
+			if (calVisible) {
+				appointmentReadWriteKalendarId = appointmentReadWriteKalendar.getCalendarID();
+				KalendarRenderWrapper appointmentReadWriteWrapper = new KalendarRenderWrapper(appointmentReadWriteKalendar,
+						translate("appointment.calendar.name"), "project.appointments.rw" + project.getKey());
+				appointmentReadWriteWrapper.setPrivateEventsVisible(true);
+				appointmentReadWriteWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+				appointmentReadWriteWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_WRITE);
+				calendarWrappers.add(appointmentReadWriteWrapper);
+				
+				KalendarRenderWrapper appointmentReadOnlyWrapper = new KalendarRenderWrapper(appointmentReadOnlyKalendar,
+						translate("appointment.calendar.name"), "project.appointments.ro" + project.getKey());
+				appointmentReadOnlyWrapper.setPrivateEventsVisible(true);
+				appointmentReadOnlyWrapper.setCssClass(ProjectUIFactory.COLOR_APPOINTMENT);
+				appointmentReadOnlyWrapper.setAccess(KalendarRenderWrapper.ACCESS_READ_ONLY);
+				calendarWrappers.add(appointmentReadOnlyWrapper);
+			} else {
+				Map<String, ProjAppointmentInfo> appointmentIdentToAppointment = appointmentInfos.stream()
+						.collect(Collectors.toMap(info ->info.getAppointment().getIdentifier(), Function.identity()));
+				
+				List<KalendarEvent> readWriteEvents = calendarManager.getEvents(appointmentReadWriteKalendar,
+						DateUtils.addYears(new Date(), -10), DateUtils.addYears(new Date(), 10), true);
+				for (KalendarEvent event : readWriteEvents) {
+					ProjCalendarRow row = createAppointmentRow(ureq, event, appointmentIdentToAppointment.get(event.getExternalId()), true);
+					rows.add(row);
+				}
+				List<KalendarEvent> readOnlyEvents = calendarManager.getEvents(appointmentReadOnlyKalendar,
+						DateUtils.addYears(new Date(), -10), DateUtils.addYears(new Date(), 10), true);
+				for (KalendarEvent event : readOnlyEvents) {
+					ProjCalendarRow row = createAppointmentRow(ureq, event, appointmentIdentToAppointment.get(event.getExternalId()), false);
+					rows.add(row);
+				}
+				
+				// Appointments without date
+				appointmentSearchParams.setDatesNull(Boolean.TRUE);
+				appointmentInfos = projectService.getAppointmentInfos(appointmentSearchParams, ProjArtefactInfoParams.ALL);
+				
+				for (ProjAppointmentInfo info : appointmentInfos) {
+					ProjCalendarRow row = createAppointmentRow(ureq, null, info, secCallback.canEditAppointment(info.getAppointment()));
+					rows.add(row);
+				}
+			}
 		}
 		
 		// Milestones
 		if (secCallback.canViewMilestones()) {
 			ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
 			milestoneSearchParams.setProject(project);
-			milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
-			List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+			if (calVisible) {
+				milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+			} else {
+				applyFilters(milestoneSearchParams);
+			}
 			
-			Kalendar milestoneKalendar = projectService.getMilestonesKalendar(milestones);
-			milestoneKalendarId = milestoneKalendar.getCalendarID();
-			KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
-					translate("milestone.calendar.name"), "project.milestones." + project.getKey());
-			milestoneWrapper.setPrivateEventsVisible(true);
-			milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
-			int milestonesAccess = secCallback.canEditMilestones()
-					? KalendarRenderWrapper.ACCESS_READ_WRITE
-							: KalendarRenderWrapper.ACCESS_READ_ONLY;
-			milestoneWrapper.setAccess(milestonesAccess);
-			calendarWrappers.add(milestoneWrapper);
+			if (calVisible) {
+				milestoneSearchParams.setDueDateNull(Boolean.FALSE);
+				List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
+				
+				Kalendar milestoneKalendar = projectService.getMilestonesKalendar(milestones);
+				milestoneKalendarId = milestoneKalendar.getCalendarID();
+				KalendarRenderWrapper milestoneWrapper = new KalendarRenderWrapper(milestoneKalendar,
+						translate("milestone.calendar.name"), "project.milestones." + project.getKey());
+				milestoneWrapper.setPrivateEventsVisible(true);
+				milestoneWrapper.setCssClass(ProjectUIFactory.COLOR_MILESTONE);
+				int milestonesAccess = secCallback.canEditMilestones()
+						? KalendarRenderWrapper.ACCESS_READ_WRITE
+						: KalendarRenderWrapper.ACCESS_READ_ONLY;
+				milestoneWrapper.setAccess(milestonesAccess);
+				calendarWrappers.add(milestoneWrapper);
+			} else {
+				List<ProjMilestoneInfo> milestoneInfos = projectService.getMilestoneInfos(milestoneSearchParams, ProjArtefactInfoParams.of(true, false, true));
+				for (ProjMilestoneInfo milestoneInfo : milestoneInfos) {
+					ProjCalendarRow row = createMilestoneRow(ureq, milestoneInfo);
+					rows.add(row);
+				}
+			}
 		}
 		
+		if (calVisible) {
+			calendarEl.setCalendars(calendarWrappers);
+		} else {
+			applyFilters(rows);
+			if (sort) {
+				sortTable();
+			}
+			dataModel.setObjects(rows);
+			tableEl.reset(true, true, true);
+		}
+	}
+	
+	private void applyFilters(ProjAppointmentSearchParams searchParams) {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabNew) {
+			searchParams.setCreatedAfter(lastVisitDate);
+		} else {
+			searchParams.setCreatedAfter(null);
+		}
 		
-		calendarEl.setCalendars(calendarWrappers);
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (ProjCalendarFilter.status.name() == filter.getFilter()) {
+				List<String> status = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (status != null && !status.isEmpty()) {
+					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
+				} else {
+					searchParams.setStatus(null);
+				}
+			}
+		}
+	}
+	
+	private void applyFilters(ProjMilestoneSearchParams searchParams) {
+		if (tableEl.getSelectedFilterTab() != null && tableEl.getSelectedFilterTab() == tabNew) {
+			searchParams.setCreatedAfter(lastVisitDate);
+		} else {
+			searchParams.setCreatedAfter(null);
+		}
+		
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (ProjCalendarFilter.status.name() == filter.getFilter()) {
+				List<String> status = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (status != null && !status.isEmpty()) {
+					searchParams.setStatus(status.stream().map(ProjectStatus::valueOf).collect(Collectors.toList()));
+				} else {
+					searchParams.setStatus(null);
+				}
+			}
+		}
+	}
+	
+	private void applyFilters(List<ProjCalendarRow> rows) {
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		if (filters == null || filters.isEmpty()) return;
+		
+		for (FlexiTableFilter filter : filters) {
+			if (ProjCalendarFilter.tag.name().equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableTagFilter)filter).getValues();
+				if (values != null && !values.isEmpty()) {
+					Set<Long> selectedTagKeys = values.stream().map(Long::valueOf).collect(Collectors.toSet());
+					rows.removeIf(row -> row.getTagKeys() == null || !row.getTagKeys().stream().anyMatch(key -> selectedTagKeys.contains(key)));
+				}
+			}
+		}
+	}
+	
+	private void sortTable() {
+		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
+			tableEl.sort(new SortKey(NoteCols.lastModifiedDate.name(), false));
+		} else if (tableEl.getSelectedFilterTab() == tabAll || tableEl.getSelectedFilterTab() == tabDeleted) {
+			tableEl.sort( new SortKey(NoteCols.displayName.name(), true));
+		} else if (tableEl.getSelectedFilterTab() == tabNew) {
+			tableEl.sort(new SortKey(NoteCols.creationDate.name(), false));
+		}
+	}
+	
+	private ProjCalendarRow createAppointmentRow(UserRequest ureq, KalendarEvent event, ProjAppointmentInfo info, boolean canEdit) {
+		ProjAppointment appointment = info.getAppointment();
+		ProjCalendarRow row = new ProjCalendarRow(appointment, event);
+		
+		row.setTranslatedType(translate("appointment"));
+		row.setDisplayName(ProjectUIFactory.getDisplayName(getTranslator(), appointment));
+		
+		String modifiedDate = formatter.formatDateRelative(appointment.getArtefact().getContentModifiedDate());
+		String modifiedBy = userManager.getUserDisplayName(appointment.getArtefact().getContentModifiedBy().getKey());
+		row.setContentModifiedByName(modifiedBy);
+		String modified = translate("date.by", modifiedDate, modifiedBy);
+		row.setModified(modified);
+		
+		row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
+		row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
+		
+		if (event != null) {
+			if (event.isAllDayEvent()) {
+				row.setStartDate(DateUtils.setTime(event.getBegin(), 0, 0, 0));
+				row.setEndDate(DateUtils.setTime(event.getEnd(), 23, 59, 59));
+			} else {
+				row.setStartDate(event.getBegin());
+				row.setEndDate(event.getEnd());
+			}
+		} else {
+			if (appointment.isAllDay() && appointment.getStartDate() != null) {
+				row.setStartDate(DateUtils.setTime(appointment.getStartDate(), 0, 0, 0));
+				row.setEndDate(DateUtils.setTime(appointment.getStartDate(), 23, 59, 59));
+			} else {
+				row.setStartDate(appointment.getStartDate());
+				row.setEndDate(appointment.getEndDate());
+			}
+		}
+		
+		if (!calVisible) {
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
+			row.setUserPortraits(createUsersPortraits(ureq, info.getMembers()));
+		}
+		
+		if (canEdit) {
+			forgeToolsLink(row);
+		}
+		
+		return row;
+	}
+	
+	private ProjCalendarRow createMilestoneRow(UserRequest ureq, ProjMilestoneInfo info) {
+		ProjMilestone milestone = info.getMilestone();
+		ProjCalendarRow row = new ProjCalendarRow(milestone);
+		
+		row.setTranslatedType(translate("milestone"));
+		row.setDisplayName(ProjectUIFactory.getDisplayName(getTranslator(), milestone));
+		
+		String modifiedDate = formatter.formatDateRelative(milestone.getArtefact().getContentModifiedDate());
+		String modifiedBy = userManager.getUserDisplayName(milestone.getArtefact().getContentModifiedBy().getKey());
+		row.setContentModifiedByName(modifiedBy);
+		String modified = translate("date.by", modifiedDate, modifiedBy);
+		row.setModified(modified);
+		
+		if (row.getDeletedBy() != null) {
+			row.setDeletedByName(userManager.getUserDisplayName(row.getDeletedBy().getKey()));
+		}
+		
+		row.setTagKeys(info.getTags().stream().map(Tag::getKey).collect(Collectors.toSet()));
+		row.setFormattedTags(TagUIFactory.getFormattedTags(getLocale(), info.getTags()));
+		
+		if (milestone.getDueDate() != null) {
+			row.setEndDate(DateUtils.setTime(milestone.getDueDate(), 23, 59, 59));
+		}
+		
+		if (!calVisible) {
+			row.setMemberKeys(info.getMembers().stream().map(Identity::getKey).collect(Collectors.toSet()));
+			row.setUserPortraits(createUsersPortraits(ureq, info.getMembers()));
+		}
+		
+		if (secCallback.canEditMilestone(milestone)) {
+			forgeToolsLink(row);
+		}
+		
+		return row;
+	}
+	
+	private UsersPortraitsComponent createUsersPortraits(UserRequest ureq, Set<Identity> members) {
+		List<PortraitUser> portraitUsers = UsersPortraitsFactory.createPortraitUsers(new ArrayList<>(members));
+		UsersPortraitsComponent usersPortraitCmp = UsersPortraitsFactory.create(ureq, "users_" + counter++, flc.getFormItemComponent(), null, avatarMapperKey);
+		usersPortraitCmp.setAriaLabel(translate("involved"));
+		usersPortraitCmp.setSize(PortraitSize.small);
+		usersPortraitCmp.setMaxUsersVisible(10);
+		usersPortraitCmp.setUsers(portraitUsers);
+		return usersPortraitCmp;
+	}
+	
+	private void forgeToolsLink(ProjCalendarRow row) {
+		FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
+		toolsLink.setIconLeftCSS("o_icon o_icon-fws o_icon-lg o_icon_actions");
+		toolsLink.setUserObject(row);
+		row.setToolsLink(toolsLink);
+	}
+	
+	private void updateUI() {
+		calendarEl.setVisible(calVisible);
+		tableEl.setVisible(!calVisible);
 	}
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if (entries != null && !entries.isEmpty()) {
+			calVisible = Boolean.FALSE;
+			updateUI();
 			ContextEntry entry = entries.get(0);
 			String type = entry.getOLATResourceable().getResourceableTypeName();
-			if (ProjectBCFactory.TYPE_APPOINTMENT.equals(type)) {
-				if (secCallback.canViewAppointments()) {
+			FlexiFiltersTab tab = tableEl.getFilterTabById(type);
+			if (tab != null) {
+				selectFilterTab(ureq, tab);
+			} else {
+				selectFilterTab(ureq, tabAll);
+				if (ProjectBCFactory.TYPE_APPOINTMENT.equals(type) && secCallback.canViewAppointments()) {
 					Long key = entry.getOLATResourceable().getResourceableId();
-					KalendarRenderWrapper calendar = calendarEl.getCalendar(appointmentReadWriteKalendarId);
-					if (calendar != null) {
-						String calendarId = key.toString();
-						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-						if (event.isPresent()) {
-							calendarEl.setFocusDate(event.get().getBegin());
-							return;
-						}
-					}
-					calendar = calendarEl.getCalendar(appointmentReadOnlyKalendarId);
-					if (calendar != null) {
-						String calendarId = key.toString();
-						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-						if (event.isPresent()) {
-							calendarEl.setFocusDate(event.get().getBegin());
-							return;
-						}
-					}
-				}
-			} else if (ProjectBCFactory.TYPE_MILESTONE.equals(type)) {
-				if (secCallback.canViewMilestones()) {
-					Long key = entry.getOLATResourceable().getResourceableId();
-					KalendarRenderWrapper calendar = calendarEl.getCalendar(milestoneKalendarId);
-					if (calendar != null) {
-						String calendarId = key.toString();
-						Optional<KalendarEvent> event = calendar.getKalendar().getEvents().stream().filter(e -> e.getID().equals(calendarId)).findFirst();
-						if (event.isPresent()) {
-							calendarEl.setFocusDate(event.get().getBegin());
-							return;
-						}
+					activate(ureq, ProjAppointment.TYPE, key);
+				} else if (ProjectBCFactory.TYPE_MILESTONE.equals(type) && secCallback.canViewMilestones()) {
+					if (secCallback.canViewMilestones()) {
+						Long key = entry.getOLATResourceable().getResourceableId();
+						activate(ureq, ProjMilestone.TYPE, key);
 					}
 				}
 			}
-		} 
+		}
+	}
+	
+	private void activate(UserRequest ureq, String type, Long key) {
+		ProjCalendarRow row = dataModel.getObjectByKey(type, key);
+		if (row != null) {
+			int index = dataModel.getObjects().indexOf(row);
+			if (index >= 1 && tableEl.getPageSize() > 1) {
+				int page = index / tableEl.getPageSize();
+				tableEl.setPage(page);
+			}
+			doOpenPreview(ureq, row);
+		}
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (appointmentEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(ureq, false);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == appointmentPreviewCtrl) {
 			if (event instanceof AppointmentEditEvent aEvent) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 				
-				doEditAppointment(ureq, aEvent.getKalendarEvent());
+				doEditAppointment(ureq, aEvent.getAppointment(), aEvent.getKalendarEvent());
 			} else if (event instanceof AppointmentDeleteEvent aEvent) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 				
 				doConfirmDeleteAppointment(ureq, aEvent.getAppointment(), aEvent.getKalendarEvent());
 			} else if (event == Event.DONE_EVENT) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 			}
 		} else if (source == appointmentEditAllCtr) {
@@ -290,9 +685,9 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			}
 		} else if (source == appointmentMoveAllCtr) {
 			if (event instanceof CalendarGUIUpdateEvent calEvent) {
-				doMoveRecurringAppointment(appointmentMoveAllCtr.getKalendarEvent(), calEvent.getCascade(),
-						appointmentMoveAllCtr.getDayDelta(), appointmentMoveAllCtr.getMinuteDelta(),
-						appointmentMoveAllCtr.getChangeBegin());
+				doMoveRecurringAppointment(ureq, appointmentMoveAllCtr.getKalendarEvent(),
+						calEvent.getCascade(), appointmentMoveAllCtr.getDayDelta(),
+						appointmentMoveAllCtr.getMinuteDelta(), appointmentMoveAllCtr.getChangeBegin());
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -300,51 +695,67 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			if (event == Event.DONE_EVENT) {
 				Object userObject = appointmentDeleteConfirmationCtrl.getUserObject();
 				if (userObject instanceof KalendarEvent kalendarEvent)
-				doDeleteAppointment(kalendarEvent, appointmentDeleteConfirmationCtrl.getCascade());
+				doDeleteAppointment(ureq, kalendarEvent, appointmentDeleteConfirmationCtrl.getCascade());
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (milestoneEditCtrl == source) {
 			if (event == Event.DONE_EVENT) {
-				loadModel();
+				loadModel(ureq, false);
 			}
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == milestonePreviewCtrl) {
 			if (event instanceof MilestoneEditEvent mEvent) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 				
 				doEditMilestone(ureq, mEvent.getMilestone());
 			} else if (event instanceof MilestoneStatusEvent mEvent) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 				
 				doAcomplishMilestone(mEvent.getMilestone());
 			} else if (event instanceof MilestoneDeleteEvent eEvent) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 				
 				doConfirmDeleteMilestone(ureq, eEvent.getMilestone());
 			} else if (event == Event.DONE_EVENT) {
-				calloutCtr.deactivate();
+				closeCalloutOrCmc();
 				cleanUp();
 			}
 		} else if (milestoneDeleteConfirmationCtrl == source) {
 			if (event == Event.DONE_EVENT) {
 				Object userObject = milestoneDeleteConfirmationCtrl.getUserObject();
 				if (userObject instanceof ProjMilestoneRef milestone)
-				doDeleteMilestone(milestone);
+				doDeleteMilestone(ureq, milestone);
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if (toolsCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				if (toolsCalloutCtrl != null) {
+					toolsCalloutCtrl.deactivate();
+					cleanUp();
+				}
+			}
 		} else if(cmc == source) {
-			loadModel();
+			loadModel(ureq, false);
 			cleanUp();
 		} else if(calloutCtr == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void closeCalloutOrCmc() {
+		if (calloutCtr != null) {
+			calloutCtr.deactivate();
+		}
+		if (cmc != null) {
+			cmc.deactivate();
+		}
 	}
 	
 	private void cleanUp() {
@@ -356,7 +767,9 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		removeAsListenerAndDispose(milestoneDeleteConfirmationCtrl);
 		removeAsListenerAndDispose(milestonePreviewCtrl);
 		removeAsListenerAndDispose(milestoneEditCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(calloutCtr);
+		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
 		appointmentDeleteConfirmationCtrl = null;
 		appointmentPreviewCtrl = null;
@@ -366,7 +779,9 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		milestoneDeleteConfirmationCtrl = null;
 		milestonePreviewCtrl = null;
 		milestoneEditCtrl = null;
+		toolsCalloutCtrl = null;
 		calloutCtr = null;
+		toolsCtrl = null;
 		cmc = null;
 	}
 	
@@ -376,6 +791,14 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			doCreateAppointment(ureq, new Date());
 		} else if (source == milestoneCreateLink) {
 			doCreateMilestone(ureq);
+		} else if (source == calLink) {
+			calVisible = Boolean.TRUE;
+			updateUI();
+			loadModel(ureq, false);
+		} else if (source == tableLink) {
+			calVisible = Boolean.FALSE;
+			updateUI();
+			loadModel(ureq, false);
 		} else if (source == calendarEl) {
 			if (event instanceof CalendarGUIAddEvent caEvent) {
 				doCreateAppointment(ureq, DateUtils.copyTime(caEvent.getStartDate(), new Date()));
@@ -395,6 +818,27 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 							resizeEvent.getAllDay(), false);
 				}
 			}
+		} else if (tableEl == source) {
+			if (event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				String cmd = se.getCommand();
+				ProjCalendarRow row = dataModel.getObject(se.getIndex());
+				if (CMD_SELECT.equals(cmd)) {
+					doOpenPreview(ureq, row);
+				}
+			} else if (event instanceof FlexiTableSearchEvent) {
+				loadModel(ureq, false);
+			} else if (event instanceof FlexiTableFilterTabEvent) {
+				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
+				loadModel(ureq, true);
+			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
+				doCreateAppointment(ureq, new Date());
+			}
+		} else if (source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ProjCalendarRow row) {
+				doOpenTools(ureq, row, link);
+			} 
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -464,6 +908,59 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		listenTo(calloutCtr);
 		calloutCtr.activate();
 	}
+	
+	private void doOpenPreview(UserRequest ureq, ProjCalendarRow row) {
+		if (ProjAppointment.TYPE.equals(row.getType())) {
+			if (cmc != null && appointmentEditCtrl != null) return;
+			
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(appointmentEditCtrl);
+			
+			ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+			searchParams.setAppointments(List.of(() -> row.getKey()));
+			searchParams.setStatus(List.of(ProjectStatus.active));
+			List<ProjAppointmentInfo> appointmentInfos = projectService.getAppointmentInfos(searchParams,
+					ProjArtefactInfoParams.of(true, false, false));
+			if (appointmentInfos.isEmpty()) {
+				return;
+			}
+			ProjAppointmentInfo appointmentInfo = appointmentInfos.get(0);
+			
+			appointmentPreviewCtrl = new ProjAppointmentPreviewController(ureq, getWindowControl(), secCallback,
+					appointmentInfo, row.getKalendarEvent());
+			listenTo(appointmentPreviewCtrl);
+			
+			String title = translate("appointment");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), appointmentPreviewCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+			
+		} else if (ProjMilestone.TYPE.equals(row.getType())) {
+			if (cmc != null && milestoneEditCtrl != null) return;
+			
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(milestoneEditCtrl);
+			
+			ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+			searchParams.setMilestones(List.of(() -> row.getKey()));
+			searchParams.setStatus(List.of(ProjectStatus.active));
+			List<ProjMilestoneInfo> milestonesInfos = projectService.getMilestoneInfos(searchParams, ProjArtefactInfoParams.TAGS);
+			if (milestonesInfos.isEmpty()) {
+				return;
+			}
+			ProjMilestoneInfo milestoneInfo = milestonesInfos.get(0);
+			
+			milestonePreviewCtrl = new ProjMilestonePreviewController(ureq, getWindowControl(), secCallback,
+					milestoneInfo);
+			listenTo(milestonePreviewCtrl);
+			
+			String title = translate("milestone");
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), milestonePreviewCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
+		
+	}
 
 	private void doCreateAppointment(UserRequest ureq, Date initialStartDate) {
 		if (guardModalController(appointmentEditCtrl)) return;
@@ -489,7 +986,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		cmc.activate();
 	}
 	
-	private void doEditAppointment(UserRequest ureq, KalendarEvent kalendarEvent) {
+	private void doEditAppointment(UserRequest ureq, ProjAppointment appointment, KalendarEvent kalendarEvent) {
 		if (kalendarEvent instanceof KalendarRecurEvent recurEvent
 				&& !StringHelper.containsNonWhitespace(kalendarEvent.getRecurrenceID())) {
 			appointmentEditAllCtr = new ConfirmUpdateController(ureq, getWindowControl(), recurEvent);
@@ -501,7 +998,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			listenTo(cmc);
 			cmc.activate();
 		} else {
-			doEditAppointment(ureq, kalendarEvent.getExternalId());
+			doEditAppointment(ureq, appointment.getIdentifier());
 		}
 	}
 	
@@ -551,7 +1048,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			if (appointmentReadWriteKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
 				doMoveAppointment(ureq, kalendarEvent, days, minutes, allDay, changeStartDate);
 			} else if (milestoneKalendarId.equals(kalendarEvent.getCalendar().getCalendarID())) {
-				doMoveMilestone(kalendarEvent, days);
+				doMoveMilestone(ureq, kalendarEvent, days);
 			}
 		}
 	}
@@ -571,13 +1068,13 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 			cmc.activate();
 		} else if (kalendarEvent != null) {
 			projectService.moveAppointment(getIdentity(), kalendarEvent.getExternalId(), days, minutes, changeStartDate);
-			loadModel();
+			loadModel(ureq, false);
 		} else {
-			loadModel();
+			loadModel(ureq, false);
 		}
 	}
 	
-	private void doMoveRecurringAppointment(KalendarRecurEvent kalendarRecurEvent,
+	private void doMoveRecurringAppointment(UserRequest ureq, KalendarRecurEvent kalendarRecurEvent,
 			org.olat.commons.calendar.ui.events.CalendarGUIUpdateEvent.Cascade cascade, Long days, Long minutes,
 			boolean moveStartDate) {
 		switch(cascade) {
@@ -593,7 +1090,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				break;
 			}
 		}
-		loadModel();
+		loadModel(ureq, false);
 	}
 	
 	private void doEditMilestone(UserRequest ureq, ProjMilestoneRef milestone) {
@@ -621,9 +1118,9 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		projectService.updateMilestoneStatus(getIdentity(), milestone, ProjMilestoneStatus.achieved);
 	}
 	
-	private void doMoveMilestone(KalendarEvent kalendarEvent, Long days) {
+	private void doMoveMilestone(UserRequest ureq, KalendarEvent kalendarEvent, Long days) {
 		projectService.moveMilestone(getIdentity(), kalendarEvent.getExternalId(), days);
-		loadModel();
+		loadModel(ureq, false);
 	}
 	
 	private void doConfirmDeleteAppointment(UserRequest ureq, ProjAppointmentRef appointmentRef, KalendarEvent kalendarEvent) {
@@ -646,7 +1143,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		cmc.activate();
 	}
 	
-	private void doDeleteAppointment(KalendarEvent kalendarEvent, Cascade cascade) {
+	private void doDeleteAppointment(UserRequest ureq, KalendarEvent kalendarEvent, Cascade cascade) {
 		switch(cascade) {
 			case all: 
 				projectService.deleteAppointmentSoftly(getIdentity(), kalendarEvent.getExternalId(), kalendarEvent.getOccurenceDate());
@@ -660,7 +1157,7 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 				break;
 			}
 		}
-		loadModel();
+		loadModel(ureq, false);
 	}
 	
 	private void doConfirmDeleteMilestone(UserRequest ureq, ProjMilestoneRef milestoneRef) {
@@ -683,9 +1180,93 @@ public class ProjCalendarAllController extends FormBasicController implements Ac
 		cmc.activate();
 	}
 	
-	private void doDeleteMilestone(ProjMilestoneRef milestone) {
+	private void doDeleteMilestone(UserRequest ureq, ProjMilestoneRef milestone) {
 		projectService.deleteMilestoneSoftly(getIdentity(), milestone);
-		loadModel();
+		loadModel(ureq, false);
+	}
+	
+	private void doOpenTools(UserRequest ureq, ProjCalendarRow row, FormLink link) {
+		removeAsListenerAndDispose(toolsCtrl);
+		removeAsListenerAndDispose(toolsCalloutCtrl);
+		
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		listenTo(toolsCtrl);	
+
+		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				toolsCtrl.getInitialComponent(), link.getFormDispatchId(), "", true, "");
+		listenTo(toolsCalloutCtrl);
+		toolsCalloutCtrl.activate();
+	}
+	
+	private class ToolsController extends BasicController {
+		
+		private final VelocityContainer mainVC;
+		
+		private final ProjCalendarRow row;
+		private ProjAppointment appointment;
+		
+		public ToolsController(UserRequest ureq, WindowControl wControl, ProjCalendarRow row) {
+			super(ureq, wControl);
+			this.row = row;
+			
+			mainVC = createVelocityContainer("calendar_tools");
+			
+			if (ProjAppointment.TYPE.equals(row.getType())) {
+				appointment = projectService.getAppointment(() -> row.getKey());
+				if (appointment != null) {
+					if (secCallback.canEditAppointment(appointment)) {
+						addLink("appointment.edit", CMD_EDIT, "o_icon o_icon_edit");
+					}
+					
+					if (secCallback.canDeleteAppointment(appointment, getIdentity())) {
+						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					}
+				}
+			} else if (ProjMilestone.TYPE.equals(row.getType())) {
+				ProjMilestone milestone = projectService.getMilestone(() -> row.getKey());
+				if (milestone != null) {
+					if (secCallback.canEditMilestone(milestone)) {
+						addLink("milestone.edit", CMD_EDIT, "o_icon o_icon_edit");
+					}
+					
+					if (secCallback.canDeleteMilestone(milestone, getIdentity())) {
+						addLink("delete", CMD_DELETE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					}
+				}
+			}
+			
+			putInitialPanel(mainVC);
+		}
+		
+		private void addLink(String name, String cmd, String iconCSS) {
+			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+			if(iconCSS != null) {
+				link.setIconLeftCSS(iconCSS);
+			}
+			mainVC.put(name, link);
+		}
+		
+		@Override
+		protected void event(UserRequest ureq, Component source, Event event) {
+			fireEvent(ureq, Event.DONE_EVENT);
+			if(source instanceof Link) {
+				Link link = (Link)source;
+				String cmd = link.getCommand();
+				if (CMD_EDIT.equals(cmd)) {
+					if (ProjAppointment.TYPE.equals(row.getType())) {
+						doEditAppointment(ureq, appointment, row.getKalendarEvent());
+					} else if (ProjMilestone.TYPE.equals(row.getType())) {
+						doEditMilestone(ureq, () -> row.getKey());
+					}
+				} else if(CMD_DELETE.equals(cmd)) {
+					if (ProjAppointment.TYPE.equals(row.getType())) {
+						doConfirmDeleteAppointment(ureq, () -> row.getKey(), row.getKalendarEvent());
+					} else if (ProjMilestone.TYPE.equals(row.getType())) {
+						doConfirmDeleteMilestone(ureq, () -> row.getKey());
+					}
+				}
+			}
+		}
 	}
 	
 }

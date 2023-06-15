@@ -376,6 +376,7 @@ public class ProjTimelineController extends FormBasicController
 		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
 		searchParams.setProject(project);
 		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setDatesNull(Boolean.FALSE);
 		List<ProjAppointment> appointments = projectService.getAppointments(searchParams);
 		Map<String, ProjAppointment> appointmentIdentToAppointment = appointments.stream()
 				.collect(Collectors.toMap(ProjAppointment::getIdentifier, Function.identity()));
@@ -418,6 +419,7 @@ public class ProjTimelineController extends FormBasicController
 		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
 		searchParams.setProject(project);
 		searchParams.setStatus(List.of(ProjectStatus.active));
+		searchParams.setDueDateNull(Boolean.FALSE);
 		List<ProjMilestone> milestones = projectService.getMilestones(searchParams);
 		
 		for (ProjMilestone milestone : milestones) {

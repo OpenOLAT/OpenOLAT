@@ -146,6 +146,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		ProjMilestoneSearchParams milestoneSearchParams = new ProjMilestoneSearchParams();
 		milestoneSearchParams.setProject(project);
 		milestoneSearchParams.setStatus(List.of(ProjectStatus.active));
+		milestoneSearchParams.setDueDateNull(Boolean.FALSE);
 		List<ProjMilestone> milestones = projectService.getMilestones(milestoneSearchParams);
 		if (!milestones.isEmpty()) {
 			milestones.sort((m1, m2) -> m1.getDueDate().compareTo(m2.getDueDate()));
@@ -177,6 +178,7 @@ public class ProjCalendarWidgetController extends FormBasicController {
 		ProjAppointmentSearchParams appointmentSearchParams = new ProjAppointmentSearchParams();
 		appointmentSearchParams.setProject(project);
 		appointmentSearchParams.setStatus(List.of(ProjectStatus.active));
+		appointmentSearchParams.setDatesNull(Boolean.FALSE);
 		List<ProjAppointment> appointments = projectService.getAppointments(appointmentSearchParams);
 		Kalendar kalendar = projectService.getAppointmentsKalendar(appointments);
 		List<KalendarEvent> appointmentEvents = calendarManager.getEvents(kalendar,

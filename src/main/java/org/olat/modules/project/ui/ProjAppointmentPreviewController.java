@@ -79,11 +79,16 @@ public class ProjAppointmentPreviewController extends BasicController {
 		mainVC = createVelocityContainer("appointment_preview");
 		putInitialPanel(mainVC);
 		
-		ProjFormattedDateRange formatRange = ProjectUIFactory.formatRange(getTranslator(), kalendarEvent.getBegin(),
-				kalendarEvent.getEnd());
-		mainVC.contextPut("date", formatRange.getDate());
-		mainVC.contextPut("date2", formatRange.getDate2());
-		mainVC.contextPut("time", formatRange.getTime());
+		if (kalendarEvent != null) {
+			ProjFormattedDateRange formatRange = ProjectUIFactory.formatRange(getTranslator(), kalendarEvent.getBegin(),
+					kalendarEvent.getEnd());
+			mainVC.contextPut("date", formatRange.getDate());
+			mainVC.contextPut("date2", formatRange.getDate2());
+			mainVC.contextPut("time", formatRange.getTime());
+		} else {
+			mainVC.contextPut("date", translate("appointment.no.dates"));
+		}
+		
 		
 		mainVC.contextPut("subject", appointment.getSubject());
 		mainVC.contextPut("description", appointment.getDescription());

@@ -34,6 +34,7 @@ import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.project.ProjActivity.Action;
+import org.olat.modules.project.ProjAppointment;
 import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjArtefactItems;
 import org.olat.modules.project.ProjArtefactSearchParams;
@@ -41,6 +42,8 @@ import org.olat.modules.project.ProjArtefactToArtefact;
 import org.olat.modules.project.ProjArtefactToArtefactSearchParams;
 import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
+import org.olat.modules.project.ProjMilestone;
+import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
@@ -113,17 +116,13 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 
 	@Override
 	public void copyProjectArtefacts(Identity doer, ProjProjectRef project, ProjProject projectCopy) {
-		List<String> artefactTypes = List.of(ProjFile.TYPE, ProjNote.TYPE, ProjToDo.TYPE, ProjDecision.TYPE);
-		
 		ProjArtefactSearchParams sarchParams = new ProjArtefactSearchParams();
 		sarchParams.setProject(project);
-		sarchParams.setTypes(artefactTypes);
 		sarchParams.setStatus(List.of(ProjectStatus.active));
 		ProjArtefactItems artefactItems = projectService.getArtefactItems(sarchParams);
 		
 		ProjTagSearchParams tagSearchParams = new ProjTagSearchParams();
 		tagSearchParams.setProject(project);
-		tagSearchParams.setArtefactTypes(artefactTypes);
 		tagSearchParams.setArtefactStatus(List.of(ProjectStatus.active));
 		Map<ProjArtefact, List<String>> artefactToTagDisplayNames = tagDao.loadTags(tagSearchParams).stream()
 				.collect(Collectors.groupingBy(
@@ -146,6 +145,8 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 			case ProjNote.TYPE: copyNote(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getNote(artefact));
 			case ProjToDo.TYPE: copyToDo(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getToDo(artefact));
 			case ProjDecision.TYPE: copyDecision(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getDecision(artefact));
+			case ProjAppointment.TYPE: copyAppointment(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getAppointment(artefact));
+			case ProjMilestone.TYPE: copyMilestone(doer, projectCopy, artefactToTagDisplayNames, artefactToArtefactCopy, artefactItems.getMilestone(artefact));
 			default: // do not copy 
 			}
 			
@@ -215,6 +216,42 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		projectService.updateDecision(doer, decisionCopy, decision.getTitle(), decision.getDetails(), null);
 		projectService.updateTags(doer, decisionCopy.getArtefact(), artefactToTagDisplayNames.getOrDefault(decision.getArtefact(), List.of()));
 		artefactToArtefactCopy.put(decision.getArtefact(), decisionCopy.getArtefact());
+	}
+
+	private void copyAppointment(Identity doer, ProjProject projectCopy,
+			Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
+			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjAppointment appointment) {
+		if (appointment == null) return;
+		
+		ProjAppointment appointmentCopy = projectService.createAppointment(doer, projectCopy, null);
+		activityDao.create(Action.appointmentCopyInitialized, null, null, doer, appointmentCopy.getArtefact());
+		projectService.updateAppointment(doer, appointmentCopy,
+				null,
+				null,
+				appointment.getSubject(),
+				appointment.getDescription(),
+				appointment.getLocation(),
+				appointment.getColor(),
+				appointment.isAllDay(),
+				appointment.getRecurrenceRule());
+		projectService.updateTags(doer, appointmentCopy.getArtefact(), artefactToTagDisplayNames.getOrDefault(appointment.getArtefact(), List.of()));
+		artefactToArtefactCopy.put(appointment.getArtefact(), appointmentCopy.getArtefact());
+	}
+	
+	private void copyMilestone(Identity doer, ProjProject projectCopy, Map<ProjArtefact, List<String>> artefactToTagDisplayNames,
+			Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy, ProjMilestone milestone) {
+		if (milestone == null) return;
+		
+		ProjMilestone milestoneCopy = projectService.createMilestone(doer, projectCopy);
+		activityDao.create(Action.milestoneCopyInitialized, null, null, doer, milestoneCopy.getArtefact());
+		projectService.updateMilestone(doer, milestoneCopy,
+				ProjMilestoneStatus.open,
+				null,
+				milestone.getSubject(),
+				milestone.getDescription(),
+				milestone.getColor());
+		projectService.updateTags(doer, milestoneCopy.getArtefact(), artefactToTagDisplayNames.getOrDefault(milestone.getArtefact(), List.of()));
+		artefactToArtefactCopy.put(milestone.getArtefact(), milestoneCopy.getArtefact());
 	}
 	
 	private void copyArtefactToArtefact(Identity doer, ProjProjectRef project, Map<ProjArtefact, ProjArtefact> artefactToArtefactCopy) {

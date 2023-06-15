@@ -1623,14 +1623,16 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	@Override
 	public ProjAppointment createAppointment(Identity doer, ProjProject project, Date startDay) {
 		// Add some time to start after the creation of the activity (below)
-		Date startDate = DateUtils.copyTime(startDay, DateUtils.addMinutes(new Date(), 1));
-		Date endDate = DateUtils.addHours(startDate, 1);
+		Date startDate = startDay != null? DateUtils.copyTime(startDay, DateUtils.addMinutes(new Date(), 1)): null;
+		Date endDate = startDate != null? DateUtils.addHours(startDate, 1): null;
 		return createAppointment(doer, true, project, startDate, endDate);
 	}
 	
 	private ProjAppointment createAppointment(Identity doer, boolean createActivity, ProjProject project, Date startDate, Date endDate) {
 		ProjArtefact artefact = artefactDao.create(ProjAppointment.TYPE, project, doer);
-		ProjAppointment appointment = appointmentDao.create(artefact, DateUtils.truncateSeconds(startDate), DateUtils.truncateSeconds(endDate));
+		Date truncatedStartDate = startDate != null? DateUtils.truncateSeconds(startDate): null;
+		Date truncatedEndate = endDate != null? DateUtils.truncateSeconds(endDate): null;
+		ProjAppointment appointment = appointmentDao.create(artefact, truncatedStartDate, truncatedEndate);
 		calendarHelper.createOrUpdateEvent(appointment, List.of(doer));
 		if (createActivity) {
 			String after = ProjectXStream.toXml(appointment);
@@ -1749,12 +1751,12 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			reloadedAppointment.setRecurrenceId(recurrenceId);
 			contentChanged = true;
 		}
-		Date cleanedStartDate = DateUtils.truncateSeconds(startDate);
+		Date cleanedStartDate = startDate != null? DateUtils.truncateSeconds(startDate): null;
 		if (!Objects.equals(reloadedAppointment.getStartDate(), cleanedStartDate)) {
 			reloadedAppointment.setStartDate(cleanedStartDate);
 			contentChanged = true;
 		}
-		Date cleanedEndDate = DateUtils.truncateSeconds(endDate);
+		Date cleanedEndDate = endDate != null? DateUtils.truncateSeconds(endDate): null;
 		if (!Objects.equals(reloadedAppointment.getEndDate(), cleanedEndDate)) {
 			reloadedAppointment.setEndDate(cleanedEndDate);
 			contentChanged = true;
@@ -1798,7 +1800,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(reloadedAppointment.getArtefact(), doer);
 			
 			List<Identity> members = groupDao.getMembers(reloadedAppointment.getArtefact().getBaseGroup(), DEFAULT_ROLE_NAME);
-			calendarHelper.createOrUpdateEvent(reloadedAppointment, members);
+			if (startDate != null && endDate != null) {
+				calendarHelper.createOrUpdateEvent(reloadedAppointment, members);
+			} else {
+				calendarHelper.deleteEvent(reloadedAppointment, members);
+			}
 			
 			if (createActivity) {
 				String after = ProjectXStream.toXml(reloadedAppointment);
@@ -1987,13 +1993,13 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	
 	@Override
 	public ProjMilestone createMilestone(Identity doer, ProjProject project) {
-		Date dueDate = DateUtils.setTime(new Date(), 23, 59, 0);
-		return createMilestone(doer, true, project, dueDate);
+		return createMilestone(doer, true, project, null);
 	}
 	
 	private ProjMilestone createMilestone(Identity doer, boolean createActivity, ProjProject project, Date dueDate) {
 		ProjArtefact artefact = artefactDao.create(ProjMilestone.TYPE, project, doer);
-		ProjMilestone milestone = milestoneDao.create(artefact, DateUtils.truncateSeconds(dueDate));
+		Date truncateedDueDate = dueDate != null? DateUtils.truncateSeconds(dueDate): null;
+		ProjMilestone milestone = milestoneDao.create(artefact, truncateedDueDate);
 		Set<Identity> members = getMembers(project);
 		calendarHelper.createOrUpdateEvent(milestone, members);
 		if (createActivity) {
@@ -2047,7 +2053,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			reloadedMilestone.setStatus(status);
 			contentChanged = true;
 		}
-		Date cleanedDueDate = DateUtils.truncateSeconds(dueDate);
+		Date cleanedDueDate = dueDate != null? DateUtils.truncateSeconds(dueDate): null;
 		if (!Objects.equals(reloadedMilestone.getDueDate(), cleanedDueDate)) {
 			reloadedMilestone.setDueDate(cleanedDueDate);
 			contentChanged = true;
@@ -2073,7 +2079,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(reloadedMilestone.getArtefact(), doer);
 			
 			Set<Identity> members = getMembers(reloadedMilestone.getArtefact().getProject());
-			calendarHelper.createOrUpdateEvent(reloadedMilestone, members);
+			if (dueDate != null) {
+				calendarHelper.createOrUpdateEvent(reloadedMilestone, members);
+			} else {
+				calendarHelper.deleteEvent(reloadedMilestone, members);
+			}
 			
 			String after = ProjectXStream.toXml(reloadedMilestone);
 			activityDao.create(Action.milestoneContentUpdate, before, after, null, doer, reloadedMilestone.getArtefact());

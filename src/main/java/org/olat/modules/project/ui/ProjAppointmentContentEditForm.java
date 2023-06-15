@@ -126,10 +126,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
 		startEl.addActionListener(FormEvent.ONCHANGE);
-		startEl.setMandatory(true);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
-		endEl.setMandatory(true);
 		
 		SelectionValues recurrenceSV = new SelectionValues();
 		recurrenceSV.add(entry(RECURRENCE_NONE, translate("cal.form.recurrence.none")));
@@ -197,7 +195,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private void syncEndDate() {
 		Date newStartdDate = startEl.getDate();
 		Date endDate = endEl.getDate();
-		if (newStartdDate == null || endDate == null) {
+		if (newStartdDate == null || startDate == null || endDate == null) {
 			return;
 		}
 		
@@ -235,17 +233,8 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			allOk &= false;
 		}
 		
-		startEl.clearError();
-		if (startEl.getDate() == null) {
-			startEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		}
-		
 		endEl.clearError();
-		if (endEl.getDate() == null) {
-			endEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		} else if (startEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
+		if (startEl.getDate() != null && endEl.getDate() != null && endEl.getDate().before(startEl.getDate())) {
 			endEl.setErrorKey("cal.form.error.endbeforebegin");
 			allOk &= false;
 		}

@@ -642,7 +642,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		removeAsListenerAndDispose(calendarAllCtrl);
 		
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_CALENDAR), null);
-		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback);
+		calendarAllCtrl = new ProjCalendarAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(calendarAllCtrl);
 		stackPanel.pushController(translate("calendar.all.title"), calendarAllCtrl);
 	}

@@ -200,6 +200,40 @@ public class ProjMilestoneDAOTest extends OlatTestCase {
 		assertThat(milestones).containsExactlyInAnyOrder(milestone1, milestone2);
 	}
 	
+	@Test
+	public void shouldLoad_filter_createdAfter() {
+		ProjMilestone milestone = createRandomMilestone();
+		
+		ProjMilestoneSearchParams params = new ProjMilestoneSearchParams();
+		params.setMilestones(List.of(milestone));
+		params.setCreatedAfter(new Date());
+		sut.loadMilestones(params);
+		
+		// Just syntax check because created date can't be modified.
+	}
+	
+	@Test
+	public void shouldLoad_filter_dueDateNull() {
+		ProjMilestone milestone1 = createRandomMilestone();
+		ProjMilestone milestone2 = createRandomMilestone();
+		milestone2.setDueDate(null);
+		sut.save(milestone2);
+		dbInstance.commitAndCloseSession();
+		
+		ProjMilestoneSearchParams params = new ProjMilestoneSearchParams();
+		params.setMilestones(List.of(milestone1, milestone2));
+		List<ProjMilestone> milestones = sut.loadMilestones(params);
+		assertThat(milestones).containsExactlyInAnyOrder(milestone1, milestone2);
+		
+		params.setDueDateNull(Boolean.TRUE);
+		milestones = sut.loadMilestones(params);
+		assertThat(milestones).containsExactlyInAnyOrder(milestone2);
+		
+		params.setDueDateNull(Boolean.FALSE);
+		milestones = sut.loadMilestones(params);
+		assertThat(milestones).containsExactlyInAnyOrder(milestone1);
+	}
+	
 	private ProjMilestone createRandomMilestone() {
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser(random());
 		return createRandomMilestone(creator);

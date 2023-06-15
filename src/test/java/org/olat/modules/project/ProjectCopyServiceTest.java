@@ -255,6 +255,78 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		assertThat(tagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
 		assertThat(tagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
 	}
+	
+	@Test
+	public void shouldCopyArtefacts_initAppointment() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject project = projectService.createProject(doer, doer);
+		Date startDate = new Date();
+		ProjAppointment appointment = projectService.createAppointment(doer, project, startDate);
+		Date endDate =  new Date();
+		String subject = random();
+		String description = random();
+		String location = random();
+		String color = random();
+		boolean allDay = false;
+		projectService.updateAppointment(doer, appointment, startDate, endDate, subject, description, location, color, allDay, null);
+		String tag1 = random();
+		String tag2 = random();
+		projectService.updateTags(doer, appointment.getArtefact(), List.of(tag1, tag2));
+		dbInstance.commitAndCloseSession();
+		
+		ProjProject projectCopy = projectService.createProject(doer, doer);
+		sut.copyProjectArtefacts(doer, project, projectCopy);
+		dbInstance.commitAndCloseSession();
+		
+		ProjAppointmentSearchParams searchParams = new ProjAppointmentSearchParams();
+		searchParams.setProject(projectCopy);
+		List<ProjAppointment> appointmentCopies = projectService.getAppointments(searchParams);
+		assertThat(appointmentCopies).hasSize(1);
+		ProjAppointment appointmentCopy = appointmentCopies.get(0);
+		assertThat(appointmentCopy.getStartDate()).isNull();
+		assertThat(appointmentCopy.getEndDate()).isNull();
+		assertThat(appointmentCopy.getSubject()).isEqualTo(subject);
+		assertThat(appointmentCopy.getDescription()).isEqualTo(description);
+		assertThat(appointmentCopy.getLocation()).isEqualTo(location);
+		assertThat(appointmentCopy.getColor()).isEqualTo(color);
+		assertThat(appointmentCopy.isAllDay()).isEqualTo(allDay);
+		List<TagInfo> tagInfos = projectService.getTagInfos(projectCopy, appointmentCopy.getArtefact());
+		assertThat(tagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
+		assertThat(tagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+	}
+
+	@Test
+	public void shouldCopyArtefacts_initMilestone() {
+		Identity doer = JunitTestHelper.createAndPersistIdentityAsUser(random());
+		ProjProject project = projectService.createProject(doer, doer);
+		ProjMilestone milestone = projectService.createMilestone(doer, project);
+		String subject = random();
+		String description = random();
+		String color = random();
+		projectService.updateMilestone(doer, milestone, ProjMilestoneStatus.achieved, new Date(), subject, description, color);
+		String tag1 = random();
+		String tag2 = random();
+		projectService.updateTags(doer, milestone.getArtefact(), List.of(tag1, tag2));
+		dbInstance.commitAndCloseSession();
+		
+		ProjProject projectCopy = projectService.createProject(doer, doer);
+		sut.copyProjectArtefacts(doer, project, projectCopy);
+		dbInstance.commitAndCloseSession();
+		
+		ProjMilestoneSearchParams searchParams = new ProjMilestoneSearchParams();
+		searchParams.setProject(projectCopy);
+		List<ProjMilestone> milestoneCopies = projectService.getMilestones(searchParams);
+		assertThat(milestoneCopies).hasSize(1);
+		ProjMilestone milestoneCopy = milestoneCopies.get(0);
+		assertThat(milestoneCopy.getStatus()).isEqualTo(ProjMilestoneStatus.open);
+		assertThat(milestoneCopy.getDueDate()).isNull();
+		assertThat(milestoneCopy.getSubject()).isEqualTo(subject);
+		assertThat(milestoneCopy.getDescription()).isEqualTo(description);
+		assertThat(milestoneCopy.getColor()).isEqualTo(color);
+		List<TagInfo> tagInfos = projectService.getTagInfos(projectCopy, milestoneCopy.getArtefact());
+		assertThat(tagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
+		assertThat(tagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+	}
 
 	@Test
 	public void shouldCopyArtefacts_copyReferences() {
@@ -281,7 +353,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		ProjArtefactToArtefactSearchParams searchParams = new ProjArtefactToArtefactSearchParams();
 		searchParams.setProject(projectCopy);
 		List<ProjArtefactToArtefact> ataCopies = artefactToArtefactDao.loadArtefactToArtefacts(searchParams);
-		assertThat(ataCopies).hasSize(1);
+		assertThat(ataCopies).hasSize(2);
 	}
 
 }

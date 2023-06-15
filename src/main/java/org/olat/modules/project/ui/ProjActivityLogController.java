@@ -420,15 +420,15 @@ public class ProjActivityLogController extends ActivityLogController {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjAppointment before = ProjectXStream.fromXml(activity.getBefore(), ProjAppointment.class);
 				ProjAppointment after = ProjectXStream.fromXml(activity.getAfter(), ProjAppointment.class);
-				Date beforeStartDate = new Date(before.getStartDate().getTime());
-				Date afterStartDate = new Date(after.getStartDate().getTime());
+				Date beforeStartDate = before.getStartDate() != null? new Date(before.getStartDate().getTime()): null;
+				Date afterStartDate = after.getStartDate() != null? new Date(after.getStartDate().getTime()): null;
 				if (!Objects.equals(beforeStartDate, afterStartDate)) {
 					addRow(rows, activity, "activity.log.message.edit.start.date",
 							formatter.formatDateAndTime(beforeStartDate),
 							formatter.formatDateAndTime(afterStartDate));
 				}
-				Date beforeEndDate = new Date(before.getEndDate().getTime());
-				Date afterEndDate = new Date(after.getEndDate().getTime());
+				Date beforeEndDate = before.getEndDate() != null? new Date(before.getEndDate().getTime()): null;
+				Date afterEndDate = after.getEndDate() != null? new Date(after.getEndDate().getTime()): null;
 				if (!Objects.equals(beforeEndDate, after.getEndDate())) {
 					addRow(rows, activity, "activity.log.message.edit.end.date",
 							formatter.formatDateAndTime(beforeEndDate),
@@ -497,8 +497,8 @@ public class ProjActivityLogController extends ActivityLogController {
 			if (StringHelper.containsNonWhitespace(activity.getBefore()) && StringHelper.containsNonWhitespace(activity.getAfter())) {
 				ProjMilestone before = ProjectXStream.fromXml(activity.getBefore(), ProjMilestone.class);
 				ProjMilestone after = ProjectXStream.fromXml(activity.getAfter(), ProjMilestone.class);
-				Date beforeDueDate = new Date(before.getDueDate().getTime());
-				Date afterDueDate = new Date(after.getDueDate().getTime());
+				Date beforeDueDate = before.getDueDate() != null? new Date(before.getDueDate().getTime()): null;
+				Date afterDueDate = after.getDueDate() != null? new Date(after.getDueDate().getTime()): null;
 				if (!Objects.equals(beforeDueDate, after.getDueDate())) {
 					addRow(rows, activity, "activity.log.message.edit.due.date",
 							formatter.formatDateAndTime(beforeDueDate),

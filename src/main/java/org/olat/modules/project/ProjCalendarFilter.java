@@ -17,38 +17,17 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.project.ui.event;
-
-import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.gui.control.Event;
-import org.olat.modules.project.ProjAppointment;
+package org.olat.modules.project;
 
 /**
  * 
- * Initial date: 20 Feb 2023<br>
- * 
+ * Initial date: 15 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class AppointmentEditEvent extends Event {
-
-	private static final long serialVersionUID = -6897826314642471576L;
-
-	private final ProjAppointment appointment;
-	private final KalendarEvent kalendarEvent;
-
-	public AppointmentEditEvent(ProjAppointment appointment, KalendarEvent kalendarEvent) {
-		super("appointment-edit");
-		this.appointment = appointment;
-		this.kalendarEvent = kalendarEvent;
-	}
-
-	public ProjAppointment getAppointment() {
-		return appointment;
-	}
-
-	public KalendarEvent getKalendarEvent() {
-		return kalendarEvent;
-	}
+public enum ProjCalendarFilter {
 	
+	tag,
+	status;
+
 }

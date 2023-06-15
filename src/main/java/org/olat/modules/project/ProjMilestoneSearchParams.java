@@ -20,6 +20,7 @@
 package org.olat.modules.project;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,8 @@ public class ProjMilestoneSearchParams {
 	private Collection<String> identifiers;
 	private Collection<Long> artefactKeys;
 	private Collection<ProjectStatus> status;
+	private Date createdAfter;
+	private Boolean dueDateNull;
 
 	public ProjProjectRef getProject() {
 		return project;
@@ -74,6 +77,22 @@ public class ProjMilestoneSearchParams {
 
 	public void setStatus(Collection<ProjectStatus> status) {
 		this.status = status;
+	}
+
+	public Date getCreatedAfter() {
+		return createdAfter;
+	}
+
+	public void setCreatedAfter(Date createdAfter) {
+		this.createdAfter = createdAfter;
+	}
+
+	public Boolean getDueDateNull() {
+		return dueDateNull;
+	}
+
+	public void setDueDateNull(Boolean dueDateNull) {
+		this.dueDateNull = dueDateNull;
 	}
 	
 }

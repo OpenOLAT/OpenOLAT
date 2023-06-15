@@ -83,7 +83,7 @@ public class ProjCalendarHelper {
 	}
 
 	public void createOrUpdateEvent(ProjAppointment appointment, Collection<Identity> set) {
-		if (appointment.getStartDate() == null) {
+		if (appointment.getStartDate() == null || (appointment.getEndDate() == null && !appointment.isAllDay())) {
 			return;
 		}
 		

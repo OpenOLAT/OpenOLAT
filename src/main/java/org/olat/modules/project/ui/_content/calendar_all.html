@@ -15,9 +15,20 @@
 			#if($r.available("milestone.create") && $r.visible("milestone.create"))
 				$r.render("milestone.create")
 			#end
+			<div class="btn-group">
+				$r.render("cal.show")
+				$r.render("table.show")
+			</div>
 		</div>
 	</div>
-	<div class="o_cal">
-		$r.render("calendar")
-	</div>
+	#if($r.visible("calendar"))
+		<div class="o_cal">
+			$r.render("calendar")
+		</div>
+	#end
+	#if($r.visible("table"))
+		<div>
+			$r.render("table")
+		</div>
+	#end
 </div>

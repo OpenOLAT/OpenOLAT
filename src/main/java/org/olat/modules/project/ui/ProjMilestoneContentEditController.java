@@ -98,7 +98,6 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		
 		Date dueDate = milestone != null? milestone.getDueDate(): null;
 		dueEl = uifactory.addDateChooser("due", "milestone.edit.due", dueDate, formLayout);
-		dueEl.setMandatory(true);
 		
 		statusEl = uifactory.addDropdownMenu("status", "", "milestone.edit.status", formLayout, getTranslator());
 		statusEl.addActionListener(FormEvent.ONCHANGE);
@@ -168,12 +167,6 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		subjectEl.clearError();
 		if (!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
 			subjectEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		}
-		
-		dueEl.clearError();
-		if (dueEl.getDate() == null) {
-			dueEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
