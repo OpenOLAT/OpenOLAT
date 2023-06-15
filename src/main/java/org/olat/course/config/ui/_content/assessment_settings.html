@@ -7,11 +7,6 @@
 #if($r.available("certificate"))
 	$r.render("certificate")
 #end
-#if($r.available("badges"))
-	#if($r.visible("badges"))
-		$r.render("badges")
-	#end
-#end
 #if($r.available("recertification"))
 	#if($r.visible("recertification"))
 	<div class="o_form form clearfix">
@@ -31,5 +26,11 @@
 			<div class="panel-body">$r.render("reminders")</div>
 		</div>
 	</div>
-</div>
+</div></div>
+#end
+
+#if($r.available("badges"))
+	#if($r.visible("badges"))
+		$r.render("badges")
+	#end
 #end

@@ -114,10 +114,6 @@ public class CourseAssessmentSettingsController extends BasicController {
 		listenTo(certificatesCtrl);
 		mainVC.put("certificate", certificatesCtrl.getInitialComponent());
 
-		badgesCtrl = new OpenBadgesAssessmentSettingsController(ureq, wControl, entry, editableAndLocked);
-		listenTo(badgesCtrl);
-		mainVC.put("badges", badgesCtrl.getInitialComponent());
-
 		recertificationCtrl = new RecertificationOptionsController(ureq, getWindowControl(), entry, editableAndLocked);
 		listenTo(recertificationCtrl);
 		mainVC.put("recertification", recertificationCtrl.getInitialComponent());
@@ -126,7 +122,11 @@ public class CourseAssessmentSettingsController extends BasicController {
 		remindersCtrl = new CourseReminderListController(ureq, wControl, stackPanel, entry, certificateReminderProvider, null, false);
 		listenTo(remindersCtrl);
 		mainVC.put("reminders", remindersCtrl.getInitialComponent());
-		
+
+		badgesCtrl = new OpenBadgesAssessmentSettingsController(ureq, wControl, entry, editableAndLocked);
+		listenTo(badgesCtrl);
+		mainVC.put("badges", badgesCtrl.getInitialComponent());
+
 		putInitialPanel(mainVC);
 		updateUI(ureq);
 	}
