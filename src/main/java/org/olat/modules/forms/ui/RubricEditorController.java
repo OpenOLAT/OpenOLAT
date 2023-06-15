@@ -414,8 +414,21 @@ public class RubricEditorController extends FormBasicController implements PageE
 			TextElement weightEl = row.getWeightEl();
 			weightEl.clearError();
 			if (isInvalidInteger(weightEl.getValue(), 0, 1000)) {
-				weightEl.setErrorKey("error.wrong.int", null);
+				weightEl.setErrorKey("error.wrong.int");
 				allOk = false;
+			}
+			if (restrictedEdit) {
+				row.getStartLabelEl().clearError();
+				row.getEndLabelEl().clearError();
+				if (row.getEndLabelEl().isVisible()) {
+					if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue()) && !StringHelper.containsNonWhitespace(row.getEndLabelEl().getValue()) ) {
+						row.getStartLabelEl().setErrorKey("form.legende.mandatory");
+						allOk = false;
+					}
+				} else if (!StringHelper.containsNonWhitespace(row.getStartLabelEl().getValue())) {
+					row.getStartLabelEl().setErrorKey("form.legende.mandatory");
+					allOk = false;
+				}
 			}
 		}
 
