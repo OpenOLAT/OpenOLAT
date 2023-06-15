@@ -121,7 +121,7 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 					Translator translator = Util.createPackageTranslator(ProjectUIFactory.class, locale);
 					Formatter formatter = Formatter.getInstance(locale);
 					ProjTimelineActivityRowsFactory activityRowsFactory = new ProjTimelineActivityRowsFactory(translator, formatter, userManager);
-					loadActivites(rows, project, latestNews, activityRowsFactory);
+					loadActivites(rows, project, compareDate, activityRowsFactory);
 					if (!rows.isEmpty()) {
 						List<SubscriptionListItem> items = rows.stream().map(row -> toItem(translator, row)).toList();
 						String title = translator.translate("notifications.info.title", project.getTitle());
