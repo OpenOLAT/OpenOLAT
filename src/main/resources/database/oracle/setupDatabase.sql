@@ -4156,7 +4156,7 @@ create table o_badge_template (
    creationdate date not null,
    lastmodified date not null,
    b_image varchar(256) not null,
-   b_name varchar(256) not null,
+   b_name varchar(1024) not null,
    b_description clob,
    b_scopes varchar(128),
    b_placeholders varchar(1024),
