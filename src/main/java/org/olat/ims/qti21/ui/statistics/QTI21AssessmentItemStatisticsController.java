@@ -118,9 +118,10 @@ public class QTI21AssessmentItemStatisticsController extends BasicController {
 		mainVC.contextPut("itemCss", itemCss);
 		
 		if(withFilter && (resourceResult.canViewAnonymousUsers() || resourceResult.canViewNonParticipantUsers())) {
-			filterCtrl = new UserFilterController(ureq, getWindowControl(),
-					false, resourceResult.canViewNonParticipantUsers(), false, resourceResult.canViewAnonymousUsers(),
-					true, resourceResult.isViewNonParticipantUsers(), false, resourceResult.isViewAnonymousUsers());
+			filterCtrl = new UserFilterController(ureq, getWindowControl(), true,
+					resourceResult.canViewNonParticipantUsers(), resourceResult.canViewFakeParticipants(),
+					resourceResult.canViewAnonymousUsers(), true, resourceResult.isViewNonParticipantUsers(), false,
+					resourceResult.isViewAnonymousUsers());
 			listenTo(filterCtrl);
 			mainVC.put("filter", filterCtrl.getInitialComponent());
 		}

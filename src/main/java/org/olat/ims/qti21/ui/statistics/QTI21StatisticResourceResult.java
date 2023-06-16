@@ -312,10 +312,10 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		parentNode.addChild(sectionNode);
 		
 		for(SectionPart part: section.getSectionParts()) {
-			if(part instanceof AssessmentItemRef) {
-				buildRecursively((AssessmentItemRef)part, sectionNode);
-			} else if(part instanceof AssessmentSection) {
-				buildRecursively((AssessmentSection) part, sectionNode);
+			if(part instanceof AssessmentItemRef itemRef) {
+				buildRecursively(itemRef, sectionNode);
+			} else if(part instanceof AssessmentSection aSection) {
+				buildRecursively(aSection, sectionNode);
 			}
 		}
 	}
@@ -354,17 +354,14 @@ public class QTI21StatisticResourceResult implements StatisticResourceResult {
 		} else {
 			Object uobject = selectedNode.getUserObject();
 			
-			if(uobject instanceof AssessmentItemRef) {
+			if(uobject instanceof AssessmentItemRef itemRef) {
 				TreeNode parentNode = (TreeNode)selectedNode.getParent();
 				String sectionTitle = parentNode.getTitle();
-				return createAssessmentItemController(ureq, wControl,
-						(AssessmentItemRef)uobject, sectionTitle, printMode);
-			} else if(uobject instanceof AssessmentSection) {
-				return createAssessmentPartController(ureq, wControl,
-						(AssessmentSection)uobject, printMode);
-			} else if(uobject instanceof TestPart) {
-				return createAssessmentPartController(ureq, wControl,
-						(TestPart)uobject, printMode);
+				return createAssessmentItemController(ureq, wControl, itemRef, sectionTitle, printMode);
+			} else if(uobject instanceof AssessmentSection aSection) {
+				return createAssessmentPartController(ureq, wControl, aSection, printMode);
+			} else if(uobject instanceof TestPart testPart) {
+				return createAssessmentPartController(ureq, wControl, testPart, printMode);
 			} else if(uobject instanceof AssessmentTest) {
 				return createAssessmentTestController(ureq, wControl, stackPanel, printMode);
 			}
