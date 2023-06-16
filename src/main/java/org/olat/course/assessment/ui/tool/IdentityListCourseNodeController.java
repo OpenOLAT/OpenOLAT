@@ -420,7 +420,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		allTab.setFiltersExpanded(true);
 		tabs.add(allTab);
 		
-		if(Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode()) {
+		if(assessmentConfig.hasStatus() && (Mode.setByNode == assessmentConfig.getScoreMode() || Mode.setByNode == assessmentConfig.getPassedMode())) {
 			toReviewTab = FlexiFiltersTabFactory.tabWithImplicitFilters(TO_REVIEW_TAB_ID, translate("filter.to.review"),
 					TabSelectionBehavior.nothing, List.of(FlexiTableFilterValue.valueOf(AssessedIdentityListState.FILTER_STATUS, "inReview")));
 			toReviewTab.setFiltersExpanded(true);
@@ -474,14 +474,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
 		// life-cycle
-		SelectionValues statusValues = new SelectionValues();
-		statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
-		statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
-		statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
-		statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
-		statusValues.add(SelectionValues.entry("done", translate("filter.done")));
-		filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
-				AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		if (assessmentConfig.hasStatus()) {
+			SelectionValues statusValues = new SelectionValues();
+			statusValues.add(SelectionValues.entry("notReady", translate("filter.notReady")));
+			statusValues.add(SelectionValues.entry("notStarted", translate("filter.notStarted")));
+			statusValues.add(SelectionValues.entry("inProgress", translate("filter.inProgress")));
+			statusValues.add(SelectionValues.entry("inReview", translate("filter.inReview")));
+			statusValues.add(SelectionValues.entry("done", translate("filter.done")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.status"),
+					AssessedIdentityListState.FILTER_STATUS, statusValues, true));
+		}
 		
 		// passed
 		if(Mode.none != assessmentConfig.getPassedMode()) {
@@ -662,7 +664,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	}
 	
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
+		if (assessmentConfig.hasStatus()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.assessmentStatus, new AssessmentStatusCellRenderer(getLocale())));
+		}
 	}
 	
 	protected void initModificationDatesColumns(FlexiTableColumnModel columnsModel) {

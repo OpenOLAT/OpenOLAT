@@ -23,8 +23,10 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.persistence.TypedQuery;
 
@@ -78,6 +80,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
 
 	private static final String MIGRATE_CERTIFICATE_CONFIG = "MIGRATE CERTIFICATE CONFIG";
+	
+	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS_ = "ASSESSMENT DELETE STRUCTURE STATUS";
 
 	@Autowired
 	private DB dbInstance;
@@ -113,6 +117,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initProjectsConfigs(upgradeManager, uhd);
 		allOk &= initMigrateCertificateConfiguration(upgradeManager, uhd);
 		allOk &= initInfoMessageSchedulerUpdate(upgradeManager, uhd);
+		allOk &= deleteAssessmentStatus(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -296,6 +301,75 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		}
 
 		return query.getResultList();
+	}
+	
+	private boolean deleteAssessmentStatus(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS_)) {
+			try {
+				log.info("Start delete assessment status.");
+				deleteAssessmentStatus();
+				dbInstance.commitAndCloseSession();
+				log.info("All assessment status deleted.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS_, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void deleteAssessmentStatus() {
+		List<Long> assessmentEntryKeys = getAssessmentEntryKeysOfConditionalStrucureNodes();
+
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (Long assessmentEntryKey : assessmentEntryKeys) {
+			deleteAssessmentStatus(assessmentEntryKey);
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Delete assessment entry status: num. of assessment entries: {}", migrationCounter);
+			}
+		}
+	}
+	
+	private List<Long> getAssessmentEntryKeysOfConditionalStrucureNodes() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae.key");
+		sb.append("  from assessmententry ae");
+		sb.append("       inner join ae.repositoryEntry re");
+		sb.append("       inner join courseelement ce");
+		sb.append("         on ce.repositoryEntry = ae.repositoryEntry");
+		sb.append("        and ce.subIdent = ae.subIdent");
+		sb.append("        and ce.type = 'st'");
+		sb.and().append("re.technicalType = 'condition'");
+		sb.and().append("ae.status is not null");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
+	}
+	
+	private void deleteAssessmentStatus(Long assessmentEntrykey) {
+		try {
+			String query = 
+			"""
+				update assessmententry ae
+				   set ae.status = null
+					 , ae.lastModified = :lastModified
+				 where ae.key = :aeKey
+			""";
+			dbInstance.getCurrentEntityManager()
+					.createQuery(query)
+					.setParameter("lastModified", new Date())
+					.setParameter("aeKey", assessmentEntrykey)
+					.executeUpdate();
+		} catch (Exception e) {
+			log.error("Error in update assessment status ({}).", assessmentEntrykey);
+			log.error("", e);
+		}
 	}
 
 }

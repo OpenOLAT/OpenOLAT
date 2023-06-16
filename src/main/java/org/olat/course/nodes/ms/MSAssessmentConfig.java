@@ -84,7 +84,7 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 
 	@Override
 	public boolean hasStatus() {
-		return false;
+		return true;
 	}
 
 	@Override

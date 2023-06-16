@@ -83,7 +83,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
 	private static final RootPassedEvaluator LEARNING_PATH_ROOT_PASSED_EVALUATOR = new STRootPassedEvaluator();
 	private static final RootPassedEvaluator GRADE_ROOT_PASSED_EVALUATOR = new STRootGradeEvaluator();
-	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new STConditionStatusEvaluator();
 	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STLearningPathStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator LAST_MODIFICATION_EVALUATOR = new STLastModificationsEvaluator();
@@ -171,7 +170,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 		AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 				.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
 				.withCompletionEvaluator(new ConventionalSTCompletionEvaluator())
-				.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
 				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
 		if (courseNode.getModuleConfiguration().getBooleanSafe(STCourseNode.CONFIG_KEY_GRADE_ENABLED)) {
 			builder.withRootPassedEvaluator(GRADE_ROOT_PASSED_EVALUATOR);

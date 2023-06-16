@@ -159,7 +159,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasStatus() {
-		return false;
+		return true;
 	}
 
 	@Override

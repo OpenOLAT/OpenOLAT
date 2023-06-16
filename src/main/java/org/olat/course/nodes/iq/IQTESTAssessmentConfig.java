@@ -326,7 +326,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasStatus() {
-		return false;
+		return true;
 	}
 
 	@Override

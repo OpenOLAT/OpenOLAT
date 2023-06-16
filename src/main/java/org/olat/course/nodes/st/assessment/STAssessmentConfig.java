@@ -200,7 +200,8 @@ public class STAssessmentConfig implements AssessmentConfig {
 
 	@Override
 	public boolean hasStatus() {
-		return false;
+		// Only in learning path courses
+		return scoreCalculator == null;
 	}
 
 	@Override
