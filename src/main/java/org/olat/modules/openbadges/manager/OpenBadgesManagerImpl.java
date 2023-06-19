@@ -174,6 +174,25 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public String getColorAsRgb(String colorId) {
+		return switch (colorId) {
+			case "lightgray" -> "rgb(192,192,192)";
+			case "yellow" -> "rgb(255,255,0)";
+			case "orange" -> "rgb(255,192,0)";
+			case "brown" -> "rgb(192,128,0)";
+			case "red" -> "rgb(255,0,0)";
+			case "orchid" -> "rgb(255,0,255)";
+			case "purple" -> "rgb(192,0,255)";
+			case "lightblue" -> "rgb(128,128,255)";
+			case "cobaltblue" -> "rgb(64,64,192)";
+			case "darkblue" -> "rgb(0,0,128)";
+			case "lightgreen" -> "rgb(128,255,128)";
+			case "seagreen" -> "rgb(0,192,0)";
+			default -> "rgb(255,255,255)";
+		};
+	}
+
+	@Override
 	public List<BadgeTemplate> getTemplates() {
 		return templateDAO.getTemplates();
 	}

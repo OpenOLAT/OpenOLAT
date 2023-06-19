@@ -52,6 +52,8 @@ public interface OpenBadgesManager {
 
 	VFSLeaf getTemplateVfsLeaf(String templateImage);
 
+	String getColorAsRgb(String colorId);
+
 	void updateTemplate(BadgeTemplate template);
 
 	void deleteTemplate(BadgeTemplate template);

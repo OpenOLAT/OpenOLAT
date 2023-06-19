@@ -1,5 +1,5 @@
 <style>
-	.o_choose_template {
+	.o_template_cards {
 		width: 100%;
 		margin-left: -8px;
 		margin-right: -8px;
@@ -8,7 +8,6 @@
 
 	.o_template_card {
 		display: inline-block;
-		cursor: pointer;
 		position: relative;
 		width: 120px;
 		height: 120px;
@@ -19,11 +18,15 @@
 		border-style: solid;
 	}
 
-	.o_template_card:hover {
+	.o_template_card.o_selectable {
+		cursor: pointer;
+	}
+
+	.o_template_card.o_selectable:hover {
 		background-color: #eeeeee;
 	}
 
-	.o_template_card:active {
+	.o_template_card.o_selectable:active {
 		background-color: #dddddd;
 	}
 
@@ -48,16 +51,26 @@
 </style>
 
 <div class="o_badge_wiz_image_step o_form">
+	#if($chooseTemplate)
 	<legend>$r.translate("form.choose.a.template")</legend>
-	<div class="o_choose_template">
-
+	<div class="o_template_cards">
 		#foreach($card in $cards)
-		<div class="o_template_card" onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
+		<div class="o_template_card o_selectable"
+			 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
 			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
 			<div class="o_template_title">${card.name()}</div>
 		</div>
 		#end
 	</div>
+	#else
+	<legend>$r.translate("form.template")</legend>
+	<div class="o_template_cards">
+		<div class="o_template_card">
+			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
+			<div class="o_template_title">${card.name()}</div>
+		</div>
+	</div>
+	#end
 	<legend>$r.translate("form.details")</legend>
 	<div>
 		$r.render("form.name", "3_9", "form")

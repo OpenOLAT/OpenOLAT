@@ -36,6 +36,8 @@ public class CreateBadgeClassWizardContext {
 
 	private final BadgeClassImpl badgeClass;
 	private final ICourse course;
+	private Long selectedTemplateKey;
+	private String backgroundColorId;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		course = CourseFactory.loadCourse(entry);
@@ -46,9 +48,30 @@ public class CreateBadgeClassWizardContext {
 		badgeClass.setVersion("1.0");
 		badgeClass.setLanguage("en");
 		badgeClass.setValidityEnabled(false);
+		backgroundColorId = "lightgray";
 	}
 
 	public BadgeClassImpl getBadgeClass() {
 		return badgeClass;
+	}
+
+	public Long getSelectedTemplateKey() {
+		return selectedTemplateKey;
+	}
+
+	public void setSelectedTemplateKey(Long selectedTemplateKey) {
+		this.selectedTemplateKey = selectedTemplateKey;
+	}
+
+	public ICourse getCourse() {
+		return course;
+	}
+
+	public String getBackgroundColorId() {
+		return backgroundColorId;
+	}
+
+	public void setBackgroundColorId(String backgroundColorId) {
+		this.backgroundColorId = backgroundColorId;
 	}
 }

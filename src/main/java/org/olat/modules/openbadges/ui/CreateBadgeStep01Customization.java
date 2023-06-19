@@ -19,10 +19,16 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.io.IOException;
+import java.nio.file.Files;
+
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -30,6 +36,12 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.vfs.LocalFileImpl;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.OpenBadgesManager;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -45,12 +57,25 @@ public class CreateBadgeStep01Customization extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep01Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeStep01Form(ureq, wControl, form, runContext);
 	}
 
 	private class CreateBadgeStep01Form extends StepFormBasicController {
-		public CreateBadgeStep01Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
-			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
+
+		private CreateBadgeClassWizardContext createContext;
+		private ColorPickerElement backgroundColor;
+
+		@Autowired
+		private ColorService colorService;
+		@Autowired
+		private OpenBadgesManager openBadgesManager;
+
+		public CreateBadgeStep01Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "customize_step");
+
+			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
+				createContext = createBadgeClassWizardContext;
+			}
 
 			initForm(ureq);
 		}
@@ -67,7 +92,47 @@ public class CreateBadgeStep01Customization extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("form.choose.a.template");
+			backgroundColor = uifactory.addColorPickerElement("backgroundColor", "var.background",
+					formLayout, colorService.getColors());
+			backgroundColor.addActionListener(FormEvent.ONCHANGE);
+			if (createContext.getBackgroundColorId() != null) {
+				backgroundColor.setColor(createContext.getBackgroundColorId());
+			} else {
+				backgroundColor.setColor(colorService.getColors().get(0));
+			}
+
+			setSvg();
+		}
+
+		private void setSvg() {
+			Long templateKey = createContext.getSelectedTemplateKey();
+			String courseTitle = createContext.getCourse().getCourseTitle();
+			if (templateKey != null) {
+				BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
+				VFSLeaf templateLeaf = openBadgesManager.getTemplateVfsLeaf(template.getImage());
+				if (templateLeaf instanceof LocalFileImpl localFile) {
+					String svg;
+					try {
+						svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+						svg = svg.replace("$title", courseTitle);
+						svg = svg.replace("$background", openBadgesManager.getColorAsRgb(backgroundColor.getColor().getId()));
+						flc.contextPut("svg", svg);
+					} catch (IOException e) {
+						flc.contextRemove("svg");
+					}
+				}
+			} else {
+				flc.contextRemove("svg");
+			}
+		}
+
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == backgroundColor) {
+				createContext.setBackgroundColorId(backgroundColor.getColor().getId());
+				setSvg();
+			}
+			super.formInnerEvent(ureq, source, event);
 		}
 	}
 }

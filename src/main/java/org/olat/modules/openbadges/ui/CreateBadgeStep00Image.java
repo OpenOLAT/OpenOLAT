@@ -85,7 +85,8 @@ public class CreateBadgeStep00Image extends BasicStep {
 
 	private class CreateBadgeStep00Form extends StepFormBasicController {
 
-		private BadgeClass badgeClass;
+		private CreateBadgeClassWizardContext createContext;
+		private List<Card> cards;
 		private TextElement nameEl;
 		private TextAreaElement descriptionEl;
 		private SingleSelection expiration;
@@ -103,7 +104,7 @@ public class CreateBadgeStep00Image extends BasicStep {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "image_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
-				badgeClass = createBadgeClassWizardContext.getBadgeClass();
+				createContext = createBadgeClassWizardContext;
 			}
 
 			expirationKV = new SelectionValues();
@@ -146,6 +147,13 @@ public class CreateBadgeStep00Image extends BasicStep {
 			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
 			nameEl.setValue(template.getName());
 			descriptionEl.setValue(template.getDescription());
+			createContext.setSelectedTemplateKey(template.getKey());
+			flc.contextPut("chooseTemplate", false);
+			flc.contextPut("card", findCard(templateKey));
+		}
+
+		private Card findCard(long templateKey) {
+			return cards.stream().filter(c -> c.key == templateKey).findFirst().orElse(null);
 		}
 
 		@Override
@@ -175,6 +183,7 @@ public class CreateBadgeStep00Image extends BasicStep {
 
 		@Override
 		protected void formOK(UserRequest ureq) {
+			BadgeClass badgeClass = createContext.getBadgeClass();
 			badgeClass.setName(nameEl.getValue());
 			badgeClass.setDescription(descriptionEl.getValue());
 			badgeClass.setValidityEnabled(Expiration.validFor.name().equals(expiration.getSelectedKey()));
@@ -190,8 +199,12 @@ public class CreateBadgeStep00Image extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			flc.contextPut("chooseTemplate", createContext.getSelectedTemplateKey() == null);
+
+			BadgeClass badgeClass = createContext.getBadgeClass();
+
 			String mediaUrl = registerMapper(ureq, new BadgeImageMapper());
-			List<Card> cards = openBadgesManager.getTemplatesWithSizes().stream()
+			cards = openBadgesManager.getTemplatesWithSizes().stream()
 					.map(template -> {
 						Size targetSize = template.fitIn(120, 66);
 						return new Card(
@@ -247,6 +260,8 @@ public class CreateBadgeStep00Image extends BasicStep {
 		}
 
 		private void updateUI() {
+			BadgeClass badgeClass = createContext.getBadgeClass();
+
 			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
 				validityContainer.setVisible(true);
 				validityTimelapseEl.setIntValue(badgeClass.getValidityTimelapse());
