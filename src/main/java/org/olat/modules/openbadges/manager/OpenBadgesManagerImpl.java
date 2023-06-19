@@ -348,14 +348,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public void createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
+	public BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 									 Identity recipient, Identity awardedBy) {
 		String verification = "{\"type\":\"hosted\"}";
 		String recipientObject = createRecipientObject(recipient, badgeClass.getSalt());
 		if (recipientObject == null) {
-			return;
+			return null;
 		}
-		badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClass, verification, issuedOn, recipient, awardedBy);
+		return badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClass, verification, issuedOn,
+				recipient, awardedBy);
 	}
 
 	private String createRecipientObject(Identity recipient, String salt) {

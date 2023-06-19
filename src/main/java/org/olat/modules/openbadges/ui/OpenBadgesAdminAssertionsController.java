@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.user.UserManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,6 +62,8 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private UserManager userManager;
 
 	protected OpenBadgesAdminAssertionsController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "assertions");
@@ -75,7 +78,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
-		tableModel = new AssertionTableModel(columnModel);
+		tableModel = new AssertionTableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "assertions", tableModel, getTranslator(),
 				formLayout);
 		addLink = uifactory.addFormLink("add", "assertion.add", "assertion.add", formLayout, Link.BUTTON);
@@ -182,15 +185,18 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	private static class AssertionTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeAssertionWithSize> {
-		public AssertionTableModel(FlexiTableColumnModel columnModel) {
+		private final UserManager userManager;
+
+		public AssertionTableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
 			super(columnModel);
+			this.userManager = userManager;
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
 			return switch (Cols.values()[col]) {
-				case recipient -> badgeAssertion.getRecipientObject();
+				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 			};
 		}
 	}

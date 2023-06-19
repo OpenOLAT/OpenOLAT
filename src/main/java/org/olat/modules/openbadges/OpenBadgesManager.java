@@ -81,8 +81,8 @@ public interface OpenBadgesManager {
 	// Assertion
 	//
 
-	void createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
-							  Identity recipient, Identity savedBy);
+	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
+										Identity recipient, Identity savedBy);
 
 	List<BadgeAssertion> getBadgeAssertions();
 

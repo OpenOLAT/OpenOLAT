@@ -42,7 +42,7 @@ public class BadgeAssertionDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public void createBadgeAssertion(String uuid, String recipientObject, BadgeClass badgeClass, String verification,
+	public BadgeAssertion createBadgeAssertion(String uuid, String recipientObject, BadgeClass badgeClass, String verification,
 									 Date issuedOn, Identity recipient, Identity awardedBy) {
 		BadgeAssertionImpl badgeAssertion = new BadgeAssertionImpl();
 		badgeAssertion.setCreationDate(new Date());
@@ -55,6 +55,8 @@ public class BadgeAssertionDAO {
 		badgeAssertion.setBadgeClass(badgeClass);
 		badgeAssertion.setRecipient(recipient);
 		badgeAssertion.setAwardedBy(awardedBy);
+		dbInstance.getCurrentEntityManager().persist(badgeAssertion);
+		return badgeAssertion;
 	}
 
 	public BadgeAssertion getAssertion(String uuid) {

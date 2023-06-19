@@ -54,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EditBadgeAssertionController extends FormBasicController {
 
-	private final BadgeAssertion badgeAssertion;
+	private BadgeAssertion badgeAssertion;
 	private StaticTextElement uuidEl;
 	private FormLink recipientButton;
 	private Identity recipient;
@@ -71,7 +71,10 @@ public class EditBadgeAssertionController extends FormBasicController {
 
 	public EditBadgeAssertionController(UserRequest ureq, WindowControl wControl, BadgeAssertion badgeAssertion) {
 		super(ureq, wControl);
-		this.badgeAssertion = openBadgesManager.getBadgeAssertion(badgeAssertion.getUuid());
+		this.badgeAssertion = badgeAssertion;
+		if (this.badgeAssertion != null) {
+			this.badgeAssertion = openBadgesManager.getBadgeAssertion(badgeAssertion.getUuid());
+		}
 		badgeClassKV = new SelectionValues();
 		for (BadgeClass badgeClass : openBadgesManager.getBadgeClasses(null)) {
 			badgeClassKV.add(SelectionValues.entry(badgeClass.getUuid(), badgeClass.getName()));
@@ -118,7 +121,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 		String badgeClassUuid = badgeClassDropdown.getSelectedKey();
 		BadgeClass badgeClass = openBadgesManager.getBadgeClass(badgeClassUuid);
 		if (badgeAssertion == null) {
-			openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass,
+			badgeAssertion = openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass,
 					new Date(), recipient, getIdentity());
 		} else {
 			badgeAssertion.setRecipient(recipient);

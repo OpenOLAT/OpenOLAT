@@ -1,0 +1,72 @@
+<style>
+	.o_choose_template {
+		width: 100%;
+		margin-left: -8px;
+		margin-right: -8px;
+		margin-top: -8px;
+	}
+
+	.o_template_card {
+		display: inline-block;
+		cursor: pointer;
+		position: relative;
+		width: 120px;
+		height: 120px;
+		margin: 8px;
+		border-radius: 8px;
+		border-color: gray;
+		border-width: 1px;
+		border-style: solid;
+	}
+
+	.o_template_card:hover {
+		background-color: #eeeeee;
+	}
+
+	.o_template_card:active {
+		background-color: #dddddd;
+	}
+
+	.o_template_image {
+		display: inline-block;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		top: 8px;
+
+	}
+
+	.o_template_title {
+		position: absolute;
+		width: 100%;
+		bottom: 8px;
+		text-align: center;
+		line-height: 16px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+</style>
+
+<div class="o_badge_wiz_image_step o_form">
+	<legend>$r.translate("form.choose.a.template")</legend>
+	<div class="o_choose_template">
+
+		#foreach($card in $cards)
+		<div class="o_template_card" onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
+			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
+			<div class="o_template_title">${card.name()}</div>
+		</div>
+		#end
+	</div>
+	<legend>$r.translate("form.details")</legend>
+	<div>
+		$r.render("form.name", "3_9", "form")
+		$r.render("form.description", "3_9", "form")
+		$r.render("form.expiration", "3_9", "form")
+		$r.render("validity", "3_9", "form")
+	</div>
+	<div>
+
+	</div>
+	<legend>$r.translate("form.badge.expiry")</legend>
+</div>

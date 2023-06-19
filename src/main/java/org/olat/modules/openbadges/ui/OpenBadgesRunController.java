@@ -24,18 +24,24 @@ import java.util.List;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.context.ContextEntry;
@@ -59,6 +65,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	private final RepositoryEntry entry;
 	private ClassTableModel tableModel;
 	private FormLink addLink;
+	private StepsMainRunController addStepsController;
 	private FlexiTableElement tableEl;
 
 	@Autowired
@@ -106,6 +113,37 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		List<OpenBadgesManager.BadgeClassWithSize> classesWithSizes = openBadgesManager.getBadgeClassesWithSizes(entry);
 		tableModel.setObjects(classesWithSizes);
 		tableEl.reset();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == addLink) {
+			doLaunchAddWizard(ureq);
+		}
+		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == addStepsController) {
+			if (event == Event.CANCELLED_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(addStepsController);
+			} else if (event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(addStepsController);
+			}
+		}
+	}
+
+	private void doLaunchAddWizard(UserRequest ureq) {
+		Step start = new CreateBadgeStep00Image(ureq);
+		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> StepsMainRunController.DONE_MODIFIED;
+
+		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("form.add.new.badge"), "o_sel_add_badge_wizard");
+		listenTo(addStepsController);
+		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
 	}
 
 	@Override
