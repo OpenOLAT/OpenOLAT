@@ -46,8 +46,10 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
@@ -61,14 +63,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateBadgeStep00Image extends BasicStep {
 
-	public CreateBadgeStep00Image(UserRequest ureq) {
+	private final CreateBadgeClassWizardContext createBadgeClassContext;
+
+	public CreateBadgeStep00Image(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
+		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.image", null);
 		setNextStep(new CreateBadgeStep01Customization(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
 		return new CreateBadgeStep00Form(ureq, wControl, form, runContext);
 	}
 
@@ -79,14 +85,15 @@ public class CreateBadgeStep00Image extends BasicStep {
 
 	private class CreateBadgeStep00Form extends StepFormBasicController {
 
+		private BadgeClass badgeClass;
 		private TextElement nameEl;
 		private TextAreaElement descriptionEl;
 		private SingleSelection expiration;
 		private SelectionValues expirationKV;
 		private FormLayoutContainer validityContainer;
-		private IntegerElement validityInput;
-		private SingleSelection validityUnit;
-		private SelectionValues validityUnitKV;
+		private IntegerElement validityTimelapseEl;
+		private SingleSelection validityTimelapseUnitEl;
+		private SelectionValues validityTimelapseUnitKV;
 
 
 		@Autowired
@@ -95,15 +102,19 @@ public class CreateBadgeStep00Image extends BasicStep {
 		public CreateBadgeStep00Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "image_step");
 
+			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
+				badgeClass = createBadgeClassWizardContext.getBadgeClass();
+			}
+
 			expirationKV = new SelectionValues();
 			expirationKV.add(SelectionValues.entry(Expiration.never.name(), translate("form.never")));
 			expirationKV.add(SelectionValues.entry(Expiration.validFor.name(), translate("form.valid")));
 
-			validityUnitKV = new SelectionValues();
-			validityUnitKV.add(SelectionValues.entry(TimeUnit.day.name(), translate("form.time.day")));
-			validityUnitKV.add(SelectionValues.entry(TimeUnit.week.name(), translate("form.time.week")));
-			validityUnitKV.add(SelectionValues.entry(TimeUnit.month.name(), translate("form.time.month")));
-			validityUnitKV.add(SelectionValues.entry(TimeUnit.year.name(), translate("form.time.year")));
+			validityTimelapseUnitKV = new SelectionValues();
+			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.day.name(), translate("form.time.day")));
+			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.week.name(), translate("form.time.week")));
+			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.month.name(), translate("form.time.month")));
+			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.year.name(), translate("form.time.year")));
 
 			initForm(ureq);
 
@@ -112,6 +123,9 @@ public class CreateBadgeStep00Image extends BasicStep {
 
 		@Override
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == expiration) {
+				updateUI();
+			}
 			super.formInnerEvent(ureq, source, event);
 		}
 
@@ -122,6 +136,7 @@ public class CreateBadgeStep00Image extends BasicStep {
 				if (templateKeyString != null) {
 					long templateKey = Long.parseLong(templateKeyString);
 					doSelectTemplate(templateKey);
+					updateUI();
 				}
 			}
 			super.event(ureq, source, event);
@@ -139,7 +154,37 @@ public class CreateBadgeStep00Image extends BasicStep {
 		}
 
 		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+			if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
+				nameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+
+			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
+				if (!validityTimelapseEl.validateIntValue()) {
+					validityContainer.setErrorKey("form.error.nointeger");
+					allOk &= false;
+				} else if (validityTimelapseEl.getIntValue() <= 0) {
+					validityContainer.setErrorKey("form.error.positive.integer");
+					allOk &= false;
+				}
+			}
+			return allOk;
+		}
+
+		@Override
 		protected void formOK(UserRequest ureq) {
+			badgeClass.setName(nameEl.getValue());
+			badgeClass.setDescription(descriptionEl.getValue());
+			badgeClass.setValidityEnabled(Expiration.validFor.name().equals(expiration.getSelectedKey()));
+			if (badgeClass.isValidityEnabled()) {
+				badgeClass.setValidityTimelapse(validityTimelapseEl.getIntValue());
+				badgeClass.setValidityTimelapseUnit(BadgeClass.BadgeClassTimeUnit.valueOf(validityTimelapseUnitEl.getSelectedKey()));
+			} else {
+				badgeClass.setValidityTimelapse(0);
+				badgeClass.setValidityTimelapseUnit(null);
+			}
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
@@ -158,16 +203,22 @@ public class CreateBadgeStep00Image extends BasicStep {
 					.toList();
 			flc.contextPut("cards", cards);
 
-			nameEl = uifactory.addTextElement("form.name", 80, "", formLayout);
+			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
 			nameEl.setMandatory(true);
 			nameEl.setElementCssClass("o_test_css_class");
 
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
-					512, 2, 80, false, false, "", formLayout);
+					512, 2, 80, false, false,
+					badgeClass.getDescription(), formLayout);
 
 			expiration = uifactory.addRadiosVertical("form.expiration", formLayout, expirationKV.keys(),
 					expirationKV.values());
 			expiration.addActionListener(FormEvent.ONCHANGE);
+			if (badgeClass.isValidityEnabled()) {
+				expiration.select(Expiration.validFor.name(), true);
+			} else {
+				expiration.select(Expiration.never.name(), true);
+			}
 
 			validityContainer = FormLayoutContainer.createButtonLayout("validity", getTranslator());
 			validityContainer.setElementCssClass("o_inline_cont");
@@ -176,11 +227,37 @@ public class CreateBadgeStep00Image extends BasicStep {
 			validityContainer.setRootForm(mainForm);
 			formLayout.add(validityContainer);
 
-			validityInput = uifactory.addIntegerElement("timelapse", null, 0, validityContainer);
-			validityInput.setDisplaySize(4);
+			validityTimelapseEl = uifactory.addIntegerElement("timelapse", null, 0, validityContainer);
+			validityTimelapseEl.setDisplaySize(4);
 
-			validityUnit = uifactory.addDropdownSingleselect("timelapse.unit", null, validityContainer,
-					validityUnitKV.keys(), validityUnitKV.values(), null);
+			validityTimelapseUnitEl = uifactory.addDropdownSingleselect("timelapse.unit", null, validityContainer,
+					validityTimelapseUnitKV.keys(), validityTimelapseUnitKV.values(), null);
+
+			if (badgeClass.isValidityEnabled()) {
+				validityContainer.setVisible(true);
+				validityTimelapseEl.setIntValue(badgeClass.getValidityTimelapse());
+				if (badgeClass.getValidityTimelapseUnit() != null) {
+					validityTimelapseUnitEl.select(badgeClass.getValidityTimelapseUnit().name(), true);
+				} else {
+					validityTimelapseUnitEl.select(BadgeClass.BadgeClassTimeUnit.week.name(), true);
+				}
+			} else {
+				validityContainer.setVisible(false);
+			}
+		}
+
+		private void updateUI() {
+			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
+				validityContainer.setVisible(true);
+				validityTimelapseEl.setIntValue(badgeClass.getValidityTimelapse());
+				if (badgeClass.getValidityTimelapseUnit() != null) {
+					validityTimelapseUnitEl.select(badgeClass.getValidityTimelapseUnit().name(), true);
+				} else {
+					validityTimelapseUnitEl.select(BadgeClass.BadgeClassTimeUnit.week.name(), true);
+				}
+			} else {
+				validityContainer.setVisible(false);
+			}
 		}
 
 		public record Card(Long key, String name, String imageSrc, int width, int height) {

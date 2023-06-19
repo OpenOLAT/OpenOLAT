@@ -61,6 +61,11 @@ public class CreateBadgeStep01Customization extends BasicStep {
 		}
 
 		@Override
+		public void back() {
+			super.back();
+		}
+
+		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.choose.a.template");
 		}

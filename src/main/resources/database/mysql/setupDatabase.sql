@@ -4108,6 +4108,9 @@ create table o_badge_class (
    b_criteria varchar(1024) not null,
    b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
+   b_validity_enabled bool default false not null,
+   b_validity_timelapse bigint default 0 not null,
+   b_validity_timelapse_unit varchar(32),
    fk_entry bigint,
    primary key (id)
 );

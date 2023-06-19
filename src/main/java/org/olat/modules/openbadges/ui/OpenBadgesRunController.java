@@ -65,6 +65,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	private final RepositoryEntry entry;
 	private ClassTableModel tableModel;
 	private FormLink addLink;
+	private CreateBadgeClassWizardContext createBadgeClassContext;
 	private StepsMainRunController addStepsController;
 	private FlexiTableElement tableEl;
 
@@ -137,7 +138,8 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	}
 
 	private void doLaunchAddWizard(UserRequest ureq) {
-		Step start = new CreateBadgeStep00Image(ureq);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(entry);
+		Step start = new CreateBadgeStep00Image(ureq, createBadgeClassContext);
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> StepsMainRunController.DONE_MODIFIED;
 
 		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

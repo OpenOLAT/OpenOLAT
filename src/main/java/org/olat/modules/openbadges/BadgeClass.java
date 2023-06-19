@@ -34,6 +34,10 @@ public interface BadgeClass {
 		preparation, active, inactive, revoked
 	}
 
+	enum BadgeClassTimeUnit {
+		day, week, month, year;
+	}
+
 	Long getKey();
 
 	Date getCreationDate();
@@ -79,6 +83,18 @@ public interface BadgeClass {
 	String getIssuer();
 
 	void setIssuer(String issuer);
+
+	boolean isValidityEnabled();
+
+	void setValidityEnabled(boolean validityEnabled);
+
+	int getValidityTimelapse();
+
+	void setValidityTimelapse(int validityTimelapse);
+
+	BadgeClassTimeUnit getValidityTimelapseUnit();
+
+	void setValidityTimelapseUnit(BadgeClassTimeUnit validityTimelapseUnit);
 
 	RepositoryEntry getEntry();
 

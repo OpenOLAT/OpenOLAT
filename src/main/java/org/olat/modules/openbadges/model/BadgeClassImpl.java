@@ -96,6 +96,16 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_issuer", nullable = false, insertable = true, updatable = true)
 	private String issuer;
 
+	@Column(name="b_validity_enabled", nullable = true, insertable = true, updatable = true)
+	private boolean validityEnabled;
+
+	@Column(name="b_validity_timelapse", nullable = true, insertable = true, updatable = true)
+	private int validityTimelapse;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name="b_validity_timelapse_unit", nullable = true, insertable = true, updatable = true)
+	private BadgeClassTimeUnit validityTimelapseUnit;
+
 	@ManyToOne(targetEntity = RepositoryEntry.class, fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "fk_entry", nullable = true, insertable = true, updatable = true)
 	private RepositoryEntry entry;
@@ -228,6 +238,36 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Override
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
+	}
+
+	@Override
+	public boolean isValidityEnabled() {
+		return validityEnabled;
+	}
+
+	@Override
+	public void setValidityEnabled(boolean validityEnabled) {
+		this.validityEnabled = validityEnabled;
+	}
+
+	@Override
+	public int getValidityTimelapse() {
+		return validityTimelapse;
+	}
+
+	@Override
+	public void setValidityTimelapse(int validityTimelapse) {
+		this.validityTimelapse = validityTimelapse;
+	}
+
+	@Override
+	public BadgeClassTimeUnit getValidityTimelapseUnit() {
+		return validityTimelapseUnit;
+	}
+
+	@Override
+	public void setValidityTimelapseUnit(BadgeClassTimeUnit validityTimelapseUnit) {
+		this.validityTimelapseUnit = validityTimelapseUnit;
 	}
 
 	@Override
