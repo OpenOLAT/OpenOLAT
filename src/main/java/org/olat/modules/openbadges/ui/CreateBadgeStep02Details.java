@@ -61,7 +61,7 @@ public class CreateBadgeStep02Details extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("form.choose.a.template");
+			setFormTitle("form.details");
 		}
 	}
 }

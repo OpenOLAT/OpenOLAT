@@ -21,8 +21,10 @@ package org.olat.modules.openbadges.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -39,13 +41,13 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 public class CreateBadgeStep03Criteria extends BasicStep {
 	public CreateBadgeStep03Criteria(UserRequest ureq) {
 		super(ureq);
-		setI18nTitleAndDescr("form.criteria", null);
+		setI18nTitleAndDescr("form.award.criteria", null);
 		setNextStep(new CreateBadgeStep04Summary(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep03Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeStep03Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
 	private class CreateBadgeStep03Form extends StepFormBasicController {
@@ -61,7 +63,36 @@ public class CreateBadgeStep03Criteria extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("form.choose.a.template");
+			uifactory.addStaticTextElement("form.criteria.summary.explanation", null,
+					translate("form.criteria.summary.explanation"), formLayout);
+			uifactory.addTextElement("form.criteria.description", 0, "", formLayout);
+			uifactory.addStaticTextElement("form.award.procedure.description", null,
+					translate("form.award.procedure.description"), formLayout);
+
+			String[] awardProcedureKeys = new String[] { "automatic", "manual" };
+			String[] awardProcedureValues = new String[] {
+					translate("form.award.procedure.automatic"),
+					translate("form.award.procedure.manual")
+			};
+			String[] awardProcedureDescriptions = new String[] {
+					translate("form.award.procedure.automatic.description"),
+					translate("form.award.procedure.manual.description")
+			};
+
+			uifactory.addCardSingleSelectHorizontal("form.award.procedure", formLayout, awardProcedureKeys,
+					awardProcedureValues, awardProcedureDescriptions, null);
+
+			uifactory.addStaticTextElement("form.criteria.condition.met", null,
+					translate("form.criteria.condition.met"), formLayout);
+
+			SelectionValues conditionsKV = new SelectionValues();
+			conditionsKV.add(SelectionValues.entry("passed", translate("form.criteria.condition.course.passed")));
+			conditionsKV.add(SelectionValues.entry("score", translate("form.criteria.condition.course.score")));
+			SingleSelection conditionDropdown = uifactory.addDropdownSingleselect("form.condition", null, formLayout,
+					conditionsKV.keys(), conditionsKV.values());
+
+			uifactory.addStaticTextElement("form.criteria.condition.and", null,
+					translate("form.criteria.condition.and"), formLayout);
 		}
 	}
 }

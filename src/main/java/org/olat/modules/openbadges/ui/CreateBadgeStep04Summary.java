@@ -45,7 +45,7 @@ public class CreateBadgeStep04Summary extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep04Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeStep04Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "summary_step");
 	}
 
 	private class CreateBadgeStep04Form extends StepFormBasicController {
