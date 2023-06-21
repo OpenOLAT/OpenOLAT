@@ -185,6 +185,11 @@ public class ToDoUIFactory {
 		matcher = HOUR_PATTERN.matcher(hoursStrIntern);
 		long hours = matcher.find()? Long.parseLong(matcher.group(1)): 0;
 		
+		if (weeks == 0 && days == 0 && hours == 0 && StringHelper.isLong(hoursStrIntern)) {
+			// If the sting is a plan number we treat it as hours
+			hours = Long.valueOf(hoursStrIntern);
+		}
+		
 		return new ToDoExpenditureOfWorkImpl(weeks, days, hours);
 	}
 

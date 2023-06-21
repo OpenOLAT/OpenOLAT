@@ -43,6 +43,7 @@ import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -353,6 +354,32 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		List<ToDoTask> toToTasks = sut.loadToDoTasks(searchParams);
 		
 		assertThat(toToTasks).containsExactlyInAnyOrder(toDoTask1, toDoTask6, toDoTask7, toDoTask8, toDoTask9);
+	}
+	
+	@Test
+	public void shouldLoadTaskStatusStats() {
+		String type = random();
+		ToDoTask toDoTask = createRandomToDoTask(type, null);
+		toDoTask.setStatus(ToDoStatus.open);
+		sut.save(toDoTask);
+		ToDoTask toDoTask2 = createRandomToDoTask(type, null);
+		toDoTask2.setStatus(ToDoStatus.open);
+		sut.save(toDoTask2);
+		ToDoTask toDoTask3 = createRandomToDoTask(type, null);
+		toDoTask3.setStatus(ToDoStatus.inProgress);
+		sut.save(toDoTask3);
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		ToDoTaskStatusStats statusStats = sut.loadToDoTaskStatusStats(searchParams);
+		
+		assertThat(statusStats.getToDoTaskCount(List.of())).isEqualTo(0);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.open)).isEqualTo(2);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.inProgress)).isEqualTo(1);
+		assertThat(statusStats.getToDoTaskCount(ToDoStatus.done)).isEqualTo(0);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open))).isEqualTo(2);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done))).isEqualTo(3);
+		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.done, ToDoStatus.deleted))).isEqualTo(0);
 	}
 	
 	@Test

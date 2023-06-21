@@ -48,6 +48,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -71,6 +72,8 @@ import org.olat.modules.forms.ui.NameShuffleAnonymousComparator;
 import org.olat.modules.forms.ui.ReportHelper;
 import org.olat.modules.forms.ui.ReportHelperUserColumns;
 import org.olat.modules.forms.ui.SessionInformationLegendNameGenerator;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.analysis.AnalysisPresentation;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.AnalysisSegment;
@@ -80,6 +83,9 @@ import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.PresentationEvent.Action;
+import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
+import org.olat.modules.quality.ui.QualityToDoEditController;
+import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -103,6 +109,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	
 	private Link editPresentationLink;
 	private Link deletePresentationLink;
+	private Link toDoTaskLink;
 	private Link printLink;
 	private Link printPopupLink;
 	private Link pdfLink;
@@ -124,6 +131,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	private PresentationDeleteConfirmationController presentationDeleteCtrl;
 	private CloseableCalloutWindowController calloutCtrl;
 	private EvaluationFormPrintSelectionController printSelectionCtrl;
+	private QualityToDoEditController toDoCreateCtrl;
 	private final MainSecurityCallback secCallback;
 	private final TooledStackedPanel stackPanel;
 	
@@ -136,6 +144,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	private AnalysisPresentation presentation;
 	
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
 	private QualityAnalysisService analysisService;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
@@ -145,10 +155,13 @@ public class AnalysisController extends BasicController implements TooledControl
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
+	@Autowired
+	private DataCollectionToDoTaskProvider dataCollectionToDoProvider;
 
 	protected AnalysisController(UserRequest ureq, WindowControl wControl, MainSecurityCallback secCallback,
 			TooledStackedPanel stackPanel, AnalysisPresentation presentation) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(QualityUIFactory.class, getLocale(), getTranslator()));
 		this.secCallback = secCallback;
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
@@ -200,6 +213,12 @@ public class AnalysisController extends BasicController implements TooledControl
 	}
 	
 	private void initOutputTools() {
+		if (qualityModule.isToDoEnabled()) {
+			toDoTaskLink = LinkFactory.createToolLink("todo.create", translate("todo.create"), this);
+			toDoTaskLink.setIconLeftCSS("o_icon o_icon-fw o_icon_todo_task");
+			stackPanel.addTool(toDoTaskLink, Align.right, true);
+		}
+		
 		exportLink = LinkFactory.createToolLink("analysis.export", translate("analysis.export"), this);
 		exportLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qual_ana_export");
 		stackPanel.addTool(exportLink, Align.right, true);
@@ -229,7 +248,7 @@ public class AnalysisController extends BasicController implements TooledControl
 		
 		doHideFilter();
 		
-		toolComponents = new ToolComponents(stackPanel, printLink, printPopupLink, pdfLink, exportLink, showFilterLink,
+		toolComponents = new ToolComponents(stackPanel, toDoTaskLink, printLink, printPopupLink, pdfLink, exportLink, showFilterLink,
 				hideFilterLink);
 	}
 
@@ -239,6 +258,8 @@ public class AnalysisController extends BasicController implements TooledControl
 			doEditPresentation(ureq);
 		} else if (source == deletePresentationLink) {
 			doConfirmDeletePresentation(ureq);
+		} else if (source == toDoTaskLink) {
+			doCreateToDo(ureq);
 		} else if (source == printLink) {
 			doOpenPrintSelection(ureq);
 		} else if (source == printPopupLink) {
@@ -316,6 +337,9 @@ public class AnalysisController extends BasicController implements TooledControl
 		} else if (source == printSelectionCtrl) {
 			calloutCtrl.deactivate();
 			cleanUp();
+		} else if (source == toDoCreateCtrl) {
+			cmc.deactivate();
+			cleanUp();
 		} else if (source == cmc) {
 			cleanUp();
 		}
@@ -324,13 +348,15 @@ public class AnalysisController extends BasicController implements TooledControl
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(printSelectionCtrl);
-		printSelectionCtrl = null;
 		removeAsListenerAndDispose(presentationDeleteCtrl);
 		removeAsListenerAndDispose(presentationCtrl);
+		removeAsListenerAndDispose(toDoCreateCtrl);
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(cmc);
 		presentationDeleteCtrl = null;
+		printSelectionCtrl = null;
 		presentationCtrl = null;
+		toDoCreateCtrl = null;
 		calloutCtrl = null;
 		cmc = null;
 	}
@@ -404,6 +430,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	}
 	
 	private void setEvaluationFormToolComponents() {
+		toolComponents.setToDoTaskVisibility(false);
 		toolComponents.setPrintVisibility(true);
 		toolComponents.setPrintPopupVisibility(false);
 		toolComponents.setPdfVisibility(true);
@@ -561,6 +588,30 @@ public class AnalysisController extends BasicController implements TooledControl
 		presentation = clone;
 		doShowHildePresentationLinks();
 		stackPanel.changeDisplayname(presentation.getFormEntry().getDisplayname());
+	}
+	
+	private void doCreateToDo(UserRequest ureq) {
+		if (guardModalController(toDoCreateCtrl)) return;
+		
+		
+		QualityDataCollection dataCollection = null;
+		if (heatMapCtrl != null) {
+			dataCollection = heatMapCtrl.getDataCollection();
+		}
+		
+		if (dataCollection != null) {
+			toDoCreateCtrl = dataCollectionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
+					dataCollection.getKey(), null);
+		}
+		if (toDoCreateCtrl == null) {
+			return;
+		}
+		listenTo(toDoCreateCtrl);
+		
+		String title = translate("todo.create");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), toDoCreateCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void doOpenPrintSelection(UserRequest ureq) {
@@ -735,6 +786,7 @@ public class AnalysisController extends BasicController implements TooledControl
 	static final class ToolComponents {
 
 		private final TooledStackedPanel stackPanel;
+		private final Link toDoTaskLink;
 		private final Link printLink;
 		private final Link printPopupLink;
 		private final Link pdfLink;
@@ -744,15 +796,23 @@ public class AnalysisController extends BasicController implements TooledControl
 		
 		private Link lastVisibleFilter;
 		
-		private ToolComponents(TooledStackedPanel stackPanel, Link printLink, Link printPopupLink, Link pdfLink,
-				Link exportLink, Link showFilterLink, Link hideFilterLink) {
+		private ToolComponents(TooledStackedPanel stackPanel, Link toDoTaskLink, Link printLink, Link printPopupLink,
+				Link pdfLink, Link exportLink, Link showFilterLink, Link hideFilterLink) {
 			this.stackPanel = stackPanel;
+			this.toDoTaskLink = toDoTaskLink;
 			this.printLink = printLink;
 			this.printPopupLink = printPopupLink;
 			this.pdfLink = pdfLink;
 			this.exportLink = exportLink;
 			this.showFilterLink = showFilterLink;
 			this.hideFilterLink = hideFilterLink;
+		}
+		
+		void setToDoTaskVisibility(boolean visible) {
+			if (toDoTaskLink != null) {
+				toDoTaskLink.setVisible(visible);
+				stackPanel.setDirty(true);
+			}
 		}
 		
 		void setPrintVisibility(boolean visible) {

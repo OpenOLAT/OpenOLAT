@@ -27,10 +27,12 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.modules.forms.ui.AbstractSessionSelectionController;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,11 @@ public class EvaluationFormSessionToDoTaskProvider extends QualityToDoTaskProvid
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public String getBusinessPath(ToDoTask toDoTask) {
+		return "[QualitySite:0][quality:0][datacollections:0][datacollection:" + toDoTask.getOriginId() + "][report:0][" + AbstractSessionSelectionController.ORES_TYPE_SESSION + ":" + toDoTask.getOriginSubPath() + "]";
 	}
 	
 	@Override

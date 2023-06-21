@@ -223,6 +223,11 @@
 			gap: 10px;
 		}
 	}
+	.o_form_button_right {
+		display: grid;
+		grid-template-columns: 100fr 1fr;
+		gap: 10px;
+	}
 
 	
 /* Card Radio Buttons */

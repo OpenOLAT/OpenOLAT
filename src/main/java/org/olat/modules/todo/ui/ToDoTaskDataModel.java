@@ -83,7 +83,7 @@ public class ToDoTaskDataModel extends DefaultFlexiTableDataModel<ToDoTaskRow> i
 		case due: return row;
 		case doneDate: return row.getDoneDate();
 		case contextType: return row.getTranslatedType();
-		case contextTitle: return row.getOriginTitle();
+		case contextTitle: return row.getGoToOriginLink();
 		case assigned: return row.getAssigneesPortraits();
 		case delegated: return row.getDelegateesPortraits();
 		case tags: return row.getFormattedTags();

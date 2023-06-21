@@ -56,7 +56,7 @@ public interface ToDoService {
 	
 	public List<ToDoTask> getToDoTasks(ToDoTaskSearchParams searchParams);
 	
-	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams);
+	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams);
 
 	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
 	

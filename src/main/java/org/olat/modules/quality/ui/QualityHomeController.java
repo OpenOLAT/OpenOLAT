@@ -29,6 +29,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.components.text.TextComponent;
+import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -48,7 +50,9 @@ import org.olat.modules.quality.generator.ui.GeneratorListController;
 import org.olat.modules.quality.manager.QualityToDoTaskQuery;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
 import org.olat.modules.todo.ToDoService;
+import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,34 +113,42 @@ public class QualityHomeController extends BasicController implements Activateab
 		executorParticipationLink = LinkFactory.createLink("goto.executor.participation.link", mainVC, this);
 		executorParticipationLink.setIconRightCSS("o_icon o_icon_start");
 		wrappers.add(new PanelWrapper(translate("goto.executor.participation.title"),
-				translate("goto.executor.participation.help"), executorParticipationLink, null));
+				null, translate("goto.executor.participation.help"), executorParticipationLink, null));
 		
 		if (secCallback.canCreateSuggestion()) {
 			suggestionLink = LinkFactory.createLink("goto.suggestion.link", mainVC, this);
 			suggestionLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.suggestion.title"),
-					translate("goto.suggestion.help"), suggestionLink, null));
+					null, translate("goto.suggestion.help"), suggestionLink, null));
 		}
 		
 		if (secCallback.canViewDataCollections()) {
 			dataCollectionLink = LinkFactory.createLink("goto.data.collection.link", mainVC, this);
 			dataCollectionLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.data.collection.title"),
-					translate("goto.data.collection.help"), dataCollectionLink, null));
+					null, translate("goto.data.collection.help"), dataCollectionLink, null));
 		}
 		
 		if (secCallback.canViewGenerators()) {
 			generatorsLink = LinkFactory.createLink("goto.generator.link", mainVC, this);
 			generatorsLink.setIconRightCSS("o_icon o_icon_start");
 			wrappers.add(new PanelWrapper(translate("goto.generator.title"),
-					translate("goto.generator.help"), generatorsLink, null));
+					null, translate("goto.generator.help"), generatorsLink, null));
 		}
 		
-		if (qualityModule.isToDoEnabled() && hasToDoTasks()) {
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), false, List.of()));
+		ToDoTaskStatusStats toDoTaskStatusStats = toDoService.getToDoTaskStatusStats(searchParams);
+		if (qualityModule.isToDoEnabled() && hasToDoTasks(toDoTaskStatusStats)) {
 			toDoLink = LinkFactory.createLink("goto.todo.link", mainVC, this);
 			toDoLink.setIconRightCSS("o_icon o_icon_start");
+			
+			Long toDosDone = toDoTaskStatusStats.getToDoTaskCount(ToDoStatus.done);
+			Long toDosTotal = toDoTaskStatusStats.getToDoTaskCount(ToDoStatus.OPEN_TO_DONE);
+			String doneOfTotal = translate("todo.done.total", String.valueOf(toDosDone), String.valueOf(toDosTotal));
+			TextComponent titleIndicatorComp = TextFactory.createTextComponentFromString("toDoDone", doneOfTotal, "o_qual_todos_done", false, mainVC);
 			wrappers.add(new PanelWrapper(translate("goto.todo.title"),
-					translate("goto.todo.help"), toDoLink, null));
+					titleIndicatorComp, translate("goto.todo.help"), toDoLink, null));
 		}
 		
 		if (secCallback.canViewAnalysis()) {
@@ -144,21 +156,14 @@ public class QualityHomeController extends BasicController implements Activateab
 			analysisLink.setIconRightCSS("o_icon o_icon_start");
 			analysisPresenatationLinks = getAnalysisPresentationLinks();
 			wrappers.add(new PanelWrapper(translate("goto.analysis.title"),
-					translate("goto.analysis.help"), analysisLink, analysisPresenatationLinks));
+					null, translate("goto.analysis.help"), analysisLink, analysisPresenatationLinks));
 		}
 		
 		mainVC.contextPut("panels", wrappers);
 	}
 	
-	private boolean hasToDoTasks() {
-		if (secCallback.canCreateToDoTasks()) {
-			return true;
-		}
-		
-		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
-		searchParams.setCustomQuery(new QualityToDoTaskQuery(getIdentity(), false, List.of()));
-		Long count = toDoService.getToDoTaskCount(searchParams);
-		return count > 0;
+	private boolean hasToDoTasks(ToDoTaskStatusStats toDoTaskStatusStats) {
+		return secCallback.canCreateToDoTasks() || toDoTaskStatusStats.getToDoTaskCount(ToDoStatus.OPEN_TO_DONE) > 0;
 	}
 
 	private List<Component> getAnalysisPresentationLinks() {
@@ -332,12 +337,14 @@ public class QualityHomeController extends BasicController implements Activateab
 	public static class PanelWrapper {
 		
 		private final String title;
+		private final Component titleIndicator;
 		private final String helpText;
 		private final Component goToLink;
 		private final List<Component> links;
 		
-		public PanelWrapper(String title, String helpText, Component goToLink, List<Component> links) {
+		public PanelWrapper(String title, Component titleIndicator, String helpText, Component goToLink, List<Component> links) {
 			this.title = title;
+			this.titleIndicator = titleIndicator;
 			this.helpText = helpText;
 			this.goToLink = goToLink;
 			this.links = links;
@@ -345,6 +352,14 @@ public class QualityHomeController extends BasicController implements Activateab
 
 		public String getTitle() {
 			return title;
+		}
+		
+		public String getTitleIndicatorName() {
+			return titleIndicator != null? titleIndicator.getComponentName(): null;
+		}
+
+		public Component getTitleIndicator() {
+			return titleIndicator;
 		}
 
 		public String getHelpText() {

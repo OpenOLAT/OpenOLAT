@@ -78,6 +78,7 @@ public class ToDoTaskRow implements ToDoTaskRef {
 	private boolean canDelete;
 	private FormItem titleItem;
 	private MultipleSelectionElement doItem;
+	private FormLink goToOriginLink;
 	private FormLink toolsLink;
 	private String detailsComponentName;
 	
@@ -334,6 +335,14 @@ public class ToDoTaskRow implements ToDoTaskRef {
 
 	public void setDoItem(MultipleSelectionElement doItem) {
 		this.doItem = doItem;
+	}
+
+	public FormLink getGoToOriginLink() {
+		return goToOriginLink;
+	}
+
+	public void setGoToOriginLink(FormLink goToOriginLink) {
+		this.goToOriginLink = goToOriginLink;
 	}
 
 	public FormLink getToolsLink() {

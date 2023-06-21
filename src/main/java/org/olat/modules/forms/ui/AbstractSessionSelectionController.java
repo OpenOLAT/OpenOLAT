@@ -21,6 +21,7 @@ package org.olat.modules.forms.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,6 +36,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -51,8 +56,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractSessionSelectionController extends FormBasicController 
-{
+public abstract class AbstractSessionSelectionController extends FormBasicController implements Activateable2 {
+	
+	public static final String ORES_TYPE_SESSION = "session";
 	private static final String CMD_QUICKVIEW = "quickview";
 
 	private SessionSelectionModel dataModel;
@@ -141,6 +147,20 @@ public abstract class AbstractSessionSelectionController extends FormBasicContro
 			rows.add(row);
 		}
 		dataModel.setObjects(rows);
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries != null && !entries.isEmpty()) {
+			OLATResourceable resource = entries.get(0).getOLATResourceable();
+			if (ORES_TYPE_SESSION.equalsIgnoreCase(resource.getResourceableTypeName())) {
+				Long sessionKey = resource.getResourceableId();
+				Optional<SessionSelectionRow> rowFound = dataModel.getObjects().stream().filter(row -> row.getSession().getKey().equals(sessionKey)).findFirst();
+				if (rowFound.isPresent()) {
+					doShowQuickview(ureq, rowFound.get());
+				}
+			}
+		}
 	}
 
 	@Override

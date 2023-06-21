@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -78,8 +80,10 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.DateUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.project.ui.event.OpenArtefactEvent;
 import org.olat.modules.todo.ToDoExpenditureOfWork;
@@ -113,6 +117,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class ToDoTaskListController extends FormBasicController
 		implements Activateable2, FlexiTableComponentDelegate {
 	
+	private static final Logger log = Tracing.createLoggerFor(ToDoTaskListController.class);
+	
 	public static final String TYPE_TODO = "ToDo";
 	private static final String TAB_ID_MY = "My";
 	private static final String TAB_ID_ALL = "All";
@@ -125,6 +131,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_DELETE = "delete";
+	private static final String CMD_GOTO_ORIGIN = "origin";
 	
 	private final MapperKey avatarMapperKey;
 	protected FlexiFiltersTab tabMy;
@@ -506,6 +513,7 @@ public abstract class ToDoTaskListController extends FormBasicController
 			row.setCanDelete(getSecurityCallback().canDelete(toDoTask, creator, assignee, delegatee));
 			forgeDoItem(row);
 			forgeTitleItem(row);
+			forgeGoToOriginLink(row);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -717,6 +725,15 @@ public abstract class ToDoTaskListController extends FormBasicController
 		}
 	}
 	
+	private void forgeGoToOriginLink(ToDoTaskRow row) {
+		if (isVisible(ToDoTaskCols.contextTitle) && StringHelper.containsNonWhitespace(row.getOriginTitle())) {
+			FormLink link = uifactory.addFormLink("origin_" + row.getKey(), CMD_GOTO_ORIGIN, "", null, null, Link.NONTRANSLATED);
+			link.setI18nKey(row.getOriginTitle());
+			link.setUserObject(row);
+			row.setGoToOriginLink(link);
+		}
+	}
+	
 	private void forgeToolsLink(ToDoTaskRow row) {
 		if (row.canEdit() || row.canDelete()) {
 			FormLink toolsLink = uifactory.addFormLink("tools_" + row.getKey(), "tools", "", null, null, Link.NONTRANSLATED);
@@ -852,8 +869,10 @@ public abstract class ToDoTaskListController extends FormBasicController
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
 				doEditToDoTask(ureq, row);
-			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow) {
-				doOpenTools(ureq, (ToDoTaskRow)link.getUserObject(), link);
+			} else if (CMD_GOTO_ORIGIN.equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
+				doOpenOrigin(ureq, row);
+			} else if ("tools".equals(link.getCmd()) && link.getUserObject() instanceof ToDoTaskRow row) {
+				doOpenTools(ureq, row, link);
 			} 
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -961,6 +980,28 @@ public abstract class ToDoTaskListController extends FormBasicController
 		ToDoProvider provider = toDoService.getProvider(toDoTaskToDelete.getType());
 		provider.deleteToDoTaskSoftly(getIdentity(), toDoTaskToDelete);
 		loadModel(ureq, false);
+	}
+	
+	private void doOpenOrigin(UserRequest ureq, ToDoTaskRow row) {
+		ToDoTask toDoTask = toDoService.getToDoTask(row);
+		if (toDoTask == null) {
+			return;
+		}
+
+		ToDoProvider provider = toDoService.getProvider(toDoTask.getType());
+		if (provider == null) {
+			return;
+		}
+		String businessPath = provider.getBusinessPath(toDoTask);
+		if (businessPath == null) {
+			return;
+		}
+		
+		try {
+			NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
 	}
 	
 	private void doOpenTools(UserRequest ureq, ToDoTaskRow toDoTaskRow, FormLink link) {

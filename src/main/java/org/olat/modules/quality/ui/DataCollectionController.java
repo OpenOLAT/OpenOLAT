@@ -190,6 +190,10 @@ public class DataCollectionController extends BasicController implements TooledC
 			} else if (ORES_REPORT_TYPE.equalsIgnoreCase(resource.getResourceableTypeName())
 					&& secCallback.canViewReport()) {
 				doOpenReport(ureq);
+				if (reportCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					reportCtrl.activate(ureq, subEntries, entries.get(0).getTransientState());
+				}
 				return;
 			}
 		}

@@ -30,6 +30,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.todo.ToDoContext;
+import org.olat.modules.todo.ToDoTask;
 import org.springframework.stereotype.Service;
 
 /**
@@ -46,6 +47,11 @@ public class GeneralToDoTaskProvider extends QualityToDoTaskProvider {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public String getBusinessPath(ToDoTask toDoTask) {
+		return "[QualitySite:0][quality:0][todos:0]{todo:" + toDoTask.getKey() + "]";
 	}
 	
 	@Override

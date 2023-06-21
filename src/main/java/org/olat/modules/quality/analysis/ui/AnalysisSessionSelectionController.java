@@ -82,6 +82,7 @@ public class AnalysisSessionSelectionController extends AbstractSessionSelection
 	}
 
 	private void initToolComponents() {
+		toolComponents.setToDoTaskVisibility(false);
 		toolComponents.setPrintVisibility(true);
 		toolComponents.setPrintPopupVisibility(false);
 		toolComponents.setPdfVisibility(true);
@@ -90,6 +91,7 @@ public class AnalysisSessionSelectionController extends AbstractSessionSelection
 	}
 
 	private void initSingleSessionToolComponents() {
+		toolComponents.setToDoTaskVisibility(false);
 		toolComponents.setPrintVisibility(false);
 		toolComponents.setPrintPopupVisibility(false);
 		toolComponents.setPdfVisibility(false);

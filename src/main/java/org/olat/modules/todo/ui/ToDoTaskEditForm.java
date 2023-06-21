@@ -151,6 +151,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		assignedEl = createMembersElement(formLayout, "task.assigned", availableIdentities, currentAssignee);
 		if (availableIdentitiesSearch) {
 			FormLayoutContainer assigneeCont = FormLayoutContainer.createButtonLayout("assigneeCont", getTranslator());
+			assigneeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			assigneeCont.setRootForm(mainForm);
 			formLayout.add("assigneeCont", assigneeCont);
 			
@@ -160,6 +161,7 @@ public class ToDoTaskEditForm extends FormBasicController {
 		delegatedEl = createMembersElement(formLayout, "task.delegated", availableIdentities, currentDelegatee);
 		if (availableIdentitiesSearch) {
 			FormLayoutContainer delegateeCont = FormLayoutContainer.createButtonLayout("delegateeCont", getTranslator());
+			delegateeCont.setLabel("noTransOnlyParam", new String[] {"&nbsp;"});
 			delegateeCont.setRootForm(mainForm);
 			formLayout.add("delegateeCont", delegateeCont);
 			

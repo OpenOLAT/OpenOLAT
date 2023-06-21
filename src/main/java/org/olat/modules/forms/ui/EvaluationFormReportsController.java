@@ -20,6 +20,7 @@
 package org.olat.modules.forms.ui;
 
 import java.util.Comparator;
+import java.util.List;
 
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.gui.UserRequest;
@@ -32,6 +33,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.Figures;
@@ -47,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class EvaluationFormReportsController extends BasicController {
+public class EvaluationFormReportsController extends BasicController implements Activateable2 {
 
 	private static final String CMD_PRINT = "report.print";
 	private static final String CMD_PDF = "report.pdf";
@@ -113,6 +118,17 @@ public class EvaluationFormReportsController extends BasicController {
 	
 	public EvaluationFormSession getSession() {
 		return segmentsController != null? segmentsController.getSession(): null;
+	}
+	
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries != null && !entries.isEmpty()) {
+			OLATResourceable resource = entries.get(0).getOLATResourceable();
+			if (EvaluationFormSessionSelectionController.ORES_TYPE_SESSION.equalsIgnoreCase(resource.getResourceableTypeName())) {
+				segmentsController.activate(ureq, entries, state);
+				return;
+			}
+		}
 	}
 
 	@Override

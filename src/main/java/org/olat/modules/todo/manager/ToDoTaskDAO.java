@@ -38,8 +38,10 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.model.ToDoTaskImpl;
+import org.olat.modules.todo.model.ToDoTaskStatusStatsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -179,6 +181,22 @@ public class ToDoTaskDAO {
 		addParameters(query, searchParams);
 		
 		return query.getResultList();
+	}
+	
+	public ToDoTaskStatusStats loadToDoTaskStatusStats(ToDoTaskSearchParams searchParams) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select status, count(toDoTask)");
+		sb.append("  from todotask toDoTask");
+		appendQuery(searchParams, sb);
+		sb.groupBy().append("status");
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		addParameters(query, searchParams);
+		
+		ToDoTaskStatusStatsImpl statusStats = new ToDoTaskStatusStatsImpl();
+		query.getResultList().forEach(result -> statusStats.put((ToDoStatus)result[0], (Long)result[1]));
+		return statusStats;
 	}
 	
 	public Long loadToDoTaskCount(ToDoTaskSearchParams searchParams) {

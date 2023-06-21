@@ -39,6 +39,7 @@ import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjConfirmationController;
 import org.olat.modules.project.ui.ProjToDoDetailController;
 import org.olat.modules.project.ui.ProjToDoEditController;
+import org.olat.modules.project.ui.ProjectBCFactory;
 import org.olat.modules.project.ui.ProjectUIFactory;
 import org.olat.modules.todo.ToDoProvider;
 import org.olat.modules.todo.ToDoStatus;
@@ -65,6 +66,15 @@ public class ProjToDoProvider implements ToDoProvider {
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	@Override
+	public String getBusinessPath(ToDoTask toDoTask) {
+		ProjToDo toDo = projectService.getToDo(toDoTask.getOriginSubPath());
+		if (toDo == null) {
+			return null;
+		}
+		return ProjectBCFactory.getBusinessPath(toDo.getArtefact().getProject(), ProjToDo.TYPE, toDo.getKey());
 	}
 
 	@Override

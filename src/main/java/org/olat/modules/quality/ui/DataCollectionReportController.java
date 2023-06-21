@@ -21,11 +21,17 @@ package org.olat.modules.quality.ui;
 
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -35,6 +41,7 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.ui.EvaluationFormReportsController;
+import org.olat.modules.forms.ui.EvaluationFormSessionSelectionController;
 import org.olat.modules.forms.ui.ReportSegment;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityDataCollectionView;
@@ -48,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DataCollectionReportController extends FormBasicController {
+public class DataCollectionReportController extends FormBasicController implements Activateable2 {
 	
 	private Controller reportHeaderCtrl;
 	private EvaluationFormReportsController reportsCtrl;
@@ -64,6 +71,10 @@ public class DataCollectionReportController extends FormBasicController {
 		super(ureq, wControl, "report");
 		this.dataCollection = dataCollection;
 		initForm(ureq);
+	}
+	
+	public QualityDataCollection getDataCollection() {
+		return dataCollection;
 	}
 
 	@Override
@@ -90,6 +101,17 @@ public class DataCollectionReportController extends FormBasicController {
 	}
 	
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if (entries != null && !entries.isEmpty()) {
+			OLATResourceable resource = entries.get(0).getOLATResourceable();
+			if (EvaluationFormSessionSelectionController.ORES_TYPE_SESSION.equalsIgnoreCase(resource.getResourceableTypeName())) {
+				reportsCtrl.activate(ureq, entries, state);
+				return;
+			}
+		}
+	}
+	
+	@Override
 	protected void formOK(UserRequest ureq) {
 		//
 	}
@@ -102,4 +124,5 @@ public class DataCollectionReportController extends FormBasicController {
 		reportsCtrl = null;
         super.doDispose();
 	}
+
 }

@@ -53,6 +53,7 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 			case dueDate: Collections.sort(rows, new DueDateComporator()); break;
 			case due: Collections.sort(rows, new DueComporator()); break;
 			case priority: Collections.sort(rows, new PriorityComporator()); break;
+			case contextTitle: Collections.sort(rows, new OriginTitleComporator()); break;
 			default: {
 				super.sort(rows);
 			}
@@ -63,6 +64,13 @@ public class ToDoTaskRowSortDelegate extends SortableFlexiTableModelDelegate<ToD
 		@Override
 		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
 			return compareString(r1.getTitle(), r2.getTitle());
+		}
+	}
+	
+	private class OriginTitleComporator implements Comparator<ToDoTaskRow> {
+		@Override
+		public int compare(ToDoTaskRow r1, ToDoTaskRow r2) {
+			return compareString(r1.getOriginTitle(), r2.getOriginTitle());
 		}
 	}
 	

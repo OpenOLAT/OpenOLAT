@@ -50,6 +50,7 @@ import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskRef;
 import org.olat.modules.todo.ToDoTaskSearchParams;
+import org.olat.modules.todo.ToDoTaskStatusStats;
 import org.olat.modules.todo.ToDoTaskTag;
 import org.olat.modules.todo.model.ToDoExpenditureOfWorkImpl;
 import org.olat.modules.todo.model.ToDoTaskMembersImpl;
@@ -161,8 +162,8 @@ public class ToDoServiceImpl implements ToDoService {
 	}
 	
 	@Override
-	public Long getToDoTaskCount(ToDoTaskSearchParams searchParams) {
-		return toDoTaskDao.loadToDoTaskCount(searchParams);
+	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams) {
+		return toDoTaskDao.loadToDoTaskStatusStats(searchParams);
 	}
 	
 	@Override
