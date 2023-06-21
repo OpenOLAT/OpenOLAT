@@ -65,7 +65,10 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 	}
 
 	@Override
-	protected void initStart() throws Exception {
+	public void createActiveMQServer() throws Exception {
+		if(activeMQServer != null) {
+			return;
+		}
 		if (configuration == null) {
 			if (configResourcePath == null) {
 				configResourcePath = "broker.xml";
@@ -88,7 +91,7 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 			
 			configuration = config;
 		}
-		super.initStart();
+		super.createActiveMQServer();
 	}
 
 	@Override
