@@ -1233,6 +1233,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	private void updateReloadedToDo(Identity doer, ProjToDo reloadedToDo, String title, ToDoStatus status,
 			ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
 		String before = ProjectXStream.toXml(reloadedToDo);
+		ToDoStatus previousStatus = reloadedToDo.getToDoTask().getStatus();
 		
 		boolean changed = false;
 		ToDoTask toDoTask = reloadedToDo.getToDoTask();
@@ -1266,7 +1267,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		}
 		if (changed) {
 			toDoTask.setContentModifiedDate(new Date());
-			toDoService.update(doer, toDoTask);
+			toDoService.update(doer, toDoTask, previousStatus);
 			updateContentModified(reloadedToDo.getArtefact(), doer);
 			String after = ProjectXStream.toXml(getToDo(reloadedToDo, false));
 			activityDao.create(Action.toDoContentUpdate, before, after, doer, reloadedToDo.getArtefact());
@@ -1310,7 +1311,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			updateContentModified(reloadedToDo.getArtefact(), doer);
 		}
 		
-		toDoService.updateMember(reloadedToDo.getToDoTask(), assignees, delegatees);
+		toDoService.updateMember(doer, reloadedToDo.getToDoTask(), assignees, delegatees);
 	}
 	
 	@Override
@@ -1330,6 +1331,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 			return;
 		}
 		String before = ProjectXStream.toXml(reloadedToDo);
+		ToDoStatus previousStatus = reloadedToDo.getToDoTask().getStatus();
 		
 		ToDoTask toDoTask = reloadedToDo.getToDoTask();
 		toDoTask.setStatus(ToDoStatus.deleted);
@@ -1337,7 +1339,7 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 		toDoTask.setContentModifiedDate(now);
 		toDoTask.setDeletedDate(now);
 		toDoTask.setDeletedBy(doer);
-		toDoService.update(doer, toDoTask);
+		toDoService.update(doer, toDoTask, previousStatus);
 		
 		deleteArtefactSoftly(doer, reloadedToDo.getArtefact());
 		

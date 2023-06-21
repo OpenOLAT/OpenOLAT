@@ -102,10 +102,11 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 			return;
 		}
 		String before = QualityXStream.toXml(toDoTask);
+		ToDoStatus previousStatus = toDoTask.getStatus();
 		
 		toDoTask.setStatus(ToDoStatus.deleted);
 		toDoTask.setContentModifiedDate(new Date());
-		toDoService.update(doer, toDoTask);
+		toDoService.update(doer, toDoTask, previousStatus);
 		
 		toDoTask = getToDoTask(toDoTaskRef, false);
 		String after = QualityXStream.toXml(toDoTask);
@@ -148,6 +149,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 			private void updateReloadedToDo(Identity doer, ToDoTask toDoTask, String title, ToDoStatus status,
 					ToDoPriority priority, Date startDate, Date dueDate, Long expenditureOfWork, String description) {
 				String before = QualityXStream.toXml(toDoTask);
+				ToDoStatus previousStatus = toDoTask.getStatus();
 				
 				boolean contentChanged = false;
 				boolean statusChanged = false;
@@ -181,7 +183,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 				}
 				if (contentChanged || statusChanged) {
 					toDoTask.setContentModifiedDate(new Date());
-					toDoService.update(doer, toDoTask);
+					toDoService.update(doer, toDoTask, previousStatus);
 					String after = QualityXStream.toXml(toDoService.getToDoTask(toDoTask));
 					if (contentChanged) {
 						auditLogDao.create(Action.toDoContentUpdate, before, after, doer, toDoTask.getOriginId(), toDoTask, null);
@@ -204,7 +206,7 @@ public abstract class QualityToDoTaskProvider implements ToDoProvider {
 				.get(toDoTask.getBaseGroup().getKey());
 		Set<Identity> beforeMembers = toDoTaskMembersBefore.getMembers();
 		
-		toDoService.updateMember(toDoTask, assignees, delegatees);
+		toDoService.updateMember(doer, toDoTask, assignees, delegatees);
 		
 		ToDoTaskMembers toDoTaskMembersAfter = toDoService
 				.getToDoTaskGroupKeyToMembers(List.of(toDoTask), ToDoRole.ASSIGNEE_DELEGATEE)

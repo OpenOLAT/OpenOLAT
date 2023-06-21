@@ -235,19 +235,19 @@ public class ProjToDoDAOTest extends OlatTestCase {
 		ProjToDo toDo1 = createRandomToDo();
 		ToDoTask toDoTask1 = toDo1.getToDoTask();
 		toDoTask1.setStatus(ToDoStatus.done);
-		toDoService.update(doer, toDoTask1);
+		toDoService.update(doer, toDoTask1, ToDoStatus.open);
 		ProjToDo toDo2 = createRandomToDo();
 		ToDoTask toDoTask2 = toDo2.getToDoTask();
 		toDoTask2.setStatus(ToDoStatus.done);
-		toDoService.update(doer, toDoTask2);
+		toDoService.update(doer, toDoTask2, ToDoStatus.open);
 		ProjToDo toDo3 = createRandomToDo();
 		ToDoTask toDoTask3 = toDo3.getToDoTask();
 		toDoTask3.setStatus(ToDoStatus.deleted);
-		toDoService.update(doer, toDoTask3);
+		toDoService.update(doer, toDoTask3, ToDoStatus.open);
 		ProjToDo toDo4 = createRandomToDo();
 		ToDoTask toDoTask4 = toDo4.getToDoTask();
 		toDoTask4.setStatus(ToDoStatus.open);
-		toDoService.update(doer, toDoTask4);
+		toDoService.update(doer, toDoTask4, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 		
 		ProjToDoSearchParams params = new ProjToDoSearchParams();
@@ -266,7 +266,7 @@ public class ProjToDoDAOTest extends OlatTestCase {
 		ProjToDo toDo3 = createRandomToDo();
 		ToDoTask toDoTask3 = toDo3.getToDoTask();
 		toDoTask3.setDueDate(new Date());
-		toDoService.update(doer, toDoTask3);
+		toDoService.update(doer, toDoTask3, ToDoStatus.open);
 		dbInstance.commitAndCloseSession();
 		
 		ProjToDoSearchParams params = new ProjToDoSearchParams();

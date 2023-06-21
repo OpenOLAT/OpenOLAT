@@ -42,7 +42,7 @@ public interface ToDoService {
 	
 	public ToDoTask createToDoTask(Identity doer, String type, Long originId, String originSubPath, String originTitle);
 	
-	public ToDoTask update(Identity doer, ToDoTask toDoTask);
+	public ToDoTask update(Identity doer, ToDoTask toDoTask, ToDoStatus previousStatus);
 
 	public void updateOriginTitle(String type, Long originId, String originSubPath, String originTitle);
 	
@@ -58,7 +58,7 @@ public interface ToDoService {
 	
 	public ToDoTaskStatusStats getToDoTaskStatusStats(ToDoTaskSearchParams searchParams);
 
-	public void updateMember(ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
+	public void updateMember(Identity doer, ToDoTask toDoTask, Collection<? extends IdentityRef> assignees, Collection<? extends IdentityRef> delegatees);
 	
 	public Map<Long, ToDoTaskMembers> getToDoTaskGroupKeyToMembers(Collection<ToDoTask> toDoTasks, Collection<ToDoRole> roles);
 
