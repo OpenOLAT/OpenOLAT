@@ -57,7 +57,7 @@ public class ProjArtefactSearchParams {
 	}
 	
 	public void setExcludedArtefacts(Collection<ProjArtefactRef> excludedArtefacts) {
-		this.excludedArtefactKeys = excludedArtefacts != null && excludedArtefacts.isEmpty()
+		this.excludedArtefactKeys = excludedArtefacts != null && !excludedArtefacts.isEmpty()
 				? excludedArtefacts.stream().map(ProjArtefactRef::getKey).collect(Collectors.toSet())
 				: null;
 	}
