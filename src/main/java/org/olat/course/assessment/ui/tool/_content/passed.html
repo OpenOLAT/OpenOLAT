@@ -9,7 +9,7 @@
 	#else
 		<div class="o_assessment_mini_status o_unknown">$r.translate("status.passed.undefined")</div>
 	#end
-	<div>$message</div>
+	<div class="o_assessment_mini_message">$message</div>
 	<div class="o_button_group">
 		#if($r.visible("passed.manually.pass"))
 			$r.render("passed.manually.pass")

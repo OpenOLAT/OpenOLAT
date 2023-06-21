@@ -1,4 +1,4 @@
-<div class="panel panel-default o_assessment_mini_overview">
+<div class="panel panel-default o_assessment_mini_conditional_overview">
 	<div class="o_scores">
 		#if($score)
 			<div>
@@ -20,13 +20,9 @@
 			</div>
 		#end
 	</div>
-	<div></div>
 	<div class="o_button_group">
 		#if($r.visible("grade.apply.button"))
 			$r.render("grade.apply.button")
-		#end
-		#if($r.visible("show.efficency.statement"))
-			$r.render("show.efficency.statement")
 		#end
 	</div>
 </div>

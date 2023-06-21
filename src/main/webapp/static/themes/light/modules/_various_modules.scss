@@ -601,11 +601,28 @@ ul.o_certificates li {
 	.o_certificate_download_expired {
 		text-decoration: line-through;
 	}
-	
-	.o_sel_certificate_download {
+}
+
+@media (max-width: $screen-xs-max) { 
+
+	.o_certificate_card {
+		grid-template-columns: 20px auto;
 		
+		.o_certificate_type {
+			font-size: 25px;
+			line-height: 25px;
+			text-align: center;
+			min-height: 30px;
+			box-sizing: content-box;
+		}
+		
+		.o_certificate_actions {
+			grid-column: 1 / 3;
+		}
 	}
 }
+
+
 
 
 /* Calendar */
@@ -770,6 +787,36 @@ div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
 	grid-template-columns: 80px fit-content(200px) auto auto;
 	padding-left: 0;
 }
+
+@media (max-width: $screen-xs-max) { 
+	div.panel.o_assessment_mini_overview.o_assessment_mini_overview_completion {
+		grid-template-columns: 80px fit-content(200px) auto;
+	}
+	
+	div.o_assessment_mini_overview .o_assessment_mini_message {
+		grid-column: 1 / 3;
+		margin-left: 10px;
+	}
+	
+	div.panel.o_assessment_mini_overview .o_button_group {
+		grid-column: 1 / 3;
+		margin-left: 10px;
+		text-align: left;
+		justify-self: start;
+	}
+}
+
+div.o_assessment_mini_conditional_overview {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	padding: 0 10px;
+	
+	.o_button_group {
+		justify-self: start;
+	}
+}
+
 
 /* BigBlueButton */
 .o_bbb_deleted td {
