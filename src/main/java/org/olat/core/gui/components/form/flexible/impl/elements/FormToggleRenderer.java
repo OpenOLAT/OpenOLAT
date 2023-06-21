@@ -52,14 +52,14 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		  .append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")
 		  .append(">");
 
-		if(cmp.isOn()) {
+		if(!cmp.isOn()) {
 			sb.append("<i class=\"o_icon o_icon_toggle\"></i> ");
 		}
 		String onText = cmp.getToggleOnText();
 		sb.append("<span class=\"o_on\">").append(onText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
 		String offText = cmp.getToggleOffText();
 		sb.append("<span class=\"o_off\">").append(offText, "&nbsp;&nbsp;", StringHelper.containsNonWhitespace(onText)).append("</span>");
-		if(!cmp.isOn()) {
+		if(cmp.isOn()) {
 			sb.append(" <i class=\"o_icon o_icon_toggle\"></i>");
 		}
 		sb.append("</button>");

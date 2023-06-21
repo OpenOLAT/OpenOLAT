@@ -660,7 +660,7 @@ legend.control-label {
 	}
 	&[aria-checked="true"] {
 		text-align: right;
-		padding: 0 0.5em 0 1px;
+		padding: 0 1px 0 0.5em;
 		background: $o-toggle-on-bg;
 		border-color: $o-toggle-on-border-color;
 		i {
@@ -672,7 +672,7 @@ legend.control-label {
 		}
 	}
 	&[aria-checked="false"] {
-		padding: 0 1px 0 0.5em;
+		padding: 0 0.5em 0 1px;
 	}
 	
 	&[aria-checked="true"]>span.o_off {
