@@ -67,4 +67,13 @@ public class BadgeEntryConfigurationDAO {
 		configuration.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(configuration);
 	}
+
+	public int delete(RepositoryEntryRef entry) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("delete badgeentryconfig config where config.entry.key =: entryKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString())
+				.setParameter("entryKey", entry.getKey())
+				.executeUpdate();
+	}
 }

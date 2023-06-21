@@ -76,6 +76,7 @@ import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.invitation.manager.InvitationDAO;
 import org.olat.modules.lecture.LectureService;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.reminder.manager.ReminderDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -188,6 +189,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private RepositoryEntryAuditLogDAO repositoryEntryAuditLogDAO;
 	@Autowired
 	private NotificationsManager notificationsManager;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -618,6 +621,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		referenceManager.deleteAllReferencesOf(resource);
 		//delete all pending tasks
 		persistentTaskDao.delete(resource);
+		// delete badge configurations
+		openBadgesManager.deleteConfiguration(entry);
 		dbInstance.commit();
 		//delete lectures
 		CoreSpringFactory.getImpl(LectureService.class).delete(entry);

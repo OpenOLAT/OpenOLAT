@@ -65,6 +65,7 @@ import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.manager.RepositoryEntryDAO;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -212,7 +213,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		if (imageLeaf != null && imageLeaf.exists()) {
 			String suffix = FileUtils.getFileSuffix(imageLeaf.getName());
-			imageSize = imageService.getSize(imageLeaf, suffix);
+			if (!"svg".equalsIgnoreCase(suffix)) {
+				imageSize = imageService.getSize(imageLeaf, suffix);
+			}
 			if (imageSize == null) {
 				if (StringHelper.containsNonWhitespace(suffix)) {
 					if ("svg".equalsIgnoreCase(suffix)) {
@@ -563,6 +566,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public BadgeEntryConfiguration updateConfiguration(BadgeEntryConfiguration configuration) {
 		return badgeEntryConfigurationDAO.updateConfiguration(configuration);
+	}
+
+	@Override
+	public void deleteConfiguration(RepositoryEntryRef entry) {
+		badgeEntryConfigurationDAO.delete(entry);
 	}
 
 	@Override

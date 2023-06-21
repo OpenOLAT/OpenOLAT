@@ -29,6 +29,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 
 /**
  * Initial date: 2023-05-08<br>
@@ -112,6 +113,8 @@ public interface OpenBadgesManager {
 	BadgeEntryConfiguration updateConfiguration(BadgeEntryConfiguration configuration);
 
 	boolean isEnabled();
+
+	void deleteConfiguration(RepositoryEntryRef entry);
 
 	//
 	// Types
