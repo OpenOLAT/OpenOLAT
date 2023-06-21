@@ -35,6 +35,7 @@ import org.olat.modules.project.ProjDecisionSearchParams;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectStatus;
+import org.olat.modules.project.ui.ProjDecisionDataModel.DecisionCols;
 
 /**
  * 
@@ -44,6 +45,7 @@ import org.olat.modules.project.ProjectStatus;
  */
 public class ProjDecisionWidgetController extends ProjDecisionListController {
 	
+	private static final List<DecisionCols> COLS = List.of(DecisionCols.displayName, DecisionCols.decisionDate, DecisionCols.involved);
 	private static final Integer NUM_LAST_MODIFIED = 6;
 	
 	private FormLink titleLink;
@@ -91,6 +93,11 @@ public class ProjDecisionWidgetController extends ProjDecisionListController {
 	@Override
 	protected boolean isFullTable() {
 		return false;
+	}
+
+	@Override
+	protected boolean isVisible(DecisionCols col) {
+		return COLS.contains(col);
 	}
 
 	@Override

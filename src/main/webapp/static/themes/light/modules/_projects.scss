@@ -330,12 +330,9 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 		}
 	}
 	
-	&.o_proj_card_ctop {
-		border: initial;
-		border-top: 3px solid $o-coursesite-rowelem-border;
-	}
 	&.o_proj_card_cleft {
 		border: initial;
+		border-left: 3px solid $o-coursesite-rowelem-border;
 		.o_proj_card_meta {
 			color: initial;
 		}

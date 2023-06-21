@@ -147,6 +147,8 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	}
 	
 	protected abstract boolean isFullTable();
+
+	protected abstract boolean isVisible(DecisionCols col);
 	
 	protected abstract Integer getNumLastModified();
 
@@ -155,36 +157,57 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if (ureq.getUserSession().getRoles().isAdministrator()) {
+		if (isVisible(DecisionCols.id) &&  ureq.getUserSession().getRoles().isAdministrator()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.id));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.displayName, CMD_SELECT));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.details));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.decisionDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.creationDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.lastModifiedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.lastModifiedBy));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedBy));
-		StickyActionColumnModel toolsCol = new StickyActionColumnModel(DecisionCols.tools);
-		toolsCol.setAlwaysVisible(true);
-		toolsCol.setSortable(false);
-		toolsCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(toolsCol);
+		if (isVisible(DecisionCols.displayName)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.displayName, CMD_SELECT));
+		}
+		if (isVisible(DecisionCols.decisionDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.decisionDate));
+		}
+		if (isVisible(DecisionCols.involved)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.involved));
+		}
+		if (isVisible(DecisionCols.details)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.details));
+		}
+		if (isVisible(DecisionCols.tags)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DecisionCols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
+		}
+		if (isVisible(DecisionCols.creationDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.creationDate));
+		}
+		if (isVisible(DecisionCols.lastModifiedDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.lastModifiedDate));
+		}
+		if (isVisible(DecisionCols.lastModifiedBy)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.lastModifiedBy));
+		}
+		if (isVisible(DecisionCols.deletedDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedDate));
+		}
+		if (isVisible(DecisionCols.deletedDate)) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, DecisionCols.deletedDate));
+			StickyActionColumnModel toolsCol = new StickyActionColumnModel(DecisionCols.tools);
+			toolsCol.setAlwaysVisible(true);
+			toolsCol.setSortable(false);
+			toolsCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(toolsCol);
+		}
 		
 		dataModel = new ProjDecisionDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setNumOfRowsEnabled(isFullTable());
+		tableEl.setCustomizeColumns(isFullTable());
 
 		tableEl.setCssDelegate(ProjDecisionListCssDelegate.DELEGATE);
 		if (isFullTable()) {
 			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		} else {
-			tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
+			tableEl.setAvailableRendererTypes(FlexiTableRendererType.classic);
 		}
-		tableEl.setRendererType(FlexiTableRendererType.custom);
+		tableEl.setRendererType(FlexiTableRendererType.classic);
 		VelocityContainer rowVC = createVelocityContainer("decision_row");
 		rowVC.setDomReplacementWrapperRequired(false);
 		tableEl.setRowRenderer(rowVC, this);
@@ -386,7 +409,9 @@ abstract class ProjDecisionListController extends FormBasicController implements
 	}
 	
 	private void sortTable() {
-		if (tableEl.getSelectedFilterTab() == null || tableEl.getSelectedFilterTab() == tabRecently) {
+		if (tableEl.getSelectedFilterTab() == null) {
+			tableEl.sort(new SortKey(DecisionCols.decisionDate.name(), false));
+		} else if ( tableEl.getSelectedFilterTab() == tabRecently) {
 			tableEl.sort(new SortKey(DecisionCols.lastModifiedDate.name(), false));
 		} else if (tableEl.getSelectedFilterTab() == tabMy || tableEl.getSelectedFilterTab() == tabAll || tableEl.getSelectedFilterTab() == tabDeleted) {
 			tableEl.sort( new SortKey(DecisionCols.displayName.name(), true));

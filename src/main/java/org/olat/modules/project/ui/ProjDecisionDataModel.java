@@ -76,6 +76,7 @@ public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisi
 		case details: return row.getDetails();
 		case decisionDate: return row.getDecisionDate();
 		case tags: return row.getFormattedTags();
+		case involved: return row.getUserPortraits();
 		case creationDate: return row.getCreationDate();
 		case lastModifiedDate: return row.getContentModifiedDate();
 		case lastModifiedBy: return row.getContentModifiedByName();
@@ -89,10 +90,10 @@ public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisi
 	public enum DecisionCols implements FlexiSortableColumnDef {
 		id("id"),
 		displayName("title"),
-		participants("decision.participants"),
 		details("decision.details"),
 		decisionDate("decision.date"),
 		tags("tags"),
+		involved("decision.participants"),
 		creationDate("created"),
 		lastModifiedDate("last.modified.date"),
 		lastModifiedBy("last.modified.by"),
@@ -113,7 +114,8 @@ public class ProjDecisionDataModel extends DefaultFlexiTableDataModel<ProjDecisi
 		
 		@Override
 		public boolean sortable() {
-			return true;
+			return this != involved
+					|| this != tools;
 		}
 
 		@Override

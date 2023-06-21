@@ -34,6 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjProjectImageType;
 import org.olat.modules.project.ProjProjectSecurityCallback;
+import org.olat.modules.project.ui.ProjDecisionDataModel.DecisionCols;
 import org.olat.modules.project.ui.component.ProjAvatarComponent;
 import org.olat.modules.project.ui.component.ProjAvatarComponent.Size;
 
@@ -82,6 +83,11 @@ public class ProjDecisionAllController extends ProjDecisionListController {
 
 	@Override
 	protected boolean isFullTable() {
+		return true;
+	}
+
+	@Override
+	protected boolean isVisible(DecisionCols col) {
 		return true;
 	}
 

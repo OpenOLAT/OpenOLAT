@@ -100,7 +100,6 @@ public class ProjDecisionContentEditController extends FormBasicController {
 		Date decisionDate = decision != null? decision.getDecisionDate(): new Date();
 		decisionDateEl = uifactory.addDateChooser("decision.date", "decision.edit.decision.date", decisionDate, formLayout);
 		decisionDateEl.setDateChooserTimeEnabled(true);
-		decisionDateEl.setMandatory(true);
 		decisionDateEl.setEnabled(!readOnly);
 	}
 
@@ -111,12 +110,6 @@ public class ProjDecisionContentEditController extends FormBasicController {
 		titleEl.clearError();
 		if (!StringHelper.containsNonWhitespace(titleEl.getValue())) {
 			titleEl.setErrorKey("form.mandatory.hover");
-			allOk &= false;
-		}
-		
-		decisionDateEl.clearError();
-		if (decisionDateEl.getDate() == null) {
-			decisionDateEl.setErrorKey("form.mandatory.hover");
 			allOk &= false;
 		}
 		
