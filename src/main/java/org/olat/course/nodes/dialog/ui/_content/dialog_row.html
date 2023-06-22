@@ -1,0 +1,32 @@
+<div class="o_dialog_card o_dialog_card_link o_dialog_file_card" onClick="$f.ffXHREvent("select_file","$row.getDialogElementKey()");" role="link">
+	<div class="o_dialog_file_thumbnail">
+		<div class="o_dialog_file_img">
+			#if($row.isThumbnailAvailable())
+				<img src="${row.getThumbnailUrl()}" alt=""/>
+			#else
+				<div class="o_visual_not_available"></div>
+			#end
+		</div>
+	</div>
+	<div class="o_dialog_card_meta o_dialog_file_meta">
+		<div class="o_flex_first_grow_base">
+			<div class="o_nowrap">
+				<h3 class="o_dialog_card_link o_dialog_card_title">$r.render("$row.getSelectLinkName()")</h3>
+			</div>
+		</div>
+		<div class="o_nowrap">
+			$row.modified
+		</div>
+		#if($r.isNotEmpty($row.getPublishedByCardView()))
+			$row.getPublishedByCardView()
+		#end
+		<br>
+		#if($r.isNotEmpty($row.getAuthoredByCardView()))
+			$row.getAuthoredByCardView()
+		#end
+
+		<br>
+		<strong>$row.getNumOfThreads()</strong> $r.translate("table.header.threads")
+		<strong>$row.getNumOfMessages()</strong> $r.translate("table.header.messages")
+	</div>
+</div>

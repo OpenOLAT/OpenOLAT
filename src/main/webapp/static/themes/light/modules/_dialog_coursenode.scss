@@ -1,0 +1,277 @@
+.o_dialog_cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  >div {
+    width: calc(percentage(math.div(1, 3)) - 7px);
+    @media (max-width: $screen-md-max) {
+      min-width: calc(50% - 5px)
+    }
+    @media (max-width: $screen-sm-max) {
+      min-width: 100%;
+    }
+  }
+}
+
+.o_dialog_file_list {
+  &.o_rendertype_custom {
+    .o_dialog_file_rows {
+      .o_dialog_file_card {
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+
+        .o_dialog_file_thumbnail {
+          cursor: pointer;
+          height: 118px;
+          position: relative;
+          .o_dialog_file_img {
+            left: 0;
+            overflow: hidden;
+            position: absolute;
+            text-align: center;
+            top: 0;
+            transition: opacity 200ms ease-in-out;
+            width: 100%;
+            img {
+              padding: 12px 12px 0px 12px;
+              height: auto;
+              text-align: center;
+            }
+          }
+          .o_visual_not_available {
+            height: 150px;
+            background-image:url('#{$o-images-path}no_preview.png');
+            background-repeat:no-repeat;
+            background-position:50% 50%;
+            background-size: contain;
+          }
+        }
+        .o_dialog_file_meta {
+          position: relative;
+          width: 100%;
+          height: 100%;
+        }
+      }
+    }
+
+  }
+}
+
+
+
+.o_dialog_card {
+  border: 1px solid $o-coursesite-rowelem-border;
+  border-radius: $o-coursesite-rowelem-border-radius;
+  background: #ffffff;
+  height: 100%;
+
+  &.o_dialog_card_link {
+    cursor: pointer;
+    .o_icon_actions {
+      margin: 10px 15px;
+    }
+  }
+
+  .o_dialog_card_meta {
+    padding: 10px;
+    border-radius: $o-coursesite-rowelem-border-radius;
+    background: #ffffff;
+    .o_dialog_card_title {
+      margin-top: 0;
+      margin-bottom: 5px;
+      line-height: 26px;
+
+      a {
+        @extend %o_nowrap;
+        display: block;
+      }
+    }
+    .o_proj_card_members {
+      @extend %o_block_small_bottom;
+    }
+    .o_proj_card_modified {
+      @extend %o_muted;
+      @extend %o_flex_block_one_line_left;
+    }
+    .o_proj_card_tags {
+      >span {
+        margin-top: 0.5em;
+      }
+    }
+  }
+
+  &.o_proj_card_ctop {
+    border: initial;
+    border-top: 3px solid $o-coursesite-rowelem-border;
+  }
+  &.o_proj_card_cleft {
+    border: initial;
+    .o_proj_card_meta {
+      color: initial;
+    }
+
+    &.o_cal_orange {
+      border-left: 3px solid $o-cal-orange-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-orange-bg, 0.1);
+      }
+    }
+    &.o_cal_green {
+      border-left: 3px solid $o-cal-green-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-green-bg, 0.1);
+      }
+    }
+    &.o_cal_blue {
+      border-left: 3px solid $o-cal-blue-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-blue-bg, 0.1);
+      }
+    }
+    &.o_cal_yellow {
+      border-left: 3px solid $o-cal-yellow-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-yellow-bg, 0.1);
+      }
+    }
+    &.o_cal_red {
+      border-left: 3px solid $o-cal-red-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-red-bg, 0.1);
+      }
+    }
+    &.o_cal_rebeccapurple {
+      border-left: 3px solid $o-cal-rebeccapurple-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-rebeccapurple-bg, 0.1);
+      }
+    }
+    &.o_cal_fuchsia {
+      border-left: 3px solid $o-cal-fuchsia-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-fuchsia-bg, 0.1);
+      }
+    }
+    &.o_cal_olive {
+      border-left: 3px solid $o-cal-olive-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-olive-bg, 0.1);
+      }
+    }
+    &.o_cal_navy {
+      border-left: 3px solid $o-cal-navy-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-navy-bg, 0.1);
+      }
+    }
+    &.o_cal_maroon {
+      border-left: 3px solid $o-cal-maroon-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-maroon-bg, 0.1);
+      }
+    }
+    &.o_cal_lime {
+      border-left: 3px solid $o-cal-lime-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-lime-bg, 0.1);
+      }
+    }
+    &.o_cal_grey {
+      border-left: 3px solid $o-cal-grey-bg;
+      .o_proj_card_meta {
+        background-color: rgba($o-cal-grey-bg, 0.1);
+      }
+    }
+  }
+}
+
+/* Specific dialog element view - compact card view */
+div.panel.o_dialog_file_overview {
+  display: flex;
+  gap: 4rem;
+  flex-direction: row;
+  padding: 20px;
+  border: 1px solid $o-dialog-cn-box-border-color;
+
+  .o_dialog_file {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    order: -1;
+    max-width: 395px;
+    gap: 20px;
+
+    .o_dialog_file_thumbnail {
+      max-width: 110px;
+      cursor: pointer;
+      height: auto;
+      position: relative;
+      background-color: #fff;
+      border-radius: $thumbnail-border-radius;
+      border: 1px solid $o-dialog-cn-box-border-color;
+      justify-content: center;
+      align-items: center;
+
+      .o_visual_not_available {
+        min-width: 110px;
+        min-height: 150px;
+        background-image:url('#{$o-images-path}no_preview.png');
+        background-repeat:no-repeat;
+        background-position:50% 50%;
+        background-size: contain;
+      }
+    }
+  }
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+  }
+
+  .o_dialog_file_info {
+    word-wrap: anywhere;
+    h4 {
+      display: inline-block;
+    }
+
+    .o_dialog_count {
+      padding-right: 20px;
+    }
+  }
+
+  .o_dialog_file_metadata {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    flex-shrink: 0;
+    align-items: flex-end;
+
+    .o_dialog_metadata_info {
+      display: flex;
+      flex-wrap: wrap;
+      flex-grow: 1;
+      align-content: center;
+      gap: 15px;
+    }
+
+    .o_dialog_file_button_group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+
+      @media (max-width: 700px) {
+        margin-top: 15px;
+      }
+    }
+  }
+}
+
+.o_dialog_file_overview:before {
+  content: "";
+  border: 1px solid $o-dialog-cn-box-border-color;
+  align-self: stretch;
+}
+
+.o_dialog_new_button_right {
+  padding-bottom: 10px;
+}
