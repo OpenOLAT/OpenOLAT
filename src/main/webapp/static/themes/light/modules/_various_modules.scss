@@ -607,6 +607,8 @@ ul.o_certificates li {
 
 	.o_certificate_card {
 		grid-template-columns: 20px auto;
+		padding: 10px 0 30px 0;
+		position: relative;
 		
 		.o_certificate_type {
 			font-size: 25px;
@@ -616,8 +618,15 @@ ul.o_certificates li {
 			box-sizing: content-box;
 		}
 		
+		.o_certificate_meta {
+			overflow: visible;
+			padding-right: 15px;
+		}
+		
 		.o_certificate_actions {
-			grid-column: 1 / 3;
+			position: absolute;
+			bottom: 6px;
+			right: 0;
 		}
 	}
 }

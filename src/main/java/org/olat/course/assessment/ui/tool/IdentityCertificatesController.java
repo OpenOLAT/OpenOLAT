@@ -176,6 +176,7 @@ public class IdentityCertificatesController extends FormBasicController implemen
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setNumOfRowsEnabled(false);
+		tableEl.setCustomizeColumns(false);
 		
 		VelocityContainer row = createVelocityContainer("certificate_row_1");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
