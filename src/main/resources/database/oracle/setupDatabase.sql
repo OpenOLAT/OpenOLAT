@@ -3485,6 +3485,7 @@ create table o_dialog_element (
   d_filename varchar2(2048 char),
   d_filesize number(20),
   d_subident varchar2(64 char) not null,
+  d_authoredby varchar2(64 char),
   fk_author number(20),
   fk_entry number(20) not null,
   fk_forum number(20) not null,

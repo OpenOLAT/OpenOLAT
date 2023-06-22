@@ -551,3 +551,6 @@ create index idx_badge_category_class_idx on o_badge_category (fk_class);
 
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
+
+-- Dialog element
+alter table o_dialog_element add column d_authoredby varchar(64);
