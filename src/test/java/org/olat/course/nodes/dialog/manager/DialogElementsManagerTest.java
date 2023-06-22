@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.dialog.manager;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -86,6 +87,21 @@ public class DialogElementsManagerTest extends OlatTestCase {
 
 		Assert.assertEquals(authoredBy.getName(), element.getAuthoredBy());
 		Assert.assertEquals("task_e.txt", element.getFilename());
+	}
+
+	@Test
+	public void getDialogElements() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("session-1");
+		String subIdent = UUID.randomUUID().toString();
+		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		DialogElement element2 = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
+		dbInstance.commitAndCloseSession();
+
+		List<DialogElement> dialogElementList = dialogElementsManager.getDialogElements(entry, subIdent);
+		Assert.assertEquals(2, dialogElementList.size());
+		Assert.assertTrue(dialogElementList.contains(element));
+		Assert.assertTrue(dialogElementList.contains(element2));
 	}
 	
 	@Test
