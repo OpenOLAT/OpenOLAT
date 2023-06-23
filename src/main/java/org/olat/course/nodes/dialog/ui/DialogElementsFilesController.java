@@ -120,10 +120,12 @@ public class DialogElementsFilesController extends BasicController {
 						String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 						if(!chosenFile.contains("://")) {
 							VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-							dialogElmsMgr.doCopySelectedFile(chosenFile, filename, courseContainer,
+							DialogElement element = dialogElmsMgr.doCopySelectedFile(chosenFile, filename, courseContainer,
 									getIdentity(), entry, courseNode.getIdent(),
 									dialogFileUploadCtrl.getAuthoredByElValue());
-							markPublisherNews();
+							if (element != null) {
+								markPublisherNews();
+							}
 						}
 					}
 				elementListCtrl.loadModel();

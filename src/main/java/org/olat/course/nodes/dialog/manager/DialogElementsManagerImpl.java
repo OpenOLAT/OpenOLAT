@@ -213,17 +213,21 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 								   Identity identity, RepositoryEntry entry, String courseNodeIdent,
 								   String authoredBy) {
 		VFSLeaf vl = (VFSLeaf) courseContainer.resolve(chosenFile);
-		DialogElement newElement = createDialogElement(entry, identity,
-				filename, vl.getSize(), courseNodeIdent, authoredBy);
+		if (vl != null) {
+			DialogElement newElement = createDialogElement(entry, identity,
+					filename, vl.getSize(), courseNodeIdent, authoredBy);
 
-		//copy file
-		VFSContainer dialogContainer = getDialogContainer(newElement);
-		VFSLeaf copyVl = dialogContainer.createChildLeaf(filename);
-		if (copyVl == null) {
-			copyVl = (VFSLeaf) dialogContainer.resolve(filename);
+			//copy file
+			VFSContainer dialogContainer = getDialogContainer(newElement);
+			VFSLeaf copyVl = dialogContainer.createChildLeaf(filename);
+			if (copyVl == null) {
+				copyVl = (VFSLeaf) dialogContainer.resolve(filename);
+			}
+			VFSManager.copyContent(vl, copyVl, true, identity);
+			return newElement;
+		} else {
+			return null;
 		}
-		VFSManager.copyContent(vl, copyVl, true, identity);
-		return newElement;
 	}
 
 	/**

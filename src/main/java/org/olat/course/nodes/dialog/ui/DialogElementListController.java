@@ -372,8 +372,10 @@ public class DialogElementListController extends FormBasicController implements 
 						element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
 								getIdentity(), entry, courseNode.getIdent(),
 								dialogFileUploadCtrl.getAuthoredByElValue());
-						markPublisherNews();
-						loadModel();
+						if (element != null) {
+							markPublisherNews();
+							loadModel();
+						}
 					}
 				}
 				// after successful upload fireEvent which gets caught in NodeRunCtrl, so dialog gets opened

@@ -220,11 +220,13 @@ public class DialogElementListEditController extends FormBasicController {
 					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 					if(!chosenFile.contains("://")) {
 						VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-						dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
+						DialogElement element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
 								getIdentity(), entry, courseNode.getIdent(),
 								dialogFileUploadCtrl.getAuthoredByElValue());
-						markPublisherNews();
-						loadModel();
+						if (element != null) {
+							markPublisherNews();
+							loadModel();
+						}
 					}
 				}
 			}

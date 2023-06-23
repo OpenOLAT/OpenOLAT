@@ -171,7 +171,7 @@ public class DialogElementController extends BasicController implements Activate
 		} else {
 			lastActivity = Collections.max(lastActivities);
 		}
-		mainVC.contextPut("authoredBy", authoredBy);
+		mainVC.contextPut("authoredBy", authoredBy != null ? authoredBy : "");
 		mainVC.contextPut("lastActivity", Formatter.getInstance(getLocale()).formatDateAndTime(lastActivity));
 
 		mainVC.contextPut("filename", StringHelper.escapeHtml(element.getFilename()));

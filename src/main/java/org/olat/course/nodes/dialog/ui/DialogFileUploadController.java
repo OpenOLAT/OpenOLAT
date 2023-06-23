@@ -177,35 +177,30 @@ public class DialogFileUploadController extends FormBasicController {
 	 * @return String value, retrieve filtered filename
 	 */
 	public String getFileNameElValue() {
-		return StringHelper.xssScan(fileNameEl.getValue());
+		return StringHelper.escapeHtml(fileNameEl.getValue());
 	}
 
 	/**
 	 * @return String value, retrieve filtered authoredBy name
 	 */
 	public String getAuthoredByElValue() {
-		return StringHelper.xssScan(authoredByEl.getValue());
+		return StringHelper.escapeHtml(authoredByEl.getValue());
 	}
 
 	/**
 	 * @return String value, retrieve filtered chosen filename
 	 */
 	public String getFileChooserElValue() {
-		return StringHelper.xssScan(fileChooserEl.getValue());
+		return fileChooserEl.getValue();
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = super.validateFormLogic(ureq);
 		String fileName = fileNameEl.getValue();
-		String chosenFileName = fileChooserEl.getValue();
 
 		if (!FileUtils.validateFilename(fileName)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error");
-			isInputValid = false;
-		}
-		if (actionSelection.isKeySelected(DIALOG_ACTION_COPY) && !FileUtils.validateFilename(chosenFileName)) {
-			searchCont.setErrorKey("dialog.metadata.filename.error");
 			isInputValid = false;
 		}
 

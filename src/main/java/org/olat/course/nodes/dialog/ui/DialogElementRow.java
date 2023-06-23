@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.elements.DownloadLink;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.dialog.DialogElement;
+import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -36,6 +37,8 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, https://www.frentix.com
  */
 public class DialogElementRow extends UserPropertiesRow {
+
+	private final List<UserPropertyHandler> userPropertyHandlers;
 
 	private final DialogElement element;
 	private DownloadLink downloadLink;
@@ -54,6 +57,7 @@ public class DialogElementRow extends UserPropertiesRow {
 
 	public DialogElementRow(DialogElement element, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(element.getAuthor(), userPropertyHandlers, locale);
+		this.userPropertyHandlers = userPropertyHandlers;
 		this.element = element;
 	}
 
@@ -96,10 +100,10 @@ public class DialogElementRow extends UserPropertiesRow {
 	/**
 	 * get username, who published the dialog file
 	 *
-	 * @return String (Firstname, Lastname)
+	 * @return String
 	 */
 	public String getPublishedBy() {
-		return super.getIdentityProps()[1] + ", " + super.getIdentityProps()[2];
+		return UserManager.getInstance().getUserDisplayName(this, userPropertyHandlers);
 	}
 
 	/**
@@ -108,7 +112,7 @@ public class DialogElementRow extends UserPropertiesRow {
 	 * @return String name of author, can be null
 	 */
 	public String getAuthoredBy() {
-		return element != null ? StringHelper.xssScan(element.getAuthoredBy()) : null;
+		return element != null ? StringHelper.escapeHtml(element.getAuthoredBy()) : null;
 	}
 
 	/**

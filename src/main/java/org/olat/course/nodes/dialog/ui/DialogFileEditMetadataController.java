@@ -66,11 +66,11 @@ public class DialogFileEditMetadataController extends FormBasicController {
 
 
 	public String getFileName() {
-		return StringHelper.xssScan(fileNameEl.getValue());
+		return StringHelper.escapeHtml(fileNameEl.getValue());
 	}
 
 	public String getAuthoredBy() {
-		return StringHelper.xssScan(authoredByEl.getValue());
+		return StringHelper.escapeHtml(authoredByEl.getValue());
 	}
 
 	@Override
