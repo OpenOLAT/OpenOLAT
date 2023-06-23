@@ -100,6 +100,7 @@ public class EditRelationRoleController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String name = relationRole == null ? null : relationRole.getRole();
 		roleEl = uifactory.addTextElement("role.identifier", 128, name, formLayout);
+		roleEl.setMandatory(true);
 		roleEl.setEnabled(!RelationRoleManagedFlag.isManaged(relationRole, RelationRoleManagedFlag.name));
 		
 		String[] predefinedLabelValues = new String[predefinedLabelKeys.length];
@@ -183,6 +184,7 @@ public class EditRelationRoleController extends FormBasicController {
 			relationRole = identityRelationsService.createRole(roleEl.getValue(), selectedRights);
 			copyTranslations();
 		} else {
+			relationRole.setRole(roleEl.getValue());
 			relationRole = identityRelationsService.updateRole(relationRole, selectedRights);
 		}
 		
