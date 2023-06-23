@@ -895,6 +895,7 @@ public class MessageListController extends BasicController implements GenericEve
 				if(reply != null) {
 					reply = forumManager.getMessageById(reply.getKey());
 					reloadModel(ureq, reply);
+					fireEvent(ureq, Event.CHANGED_EVENT);
 				} else {
 				  	showInfo("header.cannotsavemessage");
 				}

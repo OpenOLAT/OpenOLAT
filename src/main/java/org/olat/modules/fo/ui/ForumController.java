@@ -202,10 +202,12 @@ public class ForumController extends BasicController implements GenericEventList
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (threadListCtrl ==  source) {
-			if(event instanceof SelectMessageEvent) {
-				doProcessSelectEvent(ureq, (SelectMessageEvent)event);
+			if(event instanceof SelectMessageEvent sme) {
+				doProcessSelectEvent(ureq, sme);
 			} else if(event instanceof SelectUserListEvent) {
 				doUserList(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(viewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
@@ -214,18 +216,22 @@ public class ForumController extends BasicController implements GenericEventList
 			} else if(event instanceof DeleteThreadEvent) {
 				reloadThreadList = true;
 				doThreadList(ureq);
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			} else if(event instanceof DeleteMessageEvent) {
 				reloadThreadList = true;
-			} else if(event instanceof SelectMessageEvent) {
-				doProcessSelectEvent(ureq, (SelectMessageEvent)event);
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			} else if(event instanceof SelectMessageEvent sme) {
+				doProcessSelectEvent(ureq, sme);
+			} else if (event == Event.CHANGED_EVENT) {
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if(userViewCtrl == source) {
 			if(event == Event.BACK_EVENT) {
 				reloadThreadList |= userViewCtrl.hasMarkedNewMessages();
 				cleanUpMessageViews();
 				doUserList(ureq);
-			} else if(event instanceof SelectMessageEvent) {
-				doProcessSelectEvent(ureq, (SelectMessageEvent)event);
+			} else if(event instanceof SelectMessageEvent sme) {
+				doProcessSelectEvent(ureq, sme);
 			}
 		} else if(userListCtrl == source) {
 			if(event == Event.BACK_EVENT) {
@@ -233,8 +239,7 @@ public class ForumController extends BasicController implements GenericEventList
 				userListCtrl = null;
 				
 				doThreadList(ureq);
-			} else if(event instanceof SelectUserEvent) {
-				SelectUserEvent sue = (SelectUserEvent)event;
+			} else if(event instanceof SelectUserEvent sue) {
 				if(sue.isGuest()) {
 					doGuestMessageList(ureq);
 				} else if(StringHelper.containsNonWhitespace(sue.getPseudonym())) {

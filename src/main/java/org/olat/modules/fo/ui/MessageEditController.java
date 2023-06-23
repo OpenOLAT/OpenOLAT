@@ -468,7 +468,7 @@ public class MessageEditController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		try {
 			commitMessage(ureq);
-			fireEvent(ureq, Event.DONE_EVENT);
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		} catch(DBRuntimeException | PersistenceException e) {
 			dbInstance.rollback();
 			logError("", e);

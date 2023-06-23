@@ -215,8 +215,10 @@ public class DialogFileUploadController extends FormBasicController {
 			}
 			if (event instanceof URLChoosenEvent urlChoosenEvent) {
 				String fileUrl = urlChoosenEvent.getURL();
+				String[] pathElements = urlChoosenEvent.getURL().split("/");
+				String fileName = pathElements[pathElements.length - 1];
 				fileChooserEl.setValue(fileUrl);
-				fileNameEl.setValue(fileUrl);
+				fileNameEl.setValue(fileName);
 				cmc.deactivate();
 				updateVisibility();
 			}

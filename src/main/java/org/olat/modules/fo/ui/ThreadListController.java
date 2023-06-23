@@ -195,10 +195,11 @@ public class ThreadListController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(newThreadCtrl == source) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.CHANGED_EVENT) {
 				DBFactory.getInstance().commit();
 				loadModel();
 				doSelect(ureq, newThreadCtrl.getMessage());
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 			cmc.deactivate();
 			cleanUp();

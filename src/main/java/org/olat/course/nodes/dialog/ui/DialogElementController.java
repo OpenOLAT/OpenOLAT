@@ -156,10 +156,7 @@ public class DialogElementController extends BasicController implements Activate
 		String mediaUrl = createDocumentUrl(ureq);
 		mainVC.contextPut("mediaUrl", mediaUrl);
 
-		int messageCount = forumManager.countMessagesByForumID(forum.getKey());
-		int threadCount = forumManager.countThreadsByForumID(forum.getKey());
-		mainVC.contextPut("messageCount", messageCount);
-		mainVC.contextPut("threadCount", threadCount);
+		loadForumCount();
 
 		String authoredBy = element.getAuthoredBy();
 		Date lastActivity;
@@ -190,6 +187,13 @@ public class DialogElementController extends BasicController implements Activate
 	public DialogElement getElement() {
 		return element;
 	}
+
+	private void loadForumCount() {
+		int messageCount = forumManager.countMessagesByForumID(element.getForum().getKey());
+		int threadCount = forumManager.countThreadsByForumID(element.getForum().getKey());
+		mainVC.contextPut("messageCount", messageCount);
+		mainVC.contextPut("threadCount", threadCount);
+	}
 	
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
@@ -212,6 +216,8 @@ public class DialogElementController extends BasicController implements Activate
 				fireEvent(ureq, Event.DONE_EVENT);
 			}
 			cmc.deactivate();
+		}  else if (event == Event.CHANGED_EVENT) {
+			loadForumCount();
 		}
 		super.event(ureq, source, event);
 	}
