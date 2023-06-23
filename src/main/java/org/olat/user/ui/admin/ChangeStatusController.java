@@ -125,6 +125,10 @@ public class ChangeStatusController extends FormBasicController {
 		for(Identity editedIdentity:editedIdentities) {
 			Integer oldStatus = editedIdentity.getStatus();
 			Integer newStatus = getStatus();
+			if(!Identity.STATUS_ACTIV.equals(newStatus) && securityManager.getRoles(editedIdentity).isGuestOnly()) {
+				continue;
+			}
+			
 			if(!oldStatus.equals(newStatus) && Identity.STATUS_LOGIN_DENIED.equals(newStatus) && sendLoginDeniedEmail) {
 				userBulkChangeManager.sendLoginDeniedEmail(editedIdentity);
 			}

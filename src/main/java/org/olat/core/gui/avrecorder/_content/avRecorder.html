@@ -306,5 +306,16 @@
 		generatePosterImage: $generatePosterImage
 	});
 	videoRecorder.stateInit();
+	jQuery(() => {
+		var controllerDiv = jQuery('#avRecorder');
+		var videoPreviewDiv = jQuery('#avContainer');
+		function updateSizes() {
+			if ((videoPreviewDiv.width() > (controllerDiv.width() + 30)) ||
+				(videoPreviewDiv.width() < (controllerDiv.width() - 100))) {
+				videoRecorder.sizeVideoElement(videoPreviewDiv.width(), videoPreviewDiv.height());
+			}
+		}
+		new ResizeObserver(updateSizes).observe(controllerDiv[0]);
+	});
 	#end
 </script>
