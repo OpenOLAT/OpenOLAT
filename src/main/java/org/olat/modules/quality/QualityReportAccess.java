@@ -61,6 +61,10 @@ public interface QualityReportAccess extends CreateInfo, ModifiedInfo {
 	
 	public void setEmailTrigger(EmailTrigger trigger);
 	
+	public boolean isQualitativeFeedbackEmail();
+	
+	public void setQualitativeFeedbackEmail(boolean qualitativeFeedbackEmail);
+	
 	public Group getGroup();
 
 }

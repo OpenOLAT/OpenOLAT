@@ -68,6 +68,10 @@ class DataCollectionRow {
 		return dataCollectionView.getFormName();
 	}
 	
+	boolean isQualitativeFeedback() {
+		return dataCollectionView.isQualitativeFeedback();
+	}
+	
 	String getTopicType() {
 		return dataCollectionView.getTranslatedTopicType();
 	}

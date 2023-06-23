@@ -69,8 +69,11 @@ import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SessionStatusHandler;
 import org.olat.modules.forms.SessionStatusInformation;
+import org.olat.modules.forms.model.xml.AbstractElement;
+import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.quality.QualityAuditLog;
 import org.olat.modules.quality.QualityAuditLogSearchParams;
 import org.olat.modules.quality.QualityContext;
@@ -191,6 +194,7 @@ public class QualityServiceImpl
 			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
 		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), formEntry);
+		dataCollection = updateQualitativeFeedback(dataCollection, formEntry);
 		createDataCollectionReferences(organisations, formEntry, dataCollection);
 		return dataCollection;
 	}
@@ -200,6 +204,7 @@ public class QualityServiceImpl
 			QualityGenerator generator, Long generatorProviderKey) {
 		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
 		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), formEntry);
+		dataCollection = updateQualitativeFeedback(dataCollection, formEntry);
 		createDataCollectionReferences(organisations, formEntry, dataCollection);
 		return dataCollection;
 	}
@@ -210,6 +215,7 @@ public class QualityServiceImpl
 		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
 		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(getSurveyIdent(previous));
 		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), previousSurvey);
+		dataCollection = updateQualitativeFeedback(dataCollection, previousSurvey.getFormEntry());
 		createDataCollectionReferences(organisations, previousSurvey.getFormEntry(), dataCollection);
 		return dataCollection;
 	}
@@ -219,6 +225,13 @@ public class QualityServiceImpl
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection(generator, generatorProviderKey);
 		log.info("Quality data collection " + dataCollection + " created by generator " + generator);
 		return dataCollection;
+	}
+	
+	public QualityDataCollection updateQualitativeFeedback(QualityDataCollection dataCollection,
+			RepositoryEntry formEntry) {
+		boolean qualitativeFeedback = isFormWithQualitativeFeedback(formEntry);
+		dataCollection.setQualitativeFeedback(qualitativeFeedback);
+		return dataCollectionDao.updateDataCollection(dataCollection);
 	}
 
 	private void createDataCollectionReferences(Collection<Organisation> organisations, RepositoryEntry formEntry,
@@ -293,7 +306,7 @@ public class QualityServiceImpl
 			updatedDataCollection = dataCollectionDao.updateDataCollectionStatus(dataCollection, status);
 			if (hasChangedToFinished(status, previousStatus)) {
 				reportAccessDao.deleteUnappropriated(of(updatedDataCollection));
-				sendReportAccessMails(dataCollection);
+				sendDoneMails(dataCollection);
 			}
 			log.info("Status of quality data collection updated to " + status + ". " + updatedDataCollection.toString());
 		} catch (Exception e) {
@@ -307,16 +320,22 @@ public class QualityServiceImpl
 		return QualityDataCollectionStatus.FINISHED.equals(status) && !QualityDataCollectionStatus.FINISHED.equals(previousStatus);
 	}
 
-	private void sendReportAccessMails(QualityDataCollection dataCollection) {
-		List<RubricStatistic> rubricStatistics = getRubricsStatistics(dataCollection);
-		Set<Identity> recipients = getReportAccessRecipients(dataCollection, rubricStatistics);
-		qualityMailing.sendReportAccessEmail(dataCollection, recipients, rubricStatistics);
-	}
-	
-	private Set<Identity> getReportAccessRecipients(QualityDataCollection dataCollection, List<RubricStatistic> rubricStatistics) {
+	private void sendDoneMails(QualityDataCollection dataCollection) {
 		QualityReportAccessSearchParams searchParams = new QualityReportAccessSearchParams();
 		searchParams.setReference(of(dataCollection));
 		List<QualityReportAccess> reportAccesses = reportAccessDao.load(searchParams);
+		
+		sendReportAccessMails(dataCollection, reportAccesses);
+		sendQualitatveFeedbackMails(dataCollection, reportAccesses);
+	}
+
+	private void sendReportAccessMails(QualityDataCollection dataCollection, List<QualityReportAccess> reportAccesses) {
+		List<RubricStatistic> rubricStatistics = getRubricsStatistics(dataCollection);
+		Set<Identity> reportRecipients = getReportAccessRecipients(reportAccesses, rubricStatistics);
+		qualityMailing.sendReportAccessEmail(dataCollection, reportRecipients, rubricStatistics);
+	}
+
+	private Set<Identity> getReportAccessRecipients(List<QualityReportAccess> reportAccesses, List<RubricStatistic> rubricStatistics) {
 		Set<Identity> recipients = new HashSet<>();
 		
 		for (QualityReportAccess reportAccess : reportAccesses) {
@@ -373,6 +392,43 @@ public class QualityServiceImpl
 			statistics.add(rubricStatistic);
 		}
 		return statistics;
+	}
+
+	private void sendQualitatveFeedbackMails(QualityDataCollection dataCollection, List<QualityReportAccess> reportAccesses) {
+		if (dataCollection.isQualitativeFeedback()) {
+			boolean qualitativeFeedbackEnabled = reportAccesses.stream()
+					.anyMatch(this::isQualitativeFeedbackEnabled);
+			if (qualitativeFeedbackEnabled && isQualitativeFeedbackAvailable(dataCollection)) {
+				Set<Identity> qualitativeFeedbackRecipients = getQualitativeFeedbackRecipients(reportAccesses);
+				qualityMailing.sendQualitativeFeedbackEmail(dataCollection, qualitativeFeedbackRecipients);
+			}
+		}
+	}
+	
+	private Set<Identity> getQualitativeFeedbackRecipients(List<QualityReportAccess> reportAccesses) {
+		Set<Identity> recipients = new HashSet<>();
+		
+		for (QualityReportAccess reportAccess : reportAccesses) {
+			// Make sure the e-mail is only sent if online access is enabled as well
+			if (isQualitativeFeedbackEnabled(reportAccess)) {
+				List<Identity> identities = reportAccessDao.loadRecipients(reportAccess);
+				recipients.addAll(identities);
+			}
+		}
+		
+		return recipients;
+	}
+
+	private boolean isQualitativeFeedbackEnabled(QualityReportAccess reportAccess) {
+		return accessEnabled(reportAccess) && reportAccess.isOnline() && reportAccess.isQualitativeFeedbackEmail();
+	}
+
+	private boolean isQualitativeFeedbackAvailable(QualityDataCollection dataCollection) {
+		Form form = evaluationFormManager.loadForm(loadFormEntry(dataCollection));
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
+		List<String> responseIdentifiers = elements.stream().filter(this::isQualitativeFeedbackElement).map(AbstractElement::getId).toList();
+		EvaluationFormSurvey survey = loadSurvey(dataCollection);
+		return evaluationFormManager.isStringuifiedAvailable(survey, responseIdentifiers);
 	}
 	
 	@Override
@@ -431,12 +487,25 @@ public class QualityServiceImpl
 	}
 
 	@Override
+	public  boolean isFormWithQualitativeFeedback(RepositoryEntry formEntry) {
+		Form form = evaluationFormManager.loadForm(formEntry);
+		List<AbstractElement> elements = evaluationFormManager.getUncontainerizedElements(form);
+		return elements.stream().anyMatch(this::isQualitativeFeedbackElement);
+	}
+
+	private boolean isQualitativeFeedbackElement(AbstractElement element) {
+		return element instanceof TextInput || element instanceof FileUpload;
+	}
+
+	@Override
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry) {
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		deleteReferences(dataCollection);
 		
 		evaluationFormManager.updateSurveyForm(survey, formEntry);
 		referenceManager.addReference(dataCollection, formEntry.getOlatResource(), null);
+		
+		dataCollection = updateQualitativeFeedback(dataCollection, formEntry);
 	}
 
 	private void deleteReferences(QualityDataCollectionLight dataCollection) {

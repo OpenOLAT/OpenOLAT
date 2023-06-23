@@ -144,6 +144,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(dataCollection.getCreationDate()).isNotNull();
 		assertThat(dataCollection.getLastModified()).isNotNull();
 		assertThat(dataCollection.getStatus()).isEqualTo(QualityDataCollectionStatus.PREPARATION);
+		assertThat(dataCollection.isQualitativeFeedback()).isFalse();
 		assertThat(dataCollection.getGenerator()).isEqualTo(generator);
 		assertThat(dataCollection.getGeneratorProviderKey()).isEqualTo(providerKey);
 	}
@@ -178,6 +179,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		dataCollection.setTitle(title);
 		dataCollection.setStart(start);
 		dataCollection.setDeadline(end);
+		dataCollection.setQualitativeFeedback(true);
 		dataCollection.setTopicType(topicType);
 		dataCollection.setTopicCustom(topicCustom);
 		dataCollection.setTopicOrganisation(organisation);
@@ -191,6 +193,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 		assertThat(updatedDataCollection.getTitle()).isEqualTo(title);
 		assertThat(updatedDataCollection.getStart()).isEqualToIgnoringSeconds(start);
 		assertThat(updatedDataCollection.getDeadline()).isEqualToIgnoringSeconds(end);
+		assertThat(updatedDataCollection.isQualitativeFeedback()).isTrue();
 		assertThat(updatedDataCollection.getTopicType()).isEqualTo(topicType);
 		assertThat(updatedDataCollection.getTopicCustom()).isEqualTo(topicCustom);
 		assertThat(updatedDataCollection.getTopicOrganisation()).isEqualTo(organisation);
@@ -237,7 +240,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadPreviousDataCollection() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
 		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
@@ -249,7 +252,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldLoadFollowUpDataCollection() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		QualityDataCollection first = qualityService.createDataCollection(emptyList(), formEntry);
 		QualityDataCollection second = qualityService.createDataCollection(emptyList(), first, null, null);
 		dbInstance.commitAndCloseSession();
@@ -518,8 +521,8 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadFormEntries() {
-		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		qualityTestHelper.createDataCollection(organisation, formEntry1);
 		qualityTestHelper.createDataCollection(organisation, formEntry1);
@@ -575,8 +578,10 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	public void shouldLoadDataCollectionsOrdered() {
 		QualityDataCollection dataCollectionZ = qualityTestHelper.createDataCollection();
 		dataCollectionZ.setTitle("Z");
+		sut.updateDataCollection(dataCollectionZ);
 		QualityDataCollection dataCollectionA = qualityTestHelper.createDataCollection();
 		dataCollectionA.setTitle("A");
+		sut.updateDataCollection(dataCollectionA);
 		dbInstance.commitAndCloseSession();
 		
 		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
@@ -1051,9 +1056,9 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldFilterDataCollectionsByFormEntries() {
-		RepositoryEntry formEntry1 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntry2 = JunitTestHelper.createAndPersistRepositoryEntry();
-		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry1 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntry2 = qualityTestHelper.createFormEntry();
+		RepositoryEntry formEntryOther = qualityTestHelper.createFormEntry();
 		Organisation organisation = qualityTestHelper.createOrganisation();
 		QualityDataCollection dataCollection1 = qualityTestHelper.createDataCollection(organisation, formEntry1);
 		QualityDataCollection dataCollection2 = qualityTestHelper.createDataCollection(organisation, formEntry1);
@@ -1347,7 +1352,7 @@ public class QualityDataCollectionDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterDataCollectionsByGeneratorRefs() {
 		Collection<Organisation> organisations = Collections.singletonList(qualityTestHelper.createOrganisation());
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		String title = JunitTestHelper.random();
 		QualityGenerator generator1 = qualityTestHelper.createGenerator();
 		QualityGenerator generator2 = qualityTestHelper.createGenerator();

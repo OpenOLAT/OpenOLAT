@@ -20,6 +20,7 @@
 package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
+import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -53,6 +55,8 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
+	@Autowired
+	private EvaluationFormManager evaluationFormManager;
 	
 	@Autowired
 	private EvaluationFormResponseDAO sut;
@@ -66,7 +70,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	public void shouldUpdateResponse() {
 		EvaluationFormSession session = evaTestHelper.createSession();
 		EvaluationFormResponse response = createResponse(session);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		BigDecimal numericalValue = new BigDecimal("3.3");
 		String stringuifiedResponse = numericalValue.toPlainString();
@@ -84,7 +88,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormSession session = evaTestHelper.createSession();
 		String responseIdentifier = UUID.randomUUID().toString();
 		EvaluationFormResponse response = sut.createNoResponse(responseIdentifier, session);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		assertThat(response.getCreationDate()).isNotNull();
 		assertThat(response.getLastModified()).isNotNull();
@@ -100,7 +104,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 	public void shouldUpdateNoResponse() {
 		EvaluationFormSession session = evaTestHelper.createSession();
 		EvaluationFormResponse initialResponse = createResponse(session);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 
 		EvaluationFormResponse response = sut.updateNoResponse(initialResponse);
 
@@ -120,7 +124,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormResponse response21 = evaTestHelper.createResponse(surveySession2);
 		EvaluationFormSession otherSession = evaTestHelper.createSession();
 		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesBySurvey(survey);
 		
@@ -140,7 +144,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormResponse response21 = evaTestHelper.createResponse(session2);
 		EvaluationFormSession otherSession = evaTestHelper.createSession();
 		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<EvaluationFormParticipation> participations = Arrays.asList(participation1, participation2);
 		List<EvaluationFormResponse> loadedResponses = sut.loadResponsesByParticipations(participations);
@@ -160,7 +164,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		EvaluationFormResponse response21 = evaTestHelper.createResponse(session2);
 		EvaluationFormSession otherSession = evaTestHelper.createSession();
 		EvaluationFormResponse otherResponse = evaTestHelper.createResponse(otherSession);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		List<EvaluationFormSession> sessions = Arrays.asList(session1, session2);
 		SessionFilter filter = SessionFilterFactory.create(sessions);
@@ -178,7 +182,7 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		createResponse(session, responseIdentifier);
 		createResponse(session, responseIdentifier);
 		createResponse(session, responseIdentifier);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 
 		SessionFilter filter = SessionFilterFactory.create(session);
 		List<EvaluationFormResponse> responses = sut.loadResponsesBySessions(filter);
@@ -186,12 +190,83 @@ public class EvaluationFormResponseDAOTest extends OlatTestCase {
 		
 		List<Long> keys = responses.stream().map(EvaluationFormResponse::getKey).collect(Collectors.toList());
 		sut.deleteResponses(keys);
-		dbInstance.commit();
+		dbInstance.commitAndCloseSession();
 		
 		responses = sut.loadResponsesBySessions(filter);
 		assertThat(responses).hasSize(0);
 	}
 	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_ok() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		evaluationFormManager.finishSession(session);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, "text", null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(survey, List.of(responseIdentifier))).isTrue();
+	}
+	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_no_string() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		evaluationFormManager.finishSession(session);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, null, null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(survey, List.of(responseIdentifier))).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_empty_string() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		evaluationFormManager.finishSession(session);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, "", null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(survey, List.of(responseIdentifier))).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_other_idenitifer() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		evaluationFormManager.finishSession(session);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, "text", null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(survey, List.of(random()))).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_session_not_finished() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, "text", null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(survey, List.of(responseIdentifier))).isFalse();
+	}
+	
+	@Test
+	public void shouldCheckIsStringuifiedAvailable_other_survey() {
+		EvaluationFormSurvey survey = evaTestHelper.createSurvey();
+		EvaluationFormSurvey otherSurvey = evaTestHelper.createSurvey();
+		EvaluationFormSession session = evaTestHelper.createSession(survey);
+		evaluationFormManager.finishSession(session);
+		String responseIdentifier = random();
+		sut.createResponse(responseIdentifier, null, "text", null, session);
+		dbInstance.commitAndCloseSession();
+		
+		assertThat(sut.isStringuifiedAvailable(otherSurvey, List.of(responseIdentifier))).isFalse();
+	}
 
 	private EvaluationFormResponse createResponse(EvaluationFormSession session) {
 		String responseIdentifier = UUID.randomUUID().toString();

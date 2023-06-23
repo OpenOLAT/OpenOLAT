@@ -57,6 +57,11 @@ public class DataCollectionReportAccessController extends ReportAccessController
 	protected boolean canEditReportAccessEmail() {
 		return secCallback.canEditReportAccessEmail();
 	}
+	
+	@Override
+	protected boolean canEditReportQualitativeFeedback() {
+		return secCallback.canEditReportQualitativeFeedback();
+	}
 
 	@Override
 	protected boolean canEditReportMembers() {

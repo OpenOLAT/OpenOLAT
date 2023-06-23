@@ -117,6 +117,8 @@ public interface QualityService {
 	public EvaluationFormSurvey loadSurvey(QualityDataCollectionLight dataCollection);
 
 	public boolean isFormEntryUpdateable(QualityDataCollection dataCollection);
+	
+	public boolean isFormWithQualitativeFeedback(RepositoryEntry formEntry);
 
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry);
 

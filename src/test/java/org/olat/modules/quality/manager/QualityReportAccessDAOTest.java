@@ -121,6 +121,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(access.getType()).isEqualTo(type);
 		softly.assertThat(access.isOnline()).isFalse();
 		softly.assertThat(access.getEmailTrigger()).isEqualTo(QualityReportAccess.EmailTrigger.never);
+		softly.assertThat(access.isQualitativeFeedbackEmail()).isFalse();
 		softly.assertAll();
 	}
 	
@@ -141,6 +142,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(access.getRole()).isEqualTo(role);
 		softly.assertThat(access.isOnline()).isFalse();
 		softly.assertThat(access.getEmailTrigger()).isEqualTo(QualityReportAccess.EmailTrigger.never);
+		softly.assertThat(access.isQualitativeFeedbackEmail()).isFalse();
 		softly.assertAll();
 	}
 	
@@ -152,9 +154,11 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		String role = "name";
 		boolean online = true;
 		EmailTrigger emailTrigger = QualityReportAccess.EmailTrigger.always;
+		boolean qualitativeFeedbackEmail = true;
 		QualityReportAccess reportAccess = sut.create(of(generatorRef), type, role);
 		reportAccess.setOnline(online);
 		reportAccess.setEmailTrigger(emailTrigger);
+		reportAccess.setQualitativeFeedbackEmail(qualitativeFeedbackEmail);
 		sut.save(reportAccess);
 		dbInstance.commitAndCloseSession();
 		
@@ -168,6 +172,7 @@ public class QualityReportAccessDAOTest extends OlatTestCase {
 		softly.assertThat(copy.getRole()).isEqualTo(role);
 		softly.assertThat(copy.isOnline()).isEqualTo(online);
 		softly.assertThat(copy.getEmailTrigger()).isEqualTo(emailTrigger);
+		softly.assertThat(copy.isQualitativeFeedbackEmail()).isEqualTo(qualitativeFeedbackEmail);
 		softly.assertAll();
 	}
 	

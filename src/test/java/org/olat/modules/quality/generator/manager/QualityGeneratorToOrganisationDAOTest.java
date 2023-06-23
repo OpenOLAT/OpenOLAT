@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
@@ -44,15 +43,12 @@ public class QualityGeneratorToOrganisationDAOTest extends OlatTestCase {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private QualityGeneratorDAO generatorDao;
+	@Autowired
 	private QualityTestHelper qualityTestHelper;
 	
 	@Autowired
 	private QualityGeneratorToOrganisationDAO sut;
-
-	@Before
-	public void cleanUp() {
-		qualityTestHelper.deleteAll();
-	}
 	
 	@Test
 	public void shouldCreateRelation() {
@@ -70,8 +66,8 @@ public class QualityGeneratorToOrganisationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadRelationsByGeneratorKey() {
-		QualityGenerator generator = qualityTestHelper.createGenerator();
-		QualityGenerator otherGenerator = qualityTestHelper.createGenerator();
+		QualityGenerator generator = generatorDao.create("type");
+		QualityGenerator otherGenerator = generatorDao.create("type");
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		QualityGeneratorToOrganisation relation1 = sut.createRelation(generator, organisation1);
@@ -88,8 +84,8 @@ public class QualityGeneratorToOrganisationDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldDeleteRelationsByKontextKey() {
-		QualityGenerator generator = qualityTestHelper.createGenerator();
-		QualityGenerator otherGenerator = qualityTestHelper.createGenerator();
+		QualityGenerator generator = generatorDao.create("type");
+		QualityGenerator otherGenerator = generatorDao.create("type");
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		sut.createRelation(generator, organisation1);
@@ -109,8 +105,8 @@ public class QualityGeneratorToOrganisationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadOrganisationsByGeneratorKey() {
-		QualityGenerator generator = qualityTestHelper.createGenerator();
-		QualityGenerator otherGenerator = qualityTestHelper.createGenerator();
+		QualityGenerator generator = generatorDao.create("type");
+		QualityGenerator otherGenerator = generatorDao.create("type");
 		Organisation organisation1 = qualityTestHelper.createOrganisation();
 		Organisation organisation2 = qualityTestHelper.createOrganisation();
 		Organisation otherOrganisation = qualityTestHelper.createOrganisation();

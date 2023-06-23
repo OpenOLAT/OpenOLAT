@@ -85,6 +85,8 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 	private Date start;
 	@Column(name="q_deadline", nullable=true, insertable=true, updatable=true)
 	private Date deadline;
+	@Column(name="q_qualitative_feedback", nullable=false, insertable=true, updatable=true)
+	private boolean qualitativeFeedback;
 	
 	@Column(name="q_topic_custom", nullable=true, insertable=true, updatable=true)
 	private String topicCustom;
@@ -185,6 +187,16 @@ public class QualityDataCollectionImpl implements QualityDataCollection, Persist
 	@Override
 	public void setDeadline(Date deadline) {
 		this.deadline = deadline;
+	}
+
+	@Override
+	public boolean isQualitativeFeedback() {
+		return qualitativeFeedback;
+	}
+
+	@Override
+	public void setQualitativeFeedback(boolean qualitativeFeedback) {
+		this.qualitativeFeedback = qualitativeFeedback;
 	}
 
 	@Override

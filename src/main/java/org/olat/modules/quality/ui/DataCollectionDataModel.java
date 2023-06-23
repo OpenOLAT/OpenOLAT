@@ -71,6 +71,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 			case topicType: return dataCollectionRow.getTopicType();
 			case topic: return dataCollectionRow.getTopic();
 			case formName: return dataCollectionRow.getFormName();
+			case qualitativeFeedback: return dataCollectionRow.isQualitativeFeedback();
 			case numberParticipants: return dataCollectionRow.getNumberOfParticipants();
 			case creationDate: return dataCollectionRow.getCreationDate();
 			case toDos: return dataCollectionRow.getToDosItem();
@@ -104,6 +105,7 @@ public class DataCollectionDataModel extends DefaultFlexiTableDataSourceModel<Da
 		topicType("data.collection.topic.type"),
 		topic("data.collection.topic"),
 		formName("data.collection.form"),
+		qualitativeFeedback("data.collection.qualitative.feedback"),
 		numberParticipants("data.collection.number.of.participants"),
 		creationDate("data.collection.creation.date"),
 		toDos("data.collection.todos"),

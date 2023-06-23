@@ -39,6 +39,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final String title;
 	private final Date start;
 	private final Date deadline;
+	private final boolean qualitativeFeedback;
 	private final Date creationDate;
 	private final String generatorTitle;
 	private final String formName;
@@ -51,7 +52,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	private final Long numToDoTaskTotal;
 	
 	public QualityDataCollectionViewImpl(Long key, QualityDataCollectionStatus status, String title, Date start,
-			Date deadline, Date creationDate, String generatorTitle, String formName,
+			Date deadline, boolean qualitativeFeedback, Date creationDate, String generatorTitle, String formName,
 			QualityDataCollectionTopicType topicType, String translatedTopicType, String topic,
 			String previousTitle, Long numberOfParticipants, Long numToDoTaskDone, Long numToDoTaskTotal) {
 		super();
@@ -60,6 +61,7 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 		this.title = title;
 		this.start = start;
 		this.deadline = deadline;
+		this.qualitativeFeedback = qualitativeFeedback;
 		this.creationDate = creationDate;
 		this.generatorTitle = generatorTitle;
 		this.formName = formName;
@@ -105,6 +107,11 @@ public class QualityDataCollectionViewImpl implements QualityDataCollectionView 
 	@Override
 	public Date getDeadline() {
 		return deadline;
+	}
+
+	@Override
+	public boolean isQualitativeFeedback() {
+		return qualitativeFeedback;
 	}
 
 	@Override

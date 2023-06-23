@@ -37,9 +37,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.control.WindowControl;
@@ -130,6 +130,8 @@ class QualityMailing {
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
+	private MailManager mailManager;
+	@Autowired
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
@@ -137,10 +139,9 @@ class QualityMailing {
 	private I18nModule i18nModule;
 	
 	public void sendAnnouncementMail(QualityReminder reminder, Identity topicIdentity) {
-		MailTemplate template = createAnnouncementMailTemplate(reminder, topicIdentity);
+		MailTemplate template = createQualitativeFeedbackTemplate(reminder, topicIdentity);
 		
 		MailerResult result = new MailerResult();
-		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		MailBundle bundle = mailManager.makeMailBundle(null, topicIdentity, template, null, null, result);
 		if(bundle != null) {
 			appendMimeFrom(bundle);
@@ -149,7 +150,7 @@ class QualityMailing {
 		}
 	}
 
-	private MailTemplate createAnnouncementMailTemplate(QualityReminder reminder, Identity topicIdentity) {
+	private MailTemplate createQualitativeFeedbackTemplate(QualityReminder reminder, Identity topicIdentity) {
 		User user = topicIdentity.getUser();
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
@@ -193,7 +194,6 @@ class QualityMailing {
 			MailTemplate template = createAnnouncementMailTemplate(reminder, invitation, executor);
 			
 			MailerResult result = new MailerResult();
-			MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 			MailBundle bundle = mailManager.makeMailBundle(null, executor, template, null, null, result);
 			if(bundle != null) {
 				appendMimeFrom(bundle);
@@ -308,7 +308,6 @@ class QualityMailing {
 		MailTemplate template = createReportAccessMailTemplate(dataCollection, recipient, rubricStatistics, tempDir);
 		
 		MailerResult result = new MailerResult();
-		MailManager mailManager = CoreSpringFactory.getImpl(MailManager.class);
 		MailBundle bundle = mailManager.makeMailBundle(null, recipient, template, null, null, result);
 		if(bundle != null) {
 			appendMimeFrom(bundle);
@@ -535,6 +534,49 @@ class QualityMailing {
 			bundle.setMimeFromName(qualityModule.getFromName());
 		}
 		
+	}
+
+	void sendQualitativeFeedbackEmail(QualityDataCollection dataCollection, Set<Identity> recipients) {
+		recipients.forEach(recipient -> sendQualitativeFeedbackEmail(dataCollection, recipient));
+	}
+
+	private void sendQualitativeFeedbackEmail(QualityDataCollection dataCollection, Identity recipient) {
+		MailTemplate template = createQualitativeFeedbackTemplate(dataCollection, recipient);
+		
+		MailerResult result = new MailerResult();
+		MailBundle bundle = mailManager.makeMailBundle(null, recipient, template, null, null, result);
+		if(bundle != null) {
+			appendMimeFrom(bundle);
+			result = mailManager.sendMessage(bundle);
+			if (result.isSuccessful()) {
+				log.info(MessageFormat.format("Qualitative feedback email for quality data collection [key={0}] sent to {1}",
+						dataCollection.getKey(), recipient));
+			} else {
+				log.warn(MessageFormat.format("Qualitative feedback email for quality data collection [key={0}] to {1} failed: {2}",
+						dataCollection.getKey(), recipient, result.getErrorMessage()));
+			}
+		}
+	}
+
+	private MailTemplate createQualitativeFeedbackTemplate(QualityDataCollection dataCollection, Identity recipient) {
+		User user = recipient.getUser();
+		Locale locale = I18nManager.getInstance().getLocaleOrDefault(user.getPreferences().getLanguage());
+		Translator translator = Util.createPackageTranslator(QualityMainController.class, locale);
+		
+		String subject = translator.translate("qualitative.feedback.subject");
+		String body = translator.translate("qualitative.feedback.body");
+		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
+		
+		mailBuilder.withStart(dataCollection.getStart())
+				.withDeadline(dataCollection.getDeadline())
+				.withTopicType(translator.translate(QualityDataCollectionTopicType.IDENTIY.getI18nKey()))
+				.withTopic(user.getFirstName() + " " + user.getLastName())
+				.withTitle(dataCollection.getTitle());
+		
+		String url = getReportUrl(dataCollection.getKey());
+		mailBuilder.withUrl(url);
+		
+		return mailBuilder.build();
 	}
 
 }

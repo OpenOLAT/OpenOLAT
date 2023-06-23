@@ -43,7 +43,6 @@ import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.TrendDifference;
 import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +72,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldCreatePresentation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
 		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
 		dcOrganisationRefs.add(organisationRef);
@@ -102,7 +101,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldSaveNewPresentation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
 		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
 		dcOrganisationRefs.add(organisationRef);
@@ -146,7 +145,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 
 	@Test
 	public void shouldUpdatePresentation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
 		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
 		dcOrganisationRefs.add(organisationRef);
@@ -192,7 +191,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldLoadPresentation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		List<OrganisationRef> dcOrganisationRefs = new ArrayList<>();
 		OrganisationRef organisationRef = new OrganisationRefImpl(123L);
 		dcOrganisationRefs.add(organisationRef);
@@ -241,7 +240,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByOrganisations() {
 		// Create a form with a presentation
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
@@ -253,7 +252,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
-		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOther = testHelper.createFormEntry();
 		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
@@ -272,7 +271,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByAllOrganisations() {
 		// Create a form with a presentation
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
@@ -284,7 +283,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
-		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOther = testHelper.createFormEntry();
 		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
@@ -302,7 +301,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterByNoOrganisations() {
 		// Create a form with a presentation
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		AnalysisPresentation presentation1 = sut.create(formEntry, null);
 		presentation1 = sut.save(presentation1);
 		Organisation organisation1 = testHelper.createOrganisation();
@@ -314,7 +313,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 		AnalysisPresentation presentation2 = sut.create(formEntry, null);
 		presentation2 = sut.save(presentation2);
 		// Create a second form with an other organisation
-		RepositoryEntry formEntryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntryOther = testHelper.createFormEntry();
 		AnalysisPresentation presentationOther = sut.create(formEntryOther, null);
 		presentationOther = sut.save(presentationOther);
 		Organisation organisationOther = testHelper.createOrganisation();
@@ -330,7 +329,7 @@ public class AnalysisPresentationDAOTest extends OlatTestCase {
 	
 	@Test
 	public void shouldDeletePresentation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = testHelper.createFormEntry();
 		dbInstance.commitAndCloseSession();
 		AnalysisPresentation presentation = sut.create(formEntry, null);
 		presentation = sut.save(presentation);

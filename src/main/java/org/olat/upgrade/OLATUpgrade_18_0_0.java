@@ -47,6 +47,8 @@ import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAO;
 import org.olat.course.config.CourseConfig;
 import org.olat.modules.project.ProjectModule;
+import org.olat.modules.quality.QualityDataCollection;
+import org.olat.modules.quality.manager.QualityServiceImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +83,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 
 	private static final String MIGRATE_CERTIFICATE_CONFIG = "MIGRATE CERTIFICATE CONFIG";
 	
+	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
+	
 	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS_ = "ASSESSMENT DELETE STRUCTURE STATUS";
 
 	@Autowired
@@ -93,6 +97,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
+	@Autowired
+	private QualityServiceImpl qualityService;
 
 	public OLATUpgrade_18_0_0() {
 		super();
@@ -117,6 +123,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initProjectsConfigs(upgradeManager, uhd);
 		allOk &= initMigrateCertificateConfiguration(upgradeManager, uhd);
 		allOk &= initInfoMessageSchedulerUpdate(upgradeManager, uhd);
+		allOk &= initQmQualitativeFeedback(upgradeManager, uhd);
 		allOk &= deleteAssessmentStatus(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -303,6 +310,52 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		return query.getResultList();
 	}
 	
+	private boolean initQmQualitativeFeedback(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+
+		if (!uhd.getBooleanDataValue(INIT_QM_QUALITATIVE_FEEDBACK)) {
+			try {
+				log.info("Start init qualitative feedback");
+				initQmQualitativeFeedback();
+				dbInstance.commitAndCloseSession();
+				log.info("Init qualitative feedback finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(INIT_QM_QUALITATIVE_FEEDBACK, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+
+		return allOk;
+	}
+	
+	private void initQmQualitativeFeedback() {
+		List<QualityDataCollection> dataCollections = qualityService.loadAllDataCollections();
+		
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (QualityDataCollection dataCollection : dataCollections) {
+			initQmQualitativeFeedback(dataCollection);
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Init qualitative feedback: num. of data collections: {}", migrationCounter);
+			}
+		}
+		
+	}
+
+	private void initQmQualitativeFeedback(QualityDataCollection dataCollection) {
+		try {
+			RepositoryEntry formEntry = qualityService.loadFormEntry(dataCollection);
+			qualityService.updateQualitativeFeedback(dataCollection, formEntry);
+		} catch (Exception e) {
+			log.error("Error in init qualitative feedback ({}).", dataCollection);
+			log.error("", e);
+		}
+		
+	}
+
 	private boolean deleteAssessmentStatus(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
 		if (!uhd.getBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS_)) {

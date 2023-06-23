@@ -35,6 +35,8 @@ public interface GeneratorSecurityCallback {
 	
 	public boolean canEditReportAccessEmail();
 
+	public boolean canEditReportQualitativeFeedback();
+	
 	public boolean canEditReportAccessMembers();
 
 	public boolean canActivateGenerators();

@@ -107,6 +107,11 @@ class DataCollectionStatusSecurityCallback implements DataCollectionSecurityCall
 	}
 
 	@Override
+	public boolean canEditReportQualitativeFeedback() {
+		return true;
+	}
+	
+	@Override
 	public boolean canEditReportAccessMembers() {
 		return true;
 	}

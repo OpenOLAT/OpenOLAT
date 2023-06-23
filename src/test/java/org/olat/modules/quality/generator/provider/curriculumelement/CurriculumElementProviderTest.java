@@ -43,8 +43,8 @@ import org.olat.modules.quality.generator.QualityGeneratorConfigs;
 import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.generator.manager.QualityGeneratorConfigsImpl;
 import org.olat.modules.quality.generator.ui.CurriculumElementWhiteListController;
+import org.olat.modules.quality.manager.QualityTestHelper;
 import org.olat.repository.RepositoryEntry;
-import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,6 +62,8 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 	private QualityGeneratorService generatorService;
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityTestHelper qualityTestHelper;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -117,7 +119,7 @@ public class CurriculumElementProviderTest extends OlatTestCase {
 		Organisation organisation = organisationService.getDefaultOrganisation();
 		Collection<Organisation> organisations = Collections.singletonList(organisation);
 		QualityGenerator generator = generatorService.createGenerator(sut.getType(), organisations);
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = qualityTestHelper.createFormEntry();
 		generator.setFormEntry(formEntry);
 		generatorService.updateGenerator(generator);
 		dbInstance.commitAndCloseSession();

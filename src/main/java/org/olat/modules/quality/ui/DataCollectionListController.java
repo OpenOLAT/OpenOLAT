@@ -73,6 +73,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.project.ProjNoteFilter;
 import org.olat.modules.quality.QualityDataCollection;
@@ -182,6 +183,7 @@ public class DataCollectionListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topicType));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.topic));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.formName));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(DataCollectionCols.qualitativeFeedback, new YesNoCellRenderer(getTranslator())));
 		DefaultFlexiColumnModel numParticipantsColumn = new DefaultFlexiColumnModel(DataCollectionCols.numberParticipants);
 		numParticipantsColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		numParticipantsColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);

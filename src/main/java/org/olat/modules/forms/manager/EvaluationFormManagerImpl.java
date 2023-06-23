@@ -461,6 +461,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		List<EvaluationFormResponse> responses = evaluationFormResponseDao.loadResponsesBySessions(filter);
 		return new EvaluationFormResponses(responses);
 	}
+	
+	@Override
+	public boolean isStringuifiedAvailable(EvaluationFormSurveyRef survey, Collection<String> elementIds) {
+		return evaluationFormResponseDao.isStringuifiedAvailable(survey, elementIds);
+	}
 
 	@Override
 	public File loadResponseFile(EvaluationFormResponse response) {

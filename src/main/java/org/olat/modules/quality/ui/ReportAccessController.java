@@ -69,6 +69,8 @@ import org.olat.modules.quality.QualityReportAccessReference;
 import org.olat.modules.quality.QualityReportAccessRightProvider;
 import org.olat.modules.quality.QualityReportAccessSearchParams;
 import org.olat.modules.quality.QualityService;
+import org.olat.modules.quality.generator.QualityGenerator;
+import org.olat.modules.quality.generator.QualityGeneratorService;
 import org.olat.modules.quality.ui.ReportAccessDataModel.ReportAccessCols;
 import org.olat.user.UserManager;
 import org.olat.user.UserPropertiesRow;
@@ -104,14 +106,17 @@ public abstract class ReportAccessController extends FormBasicController {
 	private UserSearchController userSearchCtrl;
 	private DialogBoxController confirmRemoveCtrl;
 	
-	private QualityReportAccessReference reference;
-	private QualityReportAccessSearchParams searchParams;
+	private final QualityReportAccessReference reference;
+	private final QualityReportAccessSearchParams searchParams;
+	private boolean formWithQualitativeFeedback;
 	private String topicIdentityName;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private List<QualityReportAccess> reportAccesses;
 	
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private QualityGeneratorService qualityGeneratorService;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -128,8 +133,16 @@ public abstract class ReportAccessController extends FormBasicController {
 		
 		if (reference.isDataCollectionRef()) {
 			QualityDataCollection dataCollection = qualityService.loadDataCollectionByKey(reference.getDataCollectionRef());
-			if (dataCollection != null && dataCollection.getTopicIdentity() != null) {
-				topicIdentityName = userManager.getUserDisplayName(dataCollection.getTopicIdentity());
+			if (dataCollection != null) {
+				formWithQualitativeFeedback = dataCollection.isQualitativeFeedback();
+				if (dataCollection.getTopicIdentity() != null) {
+					topicIdentityName = userManager.getUserDisplayName(dataCollection.getTopicIdentity());
+				}
+			}
+		} else {
+			QualityGenerator generator = qualityGeneratorService.loadGenerator(reference.getGeneratorRef());
+			if (generator != null) {
+				formWithQualitativeFeedback = qualityService.isFormWithQualitativeFeedback(generator.getFormEntry());
 			}
 		}
 		
@@ -144,6 +157,8 @@ public abstract class ReportAccessController extends FormBasicController {
 	protected abstract boolean canEditReportAccessOnline();
 	
 	protected abstract boolean canEditReportAccessEmail();
+	
+	protected abstract boolean canEditReportQualitativeFeedback();
 	
 	protected abstract boolean canEditReportMembers();
 
@@ -161,21 +176,23 @@ public abstract class ReportAccessController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		initAccessTable(ureq);
+		initAccessTable();
 		initMembersTable(ureq);
 	}
 
-	protected void initAccessTable(UserRequest ureq) {
+	protected void initAccessTable() {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.name));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.online));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.emailTrigger));
+		if (formWithQualitativeFeedback) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReportAccessCols.qualitativeFeedback));
+		}
 		
 		accessDataModel = new ReportAccessDataModel(columnsModel, getTranslator());
 		
 		if (accessTableEl != null) flc.remove(accessTableEl);
 		accessTableEl = uifactory.addTableElement(getWindowControl(), "reportaccess", accessDataModel, 25, true, getTranslator(), flc);
-		accessTableEl.setAndLoadPersistedPreferences(ureq, "quality-report-access");
 		accessTableEl.setEmptyTableMessageKey("report.access.empty.table");
 		accessTableEl.setNumOfRowsEnabled(false);
 		accessTableEl.setCustomizeColumns(false);
@@ -228,6 +245,10 @@ public abstract class ReportAccessController extends FormBasicController {
 		row.setOnlineEl(onlineEl);
 		SingleSelection emailTriggerEl = createEmailTriggerEl(row, access);
 		row.setEmailTriggerEl(emailTriggerEl);
+		if (formWithQualitativeFeedback) {
+			MultipleSelectionElement qualitativeFeedbackEl = createQualitativeFeedbackCheckbox(row, access);
+			row.setQualitativeFeedbackEl(qualitativeFeedbackEl);
+		}
 		return row;
 	}
 
@@ -254,7 +275,18 @@ public abstract class ReportAccessController extends FormBasicController {
 		emailTriggerEl.setEnabled(canEditReportAccessEmail());
 		return emailTriggerEl;
 	}
-	
+
+	private MultipleSelectionElement createQualitativeFeedbackCheckbox(ReportAccessRow row, QualityReportAccess access) {
+		String name =  "qf-" + CodeHelper.getRAMUniqueID();
+		MultipleSelectionElement onlineEl = uifactory.addCheckboxesHorizontal(name, null, flc, ONLINE_KEYS, ONLINE_VALUES);
+		onlineEl.setUserObject(row);
+		onlineEl.addActionListener(FormEvent.ONCHANGE);
+		onlineEl.setAjaxOnly(true);
+		onlineEl.select(ONLINE_KEYS[0], access != null && access.isQualitativeFeedbackEmail());
+		onlineEl.setEnabled(canEditReportQualitativeFeedback());
+		onlineEl.setVisible(row.getOnlineEl().isAtLeastSelected(1));
+		return onlineEl;
+	}
 	
 	private void initMembersTable(UserRequest ureq) {
 		if (membersLayout != null) flc.remove(membersLayout);
@@ -312,11 +344,13 @@ public abstract class ReportAccessController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof MultipleSelectionElement) {
-			MultipleSelectionElement onlineEl = (MultipleSelectionElement) source;
-			doEnableOnline(onlineEl);
-		} else if (source instanceof SingleSelection) {
-			SingleSelection emailTriggerEl = (SingleSelection)source;
+		if (source instanceof MultipleSelectionElement mse) {
+			if (mse.getName().startsWith("online")) {
+				doEnableOnline(mse);
+			} else if (mse.getName().startsWith("qf")) {
+				doEnableQualitativeFeedbackEmail(mse);
+			}
+		} else if (source instanceof SingleSelection emailTriggerEl) {
 			doSetEmailTrigger(emailTriggerEl);
 		} else if (addMemberButton == source) {
 			doSearchMember(ureq);
@@ -370,7 +404,16 @@ public abstract class ReportAccessController extends FormBasicController {
 		ReportAccessRow row = (ReportAccessRow) onlineEl.getUserObject();
 		QualityReportAccess reportAccess = getOrCreateReportAccess(row);
 		reportAccess.setOnline(enable);
+		if (!enable) {
+			reportAccess.setQualitativeFeedbackEmail(false);
+		}
 		updateReportAccess(reportAccess);
+		if (row.getQualitativeFeedbackEl() != null) {
+			row.getQualitativeFeedbackEl().setVisible(enable);
+			if (!enable) {
+				row.getQualitativeFeedbackEl().select(row.getQualitativeFeedbackEl().getKey(0), false);
+			}
+		}
 	}
 
 	private void doSetEmailTrigger(SingleSelection emailTriggerEl) {
@@ -379,6 +422,14 @@ public abstract class ReportAccessController extends FormBasicController {
 		ReportAccessRow row = (ReportAccessRow) emailTriggerEl.getUserObject();
 		QualityReportAccess reportAccess = getOrCreateReportAccess(row);
 		reportAccess.setEmailTrigger(emailTrigger);
+		updateReportAccess(reportAccess);
+	}
+
+	private void doEnableQualitativeFeedbackEmail(MultipleSelectionElement el) {
+		boolean enable = el.isAtLeastSelected(1);
+		ReportAccessRow row = (ReportAccessRow) el.getUserObject();
+		QualityReportAccess reportAccess = getOrCreateReportAccess(row);
+		reportAccess.setQualitativeFeedbackEmail(enable);
 		updateReportAccess(reportAccess);
 	}
 

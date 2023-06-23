@@ -48,6 +48,11 @@ class GeneratorReadOnlySecurityCallback implements GeneratorSecurityCallback {
 	}
 
 	@Override
+	public boolean canEditReportQualitativeFeedback() {
+		return false;
+	}
+
+	@Override
 	public boolean canEditReportAccessMembers() {
 		return false;
 	}

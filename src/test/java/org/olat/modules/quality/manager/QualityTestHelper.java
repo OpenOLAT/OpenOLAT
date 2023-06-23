@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.basesecurity.OrganisationService;
@@ -44,6 +45,7 @@ import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.handler.EvaluationFormHandler;
 import org.olat.modules.forms.manager.EvaluationFormTestsHelper;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
@@ -81,6 +83,8 @@ public class QualityTestHelper {
 	@Autowired
 	private QualityReminderDAO reminderDao;
 	@Autowired
+	private EvaluationFormHandler evaluationFormHandler;
+	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
 	private EvaluationFormTestsHelper evaTestHelper;
@@ -104,15 +108,21 @@ public class QualityTestHelper {
 	}
 
 	QualityDataCollection createDataCollection(String title, Organisation organisation) {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = createFormEntry();
 		List<Organisation> organisations = Collections.singletonList(organisation);
 		QualityDataCollection dataCollection = qualityService.createDataCollection(organisations, formEntry);
 		initDataCollection(dataCollection, title);
 		return dataCollection;
 	}
 
+	public RepositoryEntry createFormEntry() {
+		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		return evaluationFormHandler.createResource(initialAuthor, random(), null, null,
+				organisationService.getDefaultOrganisation(), Locale.ENGLISH);
+	}
+
 	private void initDataCollection(QualityDataCollection dataCollection, String title) {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = createRepositoryEntry();
 		dataCollection.setTitle(title);
 		dataCollection.setStart(new Date());
 		dataCollection.setDeadline(new Date());
@@ -140,14 +150,13 @@ public class QualityTestHelper {
 	}
 	
 	QualityDataCollection createDataCollectionWithoutValues() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry formEntry = createFormEntry();
 		List<Organisation> organisations = Collections.singletonList(organisationService.getDefaultOrganisation());
 		return qualityService.createDataCollection(organisations, formEntry);
 	}
 
 	QualityDataCollection createDataCollectionWithoutOrganisation() {
-		RepositoryEntry formEntry = JunitTestHelper.createAndPersistRepositoryEntry();
-		return qualityService.createDataCollection(Collections.emptyList(), formEntry);
+		return qualityService.createDataCollection(Collections.emptyList(), createFormEntry());
 	}
 	
 	QualityDataCollection createDataCollectionWithStartInFuture() {

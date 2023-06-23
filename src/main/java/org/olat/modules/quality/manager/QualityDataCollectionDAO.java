@@ -83,6 +83,7 @@ public class QualityDataCollectionDAO {
 		dataCollectionImpl.setCreationDate(new Date());
 		dataCollectionImpl.setLastModified(dataCollectionImpl.getCreationDate());
 		dataCollectionImpl.setStatus(QualityDataCollectionStatus.PREPARATION);
+		dataCollectionImpl.setQualitativeFeedback(false);
 		dataCollectionImpl.setGenerator(generator);
 		dataCollectionImpl.setGeneratorProviderKey(generatorProviderKey);
 		dbInstance.getCurrentEntityManager().persist(dataCollectionImpl);
@@ -419,6 +420,7 @@ public class QualityDataCollectionDAO {
 		sb.append("     , collection.title as title");
 		sb.append("     , collection.start as start");
 		sb.append("     , collection.deadline as deadline");
+		sb.append("     , collection.qualitativeFeedback as qualitativeFeedback");
 		sb.append("     , collection.creationDate as creationDate");
 		sb.append("     , generator.title as generatorTitle");
 		sb.append("     , form.displayname as formName");

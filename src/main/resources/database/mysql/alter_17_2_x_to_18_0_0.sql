@@ -347,6 +347,8 @@ create index idx_jup_deployment_tool_deployment_idx on o_jup_deployment (fk_lti_
 
 
 -- Quality management
+alter table o_qual_data_collection add column q_qualitative_feedback bool default false not null;
+alter table o_qual_report_access add column q_qualitative_feedback_email bool default false not null;
 create table o_qual_audit_log (
    id bigint not null auto_increment,
    creationdate datetime not null,
