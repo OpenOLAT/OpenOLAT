@@ -24,9 +24,6 @@ import java.util.UUID;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
-import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
-import org.olat.modules.openbadges.criteria.CoursePassedCondition;
-import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 
