@@ -385,12 +385,12 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 			log.info("using java.io.tmpdir as userdata. this is the default if userdata.dir is not set");
 		}
 		File fUserData = new File(userDataRoot);
-		if (!fUserData.exists()) {
-			if (!fUserData.mkdirs()) throw new StartupException("Unable to create userdata dir '" + userDataRoot + "'. Please fix!");
+		if (!fUserData.exists() && !fUserData.mkdirs()) {
+			throw new StartupException("Unable to create userdata dir '" + userDataRoot + "'. Please fix!");
 		}
 		//fxdiff: reset tmp-dir from within application to circumvent startup-params. 
 		//do not write to system default (/var/tmp) as this leads to permission problems with multiple instances on one host!
-		log.info("Setting userdata root to: "+userDataRoot);
+		log.info("Setting userdata root to: {}", userDataRoot);
 		WebappHelper.userDataRoot = userDataRoot;
 	}
 

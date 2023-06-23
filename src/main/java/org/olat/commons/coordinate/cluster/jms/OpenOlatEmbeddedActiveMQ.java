@@ -29,6 +29,8 @@ import org.apache.activemq.artemis.core.remoting.impl.invm.InVMConnector;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 
 /**
  * The sole purpose of this class is to start the embedded JMS server
@@ -73,6 +75,10 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 			if (configResourcePath == null) {
 				configResourcePath = "broker.xml";
 			}
+			if(!StringHelper.containsNonWhitespace(jmsDir)) {
+				jmsDir = WebappHelper.getUserDataRoot() + "/data/";
+			}
+			
 			FileDeploymentManager deploymentManager = new FileDeploymentManager(configResourcePath);
 			FileConfiguration config = new FileConfiguration();
 			
@@ -88,6 +94,8 @@ public class OpenOlatEmbeddedActiveMQ extends EmbeddedActiveMQ {
 			config.setCreateJournalDir(true);
 			config.setLargeMessagesDirectory(jmsDir + "largemessages");
 			config.setPersistenceEnabled(persistenceEnabled);
+			
+			log.info("Artemis journal path: {}", config.getJournalDirectory());
 			
 			configuration = config;
 		}
