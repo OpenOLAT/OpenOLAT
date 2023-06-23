@@ -19,11 +19,19 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -32,6 +40,10 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.openbadges.criteria.BadgeCondition;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.CoursePassedCondition;
+import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -51,48 +63,257 @@ public class CreateBadgeStep03Criteria extends BasicStep {
 	}
 
 	private class CreateBadgeStep03Form extends StepFormBasicController {
+
+		private SingleSelection newRule;
+		private ArrayList<Condition> conditions;
+
+		public class Condition {
+			private final String id;
+			private final boolean showAndLabel;
+			private final StaticTextElement andTextEl;
+			private final SingleSelection conditionDropdown;
+			private final SingleSelection symbolDropdown;
+			private final TextElement valueEl;
+			private final StaticTextElement unitEl;
+
+			Condition(String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel) {
+				this.id = id;
+				this.showAndLabel = showAndLabel;
+
+				andTextEl = uifactory.addStaticTextElement("form.criteria.condition.and." + id, null,
+						translate("form.criteria.condition.and"), formLayout);
+				andTextEl.setVisible(showAndLabel);
+
+				conditionDropdown = uifactory.addDropdownSingleselect("form.condition." + id, null,
+						formLayout, conditionsKV.keys(), conditionsKV.values());
+				conditionDropdown.select(badgeCondition.getKey(), true);
+				conditionDropdown.setVisible(true);
+				conditionDropdown.addActionListener(FormEvent.ONCHANGE);
+				conditionDropdown.setUserObject(this);
+
+				symbolDropdown = uifactory.addDropdownSingleselect("form.condition.symbol." + id, null,
+						formLayout, symbolsKV.keys(), symbolsKV.values());
+				symbolDropdown.addActionListener(FormEvent.ONCHANGE);
+
+				valueEl = uifactory.addTextElement("form.condition.value." + id, "", 32,
+						"", formLayout);
+
+				unitEl = uifactory.addStaticTextElement("form.condition.unit." + id, null,
+						"", formLayout);
+
+				if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
+					symbolDropdown.setVisible(true);
+					symbolDropdown.select(courseScoreCondition.getSymbol().name(), true);
+
+					valueEl.setVisible(true);
+					valueEl.setValue(Double.toString(courseScoreCondition.getValue()));
+
+					unitEl.setVisible(true);
+					unitEl.setValue("Pt.");
+				} else {
+					symbolDropdown.setVisible(false);
+					valueEl.setVisible(false);
+					unitEl.setVisible(false);
+				}
+			}
+
+			public void updateVisibilities() {
+				String conditionKey = conditionDropdown.getSelectedKey();
+				switch (conditionKey) {
+					case CoursePassedCondition.KEY -> {
+						symbolDropdown.setVisible(false);
+						valueEl.setVisible(false);
+						unitEl.setVisible(false);
+					}
+					case CourseScoreCondition.KEY -> {
+						symbolDropdown.setVisible(true);
+						valueEl.setVisible(true);
+						unitEl.setVisible(true);
+					}
+				}
+			}
+
+			public String getId() {
+				return id;
+			}
+
+			public StaticTextElement getAndTextEl() {
+				return andTextEl;
+			}
+
+			public SingleSelection getConditionDropdown() {
+				return conditionDropdown;
+			}
+
+			public SingleSelection getSymbolDropdown() {
+				return symbolDropdown;
+			}
+
+			public TextElement getValueEl() {
+				return valueEl;
+			}
+
+			public StaticTextElement getUnitEl() {
+				return unitEl;
+			}
+
+			public BadgeCondition asBadgeCondition() {
+				return switch (conditionDropdown.getSelectedKey()) {
+					case CoursePassedCondition.KEY -> new CoursePassedCondition();
+					case CourseScoreCondition.KEY -> new CourseScoreCondition(
+							CourseScoreCondition.Symbol.valueOf(symbolDropdown.getSelectedKey()),
+							Double.valueOf(valueEl.getValue())
+					);
+					default -> null;
+				};
+			}
+		}
+
+		private static final String KEY_AUTOMATIC = "automatic";
+		private static final String KEY_MANUAL = "manual";
+		private final String[] awardProcedureKeys;
+		private final String[] awardProcedureValues;
+		private final String[] awardProcedureDescriptions;
+		private final SelectionValues conditionsKV;
+		private final SelectionValues symbolsKV;
+
+		private CreateBadgeClassWizardContext createContext;
+		private TextElement descriptionEl;
+		private SingleSelection awardProcedureCards;
+
 		public CreateBadgeStep03Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
+
+			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
+				createContext = createBadgeClassWizardContext;
+			}
+
+			awardProcedureKeys = new String[] { KEY_AUTOMATIC, KEY_MANUAL };
+			awardProcedureValues = new String[] {
+					translate("form.award.procedure.automatic"),
+					translate("form.award.procedure.manual")
+			};
+			awardProcedureDescriptions = new String[] {
+					translate("form.award.procedure.automatic.description"),
+					translate("form.award.procedure.manual.description")
+			};
+
+			conditionsKV = new SelectionValues();
+			conditionsKV.add(SelectionValues.entry(CoursePassedCondition.KEY, translate("form.criteria.condition.course.passed")));
+			conditionsKV.add(SelectionValues.entry(CourseScoreCondition.KEY, translate("form.criteria.condition.course.score")));
+
+			symbolsKV = new SelectionValues();
+			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.greaterThan.name(), CourseScoreCondition.Symbol.greaterThan.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.greaterThanOrEqual.name(), CourseScoreCondition.Symbol.greaterThanOrEqual.getSymbolString()));
+			symbolsKV.add(SelectionValues.entry(CourseScoreCondition.Symbol.equals.name(), CourseScoreCondition.Symbol.equals.getSymbolString()));
+
 			initForm(ureq);
 		}
 
 		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == awardProcedureCards) {
+				boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
+				flc.contextPut("awardAutomatically", awardAutomatically);
+			} else if (source.getUserObject() instanceof Condition condition) {
+				if (source == condition.getConditionDropdown()) {
+					condition.updateVisibilities();
+				}
+			} else if (source == newRule) {
+				doAddCondition();
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void doAddCondition() {
+			if (!newRule.isOneSelected()) {
+				return;
+			}
+			String key = newRule.getSelectedKey();
+			BadgeCondition newBadgeCondition = switch (key) {
+				case CoursePassedCondition.KEY -> new CoursePassedCondition();
+				case CourseScoreCondition.KEY -> new CourseScoreCondition(CourseScoreCondition.Symbol.greaterThan, 1);
+				default -> null;
+			};
+			String id = Long.toString(conditions.size());
+			Condition condition = new Condition(id, newBadgeCondition, flc, !conditions.isEmpty());
+			conditions.add(condition);
+			flc.contextPut("conditions", conditions);
+		}
+
+		@Override
+		protected boolean validateFormLogic(UserRequest ureq) {
+			boolean allOk = super.validateFormLogic(ureq);
+
+			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
+
+			if (awardAutomatically) {
+				if (conditions.isEmpty()) {
+					newRule.setErrorKey("alert");
+					allOk &= false;
+				}
+			}
+
+			return allOk;
+		}
+
+		@Override
 		protected void formOK(UserRequest ureq) {
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
+			badgeCriteria.setDescription(descriptionEl.getValue());
+			badgeCriteria.setAwardAutomatically(awardAutomatically);
+			badgeCriteria.setConditions(conditions.stream().map(Condition::asBadgeCondition).collect(Collectors.toList()));
+
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+			boolean awardAutomatically = badgeCriteria.isAwardAutomatically();
+			flc.contextPut("awardAutomatically", awardAutomatically);
+
 			uifactory.addStaticTextElement("form.criteria.summary.explanation", null,
 					translate("form.criteria.summary.explanation"), formLayout);
-			uifactory.addTextElement("form.criteria.description", 0, "", formLayout);
+			descriptionEl = uifactory.addTextElement("form.criteria.description", 256,
+					badgeCriteria.getDescription(), formLayout);
 			uifactory.addStaticTextElement("form.award.procedure.description", null,
 					translate("form.award.procedure.description"), formLayout);
 
-			String[] awardProcedureKeys = new String[] { "automatic", "manual" };
-			String[] awardProcedureValues = new String[] {
-					translate("form.award.procedure.automatic"),
-					translate("form.award.procedure.manual")
-			};
-			String[] awardProcedureDescriptions = new String[] {
-					translate("form.award.procedure.automatic.description"),
-					translate("form.award.procedure.manual.description")
-			};
-
-			uifactory.addCardSingleSelectHorizontal("form.award.procedure", formLayout, awardProcedureKeys,
+			awardProcedureCards = uifactory.addCardSingleSelectHorizontal("form.award.procedure", formLayout, awardProcedureKeys,
 					awardProcedureValues, awardProcedureDescriptions, null);
+			awardProcedureCards.addActionListener(FormEvent.ONCHANGE);
+			if (awardAutomatically) {
+				awardProcedureCards.select(KEY_AUTOMATIC, true);
+			} else {
+				awardProcedureCards.select(KEY_MANUAL, true);
+			}
 
-			uifactory.addStaticTextElement("form.criteria.condition.met", null,
-					translate("form.criteria.condition.met"), formLayout);
+			if (awardAutomatically && !badgeCriteria.getConditions().isEmpty()) {
+				uifactory.addStaticTextElement("form.criteria.condition.met", null,
+						translate("form.criteria.condition.met"), formLayout);
+			}
 
-			SelectionValues conditionsKV = new SelectionValues();
-			conditionsKV.add(SelectionValues.entry("passed", translate("form.criteria.condition.course.passed")));
-			conditionsKV.add(SelectionValues.entry("score", translate("form.criteria.condition.course.score")));
-			SingleSelection conditionDropdown = uifactory.addDropdownSingleselect("form.condition", null, formLayout,
-					conditionsKV.keys(), conditionsKV.values());
+			buildConditionsFromContext(formLayout);
 
-			uifactory.addStaticTextElement("form.criteria.condition.and", null,
-					translate("form.criteria.condition.and"), formLayout);
+			newRule = uifactory.addDropdownSingleselect("form.condition.new", null,
+					formLayout, conditionsKV.keys(), conditionsKV.values());
+			newRule.enableNoneSelection(translate("form.criteria.new.rule"));
+			newRule.addActionListener(FormEvent.ONCHANGE);
+		}
+
+		private void buildConditionsFromContext(FormItemContainer formLayout) {
+			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
+
+			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
+			conditions = new ArrayList<>();
+			for (int i = 0; i < badgeConditions.size(); i++) {
+				BadgeCondition badgeCondition = badgeConditions.get(i);
+				Condition condition = new Condition(Integer.toString(i), badgeCondition, formLayout, i > 0);
+				conditions.add(condition);
+			}
+			flc.contextPut("conditions", conditions);
 		}
 	}
 }

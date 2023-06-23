@@ -107,6 +107,7 @@ public class CreateBadgeStep01Customization extends BasicStep {
 		private void setSvg() {
 			Long templateKey = createContext.getSelectedTemplateKey();
 			String courseTitle = createContext.getCourse().getCourseTitle();
+			String colorId = backgroundColor.getColor().getId();
 			if (templateKey != null) {
 				BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
 				VFSLeaf templateLeaf = openBadgesManager.getTemplateVfsLeaf(template.getImage());
@@ -115,7 +116,7 @@ public class CreateBadgeStep01Customization extends BasicStep {
 					try {
 						svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
 						svg = svg.replace("$title", courseTitle);
-						svg = svg.replace("$background", openBadgesManager.getColorAsRgb(backgroundColor.getColor().getId()));
+						svg = svg.replace("$background", openBadgesManager.getColorAsRgb(colorId));
 						flc.contextPut("svg", svg);
 					} catch (IOException e) {
 						flc.contextRemove("svg");

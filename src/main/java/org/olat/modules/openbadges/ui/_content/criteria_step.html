@@ -1,10 +1,52 @@
-<div class="o_badge_wiz_criteria_step o_form">
+<div class="o_badge_wiz_criteria_step o_form form-horizontal">
 	<legend>$r.translate("form.award.criteria")</legend>
 	$r.render("form.criteria.summary.explanation", "horizontal", "form")
 	$r.render("form.criteria.description", "3_9", "form")
 	<legend>$r.translate("form.award.procedure")</legend>
 	$r.render("form.award.procedure.description", "horizontal", "form")
 	$r.render("form.award.procedure", "3_9", "form")
+
+	#if($awardAutomatically)
+
 	<legend>$r.translate("form.criteria")</legend>
+
+	#if($r.available("form.criteria.condition.met"))
 	$r.render("form.criteria.condition.met", "horizontal", "form")
+	#end
+
+	#foreach($condition in $conditions)
+		#if($r.visible($condition.getAndTextEl().getComponent().getComponentName()))
+			$r.render($condition.getAndTextEl().getComponent().getComponentName(), "horizontal", "form")
+		#end
+		<div class="row">
+			<div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+				#if($r.visible($condition.getConditionDropdown().getName()))
+					$r.render($condition.getConditionDropdown().getName(), "horizontal", "form")
+				#end
+			</div>
+			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
+				#if($r.visible($condition.getSymbolDropdown().getName()))
+					$r.render($condition.getSymbolDropdown().getName(), "horizontal", "form")
+				#end
+			</div>
+			<div class="col-xs-3 col-sm-3 col-md-2 col-lg-1">
+				#if($r.visible($condition.getValueEl().getComponent().getComponentName()))
+				$r.render($condition.getValueEl().getComponent().getComponentName(), "horizontal", "form")
+				#end
+			</div>
+			<div class="col-xs-1" style="padding-left: 0;">
+				#if($r.visible($condition.getUnitEl().getComponent().getComponentName()))
+				$r.render($condition.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
+				#end
+			</div>
+		</div>
+	#end
+
+	<div class="row">
+		<div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+			$r.render("form.condition.new", "horizontal", "form")
+		</div>
+	</div>
+
+	#end
 </div>

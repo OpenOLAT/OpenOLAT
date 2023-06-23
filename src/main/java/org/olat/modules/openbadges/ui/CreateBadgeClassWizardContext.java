@@ -23,6 +23,10 @@ import java.util.UUID;
 
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CoursePassedCondition;
+import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 
@@ -38,6 +42,7 @@ public class CreateBadgeClassWizardContext {
 	private final ICourse course;
 	private Long selectedTemplateKey;
 	private String backgroundColorId;
+	private BadgeCriteria badgeCriteria;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		course = CourseFactory.loadCourse(entry);
@@ -49,6 +54,12 @@ public class CreateBadgeClassWizardContext {
 		badgeClass.setLanguage("en");
 		badgeClass.setValidityEnabled(false);
 		backgroundColorId = "lightgray";
+		initCriteria();
+	}
+
+	private void initCriteria() {
+		badgeCriteria = new BadgeCriteria();
+		badgeCriteria.setAwardAutomatically(false);
 	}
 
 	public BadgeClassImpl getBadgeClass() {
@@ -73,5 +84,9 @@ public class CreateBadgeClassWizardContext {
 
 	public void setBackgroundColorId(String backgroundColorId) {
 		this.backgroundColorId = backgroundColorId;
+	}
+
+	public BadgeCriteria getBadgeCriteria() {
+		return badgeCriteria;
 	}
 }

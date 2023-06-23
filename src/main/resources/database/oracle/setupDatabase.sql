@@ -4174,7 +4174,7 @@ create table o_badge_class (
    b_image varchar(256) not null,
    b_name varchar(256) not null,
    b_description varchar(1024) not null,
-   b_criteria varchar(1024) not null,
+   b_criteria clob,
    b_salt varchar(128) not null,
    b_issuer varchar(1024) not null,
    b_validity_enabled number default 0 not null,

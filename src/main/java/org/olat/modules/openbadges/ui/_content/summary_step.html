@@ -1,4 +1,52 @@
-<div class="o_badge_wiz_summary_step o_form">
+<style>
+	.o_badge_wiz_summary_step .o_small_badge {
+		max-width: 250px;
+		max-height: 250px;
+	}
+	.o_badge_theme_area {
+		display: inline-block;
+		min-width: 40px;
+		height: 20px;
+		line-height: 20px;
+		margin-right: 5px;
+		background-color: #0e76a8;
+		color: white;
+		border-radius: 4px;
+		text-align: center;
+	}
+	.o_badge_theme_area.o_tab_left {
+		margin-left: 10px;
+	}
+	.o_badge_condition_line {
+		margin-bottom: 10px;
+	}
+</style>
+<div class="o_badge_wiz_summary_step o_form form-horizontal">
 	<legend>$r.translate("form.summary")</legend>
+	<div class="row">
+		<div class="col-xs-12 col-md-6 o_small_badge">
+			$svg
+		</div>
+		<div class="col-xs-12 col-md-6 row">
+			$r.render("name", "3_9", "form")
+			$r.render("language", "3_9", "form")
+			$r.render("description", "3_9", "form")
+			$r.render("expires", "3_9", "form")
+		</div>
+	</div>
+	#if($showCriteria)
+		<legend>$r.translate("form.award.criteria")</legend>
+		#if($r.available("form.criteria.description"))
+			$r.render("form.criteria.description", "horizontal", "form")
+		#end
 
+		#foreach($condition in $conditions)
+		<div class="o_badge_condition_line">
+			<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">#if($condition.first()) if #else and #end</span>$condition.toString()
+		</div>
+		#end
+		<div class="o_badge_condition_line">
+			<span class="o_badge_theme_area">then</span>$r.translate("badge.awarded")
+		</div>
+	#end
 </div>

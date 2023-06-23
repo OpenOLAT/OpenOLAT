@@ -87,7 +87,7 @@ public class BadgeClassImpl implements Persistable, BadgeClass {
 	@Column(name = "b_description", nullable = false, insertable = true, updatable = true)
 	private String description;
 
-	@Column(name = "b_criteria", nullable = false, insertable = true, updatable = true)
+	@Column(name = "b_criteria", nullable = true, insertable = true, updatable = true)
 	private String criteria;
 
 	@Column(name = "b_salt", nullable = false, insertable = true, updatable = false)

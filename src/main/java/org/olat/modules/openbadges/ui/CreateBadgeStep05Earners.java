@@ -19,10 +19,17 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -31,6 +38,14 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.id.Identity;
+import org.olat.course.CourseFactory;
+import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-06-15<br>
@@ -38,6 +53,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadgeStep05Earners extends BasicStep {
+
 	public CreateBadgeStep05Earners(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("form.earners", null);
@@ -46,12 +62,27 @@ public class CreateBadgeStep05Earners extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep05Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
+		return new CreateBadgeStep05Form(ureq, wControl, form, runContext);
 	}
 
 	private class CreateBadgeStep05Form extends StepFormBasicController {
-		public CreateBadgeStep05Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
-			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
+		private CreateBadgeClassWizardContext createContext;
+
+		@Autowired
+		private UserManager userManager;
+		@Autowired
+		private BaseSecurityModule baseSecurityModule;
+		private List<UserPropertyHandler> userPropertyHandlers;
+		private BadgeEarnersTableModel tableModel;
+		private FlexiTableElement tableEl;
+
+		public CreateBadgeStep05Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
+
+			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
+				createContext = createBadgeClassWizardContext;
+			}
+
 			initForm(ureq);
 		}
 
@@ -62,7 +93,35 @@ public class CreateBadgeStep05Earners extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("form.choose.a.template");
+			setFormTitle("form.earners.preview");
+
+			uifactory.addStaticTextElement("form.earners.preview.description", null,
+					translate("form.earners.preview.description"), formLayout);
+
+			CourseEnvironment courseEnv = CourseFactory.loadCourse(createContext.getCourse()).getCourseEnvironment();
+			List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
+
+			boolean isAdministrator = baseSecurityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+			userPropertyHandlers = userManager.getUserPropertyHandlersFor(BadgeEarnersTableModel.usageIdentifier, isAdministrator);
+
+			FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+			int colIndex = BadgeEarnersTableModel.USER_PROPS_OFFSET;
+			for (int i = 0; i < userPropertyHandlers.size(); i++) {
+				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
+				boolean visible = userManager.isMandatoryUserProperty(BadgeEarnersTableModel.usageIdentifier, userPropertyHandler);
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(
+						visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colIndex,
+						null, true, "userProp-" + colIndex
+				));
+				colIndex++;
+			}
+			List<BadgeEarnerRow> rows = identities.stream().map(i -> new BadgeEarnerRow(i, userPropertyHandlers, getLocale())).collect(Collectors.toList());
+			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
+			tableModel.setObjects(rows);
+			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
+					false, getTranslator(), formLayout);
+			tableEl.reset();
+			tableEl.reloadData();
 		}
 	}
 }
