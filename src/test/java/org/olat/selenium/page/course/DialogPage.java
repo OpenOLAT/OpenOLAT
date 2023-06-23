@@ -41,7 +41,7 @@ public class DialogPage {
 	}
 	
 	public DialogPage uploadFile(File file) {
-		By uploadBy = By.cssSelector("div.o_sel_dialog a.o_sel_dialog_upload");
+		By uploadBy = By.cssSelector("div.o_dialog_new_button_right a.o_sel_dialog_upload");
 		OOGraphene.waitElement(uploadBy, browser);
 		browser.findElement(uploadBy).click();
 		OOGraphene.waitModalDialog(browser);
@@ -54,12 +54,18 @@ public class DialogPage {
 		
 		By saveButtonBy = By.cssSelector("div.o_sel_upload_buttons button.btn-primary");
 		browser.findElement(saveButtonBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.cssSelector("div.panel.o_dialog_file_overview"), browser);
 		return this;
 	}
 	
 	public DialogPage assertOnFile(String filename) {
-		By fileBy = By.xpath("//div[contains(@class,'o_sel_dialog')]//table//tr/td/div/a[contains(text(),'" + filename + "')]");
+		By fileBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_dialog_card_title')]/a/span[contains(text(),'" + filename + "')]");
+		OOGraphene.waitElement(fileBy, browser);
+		return this;
+	}
+	
+	public DialogPage assertOnFileOverview(String filename) {
+		By fileBy = By.xpath("//div[contains(@class,'o_dialog_file_overview')]//div[contains(@class,'o_dialog_file_info')]//h4[contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
@@ -77,14 +83,12 @@ public class DialogPage {
 	}
 	
 	public ForumPage openForum(String filename) {
-		By openForumBy = By.xpath("//table//tr[td/div/a[contains(text(),'" + filename + "')]]/td/a[contains(@onclick,'forum')]");
+		By openForumBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_dialog_card_title')]/a/span[contains(text(),'" + filename + "')]");
 		browser.findElement(openForumBy).click();
-		OOGraphene.waitBusy(browser);
-		By forumBy = By.cssSelector("div.o_sel_dialog div.o_sel_forum");
-		OOGraphene.waitElement(forumBy, browser);
+		assertOnFileOverview(filename);
 		return new ForumPage(browser);
 	}
-	
+
 	public ForumPage createNewThread(String title, String content) {
 		ForumPage forum = new ForumPage(browser);
 		return forum.createThread(title, content, null);

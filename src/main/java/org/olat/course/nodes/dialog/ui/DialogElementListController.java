@@ -193,6 +193,7 @@ public class DialogElementListController extends FormBasicController implements 
 		if (secCallback != null && secCallback.mayOpenNewThread()) {
 			FormLink uploadButton = uifactory.addFormLink(DIALOG_UPLOAD_FILE, "uploadFile", null, null, flc, Link.BUTTON);
 			uploadButton.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+			uploadButton.setElementCssClass("o_sel_dialog_upload");
 			tableEl.setEmptyTableSettings("table.empty.message", null, "o_dialog_icon", DIALOG_UPLOAD_FILE, "o_icon_add", false);
 		} else {
 			tableEl.setEmptyTableSettings("table.empty.message", null, "o_dialog_icon");

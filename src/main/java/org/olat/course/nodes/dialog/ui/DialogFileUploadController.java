@@ -128,6 +128,7 @@ public class DialogFileUploadController extends FormBasicController {
 
 		// buttons
 		FormLayoutContainer buttonLayoutCont = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
+		buttonLayoutCont.setElementCssClass("o_sel_upload_buttons");
 		dialogMetadataCont.add(buttonLayoutCont);
 		submitBtn = uifactory.addFormSubmitButton("dialog.upload.submit", buttonLayoutCont);
 		uifactory.addFormCancelButton("cancel", buttonLayoutCont, ureq, getWindowControl());
