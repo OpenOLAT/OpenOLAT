@@ -17,10 +17,8 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui.component;
+package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -28,25 +26,21 @@ import org.olat.core.gui.translator.Translator;
 
 /**
  * 
- * Initial date: 12 Nov 2018<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 30 Jan 2020<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 public class YesNoCellRenderer implements FlexiCellRenderer {
 	
-	private final Translator translator;
-	
-	public YesNoCellRenderer(Translator translator) {
-		this.translator = translator;
-	}
-
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator trans) {
-		if(Boolean.TRUE.equals(cellValue)) {
-			target.append(translator.translate("yes"));
-		} else if(Boolean.FALSE.equals(cellValue)) {
-			target.append(translator.translate("no"));
+			URLBuilder ubu, Translator translator) {
+		if(cellValue instanceof Boolean bool) {
+			if(bool.booleanValue()) {
+				target.append(translator.translate("yes"));
+			} else {
+				target.append(translator.translate("no"));
+			}
 		}
 	}
 }

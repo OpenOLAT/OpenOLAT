@@ -38,6 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -51,7 +52,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.course.editor.overview.YesNoCellRenderer;
 import org.olat.modules.contacttracing.ContactTracingLocation;
 import org.olat.modules.contacttracing.ContactTracingManager;
 import org.olat.modules.contacttracing.ui.ContactTracingLocationTableModel.ContactTracingLocationCols;
@@ -151,12 +151,12 @@ public class ContactTracingLocationListController extends FormBasicController {
 
         // Seat number column
         DefaultFlexiColumnModel seatNumberColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.seatNumber);
-        seatNumberColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+        seatNumberColumn.setCellRenderer(new YesNoCellRenderer());
         seatNumberColumn.setDefaultVisible(false);
         
         // Guest column
         DefaultFlexiColumnModel guestColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.guest);
-        guestColumn.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+        guestColumn.setCellRenderer(new YesNoCellRenderer());
        
         // Actions column
         DefaultFlexiColumnModel actionsColumn = new DefaultFlexiColumnModel(ContactTracingLocationCols.settings);

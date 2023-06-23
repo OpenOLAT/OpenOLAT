@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -131,15 +132,15 @@ public class OverviewListController extends FormBasicController implements Flexi
 		hintsModel.setExportable(false);
 		columnsModel.addFlexiColumnModel(hintsModel);
 		DefaultFlexiColumnModel dirtyModel = new DefaultFlexiColumnModel(OverviewCols.dirty);
-		dirtyModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		dirtyModel.setCellRenderer(new YesNoCellRenderer());
 		dirtyModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(dirtyModel);
 		DefaultFlexiColumnModel newModel = new DefaultFlexiColumnModel(OverviewCols.newNode);
-		newModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		newModel.setCellRenderer(new YesNoCellRenderer());
 		newModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(newModel);
 		DefaultFlexiColumnModel deletedModel = new DefaultFlexiColumnModel(OverviewCols.deleted);
-		deletedModel.setCellRenderer(new YesNoCellRenderer(getTranslator()));
+		deletedModel.setCellRenderer(new YesNoCellRenderer());
 		deletedModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(deletedModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OverviewCols.longTitle));

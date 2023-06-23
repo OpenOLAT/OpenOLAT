@@ -48,6 +48,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionE
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StickyActionColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TimeFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.YesNoCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -83,7 +84,6 @@ import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.TeacherOverviewDataModel.TeachCols;
 import org.olat.modules.lecture.ui.component.IdentityComparator;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
-import org.olat.modules.lecture.ui.component.YesNoCellRenderer;
 import org.olat.modules.lecture.ui.event.ReopenLectureBlockEvent;
 import org.olat.modules.lecture.ui.export.LectureBlockExport;
 import org.olat.modules.lecture.ui.export.LecturesBlockPDFExport;
@@ -167,7 +167,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.lectureBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.assessmentMode,
 				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.compulsory, new YesNoCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.compulsory, new YesNoCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.location));
 		if(withTeachers) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TeachCols.teachers));
