@@ -58,8 +58,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DialogElementsManagerImpl implements DialogElementsManager {
 
-	private VFSLeaf newFile;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -189,23 +188,19 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	}
 
 	@Override
-	public VFSLeaf doUpload(File fileToUpload, String fileName) {
-		VFSContainer uploadVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
-		boolean success;
+	public VFSLeaf doUpload(File fileToUpload, String fileName,
+							VFSContainer courseContainer, Identity publishedBy) {
+		VFSLeaf newFile;
 
 		// check if such a filename does already exist
-		VFSItem existingVFSItem = uploadVFSContainer.resolve(fileName);
+		VFSItem existingVFSItem = courseContainer.resolve(fileName);
 		if (existingVFSItem == null) {
-			success = uploadNewFile(fileToUpload, fileName, uploadVFSContainer);
+			newFile = uploadNewFile(fileToUpload, fileName, courseContainer, publishedBy);
 		} else {
-			success = overwriteExistingFile(fileToUpload, uploadVFSContainer, existingVFSItem);
+			newFile = overwriteExistingFile(fileToUpload, courseContainer, existingVFSItem, publishedBy);
 		}
 
-		if (success) {
-			return newFile;
-		} else {
-			return null;
-		}
+		return newFile;
 	}
 
 	@Override
@@ -236,28 +231,26 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	 * @param fileToUpload
 	 * @param filename
 	 * @param uploadVFSContainer
-	 * @return true is uploading was successful, false otherwise
+	 * @param publishedBy
+	 * @return VFSLeaf object if successful, otherwise null
 	 */
-	private boolean uploadNewFile(File fileToUpload, String filename, VFSContainer uploadVFSContainer) {
+	private VFSLeaf uploadNewFile(File fileToUpload, String filename,
+								  VFSContainer uploadVFSContainer, Identity publishedBy) {
 		// save file and finish
-		newFile = uploadVFSContainer.createChildLeaf(filename);
+		VFSLeaf newFile = uploadVFSContainer.createChildLeaf(filename);
 
-		boolean success = true;
-		if(newFile == null) {
-			// FXOLAT-409 somehow "createChildLeaf" did not succeed...
-			// if so, there is already an error-msg in log (vfsContainer.createChildLeaf)
-			success = false;
-		} else {
-			try(InputStream in = new FileInputStream(fileToUpload);
-				OutputStream out = newFile.getOutputStream(false)) {
-				FileUtils.cpio(in, out, "uploadTmpFileToDestFile");
+		if(newFile != null) {
+			try(InputStream in = new FileInputStream(fileToUpload)) {
+				VFSManager.copyContent(in, newFile, publishedBy);
 			} catch (IOException e) {
-				success = false;
+				return null;
 			}
 			FileUtils.deleteFile(fileToUpload);
 		}
+		// else: FXOLAT-409 somehow "createChildLeaf" did not succeed...
+		// if so, there is already an error-msg in log (vfsContainer.createChildLeaf)
 
-		return success;
+		return newFile;
 	}
 
 	/**
@@ -267,23 +260,22 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	 * @param fileToUpload
 	 * @param uploadVFSContainer
 	 * @param existingVFSItem
-	 * @return true is uploading was successful, false otherwise
+	 * @param publishedBy
+	 * @return VFSLeaf object if successful, otherwise null
 	 */
-	private boolean overwriteExistingFile(File fileToUpload, VFSContainer uploadVFSContainer, VFSItem existingVFSItem) {
+	private VFSLeaf overwriteExistingFile(File fileToUpload, VFSContainer uploadVFSContainer,
+										  VFSItem existingVFSItem, Identity publishedBy) {
 		String renamedFilename = VFSManager.rename(uploadVFSContainer, existingVFSItem.getName());
-		newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
+		VFSLeaf newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
 
 		// Copy content to tmp file
-		boolean success;
-		try(InputStream in = new FileInputStream(fileToUpload);
-			BufferedOutputStream out = new BufferedOutputStream(newFile.getOutputStream(false)))  {
-			FileUtils.cpio(in, out, "");
-			success = true;
+		try(InputStream in = new FileInputStream(fileToUpload)) {
+			VFSManager.copyContent(in, newFile, publishedBy);
 		} catch (IOException e) {
-			success = false;
+			newFile = null;
 		}
 		FileUtils.deleteFile(fileToUpload);
 
-		return success;
+		return newFile;
 	}
 }

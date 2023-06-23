@@ -31,6 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -735,6 +736,214 @@ public class ForumManagerTest extends OlatTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, - 1);
 		List<Message> olderLastMessages = forumManager.getNewMessageInfo(fo.getKey(), cal.getTime());
 		Assert.assertEquals(2, olderLastMessages.size());
+	}
+
+	@Test
+	public void testCountReadMessagesByUserAndForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		Forum fo2 = forumManager.addAForum();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("New message 1");
+		topMessage.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id1, false);
+		reply.setTitle("New message 2");
+		reply.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+
+		Message topMessage2 = forumManager.createMessage(fo2, id2, false);
+		topMessage2.setTitle("New message 12");
+		topMessage2.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage2);
+		dbInstance.commit();
+
+		Message topMessage3 = forumManager.createMessage(fo2, id1, false);
+		topMessage3.setTitle("New message 12");
+		topMessage3.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage3);
+		dbInstance.commit();
+
+		Message reply2 = forumManager.createMessage(fo2, id1, false);
+		reply2.setTitle("New message 2");
+		reply2.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply2, topMessage2);
+		dbInstance.commit();
+
+		List<Long> forumKeys = new ArrayList<>();
+		forumKeys.add(fo.getKey());
+		forumKeys.add(fo2.getKey());
+
+		// assert initial numOfMessages in forums
+		Assert.assertEquals(2L, forumManager.getMessagesByForum(fo).size());
+		Assert.assertEquals(3L, forumManager.getMessagesByForum(fo2).size());
+
+		// mark as read
+		forumManager.markAsRead(id1, fo, reply);
+		forumManager.markAsRead(id1, fo2, topMessage2);
+		forumManager.markAsRead(id1, fo2, reply2);
+		forumManager.markAsRead(id2, fo, topMessage);
+		forumManager.markAsRead(id2, fo2, topMessage3);
+		dbInstance.commitAndCloseSession();
+
+		Map<Long, Long> numOfReadMsgByUserAndFo1 = forumManager.countReadMessagesByUserAndForums(id1, forumKeys);
+		Map<Long, Long> numOfReadMsgByUserAndFo2 = forumManager.countReadMessagesByUserAndForums(id2, forumKeys);
+
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo1.get(fo.getKey()));
+		Assert.assertEquals(2L, (long) numOfReadMsgByUserAndFo1.get(fo2.getKey()));
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo2.get(fo.getKey()));
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo2.get(fo2.getKey()));
+	}
+
+	@Test
+	public void testCountReadThreadsByUserAndForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		Forum fo2 = forumManager.addAForum();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("New message 1");
+		topMessage.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message topMessage12 = forumManager.createMessage(fo, id1, false);
+		topMessage12.setTitle("New message 1");
+		topMessage12.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage12);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id1, false);
+		reply.setTitle("New message 2");
+		reply.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+
+		Message topMessage2 = forumManager.createMessage(fo2, id2, false);
+		topMessage2.setTitle("New message 12");
+		topMessage2.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage2);
+		dbInstance.commit();
+
+		Message topMessage3 = forumManager.createMessage(fo2, id1, false);
+		topMessage3.setTitle("New message 12");
+		topMessage3.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage3);
+		dbInstance.commit();
+
+		Message reply2 = forumManager.createMessage(fo2, id1, false);
+		reply2.setTitle("New message 2");
+		reply2.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply2, topMessage2);
+		dbInstance.commit();
+
+		List<Long> forumKeys = new ArrayList<>();
+		forumKeys.add(fo.getKey());
+		forumKeys.add(fo2.getKey());
+
+		// assert initial numOfMessages in forums
+		Assert.assertEquals(3L, forumManager.getMessagesByForum(fo).size());
+		Assert.assertEquals(3L, forumManager.getMessagesByForum(fo2).size());
+
+		// mark as read
+		forumManager.markAsRead(id1, fo, reply);
+		forumManager.markAsRead(id1, fo, topMessage12);
+		forumManager.markAsRead(id1, fo2, topMessage2);
+		forumManager.markAsRead(id1, fo2, reply2);
+		forumManager.markAsRead(id2, fo, topMessage);
+		forumManager.markAsRead(id2, fo2, topMessage3);
+		dbInstance.commitAndCloseSession();
+
+		Map<Long, Long> numOfReadMsgByUserAndFo1 = forumManager.countReadThreadsByUserAndForums(id1, forumKeys);
+		Map<Long, Long> numOfReadMsgByUserAndFo2 = forumManager.countReadThreadsByUserAndForums(id2, forumKeys);
+
+		// Both users have only read 1 of 2 threads in each forum
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo1.get(fo.getKey()));
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo1.get(fo2.getKey()));
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo2.get(fo.getKey()));
+		Assert.assertEquals(1L, (long) numOfReadMsgByUserAndFo2.get(fo2.getKey()));
+	}
+
+	@Test
+	public void testCountMessagesByForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		Forum fo2 = forumManager.addAForum();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("New message 1");
+		topMessage.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id1, false);
+		reply.setTitle("New message 2");
+		reply.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+
+		Message topMessage2 = forumManager.createMessage(fo2, id2, false);
+		topMessage2.setTitle("New message 12");
+		topMessage2.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage2);
+		dbInstance.commit();
+
+		List<Long> forumKeys = new ArrayList<>();
+		forumKeys.add(fo.getKey());
+		forumKeys.add(fo2.getKey());
+
+		Map<Long, Long> numOfMessages = forumManager.countMessagesByForums(forumKeys);
+
+		Assert.assertEquals(2L, (long) numOfMessages.get(fo.getKey()));
+		Assert.assertEquals(1L, (long) numOfMessages.get(fo2.getKey()));
+	}
+
+	@Test
+	public void testCountThreadsByForums() {
+		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-5");
+		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("fo-6");
+		Forum fo = forumManager.addAForum();
+		Forum fo2 = forumManager.addAForum();
+
+		Message topMessage = forumManager.createMessage(fo, id1, false);
+		topMessage.setTitle("New message 1");
+		topMessage.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage);
+		dbInstance.commit();
+
+		Message reply = forumManager.createMessage(fo, id1, false);
+		reply.setTitle("New message 2");
+		reply.setBody("The more newest stuff");
+		forumManager.replyToMessage(reply, topMessage);
+		dbInstance.commit();
+
+		Message topMessage2 = forumManager.createMessage(fo2, id2, false);
+		topMessage2.setTitle("New message 12");
+		topMessage2.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage2);
+		dbInstance.commit();
+
+		Message topMessage3 = forumManager.createMessage(fo2, id2, false);
+		topMessage3.setTitle("New message 12");
+		topMessage3.setBody("The newest stuff");
+		forumManager.addTopMessage(topMessage3);
+		dbInstance.commit();
+
+		List<Long> forumKeys = new ArrayList<>();
+		forumKeys.add(fo.getKey());
+		forumKeys.add(fo2.getKey());
+
+		Map<Long, Long> numOfThreads = forumManager.countThreadsByForums(forumKeys);
+
+		Assert.assertEquals(1L, (long) numOfThreads.get(fo.getKey()));
+		Assert.assertEquals(2L, (long) numOfThreads.get(fo2.getKey()));
 	}
 	
 	@Test

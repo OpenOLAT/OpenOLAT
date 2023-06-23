@@ -351,11 +351,14 @@ public class DialogElementListController extends FormBasicController implements 
 			}
 		} else if (source == dialogFileUploadCtrl) {
 			if (event == Event.DONE_EVENT) {
+				VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 				if (dialogFileUploadCtrl.getActionSelectedKey().equals(DialogFileUploadController.DIALOG_ACTION_UPLOAD)) {
 					// upload new file
 					VFSLeaf newFile = dialogElementsManager.doUpload(
 							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
-							dialogFileUploadCtrl.getFileNameElValue());
+							dialogFileUploadCtrl.getFileNameElValue(),
+							courseContainer,
+							getIdentity());
 
 					if (newFile != null) {
 						doFinalizeUploadFile(newFile);
@@ -369,7 +372,6 @@ public class DialogElementListController extends FormBasicController implements 
 					String filename = dialogFileUploadCtrl.getFileNameElValue();
 					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 					if (!chosenFile.contains("://")) {
-						VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 						element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
 								getIdentity(), entry, courseNode.getIdent(),
 								dialogFileUploadCtrl.getAuthoredByElValue());

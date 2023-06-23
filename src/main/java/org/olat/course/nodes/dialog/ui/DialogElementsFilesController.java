@@ -101,11 +101,14 @@ public class DialogElementsFilesController extends BasicController {
 			if (event == Event.CANCELLED_EVENT) {
 				cmc.deactivate();
 			} else if (event == Event.DONE_EVENT) {
+				VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 					if (dialogFileUploadCtrl.getActionSelectedKey().equals(DialogFileUploadController.DIALOG_ACTION_UPLOAD)) {
 						// upload new file
 						VFSLeaf newFile = dialogElmsMgr.doUpload(
 								dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
-								dialogFileUploadCtrl.getFileNameElValue());
+								dialogFileUploadCtrl.getFileNameElValue(),
+								courseContainer,
+								getIdentity());
 
 						if (newFile != null) {
 							doFinalizeUploadFile(newFile);
@@ -119,7 +122,7 @@ public class DialogElementsFilesController extends BasicController {
 						String filename = dialogFileUploadCtrl.getFileNameElValue();
 						String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 						if(!chosenFile.contains("://")) {
-							VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
+
 							DialogElement element = dialogElmsMgr.doCopySelectedFile(chosenFile, filename, courseContainer,
 									getIdentity(), entry, courseNode.getIdent(),
 									dialogFileUploadCtrl.getAuthoredByElValue());
