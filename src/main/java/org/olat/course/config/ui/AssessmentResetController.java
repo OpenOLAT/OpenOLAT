@@ -31,6 +31,9 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.assessment.AssessmentService;
+import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,17 +55,29 @@ public class AssessmentResetController extends FormBasicController {
 
 	private final boolean showResetOverriden;
 	private final boolean showDiscard;
+	private final boolean warningOptionalOnly;
+	private final Long assessmentEntriesCount;
+	
+	@Autowired
+	private AssessmentService assessmentService;
 
-	public AssessmentResetController(UserRequest ureq, WindowControl wControl, boolean showResetOverriden, boolean showDiscard) {
+	public AssessmentResetController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			String rootNodeIdent, boolean showResetOverriden, boolean showDiscard, boolean warningOptionalOnly) {
 		super(ureq, wControl);
 		this.showResetOverriden = showResetOverriden;
 		this.showDiscard = showDiscard;
+		this.warningOptionalOnly = warningOptionalOnly;
+		assessmentEntriesCount = assessmentService.getAssessmentEntriesCount(courseEntry, rootNodeIdent);
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormDescription("assessment.reset.desc", null);
+		setFormDescription("assessment.reset.desc.num", new String[] { String.valueOf(assessmentEntriesCount) });
+		if (warningOptionalOnly) {
+			setFormWarning("error.passed.progress.only.optional");
+		}
 		
 		recalculateAllEl = uifactory.addCheckboxesVertical("recalculate.all",
 				"assessment.reset.recalculate.all.label", formLayout, ENABLE_KEYS,

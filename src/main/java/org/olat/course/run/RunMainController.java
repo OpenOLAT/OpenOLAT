@@ -121,6 +121,7 @@ import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.course.style.ui.HeaderContentController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.cp.TreeNodeEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -732,16 +733,19 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void updateProgressUI() {
 		if (courseProgress != null) {
 			// update visibility on role change
-			if (courseProgress.isVisible() && !uce.isParticipant()) {
-				courseProgress.setVisible(false);				
-			} else if (!courseProgress.isVisible() && uce.isParticipant()) {
-				courseProgress.setVisible(true);				
+			CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
+			boolean rootMandatory =  assessmentEvaluation.getObligation() != null
+					&& AssessmentObligation.mandatory == assessmentEvaluation.getObligation().getCurrent();
+			boolean showProgress = rootMandatory && uce.isParticipant();
+			if (courseProgress.isVisible() && !showProgress) {
+				courseProgress.setVisible(false);
+			} else if (!courseProgress.isVisible() && showProgress) {
+				courseProgress.setVisible(true);	
 			} 
 			// Update progress only if visible
-			if (courseProgress.isVisible()) {				
+			if (courseProgress.isVisible()) {
 				// 1) Progress
-				CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
-				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
 				Double completion = assessmentEvaluation.getCompletion();
 				float actual = completion != null? completion.floatValue(): 0;
 				if (actual * 100 != courseProgress.getActual()) {

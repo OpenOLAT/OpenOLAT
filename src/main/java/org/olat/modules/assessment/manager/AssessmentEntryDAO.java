@@ -362,6 +362,28 @@ public class AssessmentEntryDAO {
 				.executeUpdate();
 	}
 	
+	public Long loadAssessmentEntriesCount(RepositoryEntryRef entry, String subIdent) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(data.key)");
+		sb.append("  from assessmententry data");
+		sb.and().append(" data.repositoryEntry.key=:repositoryEntryKey");
+
+		if(subIdent != null) {
+			sb.and().append("data.subIdent=:subIdent");
+		} else {
+			sb.and().append("data.subIdent is null");
+		}
+
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("repositoryEntryKey", entry.getKey());
+		if(subIdent != null) {
+			query.setParameter("subIdent", subIdent);
+		} 
+
+		return query.getSingleResult();
+	}
+	
 	/**
 	 * Load all assessment entries for the specific assessed repository entry with
 	 * the specific sub identifier (it is mandatory). The anonym users are excluded

@@ -95,7 +95,7 @@ public class STRootPassedEvaluatorTest {
 	
 	@Test
 	public void shouldReturnTrueIfFullyAssessed() {
-		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.FALSE, Boolean.TRUE);
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, Boolean.FALSE, Boolean.TRUE, 1.0);
 		CourseNode courseNode = new STCourseNode();
 		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -104,6 +104,19 @@ public class STRootPassedEvaluatorTest {
 		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry, null).getPassed();
 		
 		assertThat(passed).isTrue();
+	}
+	
+	@Test
+	public void shouldReturnFalseIfFullyAssessedButNotCompleted() {
+		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.TRUE, 0.9);
+		CourseNode courseNode = new STCourseNode();
+		courseNode.getModuleConfiguration().setBooleanEntry(STCourseNode.CONFIG_PASSED_PROGRESS, true);
+		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
+		
+		STRootPassedEvaluator sut = new STRootPassedEvaluator(oneHalfPassed);
+		Boolean passed = sut.getPassed(currentEvaluation, courseNode, scoreAccounting, dummyEntry, null).getPassed();
+		
+		assertThat(passed).isFalse();
 	}
 	
 	@Test
@@ -485,7 +498,7 @@ public class STRootPassedEvaluatorTest {
 
 	
 	@Test
-	public void shouldReturnNullIfCourseIsFullyAssessedButHassNoPassConfigs() {
+	public void shouldReturnNullIfCourseIsFullyAssessedButHasNoPassConfigs() {
 		AssessmentEvaluation currentEvaluation = createAssessmentEvaluation(null, null, Boolean.TRUE);
 		CourseNode courseNode = new STCourseNode();
 		ScoreAccounting scoreAccounting = new MappedScoreAccounting();
@@ -501,9 +514,13 @@ public class STRootPassedEvaluatorTest {
 		}
 
 	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed) {
-		return new AssessmentEvaluation(score, null, null, null, null, passed, Overridable.of(passed), null, null, null,
-				null, null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
-				null, null, null, null, null);
+		return createAssessmentEvaluation(score, passed, fullyAssessed, null);
+	}
+			
+	private AssessmentEvaluation createAssessmentEvaluation(Float score, final Boolean passed, Boolean fullyAssessed, Double completion) {
+		return new AssessmentEvaluation(score, null, null, null, null, passed, Overridable.of(passed), null, null, completion,
+		null, null, fullyAssessed, null, null, null, null, null, null, null, 0, null, null, null, null, null,
+		null, null, null, null, null);
 	}
 	
 	private final static class CountsImpl implements Counts {

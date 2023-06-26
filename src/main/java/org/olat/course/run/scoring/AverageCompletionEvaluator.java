@@ -39,9 +39,9 @@ import org.olat.repository.RepositoryEntryRef;
  */
 public class AverageCompletionEvaluator implements CompletionEvaluator {
 	
-	public final static Function<AssessmentEvaluation, Integer> UNWEIGHTED = (ae) -> 1;
+	public final static Function<AssessmentEvaluation, Integer> UNWEIGHTED = ae -> 1;
 	public final static Function<AssessmentEvaluation, Integer> DURATION_WEIGHTED = 
-			(ae) -> ae.getDuration() != null? ae.getDuration(): Integer.valueOf(1);
+			ae -> ae.getDuration() != null? ae.getDuration(): Integer.valueOf(1);
 			
 	private static final StatusCompletionEvaluator statusCompletionEvaluator = new StatusCompletionEvaluator();
 	
@@ -98,7 +98,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 		}
 		
 		if (allOptional) {
-			return 1.0;
+			return null;
 		}
 		return count > 0? completion / count: null;
 	}

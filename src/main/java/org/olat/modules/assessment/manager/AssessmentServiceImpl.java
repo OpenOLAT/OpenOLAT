@@ -112,6 +112,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 		assessmentEntryDao.resetAllOverridenRootPassed(entry);
 		dbInstance.commit();
 	}
+	
+	@Override
+	public Long getAssessmentEntriesCount(RepositoryEntryRef entry, String subIdent) {
+		return assessmentEntryDao.loadAssessmentEntriesCount(entry, subIdent);
+	}
 
 	@Override
 	public List<AssessmentEntry> loadAssessmentEntriesBySubIdent(RepositoryEntryRef entry, String subIdent) {

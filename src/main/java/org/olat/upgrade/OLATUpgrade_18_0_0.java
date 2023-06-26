@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.commons.info.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -46,6 +47,11 @@ import org.olat.course.certificate.CertificationTimeUnit;
 import org.olat.course.certificate.RepositoryEntryCertificateConfiguration;
 import org.olat.course.certificate.manager.RepositoryEntryCertificateConfigurationDAO;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.manager.QualityServiceImpl;
@@ -84,8 +90,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_CERTIFICATE_CONFIG = "MIGRATE CERTIFICATE CONFIG";
 	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
-	
-	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS_ = "ASSESSMENT DELETE STRUCTURE STATUS";
+	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS = "ASSESSMENT DELETE STRUCTURE STATUS";
+	private static final String ASSESSMENT_PROGRESS_OPTIONAL = "ASSESSMENT PROGRESS OPTIONAL";
 
 	@Autowired
 	private DB dbInstance;
@@ -125,6 +131,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initInfoMessageSchedulerUpdate(upgradeManager, uhd);
 		allOk &= initQmQualitativeFeedback(upgradeManager, uhd);
 		allOk &= deleteAssessmentStatus(upgradeManager, uhd);
+		allOk &= updateAssessmentProgressOptional(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -358,7 +365,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 
 	private boolean deleteAssessmentStatus(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
-		if (!uhd.getBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS_)) {
+		if (!uhd.getBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS)) {
 			try {
 				log.info("Start delete assessment status.");
 				deleteAssessmentStatus();
@@ -368,7 +375,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 				log.error("", e);
 				allOk = false;
 			}
-			uhd.setBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS_, allOk);
+			uhd.setBooleanDataValue(ASSESSMENT_DELETE_STRUCTURE_STATUS, allOk);
 			upgradeManager.setUpgradesHistory(uhd, VERSION);
 		}
 		return allOk;
@@ -423,6 +430,73 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 			log.error("Error in update assessment status ({}).", assessmentEntrykey);
 			log.error("", e);
 		}
+	}
+	
+	private boolean updateAssessmentProgressOptional(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ASSESSMENT_PROGRESS_OPTIONAL)) {
+			try {
+				log.info("Start update assessment progress if root node is optional.");
+				updateAssessmentProgressOptional();
+				dbInstance.commitAndCloseSession();
+				log.info("End update assessment progress if root node is optional.");
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			uhd.setBooleanDataValue(ASSESSMENT_PROGRESS_OPTIONAL, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+
+	private void updateAssessmentProgressOptional() {
+		List<AssessmentEntry> assessmentEntries = getOptionalAssessmentEntryRootNodes();
+
+		AtomicInteger migrationCounter = new AtomicInteger(0);
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			
+			evaluate(assessmentEntry);
+			
+			migrationCounter.incrementAndGet();
+			dbInstance.commitAndCloseSession();
+			if(migrationCounter.get() % 100 == 0) {
+				log.info("Update assessment progress if root node is optional: num. of assessment entries: {}", migrationCounter);
+			}
+		}
+	}
+
+	private void evaluate(AssessmentEntry assessmentEntry) {
+		try {
+			ICourse course = CourseFactory.loadCourse(assessmentEntry.getRepositoryEntry());
+			if (course != null) {
+				IdentityEnvironment identityEnv = new IdentityEnvironment();
+				identityEnv.setIdentity(assessmentEntry.getIdentity());
+				UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+				ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
+				scoreAccounting.evaluateAll(true);
+			}
+		} catch (CorruptedCourseException e) {
+			//
+		} catch (Exception e) {
+			log.error("Error updating assessment progress ({}).", assessmentEntry.getKey());
+			log.error("", e);
+		}
+	}
+	
+	private List<AssessmentEntry> getOptionalAssessmentEntryRootNodes() {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ae");
+		sb.append("  from assessmententry ae");
+		sb.append("       inner join fetch ae.repositoryEntry re");
+		sb.append("       inner join fetch re.olatResource as ores");
+		sb.and().append("re.technicalType = 'learningpath'");
+		sb.and().append("ae.entryRoot = true");
+		sb.and().append("ae.obligation ").in(AssessmentObligation.optional, AssessmentObligation.excluded);
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntry.class)
+				.getResultList();
 	}
 
 }
