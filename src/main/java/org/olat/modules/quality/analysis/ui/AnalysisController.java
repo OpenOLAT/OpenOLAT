@@ -84,6 +84,7 @@ import org.olat.modules.quality.analysis.QualityAnalysisService;
 import org.olat.modules.quality.analysis.TemporalGroupBy;
 import org.olat.modules.quality.analysis.ui.PresentationEvent.Action;
 import org.olat.modules.quality.manager.DataCollectionToDoTaskProvider;
+import org.olat.modules.quality.manager.EvaluationFormSessionToDoTaskProvider;
 import org.olat.modules.quality.ui.QualityToDoEditController;
 import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.security.MainSecurityCallback;
@@ -155,6 +156,8 @@ public class AnalysisController extends BasicController implements TooledControl
 	private PdfModule pdfModule;
 	@Autowired
 	private PdfService pdfService;
+	@Autowired
+	private EvaluationFormSessionToDoTaskProvider sessionToDoProvider;
 	@Autowired
 	private DataCollectionToDoTaskProvider dataCollectionToDoProvider;
 
@@ -593,15 +596,21 @@ public class AnalysisController extends BasicController implements TooledControl
 	private void doCreateToDo(UserRequest ureq) {
 		if (guardModalController(toDoCreateCtrl)) return;
 		
-		
+		EvaluationFormSession session = null;
 		QualityDataCollection dataCollection = null;
 		if (heatMapCtrl != null) {
+			session = heatMapCtrl.getSession();
 			dataCollection = heatMapCtrl.getDataCollection();
 		}
 		
 		if (dataCollection != null) {
-			toDoCreateCtrl = dataCollectionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
-					dataCollection.getKey(), null);
+			if (session != null) {
+				toDoCreateCtrl = sessionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
+						dataCollection.getKey(), session.getKey().toString());
+			} else {
+				toDoCreateCtrl = dataCollectionToDoProvider.createCreateController(ureq, getWindowControl(), getIdentity(),
+						dataCollection.getKey(), null);
+			}
 		}
 		if (toDoCreateCtrl == null) {
 			return;

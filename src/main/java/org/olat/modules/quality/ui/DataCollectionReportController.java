@@ -72,10 +72,6 @@ public class DataCollectionReportController extends FormBasicController implemen
 		this.dataCollection = dataCollection;
 		initForm(ureq);
 	}
-	
-	public QualityDataCollection getDataCollection() {
-		return dataCollection;
-	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -98,6 +94,10 @@ public class DataCollectionReportController extends FormBasicController implemen
 	
 	public EvaluationFormSession getSession() {
 		return reportsCtrl != null? reportsCtrl.getSession(): null;
+	}
+	
+	public QualityDataCollection getDataCollection() {
+		return dataCollection;
 	}
 	
 	@Override

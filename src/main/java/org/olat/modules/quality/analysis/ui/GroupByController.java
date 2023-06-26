@@ -70,6 +70,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
@@ -322,6 +323,13 @@ public abstract class GroupByController extends FormBasicController implements F
 				return new FilteredPrintController(lureq, lwControl, sliderTrendCtrl, sliderTrendCtrl.getSearchParams(),
 						false, title);
 			};
+		}
+		return null;
+	}
+	
+	public EvaluationFormSession getSession() {
+		if (dataCollectionCtrl != null) {
+			return dataCollectionCtrl.getSession();
 		}
 		return null;
 	}
