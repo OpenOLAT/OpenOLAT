@@ -67,7 +67,7 @@ public class DialogElementRow extends UserPropertiesRow {
 	 * @return publishedBy name and specific String information
 	 */
 	public String getPublishedByCardView() {
-		return publishedByCardView;
+		return StringHelper.escapeHtml(publishedByCardView);
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class DialogElementRow extends UserPropertiesRow {
 	 * @return authoredBy name and specific String information
 	 */
 	public String getAuthoredByCardView() {
-		return authoredByCardView;
+		return StringHelper.escapeHtml(authoredByCardView);
 	}
 
 	/**
@@ -112,7 +112,7 @@ public class DialogElementRow extends UserPropertiesRow {
 	 * @return String name of author, can be null
 	 */
 	public String getAuthoredBy() {
-		return element != null ? StringHelper.escapeHtml(element.getAuthoredBy()) : null;
+		return element != null ? element.getAuthoredBy() : null;
 	}
 
 	/**

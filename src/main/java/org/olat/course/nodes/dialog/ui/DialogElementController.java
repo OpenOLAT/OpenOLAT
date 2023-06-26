@@ -88,7 +88,7 @@ public class DialogElementController extends BasicController implements Activate
 	private CloseableModalController cmc;
 	private DialogFileEditMetadataController dialogFileEditMetadataCtrl;
 	
-	private final DialogElement element;
+	private DialogElement element;
 	
 	@Autowired
 	private UserManager userManager;
@@ -158,7 +158,7 @@ public class DialogElementController extends BasicController implements Activate
 
 		loadForumCount();
 
-		String authoredBy = element.getAuthoredBy();
+		String authoredBy = StringHelper.escapeHtml(element.getAuthoredBy());
 		Date lastActivity;
 		List<Date> lastActivities = forumManager.getMessagesByForum(forum).stream().map(MessageLight::getLastModified).toList();
 		if (lastActivities.isEmpty()) {
@@ -235,12 +235,14 @@ public class DialogElementController extends BasicController implements Activate
 	private void doUpdateFileDialog() {
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		String updatedFileName = dialogFileEditMetadataCtrl.getFileName();
+		// add file extension
+		updatedFileName = updatedFileName + "." + FileUtils.getFileSuffix(element.getFilename());
 		String updatedAuthoredBy = dialogFileEditMetadataCtrl.getAuthoredBy();
 		VFSItem existingVFSItem = dialogContainer.resolve(element.getFilename());
 		existingVFSItem.rename(updatedFileName);
-		dialogElmsMgr.updateDialogElement((DialogElementImpl) element, updatedFileName, updatedAuthoredBy);
+		element = dialogElmsMgr.updateDialogElement((DialogElementImpl) element, updatedFileName, updatedAuthoredBy);
 		mainVC.contextPut("filename", StringHelper.escapeHtml(existingVFSItem.getName()));
-		mainVC.contextPut("authoredBy", updatedAuthoredBy);
+		mainVC.contextPut("authoredBy", StringHelper.escapeHtml(updatedAuthoredBy));
 	}
 
 	private void doDownload(UserRequest ureq) {

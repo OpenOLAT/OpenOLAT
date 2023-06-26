@@ -53,7 +53,7 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		fileNameEl = uifactory.addTextElement("filename", "dialog.metadata.filename", 256, null, formLayout);
-		fileNameEl.setValue(element.getFilename());
+		fileNameEl.setValue(element.getFilename().replaceAll("\\..*", ""));
 		authoredByEl = uifactory.addTextElement("authoredby", "dialog.metadata.authored.by", 256, null, formLayout);
 		authoredByEl.setValue(element.getAuthoredBy());
 
@@ -66,11 +66,11 @@ public class DialogFileEditMetadataController extends FormBasicController {
 
 
 	public String getFileName() {
-		return StringHelper.escapeHtml(fileNameEl.getValue());
+		return fileNameEl.getValue();
 	}
 
 	public String getAuthoredBy() {
-		return StringHelper.escapeHtml(authoredByEl.getValue());
+		return authoredByEl.getValue();
 	}
 
 	@Override
