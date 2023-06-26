@@ -294,17 +294,17 @@ public class AverageCompletionEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldReturnFullCompletionIfItHasNoChildren() {
+	public void shouldReturnNoCompletionIfItHasNoChildren() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		CourseNode parent = new STCourseNode();
 		
 		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
-		assertThat(completion).isEqualTo(1.0);
+		assertThat(completion).isNull();
 	}
 
 	@Test
-	public void shouldReturnFullCompletionIfNoChildrenAreMandatory() {
+	public void shouldReturnNullCompletionIfNoChildrenAreMandatory() {
 		MappedScoreAccounting scoreAccounting = new MappedScoreAccounting();
 		
 		// Parent: calculated
@@ -342,7 +342,7 @@ public class AverageCompletionEvaluatorTest {
 		
 		Double completion = sut.getCompletion(null, parent, scoreAccounting, courseEntry);
 		
-		assertThat(completion).isEqualTo(1.0);
+		assertThat(completion).isNull();
 	}
 
 	
