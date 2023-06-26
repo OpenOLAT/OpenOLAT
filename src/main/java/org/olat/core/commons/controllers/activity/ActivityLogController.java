@@ -83,6 +83,7 @@ public abstract class ActivityLogController extends FormBasicController {
 	private static final String FILTER_USER = "user";
 
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private FormLayoutContainer logCont;
 	private FlexiFiltersTab tabLast7Days;
 	private FlexiFiltersTab tabLast4Weeks;
 	private FlexiFiltersTab tabLast12Month;
@@ -91,7 +92,7 @@ public abstract class ActivityLogController extends FormBasicController {
 	private FlexiTableElement tableEl;
 
 	protected final Formatter formatter;
-	private Boolean logOpen = Boolean.TRUE;
+	private Boolean logOpen = Boolean.FALSE;
 
 	@Autowired
 	protected UserManager userManager;
@@ -119,7 +120,7 @@ public abstract class ActivityLogController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Add the table on a custom layout to enable inheritance from other packages.
 		String page = Util.getPackageVelocityRoot(ActivityLogController.class) + "/activity_log.html";
-		FormLayoutContainer logCont = FormLayoutContainer.createCustomFormLayout("activity.log", getTranslator(), page);
+		logCont = FormLayoutContainer.createCustomFormLayout("activity.log", getTranslator(), page);
 		logCont.setRootForm(mainForm);
 		formLayout.add(logCont);
 		
@@ -149,7 +150,7 @@ public abstract class ActivityLogController extends FormBasicController {
 
 		initFilterTabs(ureq);
 		initFilters();
-		flc.contextPut("logOpen", logOpen);
+		logCont.getFormItemComponent().contextPut("logOpen", logOpen);
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -275,11 +276,11 @@ public abstract class ActivityLogController extends FormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if ("panel".equals(event.getCommand())) {
+		if ("ONCLICK".equals(event.getCommand())) {
 			String logOpenVal = ureq.getParameter("logOpen");
 			if (StringHelper.containsNonWhitespace(logOpenVal)) {
 				logOpen = Boolean.valueOf(logOpenVal);
-				flc.contextPut("logOpen", logOpen);
+				logCont.getFormItemComponent().contextPut("logOpen", logOpen);
 			}
 		}
 		super.event(ureq, source, event);

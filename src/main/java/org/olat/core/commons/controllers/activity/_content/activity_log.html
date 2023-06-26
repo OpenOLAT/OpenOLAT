@@ -6,11 +6,11 @@
 jQuery(function() {
 	jQuery('#collapse_log_${r.getCId()}').on('hide.bs.collapse', function () {
 		jQuery('#collapse_log_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-		$r.javaScriptCommand("panel","logOpen","false");
+		$f.openFfXHREvent(false, false, true), "logOpen","false");
 	})
 	jQuery('#collapse_log_${r.getCId()}').on('show.bs.collapse', function () {
 		jQuery('#collapse_log_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-		$r.javaScriptCommand("panel","logOpen","true");
+		$f.openFfXHREvent(false, false, true), "logOpen","true");
 	})
 });
 </script>
