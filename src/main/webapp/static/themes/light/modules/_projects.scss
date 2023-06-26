@@ -290,8 +290,6 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 }
 
 .o_proj_card {
-	border: 1px solid $o-coursesite-rowelem-border;
-	border-radius: $o-coursesite-rowelem-border-radius;
 	background: #ffffff;
 	height: 100%;
 	
@@ -304,7 +302,7 @@ $o-proj-header-background-break: calc($o-proj-header-background-width-min + $gri
 	
 	.o_proj_card_meta {
 		padding: 10px;
-		border-radius: $o-coursesite-rowelem-border-radius;
+		border-radius: $o-card-border-radius;
 		background: #ffffff;
 		.o_proj_card_title {
 			margin-top: 0;

@@ -354,8 +354,6 @@
 
 .o_entry_cards {
 	.o_repo_entry_card {
-		border: 1px solid $o-coursesite-rowelem-border;
-		border-radius: $o-coursesite-rowelem-border-radius;
 		background: $o-coursesite-rowelem-bg;
 		cursor: pointer;
 		display: flex;
@@ -780,13 +778,6 @@
 		}
 	}
 	
-	.o_catalog_title_link {
-		a {
-			color: $o-coursesite-meta-title-color;
-			@extend %o_undecorated;
-		}
-	}
-	
 	.o_catalog_launcher {
 		margin-top: $o-cat2-launcher-margin-top;
 		@media (min-width: $screen-xs-min) { 
@@ -828,8 +819,6 @@
 			grid-template-columns: repeat(2, auto);
 		}
 		.o_taxonomy_launcher {
-			border: 1px solid $o-coursesite-rowelem-border;
-			border-radius: $o-coursesite-rowelem-border-radius;
 			background: $o-coursesite-rowelem-bg;
 			cursor: pointer;
 			&.o_tax_teaser_preview {
@@ -847,7 +836,7 @@
 			}
 			.o_visual {
 				box-sizing: content-box;
-				border-radius: $o-coursesite-rowelem-border-radius;
+				border-radius: $o-card-border-radius;
 				height: auto;
 				width: auto;
 				aspect-ratio: 2.4;
@@ -867,8 +856,8 @@
 				left: 0;
 				bottom: 0;
 				width: 100%;
-				border-bottom-left-radius: $o-coursesite-rowelem-border-radius;
-				border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
+				border-bottom-left-radius: $o-card-border-radius;
+				border-bottom-right-radius: $o-card-border-radius;
 				background-color: rgba(255,255,255,.8);
 				
 				.o_title {
@@ -883,18 +872,6 @@
 						overflow: hidden;
 						text-overflow: ellipsis;
 					}
-				}
-			}
-		}
-	}
-	
-	.o_card_hover {
-		&:hover {
-			border: 1px solid $brand-primary;
-			border-radius: 3px;
-			.o_catalog_title_link {
-				a {
-					color: $brand-primary;
 				}
 			}
 		}

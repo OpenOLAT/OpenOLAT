@@ -1359,4 +1359,10 @@ $o-proj-header-margin-bottom					: 20px !default;
 $o-todo-overdue-color						: $brand-danger !default;
 
 /* Dialog courseNode */
-$o-dialog-cn-box-border-color				: $panel-default-border
+$o-dialog-cn-box-border-color				: $panel-default-border;
+
+/* Card */
+$o-card-border								: 1px solid #cccccc !default;
+$o-card-border-radius						: 4px !default;
+$o-card-hover-color							: $brand-primary !default;
+$o-card-title-color							: $o-coursesite-meta-title-color !default;

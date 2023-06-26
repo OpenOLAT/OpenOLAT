@@ -1,8 +1,8 @@
-<div class="o_proj_card o_proj_card_link o_proj_note_card" onClick="$f.ffXHREvent("select","$row.key")";" role="link">
+<div class="o_card o_proj_card o_proj_card_link o_proj_note_card" onClick="$f.ffXHREvent("select","$row.key")";" role="link">
 	<div class="o_proj_card_meta o_proj_note_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">
-				<h4 class="o_proj_note_title o_proj_card_title">$r.render("$row.getSelectLinkName()")</h4>
+				<h4 class="o_proj_note_title o_proj_card_title o_card_title">$r.render("$row.getSelectLinkName()")</h4>
 			</div>
 			#if($row.getToolsLinkName())
 				$r.render($row.getToolsLinkName())
