@@ -129,6 +129,8 @@ public class VideoTaskParticipantListController extends IdentityListCourseNodeCo
 				moreDropdown.addElement(deleteAllDataButton);
 			}
 		}
+
+		initBulkAwardBadgeTool(ureq, formLayout);
 	}
 	
 	@Override

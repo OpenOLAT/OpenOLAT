@@ -303,6 +303,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		}
 		
 		super.initBulkEmailTool(ureq, formLayout);
+		super.initBulkAwardBadgeTool(ureq, formLayout);
 	}
 	
 	private boolean isTestRunning() {

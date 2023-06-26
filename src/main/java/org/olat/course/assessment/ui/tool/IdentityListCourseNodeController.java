@@ -158,8 +158,12 @@ import org.olat.modules.grade.ui.wizard.GradeScaleAdjustCallback;
 import org.olat.modules.grade.ui.wizard.GradeScaleAdjustStep;
 import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.user.IdentityComporatorFactory;
 import org.olat.user.UserManager;
@@ -216,6 +220,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private FormLink bulkApplyGradeButton;
 	private FormLink bulkVisibleButton;
 	private FormLink bulkHiddenButton;
+	private FormLink bulkAwardBadgeButton;
 	protected final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	protected IdentityListCourseNodeTableModel usersTableModel;
@@ -253,6 +258,10 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private GradeModule gradeModuel;
 	@Autowired
 	private GradeService gradeService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public IdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -701,6 +710,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		initBulkStatusTools(ureq, formLayout);
 		initBulkEmailTool(ureq, formLayout);
+		initBulkAwardBadgeTool(ureq, formLayout);
 	}
 
 	protected void initBulkStatusTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
@@ -757,6 +767,24 @@ public class IdentityListCourseNodeController extends FormBasicController
 			gradeScaleButton = uifactory.addFormLink("tool.grade.scale", formLayout, Link.BUTTON);
 			gradeScaleButton.setIconLeftCSS("o_icon o_icon_grade");
 			gradeScaleButton.setVisible(!coachCourseEnv.isCourseReadOnly());
+		}
+	}
+
+	protected void initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
+		if (!openBadgesManager.isEnabled()) {
+			return;
+		}
+		BadgeEntryConfiguration badgeConfiguration = openBadgesManager.getConfiguration(courseEntry);
+		if (!badgeConfiguration.isAwardEnabled()) {
+			return;
+		}
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
+		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) ||
+				(reSecurity.isOwner()) && badgeConfiguration.isOwnerCanAward()) {
+			bulkAwardBadgeButton = uifactory.addFormLink("bulk.badge", formLayout, Link.BUTTON);
+			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
+			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_certificate");
+			tableEl.addBatchButton(bulkAwardBadgeButton);
 		}
 	}
 	
