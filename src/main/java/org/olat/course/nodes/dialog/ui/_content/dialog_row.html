@@ -1,4 +1,4 @@
-<div class="o_dialog_card o_dialog_card_link o_dialog_file_card" onClick="$f.ffXHREvent("select_file","$row.getDialogElementKey()");" role="link">
+<div class="o_card o_dialog_card o_dialog_card_link o_dialog_file_card" onClick="$f.ffXHREvent("select_file","$row.getDialogElementKey()");" role="link">
 	<div class="o_dialog_file_thumbnail">
 		<div class="o_dialog_file_img">
 			#if($row.isThumbnailAvailable())
@@ -11,7 +11,7 @@
 	<div class="o_dialog_card_meta o_dialog_file_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">
-				<h3 class="o_dialog_card_link o_dialog_card_title">$r.render("$row.getSelectLinkName()")</h3>
+				<h3 class="o_card_title o_dialog_card_link">$r.render("$row.getSelectLinkName()")</h3>
 			</div>
 		</div>
 		<div class="o_nowrap">

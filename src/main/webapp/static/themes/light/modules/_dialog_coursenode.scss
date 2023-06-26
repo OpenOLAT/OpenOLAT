@@ -61,8 +61,6 @@
 
 
 .o_dialog_card {
-  border: 1px solid $o-coursesite-rowelem-border;
-  border-radius: $o-coursesite-rowelem-border-radius;
   background: #ffffff;
   height: 100%;
 
@@ -75,7 +73,7 @@
 
   .o_dialog_card_meta {
     padding: 10px;
-    border-radius: $o-coursesite-rowelem-border-radius;
+    border-radius: $o-card-border-radius;
     background: #ffffff;
     .o_dialog_card_title {
       margin-top: 0;

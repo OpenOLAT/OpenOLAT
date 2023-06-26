@@ -1,4 +1,4 @@
-<div class="o_proj_card o_proj_file_card">
+<div class="o_card o_proj_card o_proj_file_card">
 	#if($row.isOpenInNewWindow())
 		<div class="o_proj_file_thumbnail" onClick="$f.openFfXHREvent(false, true, false), 'oo-opennewwindow-oo', 'true', 'oo-opennewwindow-target', '_blank', 'select_file','$row.key');" role="link">
 	#else
@@ -15,7 +15,7 @@
 	<div class="o_proj_card_meta o_proj_file_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">
-				<h4 class="o_proj_file_title o_proj_card_title">$r.render("$row.getSelectLinkName()")</h4>
+				<h4 class="o_proj_file_title o_proj_card_title o_card_title">$r.render("$row.getSelectLinkName()")</h4>
 			</div>
 			#if($row.getToolsLinkName())
 				$r.render($row.getToolsLinkName())

@@ -1,0 +1,22 @@
+%o_card,
+.o_card {
+	border: $o-card-border;
+	border-radius: $o-card-border-radius;
+	
+	.o_card_title {
+		a {
+			color: $o-card-title-color;
+			@extend %o_undecorated;
+		}
+	}
+	
+	&:hover {
+		border: 1px solid $o-card-hover-color;
+		border-radius: 3px;
+		.o_card_title {
+			a {
+				color: $o-card-hover-color;
+			}
+		}
+	}
+}
