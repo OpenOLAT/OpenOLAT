@@ -31,6 +31,7 @@ import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.controllers.activity.ActivityLogTableModel.ActivityLogCols;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -53,6 +54,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSel
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.util.SelectionValuesSupplier;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
@@ -89,6 +91,7 @@ public abstract class ActivityLogController extends FormBasicController {
 	private FlexiTableElement tableEl;
 
 	protected final Formatter formatter;
+	private Boolean logOpen = Boolean.TRUE;
 
 	@Autowired
 	protected UserManager userManager;
@@ -146,6 +149,7 @@ public abstract class ActivityLogController extends FormBasicController {
 
 		initFilterTabs(ureq);
 		initFilters();
+		flc.contextPut("logOpen", logOpen);
 	}
 
 	private void initFilterTabs(UserRequest ureq) {
@@ -267,6 +271,18 @@ public abstract class ActivityLogController extends FormBasicController {
 	
 	protected ActivityLogRow createRow(Identity identity) {
 		return new ActivityLogRow(identity, userPropertyHandlers, getLocale());
+	}
+
+	@Override
+	public void event(UserRequest ureq, Component source, Event event) {
+		if ("panel".equals(event.getCommand())) {
+			String logOpenVal = ureq.getParameter("logOpen");
+			if (StringHelper.containsNonWhitespace(logOpenVal)) {
+				logOpen = Boolean.valueOf(logOpenVal);
+				flc.contextPut("logOpen", logOpen);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 	
 	@Override

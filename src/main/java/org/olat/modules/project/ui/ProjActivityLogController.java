@@ -217,7 +217,7 @@ public class ProjActivityLogController extends ActivityLogController {
 		addActivityFilterValue(filterSV, "activity.log.message.tag.add");
 		addActivityFilterValue(filterSV, "activity.log.message.tag.remove");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.title");
-		addActivityFilterValue(filterSV, "activity.log.message.todo.task.text");
+		addActivityFilterValue(filterSV, "activity.log.message.todo.task.description");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.status");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.priority");
 		addActivityFilterValue(filterSV, "activity.log.message.todo.task.expenditure.of.work");

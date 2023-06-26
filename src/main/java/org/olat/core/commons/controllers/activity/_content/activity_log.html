@@ -1,12 +1,16 @@
-<div class="o_proj_widget o_proj_activity_log panel panel-default">
-	<div class="o_proj_title o_proj_widget_title panel-heading">
-		<div>
-			<h3>
-				$r.translate("activity.log.title")
-			</h3>
-		</div>
-	</div>
-	<div class="panel-body">
-		$r.render("table")
-	</div>
-</div>
+<h4 onclick="jQuery('#collapse_log_${r.getCId()}').collapse('toggle')">
+	<i id="collapse_log_${r.getCId()}_toggler" class="o_icon o_icon-fw #if($logOpen) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i> $r.translate("activity.log.title")
+</h4>
+<div id="collapse_log_${r.getCId()}" class="collapse #if($logOpen) in #end">$r.render("table")</div>
+<script>
+jQuery(function() {
+	jQuery('#collapse_log_${r.getCId()}').on('hide.bs.collapse', function () {
+		jQuery('#collapse_log_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		$r.javaScriptCommand("panel","logOpen","false");
+	})
+	jQuery('#collapse_log_${r.getCId()}').on('show.bs.collapse', function () {
+		jQuery('#collapse_log_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+		$r.javaScriptCommand("panel","logOpen","true");
+	})
+});
+</script>
