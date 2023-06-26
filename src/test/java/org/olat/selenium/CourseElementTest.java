@@ -831,9 +831,8 @@ public class CourseElementTest extends Deployments {
 		dialog
 			.assertOnFile(imageFile.getName())
 			.uploadFile(imageRunFile)
-			.assertOnFile(imageRunFile.getName())
-			.openForum(imageRunFile.getName())
-			.createThread("JPEG vs PNG", "Which is the best format", null);
+			.assertOnFileOverview(imageRunFile.getName())
+			.createNewThread("JPEG vs PNG", "Which is the best format");
 		
 		// The participant come in
 		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);

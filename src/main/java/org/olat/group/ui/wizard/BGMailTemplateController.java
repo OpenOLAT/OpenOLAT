@@ -149,12 +149,12 @@ public class BGMailTemplateController extends FormBasicController {
 		}
 		if (mandatoryEmail || sendMail.isOn()) {
 			if(subjectElem != null && !StringHelper.containsNonWhitespace(subjectElem.getValue())) {
-				subjectElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				subjectElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 			
 			if(bodyElem != null && !StringHelper.containsNonWhitespace(bodyElem.getValue())) {
-				bodyElem.setErrorKey("mailtemplateform.error.emptyfield", null);
+				bodyElem.setErrorKey("mailtemplateform.error.emptyfield");
 				allOk &= false;
 			}
 		}
@@ -221,7 +221,7 @@ public class BGMailTemplateController extends FormBasicController {
 	}
 	
 	private void updateVisibility() {
-		boolean isSendMail = sendMail != null && sendMail.isOn();
+		boolean isSendMail = sendMail == null || sendMail.isOn();
 		boolean sm = customizingAvailable && !mailContentSelection.isKeySelected(DEFAULT_MAIL_TEMPLATE);
 		mailContentSelection.setVisible(isSendMail);
 		defaultTemplateEl.setVisible(isSendMail && mailContentSelection.isKeySelected(DEFAULT_MAIL_TEMPLATE));
