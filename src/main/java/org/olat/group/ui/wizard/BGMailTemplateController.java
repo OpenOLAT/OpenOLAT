@@ -167,7 +167,7 @@ public class BGMailTemplateController extends FormBasicController {
 		// toggle sendMail or not
 		if(!mandatoryEmail) {
 			sendMail = uifactory.addToggleButton("sendmail", "mailtemplateform.sendMailSwitchElem", null, null, formLayout);
-			sendMail.toggleOff();
+			sendMail.toggleOn();
 			sendMail.addActionListener(FormEvent.ONCHANGE);
 		}
 
@@ -191,7 +191,7 @@ public class BGMailTemplateController extends FormBasicController {
 			if(body != null && !StringHelper.isHtml(body)) {
 				body = Formatter.escWithBR(body).toString();
 			}
-			bodyElem = uifactory.addRichTextElementForStringDataMinimalistic("bodyElem", "mailtemplateform.body", body, 15, 60, formLayout, getWindowControl());
+			bodyElem = uifactory.addRichTextElementForStringDataMinimalistic("bodyElem", "mailtemplateform.body", body, 8, 60, formLayout, getWindowControl());
 			bodyElem.setMandatory(true);
 			MailHelper.setVariableNamesAsHelp(bodyElem, template, getLocale());
 		}
