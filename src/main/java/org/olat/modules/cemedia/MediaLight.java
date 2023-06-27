@@ -36,10 +36,6 @@ public interface MediaLight extends MediaInformations {
 	
 	Date getCollectionDate();
 	
-	String getStoragePath();
-	
-	String getRootFilename();
-	
 	String getBusinessPath();
 
 }

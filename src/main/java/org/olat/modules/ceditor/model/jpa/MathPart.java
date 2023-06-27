@@ -30,7 +30,7 @@ import org.olat.modules.ceditor.model.MathElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfmathpart")
+@Entity(name="cemathpart")
 public class MathPart extends AbstractPart implements MathElement {
 
 	private static final long serialVersionUID = -8243190734049674174L;

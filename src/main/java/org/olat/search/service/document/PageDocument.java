@@ -43,7 +43,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
-import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.file.DocumentAccessException;
@@ -94,7 +94,7 @@ public class PageDocument extends OlatDocument {
 			} else if(part instanceof TablePart table) {
 				appendTableContent(sb, table);
 			} else if(part instanceof MediaPart mediaPart) {
-				Document document = createMediaDocument(mediaPart.getMedia(), searchResourceContext);
+				Document document = createMediaDocument(mediaPart.getMediaVersion(), searchResourceContext);
 				if(document != null) {
 					documents.add(document);
 				}
@@ -103,12 +103,12 @@ public class PageDocument extends OlatDocument {
 		return sb.toString();
 	}
 	
-	private static Document createMediaDocument(Media media, SearchResourceContext searchResourceContext) {
+	private static Document createMediaDocument(MediaVersion mediaVersion, SearchResourceContext searchResourceContext) {
 		try {
 			FileDocumentFactory documentFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
 			ContentEditorFileStorage fileStorage = CoreSpringFactory.getImpl(ContentEditorFileStorage.class);
-			VFSContainer container = fileStorage.getMediaContainer(media);
-			VFSItem item = container.resolve(media.getRootFilename());
+			VFSContainer container = fileStorage.getMediaContainer(mediaVersion);
+			VFSItem item = container.resolve(mediaVersion.getRootFilename());
 			if(item instanceof VFSLeaf leaf) {
 				return documentFactory.createDocument(searchResourceContext, leaf);
 			}

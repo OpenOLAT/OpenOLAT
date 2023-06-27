@@ -149,7 +149,7 @@ public class PageDAO {
 		boolean deleteBody = oldBody.getUsage() <= 1;
 		if(deleteBody) {
 			oldBody = loadPageBodyByKey(oldBody.getKey());
-			String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
+			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			dbInstance.getCurrentEntityManager()
 					.createQuery(partQ)
 					.setParameter("bodyKey", oldBody.getKey())
@@ -189,7 +189,7 @@ public class PageDAO {
 	
 	public Group getGroup(Page page) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select baseGroup from pfpage as page ")
+		sb.append("select baseGroup from cepage as page ")
 		  .append(" inner join page.baseGroup as baseGroup")
 		  .append(" where page.key=:pageKey");
 
@@ -200,7 +200,7 @@ public class PageDAO {
 	
 	public List<Page> getPages(BinderRef binder) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
@@ -226,7 +226,7 @@ public class PageDAO {
 		StringBuilder competenceSubQuery = new StringBuilder();
 		if(options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty()) {
 			competenceSubQuery.append(", (select count(distinct competence.key) = :competenceCountSize")
-				.append(" from pfpagetotaxonomycompetence competenceRel")
+				.append(" from cepagetotaxonomycompetence competenceRel")
 				.append(" inner join competenceRel.taxonomyCompetence as competence")
 				.append(" inner join competence.taxonomyLevel level")
 				.append(" where competenceRel.page.key = page.key and level.key in :levelKeys")
@@ -237,7 +237,7 @@ public class PageDAO {
 		qb.append("select page as page")
 		  .append(competenceSubQuery.toString(), ", true as competenceCountCorrect", options.getTaxonomyLevels() != null && !options.getTaxonomyLevels().isEmpty())
 		  .append(categorySubQuery.toString(), ", true as categoryCountCorrect", options.getCategories() != null && !options.getCategories().isEmpty())
-		  .append(" from pfpage as page")
+		  .append(" from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" left join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
@@ -263,7 +263,7 @@ public class PageDAO {
 			  .append("   inner join rel.category cat")
 			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
 			  .append(" )");
-			qb.append(" or exists (select competence from pfpagetotaxonomycompetence competenceRel ")
+			qb.append(" or exists (select competence from cepagetotaxonomycompetence competenceRel ")
 			  .append("   inner join competenceRel.taxonomyCompetence as competence")
 			  .append("   inner join competence.taxonomyLevel level")
 			  .append("   where competenceRel.page.key = page.key and lower(level.displayName) like :searchString")
@@ -307,7 +307,7 @@ public class PageDAO {
 	
 	public List<Page> getPages(SectionRef section) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch page.body as body")
@@ -322,7 +322,7 @@ public class PageDAO {
 	
 	public int countOwnedPages(IdentityRef owner) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(distinct page.key) from pfpage as page")
+		sb.append("select count(distinct page.key) from cepage as page")
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
@@ -339,7 +339,7 @@ public class PageDAO {
 	
 	public List<Page> getOwnedPages(IdentityRef owner, String searchString) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.body as body")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
@@ -357,7 +357,7 @@ public class PageDAO {
 			  .append("   inner join rel.category cat")
 			  .append("   where rel.resId=page.key and rel.resName='Page' and lower(cat.name) like :searchString")
 			  .append(" )");
-			sb.append(" or exists (select competence from pfpagetotaxonomycompetence competenceRel ")
+			sb.append(" or exists (select competence from cepagetotaxonomycompetence competenceRel ")
 			  .append("   inner join competenceRel.taxonomyCompetence as competence")
 			  .append("   inner join competence.taxonomyLevel level")
 			  .append("   where competenceRel.page.key = page.key and lower(level.displayName) like :searchString")
@@ -377,9 +377,9 @@ public class PageDAO {
 	
 	public List<String> getSharedPageStatus(Page page) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page.status from pfpage as page")
+		sb.append("select page.status from cepage as page")
 		  .append(" inner join page.body as pageBody")
-		  .append(" inner join pfpage as delegatePage on (delegatePage.body.key=pageBody.key)")
+		  .append(" inner join cepage as delegatePage on (delegatePage.body.key=pageBody.key)")
 		  .append(" where delegatePage.key=:pageKey");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -390,9 +390,9 @@ public class PageDAO {
 	
 	public int getCountSharedPageBody(Page page) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select count(distinct page.key) from pfpage as page")
+		sb.append("select count(distinct page.key) from cepage as page")
 		  .append(" inner join page.body as pageBody")
-		  .append(" inner join pfpage as sharedPage on (sharedPage.body.key=pageBody.key)")
+		  .append(" inner join cepage as sharedPage on (sharedPage.body.key=pageBody.key)")
 		  .append(" where sharedPage.key=:pageKey");
 		
 		List<Number> count = dbInstance.getCurrentEntityManager()
@@ -404,9 +404,9 @@ public class PageDAO {
 	
 	public List<Page> getPagesBySharedBody(Page page) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join page.body as pageBody")
-		  .append(" inner join pfpage as delegatePage on (delegatePage.body.key=pageBody.key)")
+		  .append(" inner join cepage as delegatePage on (delegatePage.body.key=pageBody.key)")
 		  .append(" left join fetch page.section as section")
 		  .append(" where delegatePage.key=:pageKey");
 		
@@ -418,7 +418,7 @@ public class PageDAO {
 	
 	public List<Page> getDeletedPages(IdentityRef owner, String searchString) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.body as body")
 		  .append(" inner join fetch page.baseGroup as bGroup")
 		  .append(" inner join bGroup.members as membership")
@@ -449,7 +449,7 @@ public class PageDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select membership.identity from pfpage as page")
+		sb.append("select membership.identity from cepage as page")
 		  .append(" inner join page.baseGroup as baseGroup")
 		  .append(" inner join baseGroup.members as membership")
 		  .append(" inner join membership.identity as ident")
@@ -472,7 +472,7 @@ public class PageDAO {
 	
 	public Page loadByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
@@ -488,13 +488,15 @@ public class PageDAO {
 	
 	public Page loadPageByKey(Long key) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
 		  .append(" left join fetch page.body as body")
 		  .append(" left join fetch body.parts as parts")
+		  .append(" left join fetch parts.mediaVersion as partVersion")
 		  .append(" left join fetch parts.media as media")
+		  .append(" left join fetch media.versions as mediaVersion")
 		  .append(" where page.key=:pageKey");
 		
 		List<Page> pages = dbInstance.getCurrentEntityManager()
@@ -508,7 +510,7 @@ public class PageDAO {
 		if(keys == null || keys.isEmpty()) return new ArrayList<>();
 		
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
@@ -523,7 +525,7 @@ public class PageDAO {
 	
 	public Page loadByBody(PageBody body) {
 		StringBuilder sb = new StringBuilder(512);
-		sb.append("select page from pfpage as page")
+		sb.append("select page from cepage as page")
 		  .append(" inner join fetch page.baseGroup as baseGroup")
 		  .append(" left join fetch page.section as section")
 		  .append(" left join fetch section.binder as binder")
@@ -538,7 +540,7 @@ public class PageDAO {
 	}
 	
 	public PageBody loadPageBodyByKey(Long key) {
-		String query = "select body from pfpagebody as body where body.key=:bodyKey";
+		String query = "select body from cepagebody as body where body.key=:bodyKey";
 		
 		List<PageBody> bodies = dbInstance.getCurrentEntityManager()
 			.createQuery(query, PageBody.class)
@@ -549,7 +551,7 @@ public class PageDAO {
 	
 	public boolean isFormEntryInUse(RepositoryEntryRef formEntry) {
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("select part.key from pfformpart as part")
+		sb.append("select part.key from ceformpart as part")
 		  .append(" where part.formEntry.key=:formEntryKey");
 
 		List<Long> counts = dbInstance.getCurrentEntityManager()
@@ -564,7 +566,7 @@ public class PageDAO {
 	public List<Page> getLastPages(IdentityRef owner, int maxResults) {
 		StringBuilder sc = new StringBuilder(1024);
 		sc.append("select page.key, page.lastModified, body.lastModified, part.lastModified")
-		  .append(" from pfpage as page")
+		  .append(" from cepage as page")
 		  .append(" inner join page.body as body")
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
@@ -724,12 +726,17 @@ public class PageDAO {
 		return dbInstance.getCurrentEntityManager().merge(body);
 	}
 	
+	/**
+	 * The body and part must be loaded with an hibernate session.
+	 * 
+	 * @param body
+	 * @param part
+	 * @return
+	 */
 	public PageBody removePart(PageBody body, PagePart part) {
-		PagePart aPart = dbInstance.getCurrentEntityManager()
-				.getReference(part.getClass(), part.getKey());
 		body.getParts().size();
-		body.getParts().remove(aPart);
-		dbInstance.getCurrentEntityManager().remove(aPart);
+		body.getParts().remove(part);
+		dbInstance.getCurrentEntityManager().remove(part);
 		((PageBodyImpl)body).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(body);
 	}
@@ -842,9 +849,10 @@ public class PageDAO {
 	
 	public List<PagePart> getParts(PageBody body) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select part from pfpagepart as part")
+		sb.append("select part from cepagepart as part")
 		  .append(" inner join fetch part.body as body")
 		  .append(" left join fetch part.media as media")
+		  .append(" left join fetch part.mediaVersion as mediaVersion")
 		  .append(" where body.key=:bodyKey")
 		  .append(" order by part.pos");
 		
@@ -852,6 +860,15 @@ public class PageDAO {
 			.createQuery(sb.toString(), PagePart.class)
 			.setParameter("bodyKey", body.getKey())
 			.getResultList();
+	}
+	
+	public PagePart loadPart(PagePart part) {
+		String sb = "select part from cepagepart as part where part.key=:partKey";
+		List<PagePart> parts = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), PagePart.class)
+			.setParameter("partKey", part.getKey())
+			.getResultList();
+		return parts == null || parts.isEmpty() ? null : parts.get(0);
 	}
 	
 	public PagePart merge(PagePart part) {
@@ -876,7 +893,7 @@ public class PageDAO {
 		PageBody body = page.getBody();
 		boolean deleteBody = body.getUsage() <= 1;
 		if(deleteBody) {
-			String partQ = "delete from pfpagepart part where part.body.key=:bodyKey";
+			String partQ = "delete from cepagepart part where part.body.key=:bodyKey";
 			parts = dbInstance.getCurrentEntityManager()
 					.createQuery(partQ)
 					.setParameter("bodyKey", body.getKey())

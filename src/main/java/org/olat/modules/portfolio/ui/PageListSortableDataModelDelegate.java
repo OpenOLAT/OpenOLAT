@@ -89,20 +89,6 @@ public class PageListSortableDataModelDelegate extends SortableFlexiTableModelDe
 		//do nothing
 	}
 	
-	private static class ReverseComparator implements Comparator<PortfolioElementRow> {
-		
-		private Comparator<PortfolioElementRow> delegate;
-		
-		public ReverseComparator(Comparator<PortfolioElementRow> delegate) {
-			this.delegate = delegate;
-		}
-
-		@Override
-		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {
-			return -delegate.compare(o1, o2);
-		}
-	}
-	
 	private final class CommentsComparator implements Comparator<PortfolioElementRow> {
 		@Override
 		public int compare(PortfolioElementRow o1, PortfolioElementRow o2) {

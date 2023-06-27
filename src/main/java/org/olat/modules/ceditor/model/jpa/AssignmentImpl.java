@@ -57,7 +57,7 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 @Entity(name="pfassignment")
-@Table(name="o_pf_assignment")
+@Table(name="o_ce_assignment")
 public class AssignmentImpl implements Persistable, ModifiedInfo, CreateInfo, Assignment {
 
 	private static final long serialVersionUID = -8045342700649500903L;

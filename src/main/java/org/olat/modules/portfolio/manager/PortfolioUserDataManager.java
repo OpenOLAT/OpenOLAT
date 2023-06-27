@@ -147,8 +147,10 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 		List<Media> medias = mediaDao.load(identity);
 		dbInstance.commitAndCloseSession();
 		for(Media media:medias) {
+			media = mediaDao.loadByKey(media.getKey());
 			MediaHandler handler = mediaService.getMediaHandler(media.getType());
 			handler.export(media, manifest, mediasArchive, locale);
+			dbInstance.commitAndCloseSession();
 		}
 	}
 	

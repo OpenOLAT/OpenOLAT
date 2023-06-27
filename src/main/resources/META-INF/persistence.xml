@@ -182,6 +182,7 @@
 		<class>org.olat.modules.catalog.model.CatalogLauncherToOrganisationImpl</class>
 		<class>org.olat.modules.catalog.model.CatalogFilterImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.PageImpl</class>
+		<class>org.olat.modules.ceditor.model.jpa.PageReferenceImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.PageUserInformationsImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.PageBodyImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.AbstractPart</class>
@@ -200,6 +201,11 @@
 		<class>org.olat.modules.ceditor.model.jpa.PageToTaxonomyCompetenceImpl</class>
 		<class>org.olat.modules.ceditor.model.jpa.ContentAuditLogImpl</class>
 		<class>org.olat.modules.cemedia.model.MediaImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaVersionImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaTagImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaToGroupRelationImpl</class>
+		<class>org.olat.modules.cemedia.model.MediaToTaxonomyLevelImpl</class>
+		<class>org.olat.upgrade.model.UpgradeMedia</class>
 		<class>org.olat.modules.curriculum.model.CurriculumImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementImpl</class>
 		<class>org.olat.modules.curriculum.model.CurriculumElementTypeImpl</class>

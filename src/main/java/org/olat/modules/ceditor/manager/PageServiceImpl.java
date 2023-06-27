@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -47,12 +48,15 @@ import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.PageReference;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.portfolio.manager.PageUserInfosDAO;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyCompetenceLinkLocations;
@@ -61,6 +65,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyCompetenceDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -88,6 +93,8 @@ public class PageServiceImpl implements PageService {
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
+	private PageReferenceDAO pageReferenceDao;
+	@Autowired
 	private PageUserInfosDAO pageUserInfosDao;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
@@ -113,6 +120,16 @@ public class PageServiceImpl implements PageService {
 	@Override
 	public Page updatePage(Page page) {
 		return pageDao.updatePage(page);
+	}
+	
+	@Override
+	public PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent) {
+		return pageReferenceDao.createReference(page, repositoryEntry, subIdent);
+	}
+
+	@Override
+	public boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent) {
+		return pageReferenceDao.hasReference(page, repositoryEntry, subIdent);
 	}
 
 	@Override
@@ -153,8 +170,9 @@ public class PageServiceImpl implements PageService {
 		for(PagePart part:parts) {
 			PagePart newPart = part.copy();
 			if(newPart instanceof MediaPart mediaPart && mediaPart.getMedia() != null) {
-				Media importedMedia = importMedia(mediaPart.getMedia(), owner, storage);
-				mediaPart.setMedia(importedMedia);
+				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), owner, storage);
+				mediaPart.setMedia(importedMedia.media());
+				mediaPart.setMediaVersion(importedMedia.currentVersion());
 			}
 			copyBody = pageDao.persistPart(copyBody, newPart);
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
@@ -164,26 +182,60 @@ public class PageServiceImpl implements PageService {
 		return copy;
 	}
 	
-	private Media importMedia(Media media, Identity owner, ZipFile storage) {
-		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), media.getContent(), media.getType(), media.getBusinessPath(), null, 0, owner);
-		String mediaZipPath = media.getStoragePath();
-		if(StringHelper.containsNonWhitespace(mediaZipPath)) {
-			File mediaDir = fileStorage.generateMediaSubDirectory(importedMedia);
-			String storagePath = fileStorage.getRelativePath(mediaDir);
-			for(Enumeration<? extends ZipEntry> entries=storage.entries(); entries.hasMoreElements(); ) {
-				ZipEntry entry=entries.nextElement();
-				String entryPath = entry.getName();
-				if(entryPath.startsWith(mediaZipPath)) {
-					File mediaFile = unzip(mediaZipPath, entry, storage, mediaDir);
-					if(mediaFile != null) {
-						importedMedia.setStoragePath(storagePath);
-						importedMedia.setRootFilename(mediaFile.getName());
+	private MediaWithVersion importMedia(Media media, MediaVersion mediaVersion, Identity owner, ZipFile storage) {
+		String mediaUuid = media.getUuid();
+		if(StringHelper.containsNonWhitespace(mediaUuid)) {
+			Media existingMedia = mediaDao.loadByUuid(mediaUuid);
+			if(existingMedia != null) {
+				List<MediaVersion> versions = existingMedia.getVersions();
+				if(versions != null) {
+					if(mediaVersion != null) {
+						for(MediaVersion version:versions) {
+							if(Objects.equals(mediaVersion.getVersionUuid(), version.getVersionUuid())) {
+								return new MediaWithVersion(media, version, 1l);
+							}
+						}
+					}
+					
+					if(!versions.isEmpty()) {
+						return new MediaWithVersion(media, versions.get(0), 1l);
 					}
 				}
+				return new MediaWithVersion(media, null, 0l);
 			}
-			importedMedia = mediaDao.update(importedMedia);
 		}
-		return importedMedia;
+
+		Media importedMedia = mediaDao.createMedia(media.getTitle(), media.getDescription(), media.getAltText(),
+				media.getType(), media.getBusinessPath(), null, 0, owner);
+		if(mediaVersion != null) {
+			String content = mediaVersion.getContent();
+			String mediaZipPath = mediaVersion.getStoragePath();
+			if(StringHelper.containsNonWhitespace(mediaZipPath)) {
+				File mediaDir = fileStorage.generateMediaSubDirectory(importedMedia);
+				String storagePath = fileStorage.getRelativePath(mediaDir);
+				for(Enumeration<? extends ZipEntry> entries=storage.entries(); entries.hasMoreElements(); ) {
+					ZipEntry entry=entries.nextElement();
+					String entryPath = entry.getName();
+					if(entryPath.startsWith(mediaZipPath)) {
+						File mediaFile = unzip(mediaZipPath, entry, storage, mediaDir);
+						if(mediaFile != null) {
+							importedMedia = mediaDao.createVersion(importedMedia,
+									mediaVersion.getCollectionDate(), mediaFile.getName(), storagePath, mediaFile.getName());
+						}
+					}
+				}
+				importedMedia = mediaDao.update(importedMedia);
+			} else if(StringHelper.containsNonWhitespace(content)) {
+				importedMedia = mediaDao.createVersion(importedMedia,
+						mediaVersion.getCollectionDate(), content, null, null);
+			}
+		}
+		
+		MediaVersion importedVersionMedia = null;
+		if(!importedMedia.getVersions().isEmpty()) {
+			importedVersionMedia = importedMedia.getVersions().get(0);
+		}
+		return new MediaWithVersion(importedMedia, importedVersionMedia, importedMedia.getVersions().size());
 	}
 	
 	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {
@@ -282,7 +334,8 @@ public class PageServiceImpl implements PageService {
 	@Override
 	public void removePagePart(Page page, PagePart part) {
 		PageBody body = pageDao.loadPageBodyByKey(page.getBody().getKey());
-		pageDao.removePart(body, part);
+		PagePart reloadedPart = pageDao.loadPart(part);
+		pageDao.removePart(body, reloadedPart);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ import org.olat.modules.ceditor.model.TableElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pftablepart")
+@Entity(name="cetablepart")
 public class TablePart extends AbstractPart implements TableElement {
 
 	private static final long serialVersionUID = 7060103983145628108L;

@@ -1,18 +1,8 @@
-<div class="clearfix">
-	$r.contextHelpWithWrapper("manual_user/portfolio/Media_center/")		
+<div class="o_button_group o_button_group_right">
+	<div class="btn-group">
+		$r.render("add.media")
+		$r.render("add.more")
+	</div>
+	$r.contextHelpWithWrapper("manual_user/portfolio/Media_center/")
 </div>
-#if($r.isNotEmpty($tagLinks) || $r.available("new.medias"))
-<div class="o_block clearfix">
-	#if($r.isNotEmpty($tagLinks))
-		<div class="pull-left"><i class="o_icon o_icon_tags"> </i>
-		#foreach($tagLink in $tagLinks)
-			$r.render($tagLink)
-		#end
-		</div>
-	#end
-	#if($r.available("new.medias"))
-		<div class="pull-right">$r.render("new.medias")</div>
-	#end
-</div>
-#end
-<div class="o_portfolio_media_browser">$r.render("table")</div>
+<div class="o_media_browser clearfix">$r.render("table")</div>

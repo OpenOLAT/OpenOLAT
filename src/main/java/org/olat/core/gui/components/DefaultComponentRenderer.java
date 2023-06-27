@@ -45,6 +45,9 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		
 		String layout = layout(source, args);
 		switch(layout) {
+			case "0_12":
+				renderBootstrapLayout(renderer, sb, source, 12, layout, ubu, translator, renderResult, args);
+				break;
 			case "2_10":
 				renderBootstrapLayout(renderer, sb, source, 10, layout, ubu, translator, renderResult, args);
 				break;
@@ -198,7 +201,7 @@ public abstract class DefaultComponentRenderer implements ComponentRenderer {
 		
 		String wrapperTagName = renderOpenFormComponent(sb, source, layout, item);
 		
-		if(item.hasLabel()) {
+		if(item.hasLabel() && labelWidth > 0) {
 			renderLabel(sb, (FormBaseComponent)source, layout, translator, new String[] { item.getFormDispatchId(), "col-sm-" + labelWidth } );
 		}
 

@@ -32,6 +32,7 @@ import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -71,6 +72,10 @@ public interface PageService {
 	 * @return The persisted page
 	 */
 	Page importPage(Identity owner, Page page, ZipFile storage);
+	
+	PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
+	
+	boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
 
 	
 	/**

@@ -46,8 +46,8 @@ import org.olat.modules.taxonomy.model.TaxonomyCompetenceImpl;
  *
  * @author aboeckle, alexander.boeckle@frentix.com, http://www.frentix.com
  */
-@Entity(name = "pfpagetotaxonomycompetence")
-@Table(name = "o_pf_page_to_tax_competence")
+@Entity(name = "cepagetotaxonomycompetence")
+@Table(name = "o_ce_page_to_tax_competence")
 public class PageToTaxonomyCompetenceImpl implements PageToTaxonomyCompetence, Persistable, CreateInfo {
 
 	private static final long serialVersionUID = 7492748503495032549L;

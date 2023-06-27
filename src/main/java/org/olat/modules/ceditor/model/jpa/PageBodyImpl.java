@@ -50,8 +50,8 @@ import org.olat.modules.ceditor.PageStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfpagebody")
-@Table(name="o_pf_page_body")
+@Entity(name="cepagebody")
+@Table(name="o_ce_page_body")
 public class PageBodyImpl implements Persistable, ModifiedInfo, CreateInfo, PageBody {
 
 	private static final long serialVersionUID = -2441388713989345529L;

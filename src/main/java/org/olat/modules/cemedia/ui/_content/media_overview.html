@@ -1,0 +1,17 @@
+#if($r.visible("add.version") || $r.visible("versions.list"))
+<div class="o_button_group o_button_group_right">
+#if($r.visible("add.version"))
+	$r.render("add.version")
+#end
+#if($r.visible("versions.list"))
+	$r.render("versions.list")
+#end
+</div>
+#end
+#if($r.isNotEmpty($media.description))
+	<div class="o_hint">$r.xssScan($media.description)</div>
+#end
+<div class="row o_block_large">
+	<div class="col-md-6">$r.render("media")</div>
+	<div class="col-md-6">$r.render("meta")</div>
+</div>

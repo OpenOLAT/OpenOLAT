@@ -31,8 +31,8 @@ import org.olat.core.util.io.SystemFilenameFilter;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.Assignment;
+import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaLight;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
@@ -168,12 +168,21 @@ public class ContentEditorFileStorage implements InitializingBean {
 		return null;
 	}
 	
-	public File getMediaDirectory(MediaLight media) {
-		return new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
+	public File getMediaDirectory(StoredData data) {
+		return new File(FolderConfig.getCanonicalRoot(), data.getStoragePath());
 	}
 	
-	public VFSContainer getMediaContainer(MediaLight media) {
-		return VFSManager.olatRootContainer("/" + media.getStoragePath(), null);
+	public File getMediaRootFile(StoredData data) {
+		if(data != null && StringHelper.containsNonWhitespace(data.getStoragePath())
+				&& StringHelper.containsNonWhitespace(data.getRootFilename())) {
+			File directory = getMediaDirectory(data);
+			return new File(directory, data.getRootFilename());
+		}
+		return null;
+	}
+	
+	public VFSContainer getMediaContainer(StoredData data) {
+		return VFSManager.olatRootContainer("/" + data.getStoragePath(), null);
 	}
 	
 	public File generateMediaSubDirectory(Media media) {

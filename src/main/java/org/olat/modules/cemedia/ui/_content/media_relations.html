@@ -1,0 +1,9 @@
+<fieldset>
+	#if($r.visible("open.close"))
+	<legend>$r.render("open.close")</legend>
+	#end
+	<div class="o_button_group o_button_group_right">
+		$r.render("add.shares")
+	</div>
+	$r.render("table")
+</fieldset>

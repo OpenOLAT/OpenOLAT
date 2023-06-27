@@ -35,12 +35,6 @@ import java.io.Serializable;
 public interface StoredData extends Serializable {
 	
 	/**
-	 * 
-	 * @return A description of the data (can be null)
-	 */
-	public String getDescription();
-	
-	/**
 	 * @return The relative path of the file.
 	 */
 	public String getStoragePath();

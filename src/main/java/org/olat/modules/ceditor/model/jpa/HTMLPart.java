@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.model.HTMLRawElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfhtmlpart")
+@Entity(name="cehtmlpart")
 public class HTMLPart extends AbstractPart implements HTMLRawElement {
 
 	private static final long serialVersionUID = 7060103983145628108L;

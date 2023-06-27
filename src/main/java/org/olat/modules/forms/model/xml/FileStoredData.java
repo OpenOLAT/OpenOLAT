@@ -53,13 +53,4 @@ public class FileStoredData implements StoredData {
 	public void setRootFilename(String name) {
 		this.rootFilename = name;
 	}
-
-	@Override
-	public String getDescription() {
-		return null;
-	}
-
-
-	
-	
 }

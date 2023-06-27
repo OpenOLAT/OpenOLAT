@@ -21,7 +21,7 @@ package org.olat.modules.webFeed.portfolio;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -36,14 +36,14 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
-import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.user.manager.ManifestBuilder;
@@ -86,9 +86,14 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	public boolean acceptMimeType(String mimeType) {
 		return false;
 	}
+	
+	@Override
+	public boolean hasVersion() {
+		return false;
+	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
 	}
 	
@@ -100,15 +105,16 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
 		BlogEntryMedia entry = (BlogEntryMedia)mediaObject;
 		Item item = entry.getItem();
 		
-		Media media = mediaDao.createMedia(title, description, "", BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
+		Media media = mediaDao.createMedia(title, description, altText, BLOG_ENTRY_HANDLER, businessPath, null, 70, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		media = mediaDao.updateStoragePath(media, storagePath, "item.xml");
-		VFSContainer mediaContainer = fileStorage.getMediaContainer(media);
+		media = mediaDao.createVersion(media, new Date(), "-", storagePath, "item.xml");
+		MediaVersion currentVersion = media.getVersions().get(0);
+		VFSContainer mediaContainer = fileStorage.getMediaContainer(currentVersion);
 		VFSContainer itemContainer = feedManager.getItemContainer(item);
 		FeedManager.getInstance().saveItemAsXML(item);
 		VFSManager.copyContent(itemContainer, mediaContainer);
@@ -118,8 +124,8 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 	
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new BlogEntryMediaController(ureq, wControl, media, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+		return new BlogEntryMediaController(ureq, wControl, version, hints);
 	}
 
 	@Override
@@ -128,10 +134,22 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 	
 	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new StandardEditMediaController(ureq, wControl, media);
+	}
+
+	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
-		File mediaDir = fileStorage.getMediaDirectory(media);
-		File[] files = mediaDir.listFiles(SystemFileFilter.FILES_ONLY);
-		List<File> attachments = files == null ? Collections.emptyList() : Arrays.asList(files);
+		List<MediaVersion> versions = media.getVersions();
+		List<File> attachments = null;
+		if(!versions.isEmpty()) {
+			File mediaDir = fileStorage.getMediaDirectory(versions.get(0));
+			File[] files = mediaDir.listFiles(SystemFileFilter.FILES_ONLY);
+			attachments = files == null ? List.of() : Arrays.asList(files);
+		}
+		if(attachments == null) {
+			attachments = List.of();
+		}
 		super.exportContent(media, null, attachments, mediaArchiveDirectory, locale);
 	}
 	

@@ -356,7 +356,7 @@ public class AssignmentDAO {
 	
 	public List<Assignment> getOwnedAssignments(IdentityRef assignee) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select assignment from pfpage page")
+		sb.append("select assignment from cepage page")
 		  .append(" inner join page.body as body")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")

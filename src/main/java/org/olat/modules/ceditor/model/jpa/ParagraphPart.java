@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.model.ParagraphElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfparagraphpart")
+@Entity(name="ceparagraphpart")
 public class ParagraphPart extends AbstractPart implements ParagraphElement {
 
 	private static final long serialVersionUID = 4371854631953055209L;

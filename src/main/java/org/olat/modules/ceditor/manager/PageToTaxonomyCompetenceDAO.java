@@ -65,7 +65,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public List<TaxonomyCompetence> getCompetencesToPage(Page page, boolean fetchTaxonomies) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select competence from pfpagetotaxonomycompetence rel")
+		sb.append("select competence from cepagetotaxonomycompetence rel")
 		  .append(" inner join rel.taxonomyCompetence as competence");
 		
 		if (fetchTaxonomies) {
@@ -85,7 +85,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public Page getPageToCompetence(TaxonomyCompetence competence) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select page from pfpagetotaxonomycompetence rel")
+		sb.append("select page from cepagetotaxonomycompetence rel")
 		  .append(" inner join rel.page as page")
 		  .append(" inner join fetch page.section as section")
 		  .append(" inner join fetch section.binder as binder")
@@ -102,7 +102,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public void deleteRelation(Page page, TaxonomyCompetence taxonomyCompetence) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		sb.append("select rel from cepagetotaxonomycompetence rel")
 		  .append(" where rel.page.key = :pageKey and rel.taxonomyCompetence.key = :competenceKey");
 		
 		List<PageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
@@ -119,7 +119,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public void deleteRelation(TaxonomyCompetence taxonomyCompetence) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		sb.append("select rel from cepagetotaxonomycompetence rel")
 		  .append(" where rel.taxonomyCompetence.key = :competenceKey");
 		
 		List<PageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
@@ -139,7 +139,7 @@ public class PageToTaxonomyCompetenceDAO {
 		
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		sb.append("select rel from cepagetotaxonomycompetence rel")
 		  .append(" inner join rel.taxonomyCompetence.taxonomyLevel as level")
 		  .append(" inner join level.type as type")
 		  .append(" where type.key = :typeKey");
@@ -158,7 +158,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public void deleteRelation(Page page) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select rel from pfpagetotaxonomycompetence rel")
+		sb.append("select rel from cepagetotaxonomycompetence rel")
 		  .append(" where rel.page.key = :pageKey");
 		
 		List<PageToTaxonomyCompetence> relationsToDelete = dbInstance.getCurrentEntityManager()
@@ -174,7 +174,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public Map<TaxonomyLevel,Long> getCompetencesAndUsage(Section section) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
+		sb.append("select level as level, count(*) as competenceCount from cepagetotaxonomycompetence rel")
 		  .append(" inner join rel.page as page")
 		  .append(" inner join rel.taxonomyCompetence as competence")
 		  .append(" inner join competence.taxonomyLevel as level")
@@ -197,7 +197,7 @@ public class PageToTaxonomyCompetenceDAO {
 	public Map<TaxonomyLevel, Long> getCompetencesAndUsage(List<Page> pages) {
 		StringBuilder sb = new StringBuilder(256);
 		
-		sb.append("select level as level, count(*) as competenceCount from pfpagetotaxonomycompetence rel")
+		sb.append("select level as level, count(*) as competenceCount from cepagetotaxonomycompetence rel")
 		  .append(" inner join rel.page as page")
 		  .append(" inner join rel.taxonomyCompetence as competence")
 		  .append(" inner join competence.taxonomyLevel as level")

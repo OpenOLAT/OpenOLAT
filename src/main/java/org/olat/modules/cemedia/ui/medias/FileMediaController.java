@@ -31,6 +31,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -46,10 +47,15 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
@@ -71,7 +77,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	private Link editLink;
 
 	private final Roles roles;
-	private final Media media;
+	private Media media;
+	private MediaVersion version;
 	private final MediaRenderingHints hints;
 	private VFSLeaf vfsLeaf;
 	private boolean editable = false;
@@ -84,43 +91,22 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	public FileMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
-		this.media = media;
+		this.media = version.getMedia();
+		this.version = version;
 		this.hints = hints;
 
 		mainVC = createVelocityContainer("media_file");
-		mainVC.contextPut("filename", media.getContent());
 		String desc = media.getDescription();
 		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
 		String title = media.getTitle();
 		mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
-
-		mainVC.contextPut("creationdate", media.getCreationDate());
 		mainVC.contextPut("author", userManager.getUserDisplayName(media.getAuthor()));
 
-		VFSContainer container = fileStorage.getMediaContainer(media);
-		VFSItem item = container.resolve(media.getRootFilename());
-		if (item instanceof VFSLeaf) {
-			vfsLeaf = (VFSLeaf) item;
-			String mapperUri = registerCacheableMapper(ureq,
-					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), new VFSMediaMapper(vfsLeaf));
-			mainVC.contextPut("mapperUri", mapperUri);
-			String iconCss = CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName());
-			mainVC.contextPut("fileIconCss", iconCss);
-			mainVC.contextPut("filename", vfsLeaf.getName());
-			mainVC.contextPut("size", Formatter.formatBytes(((VFSLeaf) item).getSize()));
-
-			String cssClass = CSSHelper.createFiletypeIconCssClassFor(item.getName());
-			if (cssClass == null) {
-				cssClass = "o_filetype_file";
-			}
-			mainVC.contextPut("cssClass", cssClass);
-
-			updateUI();
-		}
+		updateVersion(ureq);
 
 		if (hints.isExtendedMetadata()) {
 			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
@@ -130,6 +116,33 @@ public class FileMediaController extends BasicController implements PageElementE
 
 		mainVC.setDomReplacementWrapperRequired(false);
 		putInitialPanel(mainVC);
+	}
+	
+	private void updateVersion(UserRequest ureq) {
+		mainVC.contextPut("filename", version.getContent());
+		
+		VFSContainer container = fileStorage.getMediaContainer(version);
+		VFSItem item = container.resolve(version.getRootFilename());
+		if (item instanceof VFSLeaf leaf) {
+			vfsLeaf = leaf;
+			String mapperUri = registerCacheableMapper(ureq,
+					"File-Media-" + media.getKey() + "-" + vfsLeaf.getLastModified(), new VFSMediaMapper(vfsLeaf));
+			mainVC.contextPut("mapperUri", mapperUri);
+			String iconCss = CSSHelper.createFiletypeIconCssClassFor(vfsLeaf.getName());
+			mainVC.contextPut("fileIconCss", iconCss);
+			mainVC.contextPut("filename", vfsLeaf.getName());
+			mainVC.contextPut("size", Formatter.formatBytes(vfsLeaf.getSize()));
+			mainVC.contextPut("creationdate", version.getCollectionDate());
+
+			String cssClass = CSSHelper.createFiletypeIconCssClassFor(item.getName());
+			if (cssClass == null) {
+				cssClass = "o_filetype_file";
+			}
+			mainVC.contextPut("cssClass", cssClass);
+
+			updateUI();
+		}
+		
 	}
 
 	private void updateUI() {
@@ -183,18 +196,32 @@ public class FileMediaController extends BasicController implements PageElementE
 			doOpen(ureq, mode);
 		}
 	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof ModalInspectorController && event instanceof ChangeVersionPartEvent cvpe) {
+			PageElement element = cvpe.getElement();
+			if(element instanceof MediaPart mediaPart) {
+				media = mediaPart.getMedia();
+				version = mediaPart.getMediaVersion();
+				updateVersion(ureq);
+			}
+		}
+		super.event(ureq, source, event);
+	}
 
 	private void doOpen(UserRequest ureq, Mode mode) {
-		VFSContainer container = fileStorage.getMediaContainer(media);
-		VFSItem vfsItem = container.resolve(media.getRootFilename());
-		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
-			showError("error.missing.file");
-		} else {
+		VFSContainer container = fileStorage.getMediaContainer(version);
+		VFSItem vfsItem = container.resolve(version.getRootFilename());
+		if(vfsItem instanceof VFSLeaf docLeaf) {
+			vfsLeaf = docLeaf;
 			DocEditorConfigs configs = DocEditorConfigs.builder()
 					.withMode(mode)
 					.build(vfsLeaf);
 			String url = docEditorService.prepareDocumentUrl(ureq.getUserSession(), configs);
 			getWindowControl().getWindowBackOffice().sendCommandTo(CommandFactory.createNewWindowRedirectTo(url));
+		} else {
+			showError("error.missing.file");
 		}
 	}
 }

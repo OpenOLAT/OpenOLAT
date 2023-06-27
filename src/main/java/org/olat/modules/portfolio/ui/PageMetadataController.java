@@ -221,7 +221,7 @@ public class PageMetadataController extends FormBasicController {
 		}
 		
 		owners.addAll(portfolioService.getMembers(page, ContentRoles.owner.name()));
-		isOwnedByViewer = owners.contains(ureq.getUserSession().getIdentity());
+		isOwnedByViewer = owners.contains(getIdentity());
 		
 		StringBuilder ownerSb = new StringBuilder();
 		for(Identity owner:owners) {
@@ -380,7 +380,6 @@ public class PageMetadataController extends FormBasicController {
 		editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
 		editMetaDataLink.setVisible(page.isEditable() && secCallback.canEditPageMetadata(page, assignments));
 	}
-	
 
 	public void updateEditLink(boolean edit) {
 		//TODO toogle
@@ -592,7 +591,7 @@ public class PageMetadataController extends FormBasicController {
 		}
 		
 		private void doOpen(UserRequest ureq, Page sharedPage) {
-			Long identityKey = ureq.getUserSession().getIdentity().getKey();
+			Long identityKey = getIdentity().getKey();
 			Long binderKey = sharedPage.getSection().getBinder().getKey();
 			Long pageKey = sharedPage.getKey();
 			String businessPath = "[HomeSite:" + identityKey + "][PortfolioV2:0][MyBinders:0][Binder:" + binderKey + "][Toc:0][Entry:" + pageKey + "]";

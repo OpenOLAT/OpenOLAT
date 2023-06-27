@@ -31,8 +31,10 @@ import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaImpl;
+import org.olat.modules.cemedia.model.MediaVersionImpl;
 
 /**
  * 
@@ -40,7 +42,7 @@ import org.olat.modules.cemedia.model.MediaImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfmediapart")
+@Entity(name="cemediapart")
 public class MediaPart extends AbstractPart implements ImageElement {
 
 	private static final long serialVersionUID = -5902348088983758191L;
@@ -49,8 +51,21 @@ public class MediaPart extends AbstractPart implements ImageElement {
 	@JoinColumn(name="fk_media_id", nullable=false, insertable=true, updatable=false)
 	private Media media;
 	
-	public MediaPart() {
+	@ManyToOne(targetEntity=MediaVersionImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_media_version_id", nullable=true, insertable=true, updatable=true)
+	private MediaVersion mediaVersion;
+	
+	private MediaPart() {
 		//
+	}
+	
+	public static MediaPart valueOf(Media mediaReference) {
+		MediaPart part = new MediaPart();
+		part.setMedia(mediaReference);
+		if(mediaReference.getVersions() != null && !mediaReference.getVersions().isEmpty()) {
+			part.setMediaVersion(mediaReference.getVersions().get(0));
+		}
+		return part;
 	}
 
 	public Media getMedia() {
@@ -61,9 +76,17 @@ public class MediaPart extends AbstractPart implements ImageElement {
 		this.media = media;
 	}
 	
+	public MediaVersion getMediaVersion() {
+		return mediaVersion;
+	}
+	
+	public void setMediaVersion(MediaVersion version) {
+		this.mediaVersion = version;
+	}
+	
 	@Override
 	public StoredData getStoredData() {
-		return media;
+		return getMediaVersion();
 	}
 
 	@Override
@@ -85,6 +108,7 @@ public class MediaPart extends AbstractPart implements ImageElement {
 		MediaPart part = new MediaPart();
 		copy(part);
 		part.setMedia(getMedia());
+		part.setMediaVersion(getMediaVersion());
 		return part;
 	}
 

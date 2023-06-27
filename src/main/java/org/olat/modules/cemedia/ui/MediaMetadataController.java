@@ -22,19 +22,25 @@ package org.olat.modules.cemedia.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementComponent;
+import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.Category;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -72,7 +78,9 @@ public class MediaMetadataController extends BasicController {
 		MediaHandler handler = mediaService.getMediaHandler(media.getType());
 		String type = translate("artefact." + handler.getType());
 		metaVC.contextPut("mediaType", type);
-		String iconCssClass = handler.getIconCssClass(media);
+		
+		MediaVersion currentVersion = media.getVersions().get(0);
+		String iconCssClass = handler.getIconCssClass(currentVersion);
 		if(StringHelper.containsNonWhitespace(iconCssClass)) {
 			metaVC.contextPut("mediaIconCssClass", iconCssClass);
 		}
@@ -86,12 +94,28 @@ public class MediaMetadataController extends BasicController {
 			Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
 			metaVC.contextPut("metadata", metadata);
 		}
-		
-		List<Category> categories = mediaService.getCategories(media);
-		if(categories != null && !categories.isEmpty()) {
-			List<String> categoriesList = categories.stream().map(Category::getName)
+
+		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(media);
+		if(levels != null && !levels.isEmpty()) {
+			List<TextBoxItem> levelsMap = levels.stream()
+					.map(level -> {
+						String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
+						return new TextBoxItemImpl(displayName, displayName);
+					})
 					.collect(Collectors.toList());
-			metaVC.contextPut("categoriesList", categoriesList);
+			TextBoxListElementComponent taxonomyLevelsCmp = new TextBoxListElementComponent(null, "taxonomy.level", null, levelsMap, getTranslator());
+			taxonomyLevelsCmp.setEnabled(false);
+		}
+		
+		List<TagInfo> tagInfos = mediaService.getTagInfos(media);
+		if(tagInfos != null && !tagInfos.isEmpty()) {
+			List<TextBoxItem> tagsMap = tagInfos.stream()
+					.map(cat -> new TextBoxItemImpl(cat.getDisplayName(), cat.getDisplayName()))
+					.collect(Collectors.toList());
+			TextBoxListElementComponent tagsCmp = new TextBoxListElementComponent(null, "tags", "categories.hint", tagsMap, getTranslator());
+			tagsCmp.setElementCssClass("o_sel_ep_tagsinput");
+			tagsCmp.setEnabled(false);
+			metaVC.put("tags", tagsCmp);
 		}
 	}
 

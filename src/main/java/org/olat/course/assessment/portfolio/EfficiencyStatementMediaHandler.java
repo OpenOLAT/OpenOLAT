@@ -44,11 +44,11 @@ import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
@@ -91,9 +91,14 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	public boolean acceptMimeType(String mimeType) {
 		return false;
 	}
+	
+	@Override
+	public boolean hasVersion() {
+		return false;
+	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
 	}
 
@@ -107,11 +112,11 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
 		Media media = null;
 		if (mediaObject instanceof EfficiencyStatement statement) {
 			String xml = EfficiencyStatementManager.toXML(statement); 
-			media = mediaDao.createMedia(title, description, xml, EFF_MEDIA, businessPath, null, 90, author);
+			media = mediaDao.createMedia(title, description, altText, xml, EFF_MEDIA, businessPath, null, 90, author);
 			ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 					LoggingResourceable.wrap(media));
 		}
@@ -119,8 +124,8 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		String statementXml = media.getContent();
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+		String statementXml = version.getContent();
 		EfficiencyStatement statement = null;
 		if(StringHelper.containsNonWhitespace(statementXml)) {
 			try {
@@ -140,15 +145,22 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new StandardEditMediaController(ureq, wControl, media);
+	}
+
+	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		EfficiencyStatement statement = null;
-		if(StringHelper.containsNonWhitespace(media.getContent())) {
+		List<MediaVersion> versions = media.getVersions();
+		if(!versions.isEmpty() && StringHelper.containsNonWhitespace(versions.get(0).getContent())) {
 			try {
-				statement = EfficiencyStatementManager.fromXML(media.getContent());
+				statement = EfficiencyStatementManager.fromXML(versions.get(0).getContent());
 			} catch (Exception e) {
 				log.error("Cannot load efficiency statement from artefact", e);
 			}
 		}
+		
 		if(statement != null) {
 			List<Map<String,Object>> assessmentNodes = statement.getAssessmentNodes();
 			List<AssessmentNodeData> assessmentNodeList = AssessmentHelper.assessmentNodeDataMapToList(assessmentNodes);

@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.persistence.TypedQuery;
@@ -52,11 +53,20 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.model.MediaImpl;
+import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.manager.QualityServiceImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.upgrade.model.UpgradeMedia;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -89,12 +99,21 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 
 	private static final String MIGRATE_CERTIFICATE_CONFIG = "MIGRATE CERTIFICATE CONFIG";
 	
+	private static final String MIGRATE_MEDIA_CATEGORIES = "MIGRATE MEDIA CATEGORIES";
+	private static final String MIGRATE_MEDIA_CONTENT = "MIGRATE MEDIA CONTENT";
+	private static final String MIGRATE_MEDIA_UUID = "MIGRATE MEDIA UUID";
+	private static final String MIGRATE_MEDIA_MISSING_CHECKSUM = "MIGRATE MEDIA MISSING CHECKSUM";
+	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
 	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS = "ASSESSMENT DELETE STRUCTURE STATUS";
 	private static final String ASSESSMENT_PROGRESS_OPTIONAL = "ASSESSMENT PROGRESS OPTIONAL";
 
 	@Autowired
 	private DB dbInstance;
+ 	@Autowired
+	private MediaDAO mediaDao;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private ProjectModule projectModule;
 	@Autowired
@@ -132,6 +151,10 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initQmQualitativeFeedback(upgradeManager, uhd);
 		allOk &= deleteAssessmentStatus(upgradeManager, uhd);
 		allOk &= updateAssessmentProgressOptional(upgradeManager, uhd);
+		allOk &= initMigrateMediaUuid(upgradeManager, uhd);
+		allOk &= initMigrateMediaCategoriesToTags(upgradeManager, uhd);
+		allOk &= initMigrateMediaContent(upgradeManager, uhd);
+		allOk &= initMigrateMediaMissingChecksum(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -498,5 +521,243 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 				.createQuery(sb.toString(), AssessmentEntry.class)
 				.getResultList();
 	}
+	
 
+	private boolean initMigrateMediaUuid(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_MEDIA_UUID)) {
+			try {
+				log.info("Start generate media UUIDs.");
+				
+				int counter = 0;
+				List<Media> medias;
+				do {
+					medias = getMediaWithoutUUID(counter, BATCH_SIZE);
+					for (Media media : medias) {
+						if(!StringHelper.containsNonWhitespace(media.getUuid())) {
+							((MediaImpl)media).setUuid(UUID.randomUUID().toString());
+							mediaService.updateMedia(media);
+						}
+					}
+					counter += medias.size();
+					log.info(Tracing.M_AUDIT, "UUIDs media generated: {} total processed ({})", medias.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("Media UUIDs generation finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_MEDIA_UUID, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+
+	private List<Media> getMediaWithoutUUID(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select media from mmedia as media")
+		  .append(" where media.uuid is null")
+		  .append(" order by media.key");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Media.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	
+	private boolean initMigrateMediaCategoriesToTags(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_MEDIA_CATEGORIES)) {
+			try {
+				log.info("Start migration of media categories to tags.");
+				
+				int counter = 0;
+				List<Media> medias;
+				do {
+					medias = getMediaWithCategories(counter, BATCH_SIZE);
+					for (Media media : medias) {
+						List<String> categories = getCategories(media);
+						mediaService.updateTags(null, media, categories);
+					}
+					counter += medias.size();
+					log.info(Tracing.M_AUDIT, "Updated media categories: {} total processed ({})", medias.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("Media categories migration finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_MEDIA_CATEGORIES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	public List<String> getCategories(Media media) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select category.name from pfcategoryrelation as rel")
+		  .append(" inner join rel.category as category")
+		  .append(" where rel.resId=:resId and rel.resName=:resName");
+		
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), String.class)
+			.setParameter("resName", "Media")
+			.setParameter("resId", media.getKey())
+			.getResultList();
+	}
+	
+	private List<Media> getMediaWithCategories(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select media from mmedia as media")
+		  .append(" inner join fetch media.author as author")
+		  .append(" where exists (select rel.key from pfcategoryrelation as rel")
+		  .append("  where rel.resId=media.key and rel.resName='Media'")
+		  .append(" ) order by media.key");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Media.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private boolean initMigrateMediaContent(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_MEDIA_CONTENT)) {
+			try {
+				log.info("Start migration of media content to version.");
+				
+				int counter = 0;
+				List<UpgradeMedia> upgradeMedias;
+				do {
+					upgradeMedias = getMedia(counter, BATCH_SIZE);
+					for (UpgradeMedia upgradeMedia : upgradeMedias) {
+						Media media = mediaDao.loadByKey(upgradeMedia.getKey());
+						List<MediaVersion> versions = media.getVersions();
+						if(versions == null || versions.isEmpty()) {
+							mediaDao.createVersion(media, upgradeMedia.getCollectionDate(),
+									upgradeMedia.getContent(), upgradeMedia.getStoragePath(), upgradeMedia.getRootFilename());
+							dbInstance.commit();
+						}
+					}
+					counter += upgradeMedias.size();
+					log.info(Tracing.M_AUDIT, "Updated media content: {} total processed ({})", upgradeMedias.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+				log.info("Media content migration finished.");
+				
+				// Both are not independent
+				log.info("Start migration of page parts to media version.");
+				int counterPart = 0;
+				List<PagePart> parts;
+				do {
+					parts = getMediaParts(counterPart, BATCH_SIZE);
+					for (PagePart part : parts) {
+						if(part instanceof MediaPart mediaPart) {
+							Media media = mediaPart.getMedia();
+							MediaVersion mediaVersion = mediaPart.getMediaVersion();
+							List<MediaVersion> versions = media.getVersions();
+							if(versions != null && !versions.isEmpty() && mediaVersion == null) {
+								mediaPart.setMediaVersion(versions.get(0));
+								dbInstance.getCurrentEntityManager().merge(mediaPart);
+								dbInstance.commit();
+							}
+						}
+					}
+					counterPart += parts.size();
+					log.info(Tracing.M_AUDIT, "Updated page parts: {} total processed ({})", parts.size(), counterPart);
+					dbInstance.commitAndCloseSession();
+				} while (counterPart == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("Page parts migration finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_MEDIA_CONTENT, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<UpgradeMedia> getMedia(int firstResult, int maxResults) {
+		String query = "select media from upgrademedia as media order by media.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, UpgradeMedia.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+
+	private List<PagePart> getMediaParts(int firstResult, int maxResults) {
+		String query = "select part from cepagepart as part order by part.key";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, PagePart.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private boolean initMigrateMediaMissingChecksum(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_MEDIA_MISSING_CHECKSUM)) {
+			try {
+				log.info("Start calculating missing versions checksum.");
+				
+				int counter = 0;
+				List<MediaVersionImpl> mediaVersions;
+				do {
+					mediaVersions = getMediaVersionWithoutChecksum(counter, BATCH_SIZE);
+					for (MediaVersionImpl mediaVersion : mediaVersions) {
+						mediaDao.checksum(mediaVersion);
+						mediaDao.update(mediaVersion);
+					}
+					counter += mediaVersions.size();
+					log.info(Tracing.M_AUDIT, "Updated media categories: {} total processed ({})", mediaVersions.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("Calculating missing versions checksum finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_MEDIA_MISSING_CHECKSUM, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private List<MediaVersionImpl> getMediaVersionWithoutChecksum(int firstResult, int maxResults) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mversion from mediaversion as mversion")
+		  .append(" where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null")
+		  .append(" order by mversion.key asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), MediaVersionImpl.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
 }

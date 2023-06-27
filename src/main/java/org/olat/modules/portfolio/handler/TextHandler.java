@@ -22,6 +22,7 @@ package org.olat.modules.portfolio.handler;
 import java.io.File;
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -29,15 +30,22 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
-import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
+import org.olat.modules.cemedia.ui.medias.NewTextVersionController;
 import org.olat.modules.cemedia.ui.medias.TextMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -51,7 +59,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class TextHandler extends AbstractMediaHandler {
+public class TextHandler extends AbstractMediaHandler implements PageElementStore<MediaPart> {
 	
 	public static final String TEXT_MEDIA = "text";
 	
@@ -76,9 +84,14 @@ public class TextHandler extends AbstractMediaHandler {
 	public boolean acceptMimeType(String mimeType) {
 		return false;
 	}
+	
+	@Override
+	public boolean hasVersion() {
+		return true;
+	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
 	}
 	
@@ -88,23 +101,50 @@ public class TextHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+		Media media = mediaDao.createMedia(title, description, altText, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		return media;
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new TextMediaController(ureq, wControl, media, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+		return new TextMediaController(ureq, wControl, version, hints);
 	}
 
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectTextMediaController(ureq, wControl, media);
+		return new CollectTextMediaController(ureq, wControl, media, false);
 	}
 	
+	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectTextMediaController(ureq, wControl, media, true);
+	}
+
+	@Override
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new NewTextVersionController(ureq, wControl, media, this);
+	}
+
+	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof MediaPart part) {
+			return new MediaVersionInspectorController(ureq, wControl, part, this);
+		}
+		return null;
+	}
+	
+	@Override
+	public MediaPart savePageElement(MediaPart element) {
+		MediaPart mediaPart = CoreSpringFactory.getImpl(PageService.class).updatePart(element);
+		if(mediaPart.getMedia() != null) {
+			mediaPart.getMedia().getMetadataXml();
+		}
+		return mediaPart;
+	}
+
 	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		super.exportContent(media, null, null, mediaArchiveDirectory, locale);

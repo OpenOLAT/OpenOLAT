@@ -215,6 +215,8 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 			Page page = importHelper.importPage(zfile, owner);
 			if(page != null) {
 				setPageReferenceKey(page.getKey());
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				CoreSpringFactory.getImpl(PageService.class).addReference(page, courseEntry, getIdent());
 			}
 		} catch(IOException e) {
 			log.error("", e);
@@ -224,7 +226,7 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		PageCourseNode pageNode = (PageCourseNode)super.createInstanceForCopy(isNewTitle, course, author);
-		Page copiedPage = copyPage(this, pageNode, author);
+		Page copiedPage = copyPage(course, this, pageNode, author);
 		if(copiedPage != null) {
 			String title = pageNode.getLongTitle();
 			if(!StringHelper.containsNonWhitespace(title)) {
@@ -241,23 +243,29 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCourse, CopyCourseContext context) {
 		super.postCopy(envMapper, processType, course, sourceCourse, context);
-		copyPage(this, this, envMapper.getAuthor());
+		copyPage(course, this, this, envMapper.getAuthor());
 	}
 	
 	@Override // Import course elements wizard
 	public void postImportCourseNodes(ICourse course, CourseNode sourceCourseNode, ICourse sourceCourse, ImportSettings settings, CourseEnvironmentMapper envMapper) {
 		super.postImportCourseNodes(course, sourceCourseNode, sourceCourse, settings, envMapper);
-		copyPage((PageCourseNode)sourceCourseNode, this, envMapper.getAuthor());
+		copyPage(course, (PageCourseNode)sourceCourseNode, this, envMapper.getAuthor());
 	}
 	
-	private Page copyPage(PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode, Identity owner) {
+	private Page copyPage(ICourse course, PageCourseNode sourceCourseNode, PageCourseNode targetCourseNode, Identity owner) {
 		Long sourcePageKey = sourceCourseNode.getPageReferenceKey();
 		PageService pageService = CoreSpringFactory.getImpl(PageService.class);
 		Page sourcePage = pageService.getFullPageByKey(sourcePageKey);
 		Page targetPage = null;
 		if(sourcePage != null) {
 			targetPage = pageService.copyPage(owner, sourcePage);
-			targetCourseNode.setPageReferenceKey(targetPage.getKey());
+			if(targetPage != null) {
+				targetCourseNode.setPageReferenceKey(targetPage.getKey());
+				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+				CoreSpringFactory.getImpl(PageService.class).addReference(targetPage, courseEntry, targetCourseNode.getIdent());
+			} else {
+				targetCourseNode.removePageReferenceKey();
+			}
 		} else {
 			targetCourseNode.removePageReferenceKey();
 		}

@@ -49,8 +49,8 @@ import org.olat.modules.ceditor.PagePart;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfpagepart")
-@Table(name="o_pf_page_part")
+@Entity(name="cepagepart")
+@Table(name="o_ce_page_part")
 @DiscriminatorColumn
 public abstract class AbstractPart implements Persistable, ModifiedInfo, CreateInfo, PagePart {
 

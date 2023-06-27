@@ -2328,7 +2328,7 @@ create table o_pf_section (
    primary key (id)
 );
 
-create table o_pf_page (
+create table o_ce_page (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2348,7 +2348,7 @@ create table o_pf_page (
    primary key (id)
 );
 
-create table o_pf_media (
+create table o_media (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    p_collection_date date not null,
@@ -2358,6 +2358,8 @@ create table o_pf_media (
    p_title varchar(255) not null,
    p_description varchar2(4000 char),
    p_content CLOB,
+   p_alt_text varchar(2000),
+   p_uuid varchar(48),
    p_signature number(20) default 0 not null,
    p_reference_id varchar2(255 char) default null,
    p_business_path varchar2(255 char) default null,
@@ -2374,7 +2376,58 @@ create table o_pf_media (
    primary key (id)
 );
 
-create table o_pf_page_body (
+create table o_media_tag (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_media number(20) not null,
+   fk_tag number(20) not null,
+   primary key (id)
+);
+
+create table o_media_to_tax_level (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_media number(20) not null,
+   fk_taxonomy_level number(20) not null,
+   primary key (id)
+);
+
+create table o_media_to_group (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_type varchar(32),
+   p_editable number default 0 not null,
+   fk_media number(20) not null,
+   fk_group number(20) not null,
+   primary key (id)
+);
+
+create table o_media_version (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   pos number(20) default null,
+   p_version varchar(32),
+   p_version_uuid varchar(48),
+   p_version_checksum varchar(128),
+   p_collection_date date not null,
+   p_storage_path varchar(255),
+   p_root_filename varchar(255),
+   p_content CLOB,
+   fk_media number(20) not null,
+   primary key (id)
+);
+
+create table o_ce_page_reference  (
+   id number(20) generated always as identity,
+   creationdate date not null,
+   fk_page number(20) not null,
+   fk_entry number(20) not null,
+   p_subident varchar(512) null,
+   primary key (id)
+);
+
+create table o_ce_page_body (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2383,7 +2436,7 @@ create table o_pf_page_body (
    primary key (id)
 );
 
-create table o_pf_page_part (
+create table o_ce_page_part (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2395,6 +2448,7 @@ create table o_pf_page_part (
    fk_media_id number(20),
    fk_page_body_id number(20),
    fk_form_entry_id number(20) default null,
+   fk_media_version_id number(20) default null,
    primary key (id)
 );
 
@@ -2426,7 +2480,7 @@ create table o_pf_assessment_section (
    primary key (id)
 );
 
-create table o_pf_assignment (
+create table o_ce_assignment (
    id number(20) GENERATED ALWAYS AS IDENTITY,
    creationdate date not null,
    lastmodified date not null,
@@ -2464,7 +2518,7 @@ create table o_pf_binder_user_infos (
    primary key (id)
 );
 
-create table o_pf_page_user_infos (
+create table o_ce_page_user_infos (
   id number(20) generated always as identity,
   creationdate date not null,
   lastmodified date not null,
@@ -2476,7 +2530,7 @@ create table o_pf_page_user_infos (
   primary key (id)
 );
 
-create table o_pf_page_to_tax_competence (
+create table o_ce_page_to_tax_competence (
   id number(20) generated always as identity,
   creationdate date not null,
   fk_tax_competence number(20) not null,
@@ -5118,24 +5172,51 @@ create index idx_pf_section_binder_idx on o_pf_section (fk_binder_id);
 alter table o_pf_section add constraint pf_section_template_idx foreign key (fk_template_reference_id) references o_pf_section (id);
 create index idx_pf_section_template_idx on o_pf_section (fk_template_reference_id);
 
-alter table o_pf_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
-create index idx_pf_page_group_idx on o_pf_page (fk_group_id);
-alter table o_pf_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
-create index idx_pf_page_section_idx on o_pf_page (fk_section_id);
+alter table o_ce_page add constraint pf_page_group_idx foreign key (fk_group_id) references o_bs_group (id);
+create index idx_pf_page_group_idx on o_ce_page (fk_group_id);
+alter table o_ce_page add constraint pf_page_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_page_section_idx on o_ce_page (fk_section_id);
 
-alter table o_pf_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
-create index idx_pf_media_author_idx on o_pf_media (fk_author_id);
-create index idx_media_storage_path_idx on o_pf_media (p_business_path);
+alter table o_media add constraint pf_media_author_idx foreign key (fk_author_id) references o_bs_identity (id);
+create index idx_pf_media_author_idx on o_media (fk_author_id);
+create index idx_media_storage_path_idx on o_media (p_business_path);
 
-alter table o_pf_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_pf_page_body (id);
-create index idx_pf_page_body_idx on o_pf_page (fk_body_id);
+alter table o_media_tag add constraint media_tag_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_tag_media_idx on o_media_tag (fk_media);
+alter table o_media_tag add constraint media_tag_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+create index idx_media_tag_tag_idx on o_media_tag (fk_tag);
 
-alter table o_pf_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_pf_page_body (id);
-create index idx_pf_page_page_body_idx on o_pf_page_part (fk_page_body_id);
-alter table o_pf_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_pf_media (id);
-create index idx_pf_page_media_idx on o_pf_page_part (fk_media_id);
-alter table o_pf_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
-create index idx_pf_part_form_idx on o_pf_page_part (fk_form_entry_id);
+alter table o_media_to_tax_level add constraint media_tax_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_tax_media_idx on o_media_to_tax_level (fk_media);
+alter table o_media_to_tax_level add constraint media_tax_tax_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+create index idx_media_tax_tax_idx on o_media_to_tax_level (fk_taxonomy_level);
+
+alter table o_media_to_group add constraint med_to_group_media_idx foreign key (fk_media) references o_media (id);
+create index idx_med_to_group_media_idx on o_media_to_group (fk_media);
+alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
+create index idx_med_to_group_group_idx on o_media_to_group (fk_group);
+
+alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_version_media_idx on o_media_version (fk_media);
+create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
+create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
+
+alter table o_ce_page add constraint pf_page_body_idx foreign key (fk_body_id) references o_ce_page_body (id);
+create index idx_pf_page_body_idx on o_ce_page (fk_body_id);
+
+alter table o_ce_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_ce_page_body (id);
+create index idx_pf_page_page_body_idx on o_ce_page_part (fk_page_body_id);
+alter table o_ce_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_media (id);
+create index idx_pf_page_media_idx on o_ce_page_part (fk_media_id);
+alter table o_ce_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
+create index idx_pf_part_form_idx on o_ce_page_part (fk_form_entry_id);
+alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
+create index idx_media_part_version_idx on o_ce_page_part (fk_media_version_id);
+
+alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);
+create index idx_page_ref_to_page_idx on o_ce_page_reference (fk_page);
+alter table o_ce_page_reference add constraint page_ref_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_page_ref_to_entry_idx on o_ce_page_reference (fk_entry);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 
@@ -5148,31 +5229,31 @@ create index idx_pf_asection_section_idx on o_pf_assessment_section (fk_section_
 alter table o_pf_assessment_section add constraint pf_asection_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_pf_asection_ident_idx on o_pf_assessment_section (fk_identity_id);
 
-alter table o_pf_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
-create index idx_pf_assign_section_idx on o_pf_assignment (fk_section_id);
-alter table o_pf_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
-create index idx_pf_assign_binder_idx on o_pf_assignment (fk_binder_id);
-alter table o_pf_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_pf_assignment (id);
-create index idx_pf_assign_ref_assign_idx on o_pf_assignment (fk_template_reference_id);
-alter table o_pf_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_pf_page (id);
-create index idx_pf_assign_page_idx on o_pf_assignment (fk_page_id);
-alter table o_pf_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
-create index idx_pf_assign_assignee_idx on o_pf_assignment (fk_assignee_id);
+alter table o_ce_assignment add constraint pf_assign_section_idx foreign key (fk_section_id) references o_pf_section (id);
+create index idx_pf_assign_section_idx on o_ce_assignment (fk_section_id);
+alter table o_ce_assignment add constraint pf_assign_binder_idx foreign key (fk_binder_id) references o_pf_binder (id);
+create index idx_pf_assign_binder_idx on o_ce_assignment (fk_binder_id);
+alter table o_ce_assignment add constraint pf_assign_ref_assign_idx foreign key (fk_template_reference_id) references o_ce_assignment (id);
+create index idx_pf_assign_ref_assign_idx on o_ce_assignment (fk_template_reference_id);
+alter table o_ce_assignment add constraint pf_assign_page_idx foreign key (fk_page_id) references o_ce_page (id);
+create index idx_pf_assign_page_idx on o_ce_assignment (fk_page_id);
+alter table o_ce_assignment add constraint pf_assign_assignee_idx foreign key (fk_assignee_id) references o_bs_identity (id);
+create index idx_pf_assign_assignee_idx on o_ce_assignment (fk_assignee_id);
 
 alter table o_pf_binder_user_infos add constraint binder_user_to_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_binder_user_to_ident_idx on o_pf_binder_user_infos (fk_identity);
 alter table o_pf_binder_user_infos add constraint binder_user_binder_idx foreign key (fk_binder) references o_pf_binder (id);
 create index idx_binder_user_binder_idx on o_pf_binder_user_infos (fk_binder);
 
-alter table o_pf_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
-create index idx_user_pfpage_idx on o_pf_page_user_infos (fk_identity_id);
-alter table o_pf_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_pf_page (id);
-create index idx_page_pfpage_idx on o_pf_page_user_infos (fk_page_id);
+alter table o_ce_page_user_infos add constraint user_pfpage_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_user_pfpage_idx on o_ce_page_user_infos (fk_identity_id);
+alter table o_ce_page_user_infos add constraint page_pfpage_idx foreign key (fk_page_id) references o_ce_page (id);
+create index idx_page_pfpage_idx on o_ce_page_user_infos (fk_page_id);
 
-alter table o_pf_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
-create index idx_fk_tax_competence_idx on o_pf_page_to_tax_competence (fk_tax_competence);
-alter table o_pf_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_pf_page (id);
-create index idx_fk_pf_page_idx on o_pf_page_to_tax_competence (fk_pf_page);
+alter table o_ce_page_to_tax_competence add constraint fk_tax_competence_idx foreign key (fk_tax_competence) references o_tax_taxonomy_competence (id);
+create index idx_fk_tax_competence_idx on o_ce_page_to_tax_competence (fk_tax_competence);
+alter table o_ce_page_to_tax_competence add constraint fk_pf_page_idx foreign key (fk_pf_page) references o_ce_page (id);
+create index idx_fk_pf_page_idx on o_ce_page_to_tax_competence (fk_pf_page);
 
 alter table o_ce_audit_log add constraint ce_log_to_doer_idx foreign key (fk_doer) references o_bs_identity (id);
 create index idx_ce_log_to_doer_idx on o_ce_audit_log (fk_doer);
@@ -5192,7 +5273,7 @@ create index idx_eva_sess_to_surv_idx on o_eva_form_session (fk_survey);
 alter table o_eva_form_session add constraint eva_sess_to_part_idx foreign key (fk_participation) references o_eva_form_participation (id);
 alter table o_eva_form_session add constraint eva_session_to_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_eva_session_to_ident_idx on o_eva_form_session (fk_identity);
-alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_pf_page_body (id);
+alter table o_eva_form_session add constraint eva_session_to_body_idx foreign key (fk_page_body) references o_ce_page_body (id);
 create index idx_eva_session_to_body_idx on o_eva_form_session (fk_page_body);
 alter table o_eva_form_session add constraint eva_session_to_form_idx foreign key (fk_form_entry) references o_repositoryentry (repositoryentry_id);
 create index idx_eva_session_to_form_idx on o_eva_form_session (fk_form_entry);

@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.model.ContainerElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfcontainerpart")
+@Entity(name="cecontainerpart")
 public class ContainerPart extends AbstractPart implements ContainerElement {
 
 	private static final long serialVersionUID = -3938751306318666884L;

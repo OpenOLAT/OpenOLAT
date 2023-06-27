@@ -54,6 +54,7 @@ import org.olat.modules.portfolio.BinderSecurityCallback;
 import org.olat.modules.portfolio.BinderSecurityCallbackFactory;
 import org.olat.modules.portfolio.ui.PageRunController;
 import org.olat.modules.portfolio.ui.PageSettings;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -92,6 +93,11 @@ public class PageContentConfigurationController extends BasicController {
 		
 		if(courseNode.getPageReferenceKey() != null) {
 			page = pageService.getPageByKey(courseNode.getPageReferenceKey());
+			
+			RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			if(!pageService.hasReference(page, courseEntry, courseNode.getIdent())) {
+				pageService.addReference(page, courseEntry, courseNode.getIdent());
+			}
 		}
 
 		// Main container for everything

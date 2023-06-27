@@ -20,7 +20,9 @@
 package org.olat.modules.cemedia.model;
 
 import java.util.Date;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,6 +31,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -38,6 +42,7 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 
 /**
  * 
@@ -45,8 +50,8 @@ import org.olat.modules.cemedia.Media;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfmedia")
-@Table(name="o_pf_media")
+@Entity(name="mmedia")
+@Table(name="o_media")
 public class MediaImpl implements Persistable, CreateInfo, Media  {
 
 	private static final long serialVersionUID = -8066676191014353560L;
@@ -65,24 +70,21 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	private Date collectionDate;
 	@Column(name="p_type", nullable=false, insertable=true, updatable=false)
 	private String type;
-	
-	@Column(name="p_storage_path", nullable=true, insertable=true, updatable=true)
-	private String storagePath;
-	@Column(name="p_root_filename", nullable=true, insertable=true, updatable=true)
-	private String rootFilename;
 
 	@Column(name="p_title", nullable=false, insertable=true, updatable=true)
 	private String title;
 	@Column(name="p_description", nullable=true, insertable=true, updatable=true)
 	private String description;
-	@Column(name="p_content", nullable=true, insertable=true, updatable=true)
-	private String content;
+	@Column(name="p_alt_text", nullable=true, insertable=true, updatable=true)
+	private String altText;
 	@Column(name="p_signature", nullable=false, insertable=true, updatable=true)
 	private int signature;
 	@Column(name="p_business_path", nullable=true, insertable=true, updatable=true)
 	private String businessPath;
 	@Column(name="p_reference_id", nullable=true, insertable=true, updatable=true)
 	private String referenceId;
+	@Column(name="p_uuid", insertable=true, updatable=true)
+	private String uuid;
 
 	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_author_id", nullable=false, insertable=true, updatable=false)
@@ -108,6 +110,11 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	
 	@Column(name="p_metadata_xml", nullable=true, insertable=true, updatable=true)
 	private String metadataXml;// Dublin core
+	
+	@OneToMany(targetEntity=MediaVersionImpl.class, mappedBy="media", fetch=FetchType.LAZY,
+			orphanRemoval=true, cascade={CascadeType.REMOVE})
+	@OrderColumn(name="pos")
+	private List<MediaVersion> versions;
 	
 	public MediaImpl() {
 		//
@@ -150,26 +157,6 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	}
 
 	@Override
-	public String getStoragePath() {
-		return storagePath;
-	}
-
-	@Override
-	public void setStoragePath(String storagePath) {
-		this.storagePath = storagePath;
-	}
-
-	@Override
-	public String getRootFilename() {
-		return rootFilename;
-	}
-
-	@Override
-	public void setRootFilename(String rootFilename) {
-		this.rootFilename = rootFilename;
-	}
-
-	@Override
 	public String getTitle() {
 		return title;
 	}
@@ -190,13 +177,13 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 	}
 
 	@Override
-	public String getContent() {
-		return content;
+	public String getAltText() {
+		return altText;
 	}
 
 	@Override
-	public void setContent(String content) {
-		this.content = content;
+	public void setAltText(String altText) {
+		this.altText = altText;
 	}
 
 	public int getSignature() {
@@ -321,6 +308,24 @@ public class MediaImpl implements Persistable, CreateInfo, Media  {
 
 	public void setAuthor(Identity author) {
 		this.author = author;
+	}
+
+	@Override
+	public String getUuid() {
+		return uuid;
+	}
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+	@Override
+	public List<MediaVersion> getVersions() {
+		return versions;
+	}
+
+	public void setVersions(List<MediaVersion> versions) {
+		this.versions = versions;
 	}
 
 	@Override

@@ -22,22 +22,26 @@ package org.olat.modules.cemedia.ui.medias;
 import static org.olat.core.gui.components.util.SelectionValues.entry;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import org.olat.core.commons.modules.bc.meta.MetaInfoController;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -59,6 +63,14 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaRelationsController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,28 +82,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CreateFileMediaController extends FormBasicController implements PageElementAddController {
 	
 	private TextElement titleEl;
+	private TagSelection tagsEl;
+	private TextElement altTextEl;
 	private RichTextElement descriptionEl;
-	private TextBoxListElement categoriesEl;
+	private TaxonomyLevelSelection taxonomyLevelEl;
 	private SingleSelection fileTypeEl;
 	private TextElement fileNameEl;
 
 	private Media mediaReference;
-	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final List<DocTemplate> docTemplates;
 	private final String businessPath;
 	private AddElementInfos userObject;
 	
+	private MediaRelationsController relationsCtrl;
+	
 	@Autowired
 	private FileHandler fileHandler;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 
 	public CreateFileMediaController(UserRequest ureq, WindowControl wControl, DocTemplates docTemplates) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
+		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.docTemplates = docTemplates.getTemplates();
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
+		
+		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
+		relationsCtrl.setOpenClose(false);
+		listenTo(relationsCtrl);
+		
 		initForm(ureq);
 	}
 	
@@ -111,22 +136,40 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 
 	@Override
 	public PageElement getPageElement() {
-		MediaPart part = new MediaPart();
-		part.setMedia(mediaReference);
-		return part;
+		return MediaPart.valueOf(mediaReference);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_create_document_form");
+		initMetadataForm(formLayout);
 		
+		if(relationsCtrl != null) {
+			FormItem relationsItem = relationsCtrl.getInitialFormItem();
+			relationsItem.setFormLayout("0_12");
+			formLayout.add(relationsItem);
+		}
+
+		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
+		if(relationsCtrl != null) {
+			buttonsCont.setFormLayout("0_12");
+		}
+		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+
+	private void initMetadataForm(FormItemContainer formLayout) {	
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, "", formLayout);
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getTitle();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 8, 60, formLayout, getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+
+		String altText = mediaReference == null ? null : mediaReference.getAltText();
+		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
 		
 		SelectionValues fileTypeKV = new SelectionValues();
 		for (int i = 0; i < docTemplates.size(); i++) {
@@ -141,26 +184,26 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		fileNameEl.setDisplaySize(100);
 		fileNameEl.setMandatory(true);
 
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
+		
+		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(portfolioModule.getLinkedTaxonomies());
+		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		taxonomyLevelEl.setSelection(levels);
 		
 		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
 		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
 		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
 
-		if(StringHelper.containsNonWhitespace(businessPath)) {
-			String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-			uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
-		}
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		StaticTextElement linkEl =uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		linkEl.setVisible(MediaUIHelper.showBusinessPath(businessPath));
 	}
-
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
@@ -216,15 +259,23 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		createContent(tempFile);
 		
 		String title = titleEl.getValue();
+		String altText = altTextEl.getValue();
 		String description = descriptionEl.getValue();
 		String mimeType = WebappHelper.getMimeType(fileName);
 		UploadMedia mObject = new UploadMedia(tempFile, fileName, mimeType);
-		mediaReference = fileHandler.createMedia(title, description, mObject, businessPath, getIdentity());
+		mediaReference = fileHandler.createMedia(title, description, altText, mObject, businessPath, getIdentity());
 		FileUtils.deleteFile(tempFile);
 		FileUtils.deleteFile(tempDir);
 
-		List<String> updatedCategories = categoriesEl.getValueList();
-		mediaService.updateCategories(mediaReference, updatedCategories);
+		List<String> updatedTags = tagsEl.getDisplayNames();
+		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
+		
+		Set<TaxonomyLevelRef> updatedLevels = taxonomyLevelEl.getSelection();
+		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
+
+		if(relationsCtrl != null) {
+			relationsCtrl.saveRelations(mediaReference);
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

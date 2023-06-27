@@ -19,24 +19,23 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
-import org.olat.modules.ceditor.Category;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterController;
@@ -51,11 +50,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StandardEditMediaController extends FormBasicController {
 	
 	private TextElement titleEl;
-	private TextElement descriptionEl;
-	private TextBoxListElement categoriesEl;
+	private TagSelection tagsEl;
+	private RichTextElement descriptionEl;
 
 	private Media mediaReference;
-	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	@Autowired
 	private MediaService mediaService;
@@ -64,12 +62,6 @@ public class StandardEditMediaController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		mediaReference = media;
-		
-		List<Category> categoryList = mediaService.getCategories(media);
-		for(Category category:categoryList) {
-			categories.add(new TextBoxItemImpl(category.getName(), category.getName()));
-		}
-		
 		initForm(ureq);
 	}
 
@@ -80,12 +72,14 @@ public class StandardEditMediaController extends FormBasicController {
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
-
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", desc, 4, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
+		
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
 		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
@@ -103,8 +97,8 @@ public class StandardEditMediaController extends FormBasicController {
 		mediaReference.setDescription(descriptionEl.getValue());
 		mediaReference = mediaService.updateMedia(mediaReference);
 
-		List<String> updatedCategories = categoriesEl.getValueList();
-		mediaService.updateCategories(mediaReference, updatedCategories);
+		List<String> updatedTags = tagsEl.getDisplayNames();
+		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

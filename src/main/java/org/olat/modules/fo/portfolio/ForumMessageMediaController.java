@@ -39,6 +39,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
@@ -55,12 +56,14 @@ public class ForumMessageMediaController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
+		
+		Media media = version.getMedia();
 
 		VelocityContainer mainVC = createVelocityContainer("messageDetails");
-		mainVC.contextPut("text", media.getContent());
+		mainVC.contextPut("text", version.getContent());
 				
 		String desc = media.getDescription();
 		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -70,8 +73,8 @@ public class ForumMessageMediaController extends BasicController {
 		mainVC.contextPut("creationdate", media.getCreationDate());
 		mainVC.contextPut("author", userManager.getUserDisplayName(media.getAuthor()));
 
-		if (StringHelper.containsNonWhitespace(media.getStoragePath())) {
-			VFSContainer attachmentsContainer = VFSManager.olatRootContainer("/" + media.getStoragePath(), null);
+		if (StringHelper.containsNonWhitespace(version.getStoragePath())) {
+			VFSContainer attachmentsContainer = VFSManager.olatRootContainer("/" + version.getStoragePath(), null);
 			List<VFSItem> attachments = attachmentsContainer.getItems(new VFSSystemItemFilter());
 			List<VFSItem> attachmentsToShow = new ArrayList<>();
 			int i=1; //vc-shift!

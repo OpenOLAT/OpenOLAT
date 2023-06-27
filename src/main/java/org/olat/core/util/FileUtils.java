@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
@@ -1046,7 +1047,14 @@ public class FileUtils {
 		return isMeta;
 	}
 	
-
+	public static String checksumSha256(File file) {
+		try(InputStream in= new FileInputStream(file)) {
+			return DigestUtils.sha256Hex(in);
+		} catch(IOException e) {
+			log.error("", e);
+		}
+		return null;
+	}
 	
 	
 	public static String rename(File f) {

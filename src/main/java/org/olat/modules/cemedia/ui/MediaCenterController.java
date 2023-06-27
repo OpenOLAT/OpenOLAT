@@ -19,10 +19,12 @@
  */
 package org.olat.modules.cemedia.ui;
 
+import static org.olat.core.util.StringHelper.EMPTY;
+
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,10 +36,12 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownItem;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
@@ -52,11 +56,16 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.filter.FlexiTableMultiSelectionFilter;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFilterTabPosition;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTab;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiFiltersTabFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.FlexiTableFilterTabEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.tab.TabSelectionBehavior;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -67,29 +76,44 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.modules.ceditor.model.jpa.CategoryLight;
 import org.olat.modules.ceditor.ui.component.CategoriesCellRenderer;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
-import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaTag;
+import org.olat.modules.cemedia.MediaToTaxonomyLevel;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.CreateFileHandler;
+import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
+import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
-import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
+import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.author.TaxonomyLevelRenderer;
+import org.olat.repository.ui.author.TaxonomyPathsRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,20 +123,36 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class MediaCenterController extends FormBasicController
-	implements Activateable2, FlexiTableComponentDelegate, TooledController {
+	implements Activateable2, FlexiTableComponentDelegate {
 	
-	private static final Size THUMBNAIL_SIZE = new Size(180, 180, false);
+	private static final Size THUMBNAIL_SIZE = new Size(195, 130, false);
+	
+	public static final String ALL_TAB_ID = "All";
+	public static final String MY_TAB_ID = "My";
+	public static final String SHARED_TAB_ID = "Shared";
+	public static final String SEARCH_TAB_ID = "Search";
+
+	public static final String FILTER_TAGS = "tags";
+	public static final String FILTER_TYPES = "types";
+	public static final String FILTER_TAXONOMY = "taxonomy";
 	
 	private MediaDataModel model;
+	private FormLink bulkDeleteButton;
 	private FormLink newMediaCallout;
 	private FlexiTableElement tableEl;
-	private String mapperThumbnailUrl;
-	private Link addFileLink, createFileLink, addMediaLink, addTextLink, addCitationLink;
+	private FormLink addFileLink;
+	private FormLink createFileLink;
+	private FormLink addMediaLink;
+	private FormLink addTextLink;
+	private FormLink addCitationLink;
+	
+	private FlexiFiltersTab myTab;
+	private FlexiFiltersTab allTab;
+	private FlexiFiltersTab sharedTab;
 	
 	private int counter = 0;
 	private final boolean select;
 	private final DocTemplates editableFileTypes;
-	private List<FormLink> tagLinks;
 	private final TooledStackedPanel stackPanel;
 
 	private CloseableModalController cmc;
@@ -121,65 +161,40 @@ public class MediaCenterController extends FormBasicController
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private CollectCitationMediaController citationUploadCtrl;
+	private ConfirmDeleteMediaController confirmDeleteMediaCtrl;
 
 	private NewMediasController newMediasCtrl;
 	private CloseableCalloutWindowController newMediasCalloutCtrl;
 	
+	private final Translator taxonomyTranslator;
+	
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "medias");
+		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = null;
 		this.select = true;
-		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
+		editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		 
 		initForm(ureq);
 		loadModel();
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
-		super(ureq, wControl, "medias");
+		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
 		this.select = false;
-		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
+		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
+		editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		 
 		initForm(ureq);
 		loadModel();
-	}
-
-	@Override
-	public void initTools() {
-		if (editableFileTypes.isEmpty()) {
-			addFileLink = LinkFactory.createToolLink("add.file", translate("add.file"), this);
-			addFileLink.setIconLeftCSS("o_icon o_icon-lg o_icon_files");
-			stackPanel.addTool(addFileLink, Align.left);
-		} else {
-			Dropdown addDropdown = new Dropdown("add.file", "add.file", false, getTranslator());
-			addDropdown.setIconCSS("o_icon o_icon-lg o_icon_files");
-			
-			createFileLink = LinkFactory.createToolLink("create.file", translate("create.file"), this);
-			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
-			addDropdown.addComponent(createFileLink);
-			
-			addFileLink = LinkFactory.createToolLink("upload.file", translate("upload.file"), this);
-			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
-			addDropdown.addComponent(addFileLink);
-			
-			stackPanel.addTool(addDropdown, Align.left);
-		}
-
-		addMediaLink = LinkFactory.createToolLink("add.media", translate("add.media"), this);
-		addMediaLink.setIconLeftCSS("o_icon o_icon-lg o_icon_media");
-		stackPanel.addTool(addMediaLink, Align.left);
-		
-		addTextLink = LinkFactory.createToolLink("add.text", translate("add.text"), this);
-		addTextLink.setIconLeftCSS("o_icon o_icon-lg o_filetype_txt");
-		stackPanel.addTool(addTextLink, Align.left);
-		
-		addCitationLink = LinkFactory.createToolLink("add.citation", translate("add.citation"), this);
-		addCitationLink.setIconLeftCSS("o_icon o_icon-lg o_icon_citation");
-		stackPanel.addTool(addCitationLink, Align.left);
 	}
 
 	@Override
@@ -191,60 +206,150 @@ public class MediaCenterController extends FormBasicController
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.key, "select"));
-
-		Map<String, MediaHandler> handlersMap = mediaService.getMediaHandlers()
-				.stream().collect(Collectors.toMap (h -> h.getType(), h -> h));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.type,
-				new MediaTypeCellRenderer(handlersMap)));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.type, new MediaTypeCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.title, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.collectionDate, "select"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.categories, new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.tags, new CategoriesCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaCols.taxonomyLevels, new TaxonomyLevelRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MediaCols.taxonomyLevelsPaths, new TaxonomyPathsRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 	
-		model = new MediaDataModel(columnsModel, getLocale());
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		model = new MediaDataModel(columnsModel, getTranslator(), getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(true);
 		tableEl.setCustomizeColumns(true);
+		tableEl.setMultiSelect(true);
 		tableEl.setEmptyTableMessageKey("table.sEmptyTable");
-		tableEl.setPageSize(24);
 		VelocityContainer row = createVelocityContainer("media_row");
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		tableEl.setCssDelegate(new MediaCssDelegate());
-		tableEl.setAndLoadPersistedPreferences(ureq, "media-list");
-		initSorters(tableEl);
-		initFilters(tableEl);
-		
-		mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
+		initSorters();
+		initFilters();
+		initFiltersPresets();
+		tableEl.setAndLoadPersistedPreferences(ureq, "media-list-v3");
+
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
+		
+		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
+		tableEl.addBatchButton(bulkDeleteButton);
+		
+		initTools(formLayout);
 	}
 	
-	private void initSorters(FlexiTableElement tableElement) {
+	private void initTools(FormItemContainer formLayout) {
+		addMediaLink = uifactory.addFormLink("add.media", formLayout, Link.BUTTON);
+		addMediaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_media");
+		
+		DropdownItem addDropdown = uifactory.addDropdownMenu("add.more", "add.more", formLayout, getTranslator());
+		addDropdown.setOrientation(DropdownOrientation.right);
+		addDropdown.setElementCssClass("o_sel_add_more");
+		addDropdown.setEmbbeded(true);
+		addDropdown.setButton(true);
+		
+		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
+		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
+		addDropdown.addElement(addTextLink);
+		
+		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
+		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
+		addDropdown.addElement(addCitationLink);
+		
+		if (editableFileTypes.isEmpty()) {
+			addFileLink = uifactory.addFormLink("add.file", formLayout, Link.LINK);
+			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_files");
+			addDropdown.addElement(addFileLink);
+		} else {
+			createFileLink = uifactory.addFormLink("create.file", formLayout, Link.LINK);
+			createFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
+			addDropdown.addElement(createFileLink);
+			
+			addFileLink = uifactory.addFormLink("upload.file", formLayout, Link.LINK);
+			addFileLink.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
+			addDropdown.addElement(addFileLink);
+		}
+	}
+	
+	private void initSorters() {
 		List<FlexiTableSort> sorters = new ArrayList<>(14);
 		sorters.add(new FlexiTableSort(translate(MediaCols.key.i18nHeaderKey()), MediaCols.key.name()));
-		sorters.add(new FlexiTableSort(translate(MediaCols.type.i18nHeaderKey()), MediaCols.type.name()));
 		sorters.add(new FlexiTableSort(translate(MediaCols.title.i18nHeaderKey()), MediaCols.title.name()));
 		sorters.add(new FlexiTableSort(translate(MediaCols.collectionDate.i18nHeaderKey()), MediaCols.collectionDate.name()));
-		sorters.add(FlexiTableSort.SPACER);
+		sorters.add(new FlexiTableSort(translate(MediaCols.tags.i18nHeaderKey()), MediaCols.tags.name()));
+		sorters.add(new FlexiTableSort(translate(MediaCols.taxonomyLevels.i18nHeaderKey()), MediaCols.taxonomyLevels.name()));
 
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
-		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
-		tableElement.setSortSettings(options);
+		options.setDefaultOrderBy(new SortKey(MediaCols.title.name(), true));
+		tableEl.setSortSettings(options);
 	}
 	
-	private void initFilters(FlexiTableElement tableElement) {
-		List<FlexiTableFilter> filters = new ArrayList<>(16);
-		filters.add(new FlexiTableFilter(translate("filter.show.all"), "showall"));
-		filters.add(FlexiTableFilter.SPACER);
+	private void initFilters() {
+		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
+		
+		SelectionValues typesKV = new SelectionValues();
 		List<MediaHandler> handlers = mediaService.getMediaHandlers();
 		for(MediaHandler handler:handlers) {
-			filters.add(new FlexiTableFilter(translate("artefact." + handler.getType()), handler.getType()));
+			typesKV.add(SelectionValues.entry(handler.getType(), translate("artefact." + handler.getType())));
 		}
-		tableElement.setFilters(null, filters, false);
+		FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
+				FILTER_TYPES, typesKV, true);
+		filters.add(membersFilter);
+		
+		SelectionValues tagsKV = new SelectionValues();
+		List<MediaTag> tags = mediaService.getTags(getIdentity());
+		for(MediaTag tag:tags) {
+			tagsKV.add(SelectionValues.entry(tag.getTag().getDisplayName(), tag.getTag().getDisplayName()));
+		}
+		FlexiTableMultiSelectionFilter tagsFilter = new FlexiTableMultiSelectionFilter(translate("filter.tags"),
+				FILTER_TAGS, tagsKV, true);
+		filters.add(tagsFilter);
+		
+		List<Taxonomy> taxonomies = portfolioModule.getLinkedTaxonomies();
+		if(taxonomies != null && !taxonomies.isEmpty()) {
+			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomies);
+			SelectionValues taxonomyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.taxonomy.paths"),
+					FILTER_TAXONOMY, taxonomyValues, true));
+		}
+		
+		tableEl.setFilters(true, filters, false, false);
 	}
-
+	
+	private void initFiltersPresets() {
+		List<FlexiFiltersTab> tabs = new ArrayList<>();
+			
+		allTab = FlexiFiltersTabFactory.tabWithImplicitFilters(ALL_TAB_ID, translate("filter.all"),
+				TabSelectionBehavior.reloadData, List.of());
+		allTab.setElementCssClass("o_sel_media_all");
+		allTab.setFiltersExpanded(true);
+		tabs.add(allTab);
+		
+		myTab = FlexiFiltersTabFactory.tabWithImplicitFilters(MY_TAB_ID, translate("filter.my"),
+				TabSelectionBehavior.reloadData, List.of());
+		myTab.setElementCssClass("o_sel_media_my");
+		myTab.setFiltersExpanded(true);
+		tabs.add(myTab);
+		
+		sharedTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SHARED_TAB_ID, translate("filter.shared"),
+				TabSelectionBehavior.reloadData, List.of());
+		sharedTab.setElementCssClass("o_sel_media_shared");
+		sharedTab.setFiltersExpanded(true);
+		tabs.add(sharedTab);
+		
+		FlexiFiltersTab searchTab = FlexiFiltersTabFactory.tabWithImplicitFilters(SEARCH_TAB_ID, translate("filter.search"),
+				TabSelectionBehavior.clear, List.of());
+		searchTab.setElementCssClass("o_sel_media_search");
+		searchTab.setPosition(FlexiFilterTabPosition.right);
+		searchTab.setLargeSearch(true);
+		searchTab.setFiltersExpanded(true);
+		tabs.add(searchTab);
+		
+		tableEl.setFilterTabs(true, tabs);
+	}
+	
 	@Override
 	public Iterable<Component> getComponents(int row, Object rowObject) {
 		MediaRow mediaRow = model.getObject(row);
@@ -255,81 +360,174 @@ public class MediaCenterController extends FormBasicController
 		return components;
 	}
 	
+	private void doSelectTab() {
+		FlexiFiltersTab tab = tableEl.getSelectedFilterTab();
+		if(tab.getSelectionBehavior() == TabSelectionBehavior.clear) {
+			model.setObjects(new ArrayList<>());
+			tableEl.reset(true, true, true);
+		} else {
+			loadModel();
+		}
+	}
+	
 	private void loadModel() {
-		String searchString = tableEl.getQuickSearchString();
-		List<String> tagNames = getSelectedTagNames();
+		SearchMediaParameters params = getSearchParameters();
+		List<MediaWithVersion> medias = mediaService.searchMedias(params);
+		
 		Map<Long,MediaRow> currentMap = model.getObjects()
 				.stream().collect(Collectors.toMap(MediaRow::getKey, r -> r));
-
-		List<MediaLight> medias = mediaService.searchOwnedMedias(getIdentity(), searchString, tagNames);
 		List<MediaRow> rows = new ArrayList<>(medias.size());
-		for(MediaLight media:medias) {
-			if(currentMap.containsKey(media.getKey())) {
-				rows.add(currentMap.get(media.getKey()));
+		for(MediaWithVersion mediaWithVersion:medias) {
+			Media media = mediaWithVersion.media();
+			if(currentMap.containsKey(mediaWithVersion.getKey())) {
+				rows.add(currentMap.get(mediaWithVersion.getKey()));
 			} else {
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
-				VFSLeaf thumbnail = handler.getThumbnail(media, THUMBNAIL_SIZE);
+				MediaVersion currentVersion = mediaWithVersion.currentVersion();
+				VFSLeaf thumbnail = handler.getThumbnail(currentVersion, THUMBNAIL_SIZE);
 				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
+				String iconCssClass = handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
-				MediaRow row = new MediaRow(media, thumbnail, openLink, handler.getIconCssClass(media));
+				openLink.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
+				MediaRow row = new MediaRow(media, thumbnail, openLink, iconCssClass);
+				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);
 				rows.add(row);
 			}
 		}
 		model.setObjects(rows);
-		model.filter(null, tableEl.getFilters());
 		
 		Map<Long,MediaRow> rowMap = model.getObjects()
-				.stream().collect(Collectors.toMap(r -> r.getKey(), r -> r));
+				.stream().collect(Collectors.toMap(MediaRow::getKey, r -> r, (u, v) -> u));
 		
-		Set<String> duplicateCategories = new HashSet<>();
-		List<CategoryLight> categories = mediaService.getMediaCategories(getIdentity());
-		List<FormLink> newTagLinks = new ArrayList<>(categories.size());
-		for(CategoryLight category:categories) {
-			String name = category.getCategory();
-			MediaRow mRow = rowMap.get(category.getMediaKey());
+		List<MediaTag> tags = mediaService.getTags(getIdentity());
+		for(MediaTag tag:tags) {
+			String name = tag.getTag().getDisplayName();
+			MediaRow mRow = rowMap.get(tag.getMedia().getKey());
 			if(mRow != null) {
-				mRow.addCategory(name);
+				mRow.addTag(name);
 			}
-			
-			if(duplicateCategories.contains(name)) {
-				continue;
-			}
-			duplicateCategories.add(name);
-			
-			FormLink tagLink =  uifactory.addFormLink("tag_" + (++counter), "tag", name, null, null, Link.NONTRANSLATED);
-			CategoryState state = new CategoryState(category, tagNames.contains(name));
-			tagLink.setUserObject(state);
-			if(state.isSelected()) {
-				tagLink.setCustomEnabledLinkCSS("tag label label-info o_disabled");
-			} else {
-				tagLink.setCustomEnabledLinkCSS("tag label label-info");
-			}
-			flc.add(tagLink);
-			newTagLinks.add(tagLink);
 		}
-		flc.contextPut("tagLinks", newTagLinks);
-		tagLinks = newTagLinks;
+		
+		List<MediaToTaxonomyLevel> relationToLevels = mediaService.getTaxonomyLevels(getIdentity());
+		for(MediaToTaxonomyLevel relationToLevel:relationToLevels) {
+			TaxonomyLevel level = relationToLevel.getTaxonomyLevel();
+			MediaRow mRow = rowMap.get(relationToLevel.getMedia().getKey());
+			if(mRow != null) {
+				String levelName = TaxonomyUIFactory.translateDisplayName(taxonomyTranslator, level, EMPTY);
+				mRow.addTaxonomyLevel(level, levelName);
+			}
+		}
+
+		tableEl.reset(true, true, true);
+	}
+	
+	private SearchMediaParameters getSearchParameters() {
+		SearchMediaParameters params = new SearchMediaParameters();
+		params.setSearchString(tableEl.getQuickSearchString());
+		params.setIdentity(getIdentity());
+		
+		List<FlexiTableFilter> filters = tableEl.getFilters();
+		
+		FlexiTableFilter typeFilters = FlexiTableFilter.getFilter(filters, FILTER_TYPES);
+		if (typeFilters != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)typeFilters).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				params.setTypes(filterValues);
+			}
+		}
+		
+		FlexiTableFilter tagsFilters = FlexiTableFilter.getFilter(filters, FILTER_TAGS);
+		if (tagsFilters != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)tagsFilters).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				params.setTags(filterValues);
+			}
+		}
+		
+		FlexiTableFilter taxonomyFilters = FlexiTableFilter.getFilter(filters, FILTER_TAXONOMY);
+		if (taxonomyFilters != null) {
+			List<String> filterValues = ((FlexiTableExtendedFilter)taxonomyFilters).getValues();
+			if (filterValues != null && !filterValues.isEmpty()) {
+				List<TaxonomyLevelRef> taxonomyLevels = filterValues.stream()
+						.filter(StringHelper::isLong)
+						.map( val -> new TaxonomyLevelRefImpl(Long.valueOf(val)))
+						.collect(Collectors.toList());
+				params.setTaxonomyLevelsRefs(taxonomyLevels);
+			}
+		}
+		
+		FlexiFiltersTab selectedTab = tableEl.getSelectedFilterTab();
+		if(selectedTab == myTab) {
+			params.setScope(Scope.MY);
+		} else if(selectedTab == sharedTab) {
+			params.setScope(Scope.SHARED);
+		} else {
+			params.setScope(Scope.ALL);
+		}
+		return params;
 	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
+		FlexiFiltersTab tab = tableEl.getSelectedFilterTab();
+		if(entries == null || entries.isEmpty()) {
+			if(tab == null) {
+				tableEl.setSelectedFilterTab(ureq, myTab);
+				if(stackPanel != null) {
+					addToHistory(ureq, this);
+				}
+			}
+			return;
+		}
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Media".equalsIgnoreCase(resName)) {
+			if(tab == null) {
+				tableEl.setSelectedFilterTab(ureq, allTab);
+			}
 			Long resId = entries.get(0).getOLATResourceable().getResourceableId();
-			for(MediaRow row:model.getObjects()) {
-				if(row.getKey().equals(resId)) {
-					doOpenMedia(ureq, resId);
-				}
+			if(!activateMedia(ureq, resId) && tableEl.getSelectedFilterTab() != allTab) {
+				tableEl.setSelectedFilterTab(ureq, allTab);
+				activateMedia(ureq, resId);
+			}
+			
+			if(stackPanel != null) {
+				addToHistory(ureq, this);
 			}
 		}
+	}
+	
+	private boolean activateMedia(UserRequest ureq, Long resId) {
+		if(detailsCtrl != null) {
+			stackPanel.popController(detailsCtrl);
+			removeAsListenerAndDispose(detailsCtrl);
+		}
+		
+		for(MediaRow row:model.getObjects()) {
+			if(row.getKey().equals(resId)) {
+				doOpenMedia(ureq, resId);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source == tableEl) {
+		if(createFileLink == source) {
+			doCreateFile(ureq);
+		} else if(addFileLink == source) {
+			doAddMedia(ureq, "add.file");
+		} else if(addMediaLink == source) {
+			doAddMedia(ureq, "add.media");
+		} else if(addTextLink == source) {
+			doAddTextMedia(ureq);
+		} else if(addCitationLink == source) {
+			doAddCitationMedia(ureq);
+		} else if(bulkDeleteButton == source) {
+			doConfirmDelete(ureq);
+		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				MediaRow row = model.getObject(se.getIndex());
@@ -345,6 +543,8 @@ public class MediaCenterController extends FormBasicController
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				loadModel();
+			} else if(event instanceof FlexiTableFilterTabEvent) {
+				doSelectTab();
 			}
 		} else if(newMediaCallout == source) {
 			doOpenNewMediaCallout(ureq, newMediaCallout);
@@ -360,8 +560,6 @@ public class MediaCenterController extends FormBasicController
 						activateable.activate(ureq, null, null);
 					}
 				}
-			} else if("tag".equals(cmd)) {
-				doToggleCategory(link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -370,7 +568,7 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source) {
+				|| citationUploadCtrl == source || confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel();
 				tableEl.reloadData();
@@ -403,7 +601,7 @@ public class MediaCenterController extends FormBasicController
 		} else if(detailsCtrl == source) {
 			if(event instanceof MediaEvent me) {
 				if(MediaEvent.DELETED.equals(me.getCommand())) {
-					stackPanel.popUpToController(this);
+					stackPanel.popController(detailsCtrl);
 					loadModel();
 					tableEl.reset(false, true, true);
 				}
@@ -415,11 +613,13 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmDeleteMediaCtrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmDeleteMediaCtrl = null;
 		citationUploadCtrl = null;
 		mediaUploadCtrl = null;
 		createFileCtrl = null;
@@ -429,36 +629,23 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(createFileLink == source) {
-			doCreateFile(ureq);
-		} else if(addFileLink == source) {
-			doAddMedia(ureq, "add.file");
-		} else if(addMediaLink == source) {
-			doAddMedia(ureq, "add.media");
-		} else if(addTextLink == source) {
-			doAddTextMedia(ureq);
-		} else if(addCitationLink == source) {
-			doAddCitationMedia(ureq);
-
-		} else if(source == mainForm.getInitialComponent()) {
-			if("ONCLICK".equals(event.getCommand())) {
-				String rowKeyStr = ureq.getParameter("img_select");
-				if(StringHelper.isLong(rowKeyStr)) {
-					try {
-						Long rowKey = Long.valueOf(rowKeyStr);
-						List<MediaRow> rows = model.getObjects();
-						for(MediaRow row:rows) {
-							if(row != null && row.getKey().equals(rowKey)) {
-								if(select) {
-									doSelect(ureq, rowKey);
-								} else {
-									doOpenMedia(ureq, rowKey);
-								}
+		if(source == mainForm.getInitialComponent() && "ONCLICK".equals(event.getCommand())) {
+			String rowKeyStr = ureq.getParameter("img_select");
+			if(StringHelper.isLong(rowKeyStr)) {
+				try {
+					Long rowKey = Long.valueOf(rowKeyStr);
+					List<MediaRow> rows = model.getObjects();
+					for(MediaRow row:rows) {
+						if(row != null && row.getKey().equals(rowKey)) {
+							if(select) {
+								doSelect(ureq, rowKey);
+							} else {
+								doOpenMedia(ureq, rowKey);
 							}
 						}
-					} catch (NumberFormatException e) {
-						logWarn("Not a valid long: " + rowKeyStr, e);
 					}
+				} catch (NumberFormatException e) {
+					logWarn("Not a valid long: " + rowKeyStr, e);
 				}
 			}
 		}
@@ -523,25 +710,6 @@ public class MediaCenterController extends FormBasicController
 		fireEvent(ureq, new MediaSelectionEvent(media));
 	}
 	
-	private void doToggleCategory(FormLink tagLink) {
-		CategoryState state = (CategoryState)tagLink.getUserObject();
-		state.setSelected(!state.isSelected());
-		loadModel();
-	}
-	
-	private List<String> getSelectedTagNames() {
-		List<String> tagNames = new ArrayList<>();
-		if(tagLinks != null && !tagLinks.isEmpty()) {
-			for(FormLink tagLink:tagLinks) {
-				CategoryState state = (CategoryState)tagLink.getUserObject();
-				if(state.isSelected()) {
-					tagNames.add(state.getName());
-				}
-			}
-		}
-		return tagNames;
-	}
-	
 	private void doOpenNewMediaCallout(UserRequest ureq, FormLink link) {
 		removeAsListenerAndDispose(newMediasCtrl);
 		removeAsListenerAndDispose(newMediasCalloutCtrl);
@@ -561,23 +729,53 @@ public class MediaCenterController extends FormBasicController
 		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Media", mediaKey);
 		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		Media media = mediaService.getMediaByKey(mediaKey);
-		detailsCtrl = new MediaDetailsController(ureq, swControl, stackPanel, media);
+		MediaVersion currentVersion = media.getVersions().get(0);
+		detailsCtrl = new MediaDetailsController(ureq, swControl, media, currentVersion);
 		listenTo(detailsCtrl);
 		
 		stackPanel.pushController(media.getTitle(), detailsCtrl);
 		return detailsCtrl;
 	}
 	
-	private static class MediaCssDelegate extends DefaultFlexiTableCssDelegate {
+	private void doConfirmDelete(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<MediaRow> rows = selectedIndex.stream()
+				.map(index -> model.getObject(index.intValue()))
+				.filter(Objects::nonNull)
+				.toList();
+		
+		List<Long> rowsKeys = rows.stream()
+				.map(MediaRow::getKey)
+				.toList();
+		
+		final List<Long> rowsKeysToDelete = mediaService.filterOwnedDeletableMedias(getIdentity(), rowsKeys);
+		if(rowsKeysToDelete.isEmpty()) {
+			showWarning("warning.atleast.one.deletable");
+		} else {
+			List<MediaRow> rowsToDelete = rows.stream()
+					.filter(row -> rowsKeysToDelete.contains(row.getKey()))
+					.toList();
+
+			confirmDeleteMediaCtrl = new ConfirmDeleteMediaController(ureq, getWindowControl(), rowsToDelete);
+			listenTo(confirmDeleteMediaCtrl);
+			
+			String title = translate("delete");
+			cmc = new CloseableModalController(getWindowControl(), null, confirmDeleteMediaCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
+	}
+	
+	private class MediaCssDelegate extends DefaultFlexiTableCssDelegate {
 
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
-			return "o_portfolio_medias clearfix";
+			return select ? "o_medias_table o_medias_select clearfix" : "o_medias_table clearfix";
 		}
 
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			return "o_portfolio_media";
+			return "o_media_card_cell";
 		}
 	}
 	
@@ -611,29 +809,6 @@ public class MediaCenterController extends FormBasicController
 			}
 			
 			return mr;
-		}
-	}
-
-	private static class CategoryState {
-		
-		private boolean selected;
-		private final CategoryLight category;
-		
-		public CategoryState(CategoryLight category, boolean selected) {
-			this.category = category;
-			this.selected = selected;
-		}
-
-		public boolean isSelected() {
-			return selected;
-		}
-
-		public void setSelected(boolean selected) {
-			this.selected = selected;
-		}
-
-		public String getName() {
-			return category.getCategory();
 		}
 	}
 	

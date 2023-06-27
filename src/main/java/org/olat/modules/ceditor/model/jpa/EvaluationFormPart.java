@@ -33,7 +33,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfformpart")
+@Entity(name="ceformpart")
 public class EvaluationFormPart extends AbstractPart {
 
 	private static final long serialVersionUID = -2843755995032511100L;

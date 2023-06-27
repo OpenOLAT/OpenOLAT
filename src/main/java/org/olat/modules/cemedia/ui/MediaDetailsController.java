@@ -19,52 +19,34 @@
  */
 package org.olat.modules.cemedia.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
-import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.dropdown.Dropdown;
+import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.stack.TooledController;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
+import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.PageStatus;
-import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.cemedia.manager.MetadataXStream;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
-import org.olat.modules.cemedia.ui.medias.FileMediaController;
-import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.model.BinderPageUsage;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,172 +55,115 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MediaDetailsController extends FormBasicController implements Activateable2, TooledController {
-
-	private Link editLink;
-	private Link deleteLink;
-	private Link gotoOriginalLink;
-	private final TooledStackedPanel stackPanel;
-
-	private Controller mediaCtrl;
+public class MediaDetailsController extends BasicController implements Activateable2 {
+	
+	private final Link editLink;
+	private final Link deleteLink;
+	private final TabbedPane tabbedPane;
+	
+	private Controller metadataCtrl;
 	private Controller mediaEditCtrl;
 	private CloseableModalController cmc;
+	private MediaUsageController usageCtrl;
+	private MediaRelationsController relationsCtrl;
 	private DialogBoxController confirmDeleteMediaCtrl;
-	
-	private int counter;
-	private Media media;
-	private boolean editable = true;
-	private final MediaHandler handler;
-	private final List<BinderPageUsage> usedInList;
+	private final MediaOverviewController overviewCtrl;
 
-	@Autowired
-	private UserManager userManager;
+	private Media media;
+	private boolean editable;
+	private final MediaHandler handler;
+	private final List<MediaUsage> usageList;
+	
 	@Autowired
 	private MediaService mediaService;
-	@Autowired
-	private PortfolioService portfolioService;
 	
-	public MediaDetailsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel, Media media) {
-		super(ureq, wControl, "media_details");
+	public MediaDetailsController(UserRequest ureq, WindowControl wControl, Media media, MediaVersion currentVersion) {
+		super(ureq, wControl);
+		
 		this.media = media;
-		this.stackPanel = stackPanel;
 		handler = mediaService.getMediaHandler(media.getType());
-		usedInList = portfolioService.getUsedInBinders(media);
-		for(BinderPageUsage binder:usedInList) {
-			if(binder.getPageStatus() == PageStatus.closed || binder.getPageStatus() == PageStatus.published) {
+		
+		usageList = mediaService.getMediaUsage(media);
+		for(MediaUsage mediaUsage:usageList) {
+			if(mediaUsage.getPageStatus() == PageStatus.closed || mediaUsage.getPageStatus() == PageStatus.published) {
 				editable = false;
 			}
 		}
-		initForm(ureq);
-	}
-
-	@Override
-	public void initTools() {
-		if(editable) {
-			editLink = LinkFactory.createToolLink("edit", translate("edit"), this);
-			editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit");
-			stackPanel.addTool(editLink, Align.left);
-		}
 		
-		if(usedInList.isEmpty()) {
-			deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this);
-			deleteLink.setIconLeftCSS("o_icon o_icon-lg o_icon_delete_item");
-			stackPanel.addTool(deleteLink, Align.left);
-		}
+		VelocityContainer mainVC = createVelocityContainer("media_details");
+		
+		mainVC.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
+		mainVC.contextPut("description", StringHelper.xssScan(media.getDescription()));
+		mainVC.contextPut("iconCssClass", handler.getIconCssClass(currentVersion));
+		
+		Dropdown commandsDropdown = new Dropdown("commands", null, false, getTranslator());
+		commandsDropdown.setDomReplaceable(false);
+		commandsDropdown.setCarretIconCSS("o_icon o_icon_commands");
+		commandsDropdown.setButton(true);
+		commandsDropdown.setEmbbeded(true);
+		commandsDropdown.setOrientation(DropdownOrientation.right);
+		mainVC.put("commands", commandsDropdown);
+		
+		editLink = LinkFactory.createToolLink("edit", translate("edit"), this, "o_icon o_icon-lg o_icon_edit");
+		commandsDropdown.addComponent(editLink);
+		
+		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");
+		commandsDropdown.addComponent(deleteLink);
+		
+		tabbedPane = new TabbedPane("pane", getLocale());
+		tabbedPane.addListener(this);
+		mainVC.put("tabs", tabbedPane);
+		
+		overviewCtrl = new MediaOverviewController(ureq, getWindowControl(), media, currentVersion, usageList, editable);
+		listenTo(overviewCtrl);
+		tabbedPane.addTab(translate("tab.overview"), "o_sel_media_overview", overviewCtrl);
+		
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.metadata"), "o_sel_media_metadata", uureq -> {
+			removeAsListenerAndDispose(metadataCtrl);
+			metadataCtrl = handler.getEditMetadataController(uureq, getWindowControl(), media);
+			listenTo(metadataCtrl);
+			return metadataCtrl;
+		}, false);
+		
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_metadata", uureq -> {
+			removeAsListenerAndDispose(usageCtrl);
+			usageCtrl = new MediaUsageController(uureq, getWindowControl(), media);
+			listenTo(usageCtrl);
+			return usageCtrl;
+		}, false);
+		
+		tabbedPane.addTabControllerCreator(ureq, translate("tab.relations"), "o_sel_media_relations", uureq -> {
+			removeAsListenerAndDispose(relationsCtrl);
+			relationsCtrl = new MediaRelationsController(uureq, getWindowControl(), media);
+			listenTo(relationsCtrl);
+			return relationsCtrl;
+		}, false);
+		
+		
+		putInitialPanel(mainVC);
 	}
 
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
-			layoutCont.contextPut("description", StringHelper.xssScan(media.getDescription()));
-			layoutCont.contextPut("iconCssClass", handler.getIconCssClass(media));
-			
-			mediaCtrl = handler.getMediaController(ureq, getWindowControl(), media, new StandardMediaRenderingHints());
-			if(mediaCtrl != null) {
-				// Move this to the MediaHandler if even more Media types are editable inline.
-				if (mediaCtrl instanceof FileMediaController fileMediaCtrl && editable) {
-					fileMediaCtrl.setEditable(editable);
-				}
-				listenTo(mediaCtrl);
-				layoutCont.put("media", mediaCtrl.getInitialComponent());
-			}
-			
-			String metaPage = velocity_root + "/media_details_metadata.html";
-			FormLayoutContainer metaCont = FormLayoutContainer.createCustomFormLayout("meta", getTranslator(), metaPage);
-			layoutCont.add("meta", metaCont);
-			metaCont.setRootForm(mainForm);
-
-			metaCont.contextPut("media", media);
-			String author = userManager.getUserDisplayName(media.getAuthor());
-			metaCont.contextPut("author", author);
-			
-			if(media.getCollectionDate() != null) {
-				String collectionDate = Formatter.getInstance(getLocale()).formatDate(media.getCollectionDate());
-				metaCont.contextPut("collectionDate", collectionDate);
-			}
-			
-			if (StringHelper.containsNonWhitespace(media.getBusinessPath())) {
-				gotoOriginalLink = LinkFactory.createLink("goto.original", metaCont.getFormItemComponent(), this);
-			}
-			
-			if(StringHelper.containsNonWhitespace(media.getMetadataXml())) {
-				Object metadata = MetadataXStream.get().fromXML(media.getMetadataXml());
-				metaCont.contextPut("metadata", metadata);
-			}
-			
-			List<Category> categories = mediaService.getCategories(media);
-			if(categories != null && !categories.isEmpty()) {
-				List<TextBoxItem> categoriesMap = categories.stream()
-						.map(cat -> new TextBoxItemImpl(cat.getName(), cat.getName()))
-						.collect(Collectors.toList());
-				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, metaCont, getTranslator());
-				categoriesEl.setHelpText(translate("categories.hint"));
-				categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-				categoriesEl.setEnabled(false);
-			}
-			
-			
-			List<FormLink> binderLinks = new ArrayList<>(usedInList.size());
-			Set<Long> binderUniqueKeys = new HashSet<>();
-			for(BinderPageUsage binder:usedInList) {
-				if(binderUniqueKeys.contains(binder.getBinderKey())) continue;
-				
-				FormLink link;
-				if(binder.getBinderKey() == null) {
-					link = uifactory.addFormLink("binder_" + (++counter), "page", binder.getPageTitle(), null, metaCont, Link.LINK | Link.NONTRANSLATED);
-					binderUniqueKeys.add(binder.getPageKey());
-				} else {
-					link = uifactory.addFormLink("binder_" + (++counter), "binder", binder.getBinderTitle(), null, metaCont, Link.LINK | Link.NONTRANSLATED);
-					binderUniqueKeys.add(binder.getBinderKey());
-				}
-				link.setUserObject(binder);
-				binderLinks.add(link);
-			}
-			metaCont.contextPut("binderLinks", binderLinks);
-		}
-	}
-	
-	private void reload(UserRequest ureq) {
-		initForm(flc, this, ureq);
-	}
-	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		//
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		//
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		if(editLink == source) {
-			doEdit(ureq);
-		} else if(deleteLink == source) {
-			doConfirmDelete(ureq);
-		} else if(gotoOriginalLink == source) {
-			NewControllerFactory.getInstance().launch(media.getBusinessPath(), ureq, getWindowControl());	
-		}
-		super.event(ureq, source, event);
-	}
-
-	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(mediaEditCtrl == source) {
+		if(confirmDeleteMediaCtrl == source) {
+			if(DialogBoxUIFactory.isYesEvent(event)) {
+				doDelete(ureq);
+			}	
+		} else if(mediaEditCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				reload(ureq);
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				reload();
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(confirmDeleteMediaCtrl == source) {
-			if(DialogBoxUIFactory.isYesEvent(event)) {
-				doDelete();
-				fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
-			}	
+		} else if(relationsCtrl == source || overviewCtrl == source || metadataCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				reload();
+			}
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -253,22 +178,31 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink link) {
-			String cmd = link.getCmd();
-			Object uobject = link.getUserObject();
-			if("binder".equals(cmd)
-					&& uobject instanceof BinderPageUsage binderPageUsage) {
-				String businessPath = "[Binder:" + binderPageUsage.getBinderKey() + "]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
-			} else if("page".equals(cmd)
-					&& uobject instanceof BinderPageUsage binderPageUsage) {
-				//http://localhost:8081/auth/HomeSite/720898/PortfolioV2/0/MyPages/0/Entry/89
-				String businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MyPages:0][Entry:" + binderPageUsage.getPageKey() + "]";
-				NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());	
-			}
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(deleteLink == source) {
+			doConfirmDelete(ureq);
+		} else if(editLink == source) {
+			doEdit(ureq);
+		} 
+	}
+	
+	private void reload() {
+		overviewCtrl.reload();
+		if(this.usageCtrl != null) {
+			usageCtrl.reload();
 		}
-		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doConfirmDelete(UserRequest ureq) {
+		String title = translate("delete.media.confirm.title");
+		String text = translate("delete.media.confirm.descr", StringHelper.escapeHtml(media.getTitle()));
+		confirmDeleteMediaCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteMediaCtrl);
+		confirmDeleteMediaCtrl.setUserObject(media);
+	}
+	
+	private void doDelete(UserRequest ureq) {
+		mediaService.deleteMedia(media);
+		fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
 	}
 	
 	private void doEdit(UserRequest ureq) {
@@ -281,16 +215,5 @@ public class MediaDetailsController extends FormBasicController implements Activ
 		cmc = new CloseableModalController(getWindowControl(), null, mediaEditCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
-	}
-
-	private void doConfirmDelete(UserRequest ureq) {
-		String title = translate("delete.media.confirm.title");
-		String text = translate("delete.media.confirm.descr", StringHelper.escapeHtml(media.getTitle()));
-		confirmDeleteMediaCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteMediaCtrl);
-		confirmDeleteMediaCtrl.setUserObject(media);
-	}
-	
-	private void doDelete() {
-		mediaService.deleteMedia(media);
 	}
 }

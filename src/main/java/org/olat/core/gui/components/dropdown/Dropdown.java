@@ -46,7 +46,7 @@ public class Dropdown extends FormBaseComponentImpl implements ComponentCollecti
 	private static final ComponentRenderer RENDERER = new DropdownRenderer();
 	
 	public enum ButtonSize { extraSmall, small, regular, large }
-	public enum CaretPosition { left, right }
+	public enum CaretPosition { left, right, none }
 	
 	private DropdownItem item;
 	private String i18nKey;

@@ -756,9 +756,8 @@ public class PageMetadataEditController extends FormBasicController {
 			
 			if(handler != null) {
 				UploadMedia mObject = new UploadMedia(document.getFile(), document.getName(), mimeType);
-				Media media = handler.createMedia(document.getName(), "", mObject, businessPath, getIdentity());
-				MediaPart part = new MediaPart();
-				part.setMedia(media);
+				Media media = handler.createMedia(document.getName(), "", "", mObject, businessPath, getIdentity());
+				MediaPart part = MediaPart.valueOf(media);
 				pageService.appendNewPagePart(thePage, part);
 			} else {
 				showWarning("warning.unkown.media");

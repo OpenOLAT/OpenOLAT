@@ -19,17 +19,16 @@
  */
 package org.olat.modules.portfolio.ui.wizard;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -51,14 +50,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollectArtefactController extends FormBasicController {
 	
+	private TagSelection tagsEl;
 	private TextElement titleEl;
+	private TextElement altTextEl;
 	private TextElement descriptionEl;
-	private TextBoxListElement categoriesEl;
 
 	private Media mediaReference;
 	private final Object mediaObject;
 	private final MediaHandler handler;
-	private List<TextBoxItem> categories = new ArrayList<>();
 	
 	private final String businessPath;
 	private final MediaInformations prefillInfos;
@@ -91,11 +90,14 @@ public class CollectArtefactController extends FormBasicController {
 		String descr = prefillInfos == null ? "" : prefillInfos.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("artefact.descr", "artefact.descr", descr, 8, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		descriptionEl.setElementCssClass("o_sel_pf_collect_media_description");
+
+		String altText = mediaReference == null ? null : mediaReference.getAltText();
+		altTextEl = uifactory.addTextElement("artefact.alt.text", "artefact.alt.text", 1000, altText, formLayout);
 		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("tags.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		String source = handler.getType();
 		uifactory.addStaticTextElement("artefact.source", "artefact.source", source, formLayout);
@@ -112,13 +114,14 @@ public class CollectArtefactController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if(mediaReference == null) {
 			String title = titleEl.getValue();
+			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
-			mediaReference = handler.createMedia(title, description, mediaObject, businessPath, getIdentity());
+			mediaReference = handler.createMedia(title, description, altText, mediaObject, businessPath, getIdentity());
 		}
 
 		if(mediaReference != null) {
-			List<String> updatedCategories = categoriesEl.getValueList();
-			mediaService.updateCategories(mediaReference, updatedCategories);
+			List<String> updatedTags = tagsEl.getDisplayNames();
+			mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
 		} else {
 			showError("ERROR");
 		}

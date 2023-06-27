@@ -44,6 +44,8 @@ import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.ceditor.model.ImageTitlePosition;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
+import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
+import org.olat.modules.cemedia.Media;
 
 /**
  * The controller show the image and its metadata, caption, description...<br>
@@ -61,6 +63,8 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	private final ImageComponent imageCmp;
 	protected final VelocityContainer mainVC;
 	
+	private final DataStorage dataStorage;
+	
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, PageElementRenderingHints hints) {
 		this(ureq, wControl, dataStorage, media.getStoredData(), hints);
 		
@@ -77,12 +81,16 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, PageElementRenderingHints hints) {
 		super(ureq, wControl, Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		velocity_root = Util.getPackageVelocityRoot(ImageRunController.class);
+		this.dataStorage = dataStorage;
 
 		mainVC = createVelocityContainer("image");
 		mainVC.setDomReplacementWrapperRequired(false);
 		imageCmp = new ImageComponent(ureq.getUserSession(), "image");
 		imageCmp.setDivImageWrapper(false);
 		imageCmp.setPreventBrowserCaching(false);
+		if(storedData instanceof Media med && StringHelper.containsNonWhitespace(med.getAltText())) {
+			imageCmp.setAlt(med.getAltText());
+		}
 		
 		File mediaFile = dataStorage.getFile(storedData);
 		if(mediaFile != null) {
@@ -98,16 +106,6 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		}
 		mainVC.contextPut("extendedMetadata", hints.isExtendedMetadata());
 
-		boolean showCaption = StringHelper.containsNonWhitespace(storedData.getDescription());
-		mainVC.contextPut("showCaption", Boolean.valueOf(showCaption));
-		if(showCaption) {
-			mainVC.contextPut("caption", storedData.getDescription());
-		}
-		
-		if(hints.isExtendedMetadata()) {
-			initMetadata(ureq, storedData);
-		}
-		
 		putInitialPanel(mainVC);
 	}
 	
@@ -157,14 +155,6 @@ public class ImageRunController extends BasicController implements PageRunElemen
 			}
 		}
 	}
-	
-	/**
-	 * @param ureq The user request
-	 * @param storedData To be extended 
-	 */
-	protected void initMetadata(UserRequest ureq, StoredData storedData) {
-		//
-	}
 
 	@Override
 	public Component getComponent() {
@@ -185,13 +175,24 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(source instanceof ModalInspectorController && event instanceof ChangePartEvent) {
 			ChangePartEvent cpe = (ChangePartEvent)event;
-			PageElement media = cpe.getElement();
-			if(media instanceof ImageElement image) {
-				doUpdate(image);
+			PageElement element = cpe.getElement();
+			if(element instanceof ImageElement image) {
+				if(event instanceof ChangeVersionPartEvent) {
+					doUpdateVersion(image);
+				} else {
+					doUpdate(image);
+				}
 				mainVC.setDirty(true);
 			}
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void doUpdateVersion(ImageElement image) {
+		File mediaFile = dataStorage.getFile(image.getStoredData());
+		if(mediaFile != null) {
+			imageCmp.setMedia(mediaFile);
+		}
 	}
 	
 	private void doUpdate(ImageElement element) {

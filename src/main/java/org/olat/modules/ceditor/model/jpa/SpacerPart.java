@@ -28,7 +28,7 @@ import jakarta.persistence.Transient;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfseparatorpart")
+@Entity(name="ceseparatorpart")
 public class SpacerPart extends AbstractPart {
 
 	private static final long serialVersionUID = 7060103983145628108L;

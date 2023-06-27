@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -59,8 +60,8 @@ import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 
@@ -88,17 +89,19 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 	
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass(MediaVersion mediaVersion) {
 		return getIconCssClass();
 	}
 
 	@Override
+	public boolean hasVersion() {
+		return false;
+	}
+
+	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
-		if(element instanceof Media media) {
-			return new PageRunControllerElement(getMediaController(ureq, wControl, media, new RenderingHints(options)));
-		}
 		if(element instanceof MediaPart mediaPart) {
-			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMedia(), new RenderingHints(options)));
+			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMediaVersion(), new RenderingHints(options)));
 		}
 		return null;
 	}
@@ -110,6 +113,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		return null;
+	}
+	
+	@Override
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
 		return null;
 	}
 
@@ -153,7 +161,14 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 			if(contentCmp != null) {
 				component.put("contentCmp", contentCmp);
 			} else {
-				component.contextPut("content", media.getContent());
+				List<String> contents = new ArrayList<>();
+				List<MediaVersion> versions = media.getVersions();
+				for(MediaVersion version:versions) {
+					if(version != null && StringHelper.containsNonWhitespace(version.getContent())) {
+						contents.add(version.getContent());
+					}
+				}
+				component.contextPut("contents", contents);
 			}
 			component.contextPut("attachments", attachments);
 			

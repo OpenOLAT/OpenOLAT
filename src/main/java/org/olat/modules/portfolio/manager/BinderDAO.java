@@ -545,10 +545,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -617,10 +617,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -665,10 +665,10 @@ public class BinderDAO {
 		  .append(" (select count(section.key) from pfsection as section")
 		  .append("   where section.binder.key=binder.key")
 		  .append(" ) as numOfSections,")
-		  .append(" (select count(page.key) from pfpage as page, pfsection as pageSection")
+		  .append(" (select count(page.key) from cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key")
 		  .append(" ) as numOfPages,")
-		  .append(" (select count(comment.key) from usercomment as comment, pfpage as page, pfsection as pageSection")
+		  .append(" (select count(comment.key) from usercomment as comment, cepage as page, pfsection as pageSection")
 		  .append("   where pageSection.binder.key=binder.key and page.section.key=pageSection.key and comment.resId=page.key and comment.resName='Page'")
 		  .append(" ) as numOfComments")
 		  .append(" from pfbinder as binder")
@@ -975,7 +975,7 @@ public class BinderDAO {
 	public List<BinderPageUsage> usedInBinders(MediaLight media) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder.key, binder.title, page.key, page.title, page.status")
-		  .append(" from pfpage as page")
+		  .append(" from cepage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join pageBody.parts as bodyPart")
 		  .append(" left join page.section as section")
@@ -1137,7 +1137,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join binder.baseGroup as baseGroup")
@@ -1180,7 +1180,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join section.baseGroup as baseGroup")
@@ -1223,7 +1223,7 @@ public class BinderDAO {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from pfpage as page")
+		sb.append("select binder.key, section.key, page.key, membership.role, ident, invitation from cepage as page")
 		  .append(" inner join page.section as section")
 		  .append(" inner join section.binder as binder")
 		  .append(" inner join page.baseGroup as baseGroup")

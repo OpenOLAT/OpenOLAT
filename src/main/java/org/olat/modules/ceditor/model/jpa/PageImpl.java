@@ -54,8 +54,8 @@ import org.olat.modules.portfolio.model.SectionImpl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfpage")
-@Table(name="o_pf_page")
+@Entity(name="cepage")
+@Table(name="o_ce_page")
 public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	
 	private static final long serialVersionUID = -3846753221071930063L;
@@ -285,8 +285,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 		if(this == obj) {
 			return true;
 		}
-		if(obj instanceof PageImpl) {
-			PageImpl page = (PageImpl)obj;
+		if(obj instanceof PageImpl page) {
 			return key != null && key.equals(page.getKey());
 		}
 		return false;

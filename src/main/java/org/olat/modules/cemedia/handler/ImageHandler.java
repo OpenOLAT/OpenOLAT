@@ -21,6 +21,7 @@ package org.olat.modules.cemedia.handler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -55,14 +56,15 @@ import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
-import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.CollectImageMediaController;
 import org.olat.modules.cemedia.ui.medias.ImageMediaController;
+import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -106,9 +108,14 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	public boolean acceptMimeType(String mimeType) {
 		return mimeTypes.contains(mimeType);
 	}
+	
+	@Override
+	public boolean hasVersion() {
+		return true;
+	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
+	public String getIconCssClass(MediaVersion media) {
 		String filename = media.getRootFilename();
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
@@ -117,7 +124,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		String storagePath = media.getStoragePath();
 
 		VFSLeaf thumbnail = null;
@@ -125,14 +132,14 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
-				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getHeight(), size.getWidth(), true);
+				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
 			}
 		}
 		
 		return thumbnail;
 	}
 	
-	public VFSItem getImage(Media media) {
+	public VFSItem getImage(MediaVersion media) {
 		VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 		return storageContainer.resolve(media.getRootFilename());
 	}
@@ -150,19 +157,20 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
 		UploadMedia mObject = (UploadMedia)mediaObject;
-		return createMedia(title, description, mObject.getFile(), mObject.getFilename(), businessPath, author);
+		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author);
 	}
 	
-	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, filename, IMAGE_TYPE, businessPath, null, 60, author);
+	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author) {
+		Media media = mediaDao.createMedia(title, description, altText, IMAGE_TYPE, businessPath, null, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		mediaDao.updateStoragePath(media, storagePath, filename);
 		
+		media = mediaDao.createVersion(media, new Date(), filename, storagePath, filename);
+
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		
@@ -186,13 +194,24 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new ImageMediaController(ureq, wControl, dataStorage, media, ExtendedMediaRenderingHints.valueOf(hints));
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+		return new ImageMediaController(ureq, wControl, dataStorage, version, ExtendedMediaRenderingHints.valueOf(hints));
 	}
 
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectImageMediaController(ureq, wControl, media);
+		return new CollectImageMediaController(ureq, wControl, media, false);
+	}
+	
+	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectImageMediaController(ureq, wControl, media, true);
+	}
+	
+	@Override
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new NewFileMediaVersionController(ureq, wControl, media, this,
+				CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);	
 	}
 
 	@Override
@@ -203,8 +222,11 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		List<File> images = new ArrayList<>();
-		File mediaDir = fileStorage.getMediaDirectory(media);
-		images.add(new File(mediaDir, media.getRootFilename()));
+		List<MediaVersion> versions = media.getVersions();
+		for(MediaVersion version:versions) {
+			File mediaDir = fileStorage.getMediaDirectory(version);
+			images.add(new File(mediaDir, version.getRootFilename()));
+		}
 		super.exportContent(media, null, images, mediaArchiveDirectory, locale);
 	}
 	

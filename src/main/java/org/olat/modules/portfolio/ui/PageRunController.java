@@ -1108,8 +1108,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 		
 		private void doAddMedia(Media media) {
-			mediaPart = new MediaPart();
-			mediaPart.setMedia(media);
+			mediaPart = MediaPart.valueOf(media);
 		}
 	}
 }

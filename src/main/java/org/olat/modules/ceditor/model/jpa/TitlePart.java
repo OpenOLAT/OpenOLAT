@@ -30,7 +30,7 @@ import org.olat.modules.ceditor.model.TitleElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pftitlepart")
+@Entity(name="cetitlepart")
 public class TitlePart extends AbstractPart implements TitleElement {
 
 	private static final long serialVersionUID = 7060103983145628108L;

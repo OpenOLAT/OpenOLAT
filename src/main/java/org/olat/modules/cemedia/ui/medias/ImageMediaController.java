@@ -21,14 +21,15 @@ package org.olat.modules.cemedia.ui.medias;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElementRenderingHints;
-import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 
@@ -40,19 +41,31 @@ import org.olat.modules.cemedia.ui.MediaMetadataController;
  */
 public class ImageMediaController extends ImageRunController {
 	
-	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart media, PageElementRenderingHints hints) {
-		super(ureq, wControl, dataStorage, media, hints);
+	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart element, PageElementRenderingHints hints) {
+		super(ureq, wControl, dataStorage, element, hints);
 	}
 
-	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, Media media, PageElementRenderingHints hints) {
-		super(ureq, wControl, dataStorage, media, hints);
+	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, PageElementRenderingHints hints) {
+		super(ureq, wControl, dataStorage, version, hints);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
-		setTranslator(Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(PageEditorV2Controller.class, getLocale(), getTranslator()));
+		
+		Media media = version.getMedia();
+		if(hints.isExtendedMetadata()) {
+			initMetadata(ureq, media);
+		}
+		
+		Object showCaption = mainVC.contextGet("showCaption");
+		if(showCaption == null || (showCaption instanceof Boolean sCaption && !sCaption.booleanValue())) {
+			boolean showDescription = StringHelper.containsNonWhitespace(media.getDescription());
+			mainVC.contextPut("showCaption", Boolean.valueOf(showDescription));
+			if(showDescription) {
+				mainVC.contextPut("caption", media.getDescription());
+			}
+		}
 	}
 
-	@Override
-	protected void initMetadata(UserRequest ureq, StoredData storedData) {
-		Media media = (Media)storedData;
+	protected void initMetadata(UserRequest ureq, Media media) {
 		MediaMetadataController metaCtrl = new MediaMetadataController(ureq, getWindowControl(), media);
 		listenTo(metaCtrl);
 		mainVC.put("meta", metaCtrl.getInitialComponent());

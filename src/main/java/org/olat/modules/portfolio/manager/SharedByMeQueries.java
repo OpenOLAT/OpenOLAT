@@ -62,7 +62,7 @@ public class SharedByMeQueries {
 		  .append("   inner join sectionGroup.members as sectionMembership")
 		  .append("   where section.binder.key=binder.key and sectionMembership.role in ('").append(ContentRoles.coach.name()).append("','").append(ContentRoles.reviewer.name()).append("')")
 		  .append(" )")
-		  .append(" or exists (select page.key from pfpage as page")
+		  .append(" or exists (select page.key from cepage as page")
 		  .append("   inner join page.baseGroup as pageGroup")
 		  .append("   inner join page.section as pageSection")
 		  .append("   inner join pageGroup.members as pageMembership")

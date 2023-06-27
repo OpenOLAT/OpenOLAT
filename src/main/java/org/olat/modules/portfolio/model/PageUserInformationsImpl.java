@@ -49,8 +49,8 @@ import org.olat.modules.portfolio.PageUserStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Entity(name="pfpageuserinfos")
-@Table(name="o_pf_page_user_infos")
+@Entity(name="cepageuserinfos")
+@Table(name="o_ce_page_user_infos")
 public class PageUserInformationsImpl implements Persistable, ModifiedInfo, CreateInfo, PageUserInformations {
 
 	private static final long serialVersionUID = 3778189345652328084L;

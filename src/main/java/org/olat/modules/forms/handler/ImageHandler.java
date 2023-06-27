@@ -92,8 +92,8 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
 			PageElementRenderingHints options) {
-		if(element instanceof ImageElement) {
-			Controller ctrl = new ImageRunController(ureq, wControl, dataStorage, (ImageElement)element, options);
+		if(element instanceof ImageElement imageElement) {
+			Controller ctrl = new ImageRunController(ureq, wControl, dataStorage, imageElement, options);
 			return new PageRunControllerElement(ctrl);
 		}
 		return new PageRunComponent(new Panel("empty"));
@@ -101,16 +101,16 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ImageElement) {
-			return new ImageRunController(ureq, wControl, dataStorage, (ImageElement)element, new StandardMediaRenderingHints());
+		if(element instanceof ImageElement imageElement) {
+			return new ImageRunController(ureq, wControl, dataStorage, imageElement, new StandardMediaRenderingHints());
 		}
 		return null;
 	}
 	
 	@Override
 	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
-		if(element instanceof ImageElement) {
-			return new ImageInspectorController(ureq, wControl, (ImageElement)element, this);
+		if(element instanceof ImageElement imageElement) {
+			return new ImageInspectorController(ureq, wControl, imageElement, this);
 		}
 		return null;
 	}
@@ -118,8 +118,8 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
-		if (element instanceof ImageElement) {
-			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, (ImageElement)element, new StandardMediaRenderingHints());
+		if (element instanceof ImageElement imageElement) {
+			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, imageElement, new StandardMediaRenderingHints());
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;

@@ -31,12 +31,13 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
-import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,9 +70,11 @@ public class PageImportExportHelper {
 	}
 	
 	private void export(MediaPart mediaPart, ZipOutputStream zout) {
-		Media media = mediaPart.getMedia();
-		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
-		ZipUtil.addPathToZip(media.getStoragePath(), mediaDir.toPath(), zout);
+		MediaVersion mediaVersion = mediaPart.getMediaVersion();
+		if(StringHelper.containsNonWhitespace(mediaVersion.getStoragePath())) {
+			File mediaDir = new File(FolderConfig.getCanonicalRoot(), mediaVersion.getStoragePath());
+			ZipUtil.addPathToZip(mediaVersion.getStoragePath(), mediaDir.toPath(), zout);
+		}
 	}
 	
 	public Page importPage(ZipFile zfile, Identity author) {

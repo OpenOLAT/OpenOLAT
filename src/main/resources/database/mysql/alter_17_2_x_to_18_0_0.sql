@@ -530,3 +530,108 @@ alter table o_badge_entry_config add constraint badge_entry_config_entry_idx for
 
 -- Dialog element
 alter table o_dialog_element add column d_authoredby varchar(64);
+
+
+-- Content editor
+rename table o_pf_assignment to o_ce_assignment;
+rename table o_pf_page to o_ce_page;
+rename table o_pf_page_body to o_ce_page_body;
+rename table o_pf_page_part to o_ce_page_part;
+rename table o_pf_page_user_infos to o_ce_page_user_infos;
+rename table o_pf_page_to_tax_competence to o_ce_page_to_tax_competence;
+rename table o_pf_media to o_media;
+
+update o_ce_page_part set dtype='cepagepart' where dtype='pfpagepart';
+update o_ce_page_part set dtype='cecontainerpart' where dtype='pfcontainerpart';
+update o_ce_page_part set dtype='ceformpart' where dtype='pfformpart';
+update o_ce_page_part set dtype='cehtmlpart' where dtype='pfhtmlpart';
+update o_ce_page_part set dtype='cemathpart' where dtype='pfmathpart';
+update o_ce_page_part set dtype='cemediapart' where dtype='pfmediapart';
+update o_ce_page_part set dtype='ceparagraphpart' where dtype='pfparagraphpart';
+update o_ce_page_part set dtype='ceseparatorpart' where dtype='pfseparatorpart';
+update o_ce_page_part set dtype='cetablepart' where dtype='pftablepart';
+update o_ce_page_part set dtype='cetitlepart' where dtype='pftitlepart';
+
+
+-- Media
+alter table o_media add column p_alt_text varchar(2000);
+alter table o_media add column p_uuid varchar(48);
+
+create table o_media_tag (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_media bigint not null,
+   fk_tag bigint not null,
+   primary key (id)
+);
+alter table o_media_tag ENGINE = InnoDB;
+
+alter table o_media_tag add constraint media_tag_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_tag add constraint media_tag_tag_idx foreign key (fk_tag) references o_tag_tag (id);
+
+create table o_media_to_tax_level (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_media bigint not null,
+   fk_taxonomy_level bigint not null,
+   primary key (id)
+);
+alter table o_media_to_tax_level ENGINE = InnoDB;
+
+alter table o_media_to_tax_level add constraint media_tax_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_to_tax_level add constraint media_tax_tax_idx foreign key (fk_taxonomy_level) references o_tax_taxonomy_level (id);
+
+create table o_media_to_group (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_type varchar(32),
+   p_editable bool default false not null,
+   fk_media bigint not null,
+   fk_group bigint not null,
+   primary key (id)
+);
+alter table o_media_to_group ENGINE = InnoDB;
+
+alter table o_media_to_group add constraint med_to_group_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
+
+create table o_ce_page_reference  (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_page bigint not null,
+   fk_entry bigint not null,
+   p_subident varchar(512) null,
+   primary key (id)
+);
+alter table o_ce_page_reference ENGINE = InnoDB;
+
+alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);
+alter table o_ce_page_reference add constraint page_ref_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+
+
+create table o_media_version (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   pos bigint default null,
+   p_version varchar(32),
+   p_version_uuid varchar(48),
+   p_version_checksum varchar(128),
+   p_collection_date datetime not null,
+   p_storage_path varchar(255),
+   p_root_filename varchar(255),
+   p_content mediumtext,
+   fk_media bigint not null,
+   primary key (id)
+);
+alter table o_media_version ENGINE = InnoDB;
+
+alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
+create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
+
+
+alter table o_ce_page_part add column fk_media_version_id bigint;
+
+alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
+

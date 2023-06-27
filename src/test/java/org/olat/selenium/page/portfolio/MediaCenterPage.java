@@ -42,7 +42,7 @@ public class MediaCenterPage {
 	}
 	
 	public MediaCenterPage assertOnMedia(String name) {
-		By nameBy = By.xpath("//div[contains(@class,'o_portfolio_media')]//a/span[contains(text(),'" + name + "')]");
+		By nameBy = By.xpath("//div[contains(@class,'o_media_card')]//a/span[contains(text(),'" + name + "')]");
 		OOGraphene.waitElement(nameBy, 5, browser);
 		List<WebElement> nameEls = browser.findElements(nameBy);
 		Assert.assertFalse(nameEls.isEmpty());
@@ -50,7 +50,7 @@ public class MediaCenterPage {
 	}
 	
 	public MediaDetailsPage selectMedia(String name) {
-		By nameBy = By.xpath("//div[contains(@class,'o_portfolio_media')]//a[span[contains(text(),'" + name + "')]]");
+		By nameBy = By.xpath("//div[contains(@class,'o_media_card')]//a[span[contains(text(),'" + name + "')]]");
 		OOGraphene.waitElement(nameBy, 5, browser);
 		browser.findElement(nameBy).click();
 		OOGraphene.waitBusy(browser);

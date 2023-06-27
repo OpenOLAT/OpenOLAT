@@ -20,24 +20,25 @@
  */
 package org.olat.modules.cemedia.ui.medias;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoController;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.TagSelection;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -45,7 +46,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
@@ -53,10 +53,19 @@ import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.CitationSourceType;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.CitationHandler;
 import org.olat.modules.cemedia.manager.MetadataXStream;
 import org.olat.modules.cemedia.model.CitationXml;
 import org.olat.modules.cemedia.ui.MediaCenterController;
+import org.olat.modules.cemedia.ui.MediaRelationsController;
+import org.olat.modules.cemedia.ui.MediaUIHelper;
+import org.olat.modules.portfolio.PortfolioV2Module;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyService;
+import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
+import org.olat.modules.taxonomy.ui.component.TaxonomyLevelSelection;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -77,50 +86,75 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CollectCitationMediaController extends FormBasicController implements PageElementAddController {
 	
 	private TextElement titleEl;
-	private RichTextElement descriptionEl, textEl;
-	private TextBoxListElement categoriesEl;
+	private TagSelection tagsEl;
+	private RichTextElement textEl;
+	private RichTextElement descriptionEl;
+	private TaxonomyLevelSelection taxonomyLevelEl;
 	
 	private SingleSelection sourceTypeEl;
-	private TextElement urlEl, sourceEl, languageEl;
-	private TextElement creatorsEl, placeEl, publisherEl;
-	private DateChooser publicationDateEl, lastVisitDateEl;
-	private TextElement editorEl, editionEl, volumeEl, seriesEl, publicationTitleEl, isbnEl, issueEl, pagesEl, institutionEl;
+	private TextElement urlEl;
+	private TextElement sourceEl;
+	private TextElement languageEl;
+	private TextElement creatorsEl;
+	private TextElement placeEl;
+	private TextElement publisherEl;
+	private DateChooser publicationDateEl;
+	private DateChooser lastVisitDateEl;
+	private TextElement editorEl;
+	private TextElement editionEl;
+	private TextElement volumeEl;
+	private TextElement seriesEl;
+	private TextElement publicationTitleEl;
+	private TextElement isbnEl;
+	private TextElement issueEl;
+	private TextElement pagesEl;
+	private TextElement institutionEl;
 	
 	private CitationXml citation;
 	private Media mediaReference;
-	private List<TextBoxItem> categories = new ArrayList<>();
+	private MediaVersion mediaVersion;
+	private final boolean metadataOnly;
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
+
+	private MediaRelationsController relationsCtrl;
 	
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
 	private CitationHandler citationHandler;
+	@Autowired
+	private TaxonomyService taxonomyService;
+	@Autowired
+	private PortfolioV2Module portfolioModule;
 
 	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(),
-				Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator())));
+		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
+		metadataOnly = false;
+		
+		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
+		relationsCtrl.setOpenClose(false);
+		listenTo(relationsCtrl);
+		
 		initForm(ureq);
 		updateCitationFieldsVisibility();
 	}
 	
-	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		super(ureq, wControl);
-		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(),
-				Util.createPackageTranslator(MetaInfoController.class, getLocale(), getTranslator())));
+	public CollectCitationMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
+		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		businessPath = media.getBusinessPath();
+		this.metadataOnly = metadataOnly;
 		mediaReference = media;
+		mediaVersion = media.getVersions().get(0);
 		
 		if(StringHelper.containsNonWhitespace(mediaReference.getMetadataXml())) {
 			citation = (CitationXml)MetadataXStream.get().fromXML(mediaReference.getMetadataXml());
-		}
-		
-		List<Category> categoryList = mediaService.getCategories(media);
-		for(Category category:categoryList) {
-			categories.add(new TextBoxItemImpl(category.getName(), category.getName()));
 		}
 		initForm(ureq);
 		updateCitationFieldsVisibility();
@@ -142,32 +176,55 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	public PageElement getPageElement() {
-		MediaPart part = new MediaPart();
-		part.setMedia(mediaReference);
-		return part;
+		return MediaPart.valueOf(mediaReference);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		formLayout.setElementCssClass("o_sel_pf_collect_citation_form");
+		initMetadataForm(formLayout, ureq);
 		
+		if(relationsCtrl != null) {
+			FormItem relationsItem = relationsCtrl.getInitialFormItem();
+			relationsItem.setFormLayout("0_12");
+			formLayout.add(relationsItem);
+		}
+
+		FormLayoutContainer buttonsCont = uifactory.addInlineFormLayout("buttons", null, formLayout);
+		if(relationsCtrl != null) {
+			buttonsCont.setFormLayout("0_12");
+		}
+		uifactory.addFormSubmitButton("save", "save", buttonsCont);
+		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+	}
+	
+	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
 		String title = mediaReference == null ? null : mediaReference.getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
 		
 		String desc = mediaReference == null ? null : mediaReference.getDescription();
-		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 6, 60, formLayout, getWindowControl());
+		descriptionEl = uifactory.addRichTextElementForStringDataMinimalistic("artefact.descr", "artefact.descr", desc, 4, -1, formLayout, getWindowControl());
 		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
+		descriptionEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.multiLine);
 		
-		String text = mediaReference == null ? null : mediaReference.getContent();
+		String text = mediaVersion == null ? null : mediaVersion.getContent();
 		textEl = uifactory.addRichTextElementForStringData("citation", "citation", text, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		textEl.setElementCssClass("o_sel_pf_collect_citation");
+		textEl.setVisible(!metadataOnly);
+
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference);
+		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
+		tagsEl.setHelpText(translate("categories.hint"));
+		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categories, formLayout, getTranslator());
-		categoriesEl.setHelpText(translate("categories.hint"));
-		categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
-		categoriesEl.setAllowDuplicates(false);
+		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(portfolioModule.getLinkedTaxonomies());
+		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
+				getWindowControl(), availableTaxonomyLevels);
+		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));
+		taxonomyLevelEl.setSelection(levels);
 		
 		String[] typeKeys = new String[CitationSourceType.values().length];
 		String[] typeValues = new String[CitationSourceType.values().length];
@@ -192,17 +249,12 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		
 		Date collectDate = mediaReference == null ? new Date() : mediaReference.getCollectionDate();
 		String date = Formatter.getInstance(getLocale()).formatDate(collectDate);
-		uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
+		StaticTextElement collectDateEl = uifactory.addStaticTextElement("artefact.collect.date", "artefact.collect.date", date, formLayout);
+		collectDateEl.setVisible(!metadataOnly);
 
-		if(StringHelper.containsNonWhitespace(businessPath)) {
-			String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
-			uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
-		}
-		
-		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("save", "save", buttonsCont);
-		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
+		String link = BusinessControlFactory.getInstance().getURLFromBusinessPathString(businessPath);
+		StaticTextElement linkEl = uifactory.addStaticTextElement("artefact.collect.link", "artefact.collect.link", link, formLayout);
+		linkEl.setVisible(!metadataOnly && MediaUIHelper.showBusinessPath(businessPath));
 	}
 
 	protected void initMetadataForm(FormItemContainer formLayout) {
@@ -307,7 +359,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
 			String content = textEl.getValue();
-			mediaReference = citationHandler.createMedia(title, description, content, businessPath, getIdentity());
+			mediaReference = citationHandler.createMedia(title, description, null, content, businessPath, getIdentity());
 		}
 
 		citation = new CitationXml();
@@ -336,8 +388,15 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 		mediaReference = mediaService.updateMedia(mediaReference);
 
-		List<String> updatedCategories = categoriesEl.getValueList();
-		mediaService.updateCategories(mediaReference, updatedCategories);
+		List<String> updatedTags = tagsEl.getDisplayNames();
+		mediaService.updateTags(getIdentity(), mediaReference, updatedTags);
+		
+		Set<TaxonomyLevelRef> updatedLevels = taxonomyLevelEl.getSelection();
+		mediaService.updateTaxonomyLevels(mediaReference, updatedLevels);
+
+		if(relationsCtrl != null) {
+			relationsCtrl.saveRelations(mediaReference);
+		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

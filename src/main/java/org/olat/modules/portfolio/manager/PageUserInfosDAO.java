@@ -60,7 +60,7 @@ public class PageUserInfosDAO {
 	
 	public PageUserInformations getPageUserInfos(Page page, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select infos from pfpageuserinfos as infos")
+		sb.append("select infos from cepageuserinfos as infos")
 		  .append(" where infos.page.key=:pageKey and infos.identity.key=:identityKey");
 		
 		List<PageUserInformations> infos = dbInstance.getCurrentEntityManager()
@@ -73,7 +73,7 @@ public class PageUserInfosDAO {
 	
 	public List<PageUserInformations> getPageUserInfos(BinderRef binder, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select infos from pfpageuserinfos as infos")
+		sb.append("select infos from cepageuserinfos as infos")
 		  .append(" inner join fetch infos.page page")
 		  .append(" inner join page.section section")
 		  .append(" where section.binder.key=:binderKey and infos.identity.key=:identityKey");
@@ -90,7 +90,7 @@ public class PageUserInfosDAO {
 	}
 	
 	public void updateStatus(Page page, PageUserStatus status) {
-		String q = "update pfpageuserinfos infos set infos.userStatus=:status where infos.page.key=:pageKey";
+		String q = "update cepageuserinfos infos set infos.userStatus=:status where infos.page.key=:pageKey";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(q)
 			.setParameter("status", status.name())
@@ -99,7 +99,7 @@ public class PageUserInfosDAO {
 	}
 	
 	public void updateStatus(Page page, PageUserStatus newStatus, PageUserStatus restrictionTo) {
-		String q = "update pfpageuserinfos infos set infos.userStatus=:status where infos.page.key=:pageKey and infos.userStatus=:restrictionTo";
+		String q = "update cepageuserinfos infos set infos.userStatus=:status where infos.page.key=:pageKey and infos.userStatus=:restrictionTo";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(q)
 			.setParameter("status", newStatus.name())
@@ -109,7 +109,7 @@ public class PageUserInfosDAO {
 	}
 	
 	public int delete(Page page) {
-		String q = "delete from pfpageuserinfos where page.key=:pageKey";
+		String q = "delete from cepageuserinfos where page.key=:pageKey";
 		return dbInstance.getCurrentEntityManager()
 			.createQuery(q)
 			.setParameter("pageKey", page.getKey())

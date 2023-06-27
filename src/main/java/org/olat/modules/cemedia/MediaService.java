@@ -19,11 +19,22 @@
  */
 package org.olat.modules.cemedia;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
-import org.olat.modules.ceditor.Category;
-import org.olat.modules.ceditor.model.jpa.CategoryLight;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.cemedia.model.MediaShare;
+import org.olat.modules.cemedia.model.MediaUsage;
+import org.olat.modules.cemedia.model.MediaUsageWithStatus;
+import org.olat.modules.cemedia.model.MediaWithVersion;
+import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
 
 /**
  * 
@@ -34,27 +45,63 @@ import org.olat.modules.ceditor.model.jpa.CategoryLight;
  */
 public interface MediaService {
 	
-	/**
-	 * The list of categories of the specified media.
-	 * @param media
-	 * @return A list of categories
-	 */
-	List<Category> getCategories(Media media);
-	
-	List<CategoryLight> getMediaCategories(IdentityRef owner);
-	
 	MediaHandler getMediaHandler(String type);
 	
 	List<MediaHandler> getMediaHandlers();
 	
 	Media getMediaByKey(Long key);
 	
-	List<MediaLight> searchOwnedMedias(IdentityRef author, String searchString, List<String> tagNames);
+	List<MediaWithVersion> searchMedias(SearchMediaParameters params);
+	
+	List<Long> filterOwnedDeletableMedias(IdentityRef identity, List<Long> mediasKeys);
 	
 	Media updateMedia(Media media);
 	
-	void updateCategories(Media media, List<String> categories);
-	
 	void deleteMedia(Media media);
+	
+	Media addVersion(Media media, String content);
+	
+	Media addVersion(Media media, File file, String filename);
+	
+	List<MediaVersion> getVersions(Media media);
+	
+	/**
+	 * The list of media and the binder, the course or simply the page where it is used
+	 * with an indication if the share match the current state of the document.
+	 * 
+	 * @param media The media
+	 * @return A list of location
+	 */
+	List<MediaUsageWithStatus> getMediaUsageWithStatus(MediaLight media);
+	
+	List<MediaUsage> getMediaUsage(MediaLight media);
+	
+	List<TagInfo> getTagInfos(Media media);
+	
+	List<MediaTag> getTags(IdentityRef owner);
+	
+	void updateTags(Identity identity, Media media, List<String> tags);
+	
+	List<TaxonomyLevel> getTaxonomyLevels(Media media);
+	
+	List<MediaToTaxonomyLevel> getTaxonomyLevels(IdentityRef author);
+	
+	void updateTaxonomyLevels(Media media, Collection<TaxonomyLevelRef> levels);
+	
+	List<MediaShare> getMediaShares(Media media);
+	
+	MediaToGroupRelation addRelation(Media media, boolean editable, Identity identity);
+	
+	void removeRelation(Media media, Identity identity);
+	
+	MediaToGroupRelation addRelation(Media media, boolean editable, Organisation organisation);
+	
+	void removeRelation(Media media, Organisation organisation);
+	
+	MediaToGroupRelation addRelation(Media media, boolean editable, BusinessGroup businessGroup);
+	
+	void removeRelation(Media media, BusinessGroup businessGroup);
+	
+	MediaToGroupRelation updateMediaToGroupRelation(MediaToGroupRelation relation);
 
 }

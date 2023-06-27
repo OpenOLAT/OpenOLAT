@@ -25,13 +25,19 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.user.UserManager;
@@ -45,16 +51,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TextMediaController extends BasicController {
 	
+	private final TextComponent textCmp;
+	
 	@Autowired
 	private UserManager userManager;
 	
-	public TextMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	public TextMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
+		
+		Media media = version.getMedia();
 
 		VelocityContainer mainVC = createVelocityContainer("media_text");
-		TextComponent cmp = TextFactory.createTextComponentFromString("text", media.getContent(), null, false, null);
-		mainVC.put("text", cmp);
+		textCmp = TextFactory.createTextComponentFromString("text", version.getContent(), null, false, null);
+		mainVC.put("text", textCmp);
 		
 		String desc = media.getDescription();
 		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -76,5 +86,16 @@ public class TextMediaController extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof ModalInspectorController && event instanceof ChangeVersionPartEvent cvpe) {
+			PageElement element = cvpe.getElement();
+			if(element instanceof MediaPart mediaPart) {
+				textCmp.setText( mediaPart.getMediaVersion().getContent());
+			}
+		}
+		super.event(ureq, source, event);
 	}
 }

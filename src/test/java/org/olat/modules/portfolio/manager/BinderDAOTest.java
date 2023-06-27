@@ -237,11 +237,10 @@ public class BinderDAOTest extends OlatTestCase {
 		
 		Section reloadedSection = binderDao.loadSectionByKey(section.getKey());
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
-		Media media = mediaDao.createMedia("Media", "Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		Media media = mediaDao.createMedia("Media", "Binder", "Alt-Binder", "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
-		MediaPart mediaPart = new MediaPart();
-		mediaPart.setMedia(media);
+		MediaPart mediaPart = MediaPart.valueOf(media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();

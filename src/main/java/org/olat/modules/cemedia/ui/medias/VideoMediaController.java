@@ -21,18 +21,23 @@ package org.olat.modules.cemedia.ui.medias;
 
 import java.io.File;
 
-import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.image.ImageComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Util;
-import org.olat.modules.cemedia.Media;
+import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.ModalInspectorController;
+import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 
@@ -46,14 +51,16 @@ public class VideoMediaController extends BasicController {
 	
 	private final ImageComponent videoCmp;
 	
-	public VideoMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	private final DataStorage dataStorage;
+	
+	public VideoMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
+		this.dataStorage = dataStorage;
 		
 		VelocityContainer mainVC = createVelocityContainer("media_video");
 
-		File mediaDir = new File(FolderConfig.getCanonicalRoot(), media.getStoragePath());
-		File mediaFile = new File(mediaDir, media.getRootFilename());
+		File mediaFile = dataStorage.getFile(version);
 		videoCmp = new ImageComponent(ureq.getUserSession(), "image");
 		videoCmp.setMedia(mediaFile);
 		mainVC.put("video", videoCmp);
@@ -67,17 +74,30 @@ public class VideoMediaController extends BasicController {
 		}
 		
 		if(hints.isExtendedMetadata()) {
-			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
+			MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, version.getMedia());
 			listenTo(metaCtrl);
 			mainVC.put("meta", metaCtrl.getInitialComponent());
 		}
 		putInitialPanel(mainVC);
 	}
 
-
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(source instanceof ModalInspectorController && event instanceof ChangeVersionPartEvent cvpe) {
+			PageElement element = cvpe.getElement();
+			if(element instanceof MediaPart videoPart) {
+				File mediaFile = dataStorage.getFile(videoPart.getStoredData());
+				if(mediaFile != null) {
+					videoCmp.setMedia(mediaFile);
+				}
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override

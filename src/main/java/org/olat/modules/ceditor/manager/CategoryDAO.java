@@ -146,7 +146,7 @@ public class CategoryDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rel from pfcategoryrelation as rel")
 		  .append(" inner join fetch rel.category as category")
-		  .append(" inner join pfpage as page on (rel.resId=page.key and rel.resName='Page')")
+		  .append(" inner join cepage as page on (rel.resId=page.key and rel.resName='Page')")
 		  .append(" left join pfsection as section on (section.key = page.section.key)")
 		  .append(" left join pfbinder as binder on (binder.key=section.binder.key)")
 		  .append(" where exists (select pageMember from bgroupmember as pageMember")
@@ -163,7 +163,7 @@ public class CategoryDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select category.name, count(media.key) from pfcategoryrelation as rel")
 		  .append(" inner join rel.category as category")
-		  .append(" inner join pfmedia as media on (rel.resId=media.key and rel.resName='Media')")
+		  .append(" inner join mmedia as media on (rel.resId=media.key and rel.resName='Media')")
 		  .append(" where media.author.key=:identityKey")
 		  .append(" group by category.name");
 		
@@ -185,7 +185,7 @@ public class CategoryDAO {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select category.name, media.key from pfcategoryrelation as rel")
 		  .append(" inner join rel.category as category")
-		  .append(" inner join pfmedia as media on (rel.resId=media.key and rel.resName='Media')")
+		  .append(" inner join mmedia as media on (rel.resId=media.key and rel.resName='Media')")
 		  .append(" where media.author.key=:identityKey");
 		
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()

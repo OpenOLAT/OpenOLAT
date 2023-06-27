@@ -21,10 +21,12 @@ package org.olat.modules.cemedia.handler;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -41,16 +43,23 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.InteractiveAddPageElementHandler;
+import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.PageElementInspectorController;
+import org.olat.modules.ceditor.PageElementStore;
+import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
-import org.olat.modules.cemedia.MediaLoggingAction;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
+import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.CollectVideoMediaController;
+import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.cemedia.ui.medias.VideoMediaController;
 import org.olat.user.manager.ManifestBuilder;
@@ -65,7 +74,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class VideoHandler extends AbstractMediaHandler implements InteractiveAddPageElementHandler {
+public class VideoHandler extends AbstractMediaHandler implements PageElementStore<MediaPart>, InteractiveAddPageElementHandler {
 	
 	public static final String VIDEO_TYPE = "video";
 	public static final Set<String> mimeTypes = Set.of("video/mp4");
@@ -95,10 +104,15 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	public boolean acceptMimeType(String mimeType) {
 		return mimeTypes.contains(mimeType);
 	}
+	
+	@Override
+	public boolean hasVersion() {
+		return true;
+	}
 
 	@Override
-	public String getIconCssClass(MediaLight media) {
-		String filename = media.getRootFilename();
+	public String getIconCssClass(MediaVersion mediaVersion) {
+		String filename = mediaVersion.getRootFilename();
 		if (filename != null){
 			return CSSHelper.createFiletypeIconCssClassFor(filename);
 		}
@@ -106,7 +120,7 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	}
 
 	@Override
-	public VFSLeaf getThumbnail(MediaLight media, Size size) {
+	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		String storagePath = media.getStoragePath();
 
 		VFSLeaf thumbnail = null;
@@ -114,14 +128,14 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 			VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 			VFSItem item = storageContainer.resolve(media.getRootFilename());
 			if(item instanceof VFSLeaf leaf && leaf.canMeta() == VFSConstants.YES) {
-				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getHeight(), size.getWidth(), true);
+				thumbnail = vfsRepositoryService.getThumbnail(leaf, size.getWidth(), size.getHeight(), true);
 			}
 		}
 		
 		return thumbnail;
 	}
 	
-	public VFSItem getVideoItem(Media media) {
+	public VFSItem getVideoItem(MediaVersion media) {
 		VFSContainer storageContainer = fileStorage.getMediaContainer(media);
 		return storageContainer.resolve(media.getRootFilename());
 	}
@@ -139,13 +153,13 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	}
 
 	@Override
-	public Media createMedia(String title, String description, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
 		UploadMedia mObject = (UploadMedia)mediaObject;
-		return createMedia(title, description, mObject.getFile(), mObject.getFilename(), businessPath, author);
+		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author);
 	}
 	
-	public Media createMedia(String title, String description, File file, String filename, String businessPath, Identity author) {
-		Media media = mediaDao.createMedia(title, description, filename, VIDEO_TYPE, businessPath, null, 60, author);
+	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author) {
+		Media media = mediaDao.createMedia(title, description, altText, VIDEO_TYPE, businessPath, null, 60, author);
 		
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
@@ -154,18 +168,23 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		mediaDao.updateStoragePath(media, storagePath, filename);
+		media = mediaDao.createVersion(media, new Date(), filename, storagePath, filename);
 		return media;
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
-		return new VideoMediaController(ureq, wControl, media, hints);
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+		return new VideoMediaController(ureq, wControl, dataStorage, version, hints);
 	}
 	
 	@Override
 	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectVideoMediaController(ureq, wControl, media);
+		return new CollectVideoMediaController(ureq, wControl, media, false);
+	}
+
+	@Override
+	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new CollectVideoMediaController(ureq, wControl, media, true);
 	}
 
 	@Override
@@ -174,10 +193,36 @@ public class VideoHandler extends AbstractMediaHandler implements InteractiveAdd
 	}
 	
 	@Override
+	public PageElementInspectorController getInspector(UserRequest ureq, WindowControl wControl, PageElement element) {
+		if(element instanceof MediaPart part) {
+			return new MediaVersionInspectorController(ureq, wControl, part, this);
+		}
+		return null;
+	}
+	
+	@Override
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
+		return new NewFileMediaVersionController(ureq, wControl, media, this,
+				CollectVideoMediaController.videoMimeTypes, CollectVideoMediaController.MAX_FILE_SIZE, true);	
+	}
+	
+	@Override
+	public MediaPart savePageElement(MediaPart element) {
+		MediaPart mediaPart = CoreSpringFactory.getImpl(PageService.class).updatePart(element);
+		if(mediaPart.getMedia() != null) {
+			mediaPart.getMedia().getMetadataXml();
+		}
+		return mediaPart;
+	}
+
+	@Override
 	public void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale) {
 		List<File> videos = new ArrayList<>();
-		File mediaDir = fileStorage.getMediaDirectory(media);
-		videos.add(new File(mediaDir, media.getRootFilename()));
+		List<MediaVersion> versions = media.getVersions();
+		for(MediaVersion version:versions) {
+			File mediaDir = fileStorage.getMediaDirectory(version);
+			videos.add(new File(mediaDir, version.getRootFilename()));
+		}
 		super.exportContent(media, null, videos, mediaArchiveDirectory, locale);
 	}
 }

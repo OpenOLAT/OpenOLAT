@@ -39,6 +39,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedFileStorge;
@@ -58,14 +59,14 @@ public class BlogEntryMediaController extends BasicController {
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 	
-	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
+	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("media_post");
-		if (StringHelper.containsNonWhitespace(media.getStoragePath())) {
-			VFSContainer container = fileStorage.getMediaContainer(media);
-			VFSItem item = container.resolve(media.getRootFilename());
-			if(item instanceof VFSLeaf) {
-				VFSLeaf itemLeaf = (VFSLeaf)item;
+		
+		if (StringHelper.containsNonWhitespace(version.getStoragePath())) {
+			VFSContainer container = fileStorage.getMediaContainer(version);
+			VFSItem item = container.resolve(version.getRootFilename());
+			if(item instanceof VFSLeaf itemLeaf) {
 				try(InputStream in = itemLeaf.getInputStream()) {
 					Item blogItem = (Item)FeedFileStorge.fromXML(in);
 					if(blogItem.getDate() != null) {
@@ -85,6 +86,7 @@ public class BlogEntryMediaController extends BasicController {
 					mainVC.contextPut("helper", new ItemHelper(mapperBase));
 					
 					if(hints.isExtendedMetadata()) {
+						Media media = version.getMedia();
 						MediaMetadataController metaCtrl = new MediaMetadataController(ureq, wControl, media);
 						listenTo(metaCtrl);
 						mainVC.put("meta", metaCtrl.getInitialComponent());

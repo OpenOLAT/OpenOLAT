@@ -45,7 +45,9 @@ import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.ceditor.model.jpa.TablePart;
 import org.olat.modules.ceditor.model.jpa.TitlePart;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaImpl;
+import org.olat.modules.cemedia.model.MediaVersionImpl;
 
 import com.microsoft.graph.callrecords.models.Media;
 import com.thoughtworks.xstream.XStream;
@@ -65,6 +67,7 @@ public class PageXStream {
 		Class<?>[] types = new Class[] {
 				PageImpl.class, Page.class, PageBodyImpl.class, PageBody.class,
 				AbstractPart.class, PagePart.class, Media.class, MediaImpl.class,
+				MediaVersion.class, MediaVersionImpl.class,
 				ContainerPart.class, EvaluationFormPart.class,  HTMLPart.class, MathPart.class,
 				MediaPart.class, SpacerPart.class, TablePart.class, TitlePart.class, ParagraphPart.class
 		};
@@ -80,9 +83,12 @@ public class PageXStream {
 		xstream.aliasType("spacerPart", SpacerPart.class);
 		xstream.aliasType("tablePart", TablePart.class);
 		xstream.aliasType("titlePart", TitlePart.class);
+		xstream.aliasType("paragraphPart", ParagraphPart.class);
 		xstream.omitField(AbstractPart.class, "body");
 		xstream.aliasType("media", MediaImpl.class);
 		xstream.omitField(MediaImpl.class, "author");
+		xstream.omitField(MediaImpl.class, "versions");
+		xstream.aliasType("mediaVersion", MediaVersionImpl.class);
 	}
 	
 	public static final Page fromPath(Path path)

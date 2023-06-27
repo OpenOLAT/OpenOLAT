@@ -19,9 +19,10 @@
  */
 package org.olat.modules.cemedia;
 
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
-import org.olat.modules.ceditor.model.StoredData;
 
 /**
  * 
@@ -29,18 +30,22 @@ import org.olat.modules.ceditor.model.StoredData;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface Media extends StoredData, MediaLight, DublinCoreMetadata {
+public interface Media extends MediaLight, DublinCoreMetadata {
+
+	String getAltText();
+	
+	void setAltText(String text);
 	
 	void setDescription(String description);
 	
-	String getContent();
-	
-	void setContent(String content);
-	
 	Identity getAuthor();
+	
+	String getUuid();
 	
 	String getMetadataXml();
 
 	void setMetadataXml(String medadata);
+	
+	List<MediaVersion> getVersions();
 
 }

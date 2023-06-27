@@ -24,8 +24,10 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
  * 
@@ -40,8 +42,11 @@ public class MediaRow implements MediaLight {
 	private final String cssClass;
 	private final VFSLeaf thumbnail;
 	private final FormLink openFormLink;
+	private boolean versioned;
 	
-	private List<String> categories;
+	private List<String> tags;
+	private List<String> taxonomyLevelsNames;
+	private List<TaxonomyLevel> taxonomyLevels;
 	
 	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
@@ -80,16 +85,6 @@ public class MediaRow implements MediaLight {
 	}
 
 	@Override
-	public String getStoragePath() {
-		return media.getStoragePath();
-	}
-
-	@Override
-	public String getRootFilename() {
-		return media.getRootFilename();
-	}
-
-	@Override
 	public String getDescription() {
 		return media.getDescription();
 	}
@@ -99,15 +94,56 @@ public class MediaRow implements MediaLight {
 		return media.getBusinessPath();
 	}
 	
-	public List<String> getCategories() {
-		return categories;
+	public boolean isVersioned() {
+		return versioned;
+	}
+
+	public void setVersioned(boolean versioned) {
+		this.versioned = versioned;
+	}
+
+	public List<String> getTags() {
+		return tags;
 	}
 	
-	public void addCategory(String category) {
-		if(categories == null) {
-			categories = new ArrayList<>();
+	public boolean hasTags() {
+		return tags != null && !tags.isEmpty();
+	}
+	
+	public void addTag(String tag) {
+		if(tags == null) {
+			tags = new ArrayList<>();
 		}
-		categories.add(category);
+		if(StringHelper.containsNonWhitespace(tag) && !tags.contains(tag)) {
+			tags.add(tag);
+		}
+	}
+
+	public List<TaxonomyLevel> getTaxonomyLevels() {
+		return taxonomyLevels;
+	}
+	
+	public boolean hasTaxonomyLevels() {
+		return taxonomyLevels != null && !taxonomyLevels.isEmpty();
+	}
+
+	public void addTaxonomyLevel(TaxonomyLevel taxonomyLevel, String levelName) {
+		if(taxonomyLevels == null) {
+			taxonomyLevels = new ArrayList<>();
+		}
+		if(!taxonomyLevels.contains(taxonomyLevel)) {
+			taxonomyLevels.add(taxonomyLevel);
+		}
+		if(taxonomyLevelsNames == null) {
+			taxonomyLevelsNames = new ArrayList<>();
+		}
+		if(!taxonomyLevelsNames.contains(levelName)) {
+			taxonomyLevelsNames.add(levelName);
+		}
+	}
+	
+	public List<String> getTaxonomyLevelsNames() {
+		return taxonomyLevelsNames;
 	}
 
 	public FormLink getOpenFormItem() {
