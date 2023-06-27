@@ -213,6 +213,8 @@ public class GradingAssignmentDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select assignment, record from gradingassignment as assignment")
 		  .append(" inner join fetch assignment.assessmentEntry as assessmentEntry")
+		  .append(" left join fetch assessmentEntry.identity as assessedIdent")
+		  .append(" left join fetch assessedIdent.user as assessedUser")
 		  .append(" inner join fetch assessmentEntry.repositoryEntry as assessmentRe")
 		  .append(" inner join fetch assessmentRe.olatResource as assessmentReResource")
 		  .append(" left join gradingtimerecord as record on (record.grader.key=assignment.grader.key and assignment.key=record.assignment.key)")

@@ -940,7 +940,7 @@ public class OOGraphene {
 	}
 	
 	public static ExpectedCondition<Boolean> absenceOfElementLocated(final By locator) {
-		return new ExpectedCondition<Boolean>() {
+		return new ExpectedCondition<>() {
 			@Override
 			public Boolean apply(WebDriver driver) {
 				try {
