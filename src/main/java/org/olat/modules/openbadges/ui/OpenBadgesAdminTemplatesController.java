@@ -20,10 +20,15 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.Tag;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.TagUIFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -32,9 +37,11 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -46,8 +53,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.modules.openbadges.OpenBadgesManager;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +86,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.image.getI18n(), Cols.image.ordinal(),
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.image,
 				(renderer, sb, val, row, source, ubu, translator) -> {
 					Size targetSize = tableModel.getObject(row).fitIn(60, 60);
 					int width = targetSize.getWidth();
@@ -94,9 +101,8 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 					sb.append("</div>");
 					sb.append("</div>");
 				}));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.getI18n(), Cols.name.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.version.getI18n(), Cols.version.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.language.getI18n(), Cols.language.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name, new TextFlexiCellRenderer(EscapeMode.none)));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.tags, new TextFlexiCellRenderer(EscapeMode.none)));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
@@ -193,11 +199,10 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		updateUI();
 	}
 
-	enum Cols {
+	enum Cols implements FlexiSortableColumnDef {
 		image("form.image"),
 		name("form.name"),
-		version("form.version"),
-		language("template.language");
+		tags("form.tags");
 
 		Cols(String i18n) {
 			this.i18n = i18n;
@@ -205,12 +210,23 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 
 		private final String i18n;
 
-		public String getI18n() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18n;
+		}
+
+		@Override
+		public boolean sortable() {
+			return this != tags;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 
-	private static class TemplateDataModel extends DefaultFlexiTableDataModel<OpenBadgesManager.TemplateWithSize> {
+	private class TemplateDataModel extends DefaultFlexiTableDataModel<OpenBadgesManager.TemplateWithSize> {
 		public TemplateDataModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
@@ -218,11 +234,12 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 		@Override
 		public Object getValueAt(int row, int col) {
 			BadgeTemplate template = getObject(row).template();
+			List<TagInfo> tagInfos = openBadgesManager.getCategories(template, null);
+			List<Tag> tags = tagInfos.stream().filter(TagInfo::isSelected).map(ti -> (Tag)ti).collect(Collectors.toList());
 			return switch (Cols.values()[col]) {
 				case image -> template.getImage();
-				case name -> template.getName();
-				case version -> "-";
-				case language -> "-";
+				case name -> OpenBadgesUIFactory.translateTemplateName(getTranslator(), template.getIdentifier(), "form.template.name.placeholder");
+				case tags -> TagUIFactory.getFormattedTags(getLocale(), tags);
 			};
 		}
 	}

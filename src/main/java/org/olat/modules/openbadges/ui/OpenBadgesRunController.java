@@ -139,7 +139,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 
 	private void doLaunchAddWizard(UserRequest ureq) {
 		createBadgeClassContext = new CreateBadgeClassWizardContext(entry);
-		Step start = new CreateBadgeStep00Image(ureq, createBadgeClassContext);
+		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> StepsMainRunController.DONE_MODIFIED;
 
