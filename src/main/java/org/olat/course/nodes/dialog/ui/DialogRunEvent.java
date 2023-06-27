@@ -31,6 +31,8 @@ import org.olat.course.nodes.dialog.DialogElement;
  */
 public class DialogRunEvent extends Event {
 
+	private static final long serialVersionUID = -6912723116939495674L;
+
 	public static final String OPEN_DISCUSSION = "open-discussion";
 
 	private final DialogElement element;

@@ -59,7 +59,7 @@ public class DialogPage {
 	}
 	
 	public DialogPage assertOnFile(String filename) {
-		By fileBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_dialog_card_title')]/a/span[contains(text(),'" + filename + "')]");
+		By fileBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_card_title')]/a/span[contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
@@ -83,7 +83,7 @@ public class DialogPage {
 	}
 	
 	public ForumPage openForum(String filename) {
-		By openForumBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_dialog_card_title')]/a/span[contains(text(),'" + filename + "')]");
+		By openForumBy = By.xpath("//div[contains(@class,'o_dialog_card')]//h3[contains(@class,'o_card_title')]/a/span[contains(text(),'" + filename + "')]");
 		browser.findElement(openForumBy).click();
 		assertOnFileOverview(filename);
 		return new ForumPage(browser);
