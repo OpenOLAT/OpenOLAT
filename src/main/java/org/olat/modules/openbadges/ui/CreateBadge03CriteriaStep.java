@@ -50,19 +50,19 @@ import org.olat.modules.openbadges.criteria.CourseScoreCondition;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadgeStep03Criteria extends BasicStep {
-	public CreateBadgeStep03Criteria(UserRequest ureq) {
+public class CreateBadge03CriteriaStep extends BasicStep {
+	public CreateBadge03CriteriaStep(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("form.award.criteria", null);
-		setNextStep(new CreateBadgeStep04Summary(ureq));
+		setNextStep(new CreateBadge04SummaryStep(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep03Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
+		return new CreateBadge03CriteriaForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "criteria_step");
 	}
 
-	private class CreateBadgeStep03Form extends StepFormBasicController {
+	private class CreateBadge03CriteriaForm extends StepFormBasicController {
 
 		private SingleSelection newRule;
 		private ArrayList<Condition> conditions;
@@ -181,7 +181,7 @@ public class CreateBadgeStep03Criteria extends BasicStep {
 		private TextElement descriptionEl;
 		private SingleSelection awardProcedureCards;
 
-		public CreateBadgeStep03Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadge03CriteriaForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -258,7 +258,7 @@ public class CreateBadgeStep03Criteria extends BasicStep {
 		}
 
 		@Override
-		protected void formOK(UserRequest ureq) {
+		protected void formNext(UserRequest ureq) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
 			badgeCriteria.setDescription(descriptionEl.getValue());
@@ -266,6 +266,11 @@ public class CreateBadgeStep03Criteria extends BasicStep {
 			badgeCriteria.setConditions(conditions.stream().map(Condition::asBadgeCondition).collect(Collectors.toList()));
 
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
 		}
 
 		@Override

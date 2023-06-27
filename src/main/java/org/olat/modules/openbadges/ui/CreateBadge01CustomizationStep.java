@@ -48,19 +48,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadgeStep01Customization extends BasicStep {
-	public CreateBadgeStep01Customization(UserRequest ureq) {
+public class CreateBadge01CustomizationStep extends BasicStep {
+	public CreateBadge01CustomizationStep(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("form.customization", null);
-		setNextStep(new CreateBadgeStep02Details(ureq));
+		setNextStep(new CreateBadge02DetailsStep(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep01Form(ureq, wControl, form, runContext);
+		return new CreateBadge01ImageForm(ureq, wControl, form, runContext);
 	}
 
-	private class CreateBadgeStep01Form extends StepFormBasicController {
+	private class CreateBadge01ImageForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 		private ColorPickerElement backgroundColor;
@@ -70,7 +70,7 @@ public class CreateBadgeStep01Customization extends BasicStep {
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadgeStep01Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadge01ImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "customize_step");
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -81,8 +81,13 @@ public class CreateBadgeStep01Customization extends BasicStep {
 		}
 
 		@Override
-		protected void formOK(UserRequest ureq) {
+		protected void formNext(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
 		}
 
 		@Override

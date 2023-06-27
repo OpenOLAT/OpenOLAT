@@ -51,26 +51,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadgeStep04Summary extends BasicStep {
-	public CreateBadgeStep04Summary(UserRequest ureq) {
+public class CreateBadge04SummaryStep extends BasicStep {
+	public CreateBadge04SummaryStep(UserRequest ureq) {
 		super(ureq);
 		setI18nTitleAndDescr("form.summary", null);
-		setNextStep(new CreateBadgeStep05Earners(ureq));
+		setNextStep(new CreateBadge05RecipientsStep(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep04Form(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "summary_step");
+		return new CreateBadge04SummaryForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_CUSTOM, "summary_step");
 	}
 
-	private class CreateBadgeStep04Form extends StepFormBasicController {
+	private class CreateBadge04SummaryForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
 
 		@Autowired
 		private OpenBadgesManager openBadgesManager;
 
-		public CreateBadgeStep04Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
+		public CreateBadge04SummaryForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext, int layout, String customLayoutPageName) {
 			super(ureq, wControl, rootForm, runContext, layout, customLayoutPageName);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -81,8 +81,13 @@ public class CreateBadgeStep04Summary extends BasicStep {
 		}
 
 		@Override
-		protected void formOK(UserRequest ureq) {
+		protected void formNext(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
+		}
+
+		@Override
+		protected void formOK(UserRequest ureq) {
+			//
 		}
 
 		@Override

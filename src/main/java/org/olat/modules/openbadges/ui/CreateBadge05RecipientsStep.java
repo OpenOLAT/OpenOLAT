@@ -52,20 +52,20 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class CreateBadgeStep05Earners extends BasicStep {
+public class CreateBadge05RecipientsStep extends BasicStep {
 
-	public CreateBadgeStep05Earners(UserRequest ureq) {
+	public CreateBadge05RecipientsStep(UserRequest ureq) {
 		super(ureq);
-		setI18nTitleAndDescr("form.earners", null);
+		setI18nTitleAndDescr("form.recipients", null);
 		setNextStep(Step.NOSTEP);
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		return new CreateBadgeStep05Form(ureq, wControl, form, runContext);
+		return new CreateBadge05RecipientsForm(ureq, wControl, form, runContext);
 	}
 
-	private class CreateBadgeStep05Form extends StepFormBasicController {
+	private class CreateBadge05RecipientsForm extends StepFormBasicController {
 		private CreateBadgeClassWizardContext createContext;
 
 		@Autowired
@@ -76,7 +76,7 @@ public class CreateBadgeStep05Earners extends BasicStep {
 		private BadgeEarnersTableModel tableModel;
 		private FlexiTableElement tableEl;
 
-		public CreateBadgeStep05Form(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+		public CreateBadge05RecipientsForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
@@ -87,16 +87,21 @@ public class CreateBadgeStep05Earners extends BasicStep {
 		}
 
 		@Override
-		protected void formOK(UserRequest ureq) {
+		protected void formNext(UserRequest ureq) {
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}
 
 		@Override
-		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setFormTitle("form.earners.preview");
+		protected void formOK(UserRequest ureq) {
+			//
+		}
 
-			uifactory.addStaticTextElement("form.earners.preview.description", null,
-					translate("form.earners.preview.description"), formLayout);
+		@Override
+		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			setFormTitle("form.recipients.preview");
+
+			uifactory.addStaticTextElement("form.recipients.preview.description", null,
+					translate("form.recipients.preview.description"), formLayout);
 
 			CourseEnvironment courseEnv = CourseFactory.loadCourse(createContext.getCourse()).getCourseEnvironment();
 			List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);

@@ -21,6 +21,8 @@ package org.olat.modules.openbadges.ui;
 
 import java.util.UUID;
 
+import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -38,6 +40,7 @@ public class CreateBadgeClassWizardContext {
 	private final BadgeClassImpl badgeClass;
 	private final ICourse course;
 	private Long selectedTemplateKey;
+	private String selectedTemplateImage;
 	private String backgroundColorId;
 	private BadgeCriteria badgeCriteria;
 
@@ -71,6 +74,14 @@ public class CreateBadgeClassWizardContext {
 		this.selectedTemplateKey = selectedTemplateKey;
 	}
 
+	public String getSelectedTemplateImage() {
+		return selectedTemplateImage;
+	}
+
+	public void setSelectedTemplateImage(String selectedTemplateImage) {
+		this.selectedTemplateImage = selectedTemplateImage;
+	}
+
 	public ICourse getCourse() {
 		return course;
 	}
@@ -85,5 +96,17 @@ public class CreateBadgeClassWizardContext {
 
 	public BadgeCriteria getBadgeCriteria() {
 		return badgeCriteria;
+	}
+
+	public boolean needsCustomization() {
+		if (!StringHelper.containsNonWhitespace(selectedTemplateImage)) {
+			return false;
+		}
+		String suffix = FileUtils.getFileSuffix(selectedTemplateImage);
+		if (!suffix.equalsIgnoreCase("svg")) {
+			return false;
+		}
+
+		return true;
 	}
 }
