@@ -41,6 +41,7 @@ import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.core.AdministrationPage;
 import org.olat.selenium.page.core.ContactPage;
+import org.olat.selenium.page.core.ContentViewPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.core.MenuTreePageFragment;
 import org.olat.selenium.page.course.AppointmentPage;
@@ -62,6 +63,8 @@ import org.olat.selenium.page.course.LTIPage;
 import org.olat.selenium.page.course.MemberListConfigurationPage;
 import org.olat.selenium.page.course.MemberListPage;
 import org.olat.selenium.page.course.MembersPage;
+import org.olat.selenium.page.course.PageElementConfigurationPage;
+import org.olat.selenium.page.course.PageElementPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
@@ -2038,6 +2041,112 @@ public class CourseElementTest extends Deployments {
 	}
 	
 
+	/**
+	 * An author create a course with a page element. It configures
+	 * the course node to allow coaches to edit the page. It add a coach
+	 * to the course which add a title to the page.
+	 * 
+	 * @param loginPage
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithPage()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO coach = new UserRestClient(deploymentUrl).createRandomUser("John");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+		
+		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
+		AuthoringEnvPage authoringEnv = navBar
+			.assertOnNavigationPage()
+			.openAuthoringEnvironment();
+		
+		String courseTitle = "Page " + UUID.randomUUID();
+		//create course
+		authoringEnv
+			.openCreateDropDown()
+			.clickCreate(ResourceType.course)
+			.fillCreateCourseForm(courseTitle, true)
+			.assertOnInfos()
+			.clickToolbarBack();
+		
+		//add a participant
+		MembersPage members = new CoursePageFragment(browser)
+			.members();
+		members
+			.addMember()
+			.searchMember(coach, true)
+			.nextUsers()
+			.nextOverview()
+			.selectRepositoryEntryRole(false, true, false)
+			.nextPermissions()
+			.finish();
+		members
+			.clickToolbarBack();
+
+		String pageNodeTitle = "Page";
+		//open course editor
+		CoursePageFragment course = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment editor = course
+			.assertOnCoursePage()
+			.assertOnTitle(courseTitle)
+			.edit()
+			.createNode("cepage")
+			.nodeTitle(pageNodeTitle);
+		
+		new PageElementConfigurationPage(browser)
+			.selectConfiguration()
+			.enableCoachEditing();
+		
+		//publish and go to the course element
+		editor
+			.publish()
+			.quickPublish(UserAccess.membersOnly);
+		editor
+			.clickToolbarBack();
+		course
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+		
+		//Coach login
+		LoginPage coachLoginPage = LoginPage.load(browser, deploymentUrl);
+		coachLoginPage
+			.loginAs(coach.getLogin(), coach.getPassword())
+			.resume();
+		
+		NavigationPage coachNavBar = NavigationPage.load(browser);
+		coachNavBar
+			.openMyCourses()
+			.select(courseTitle);
+
+		// Go to the course element and check the 
+		CoursePageFragment coachCourse = new CoursePageFragment(browser);
+		coachCourse
+			.tree()
+			.assertWithTitleSelected(pageNodeTitle);
+
+		String title = "My title " + UUID.randomUUID();
+		
+		PageElementPage page = new PageElementPage(browser)
+			.assertOnPageElement();
+			
+		page.openEditor()
+			.addLayout(ContainerLayout.block_1_1lcols)
+			.openElementsChooser(1, 1)
+			.addTitle(title)
+			.setTitleSize(3)
+			.closeEditFragment()
+			.assertOnTitle(title, 3);
+		
+		page.closeEditor();
+		
+		new ContentViewPage(browser)
+			.assertOnTitle(title, 3);
+	}
+	
+	
 	/**
 	 * An author creates a survey with a multiple choice
 	 * and a single choice. He uses it in a course. A

@@ -148,6 +148,7 @@ public class NodeRightsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.title");
+		formLayout.setElementCssClass("o_sel_node_rights");
 		if (StringHelper.containsNonWhitespace(contextHelp)) {
 			setFormContextHelp(contextHelp);
 		}
