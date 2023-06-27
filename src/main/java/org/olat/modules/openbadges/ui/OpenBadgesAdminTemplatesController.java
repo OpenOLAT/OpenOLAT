@@ -238,7 +238,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 			List<Tag> tags = tagInfos.stream().filter(TagInfo::isSelected).map(ti -> (Tag)ti).collect(Collectors.toList());
 			return switch (Cols.values()[col]) {
 				case image -> template.getImage();
-				case name -> OpenBadgesUIFactory.translateTemplateName(getTranslator(), template.getIdentifier(), "form.template.name.placeholder");
+				case name -> OpenBadgesUIFactory.translateTemplateName(getTranslator(), template.getIdentifier());
 				case tags -> TagUIFactory.getFormattedTags(getLocale(), tags);
 			};
 		}

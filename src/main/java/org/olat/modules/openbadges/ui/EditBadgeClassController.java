@@ -22,7 +22,9 @@ package org.olat.modules.openbadges.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -50,8 +52,11 @@ import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.openbadges.BadgeClass;
@@ -74,6 +79,8 @@ public class EditBadgeClassController extends FormBasicController {
 	private SingleSelection badgeTemplateDropdown;
 	private SelectionValues badgeTemplateKV;
 	private BadgeTemplate badgeTemplate;
+	private SingleSelection templateLanguageDropdown;
+	private SelectionValues templateLanguageKV;
 	private FormLayoutContainer badgeTemplateButtonsContainer;
 	private FormLink useTemplateButton;
 	private FormLink doNotUseTemplateButton;
@@ -92,6 +99,10 @@ public class EditBadgeClassController extends FormBasicController {
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
+	@Autowired
+	private I18nManager i18nManager;
+	@Autowired
+	private I18nModule i18nModule;
 
 	public EditBadgeClassController(UserRequest ureq, WindowControl wControl, BadgeClass badgeClass) {
 		super(ureq, wControl);
@@ -104,10 +115,20 @@ public class EditBadgeClassController extends FormBasicController {
 			badgeTemplateKV.add(SelectionValues.entry(badgeTemplate.getKey().toString(), badgeTemplate.getName()));
 		}
 
+		templateLanguageKV = new SelectionValues();
+		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
+		for (String enabledKey : enabledKeys) {
+			Locale locale = i18nManager.getLocaleOrNull(enabledKey);
+			if (locale != null) {
+				String languageDisplayName = Locale.forLanguageTag(enabledKey.substring(0,2)).getDisplayLanguage(getLocale());
+				templateLanguageKV.add(SelectionValues.entry(enabledKey, languageDisplayName));
+			}
+		}
+
 		categories = openBadgesManager.getCategories(null	, badgeClass);
 
 		initForm(ureq);
-		updateUi();
+		updateUI();
 	}
 
 	@Override
@@ -116,7 +137,11 @@ public class EditBadgeClassController extends FormBasicController {
 				UUID.randomUUID().toString().replace("-", "");
 		uuidEl = uifactory.addStaticTextElement("form.uuid", uuid, formLayout);
 
-		badgeTemplateDropdown = uifactory.addDropdownSingleselect("form.template", formLayout, badgeTemplateKV.keys(), badgeTemplateKV.values());
+		badgeTemplateDropdown = uifactory.addDropdownSingleselect("form.template", formLayout,
+				badgeTemplateKV.keys(), badgeTemplateKV.values());
+		templateLanguageDropdown = uifactory.addDropdownSingleselect("form.template.language", formLayout,
+				templateLanguageKV.keys(), templateLanguageKV.values());
+
 		badgeTemplateButtonsContainer = FormLayoutContainer.createButtonLayout("form.use.template.buttons", getTranslator());
 		badgeTemplateButtonsContainer.setRootForm(mainForm);
 		formLayout.add(badgeTemplateButtonsContainer);
@@ -166,8 +191,9 @@ public class EditBadgeClassController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}
 
-	void updateUi() {
+	void updateUI() {
 		badgeTemplateDropdown.setVisible(!templateDecisionMade);
+		templateLanguageDropdown.setVisible(!templateDecisionMade);
 		badgeTemplateButtonsContainer.setVisible(!templateDecisionMade);
 
 		versionEl.setVisible(templateDecisionMade);
@@ -262,24 +288,30 @@ public class EditBadgeClassController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileEl) {
 			if (validateImageFile()) {
-				updateUi();
+				updateUI();
 			}
 		} else if (source == useTemplateButton) {
 			templateDecisionMade = true;
 			doUseTemplate();
-			updateUi();
+			updateUI();
 		} else if (source == doNotUseTemplateButton) {
 			templateDecisionMade = true;
-			updateUi();
+			updateUI();
 		}
 	}
 
 	private void doUseTemplate() {
-		if (badgeTemplateDropdown.getSelectedKey() != null) {
+		if (badgeTemplateDropdown.getSelectedKey() != null && templateLanguageDropdown.getSelectedKey() != null) {
 			Long badgeTemplateKey = Long.parseLong(badgeTemplateDropdown.getSelectedKey());
+			String languageKey = templateLanguageDropdown.getSelectedKey();
+			Locale locale = i18nManager.getLocaleOrNull(languageKey);
+			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
 			badgeTemplate = openBadgesManager.getTemplate(badgeTemplateKey);
-			nameEl.setValue(badgeTemplate.getName());
-			descriptionEl.setValue(badgeTemplate.getDescription());
+			String name = OpenBadgesUIFactory.translateTemplateName(translator, badgeTemplate.getIdentifier());
+			nameEl.setValue(name);
+			languageEl.setValue(languageKey);
+			String description = OpenBadgesUIFactory.translateTemplateDescription(translator, badgeTemplate.getIdentifier());
+			descriptionEl.setValue(description);
 			Set<Tag> selectedTags = openBadgesManager
 					.getCategories(badgeTemplate, null)
 					.stream()

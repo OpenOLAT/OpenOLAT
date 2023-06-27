@@ -30,7 +30,7 @@ import java.util.Date;
 public interface BadgeTemplate {
 
 	enum Scope {
-		global, courseOnly
+		global, course
 	}
 
 	Long getKey();

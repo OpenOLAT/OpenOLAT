@@ -118,27 +118,28 @@ public class EditBadgeTemplateController extends FormBasicController {
 		nameCont.setMandatory(true);
 		formLayout.add(nameCont);
 
-		String name = OpenBadgesUIFactory.translateTemplateName(getTranslator(), identifier, "form.template.name.placeholder");
+		String name = OpenBadgesUIFactory.translateTemplateName(getTranslator(), identifier);
 		nameEl = uifactory.addStaticTextElement("name", name, nameCont);
 
 		nameLink = uifactory.addFormLink("form.translation", nameCont);
 
+		String description = OpenBadgesUIFactory.translateTemplateDescription(getTranslator(), identifier);
+
 		descriptionCont = FormLayoutContainer.createButtonLayout("descriptionCont", getTranslator());
 		descriptionCont.setLabel("form.description", null);
-		descriptionCont.setElementCssClass("o_inline_cont");
+		descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(description) ? null : "o_inline_cont");
 		descriptionCont.setRootForm(mainForm);
 		formLayout.add(descriptionCont);
 
-		String description = OpenBadgesUIFactory.translateTemplateDescription(getTranslator(), identifier);
-
 		descriptionEl = uifactory.addTextAreaElement("description", null,
-				-1, -1, -1, true, false, description, descriptionCont);
+				-1, 3, 80, true, false, description, descriptionCont);
 		descriptionEl.setEnabled(false);
 		descriptionEl.setVisible(StringHelper.containsNonWhitespace(description));
 
-		descriptionLink = uifactory.addFormLink("descriptionLink", "form.translation", null, descriptionCont, Link.LINK);
+		descriptionSpacerEl = uifactory.addStaticTextElement("descriptionSpacer", "-", descriptionCont);
+		descriptionSpacerEl.setVisible(!StringHelper.containsNonWhitespace(description));
 
-		descriptionSpacerEl = uifactory.addStaticTextElement("descriptionSpacer", "&nbsp;", descriptionCont);
+		descriptionLink = uifactory.addFormLink("descriptionLink", "form.translation", null, descriptionCont, Link.LINK);
 
 		categoriesEl = uifactory.addTagSelection("form.categories", "form.categories", formLayout,
 				getWindowControl(), categories);
@@ -148,6 +149,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 			badgeTemplate.getScopesAsCollection().forEach(s -> scopeEl.select(s, true));
 		}
 		scopeEl.select("a", true);
+		scopeEl.setMandatory(true);
 
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
@@ -161,9 +163,18 @@ public class EditBadgeTemplateController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 
+		allOk &= validateTemplateFile();
+
 		nameCont.clearError();
-		if (!StringHelper.containsNonWhitespace(nameEl.getValue()) || translate("form.template.name.placeholder").equals(nameEl.getValue())) {
+		if (!StringHelper.containsNonWhitespace(nameEl.getValue()) ||
+				translate(OpenBadgesUIFactory.getTemplateNameFallbackKey()).equals(nameEl.getValue())) {
 			nameCont.setErrorKey("form.legende.mandatory");
+			allOk &= false;
+		}
+
+		scopeEl.clearError();
+		if (!scopeEl.isAtLeastSelected(1)) {
+			scopeEl.setErrorKey("alert");
 			allOk &= false;
 		}
 
@@ -211,7 +222,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 			return;
 		}
 
-		String i18nKey = OpenBadgesUIFactory.getTemplateNameI18nKey(badgeTemplate.getIdentifier());
+		String i18nKey = OpenBadgesUIFactory.getTemplateNameI18nKey(identifierEl.getValue());
 
 		templateNameTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(), i18nKey, OpenBadgesUIFactory.class);
 		listenTo(templateNameTranslatorCtrl);
@@ -227,7 +238,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 			return;
 		}
 
-		String i18nKey = OpenBadgesUIFactory.getTemplateDescriptionI18nKey(badgeTemplate.getIdentifier());
+		String i18nKey = OpenBadgesUIFactory.getTemplateDescriptionI18nKey(identifierEl.getValue());
 
 		templateDescriptionTranslatorCtrl = new SingleKeyTranslatorController(ureq, getWindowControl(),
 				i18nKey, OpenBadgesUIFactory.class, SingleKeyTranslatorController.InputType.TEXT_AREA, null);
@@ -242,17 +253,18 @@ public class EditBadgeTemplateController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == templateNameTranslatorCtrl) {
-			String translation = OpenBadgesUIFactory.translateTemplateName(getTranslator(),
-					badgeTemplate.getIdentifier(), "form.template.name.placeholder");
+			String translation = OpenBadgesUIFactory.translateTemplateName(getTranslator(), identifierEl.getValue());
 			nameEl.setValue(translation);
 			validateFormLogic(ureq);
 			cmc.deactivate();
 			cleanUp();
 		} else if (source == templateDescriptionTranslatorCtrl) {
 			String translation = OpenBadgesUIFactory.translateTemplateDescription(getTranslator(),
-					badgeTemplate.getIdentifier());
+					identifierEl.getValue());
 			descriptionEl.setValue(translation);
 			descriptionEl.setVisible(StringHelper.containsNonWhitespace(translation));
+			descriptionSpacerEl.setVisible(!StringHelper.containsNonWhitespace(translation));
+			descriptionCont.setElementCssClass(StringHelper.containsNonWhitespace(translation) ? null : "o_inline_cont");
 			cmc.deactivate();
 			cleanUp();
 		} else if (cmc == source) {
@@ -273,6 +285,10 @@ public class EditBadgeTemplateController extends FormBasicController {
 	private boolean validateTemplateFile() {
 		boolean allOk = true;
 
+		if (fileEl == null) {
+			return allOk;
+		}
+
 		File templateFile = fileEl.getUploadFile();
 		fileEl.clearError();
 		if (templateFile != null && templateFile.exists()) {
@@ -285,6 +301,8 @@ public class EditBadgeTemplateController extends FormBasicController {
 				fileEl.setErrorKey("template.upload.unsupported");
 				allOk &= false;
 			}
+		} else {
+			fileEl.setErrorKey("form.legende.mandatory");
 		}
 
 		return allOk;

@@ -19,9 +19,11 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 
 /**
  * Initial date: 2023-06-26<br>
@@ -42,11 +44,19 @@ public class OpenBadgesUIFactory {
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
-	public static String translateTemplateName(Translator translator, String identifier, String fallbackKey) {
+	public static String getTemplateNameFallbackKey() {
+		return "form.template.name.placeholder";
+	}
+
+	public static Translator getTranslator(Locale locale) {
+		return Util.createPackageTranslator(OpenBadgesUIFactory.class, locale);
+	}
+
+	public static String translateTemplateName(Translator translator, String identifier) {
 		String i18nKey = getTemplateNameI18nKey(identifier);
 		String translation = translator.translate(i18nKey);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
-			translation = translator.translate(fallbackKey);
+			translation = translator.translate(getTemplateNameFallbackKey());
 		}
 		return translation;
 	}
