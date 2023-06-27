@@ -214,7 +214,7 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(!identityVisibilityEl.isOneSelected()) {
-			identityVisibilityEl.setErrorKey("form.legende.mandatory", null);
+			identityVisibilityEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -239,12 +239,12 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 				int value = Integer.parseInt(el.getValue());
 				if(value <= period.intValue()) {
 					allOk &= false;
-					el.setErrorKey("error.working.days", new String[] { period.toString() });
+					el.setErrorKey("error.working.days", period.toString());
 				}  else {
 					period.set(value);
 				}
 			} catch (NumberFormatException e) {
-				el.setErrorKey("form.error.nointeger", null);
+				el.setErrorKey("form.error.nointeger");
 				allOk &= false;
 			}
 		}
@@ -258,11 +258,11 @@ public class GradingRepositoryEntryConfigurationController extends FormBasicCont
 		bodyEl.clearError();
 		if(StringHelper.containsNonWhitespace(periodEl.getValue())) {
 			if(!StringHelper.containsNonWhitespace(subjectEl.getValue())) {
-				subjectEl.setErrorKey("form.legende.mandatory", null);
+				subjectEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 			if(!StringHelper.containsNonWhitespace(bodyEl.getValue())) {
-				bodyEl.setErrorKey("form.legende.mandatory", null);
+				bodyEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			}
 		}

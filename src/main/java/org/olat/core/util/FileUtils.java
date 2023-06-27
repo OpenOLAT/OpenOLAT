@@ -868,6 +868,10 @@ public class FileUtils {
 	 * @return the cleaned filename
 	 */
 	public static String cleanFilename(String filename) {
+		return cleanFilename(filename, -1);
+	}
+	
+	public static String cleanFilename(String filename, int maxLength) {
 		boolean hasExtension = false;
 		String name = filename;
 		String extension = getFileSuffix(filename);
@@ -876,6 +880,9 @@ public class FileUtils {
 			name = filename.substring(0, filename.length() - extension.length() - 1);
 		}
 		StringBuilder normalizedFilename = new StringBuilder();
+		if(maxLength > 0 && name.length() > maxLength) {
+			name = name.substring(0, maxLength);
+		}
 		normalizedFilename.append(cleanFilenamePart(name));
 		if (hasExtension) {
 			normalizedFilename.append(".");

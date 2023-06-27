@@ -132,15 +132,15 @@ public class ExtendDeadlineController extends FormBasicController {
 		
 		deadlineEl.clearError();	
 		if(deadlineEl.getDate() == null) {
-			deadlineEl.setErrorKey("form.legende.mandatory", null);
+			deadlineEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		} else if(deadlineEl.getDate().compareTo(new Date()) <= 0) {
-			deadlineEl.setErrorKey("error.date.future", null);
+			deadlineEl.setErrorKey("error.date.future");
 			allOk &= false;
 		} else {
 			Date lastDeadline = getLastDeadline();
 			if(lastDeadline != null && lastDeadline.after(deadlineEl.getDate())) {
-				deadlineEl.setErrorKey("error.before.deadline", null);
+				deadlineEl.setErrorKey("error.before.deadline");
 				allOk &= false;
 			}
 		}
