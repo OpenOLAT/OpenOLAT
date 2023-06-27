@@ -308,13 +308,13 @@ public class AssessmentModeForLectureEditController extends FormBasicController 
 		if(StringHelper.containsNonWhitespace(nameEl.getValue())) {
 			//too long
 		} else {
-			nameEl.setErrorKey("form.legende.mandatory", null);
+			nameEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		chooseElementsCont.clearError();
 		if(elementKeys.isEmpty()) {
-			chooseElementsCont.setErrorKey("form.legende.mandatory", null);
+			chooseElementsCont.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

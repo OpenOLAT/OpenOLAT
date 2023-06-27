@@ -503,10 +503,10 @@ public class AssessmentModeEditSafeExamBrowserController extends FormBasicContro
 		if(safeExamBrowserEl.isAtLeastSelected(1) && this.typeOfUseEl.isKeySelected("keys")) {
 			String value = safeExamBrowserKeyEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
-				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory", null);
+				safeExamBrowserKeyEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(value.length() > safeExamBrowserKeyEl.getMaxLength()) {
-				safeExamBrowserKeyEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(safeExamBrowserKeyEl.getMaxLength()) } );
+				safeExamBrowserKeyEl.setErrorKey("form.error.toolong", Integer.toString(safeExamBrowserKeyEl.getMaxLength()));
 				allOk &= false;
 			}
 		}

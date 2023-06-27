@@ -207,6 +207,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				elementNames = chooseElementsCtrl.getSelectedNames();
 				chooseElementsCont.getFormItemComponent().contextPut("elementNames", elementNames);
 				flc.setDirty(true);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -215,6 +216,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 				startElementKey = chooseStartElementCtrl.getSelectedKey();
 				String elementName = chooseStartElementCtrl.getSelectedName();
 				startElementEl.setValue(elementName);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -249,7 +251,7 @@ public class AssessmentModeEditRestrictionController extends FormBasicController
 		
 		courseElementsRestrictionEl.clearError();
 		if(courseElementsRestrictionEl.isAtLeastSelected(1) && elementKeys.isEmpty()) {
-			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory", null);
+			courseElementsRestrictionEl.setErrorKey("error.course.element.mandatory");
 			allOk &= false;
 		}
 

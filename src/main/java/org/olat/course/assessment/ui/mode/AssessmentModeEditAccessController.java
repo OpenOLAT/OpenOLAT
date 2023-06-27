@@ -299,6 +299,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				}
 				chooseGroupsCont.getFormItemComponent().contextPut("groupNames", groupNames);
 				flc.setDirty(true);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -312,6 +313,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				}
 				chooseGroupsCont.getFormItemComponent().contextPut("areaNames", areaNames);
 				flc.setDirty(true);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -325,6 +327,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 				}
 				chooseGroupsCont.getFormItemComponent().contextPut("curriculumElementNames", curriculumElementNames);
 				flc.setDirty(true);
+				markDirty();
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -358,22 +361,22 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 			Target target = AssessmentMode.Target.valueOf(targetEl.getSelectedKey());
 			if(target == Target.courseAndGroups ) {
 				if(groupKeys.isEmpty() && areaKeys.isEmpty() && curriculumElementKeys.isEmpty()) {
-					targetEl.setErrorKey("error.group.missing", null);
+					targetEl.setErrorKey("error.group.missing");
 					allOk &= false;
 				}	
 			} else if(target == Target.groups) {
 				if(groupKeys.isEmpty() && areaKeys.isEmpty()) {
-					targetEl.setErrorKey("error.group.missing", null);
+					targetEl.setErrorKey("error.group.missing");
 					allOk &= false;
 				}
 			} else if(target == Target.curriculumEls) {
 				if(curriculumElementKeys.isEmpty()) {
-					targetEl.setErrorKey("error.curriculum.missing", null);
+					targetEl.setErrorKey("error.curriculum.missing");
 					allOk &= false;
 				}
 			}
 		} else {
-			targetEl.setErrorKey("form.legende.mandatory", null);
+			targetEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
@@ -381,10 +384,10 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		if(ipsEl.isAtLeastSelected(1)) {
 			String value = ipListEl.getValue();
 			if(!StringHelper.containsNonWhitespace(value)) {
-				ipListEl.setErrorKey("form.legende.mandatory", null);
+				ipListEl.setErrorKey("form.legende.mandatory");
 				allOk &= false;
 			} else if(value.length() > ipListEl.getMaxLength()) {
-				ipListEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(ipListEl.getMaxLength()) } );
+				ipListEl.setErrorKey("form.error.toolong", Integer.toString(ipListEl.getMaxLength()));
 				allOk &= false;
 			} else {
 				allOk &= validIpList(ipListEl.getValue());
@@ -406,7 +409,7 @@ public class AssessmentModeEditAccessController extends FormBasicController {
 		for(StringTokenizer tokenizer = new StringTokenizer(ipList, "\n\r", false); tokenizer.hasMoreTokens(); ) {
 			String ipRange = tokenizer.nextToken();
 			if(StringHelper.containsNonWhitespace(ipRange) && ipRange.startsWith("/")) {
-				ipListEl.setErrorKey("error.ip.range.cannot.start.slash", new String[] { ipRange } );
+				ipListEl.setErrorKey("error.ip.range.cannot.start.slash", ipRange);
 				allOk &= false;
 			}
 		}
