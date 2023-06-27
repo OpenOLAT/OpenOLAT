@@ -42,8 +42,8 @@ public interface OpenBadgesManager {
 	// Template
 	//
 
-	BadgeTemplate createTemplate(String name, File templateFile, String targetFileName, String description,
-								 Collection<String> scopes, Identity savedBy);
+	BadgeTemplate createTemplate(String identifier, String name, File templateFile, String targetFileName,
+								 String description, Collection<String> scopes, Identity savedBy);
 
 	List<BadgeTemplate> getTemplates();
 
@@ -101,7 +101,7 @@ public interface OpenBadgesManager {
 	// Category
 	//
 
-	List<? extends TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass);
+	List<TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass);
 
 	void updateCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass, List<String> displayNames);
 

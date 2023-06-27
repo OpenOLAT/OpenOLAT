@@ -40,10 +40,11 @@ public class BadgeTemplateDAO {
 	@Autowired
 	private DB dbInstance;
 
-	public BadgeTemplate createTemplate(String image, String name) {
+	public BadgeTemplate createTemplate(String identifier, String image, String name) {
 		BadgeTemplateImpl badgeTemplate = new BadgeTemplateImpl();
 		badgeTemplate.setCreationDate(new Date());
 		badgeTemplate.setLastModified(badgeTemplate.getCreationDate());
+		badgeTemplate.setIdentifier(identifier);
 		badgeTemplate.setImage(image);
 		badgeTemplate.setName(name);
 		dbInstance.getCurrentEntityManager().persist(badgeTemplate);

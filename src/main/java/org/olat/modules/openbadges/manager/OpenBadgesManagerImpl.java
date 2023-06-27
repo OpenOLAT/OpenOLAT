@@ -146,11 +146,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	//
 
 	@Override
-	public BadgeTemplate createTemplate(String name, File templateFile, String targetFileName, String description,
+	public BadgeTemplate createTemplate(String identifier, String name, File templateFile, String targetFileName, String description,
 										Collection<String> scopes, Identity savedBy) {
 		String templateFileName = copyTemplate(templateFile, targetFileName, savedBy);
 		if (templateFileName != null) {
-			BadgeTemplate badgeTemplate = templateDAO.createTemplate(templateFileName, name);
+			BadgeTemplate badgeTemplate = templateDAO.createTemplate(identifier, templateFileName, name);
 			badgeTemplate.setDescription(description);
 			badgeTemplate.setScopesAsCollection(scopes);
 			return templateDAO.updateTemplate(badgeTemplate);
@@ -523,7 +523,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	// Category
 	//
 	@Override
-	public List<? extends TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass) {
+	public List<TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass) {
 		return badgeCategoryDAO.readBadgeCategoryTags(badgeTemplate, badgeClass);
 	}
 

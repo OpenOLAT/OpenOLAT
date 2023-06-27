@@ -63,6 +63,9 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 	@Column(name = "lastmodified", nullable = false, insertable = true, updatable = true)
 	private Date lastModified;
 
+	@Column(name = "b_identifier", nullable = false, insertable = true, updatable = false)
+	private String identifier;
+
 	@Column(name = "b_image", nullable = false, insertable = true, updatable = true)
 	private String image;
 
@@ -107,6 +110,15 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 	@Override
 	public void setLastModified(Date lastModified) {
 		this.lastModified = lastModified;
+	}
+
+	@Override
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 
 	@Override

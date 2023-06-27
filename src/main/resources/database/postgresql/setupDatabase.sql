@@ -4169,6 +4169,7 @@ create table o_badge_template (
    id bigserial,
    creationdate timestamp not null,
    lastmodified timestamp not null,
+   b_identifier varchar(36) not null,
    b_image varchar(256) not null,
    b_name varchar(1024) not null,
    b_description text,

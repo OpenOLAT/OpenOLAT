@@ -4212,6 +4212,7 @@ create table o_badge_template (
    id number(20) generated always as identity,
    creationdate date not null,
    lastmodified date not null,
+   b_identifier varchar(36) not null,
    b_image varchar(256) not null,
    b_name varchar(1024) not null,
    b_description clob,

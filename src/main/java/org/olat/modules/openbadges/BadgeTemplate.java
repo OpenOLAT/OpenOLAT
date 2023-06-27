@@ -41,6 +41,8 @@ public interface BadgeTemplate {
 
 	void setLastModified(Date lastModified);
 
+	String getIdentifier();
+
 	String getImage();
 
 	String getName();

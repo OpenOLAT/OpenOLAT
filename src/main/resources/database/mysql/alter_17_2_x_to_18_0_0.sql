@@ -434,6 +434,7 @@ create table o_badge_template (
    id bigint not null auto_increment,
    creationdate datetime not null,
    lastmodified datetime not null,
+   b_identifier varchar(36) not null,
    b_image varchar(256) not null,
    b_name varchar(1024) not null,
    b_description longtext,
