@@ -356,6 +356,33 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 	}
 	
+	@Test
+	public void renameFolder_updateChildren() throws IOException {
+		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		
+		// Create the container
+		String containerName = UUID.randomUUID().toString();
+		VFSContainer container = testContainer.createChildContainer(containerName);
+		VFSContainer container1 = container.createChildContainer("sub1");
+		VFSContainer container2 = container1.createChildContainer("sub2");
+		VFSLeaf image = container2.createChildLeaf("Image.jpg");
+		copyTestTxt(image, "IMG_1491.jpg");
+		dbInstance.commitAndCloseSession();
+
+		String newName = UUID.randomUUID().toString();
+		container.rename(newName);
+		dbInstance.commitAndCloseSession();
+		
+		testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);
+		container = (VFSContainer) testContainer.resolve(newName);
+		container1 = (VFSContainer) container.resolve("sub1");
+		container2 = (VFSContainer) container1.resolve("sub2");
+		VFSItem vfsItem = container2.resolve("Image.jpg");
+		VFSMetadata imageMetadata = vfsRepositoryService.getMetadataFor(vfsItem);
+		Assert.assertTrue(imageMetadata.getRelativePath().indexOf(newName + "/sub1/sub2") > -1);
+		Assert.assertTrue(imageMetadata.getUri().indexOf(newName + "/sub1/sub2") > -1);
+	}
+	
 	private VFSLeaf createFile() {
 		String filename = UUID.randomUUID() + ".txt";
 		VFSContainer testContainer = VFSManager.olatRootContainer(VFS_TEST_DIR, null);

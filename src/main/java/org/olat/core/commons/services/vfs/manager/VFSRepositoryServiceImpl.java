@@ -661,6 +661,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			metadataDao.removeMetadata(currentMetadata);
 		}
 		
+		String prevUri = metadata.getUri();
 		Path newFile = Paths.get(folderModule.getCanonicalRoot(), metadata.getRelativePath(), newName);
 		((VFSMetadataImpl)metadata).setFilename(newName);
 		String uri = newFile.toFile().toURI().toString();
@@ -676,7 +677,44 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				revisionDao.updateRevision(revision);
 			}
 		}
-		return metadataDao.updateMetadata(metadata);
+		VFSMetadata updateMetadata = metadataDao.updateMetadata(metadata);
+		
+		updateChildrenPaths(updateMetadata, metadata.isDirectory(), prevUri, uri, metadata.getRelativePath(), metadata.getFilename());
+		
+		return updateMetadata;
+	}
+
+	private void updateChildrenPaths(VFSMetadataRef metadata, boolean directory, String prevUri, String uri, String relativePath, String filename) {
+		if (directory) {
+			List<VFSMetadata> children = metadataDao.getMetadatasOnly(metadata);
+			for(VFSMetadata child:children) {
+				if (!child.isDeleted()) {
+					String childUri = child.getUri();
+					if (StringHelper.containsNonWhitespace(childUri) && childUri.startsWith(prevUri)) {
+						uri = uri.endsWith("/")? uri: uri + "/";
+						childUri = childUri.replaceFirst(prevUri, uri);
+						((VFSMetadataImpl)child).setUri(childUri);
+					}
+					
+					String childRelativePath = child.getRelativePath();
+					if (StringHelper.containsNonWhitespace(childRelativePath) && childRelativePath.startsWith(relativePath)) {
+						String childRelPathEnd = childRelativePath.substring(relativePath.length() + 1);
+						int nextSlash = childRelPathEnd.indexOf("/");
+						if (nextSlash > -1) {
+							childRelativePath = relativePath + "/" + filename + childRelPathEnd.substring(nextSlash);
+						} else {
+							childRelativePath = relativePath + "/" + filename;
+						}
+						
+						
+						((VFSMetadataImpl)child).setRelativePath(childRelativePath);
+					}
+					
+					metadataDao.updateMetadata(child);
+					updateChildrenPaths(child,  child.isDirectory(), prevUri, uri, relativePath, filename);
+				}
+			}
+		}
 	}
 
 	@Override
