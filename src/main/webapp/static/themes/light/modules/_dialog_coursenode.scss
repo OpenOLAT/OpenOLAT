@@ -21,8 +21,11 @@
   display: inline-flex;
   font-size: 14px;
   column-gap: 5px;
-  border-color: $o-edu-type-standard-course-color;
-  @include o-high-contrast-color(#998100);
+  bottom: 20px;
+  border-radius: 7px;
+  padding: 5px 10px;
+  border-color: $o-dialog-cn-label-new-border-color	;
+  @include o-high-contrast-color($o-dialog-cn-label-new-color);
 }
 
 
@@ -36,6 +39,7 @@
         padding-top: 20px;
         padding-left: 20px;
         padding-right: 20px;
+        border-radius: 7px;
 
         .o_dialog_file_thumbnail {
           cursor: pointer;
@@ -94,7 +98,6 @@
   .o_dialog_card_meta {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     border-radius: $o-card-border-radius;
     background: #ffffff;
     .o_dialog_card_title {
@@ -107,23 +110,19 @@
       color: #777;
     }
 
-    .o_dialog_authors {
-      padding-bottom: 20px;
+    .o_dialog_published {
+      padding-top: 10px;
+    }
 
-      .o_dialog_published {
-        padding-top: 10px;
-      }
+    .o_dialog_authored {
 
-      .o_dialog_authored {
-
-      }
     }
 
     .o_dialog_topic_information {
       display: flex;
       column-gap: 10px;
       position: absolute;
-      bottom: 0px;
+      bottom: 20px;
 
       strong {
         font-size: 18px;
