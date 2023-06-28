@@ -12,13 +12,27 @@
 <div class="o_dialog_card_label_new">
 	$r.translate("new"):
 	#if($row.getNumOfUnreadThreads() > 0)
-		<div>$row.getNumOfUnreadThreads() $r.translate("table.header.threads")</div>
+		<div>
+			$row.getNumOfUnreadThreads()
+			#if($row.getNumOfUnreadThreads() > 1)
+				$r.translate("table.header.threads")
+			#else
+				$r.translate("table.header.thread")
+			#end
+		</div>
 		#if($row.getNumOfUnreadMessages() > 0)
 			/
 		#end
 	#end
 	#if($row.getNumOfUnreadMessages() > 0)
-		<div>$row.getNumOfUnreadMessages() $r.translate("table.header.messages")</div>
+		<div>
+			$row.getNumOfUnreadMessages()
+			#if($row.getNumOfUnreadMessages() > 1)
+				$r.translate("table.header.messages")
+			#else
+				$r.translate("table.header.message")
+			#end
+		</div>
 	#end
 </div>
 #end

@@ -14,8 +14,22 @@
 		<div class="o_dialog_file_info">
 			<h4><i class="o_icon o_icon-fw $r.getFiletypeIconCss($filename)"> </i> $filename</h4>
 			<br>
-			<h4>$threadCount</h4> <span class="text-muted small o_dialog_count"> $r.translate("table.header.threads")</span>
-			<h4>$messageCount</h4> <span class="text-muted small o_dialog_count">$r.translate("table.header.messages")</span>
+			<h4>$threadCount</h4>
+			<span class="text-muted small o_dialog_count">
+				#if($threadCount > 1)
+					$r.translate("table.header.threads")
+				#else
+					$r.translate("table.header.thread")
+				#end
+			</span>
+			<h4>$messageCount</h4>
+			<span class="text-muted small o_dialog_count">
+				#if($messageCount > 1)
+					$r.translate("table.header.messages")
+				#else
+					$r.translate("table.header.message")
+				#end
+			</span>
 		</div>
 	</div>
 
