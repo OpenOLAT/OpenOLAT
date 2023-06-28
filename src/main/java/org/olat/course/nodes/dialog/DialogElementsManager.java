@@ -52,6 +52,14 @@ public interface DialogElementsManager {
 	public DialogElement updateDialogElement(DialogElementImpl element, String filename, String authoredBy);
 	
 	public List<DialogElement> getDialogElements(RepositoryEntryRef entry, String subIdent);
+
+	/**
+	 * check if there is already any dialogElement with given filename
+	 *
+	 * @param filename
+	 * @return true if there is a dialogElement with given filename, otherwise false
+	 */
+	public boolean hasDialogElementByFilename(String filename);
 	
 	/**
 	 * 
@@ -75,13 +83,11 @@ public interface DialogElementsManager {
 	 *
 	 * @param fileToUpload
 	 * @param fileName
-	 * @param entry
-	 * @param subIdent
 	 * @param publishedBy
 	 *
 	 * @return VFSLeaf/new File if successful otherwise null
 	 */
-	public VFSLeaf doUpload(File fileToUpload, String fileName, RepositoryEntry entry, String subIdent, Identity publishedBy);
+	public VFSLeaf doUpload(File fileToUpload, String fileName, Identity publishedBy);
 
 	/**
 	 * copy chosenFile and create a new file out of it

@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -109,6 +110,20 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	}
 
 	@Override
+	public boolean hasDialogElementByFilename(String filename) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.append("select element from dialogelement as element")
+				.and().append("element.filename=:filename");
+
+		List<DialogElement> result = dbInstance.getCurrentEntityManager()
+				.createQuery(qb.toString(), DialogElement.class)
+				.setParameter("filename", filename)
+				.getResultList();
+
+		return result.isEmpty();
+	}
+
+	@Override
 	public List<DialogElement> getDialogElements(IdentityRef author) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select element from dialogelement as element")
@@ -186,22 +201,10 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	}
 
 	@Override
-	public VFSLeaf doUpload(File fileToUpload, String fileName,
-							RepositoryEntry entry, String subIdent, Identity publishedBy) {
-		VFSLeaf newFile;
+	public VFSLeaf doUpload(File fileToUpload, String fileName, Identity publishedBy) {
+		VFSContainer uploadVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
 
-		// check if such a filename does already exist
-		DialogElement existingDialogEl = getDialogElements(entry, subIdent).stream().filter(e -> e.getFilename().equals(fileName)).findAny().orElse(null);
-		if (existingDialogEl == null) {
-			VFSContainer uploadVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
-			newFile = uploadNewFile(fileToUpload, fileName, uploadVFSContainer, publishedBy);
-		} else {
-			VFSContainer existingsVFSContainer = getDialogContainer(existingDialogEl);
-			VFSItem existingVFSItem = existingsVFSContainer.resolve(fileName);
-			newFile = overwriteExistingFile(fileToUpload, existingsVFSContainer, existingVFSItem, publishedBy);
-		}
-
-		return newFile;
+		return uploadNewFile(fileToUpload, fileName, uploadVFSContainer, publishedBy);
 	}
 
 	@Override
@@ -250,32 +253,6 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 		}
 		// else: FXOLAT-409 somehow "createChildLeaf" did not succeed...
 		// if so, there is already an error-msg in log (vfsContainer.createChildLeaf)
-
-		return newFile;
-	}
-
-	/**
-	 * file already exists. upload anyway with new filename and
-	 * in the folder manager status. Rename file
-	 *
-	 * @param fileToUpload
-	 * @param uploadVFSContainer
-	 * @param existingVFSItem
-	 * @param publishedBy
-	 * @return VFSLeaf object if successful, otherwise null
-	 */
-	private VFSLeaf overwriteExistingFile(File fileToUpload, VFSContainer uploadVFSContainer,
-										  VFSItem existingVFSItem, Identity publishedBy) {
-		String renamedFilename = VFSManager.rename(uploadVFSContainer, existingVFSItem.getName());
-		VFSLeaf newFile = uploadVFSContainer.createChildLeaf(renamedFilename);
-
-		// Copy content to tmp file
-		try(InputStream in = new FileInputStream(fileToUpload)) {
-			VFSManager.copyContent(in, newFile, publishedBy);
-		} catch (IOException e) {
-			newFile = null;
-		}
-		FileUtils.deleteFile(fileToUpload);
 
 		return newFile;
 	}

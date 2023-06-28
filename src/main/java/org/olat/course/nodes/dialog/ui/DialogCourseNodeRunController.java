@@ -134,7 +134,8 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 			Dropdown actionDropdown = new Dropdown("actionTools", null, false, getTranslator());
 			actionDropdown.setButton(true);
 			actionDropdown.setEmbbeded(true);
-			actionDropdown.setCarretIconCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+			actionDropdown.setCarretIconCSS("o_icon o_icon_actions o_icon-lg");
+			actionDropdown.setElementCssClass("dropdown-menu-right");
 
 			deleteLink = LinkFactory.createLink(DELETE, DELETE, getTranslator(), mainVC, this, Link.LINK);
 			deleteLink.setDomReplacementWrapperRequired(false);

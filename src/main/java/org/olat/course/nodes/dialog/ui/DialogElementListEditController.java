@@ -207,8 +207,6 @@ public class DialogElementListEditController extends FormBasicController {
 					VFSLeaf newFile = dialogElementsManager.doUpload(
 							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
 							dialogFileUploadCtrl.getFileNameElValue(),
-							entry,
-							courseNode.getIdent(),
 							getIdentity());
 
 					if (newFile != null) {

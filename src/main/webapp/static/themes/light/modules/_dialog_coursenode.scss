@@ -22,7 +22,6 @@
   font-size: 14px;
   column-gap: 5px;
   border-color: $o-edu-type-standard-course-color;
-  margin: 15px;
   @include o-high-contrast-color(#998100);
 }
 
@@ -34,10 +33,11 @@
         box-sizing: border-box;
         overflow: hidden;
         position: relative;
+        padding: 20px;
 
         .o_dialog_file_thumbnail {
           cursor: pointer;
-          height: 118px;
+          height: 120px;
           position: relative;
           .o_dialog_file_img {
             left: 0;
@@ -64,7 +64,7 @@
         .o_dialog_file_meta {
           position: relative;
           width: 100%;
-          height: 100%;
+          height: 200px;
         }
       }
     }
@@ -88,7 +88,7 @@
   .o_dialog_card_meta {
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    justify-content: center;
     border-radius: $o-card-border-radius;
     background: #ffffff;
     .o_dialog_card_title {
@@ -113,6 +113,8 @@
       display: flex;
       column-gap: 10px;
       padding-top: 10px;
+      position: absolute;
+      bottom: 0px;
 
       strong {
         font-size: 18px;

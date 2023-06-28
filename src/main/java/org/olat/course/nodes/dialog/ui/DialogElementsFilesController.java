@@ -106,8 +106,6 @@ public class DialogElementsFilesController extends BasicController {
 						VFSLeaf newFile = dialogElmsMgr.doUpload(
 								dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
 								dialogFileUploadCtrl.getFileNameElValue(),
-								entry,
-								courseNode.getIdent(),
 								getIdentity());
 
 						if (newFile != null) {

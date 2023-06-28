@@ -44,7 +44,9 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.nodes.dialog.DialogElementsManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Controller for uploading dialog files
@@ -72,6 +74,9 @@ public class DialogFileUploadController extends FormBasicController {
 	private FormSubmit submitBtn;
 	private CloseableModalController cmc;
 	private LinkChooserController fileCopyCtrl;
+
+	@Autowired
+	DialogElementsManager dialogElementsManager;
 
 
 	public DialogFileUploadController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
@@ -178,7 +183,9 @@ public class DialogFileUploadController extends FormBasicController {
 	 * @return String value, retrieve filtered filename
 	 */
 	public String getFileNameElValue() {
-		return StringHelper.escapeHtml(fileNameEl.getValue());
+		// build up full filename with extension
+		String filename = fileNameEl.getValue() + fileUploadEl.getUploadFileName().replaceAll(".*(?=\\.)", "");
+		return StringHelper.escapeHtml(filename);
 	}
 
 	/**
@@ -198,9 +205,13 @@ public class DialogFileUploadController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = super.validateFormLogic(ureq);
-		String fileName = fileNameEl.getValue();
+		// build up full filename with extension
+		String filename = fileNameEl.getValue() + fileUploadEl.getUploadFileName().replaceAll(".*(?=\\.)", "");
 
-		if (!FileUtils.validateFilename(fileName)) {
+		if (!dialogElementsManager.hasDialogElementByFilename(filename)) {
+			fileNameEl.setErrorKey("dialog.metadata.filename.error.duplicate");
+			isInputValid = false;
+		} else if (!FileUtils.validateFilename(filename)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error");
 			isInputValid = false;
 		}
@@ -233,7 +244,7 @@ public class DialogFileUploadController extends FormBasicController {
 		} else if (source == selectFileLink) {
 			doCopy(ureq);
 		} else if (source == fileUploadEl) {
-			fileNameEl.setValue(fileUploadEl.getUploadFileName());
+			fileNameEl.setValue(fileUploadEl.getUploadFileName().replaceAll("\\..*", ""));
 			updateVisibility();
 		}
 	}

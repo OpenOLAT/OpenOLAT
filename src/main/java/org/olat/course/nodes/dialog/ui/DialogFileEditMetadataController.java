@@ -29,6 +29,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.dialog.DialogElement;
+import org.olat.course.nodes.dialog.DialogElementsManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Controller for editing metadata of dialog files
@@ -42,6 +44,9 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	private final DialogElement element;
 	private TextElement fileNameEl;
 	private TextElement authoredByEl;
+
+	@Autowired
+	DialogElementsManager dialogElementsManager;
 
 	public DialogFileEditMetadataController(UserRequest ureq, WindowControl wControl, DialogElement element) {
 		super(ureq, wControl);
@@ -67,9 +72,13 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = super.validateFormLogic(ureq);
-		String fileName = fileNameEl.getValue();
+		// build up full filename with extension
+		String filename = fileNameEl.getValue() + element.getFilename().replaceAll(".*(?=\\.)", "");
 
-		if (!FileUtils.validateFilename(fileName)) {
+		if (!dialogElementsManager.hasDialogElementByFilename(filename)) {
+			fileNameEl.setErrorKey("dialog.metadata.filename.error.duplicate");
+			isInputValid = false;
+		} else if (!FileUtils.validateFilename(filename)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error");
 			isInputValid = false;
 		}
