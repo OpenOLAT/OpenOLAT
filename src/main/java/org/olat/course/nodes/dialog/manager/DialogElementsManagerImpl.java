@@ -120,7 +120,7 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 				.setParameter("filename", filename)
 				.getResultList();
 
-		return result.isEmpty();
+		return !result.isEmpty();
 	}
 
 	@Override

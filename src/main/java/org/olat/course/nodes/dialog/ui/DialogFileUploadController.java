@@ -208,7 +208,7 @@ public class DialogFileUploadController extends FormBasicController {
 		// build up full filename with extension
 		String filename = fileNameEl.getValue() + fileUploadEl.getUploadFileName().replaceAll(".*(?=\\.)", "");
 
-		if (!dialogElementsManager.hasDialogElementByFilename(filename)) {
+		if (dialogElementsManager.hasDialogElementByFilename(filename)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error.duplicate");
 			isInputValid = false;
 		} else if (!FileUtils.validateFilename(filename)) {
