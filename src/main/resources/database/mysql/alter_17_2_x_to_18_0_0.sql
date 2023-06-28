@@ -530,7 +530,7 @@ alter table o_badge_category add constraint badge_category_class_idx foreign key
 alter table o_badge_entry_config add constraint badge_entry_config_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 
 -- Dialog element
-alter table o_dialog_element add column d_authoredby varchar(64);
+alter table o_dialog_element add column d_authoredby varchar(256);
 
 
 -- Content editor

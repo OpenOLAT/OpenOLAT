@@ -126,7 +126,7 @@
 /* Specific dialog element view - compact card view */
 div.panel.o_dialog_file_overview {
   display: flex;
-  gap: 4rem;
+  gap: 3rem;
   flex-direction: row;
   padding: 20px;
   border: 1px solid $o-dialog-cn-box-border-color;
@@ -192,7 +192,7 @@ div.panel.o_dialog_file_overview {
       flex-wrap: wrap;
       flex-grow: 1;
       align-content: center;
-      column-gap: 40px;
+      column-gap: 35px;
     }
 
     .o_dialog_file_button_group {

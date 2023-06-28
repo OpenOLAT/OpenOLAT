@@ -64,9 +64,10 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		fileNameEl = uifactory.addTextElement("filename", "dialog.metadata.filename", 256, null, formLayout);
-		fileNameEl.setValue(element.getFilename().replaceAll("\\..*", ""));
+		fileNameEl.setValue(element.getFilename());
 		authoredByEl = uifactory.addTextElement("authoredby", "dialog.metadata.authored.by", 256, null, formLayout);
 		authoredByEl.setValue(element.getAuthoredBy());
+		authoredByEl.setMaxLength(256);
 
 		// buttons
 		FormLayoutContainer buttonLayoutCont = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -78,8 +79,8 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = super.validateFormLogic(ureq);
-		// build up full filename with extension
-		String filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(element.getFilename());
+
+		String filename = getFileName();
 
 		if (!element.getFilename().equals(filename) && dialogElementsManager.hasDialogElementByFilename(filename, subIdent, entry)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error.duplicate");
@@ -93,7 +94,14 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	}
 
 	public String getFileName() {
-		return fileNameEl.getValue();
+		String filename;
+		// build up full filename with extension if necessary
+		if (!FileUtils.getFileSuffix(element.getFilename()).equals(FileUtils.getFileSuffix(fileNameEl.getValue()))) {
+			filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(element.getFilename());
+		} else {
+			filename = fileNameEl.getValue();
+		}
+		return filename;
 	}
 
 	public String getAuthoredBy() {

@@ -236,8 +236,6 @@ public class DialogElementController extends BasicController implements Activate
 	private void doUpdateFileDialog() {
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		String updatedFileName = dialogFileEditMetadataCtrl.getFileName();
-		// add file extension
-		updatedFileName = updatedFileName + "." + FileUtils.getFileSuffix(element.getFilename());
 		String updatedAuthoredBy = dialogFileEditMetadataCtrl.getAuthoredBy();
 		VFSItem existingVFSItem = dialogContainer.resolve(element.getFilename());
 		existingVFSItem.rename(updatedFileName);

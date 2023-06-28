@@ -556,7 +556,7 @@ alter table o_badge_entry_config add constraint badge_entry_config_entry_idx for
 create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry);
 
 -- Dialog element
-alter table o_dialog_element add column d_authoredby varchar(64);
+alter table o_dialog_element add column d_authoredby varchar(256);
 
 
 -- Content editor

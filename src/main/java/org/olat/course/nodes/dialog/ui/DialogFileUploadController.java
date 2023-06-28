@@ -135,7 +135,7 @@ public class DialogFileUploadController extends FormBasicController {
 				dialogMetadataCont, this);
 		publishedByEl.setEnabled(false);
 		authoredByEl = uifactory.addTextElement("authoredby", "dialog.metadata.authored.by", 256, null, dialogMetadataCont);
-
+		authoredByEl.setMaxLength(256);
 
 		// buttons
 		FormLayoutContainer buttonLayoutCont = FormLayoutContainer.createButtonLayout("buttonLayout", getTranslator());
@@ -189,12 +189,23 @@ public class DialogFileUploadController extends FormBasicController {
 	 * @return String value, retrieve filtered filename
 	 */
 	public String getFileNameValue() {
-		// build up full filename with extension
 		String filename;
+
+		// build up full filename with extension if necessary
 		if (actionSelection.isKeySelected(DIALOG_ACTION_UPLOAD)) {
-			filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(fileUploadEl.getUploadFileName());
+			// if upload is selected and fileSuffix was altered in fileNameEl
+			if (!FileUtils.getFileSuffix(fileUploadEl.getUploadFileName()).equals(FileUtils.getFileSuffix(fileNameEl.getValue()))) {
+				filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(fileUploadEl.getUploadFileName());
+			} else {
+				filename = fileNameEl.getValue();
+			}
 		} else {
-			filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(fileChooserEl.getValue());
+			// else, if copy is selected and fileSuffix was altered in fileNameEl
+			if (!FileUtils.getFileSuffix(fileChooserEl.getValue()).equals(FileUtils.getFileSuffix(fileNameEl.getValue()))) {
+				filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(fileChooserEl.getValue());
+			} else {
+				filename = fileNameEl.getValue();
+			}
 		}
 		return StringHelper.escapeHtml(filename);
 	}
@@ -239,7 +250,7 @@ public class DialogFileUploadController extends FormBasicController {
 			if (event instanceof URLChoosenEvent urlChoosenEvent) {
 				String fileUrl = urlChoosenEvent.getURL();
 				String[] pathElements = urlChoosenEvent.getURL().split("/");
-				String fileName = pathElements[pathElements.length - 1].replaceAll("\\..*", "");
+				String fileName = pathElements[pathElements.length - 1];
 				fileChooserEl.setValue(fileUrl);
 				fileNameEl.setValue(fileName);
 				cmc.deactivate();
@@ -255,7 +266,7 @@ public class DialogFileUploadController extends FormBasicController {
 		} else if (source == selectFileLink) {
 			doCopy(ureq);
 		} else if (source == fileUploadEl) {
-			fileNameEl.setValue(fileUploadEl.getUploadFileName().replaceAll("\\..*", ""));
+			fileNameEl.setValue(fileUploadEl.getUploadFileName());
 			updateVisibility();
 		}
 	}
