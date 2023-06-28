@@ -33,12 +33,15 @@
         box-sizing: border-box;
         overflow: hidden;
         position: relative;
-        padding: 20px;
+        padding-top: 20px;
+        padding-left: 20px;
+        padding-right: 20px;
 
         .o_dialog_file_thumbnail {
           cursor: pointer;
           height: 120px;
           position: relative;
+
           .o_dialog_file_img {
             left: 0;
             overflow: hidden;
@@ -47,20 +50,23 @@
             top: 0;
             transition: opacity 200ms ease-in-out;
             width: 100%;
+
             img {
               padding: 12px 12px 0px 12px;
               height: auto;
               text-align: center;
             }
           }
+
           .o_visual_not_available {
             height: 150px;
-            background-image:url('#{$o-images-path}no_preview.png');
-            background-repeat:no-repeat;
-            background-position:50% 50%;
+            background-image: url('#{$o-images-path}no_preview.png');
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
             background-size: contain;
           }
         }
+
         .o_dialog_file_meta {
           position: relative;
           width: 100%;
@@ -101,18 +107,21 @@
       color: #777;
     }
 
-    .o_dialog_published {
-      padding-top: 10px;
-    }
+    .o_dialog_authors {
+      padding-bottom: 20px;
 
-    .o_dialog_authored {
+      .o_dialog_published {
+        padding-top: 10px;
+      }
 
+      .o_dialog_authored {
+
+      }
     }
 
     .o_dialog_topic_information {
       display: flex;
       column-gap: 10px;
-      padding-top: 10px;
       position: absolute;
       bottom: 0px;
 

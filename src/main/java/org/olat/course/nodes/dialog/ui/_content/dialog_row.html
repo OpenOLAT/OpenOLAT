@@ -28,12 +28,14 @@
 		<div class="o_nowrap o_dialog_modified">
 			$row.modified
 		</div>
-		#if($r.isNotEmpty($row.getPublishedByCardView()))
-			<div class="o_dialog_published">$row.getPublishedByCardView()</div>
-		#end
-		#if($r.isNotEmpty($row.getAuthoredByCardView()))
-			<div class="o_dialog_authored">$row.getAuthoredByCardView()</div>
-		#end
+		<div class="o_dialog_authors">
+			#if($r.isNotEmpty($row.getPublishedByCardView()))
+				<div class="o_dialog_published">$row.getPublishedByCardView()</div>
+			#end
+			#if($r.isNotEmpty($row.getAuthoredByCardView()))
+				<div class="o_dialog_authored">$row.getAuthoredByCardView()</div>
+			#end
+		</div>
 		<div class="o_dialog_topic_information">
 			<div><strong>$row.getNumOfThreads()</strong> $r.translate("table.header.threads")</div>
 			<div><strong>$row.getNumOfMessages()</strong> $r.translate("table.header.messages")</div>
