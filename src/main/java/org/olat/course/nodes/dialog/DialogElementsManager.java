@@ -55,11 +55,14 @@ public interface DialogElementsManager {
 
 	/**
 	 * check if there is already any dialogElement with given filename
+	 * in current repoEntry and course element
 	 *
-	 * @param filename
+	 * @param filename desired filename
+	 * @param subIdent current courseElement
+	 * @param entry current RepositoryEntry
 	 * @return true if there is a dialogElement with given filename, otherwise false
 	 */
-	public boolean hasDialogElementByFilename(String filename);
+	public boolean hasDialogElementByFilename(String filename, String subIdent, RepositoryEntry entry);
 	
 	/**
 	 * 

@@ -262,7 +262,8 @@ public class DialogElementController extends BasicController implements Activate
 
 	private void doEditMetadata(UserRequest ureq) {
 		removeAsListenerAndDispose(dialogFileEditMetadataCtrl);
-		dialogFileEditMetadataCtrl = new DialogFileEditMetadataController(ureq, getWindowControl(), element);
+		dialogFileEditMetadataCtrl =
+				new DialogFileEditMetadataController(ureq, getWindowControl(), element, element.getSubIdent(), element.getEntry());
 		listenTo(dialogFileEditMetadataCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), dialogFileEditMetadataCtrl.getInitialComponent(),

@@ -105,7 +105,7 @@ public class DialogElementsFilesController extends BasicController {
 						// upload new file
 						VFSLeaf newFile = dialogElmsMgr.doUpload(
 								dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
-								dialogFileUploadCtrl.getFileNameElValue(),
+								dialogFileUploadCtrl.getFileNameValue(),
 								getIdentity());
 
 						if (newFile != null) {
@@ -118,7 +118,7 @@ public class DialogElementsFilesController extends BasicController {
 					} else {
 						// copy file
 						VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-						String filename = dialogFileUploadCtrl.getFileNameElValue();
+						String filename = dialogFileUploadCtrl.getFileNameValue();
 						String fileToCopy = dialogFileUploadCtrl.getFileChooserElValue();
 						if(!fileToCopy.contains("://")) {
 							DialogElement element = dialogElmsMgr.doCopySelectedFile(fileToCopy, filename, courseContainer,
@@ -150,7 +150,7 @@ public class DialogElementsFilesController extends BasicController {
 		removeAsListenerAndDispose(dialogFileUploadCtrl);
 
 		// canCopyFile true, because this env/scope is in edit for admins
-		dialogFileUploadCtrl = new DialogFileUploadController(ureq, getWindowControl(), userCourseEnv, true);
+		dialogFileUploadCtrl = new DialogFileUploadController(ureq, getWindowControl(), userCourseEnv, true, courseNode.getIdent(), entry);
 		listenTo(dialogFileUploadCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), dialogFileUploadCtrl.getInitialComponent(),

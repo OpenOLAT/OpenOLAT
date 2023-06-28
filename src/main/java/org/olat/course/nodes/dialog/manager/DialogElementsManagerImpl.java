@@ -89,8 +89,7 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 		element.setAuthoredBy(authoredBy);
 		element.setLastModified(new Date());
 
-		dbInstance.updateObject(element);
-		return element;
+		return dbInstance.getCurrentEntityManager().merge(element);
 	}
 
 	@Override
@@ -110,14 +109,18 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 	}
 
 	@Override
-	public boolean hasDialogElementByFilename(String filename) {
+	public boolean hasDialogElementByFilename(String filename, String subIdent, RepositoryEntry entry) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.append("select element from dialogelement as element")
-				.and().append("element.filename=:filename");
+				.and().append("element.filename=:filename")
+				.and().append("element.subIdent=:subIdent")
+				.and().append("element.entry=:entry");
 
 		List<DialogElement> result = dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), DialogElement.class)
 				.setParameter("filename", filename)
+				.setParameter("subIdent", subIdent)
+				.setParameter("entry", entry)
 				.getResultList();
 
 		return !result.isEmpty();

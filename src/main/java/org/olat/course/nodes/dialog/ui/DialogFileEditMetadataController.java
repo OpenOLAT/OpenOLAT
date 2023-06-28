@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -41,6 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DialogFileEditMetadataController extends FormBasicController {
 
+	private final String subIdent;
+	private final RepositoryEntry entry;
 	private final DialogElement element;
 	private TextElement fileNameEl;
 	private TextElement authoredByEl;
@@ -48,9 +51,12 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	@Autowired
 	DialogElementsManager dialogElementsManager;
 
-	public DialogFileEditMetadataController(UserRequest ureq, WindowControl wControl, DialogElement element) {
+	public DialogFileEditMetadataController(UserRequest ureq, WindowControl wControl, DialogElement element,
+											String subIdent, RepositoryEntry entry) {
 		super(ureq, wControl);
 		this.element = element;
+		this.subIdent = subIdent;
+		this.entry = entry;
 
 		initForm(ureq);
 	}
@@ -73,9 +79,9 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean isInputValid = super.validateFormLogic(ureq);
 		// build up full filename with extension
-		String filename = fileNameEl.getValue() + element.getFilename().replaceAll(".*(?=\\.)", "");
+		String filename = fileNameEl.getValue() + "." + FileUtils.getFileSuffix(element.getFilename());
 
-		if (dialogElementsManager.hasDialogElementByFilename(filename)) {
+		if (!element.getFilename().equals(filename) && dialogElementsManager.hasDialogElementByFilename(filename, subIdent, entry)) {
 			fileNameEl.setErrorKey("dialog.metadata.filename.error.duplicate");
 			isInputValid = false;
 		} else if (!FileUtils.validateFilename(filename)) {

@@ -112,8 +112,8 @@ public class DialogElementsManagerTest extends OlatTestCase {
 		DialogElement element = dialogElementsManager.createDialogElement(entry, author, "task_d.txt", 234l, subIdent, author.getName());
 		dbInstance.commitAndCloseSession();
 
-		Assert.assertTrue(dialogElementsManager.hasDialogElementByFilename("task_d.txt"));
-		Assert.assertFalse(dialogElementsManager.hasDialogElementByFilename("task_" + UUID.randomUUID() + ".txt"));
+		Assert.assertTrue(dialogElementsManager.hasDialogElementByFilename("task_d.txt", subIdent, entry));
+		Assert.assertFalse(dialogElementsManager.hasDialogElementByFilename("task_e.txt", subIdent, entry));
 	}
 	
 	@Test

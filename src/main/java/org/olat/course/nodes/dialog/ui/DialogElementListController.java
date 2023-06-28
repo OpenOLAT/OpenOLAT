@@ -203,7 +203,8 @@ public class DialogElementListController extends FormBasicController implements 
 	private void doUploadFile(UserRequest ureq) {
 		removeAsListenerAndDispose(dialogFileUploadCtrl);
 
-		dialogFileUploadCtrl = new DialogFileUploadController(ureq, getWindowControl(), userCourseEnv, secCallback.canCopyFile());
+		dialogFileUploadCtrl =
+				new DialogFileUploadController(ureq, getWindowControl(), userCourseEnv, secCallback.canCopyFile(), courseNode.getIdent(), entry);
 		listenTo(dialogFileUploadCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), dialogFileUploadCtrl.getInitialComponent(),
@@ -355,7 +356,7 @@ public class DialogElementListController extends FormBasicController implements 
 					// upload new file
 					VFSLeaf newFile = dialogElementsManager.doUpload(
 							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
-							dialogFileUploadCtrl.getFileNameElValue(),
+							dialogFileUploadCtrl.getFileNameValue(),
 							getIdentity());
 
 					if (newFile != null) {
@@ -368,7 +369,7 @@ public class DialogElementListController extends FormBasicController implements 
 				} else {
 					// copy file
 					VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-					String filename = dialogFileUploadCtrl.getFileNameElValue();
+					String filename = dialogFileUploadCtrl.getFileNameValue();
 					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 					if (!chosenFile.contains("://")) {
 						element = dialogElementsManager.doCopySelectedFile(chosenFile, filename, courseContainer,
