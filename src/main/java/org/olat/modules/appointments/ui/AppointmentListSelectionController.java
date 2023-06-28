@@ -23,7 +23,6 @@ import static java.util.Collections.emptyList;
 import static org.olat.modules.appointments.ui.AppointmentsUIFactory.isEndInFuture;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -53,8 +52,9 @@ import org.olat.modules.bigbluebutton.BigBlueButtonRecordingReference;
  */
 public class AppointmentListSelectionController extends AppointmentListController {
 	
-	private final static List<String> FILTERS = Arrays.asList(
+	private final static List<String> FILTERS = List.of(
 			AppointmentDataModel.FILTER_PARTICIPATED,
+			AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE,
 			AppointmentDataModel.FILTER_FUTURE);
 	private final static List<String> FILTERS_FINDING_DEFAULT = Collections.emptyList();
 	private final static List<String> FILTERS_ENROLLMENT_DEFAULT = FILTERS;

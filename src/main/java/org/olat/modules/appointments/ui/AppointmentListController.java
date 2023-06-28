@@ -108,8 +108,10 @@ public abstract class AppointmentListController extends FormBasicController impl
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_FUTURE = "Future";
 	private static final String TAB_ID_PARTICIPATED = "Participated";
+	private static final String FILTER_KEY_PAST = "past";
 	private static final String FILTER_KEY_FUTURE = "future";
 	private static final String FILTER_KEY_PARTICIPATED = "participated";
+	private static final String FILTER_KEY_PARTICIPATIONS_AVAILABLE = "participation.available";
 	private static final String CMD_MORE = "more";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_ADD_USER = "add";
@@ -291,14 +293,28 @@ public abstract class AppointmentListController extends FormBasicController impl
 		
 		if (filterConfig.contains(AppointmentDataModel.FILTER_FUTURE)) {
 			SelectionValues futureValues = new SelectionValues();
+			futureValues.add(SelectionValues.entry(FILTER_KEY_PAST, translate("filter.past")));
 			futureValues.add(SelectionValues.entry(FILTER_KEY_FUTURE, translate("filter.future")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.future"), AppointmentDataModel.FILTER_FUTURE, futureValues, true));
+		}
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_STATUS)) {
+			SelectionValues values = new SelectionValues();
+			values.add(SelectionValues.entry(Appointment.Status.planned.name(), translate("appointment.status.planned")));
+			values.add(SelectionValues.entry(Appointment.Status.confirmed.name(), translate("appointment.status.confirmed")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("appointment.status"), AppointmentDataModel.FILTER_STATUS, values, true));
 		}
 		
 		if (filterConfig.contains(AppointmentDataModel.FILTER_PARTICIPATED)) {
 			SelectionValues participatedValues = new SelectionValues();
 			participatedValues.add(SelectionValues.entry(FILTER_KEY_PARTICIPATED, translate("filter.participated")));
 			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participated"), AppointmentDataModel.FILTER_PARTICIPATED, participatedValues, true));
+		}
+		
+		if (filterConfig.contains(AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE)) {
+			SelectionValues values = new SelectionValues();
+			values.add(SelectionValues.entry(FILTER_KEY_PARTICIPATIONS_AVAILABLE, translate("filter.participations.available")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.participations.available"), AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE, values, true));
 		}
 		
 		if (!filters.isEmpty()) {
@@ -362,11 +378,25 @@ public abstract class AppointmentListController extends FormBasicController impl
 		if (filters == null || filters.isEmpty()) return;
 		
 		for (FlexiTableFilter filter : filters) {
+			if (AppointmentDataModel.FILTER_STATUS.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && values.size() == 1) {
+					Status status = Appointment.Status.valueOf(values.get(0));
+					rows.removeIf(row -> status != row.getAppointment().getStatus());
+				}
+			}
+			
 			if (AppointmentDataModel.FILTER_FUTURE.equals(filter.getFilter())) {
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
-				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_FUTURE)) {
-					Date now = new Date();
-					rows.removeIf(row -> !AppointmentsUIFactory.isEndInFuture(row.getAppointment(), now));
+				if (values != null && values.size() == 1) {
+					if (values.get(0).equalsIgnoreCase(FILTER_KEY_FUTURE)) {
+						Date now = new Date();
+						rows.removeIf(row -> !AppointmentsUIFactory.isEndInFuture(row.getAppointment(), now));
+						
+					} else if (values.get(0).equalsIgnoreCase(FILTER_KEY_PAST)) {
+						Date now = new Date();
+						rows.removeIf(row -> !AppointmentsUIFactory.isEndInPast(row.getAppointment(), now));
+					}
 				}
 			}
 			
@@ -374,6 +404,13 @@ public abstract class AppointmentListController extends FormBasicController impl
 				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
 				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_PARTICIPATED)) {
 					rows.removeIf(row -> row.getParticipation() == null);
+				}
+			}
+			
+			if (AppointmentDataModel.FILTER_PARTICIPATIONS_AVAILABLE.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && !values.isEmpty() && values.contains(FILTER_KEY_PARTICIPATIONS_AVAILABLE)) {
+					rows.removeIf(row -> row.getFreeParticipations() != null && row.getFreeParticipations() < 1);
 				}
 			}
 		}

@@ -263,7 +263,7 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		participationsEl.clearError();
 		if (participationsEl.isVisible()) {
 			if (!participationsEl.isAtLeastSelected(1)) {
-				participationsEl.setErrorKey("error.select.participant", null);
+				participationsEl.setErrorKey("error.select.participant");
 				allOk &= false;
 			}
 		}
@@ -271,13 +271,13 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 		appointmentsEl.clearError();
 		if (appointmentsEl.isVisible()) {
 			if (!appointmentsEl.isOneSelected()) {
-				appointmentsEl.setErrorKey("error.select.appointment", null);
+				appointmentsEl.setErrorKey("error.select.appointment");
 				allOk &= false;
 			}
 		}
 		noAppointmentsEl.clearError();
 		if (noAppointmentsEl.isVisible()) {
-			noAppointmentsEl.setErrorKey("error.select.appointment", null);
+			noAppointmentsEl.setErrorKey("error.select.appointment");
 			allOk &= false;
 			
 		}

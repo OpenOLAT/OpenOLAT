@@ -39,7 +39,9 @@ public class AppointmentDataModel extends DefaultFlexiTableDataModel<Appointment
 implements SortableFlexiTableDataModel<AppointmentRow>{
 	
 	public static final String FILTER_ALL = "all";
+	public static final String FILTER_STATUS = "status";
 	public static final String FILTER_PARTICIPATED = "participated";
+	public static final String FILTER_PARTICIPATIONS_AVAILABLE = "free";
 	public static final String FILTER_FUTURE = "future";
 	
 	private final Translator translator;
