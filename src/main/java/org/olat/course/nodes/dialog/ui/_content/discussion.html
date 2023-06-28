@@ -16,18 +16,18 @@
 			<br>
 			<h4>$threadCount</h4>
 			<span class="text-muted small o_dialog_count">
-				#if($threadCount > 1)
-					$r.translate("table.header.threads")
-				#else
+				#if($threadCount == 1)
 					$r.translate("table.header.thread")
+				#else
+					$r.translate("table.header.threads")
 				#end
 			</span>
 			<h4>$messageCount</h4>
 			<span class="text-muted small o_dialog_count">
-				#if($messageCount > 1)
-					$r.translate("table.header.messages")
-				#else
+				#if($messageCount == 1)
 					$r.translate("table.header.message")
+				#else
+					$r.translate("table.header.messages")
 				#end
 			</span>
 		</div>

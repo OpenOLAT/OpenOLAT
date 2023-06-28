@@ -14,10 +14,10 @@
 	#if($row.getNumOfUnreadThreads() > 0)
 		<div>
 			$row.getNumOfUnreadThreads()
-			#if($row.getNumOfUnreadThreads() > 1)
-				$r.translate("table.header.threads")
-			#else
+			#if($row.getNumOfUnreadThreads() == 1)
 				$r.translate("table.header.thread")
+			#else
+				$r.translate("table.header.threads")
 			#end
 		</div>
 		#if($row.getNumOfUnreadMessages() > 0)
@@ -27,10 +27,10 @@
 	#if($row.getNumOfUnreadMessages() > 0)
 		<div>
 			$row.getNumOfUnreadMessages()
-			#if($row.getNumOfUnreadMessages() > 1)
-				$r.translate("table.header.messages")
-			#else
+			#if($row.getNumOfUnreadMessages() == 1)
 				$r.translate("table.header.message")
+			#else
+				$r.translate("table.header.messages")
 			#end
 		</div>
 	#end
@@ -52,8 +52,20 @@
 			<div class="o_dialog_authored">$row.getAuthoredByCardView()</div>
 		#end
 		<div class="o_dialog_topic_information">
-			<div><strong>$row.getNumOfThreads()</strong> $r.translate("table.header.threads")</div>
-			<div><strong>$row.getNumOfMessages()</strong> $r.translate("table.header.messages")</div>
+			<div><strong>$row.getNumOfThreads()</strong>
+				#if($row.getNumOfThreads() == 1)
+					$r.translate("table.header.thread")
+				#else
+					$r.translate("table.header.threads")
+				#end
+			</div>
+			<div><strong>$row.getNumOfMessages()</strong>
+				#if($row.getNumOfMessages() == 1)
+					$r.translate("table.header.message")
+				#else
+					$r.translate("table.header.messages")
+				#end
+			</div>
 		</div>
 	</div>
 </div>
