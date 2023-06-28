@@ -75,17 +75,18 @@ public interface DialogElementsManager {
 	 *
 	 * @param fileToUpload
 	 * @param fileName
-	 * @param courseContainer
+	 * @param entry
+	 * @param subIdent
 	 * @param publishedBy
 	 *
 	 * @return VFSLeaf/new File if successful otherwise null
 	 */
-	public VFSLeaf doUpload(File fileToUpload, String fileName, VFSContainer courseContainer, Identity publishedBy);
+	public VFSLeaf doUpload(File fileToUpload, String fileName, RepositoryEntry entry, String subIdent, Identity publishedBy);
 
 	/**
 	 * copy chosenFile and create a new file out of it
 	 *
-	 * @param chosenFile
+	 * @param fileToCopy
 	 * @param filename
 	 * @param courseContainer
 	 * @param identity
@@ -95,6 +96,6 @@ public interface DialogElementsManager {
 	 *
 	 * @return DialogElement if copy process was successful, otherwise null
 	 */
-	public DialogElement doCopySelectedFile(String chosenFile, String filename, VFSContainer courseContainer, Identity identity,
+	public DialogElement doCopySelectedFile(String fileToCopy, String filename, VFSContainer courseContainer, Identity identity,
 							RepositoryEntry entry, String courseNodeIdent, String authoredBy);
 }

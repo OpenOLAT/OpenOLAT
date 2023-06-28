@@ -14,19 +14,18 @@
 				<h3 class="o_card_title o_dialog_card_link">$r.render("$row.getSelectLinkName()")</h3>
 			</div>
 		</div>
-		<div class="o_nowrap">
+		<div class="o_nowrap o_dialog_modified">
 			$row.modified
 		</div>
 		#if($r.isNotEmpty($row.getPublishedByCardView()))
-			$row.getPublishedByCardView()
+			<div class="o_dialog_published">$row.getPublishedByCardView()</div>
 		#end
-		<br>
 		#if($r.isNotEmpty($row.getAuthoredByCardView()))
-			$row.getAuthoredByCardView()
+			<div class="o_dialog_authored">$row.getAuthoredByCardView()</div>
 		#end
-
-		<br>
-		<strong>$row.getNumOfThreads()</strong> $r.translate("table.header.threads")
-		<strong>$row.getNumOfMessages()</strong> $r.translate("table.header.messages")
+		<div class="o_dialog_topic_information">
+			<div><strong>$row.getNumOfThreads()</strong> $r.translate("table.header.threads")</div>
+			<div><strong>$row.getNumOfMessages()</strong> $r.translate("table.header.messages")</div>
+		</div>
 	</div>
 </div>

@@ -351,13 +351,13 @@ public class DialogElementListController extends FormBasicController implements 
 			}
 		} else if (source == dialogFileUploadCtrl) {
 			if (event == Event.DONE_EVENT) {
-				VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 				if (dialogFileUploadCtrl.getActionSelectedKey().equals(DialogFileUploadController.DIALOG_ACTION_UPLOAD)) {
 					// upload new file
 					VFSLeaf newFile = dialogElementsManager.doUpload(
 							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
 							dialogFileUploadCtrl.getFileNameElValue(),
-							courseContainer,
+							entry,
+							courseNode.getIdent(),
 							getIdentity());
 
 					if (newFile != null) {
@@ -369,6 +369,7 @@ public class DialogElementListController extends FormBasicController implements 
 					}
 				} else {
 					// copy file
+					VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 					String filename = dialogFileUploadCtrl.getFileNameElValue();
 					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 					if (!chosenFile.contains("://")) {
@@ -479,7 +480,9 @@ public class DialogElementListController extends FormBasicController implements 
 		VFSContainer forumContainer = dialogElementsManager.getDialogContainer(element);
 		List<VFSItem> items = forumContainer.getItems(new VFSLeafFilter());
 		if (!items.isEmpty() && items.get(0) instanceof VFSLeaf vl) {
-			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(vl));
+			VFSMediaResource mediaResource = new VFSMediaResource(vl);
+			mediaResource.setDownloadable(true);
+			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
 					LoggingResourceable.wrapBCFile(vl.getName()));
 		} else {

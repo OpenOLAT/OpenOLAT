@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.FileUtils;
 import org.olat.course.nodes.dialog.DialogElement;
 
 /**
@@ -63,6 +64,18 @@ public class DialogFileEditMetadataController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonLayoutCont, ureq, getWindowControl());
 	}
 
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean isInputValid = super.validateFormLogic(ureq);
+		String fileName = fileNameEl.getValue();
+
+		if (!FileUtils.validateFilename(fileName)) {
+			fileNameEl.setErrorKey("dialog.metadata.filename.error");
+			isInputValid = false;
+		}
+
+		return isInputValid;
+	}
 
 	public String getFileName() {
 		return fileNameEl.getValue();

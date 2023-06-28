@@ -25,11 +25,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.WebappHelper;
+import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -184,25 +187,28 @@ public class DialogElementsManagerImpl implements DialogElementsManager {
 
 	@Override
 	public VFSLeaf doUpload(File fileToUpload, String fileName,
-							VFSContainer courseContainer, Identity publishedBy) {
+							RepositoryEntry entry, String subIdent, Identity publishedBy) {
 		VFSLeaf newFile;
 
 		// check if such a filename does already exist
-		VFSItem existingVFSItem = courseContainer.resolve(fileName);
-		if (existingVFSItem == null) {
-			newFile = uploadNewFile(fileToUpload, fileName, courseContainer, publishedBy);
+		DialogElement existingDialogEl = getDialogElements(entry, subIdent).stream().filter(e -> e.getFilename().equals(fileName)).findAny().orElse(null);
+		if (existingDialogEl == null) {
+			VFSContainer uploadVFSContainer = new LocalFolderImpl(new File(WebappHelper.getTmpDir(), "poster_" + UUID.randomUUID()));
+			newFile = uploadNewFile(fileToUpload, fileName, uploadVFSContainer, publishedBy);
 		} else {
-			newFile = overwriteExistingFile(fileToUpload, courseContainer, existingVFSItem, publishedBy);
+			VFSContainer existingsVFSContainer = getDialogContainer(existingDialogEl);
+			VFSItem existingVFSItem = existingsVFSContainer.resolve(fileName);
+			newFile = overwriteExistingFile(fileToUpload, existingsVFSContainer, existingVFSItem, publishedBy);
 		}
 
 		return newFile;
 	}
 
 	@Override
-	public DialogElement doCopySelectedFile(String chosenFile, String filename, VFSContainer courseContainer,
-								   Identity identity, RepositoryEntry entry, String courseNodeIdent,
-								   String authoredBy) {
-		VFSLeaf vl = (VFSLeaf) courseContainer.resolve(chosenFile);
+	public DialogElement doCopySelectedFile(String fileToCopy, String filename, VFSContainer courseContainer,
+											Identity identity, RepositoryEntry entry, String courseNodeIdent,
+											String authoredBy) {
+		VFSLeaf vl = (VFSLeaf) courseContainer.resolve(fileToCopy);
 		if (vl != null) {
 			DialogElement newElement = createDialogElement(entry, identity,
 					filename, vl.getSize(), courseNodeIdent, authoredBy);

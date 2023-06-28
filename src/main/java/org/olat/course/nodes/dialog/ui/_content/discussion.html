@@ -23,7 +23,9 @@
 		<div class="o_dialog_metadata_info">
 			<div><strong>$r.translate("table.header.published.by")</strong></div>$author
 			<div><strong>$r.translate("table.header.last.activity.date")</strong></div>$lastActivity
-			<div><strong>$r.translate("table.header.authored.by")</strong></div>$authoredBy
+			#if($r.isNotEmpty($authoredBy))
+				<div><strong>$r.translate("table.header.authored.by")</strong></div>$authoredBy
+			#end
 		</div>
 		<div class="o_dialog_file_button_group">
 			<div>$r.render("download")</div>

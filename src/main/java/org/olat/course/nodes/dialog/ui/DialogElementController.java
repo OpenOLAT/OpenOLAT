@@ -119,13 +119,14 @@ public class DialogElementController extends BasicController implements Activate
 		listenTo(forumCtr);
 		
 		mainVC = createVelocityContainer("discussion");
+		boolean isCurrentUserCreator = element.getAuthor().equals(getIdentity());
 		
 		downloadLink = LinkFactory.createLink("download", "download", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 		downloadLink.setCustomDisplayText(translate("dialog.download.file"));
 		downloadLink.setIconLeftCSS("o_icon o_icon-fw o_icon_download");
 		downloadLink.setTarget("_blank");
 
-		boolean canEditDialog = secCallback.mayEditOwnMessage() || secCallback.mayEditMessageAsModerator();
+		boolean canEditDialog = isCurrentUserCreator || secCallback.mayEditMessageAsModerator();
 		mainVC.contextPut("isOwner", canEditDialog);
 		editMetadataLink = LinkFactory.createLink("editMetadata", "editMetadata", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 		editMetadataLink.setCustomDisplayText(translate("dialog.metadata.edit"));
@@ -248,7 +249,9 @@ public class DialogElementController extends BasicController implements Activate
 	private void doDownload(UserRequest ureq) {
 		VFSLeaf file = dialogElmsMgr.getDialogLeaf(element);
 		if(file != null) {
-			ureq.getDispatchResult().setResultingMediaResource(new VFSMediaResource(file));
+			VFSMediaResource mediaResource = new VFSMediaResource(file);
+			mediaResource.setDownloadable(true);
+			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 			ThreadLocalUserActivityLogger.log(CourseLoggingAction.DIALOG_ELEMENT_FILE_DOWNLOADED, getClass(),
 					LoggingResourceable.wrapBCFile(element.getFilename()));
 		} else {

@@ -203,12 +203,12 @@ public class DialogElementListEditController extends FormBasicController {
 			}
 		} else if (source == dialogFileUploadCtrl) {
 			if(event == Event.DONE_EVENT) {
-				VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 				if (dialogFileUploadCtrl.getActionSelectedKey().equals(DialogFileUploadController.DIALOG_ACTION_UPLOAD)) {
 					VFSLeaf newFile = dialogElementsManager.doUpload(
 							dialogFileUploadCtrl.getFileUploadEl().getUploadFile(),
 							dialogFileUploadCtrl.getFileNameElValue(),
-							courseContainer,
+							entry,
+							courseNode.getIdent(),
 							getIdentity());
 
 					if (newFile != null) {
@@ -219,6 +219,7 @@ public class DialogElementListEditController extends FormBasicController {
 						fireEvent(ureq, Event.FAILED_EVENT);
 					}
 				} else {
+					VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
 					String filename = dialogFileUploadCtrl.getFileNameElValue();
 					String chosenFile = dialogFileUploadCtrl.getFileChooserElValue();
 					if(!chosenFile.contains("://")) {

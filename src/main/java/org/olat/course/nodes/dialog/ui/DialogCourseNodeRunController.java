@@ -116,10 +116,6 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		}
 		
 		backButton = LinkFactory.createLinkBack(mainVC, this);
-		
-		if(secCallback.mayOpenNewThread()) {
-			initToolbar();
-		}
 
 		dialogElementListCtrl = new DialogElementListController(ureq, getWindowControl(), userCourseEnv, courseNode, secCallback, true);
 		listenTo(dialogElementListCtrl);
@@ -131,16 +127,23 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	 * Toolbar for deleting/archiving current/selected dialog file
 	 */
 	private void initToolbar() {
-		Dropdown actionDropdown = new Dropdown("actionTools", null, false, getTranslator());
-		actionDropdown.setButton(true);
-		actionDropdown.setEmbbeded(true);
-		actionDropdown.setCarretIconCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+		boolean isCurrentUserCreator = element.getAuthor().equals(getIdentity());
+		boolean canEditDialog = isCurrentUserCreator || secCallback.mayEditMessageAsModerator();
 
-		deleteLink = LinkFactory.createLink(DELETE, DELETE, getTranslator(), mainVC, this, Link.LINK);
-		deleteLink.setDomReplacementWrapperRequired(false);
-		deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
-		actionDropdown.addComponent(deleteLink);
-		mainVC.put("actionDropdown", actionDropdown);
+		if(canEditDialog) {
+			Dropdown actionDropdown = new Dropdown("actionTools", null, false, getTranslator());
+			actionDropdown.setButton(true);
+			actionDropdown.setEmbbeded(true);
+			actionDropdown.setCarretIconCSS("o_icon o_icon_actions o_icon-fws o_icon-lg");
+
+			deleteLink = LinkFactory.createLink(DELETE, DELETE, getTranslator(), mainVC, this, Link.LINK);
+			deleteLink.setDomReplacementWrapperRequired(false);
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			actionDropdown.addComponent(deleteLink);
+			mainVC.put("actionDropdown", actionDropdown);
+		} else {
+			mainVC.remove("actionDropdown");
+		}
 	}
 	
 	@Override
@@ -221,7 +224,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		if(!checkAccess(element)) {
 			return;
 		}
-		
+		initToolbar();
 		dialogElementCtrl = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 		listenTo(dialogElementCtrl);
 		mainVC.put(FORUM, dialogElementCtrl.getInitialComponent());
@@ -234,7 +237,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		if(!checkAccess(element)) {
 			return;
 		}
-		
+		initToolbar();
 		dialogElementCtrl = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 		listenTo(dialogElementCtrl);
 		mainVC.put(FORUM, dialogElementCtrl.getInitialComponent());
@@ -251,6 +254,8 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 			showInfo("element.already.deleted");
 			dialogElementListCtrl.loadModel();
 		} else {
+			initToolbar();
+
 			dialogElementCtrl = new DialogElementController(ureq, getWindowControl(), element, userCourseEnv, courseNode, secCallback);
 			listenTo(dialogElementCtrl);
 			mainVC.put(FORUM, dialogElementCtrl.getInitialComponent());
