@@ -167,7 +167,7 @@ public class DialogFileUploadController extends FormBasicController {
 
 	private void doCopy(UserRequest ureq) {
 		VFSContainer courseContainer = userCourseEnv.getCourseEnvironment().getCourseFolderContainer();
-		fileCopyCtrl = new LinkChooserController(ureq, getWindowControl(), courseContainer, null, null, null, false, "", null, null, true);
+		fileCopyCtrl = new LinkChooserController(ureq, getWindowControl(), courseContainer, null, null, null, false, "", null, null, false);
 		listenTo(fileCopyCtrl);
 
 		removeAsListenerAndDispose(cmc);
