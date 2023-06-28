@@ -8,6 +8,17 @@
 			#end
 		</div>
 	</div>
+#if($row.getNumOfUnreadThreads() > 0 || $row.getNumOfUnreadMessages() > 0)
+<div class="o_dialog_card_label_new">
+	$r.translate("new"):
+	#if($row.getNumOfUnreadThreads() > 0)
+		<div>$row.getNumOfUnreadThreads() $r.translate("table.header.threads")</div>
+	#end
+	#if($row.getNumOfUnreadMessages() > 0)
+		<div>$row.getNumOfUnreadMessages() $r.translate("table.header.messages")</div>
+	#end
+</div>
+#end
 	<div class="o_dialog_card_meta o_dialog_file_meta">
 		<div class="o_flex_first_grow_base">
 			<div class="o_nowrap">

@@ -13,6 +13,20 @@
   }
 }
 
+.o_dialog_card_label_new {
+  @extend %o_labeled;
+  font-weight: bold;
+  background: #fff8e5;
+  text-transform: none;
+  display: inline-flex;
+  font-size: 14px;
+  column-gap: 5px;
+  border-color: $o-edu-type-standard-course-color;
+  margin: 15px;
+  @include o-high-contrast-color(#998100);
+}
+
+
 .o_dialog_file_list {
   &.o_rendertype_custom {
     .o_dialog_file_rows {
