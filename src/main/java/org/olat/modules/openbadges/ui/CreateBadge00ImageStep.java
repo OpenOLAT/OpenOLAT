@@ -60,7 +60,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.image", null);
-		setNextStep(new CreateBadge01CustomizationStep(ureq));
+		setNextStep(new CreateBadge02DetailsStep(ureq));
 	}
 
 	@Override

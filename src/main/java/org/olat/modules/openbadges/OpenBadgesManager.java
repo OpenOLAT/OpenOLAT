@@ -93,6 +93,8 @@ public interface OpenBadgesManager {
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 
+	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
+
 	void updateBadgeAssertion(BadgeAssertion badgeAssertion);
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);

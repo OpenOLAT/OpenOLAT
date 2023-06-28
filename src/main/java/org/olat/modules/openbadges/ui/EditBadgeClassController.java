@@ -94,7 +94,7 @@ public class EditBadgeClassController extends FormBasicController {
 	private TextAreaElement criteriaEl;
 	private TextAreaElement issuerEl;
 	private TagSelection categoriesEl;
-	private List<? extends TagInfo> categories;
+	private final List<? extends TagInfo> categories;
 	private FormSubmit submitButton;
 
 	@Autowired

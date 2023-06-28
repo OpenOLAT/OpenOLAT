@@ -412,6 +412,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return sizeForVfsLeaf(bakedImageLeaf);
 	}
 
+	@Override
 	public VFSLeaf getBadgeAssertionVfsLeaf(String badgeAssertionFile) {
 		VFSContainer badgeAssertionsContainer = getBadgeAssertionsRootContainer();
 		if (badgeAssertionsContainer.resolve(badgeAssertionFile) instanceof VFSLeaf assertionFileLeaf) {
