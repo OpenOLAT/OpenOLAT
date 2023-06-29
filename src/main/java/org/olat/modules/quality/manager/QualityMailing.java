@@ -567,14 +567,37 @@ class QualityMailing {
 		String body = translator.translate("qualitative.feedback.body");
 		QualityMailTemplateBuilder mailBuilder = QualityMailTemplateBuilder.builder(subject, body, locale);
 		
-		mailBuilder.withStart(dataCollection.getStart())
-				.withDeadline(dataCollection.getDeadline())
-				.withTopicType(translator.translate(QualityDataCollectionTopicType.IDENTIY.getI18nKey()))
-				.withTopic(user.getFirstName() + " " + user.getLastName())
-				.withTitle(dataCollection.getTitle());
+		mailBuilder.withExecutor(user);
+		
+		QualityDataCollectionViewSearchParams searchParams = new QualityDataCollectionViewSearchParams();
+		searchParams.setDataCollectionRef(dataCollection);
+		List<QualityDataCollectionView> dataCollectionViews = dataCollectionDao.loadDataCollections(translator, searchParams, 0, -1);
+		
+		QualityDataCollectionView dataCollectionView = null;
+		if (!dataCollectionViews.isEmpty()) {
+			dataCollectionView = dataCollectionViews.get(0);
+			mailBuilder.withStart(dataCollectionView.getStart())
+					.withDeadline(dataCollectionView.getDeadline())
+					.withTopic(dataCollectionView.getTopic())
+					.withTitle(dataCollectionView.getTitle())
+					.withPreviousTitle(dataCollectionView.getPreviousTitle());
+			
+			String custom = translator.translate(QualityDataCollectionTopicType.CUSTOM.getI18nKey());
+			if (!custom.equals(dataCollectionView.getTranslatedTopicType())) {
+				mailBuilder.withTopicType(dataCollectionView.getTranslatedTopicType());
+			}
+			
+			String seriePorition = dataCollectionView.getPreviousTitle() != null
+					? translator.translate("reminder.serie.followup")
+					: translator.translate("reminder.serie.primary");
+			mailBuilder.withSeriePosition(seriePorition);
+		}
 		
 		String url = getReportUrl(dataCollection.getKey());
 		mailBuilder.withUrl(url);
+		
+		String surveyContext = createDatCollectionContext(dataCollection, locale);
+		mailBuilder.withContext(surveyContext);
 		
 		return mailBuilder.build();
 	}
