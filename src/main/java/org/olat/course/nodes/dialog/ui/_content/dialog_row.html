@@ -8,7 +8,7 @@
 			#end
 		</div>
 	</div>
-#if($row.getNumOfUnreadThreads() > 0 || $row.getNumOfUnreadMessages() > 0)
+#if($r.isNotNull($row) && ($row.getNumOfUnreadThreads() > 0 || $row.getNumOfUnreadMessages() > 0))
 <div class="o_dialog_card_label_new">
 	$r.translate("new"):
 	#if($row.getNumOfUnreadThreads() > 0)
