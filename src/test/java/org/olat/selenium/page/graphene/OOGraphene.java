@@ -858,14 +858,14 @@ public class OOGraphene {
 					try {
 						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
-						//e.printStackTrace();
+						e.printStackTrace();
 					}
 				} catch(Exception e1) {
 					try {
 						waitingALittleLonger();
 						clickCloseButton(browser, closeButton);
 					} catch(Exception e2) {
-						//e2.printStackTrace();
+						e2.printStackTrace();
 					}
 				}
 			}

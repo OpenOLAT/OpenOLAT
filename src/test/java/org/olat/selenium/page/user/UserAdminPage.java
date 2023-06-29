@@ -259,17 +259,59 @@ public class UserAdminPage {
 		return this;
 	}
 	
+	public UserAdminPage assertOnInactiveUserInList(String username) {
+		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span/i[contains(@class,'o_icon_identity_inactive')]]/td/a[text()[contains(.,'" + username + "')]]");
+		OOGraphene.waitElement(userLinksBy, browser);
+		return this;
+	}
+	
 	public UserAdminPage assertNotInUserList(String username) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr//td//a[text()[contains(.,'" + username + "')]]");
 		OOGraphene.waitElementDisappears(userLinksBy, 5, browser);
 		return this;
 	}
 	
+	/**
+	 * Select the check box of a row.
+	 * 
+	 * @param username The username
+	 * @return itself
+	 */
+	public UserAdminPage selectRowByUsername(String username) {
+		By selectBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//tr[td/a[contains(text(),'" + username + "')]]/td/input[@name='tb_ms']");
+		OOGraphene.waitElement(selectBy, browser);
+		browser.findElement(selectBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	/**
+	 * Select a user and open the details view.
+	 * 
+	 * @param username The username
+	 * @return Itself
+	 */
 	public UserAdminPage selectByUsername(String username) {
 		By selectBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//td/a[text()[contains(.,'" + username + "')]]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public UserAdminPage modifyStatusBatch(int status) {
+		By modifyButtonBy = By.cssSelector("a.o_sel_user_bulk_change_status");
+		OOGraphene.waitElement(modifyButtonBy, browser);
+		browser.findElement(modifyButtonBy).click();
+		OOGraphene.waitModalDialog(browser);
+		
+		By statusChoiceBy = By.xpath("//fieldset[contains(@class,'o_sel_user_bulk_change_status_form')]//input[@name='status'][@type='radio'][@value='" + status + "']");
+		browser.findElement(statusChoiceBy).click();
+		OOGraphene.waitBusy(browser);
+		
+		By changeStatusBy = By.cssSelector("fieldset.o_sel_user_bulk_change_status_form button.btn.btn-primary");
+		browser.findElement(changeStatusBy).click();
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 }

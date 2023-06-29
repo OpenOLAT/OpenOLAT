@@ -31,6 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.id.Identity;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
@@ -925,6 +926,44 @@ public class UserTest extends Deployments {
 			.loginAs(newUser.getLogin(), password1)
 			.resume()
 			.assertLoggedInByLastName("Akashiya");
+	}
+	
+	/**
+	 * The administrator modify the status of a user with the batch function.
+	 * It sets it inactive and the user try unsuccessfully to log in.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyUserStatusBatch()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl)
+				.createRandomUser("Katherin");
+		
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		UserAdminPage userAdminPage = navBar
+				.openUserManagement();
+		userAdminPage
+			.openSearchUser()
+			.searchByUsername(user.getLogin())
+			.assertOnUserInList(user.getLogin())
+			.selectRowByUsername(user.getLogin())
+			.modifyStatusBatch(Identity.STATUS_INACTIVE.intValue())
+			.assertOnInactiveUserInList(user.getLogin());
+
+		LoginPage userLoginPage = LoginPage.load(browser, deploymentUrl);
+		userLoginPage
+			.loginDenied(user.getLogin(), user.getPassword());
 	}
 	
 
