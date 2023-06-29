@@ -90,7 +90,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
@@ -351,10 +350,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		}
 		if(roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
 			bulkChangesButton = uifactory.addFormLink("bulkChange.title", formLayout, Link.BUTTON);
+			bulkChangesButton.setElementCssClass("o_sel_user_bulk_change_attributes");
 			tableEl.addBatchButton(bulkChangesButton);
 		}
 		if(roles.isAdministrator() || roles.isRolesManager()) {
 			bulkStatusButton = uifactory.addFormLink("bulkStatus.title", formLayout, Link.BUTTON);
+			bulkStatusButton.setElementCssClass("o_sel_user_bulk_change_status");
 			tableEl.addBatchButton(bulkStatusButton);
 		}
 		if(roles.isAdministrator() ) {
@@ -515,8 +516,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent te = (SelectionEvent) event;
+			if(event instanceof SelectionEvent te) {
 				String cmd = te.getCommand();
 				IdentityPropertiesRow userRow = tableModel.getObject(te.getIndex());
 				if("select".equals(cmd)) {
@@ -811,7 +811,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		String title;
 		if(identities.size() == 1) {
 			String fullName = userManager.getUserDisplayName(identities.get(0));
-			title = translate("bulkStatus.title.single", StringHelper.escapeHtml(fullName));
+			title = translate("bulkStatus.title.single", fullName);
 		} else {
 			title = translate("bulkStatus.title.plural", Integer.toString(identities.size()));
 		}

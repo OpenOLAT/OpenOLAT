@@ -35,6 +35,7 @@ import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -165,7 +166,8 @@ class UserBulkChangeStep02 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, "table.role.status", colPos++, false, null, FlexiColumnModel.ALIGNMENT_LEFT, textRenderer));
 
 			OverviewModel tableDataModel = new OverviewModel(mergedDataChanges, tableColumnModel);
-			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
+			FlexiTableElement tableEl = uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
+			tableEl.setElementCssClass("o_sel_users_overview");
 
 			Set<Long> allGroups = new HashSet<>(); 
 			List<Long> ownGroups = userBulkChanges.getOwnerGroups();

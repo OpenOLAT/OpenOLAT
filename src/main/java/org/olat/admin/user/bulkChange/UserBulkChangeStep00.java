@@ -191,7 +191,7 @@ class UserBulkChangeStep00 extends BasicStep {
 							if (handler.getName().equals(formItem.getName())) {
 								// first check on mandatoryness
 								if (userManager.isMandatoryUserProperty(usageIdentifyer, handler) && !StringHelper.containsNonWhitespace(evaluatedInputFieldValue)) {
-									formItem.setErrorKey("form.name." + handler.getName() + ".error.empty", null);
+									formItem.setErrorKey("form.name." + handler.getName() + ".error.empty");
 									return false;
 								}
 								// second check on property content
@@ -247,6 +247,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
 			FormItemContainer innerFormLayout = FormLayoutContainer.createDefaultFormLayout("innerFormLayout", getTranslator());
+			innerFormLayout.setElementCssClass("o_sel_user_attributes");
 			formLayout.add(innerFormLayout);
 
 			// add input field for password
@@ -301,6 +302,7 @@ class UserBulkChangeStep00 extends BasicStep {
 					
 					FormItem formItem = userPropertyHandler.addFormItem(getLocale(), null, usageIdentifyer, isAdministrativeUser, innerFormLayout);
 					formItem.setLabel(null, null);
+					formItem.setElementCssClass("o_sel_user_" + userPropertyHandler.getName());
 					formItem.setVisible(false);
 					checkboxEl.setUserObject(formItem);
 					checkBoxes.add(checkboxEl);

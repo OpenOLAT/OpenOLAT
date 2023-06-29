@@ -182,8 +182,10 @@ class UserBulkChangeStep01 extends BasicStep {
 		private void initRole(OrganisationRoles role, FormItemContainer formLayout) {
 			MultipleSelectionElement chkRole = uifactory.addCheckboxesHorizontal("rolechk_" + (++counter), "table.role." + role.name(), formLayout, onKeys, onValues);
 			chkRole.addActionListener(FormEvent.ONCHANGE);
+			chkRole.setElementCssClass("o_sel_role_" + role.name());
 
 			SingleSelection setRole = uifactory.addDropdownSingleselect("roleset_" + (++counter), null, formLayout, addremove, addremoveTranslated, null);
+			setRole.setElementCssClass("o_sel_role_" + role.name());
 			setRole.addActionListener(FormEvent.ONCHANGE);
 			setRole.setVisible(false);
 			
@@ -204,6 +206,7 @@ class UserBulkChangeStep01 extends BasicStep {
 			// the checkboxes properly we need a default layout for the remaining form
 			// elements
 			FormItemContainer innerFormLayout = FormLayoutContainer.createDefaultFormLayout("innerFormLayout", getTranslator());
+			innerFormLayout.setElementCssClass("o_sel_user_roles");
 			formLayout.add(innerFormLayout);
 			
 			if(userBulkChanges.getOrganisation() == null) {
