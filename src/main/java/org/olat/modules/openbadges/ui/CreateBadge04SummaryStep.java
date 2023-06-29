@@ -19,8 +19,6 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,10 +34,8 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
@@ -97,6 +93,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
 			uifactory.addStaticTextElement("name", "form.name", badgeClass.getName(), formLayout);
+			uifactory.addStaticTextElement("version", "form.version", badgeClass.getVersion(), formLayout);
 			uifactory.addStaticTextElement("language", "form.language", badgeClass.getLanguage(), formLayout);
 			uifactory.addStaticTextElement("description", "form.description", badgeClass.getDescription(),formLayout);
 			uifactory.addStaticTextElement("expires", "form.badge.expiry", createExpiryString(badgeClass), formLayout);
@@ -149,22 +146,11 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 		private void setSvg() {
 			Long templateKey = createContext.getSelectedTemplateKey();
-			String courseTitle = createContext.getCourse().getCourseTitle();
-			String colorId = createContext.getBackgroundColorId();
-			if (templateKey != null) {
-				BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
-				VFSLeaf templateLeaf = openBadgesManager.getTemplateVfsLeaf(template.getImage());
-				if (templateLeaf instanceof LocalFileImpl localFile) {
-					String svg;
-					try {
-						svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
-						svg = svg.replace("$title", courseTitle);
-						svg = svg.replace("$background", openBadgesManager.getColorAsRgb(colorId));
-						flc.contextPut("svg", svg);
-					} catch (IOException e) {
-						flc.contextRemove("svg");
-					}
-				}
+			String backgroundColorId = createContext.getBackgroundColorId();
+			String title = createContext.getTitle();
+			String svg = openBadgesManager.getTemplateSvgImageWithSubstitutions(templateKey, backgroundColorId, title);
+			if (StringHelper.containsNonWhitespace(svg)) {
+				flc.contextPut("svg", svg);
 			} else {
 				flc.contextRemove("svg");
 			}

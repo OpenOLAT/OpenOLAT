@@ -23,11 +23,15 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -37,6 +41,8 @@ import org.olat.repository.RepositoryEntryRef;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public interface OpenBadgesManager {
+	String VAR_TITLE = "$title";
+	String VAR_BACKGROUND = "$background";
 
 	//
 	// Template
@@ -51,9 +57,19 @@ public interface OpenBadgesManager {
 
 	BadgeTemplate getTemplate(Long key);
 
+	String getTemplateSvgPreviewImage(String templateImage);
+
 	VFSLeaf getTemplateVfsLeaf(String templateImage);
 
 	String getColorAsRgb(String colorId);
+
+	Set<String> getTemplateSvgSubstitutionVariables(String image);
+
+	String getTemplateSvgImageWithSubstitutions(Long templateKey, String backgroundColorId, String title);
+
+	String getTemplateSvgImageWithSubstitutions(String templateImage, String backgroundColorId, String title);
+
+	SelectionValues getTemplateTranslationLanguages(Locale displayLocale);
 
 	void updateTemplate(BadgeTemplate template);
 
@@ -67,6 +83,11 @@ public interface OpenBadgesManager {
 	BadgeClass createBadgeClass(String uuid, String version, String language, File sourceFile, String targetFileName,
 								String name, String description, String criteria, String salt, String issuer,
 								Identity savedBy);
+
+	void createBadgeClass(BadgeClassImpl badgeClass);
+
+	String createBadgeClassImageFromSvgTemplate(Long selectedTemplateKey, String backgroundColorId, String title,
+												Identity savedBy);
 
 	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 

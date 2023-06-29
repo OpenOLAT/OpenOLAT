@@ -19,14 +19,14 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import java.util.Set;
 
 import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.ColorPickerElement;
+import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.control.Controller;
@@ -36,9 +36,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
-import org.olat.core.util.vfs.LocalFileImpl;
-import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.openbadges.BadgeTemplate;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +62,8 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		private CreateBadgeClassWizardContext createContext;
 		private ColorPickerElement backgroundColor;
+
+		private TextElement titleEl;
 
 		@Autowired
 		private ColorService colorService;
@@ -97,13 +97,23 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			backgroundColor = uifactory.addColorPickerElement("backgroundColor", "var.background",
-					formLayout, colorService.getColors());
-			backgroundColor.addActionListener(FormEvent.ONCHANGE);
-			if (createContext.getBackgroundColorId() != null) {
-				backgroundColor.setColor(createContext.getBackgroundColorId());
-			} else {
-				backgroundColor.setColor(colorService.getColors().get(0));
+			Set<String> templateVariables = createContext.getTemplateVariables();
+			if (templateVariables != null) {
+				if (templateVariables.contains(OpenBadgesManager.VAR_BACKGROUND)) {
+					backgroundColor = uifactory.addColorPickerElement("backgroundColor", "var.background",
+							formLayout, colorService.getColors());
+					backgroundColor.addActionListener(FormEvent.ONCHANGE);
+					if (createContext.getBackgroundColorId() != null) {
+						backgroundColor.setColor(createContext.getBackgroundColorId());
+					} else {
+						backgroundColor.setColor(colorService.getColors().get(0));
+					}
+				}
+				if (templateVariables.contains(OpenBadgesManager.VAR_TITLE)) {
+					String title = createContext.getTitle();
+					titleEl = uifactory.addTextElement("title", "var.title", 24, title, formLayout);
+					titleEl.addActionListener(FormEvent.ONCHANGE);
+				}
 			}
 
 			setSvg();
@@ -111,22 +121,11 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 
 		private void setSvg() {
 			Long templateKey = createContext.getSelectedTemplateKey();
-			String courseTitle = createContext.getCourse().getCourseTitle();
-			String colorId = backgroundColor.getColor().getId();
-			if (templateKey != null) {
-				BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
-				VFSLeaf templateLeaf = openBadgesManager.getTemplateVfsLeaf(template.getImage());
-				if (templateLeaf instanceof LocalFileImpl localFile) {
-					String svg;
-					try {
-						svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
-						svg = svg.replace("$title", courseTitle);
-						svg = svg.replace("$background", openBadgesManager.getColorAsRgb(colorId));
-						flc.contextPut("svg", svg);
-					} catch (IOException e) {
-						flc.contextRemove("svg");
-					}
-				}
+			String backgroundColorId = createContext.getBackgroundColorId();
+			String title = createContext.getTitle();
+			String svg = openBadgesManager.getTemplateSvgImageWithSubstitutions(templateKey, backgroundColorId, title);
+			if (StringHelper.containsNonWhitespace(svg)) {
+				flc.contextPut("svg", svg);
 			} else {
 				flc.contextRemove("svg");
 			}
@@ -136,6 +135,9 @@ public class CreateBadge01CustomizationStep extends BasicStep {
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if (source == backgroundColor) {
 				createContext.setBackgroundColorId(backgroundColor.getColor().getId());
+				setSvg();
+			} else if (source == titleEl) {
+				createContext.setTitle(titleEl.getValue());
 				setSvg();
 			}
 			super.formInnerEvent(ureq, source, event);

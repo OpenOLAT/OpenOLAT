@@ -86,7 +86,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String uuid = badgeAssertion != null ? badgeAssertion.getUuid() :
 				UUID.randomUUID().toString().replace("-", "");
-		uuidEl = uifactory.addStaticTextElement("form.uuid", uuid, formLayout);
+		uuidEl = uifactory.addStaticTextElement("form.identifier", uuid, formLayout);
 
 		FormLayoutContainer recipientButtonCont = FormLayoutContainer.createButtonLayout("recipientContainer", getTranslator());
 		recipientButtonCont.setRootForm(mainForm);

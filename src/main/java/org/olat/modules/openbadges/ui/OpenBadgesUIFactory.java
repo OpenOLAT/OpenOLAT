@@ -32,6 +32,10 @@ import org.olat.core.util.Util;
  */
 public class OpenBadgesUIFactory {
 
+	public static String getBundleName() {
+		return OpenBadgesUIFactory.class.getPackage().getName();
+	}
+
 	public static String getTemplateNameI18nKey(String identifier) {
 		return "template.name.id." + identifier;
 	}

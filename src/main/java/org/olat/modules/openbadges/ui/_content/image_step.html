@@ -30,13 +30,16 @@
 		background-color: #dddddd;
 	}
 
+	.o_template_card.o_selected {
+		background-color: #dddddd;
+	}
+
 	.o_template_image {
 		display: inline-block;
 		position: absolute;
 		left: 50%;
 		transform: translateX(-50%);
 		top: 8px;
-
 	}
 
 	.o_template_title {
@@ -46,29 +49,29 @@
 		text-align: center;
 		line-height: 16px;
 		left: 50%;
-		transform: translateX(-50%);
+		transform: translateX(-50%) scale(90%);
+	}
+
+	.o_template_language {
+		margin-top: 15px;
+		margin-bottom: 20px;
 	}
 </style>
 
 <div class="o_badge_wiz_image_step o_form form-horizontal">
 	#if($chooseTemplate)
 	<legend>$r.translate("form.choose.a.template")</legend>
+	<div class="o_template_language">
+		$r.render("form.template.language", "barebones", "form")
+	</div>
 	<div class="o_template_cards">
 		#foreach($card in $cards)
-		<div class="o_template_card o_selectable"
+		<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
 			 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
 			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
 			<div class="o_template_title">${card.name()}</div>
 		</div>
 		#end
-	</div>
-	#else
-	<legend>$r.translate("form.template")</legend>
-	<div class="o_template_cards">
-		<div class="o_template_card">
-			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
-			<div class="o_template_title">${card.name()}</div>
-		</div>
 	</div>
 	#end
 </div>

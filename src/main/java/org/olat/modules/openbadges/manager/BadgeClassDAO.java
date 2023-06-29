@@ -61,6 +61,13 @@ public class BadgeClassDAO {
 		return badgeClass;
 	}
 
+	public void createBadgeClass(BadgeClassImpl badgeClass) {
+		badgeClass.setKey(null);
+		badgeClass.setCreationDate(new Date());
+		badgeClass.setLastModified(badgeClass.getCreationDate());
+		dbInstance.getCurrentEntityManager().persist(badgeClass);
+	}
+
 	public List<BadgeClass> getBadgeClasses(RepositoryEntryRef entry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select class from badgeclass class ");

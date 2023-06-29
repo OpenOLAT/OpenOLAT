@@ -19,12 +19,13 @@
  */
 package org.olat.modules.openbadges.ui;
 
-import java.util.UUID;
+import java.util.Set;
 
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
@@ -41,19 +42,24 @@ public class CreateBadgeClassWizardContext {
 	private final ICourse course;
 	private Long selectedTemplateKey;
 	private String selectedTemplateImage;
+	private Set<String> templateVariables;
 	private String backgroundColorId;
+	private String title;
 	private BadgeCriteria badgeCriteria;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		course = CourseFactory.loadCourse(entry);
 		badgeClass = new BadgeClassImpl();
-		badgeClass.setUuid(UUID.randomUUID().toString().replace("-", ""));
+		badgeClass.setUuid(OpenBadgesUIFactory.createIdentifier());
+		badgeClass.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		badgeClass.setSalt("badgeClass" + Math.abs(badgeClass.getUuid().hashCode()));
 		badgeClass.setIssuer(course.getCourseTitle());
 		badgeClass.setVersion("1.0");
 		badgeClass.setLanguage("en");
 		badgeClass.setValidityEnabled(false);
+		badgeClass.setEntry(entry);
 		backgroundColorId = "lightgray";
+		title = course.getCourseTitle();
 		initCriteria();
 	}
 
@@ -94,6 +100,14 @@ public class CreateBadgeClassWizardContext {
 		this.backgroundColorId = backgroundColorId;
 	}
 
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
 	public BadgeCriteria getBadgeCriteria() {
 		return badgeCriteria;
 	}
@@ -107,6 +121,18 @@ public class CreateBadgeClassWizardContext {
 			return false;
 		}
 
+		if (getTemplateVariables() == null || getTemplateVariables().isEmpty()) {
+			return false;
+		}
+
 		return true;
+	}
+
+	public Set<String> getTemplateVariables() {
+		return templateVariables;
+	}
+
+	public void setTemplateVariables(Set<String> templateVariables) {
+		this.templateVariables = templateVariables;
 	}
 }

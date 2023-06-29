@@ -20,13 +20,18 @@
 package org.olat.modules.openbadges.ui;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -38,6 +43,8 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
@@ -78,9 +85,14 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 		private CreateBadgeClassWizardContext createContext;
 		private List<Card> cards;
+		private SingleSelection templateLanguageDropdown;
+		private SelectionValues templateLanguageKV;
+		private String mediaUrl;
 
 		@Autowired
 		OpenBadgesManager openBadgesManager;
+		@Autowired
+		I18nManager i18nManager;
 
 		public CreateBadge00ImageForm(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
 			super(ureq, wControl, rootForm, runContext, LAYOUT_CUSTOM, "image_step");
@@ -88,6 +100,8 @@ public class CreateBadge00ImageStep extends BasicStep {
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
 				createContext = createBadgeClassWizardContext;
 			}
+
+			templateLanguageKV = openBadgesManager.getTemplateTranslationLanguages(getLocale());
 
 			initForm(ureq);
 
@@ -106,15 +120,27 @@ public class CreateBadge00ImageStep extends BasicStep {
 			super.event(ureq, source, event);
 		}
 
+		@Override
+		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+			if (source == templateLanguageDropdown) {
+				doSelectLanguage();
+			}
+			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void doSelectLanguage() {
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			badgeClass.setLanguage(templateLanguageDropdown.getSelectedKey());
+			initCards();
+		}
+
 		private void doSelectTemplate(long templateKey) {
 			BadgeTemplate template = openBadgesManager.getTemplate(templateKey);
-			BadgeClass badgeClass = createContext.getBadgeClass();
-			badgeClass.setName(template.getName());
-			badgeClass.setDescription(template.getDescription());
 			createContext.setSelectedTemplateKey(template.getKey());
-			createContext.setSelectedTemplateImage(template.getImage());
-			flc.contextPut("chooseTemplate", false);
-			flc.contextPut("card", findCard(templateKey));
+			String image = template.getImage();
+			createContext.setSelectedTemplateImage(image);
+			createContext.setTemplateVariables(openBadgesManager.getTemplateSvgSubstitutionVariables(image));
+			flc.contextPut("selectedTemplateKey", templateKey);
 		}
 
 		private Card findCard(long templateKey) {
@@ -128,6 +154,18 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 		@Override
 		protected void formNext(UserRequest ureq) {
+			if (createContext.getSelectedTemplateKey() == null) {
+				return;
+			}
+
+			BadgeTemplate template = openBadgesManager.getTemplate(createContext.getSelectedTemplateKey());
+			String languageKey = templateLanguageDropdown.getSelectedKey();
+			Locale locale = i18nManager.getLocaleOrNull(languageKey);
+			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
+			BadgeClass badgeClass = createContext.getBadgeClass();
+			badgeClass.setName(OpenBadgesUIFactory.translateTemplateName(translator, template.getIdentifier()));
+			badgeClass.setDescription(OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier()));
+
 			if (createContext.needsCustomization()) {
 				setNextStep(new CreateBadge01CustomizationStep(ureq));
 			} else {
@@ -146,21 +184,39 @@ public class CreateBadge00ImageStep extends BasicStep {
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			flc.contextPut("chooseTemplate", createContext.getSelectedTemplateKey() == null);
 
-			String mediaUrl = registerMapper(ureq, new BadgeImageMapper());
+			templateLanguageDropdown = uifactory.addDropdownSingleselect("form.template.language", formLayout,
+					templateLanguageKV.keys(), templateLanguageKV.values());
+			templateLanguageDropdown.addActionListener(FormEvent.ONCHANGE);
+			templateLanguageDropdown.select(templateLanguageKV.keys()[0], true);
+			doSelectLanguage();
+
+			mediaUrl = registerMapper(ureq, new BadgeImageMapper());
+			initCards();
+		}
+
+		private void initCards() {
+			String languageKey = templateLanguageDropdown.getSelectedKey();
+			Locale locale = i18nManager.getLocaleOrNull(languageKey);
+			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
+
 			cards = openBadgesManager.getTemplatesWithSizes().stream()
 					.map(template -> {
 						Size targetSize = template.fitIn(120, 66);
+						String name = OpenBadgesUIFactory.translateTemplateName(translator, template.template().getIdentifier());
+						String image = template.template().getImage();
+						String previewImage = openBadgesManager.getTemplateSvgPreviewImage(template.template().getImage());
 						return new Card(
 								template.template().getKey(),
-								template.template().getName(),
-								mediaUrl + "/" + template.template().getImage(),
-								targetSize.getWidth(), targetSize.getHeight());
+								name,
+								mediaUrl + "/" + (previewImage != null ? previewImage : image),
+								targetSize.getWidth(), targetSize.getHeight(),
+								template.template().getIdentifier());
 					})
 					.toList();
 			flc.contextPut("cards", cards);
 		}
 
-		public record Card(Long key, String name, String imageSrc, int width, int height) {
+		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier) {
 		}
 
 		private class BadgeImageMapper implements Mapper {

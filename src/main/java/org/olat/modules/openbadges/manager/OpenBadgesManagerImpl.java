@@ -19,17 +19,23 @@
  */
 package org.olat.modules.openbadges.manager;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -39,19 +45,25 @@ import javax.imageio.stream.ImageInputStream;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.services.color.ColorService;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.i18n.I18nItem;
+import org.olat.core.util.i18n.I18nManager;
+import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.FileStorage;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.openbadges.BadgeAssertion;
@@ -62,6 +74,8 @@ import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
+import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.repository.RepositoryEntry;
@@ -90,6 +104,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String TEMPLATES_VFS_FOLDER = "templates";
 	private static final String CLASSES_VFS_FOLDER = "classes";
 	private static final String ASSERTIONS_VFS_FOLDER = "assertions";
+	private static final String TEMPLATE_IMAGE_PREVIEW_PREFIX = "._oo_preview_";
 
 	@Autowired
 	private FolderModule folderModule;
@@ -115,6 +130,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private DB dbInstance;
 	@Autowired
 	private OpenBadgesModule openBadgesModule;
+	@Autowired
+	private ColorService colorService;
+	@Autowired
+	private I18nModule i18nModule;
+	@Autowired
+	private I18nManager i18nManager;
 
 	private VelocityEngine velocityEngine;
 	private FileStorage bakedBadgesStorage;
@@ -153,14 +174,46 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			BadgeTemplate badgeTemplate = templateDAO.createTemplate(identifier, templateFileName, name);
 			badgeTemplate.setDescription(description);
 			badgeTemplate.setScopesAsCollection(scopes);
+			createPreviewImage(badgeTemplate, savedBy);
 			return templateDAO.updateTemplate(badgeTemplate);
 		}
 		return null;
 	}
 
+	private void createPreviewImage(BadgeTemplate badgeTemplate, Identity savedBy) {
+		Set<String> substitutionVariables = getTemplateSvgSubstitutionVariables(badgeTemplate.getImage());
+		if (substitutionVariables.isEmpty()) {
+			return;
+		}
+
+		String backgroundColorId = colorService.getColors().get(1);
+		String title = "Badge";
+
+		String image = badgeTemplate.getImage();
+		String previewImage = TEMPLATE_IMAGE_PREVIEW_PREFIX + image;
+		String svg = getTemplateSvgImageWithSubstitutions(badgeTemplate.getImage(), backgroundColorId, title);
+		VFSContainer templatesContainer = getBadgeTemplatesRootContainer();
+		VFSLeaf targetLeaf = templatesContainer.createChildLeaf(previewImage);
+		try (InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8))) {
+			VFSManager.copyContent(inputStream, targetLeaf, savedBy);
+		} catch (Exception e) {
+			log.error(e);
+		}
+	}
+
 	@Override
 	public BadgeTemplate getTemplate(Long key) {
 		return templateDAO.getTemplate(key);
+	}
+
+	@Override
+	public String getTemplateSvgPreviewImage(String templateImage) {
+		String previewImage = TEMPLATE_IMAGE_PREVIEW_PREFIX + templateImage;
+		VFSItem item = getBadgeTemplatesRootContainer().resolve(previewImage);
+		if (item != null) {
+			return previewImage;
+		}
+		return null;
 	}
 
 	@Override
@@ -234,18 +287,118 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public Set<String> getTemplateSvgSubstitutionVariables(String image) {
+		HashSet<String> result = new HashSet<>();
+
+		String suffix = FileUtils.getFileSuffix(image);
+		if (!"svg".equalsIgnoreCase(suffix)) {
+			return result;
+		}
+
+		VFSLeaf templateLeaf = getTemplateVfsLeaf(image);
+		if (templateLeaf instanceof LocalFileImpl localFile) {
+			try {
+				String svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+				if (svg.contains(VAR_BACKGROUND)) {
+					result.add(VAR_BACKGROUND);
+				}
+				if (svg.contains(VAR_TITLE)) {
+					result.add(VAR_TITLE);
+				}
+			} catch (IOException e) {
+				log.error(e);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public String getTemplateSvgImageWithSubstitutions(Long templateKey, String backgroundColorId, String title) {
+		BadgeTemplate template = getTemplate(templateKey);
+		return getTemplateSvgImageWithSubstitutions(template.getImage(), backgroundColorId, title);
+	}
+
+	@Override
+	public String getTemplateSvgImageWithSubstitutions(String templateImage, String backgroundColorId, String title) {
+		try {
+			VFSLeaf templateLeaf = getTemplateVfsLeaf(templateImage);
+			if (templateLeaf instanceof LocalFileImpl localFile) {
+				String svg;
+				svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+				svg = svg.replace(VAR_TITLE, title);
+				svg = svg.replace(VAR_BACKGROUND, getColorAsRgb(backgroundColorId));
+				return svg;
+			}
+		} catch (Exception e) {
+			log.error(e);
+			return null;
+		}
+
+		return null;
+	}
+
+	public SelectionValues getTemplateTranslationLanguages(Locale displayLocale) {
+		SelectionValues result = new SelectionValues();
+		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
+		for (String enabledKey : enabledKeys) {
+			Locale locale = i18nManager.getLocaleOrNull(enabledKey);
+			if (locale != null) {
+				if (displayLocale != null) {
+					String languageDisplayName = Locale.forLanguageTag(enabledKey.substring(0,2)).getDisplayLanguage(displayLocale);
+					result.add(SelectionValues.entry(enabledKey, languageDisplayName));
+				} else {
+					result.add(SelectionValues.entry(enabledKey, enabledKey));
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
 	public void updateTemplate(BadgeTemplate template) {
 		templateDAO.updateTemplate(template);
 	}
 
 	@Override
 	public void deleteTemplate(BadgeTemplate badgeTemplate) {
-		if (getBadgeTemplatesRootContainer().resolve(badgeTemplate.getImage()) instanceof VFSLeaf templateLeaf) {
-			templateLeaf.delete();
+		try {
+			deleteTranslations(badgeTemplate);
+		} catch (Exception e) {
+			log.error(e);
+		}
+
+		String image = badgeTemplate.getImage();
+		if (getBadgeTemplatesRootContainer().resolve(image) instanceof VFSLeaf imageLeaf) {
+			imageLeaf.delete();
+		}
+
+		String previewImage = getTemplateSvgPreviewImage(image);
+		if (getBadgeTemplatesRootContainer().resolve(previewImage) instanceof VFSLeaf previewLeaf) {
+			previewLeaf.delete();
 		}
 
 		badgeCategoryDAO.delete(badgeTemplate);
 		templateDAO.deleteTemplate(badgeTemplate);
+	}
+
+	private void deleteTranslations(BadgeTemplate badgeTemplate) {
+		SelectionValues languageKV = getTemplateTranslationLanguages(null);
+		Map<Locale, Locale> overlayLocales = i18nModule.getOverlayLocales();
+
+		for (String languageKey : languageKV.keys()) {
+			Locale locale = i18nManager.getLocaleOrDefault(languageKey);
+			Locale overlayLocale = overlayLocales.get(locale);
+			String bundleName = OpenBadgesUIFactory.getBundleName();
+
+			String nameKey = OpenBadgesUIFactory.getTemplateNameI18nKey(badgeTemplate.getIdentifier());
+			I18nItem nameItem = i18nManager.getI18nItem(bundleName, nameKey, overlayLocale);
+			i18nManager.saveOrUpdateI18nItem(nameItem, "");
+
+			String descriptionKey = OpenBadgesUIFactory.getTemplateDescriptionI18nKey(badgeTemplate.getIdentifier());
+			I18nItem descriptionItem = i18nManager.getI18nItem(bundleName, descriptionKey, overlayLocale);
+			i18nManager.saveOrUpdateI18nItem(descriptionItem, "");
+		}
 	}
 
 	private String copyTemplate(File sourceFile, String targetFileName, Identity savedBy) {
@@ -280,6 +433,29 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 					name, description, criteria, salt, issuer);
 			badgeClass.setLanguage(language);
 			return badgeClassDAO.updateBadgeClass(badgeClass);
+		}
+		return null;
+	}
+
+	@Override
+	public void createBadgeClass(BadgeClassImpl badgeClass) {
+		badgeClassDAO.createBadgeClass(badgeClass);
+	}
+
+	@Override
+	public String createBadgeClassImageFromSvgTemplate(Long templateKey, String backgroundColorId, String title,
+													   Identity savedBy) {
+		BadgeTemplate template = getTemplate(templateKey);
+		String svg = getTemplateSvgImageWithSubstitutions(template.getImage(), backgroundColorId, title);
+		VFSContainer classesContainer = getBadgeClassesRootContainer();
+		String targetFileName = VFSManager.rename(classesContainer, template.getImage());
+		VFSLeaf targetLeaf = classesContainer.createChildLeaf(targetFileName);
+		try (InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8))) {
+			if (VFSManager.copyContent(inputStream, targetLeaf, savedBy)) {
+				return targetFileName;
+			}
+		} catch (Exception e) {
+			log.error(e);
 		}
 		return null;
 	}

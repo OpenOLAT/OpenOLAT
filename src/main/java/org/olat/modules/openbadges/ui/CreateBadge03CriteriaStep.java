@@ -42,6 +42,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.criteria.CoursePassedCondition;
 import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 
@@ -264,6 +265,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			badgeCriteria.setDescription(descriptionEl.getValue());
 			badgeCriteria.setAwardAutomatically(awardAutomatically);
 			badgeCriteria.setConditions(conditions.stream().map(Condition::asBadgeCondition).collect(Collectors.toList()));
+
+			String xml = BadgeCriteriaXStream.toXml(badgeCriteria);
+			createContext.getBadgeClass().setCriteria(xml);
 
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 		}

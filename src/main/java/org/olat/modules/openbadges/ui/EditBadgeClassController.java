@@ -22,7 +22,6 @@ package org.olat.modules.openbadges.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -56,7 +55,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.openbadges.BadgeClass;
@@ -101,8 +99,6 @@ public class EditBadgeClassController extends FormBasicController {
 	private OpenBadgesManager openBadgesManager;
 	@Autowired
 	private I18nManager i18nManager;
-	@Autowired
-	private I18nModule i18nModule;
 
 	public EditBadgeClassController(UserRequest ureq, WindowControl wControl, BadgeClass badgeClass) {
 		super(ureq, wControl);
@@ -115,15 +111,7 @@ public class EditBadgeClassController extends FormBasicController {
 			badgeTemplateKV.add(SelectionValues.entry(badgeTemplate.getKey().toString(), badgeTemplate.getName()));
 		}
 
-		templateLanguageKV = new SelectionValues();
-		Collection<String> enabledKeys = i18nModule.getEnabledLanguageKeys();
-		for (String enabledKey : enabledKeys) {
-			Locale locale = i18nManager.getLocaleOrNull(enabledKey);
-			if (locale != null) {
-				String languageDisplayName = Locale.forLanguageTag(enabledKey.substring(0,2)).getDisplayLanguage(getLocale());
-				templateLanguageKV.add(SelectionValues.entry(enabledKey, languageDisplayName));
-			}
-		}
+		templateLanguageKV = openBadgesManager.getTemplateTranslationLanguages(getLocale());
 
 		categories = openBadgesManager.getCategories(null	, badgeClass);
 
@@ -135,7 +123,7 @@ public class EditBadgeClassController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String uuid = badgeClass != null ? badgeClass.getUuid() :
 				UUID.randomUUID().toString().replace("-", "");
-		uuidEl = uifactory.addStaticTextElement("form.uuid", uuid, formLayout);
+		uuidEl = uifactory.addStaticTextElement("form.identifier", uuid, formLayout);
 
 		badgeTemplateDropdown = uifactory.addDropdownSingleselect("form.template", formLayout,
 				badgeTemplateKV.keys(), badgeTemplateKV.values());

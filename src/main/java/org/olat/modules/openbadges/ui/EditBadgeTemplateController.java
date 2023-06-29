@@ -104,7 +104,9 @@ public class EditBadgeTemplateController extends FormBasicController {
 			fileEl.setMandatory(true);
 		} else {
 			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
-			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(badgeTemplate.getImage()));
+			String image = badgeTemplate.getImage();
+			String previewImage = openBadgesManager.getTemplateSvgPreviewImage(image);
+			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(previewImage != null ? previewImage : image));
 			if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
 				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 			}

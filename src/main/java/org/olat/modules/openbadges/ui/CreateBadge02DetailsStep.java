@@ -65,6 +65,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 		private CreateBadgeClassWizardContext createContext;
 		private TextElement nameEl;
+		private TextElement versionEl;
 		private TextAreaElement descriptionEl;
 		private SingleSelection expiration;
 		private final SelectionValues expirationKV;
@@ -138,6 +139,18 @@ public class CreateBadge02DetailsStep extends BasicStep {
 				allOk = false;
 			}
 
+			versionEl.clearError();
+			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
+				versionEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+
+			descriptionEl.clearError();
+			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
+				descriptionEl.setErrorKey("form.legende.mandatory");
+				allOk = false;
+			}
+
 			validityContainer.clearError();
 			if (Expiration.validFor.name().equals(expiration.getSelectedKey())) {
 				if (!validityTimelapseEl.validateIntValue()) {
@@ -156,6 +169,7 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		protected void formNext(UserRequest ureq) {
 			BadgeClass badgeClass = createContext.getBadgeClass();
 			badgeClass.setName(nameEl.getValue());
+			badgeClass.setVersion(versionEl.getValue());
 			badgeClass.setDescription(descriptionEl.getValue());
 			badgeClass.setValidityEnabled(Expiration.validFor.name().equals(expiration.getSelectedKey()));
 			if (badgeClass.isValidityEnabled()) {
@@ -182,11 +196,14 @@ public class CreateBadge02DetailsStep extends BasicStep {
 
 			nameEl = uifactory.addTextElement("form.name", 80, badgeClass.getName(), formLayout);
 			nameEl.setMandatory(true);
-			nameEl.setElementCssClass("o_test_css_class");
+
+			versionEl = uifactory.addTextElement("form.version", 24, badgeClass.getVersion(), formLayout);
+			versionEl.setMandatory(true);
 
 			descriptionEl = uifactory.addTextAreaElement("form.description", "form.description",
 					512, 2, 80, false, false,
 					badgeClass.getDescription(), formLayout);
+			descriptionEl.setMandatory(true);
 
 			expiration = uifactory.addRadiosVertical("form.expiration", formLayout, expirationKV.keys(),
 					expirationKV.values());

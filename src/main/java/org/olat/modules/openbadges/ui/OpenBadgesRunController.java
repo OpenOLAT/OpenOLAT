@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -141,7 +142,16 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		createBadgeClassContext = new CreateBadgeClassWizardContext(entry);
 		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
-		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> StepsMainRunController.DONE_MODIFIED;
+		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
+			BadgeClassImpl badgeClass = createBadgeClassContext.getBadgeClass();
+			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
+					createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
+					createBadgeClassContext.getTitle(), getIdentity());
+			badgeClass.setImage(image);
+			openBadgesManager.createBadgeClass(badgeClass);
+			updateUI();
+			return StepsMainRunController.DONE_MODIFIED;
+		};
 
 		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("form.add.new.badge"), "o_sel_add_badge_wizard");

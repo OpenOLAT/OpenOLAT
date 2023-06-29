@@ -97,6 +97,11 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		}
 
 		@Override
+		protected void formFinish(UserRequest ureq) {
+			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
+		}
+
+		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 			setFormTitle("form.recipients.preview");
 
