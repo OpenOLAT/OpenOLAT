@@ -31,6 +31,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.selenium.page.LoginPage;
@@ -44,6 +45,7 @@ import org.olat.selenium.page.tracing.ContactTracingPage;
 import org.olat.selenium.page.user.ImportUserPage;
 import org.olat.selenium.page.user.PortalPage;
 import org.olat.selenium.page.user.UserAdminPage;
+import org.olat.selenium.page.user.UserAttributesWizardPage;
 import org.olat.selenium.page.user.UserPasswordPage;
 import org.olat.selenium.page.user.UserPreferencesPageFragment;
 import org.olat.selenium.page.user.UserPreferencesPageFragment.ResumeOption;
@@ -966,6 +968,55 @@ public class UserTest extends Deployments {
 			.loginDenied(user.getLogin(), user.getPassword());
 	}
 	
+	
+
+	/**
+	 * The administrator modify the attributes of a user with the batch function.
+	 * It modifies the first name and set the author role.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void modifyUserAttributesBatch()
+	throws IOException, URISyntaxException {
+		UserVO user = new UserRestClient(deploymentUrl)
+				.createRandomUser("Jun");
+		
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage()
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		UserAdminPage userAdminPage = navBar
+				.openUserManagement();
+		UserAttributesWizardPage attributesWizard = userAdminPage
+			.openSearchUser()
+			.searchByUsername(user.getLogin())
+			.assertOnUserInList(user.getLogin())
+			.selectRowByUsername(user.getLogin())
+			.modifyAttributesBatch();
+
+		String newFirstName = "Jon";
+		attributesWizard
+			.assertOnAttributes()
+			.changeAttribute("firstName", newFirstName)
+			.nextToRoles()
+			.changeRoles(OrganisationRoles.author.name(), true)
+			.nextToGroups()
+			.nextToOverview()
+			.assertOnNewAttributeOverview(newFirstName)
+			.finish();
+		
+		userAdminPage
+			.assertOnUserInList(newFirstName);
+	}
+
 
 	/**
 	 * An administrator add a location for contact tracing. Somebody

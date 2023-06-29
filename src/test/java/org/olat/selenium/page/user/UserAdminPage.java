@@ -314,4 +314,12 @@ public class UserAdminPage {
 		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
+	
+	public UserAttributesWizardPage modifyAttributesBatch() {
+		By modifyButtonBy = By.cssSelector("a.o_sel_user_bulk_change_attributes");
+		OOGraphene.waitElement(modifyButtonBy, browser);
+		browser.findElement(modifyButtonBy).click();
+		OOGraphene.waitModalDialog(browser);
+		return new UserAttributesWizardPage(browser);
+	}
 }
