@@ -69,5 +69,12 @@ public class PageReferenceDAO {
 			.getResultList();
 		return refs != null && !refs.isEmpty() && refs.get(0) != null && refs.get(0).longValue() > 0l;
 	}
-
+	
+	public int deleteReference(RepositoryEntry repositoryEntry, String subIdent) {
+		String query = "delete from cepagereference ref where ref.repositoryEntry.key=:entryKey and ref.subIdent=:subIdent";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("entryKey", repositoryEntry.getKey())
+				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+	}
 }

@@ -181,6 +181,8 @@ public class PageCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		PageService pageService = CoreSpringFactory.getImpl(PageService.class);
+		RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		pageService.deleteReference(courseEntry, getIdent());
 		pageService.deletePage(getPageReferenceKey());
 		DBFactory.getInstance().commit();
 		super.cleanupOnDelete(course);

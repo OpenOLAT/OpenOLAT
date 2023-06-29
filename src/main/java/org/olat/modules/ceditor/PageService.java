@@ -76,6 +76,8 @@ public interface PageService {
 	PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
 	
 	boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
+	
+	int deleteReference(RepositoryEntry repositoryEntry, String subIdent);
 
 	
 	/**

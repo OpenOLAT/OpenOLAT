@@ -74,4 +74,16 @@ public class PageReferenceDAOTest extends OlatTestCase {
 		boolean hasNotReference = pageReferenceDao.hasReference(page, re, "AC-234");
 		Assert.assertFalse(hasNotReference);
 	}
+	
+	@Test
+	public void deleteReference() {
+		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry();
+		Page page = pageDao.createAndPersist("Referenced page to delete", "A brand new page but with a ref.", null, null, true, null, null);
+		PageReference reference = pageReferenceDao.createReference(page, re, "AC-236");
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reference);
+		
+		int deletedReference = pageReferenceDao.deleteReference(re, "AC-236");
+		Assert.assertEquals(1, deletedReference);
+	}
 }

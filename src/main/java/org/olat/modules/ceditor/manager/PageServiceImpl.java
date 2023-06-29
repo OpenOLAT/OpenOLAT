@@ -133,6 +133,11 @@ public class PageServiceImpl implements PageService {
 	}
 
 	@Override
+	public int deleteReference(RepositoryEntry repositoryEntry, String subIdent) {
+		return pageReferenceDao.deleteReference(repositoryEntry, subIdent);	
+	}
+
+	@Override
 	public Page copyPage(Identity owner, Page page) {
 		String imagePath = page.getImagePath();
 		Page copy = pageDao.createAndPersist(page.getTitle(), page.getSummary(), imagePath, page.getImageAlignment(), page.isEditable(), null, null);
