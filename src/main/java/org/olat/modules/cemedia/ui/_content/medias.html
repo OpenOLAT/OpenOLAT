@@ -3,6 +3,8 @@
 		$r.render("add.media")
 		$r.render("add.more")
 	</div>
-	$r.contextHelpWithWrapper("manual_user/portfolio/Media_center/")
+	#if($r.isTrue($withHelp))
+		$r.contextHelpWithWrapper("manual_user/portfolio/Media_center/")
+	#end
 </div>
 <div class="o_media_browser clearfix">$r.render("table")</div>

@@ -99,6 +99,13 @@ public interface FlexiTableElement extends FormItem, FormItemCollection {
 	public void setRowRenderer(VelocityContainer renderer, FlexiTableComponentDelegate componentDelegate);
 	
 	/**
+	 * Set an item to be rendered before the first row and only the custom renderer.
+	 * 
+	 * @param component
+	 */
+	public void setZeroRowItem(FormItem rowItem);
+	
+	/**
 	 * Enable to show details of multiple rows in the table. If disabled, the behavior is like an accordion.
 	 * @param multiDetails
 	 */

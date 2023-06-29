@@ -17,29 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor;
+package org.olat.modules.cemedia.ui.event;
+
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 20 Feb 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 28 juin 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum PageElementCategory {
+public class AddMediaEvent extends Event {
 	
-	content("category.content"),
-	questionType("category.question.type"),
-	organisational("category.organisational"),
-	layout("category.layout");
+	private static final long serialVersionUID = -2592085491380177671L;
+	public static final String ADD_MEDIA = "media-add";
 	
-	private final String i18nKey;
-
-	private PageElementCategory(String i18nKey) {
-		this.i18nKey = i18nKey;
+	private boolean editMode;
+	
+	public AddMediaEvent(boolean editMode) {
+		super(ADD_MEDIA);
+		this.editMode = editMode;
 	}
 
-	public String getI18nKey() {
-		return i18nKey;
+	public boolean isEditMode() {
+		return editMode;
 	}
+	
 	
 }

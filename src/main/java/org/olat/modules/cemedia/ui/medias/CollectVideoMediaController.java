@@ -89,6 +89,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 
 	private Media mediaReference;
 	private final boolean metadataOnly;
+	private UploadMedia uploadedMedia;
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -125,6 +126,17 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		businessPath = media.getBusinessPath();
 		this.metadataOnly = metadataOnly;
 		mediaReference = media;
+		initForm(ureq);
+	}
+	
+	public CollectVideoMediaController(UserRequest ureq, WindowControl wControl,
+			UploadMedia uploadedMedia, String businessPath, boolean metadataOnly) {
+		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
+				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
+						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
+		this.metadataOnly = metadataOnly;
+		this.uploadedMedia = uploadedMedia;
+		this.businessPath = businessPath;
 		initForm(ureq);
 	}
 	
@@ -167,7 +179,12 @@ public class CollectVideoMediaController extends FormBasicController implements 
 	}
 
 	private void initMetadataForm(FormItemContainer formLayout, UserRequest ureq) {
-		String title = mediaReference == null ? null : mediaReference.getTitle();
+		String title = null;
+		if(mediaReference != null) {
+			title = mediaReference.getTitle();
+		} else if(uploadedMedia != null) {
+			title = uploadedMedia.getFilename();
+		}
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setMandatory(true);
 		
@@ -223,11 +240,13 @@ public class CollectVideoMediaController extends FormBasicController implements 
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
-		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
-			fileEl.setErrorKey("form.legende.mandatory");
-			allOk &= false;
-		} else {
-			allOk &= fileEl.validate();
+		if(fileEl.isVisible()) {
+			if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
+				fileEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			} else {
+				allOk &= fileEl.validate();
+			}
 		}
 		
 		titleEl.clearError();
@@ -261,8 +280,16 @@ public class CollectVideoMediaController extends FormBasicController implements 
 			String title = titleEl.getValue();
 			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
-			File uploadedFile = fileEl.getUploadFile();
-			String uploadedFilename = fileEl.getUploadFileName();
+			
+			File uploadedFile;
+			String uploadedFilename;
+			if(uploadedMedia != null) {
+				uploadedFile = uploadedMedia.getFile();
+				uploadedFilename = uploadedMedia.getFilename();
+			} else {
+				uploadedFile = fileEl.getUploadFile();
+				uploadedFilename = fileEl.getUploadFileName();
+			}
 			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath, getIdentity());
 		} else {
 			mediaReference.setTitle(titleEl.getValue());

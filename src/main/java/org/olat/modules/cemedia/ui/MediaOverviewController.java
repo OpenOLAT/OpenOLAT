@@ -29,9 +29,9 @@ import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
 import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
-import org.olat.core.gui.components.dropdown.Dropdown.CaretPosition;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -56,8 +56,10 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.MediaHandler.CreateVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
@@ -76,7 +78,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaOverviewController extends FormBasicController implements Activateable2 {
 
-	private FormLink addVersion;
+	private FormLink createVersionButton;
+	private FormLink uploadVersionButton;
 	private DropdownItem versionDropdownItem;
 	private Link gotoOriginalLink;
 	private FormLayoutContainer metaCont;
@@ -116,9 +119,26 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			updateVersion(ureq, currentVersion);
 		}
 		
-		if(handler.hasVersion()) {
-			addVersion = uifactory.addFormLink("add.version", "add.version." + handler.getType(), null, formLayout, Link.BUTTON);
+		MediaHandlerVersion handlerVersion = handler.hasVersion();
+		if(handlerVersion.hasVersion()) {
+			if(handlerVersion.canCreateVersion()) {
+				createVersionButton = uifactory.addFormLink("create.version", "create.version." + handler.getType(), null, formLayout, Link.BUTTON);
+				String createIconCssClass = handlerVersion.createIconCssClass();
+				if(!StringHelper.containsNonWhitespace(handlerVersion.createIconCssClass())) {
+					createIconCssClass = "o_icon_add";
+				}
+				createVersionButton.setIconLeftCSS("o_icon " + createIconCssClass);
+			}
+			if(handlerVersion.canUploadVersion()) {
+				uploadVersionButton = uifactory.addFormLink("upload.version", "upload.version." + handler.getType(), null, formLayout, Link.BUTTON);
+				String addIconCssClass = handlerVersion.uploadIconCssClass();
+				if(!StringHelper.containsNonWhitespace(handlerVersion.uploadIconCssClass())) {
+					addIconCssClass = "o_icon_refresh";
+				}
+				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
+			}
 			versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.list", null, formLayout, getTranslator());
+			versionDropdownItem.setIconCSS("o_icon o_icon_version");
 			versionDropdownItem.setOrientation(DropdownOrientation.right);
 			versionDropdownItem.setButton(true);
 			loadVersions();
@@ -187,6 +207,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			versionLink.setUserObject(versions.get(i));
 			versionDropdownItem.addElement(versionLink);
 		}
+		
+		versionDropdownItem.setVisible(versionDropdownItem.size() > 1);
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
@@ -291,8 +313,10 @@ public class MediaOverviewController extends FormBasicController implements Acti
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addVersion == source) {
-			doAddVersion(ureq);
+		if(createVersionButton == source) {
+			doCreateVersion(ureq);
+		} else if(uploadVersionButton == source) {
+			doUploadVersion(ureq);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			Object uobject = link.getUserObject();
@@ -305,12 +329,21 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doAddVersion(UserRequest ureq) {
-		addVersionCtrl = handler.getNewVersionController(ureq, getWindowControl(), media);
+	private void doCreateVersion(UserRequest ureq) {
+		String title = translate("create.version." + handler.getType());
+		doAddVersion(ureq, CreateVersion.CREATE, title);
+	}
+	
+	private void doUploadVersion(UserRequest ureq) {
+		String title = translate("upload.version." + handler.getType());
+		doAddVersion(ureq, CreateVersion.UPLOAD, title);
+	}
+	
+	private void doAddVersion(UserRequest ureq, CreateVersion createType, String modalTitle) {
+		addVersionCtrl = handler.getNewVersionController(ureq, getWindowControl(), media, createType);
 		listenTo(addVersionCtrl);
 		
-		String title = translate("add.version." + handler.getType());
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), addVersionCtrl.getInitialComponent(), true, title, true);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), addVersionCtrl.getInitialComponent(), true, modalTitle, true);
 		listenTo(cmc);
 		cmc.activate();
 	}

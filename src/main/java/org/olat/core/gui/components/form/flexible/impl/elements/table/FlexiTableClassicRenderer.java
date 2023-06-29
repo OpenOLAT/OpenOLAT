@@ -266,6 +266,12 @@ public class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer {
 	}
 
 	@Override
+	protected void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult) {
+		//
+	}
+
+	@Override
 	protected void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult) {
 

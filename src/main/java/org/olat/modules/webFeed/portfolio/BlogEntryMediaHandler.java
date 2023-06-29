@@ -79,16 +79,11 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 
 	@Override
 	public boolean acceptMimeType(String mimeType) {
-		return false;
-	}
-	
-	@Override
-	public boolean hasVersion() {
 		return false;
 	}
 

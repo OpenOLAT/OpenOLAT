@@ -21,6 +21,7 @@ package org.olat.modules.cemedia.ui;
 
 import static org.olat.core.util.StringHelper.EMPTY;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.dropdown.DropdownItem;
 import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableExtendedFilter;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -48,6 +50,7 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -82,6 +85,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
@@ -92,16 +96,18 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaTag;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
-import org.olat.modules.cemedia.handler.CreateFileHandler;
+import org.olat.modules.cemedia.handler.FileHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
+import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
+import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
@@ -145,13 +151,18 @@ public class MediaCenterController extends FormBasicController
 	private FormLink addMediaLink;
 	private FormLink addTextLink;
 	private FormLink addCitationLink;
+	private FileElement uploadEl;
 	
 	private FlexiFiltersTab myTab;
 	private FlexiFiltersTab allTab;
 	private FlexiFiltersTab sharedTab;
 	
 	private int counter = 0;
-	private final boolean select;
+	private final boolean withHelp;
+	private final boolean withSelect;
+	private final boolean withAddMedias;
+	private final boolean withUploadCard;
+	private final String preselectedType;
 	private final DocTemplates editableFileTypes;
 	private final TooledStackedPanel stackPanel;
 
@@ -176,22 +187,28 @@ public class MediaCenterController extends FormBasicController
 	private PortfolioV2Module portfolioModule;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
-		this.stackPanel = null;
-		this.select = true;
-		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
-		editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
-		 
-		initForm(ureq);
-		loadModel();
+		this(ureq, wControl, null, true, true, true, false, null);
+	}
+	
+	public MediaCenterController(UserRequest ureq, WindowControl wControl, MediaHandler handler, boolean withUploadCard) {
+		this(ureq, wControl, null, true, false, false, withUploadCard, handler.getType());
 	}
 	
 	public MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
+		this(ureq, wControl, stackPanel, false, true, true, false, null);
+	}
+	
+	private MediaCenterController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
+			boolean withSelect, boolean withAddMedias, boolean withHelp, boolean withUploadCard, String preselectedType) {
 		super(ureq, wControl, "medias", Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()));
 		this.stackPanel = stackPanel;
-		this.select = false;
+		this.withHelp = withHelp;
+		this.withSelect = withSelect;
+		this.withAddMedias = withAddMedias;
+		this.withUploadCard = withUploadCard;
+		this.preselectedType = preselectedType;
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
-		editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
+		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		 
 		initForm(ureq);
 		loadModel();
@@ -199,7 +216,11 @@ public class MediaCenterController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(select) {
+		if(formLayout instanceof FormLayoutContainer layoutCont) {
+			layoutCont.contextPut("withHelp", Boolean.valueOf(withHelp));
+		}
+		
+		if(withSelect) {
 			newMediaCallout = uifactory.addFormLink("new.medias", formLayout, Link.BUTTON);
 			newMediaCallout.setIconRightCSS("o_icon o_icon_caret o_icon-fw");
 		}
@@ -229,6 +250,7 @@ public class MediaCenterController extends FormBasicController
 		initSorters();
 		initFilters();
 		initFiltersPresets();
+		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list-v3");
 
 		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
@@ -237,18 +259,30 @@ public class MediaCenterController extends FormBasicController
 		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
 		tableEl.addBatchButton(bulkDeleteButton);
 		
+		if(withUploadCard) {
+			uploadEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "add.card.upload", null, formLayout);
+			uploadEl.addActionListener(FormEvent.ONCHANGE);
+			if(preselectedType != null) {
+				uploadEl.setDndInformations(translate("dnd.infos." + preselectedType));
+			}
+			uploadEl.setFormLayout("minimal");
+			tableEl.setZeroRowItem(uploadEl);
+		}
+
 		initTools(formLayout);
 	}
 	
 	private void initTools(FormItemContainer formLayout) {
 		addMediaLink = uifactory.addFormLink("add.media", formLayout, Link.BUTTON);
 		addMediaLink.setIconLeftCSS("o_icon o_icon-fw o_icon_media");
+		addMediaLink.setVisible(withAddMedias);
 		
 		DropdownItem addDropdown = uifactory.addDropdownMenu("add.more", "add.more", formLayout, getTranslator());
 		addDropdown.setOrientation(DropdownOrientation.right);
 		addDropdown.setElementCssClass("o_sel_add_more");
 		addDropdown.setEmbbeded(true);
 		addDropdown.setButton(true);
+		addDropdown.setVisible(withAddMedias);
 		
 		addTextLink = uifactory.addFormLink("add.text", formLayout, Link.LINK);
 		addTextLink.setIconLeftCSS("o_icon o_icon-fw o_filetype_txt");
@@ -289,14 +323,16 @@ public class MediaCenterController extends FormBasicController
 	private void initFilters() {
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>();
 		
-		SelectionValues typesKV = new SelectionValues();
-		List<MediaHandler> handlers = mediaService.getMediaHandlers();
-		for(MediaHandler handler:handlers) {
-			typesKV.add(SelectionValues.entry(handler.getType(), translate("artefact." + handler.getType())));
+		if(preselectedType == null) {
+			SelectionValues typesKV = new SelectionValues();
+			List<MediaHandler> handlers = mediaService.getMediaHandlers();
+			for(MediaHandler handler:handlers) {
+				typesKV.add(SelectionValues.entry(handler.getType(), translate("artefact." + handler.getType())));
+			}
+			FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
+					FILTER_TYPES, typesKV, true);
+			filters.add(membersFilter);
 		}
-		FlexiTableMultiSelectionFilter membersFilter = new FlexiTableMultiSelectionFilter(translate("filter.types"),
-				FILTER_TYPES, typesKV, true);
-		filters.add(membersFilter);
 		
 		SelectionValues tagsKV = new SelectionValues();
 		List<MediaTag> tags = mediaService.getTags(getIdentity());
@@ -429,11 +465,15 @@ public class MediaCenterController extends FormBasicController
 		
 		List<FlexiTableFilter> filters = tableEl.getFilters();
 		
-		FlexiTableFilter typeFilters = FlexiTableFilter.getFilter(filters, FILTER_TYPES);
-		if (typeFilters != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)typeFilters).getValues();
-			if (filterValues != null && !filterValues.isEmpty()) {
-				params.setTypes(filterValues);
+		if(preselectedType != null) {
+			params.setTypes(List.of(preselectedType));
+		} else {
+			FlexiTableFilter typeFilters = FlexiTableFilter.getFilter(filters, FILTER_TYPES);
+			if (typeFilters != null) {
+				List<String> filterValues = ((FlexiTableExtendedFilter)typeFilters).getValues();
+				if (filterValues != null && !filterValues.isEmpty()) {
+					params.setTypes(filterValues);
+				}
 			}
 		}
 		
@@ -527,12 +567,16 @@ public class MediaCenterController extends FormBasicController
 			doAddCitationMedia(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
+		} else if(uploadEl == source) {
+			if("ONCHANGE".equals(event.getCommand())) {
+				doUpload(ureq);
+			}
 		} else if(source == tableEl) {
 			if(event instanceof SelectionEvent se) {
 				String cmd = se.getCommand();
 				MediaRow row = model.getObject(se.getIndex());
 				if("select".equals(cmd)) {
-					if(select) {
+					if(withSelect) {
 						doSelect(ureq, row.getKey());
 					} else {
 						Activateable2 activateable = doOpenMedia(ureq, row.getKey());
@@ -552,7 +596,7 @@ public class MediaCenterController extends FormBasicController
 			String cmd = link.getCmd();
 			if("select".equals(cmd)) {
 				MediaRow row = (MediaRow)link.getUserObject();
-				if(select) {
+				if(withSelect) {
 					doSelect(ureq, row.getKey());
 				} else {
 					Activateable2 activateable = doOpenMedia(ureq, row.getKey());
@@ -576,7 +620,7 @@ public class MediaCenterController extends FormBasicController
 			cmc.deactivate();
 			cleanUp();
 			
-			if(select || event == Event.DONE_EVENT) {
+			if(withSelect || event == Event.DONE_EVENT) {
 				if(createFileCtrl == source) {
 					doSelect(ureq, createFileCtrl.getMediaReference().getKey());
 				} else if(mediaUploadCtrl == source) {
@@ -637,7 +681,7 @@ public class MediaCenterController extends FormBasicController
 					List<MediaRow> rows = model.getObjects();
 					for(MediaRow row:rows) {
 						if(row != null && row.getKey().equals(rowKey)) {
-							if(select) {
+							if(withSelect) {
 								doSelect(ureq, rowKey);
 							} else {
 								doOpenMedia(ureq, rowKey);
@@ -655,6 +699,15 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private void doUpload(UserRequest ureq) {
+		String filename = uploadEl.getUploadFileName();
+		File file = uploadEl.getUploadFile();
+		String mimeType = WebappHelper.getMimeType(filename);
+		UploadMedia uploadMedia = new UploadMedia(file, filename, mimeType);
+		UploadMediaEvent umw = new UploadMediaEvent(uploadMedia);
+		this.fireEvent(ureq, umw);
 	}
 
 	private void doCreateFile(UserRequest ureq) {
@@ -770,7 +823,7 @@ public class MediaCenterController extends FormBasicController
 
 		@Override
 		public String getTableCssClass(FlexiTableRendererType type) {
-			return select ? "o_medias_table o_medias_select clearfix" : "o_medias_table clearfix";
+			return withSelect ? "o_medias_table o_medias_select clearfix" : "o_medias_table clearfix";
 		}
 
 		@Override

@@ -168,6 +168,31 @@
 			margin: 0 $o-media-browser-space $o-media-browser-space 1px;
 			width: $o-media-browser-card-width-md;
 			height: $o-media-browser-card-height-md;
+			
+			.o_fileElement {
+				border: 1px solid $o-media-browser-border;
+				border-radius: $o-media-browser-box-radius $o-media-browser-box-radius 0 0;
+				width: $o-media-browser-card-width-md;
+				height: $o-media-browser-card-height-md;
+			}
+			
+			.o_fileinput.o_area {
+				border: none;
+				border-style: none;
+				padding: 0;
+				height: 100%;
+				background: white;
+				
+				.o_dnd {
+					display: grid;
+					align-content: center;
+					height: 100%;
+				}
+			}
+			
+			.o_dnd_icon {
+				font-size: 2.5em;
+			}
 		}
 
 		.o_media_card {

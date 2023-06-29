@@ -139,6 +139,10 @@ public interface FileElement extends FormMultipartItem {
 	
 	public void setArea(boolean area);
 	
+	public String getDndInformations();
+	
+	public void setDndInformations(String infos);
+	
 	//
 	// Methods that are used when a file has been uploaded
 

@@ -35,6 +35,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -207,12 +208,16 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			sb.append("</span></button></div>");
 			sb.append("</div>");
 		} else if(fileElem.isArea()) {
-			sb.append("<div class='o_dnd' aria-hidden='true'>");
-			sb.append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>");
-			sb.append("<div class='o_dnd_info'>").append(trans.translate("file.element.dnd.info")).append("</div>");
-			sb.append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>");
-			sb.append(trans.translate("file.element.dnd.select")).append("</span></button></div>");
-			sb.append("</div>");
+			String dndInfo = fileElem.getDndInformations();
+			if(!StringHelper.containsNonWhitespace(dndInfo)) {
+				dndInfo = trans.translate("file.element.dnd.info");
+			}
+			sb.append("<div class='o_dnd' aria-hidden='true'>")
+			  .append("<div class='o_dnd_icon'><i class='o_icon o_icon o_icon_upload'></i></div>")
+			  .append("<div class='o_dnd_info'>").append(dndInfo).append("</div>")
+			  .append("<div class='o_dnd_select'><button class='btn btn-xs btn-default' tabindex='-1'><span>")
+			  .append(trans.translate("file.element.dnd.select")).append("</span></button></div>")
+			  .append("</div>");
 			
 		} else {
 			// Add the visible but fake input field and a styled faked file chooser button

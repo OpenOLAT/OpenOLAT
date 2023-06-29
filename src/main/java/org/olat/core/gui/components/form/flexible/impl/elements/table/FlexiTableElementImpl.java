@@ -166,7 +166,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private CloseableModalController cmc;
 	private final WindowControl wControl;
 	private FlexiFiltersAndSettingsDialogController settingsCtrl;
-	
+
+	private FormItem zeroRowItem;
 	private String wrapperSelector;
 	private FlexiTableCssDelegate cssDelegate;
 
@@ -461,6 +462,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		this.componentDelegate = componentDelegate;
 	}
 	
+	public FormItem getZeroRowItem() {
+		return zeroRowItem;
+	}
+	
+	@Override
+	public void setZeroRowItem(FormItem rowItem) {
+		zeroRowItem = rowItem;
+	}
+
 	public boolean isMultiDetails() {
 		return multiDetails;
 	}

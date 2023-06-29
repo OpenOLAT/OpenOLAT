@@ -68,7 +68,7 @@ public class NewTextVersionController extends FormBasicController {
 		contentEl.setElementCssClass("o_sel_media_content");
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("add.version." + handler.getType(), buttonsCont);
+		uifactory.addFormSubmitButton("create.version." + handler.getType(), buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 

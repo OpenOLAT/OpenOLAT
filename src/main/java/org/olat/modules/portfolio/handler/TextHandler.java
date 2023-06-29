@@ -38,6 +38,7 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
@@ -77,7 +78,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
@@ -86,8 +87,8 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public boolean hasVersion() {
-		return true;
+	public MediaHandlerVersion hasVersion() {
+		return new MediaHandlerVersion(true, false, null, true, "o_icon_refresh");
 	}
 
 	@Override
@@ -124,8 +125,11 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new NewTextVersionController(ureq, wControl, media, this);
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+		if(createVersion == CreateVersion.CREATE) {
+			return new NewTextVersionController(ureq, wControl, media, this);
+		}
+		return null;
 	}
 
 	@Override

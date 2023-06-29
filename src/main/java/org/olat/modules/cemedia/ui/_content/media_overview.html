@@ -1,9 +1,12 @@
-#if($r.visible("add.version") || $r.visible("versions.list"))
+#if($r.available("create.version") || $r.available("upload.version") || $r.available("versions.list"))
 <div class="o_button_group o_button_group_right">
-#if($r.visible("add.version"))
-	$r.render("add.version")
+#if($r.available("create.version"))
+	$r.render("create.version")
 #end
-#if($r.visible("versions.list"))
+#if($r.available("upload.version"))
+	$r.render("upload.version")
+#end
+#if($r.available("versions.list"))
 	$r.render("versions.list")
 #end
 </div>

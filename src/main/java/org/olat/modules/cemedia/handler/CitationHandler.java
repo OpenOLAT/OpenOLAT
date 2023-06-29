@@ -40,11 +40,13 @@ import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.AddCitationController;
 import org.olat.modules.cemedia.ui.medias.CitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.NewTextVersionController;
@@ -78,12 +80,12 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
-	public boolean hasVersion() {
-		return true;
+	public MediaHandlerVersion hasVersion() {
+		return new MediaHandlerVersion(true, false, null, true, "o_icon_refresh");
 	}
 	
 	@Override
@@ -126,12 +128,15 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectCitationMediaController(ureq, wControl);
+		return new AddCitationController(ureq, wControl, this);
 	}
 
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new NewTextVersionController(ureq, wControl, media, this);
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+		if(createVersion == CreateVersion.CREATE) {
+			return new NewTextVersionController(ureq, wControl, media, this);
+		}
+		return null;
 	}
 	
 	@Override

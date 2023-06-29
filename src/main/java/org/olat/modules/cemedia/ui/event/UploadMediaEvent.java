@@ -17,29 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor;
+package org.olat.modules.cemedia.ui.event;
+
+import org.olat.core.gui.control.Event;
+import org.olat.modules.cemedia.ui.medias.UploadMedia;
 
 /**
  * 
- * Initial date: 20 Feb 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * Initial date: 29 juin 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum PageElementCategory {
+public class UploadMediaEvent extends Event {
 	
-	content("category.content"),
-	questionType("category.question.type"),
-	organisational("category.organisational"),
-	layout("category.layout");
+	private static final long serialVersionUID = -3115653101967398161L;
+	public static final String UPLOAD_MEDIA = "upload-media";
 	
-	private final String i18nKey;
-
-	private PageElementCategory(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
-
-	public String getI18nKey() {
-		return i18nKey;
+	private UploadMedia uploadMedia;
+	
+	public UploadMediaEvent(UploadMedia uploadMedia) {
+		super(UPLOAD_MEDIA);
+		this.uploadMedia = uploadMedia;
 	}
 	
+	public UploadMedia getUploadMedia() {
+		return uploadMedia;
+	}
+
 }

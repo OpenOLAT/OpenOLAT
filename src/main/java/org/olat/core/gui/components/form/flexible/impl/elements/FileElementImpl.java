@@ -113,6 +113,8 @@ public class FileElementImpl extends FormItemImpl
 	
 	private String fileExampleKey;
 	private String[] fileExampleParams;
+	
+	private String dndInformations;
 
 	private WindowControl wControl;
 	private Identity savedBy;
@@ -348,6 +350,16 @@ public class FileElementImpl extends FormItemImpl
 	public void setExampleKey(String exampleKey, String[] params) {
 		this.fileExampleKey = exampleKey;
 		this.fileExampleParams = params;
+	}
+
+	@Override
+	public String getDndInformations() {
+		return dndInformations;
+	}
+
+	@Override
+	public void setDndInformations(String dndInformations) {
+		this.dndInformations = dndInformations;
 	}
 
 	@Override

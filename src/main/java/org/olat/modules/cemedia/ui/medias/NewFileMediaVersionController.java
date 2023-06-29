@@ -83,7 +83,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 		}
 		
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("add.version." + handler.getType(), buttonsCont);
+		uifactory.addFormSubmitButton("upload.version." + handler.getType(), buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 	

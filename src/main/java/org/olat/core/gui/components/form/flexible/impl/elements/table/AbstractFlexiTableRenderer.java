@@ -672,6 +672,11 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		int maxRows = ftE.getMaxRows();
 		int rows = dataModel.getRowCount();
 		int lastRow = Math.min(rows, firstRow + maxRows);
+		
+		if(firstRow == 0 && ftE.getZeroRowItem() != null) {
+			String rowIdPrefix = "frow_" + id + "-";
+			renderZeroRow(renderer, target, ftC, rowIdPrefix, ubu, translator, renderResult);
+		}
 
 		String rowIdPrefix = "row_" + id + "-";
 		for (int i = firstRow; i < lastRow; i++) {
@@ -681,6 +686,9 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		}				
 		// end of table table
 	}
+	
+	protected abstract void renderZeroRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
+			URLBuilder ubu, Translator translator, RenderResult renderResult);
 	
 	protected abstract void renderRow(Renderer renderer, StringOutput target, FlexiTableComponent ftC, String rowIdPrefix,
 			int row, URLBuilder ubu, Translator translator, RenderResult renderResult);

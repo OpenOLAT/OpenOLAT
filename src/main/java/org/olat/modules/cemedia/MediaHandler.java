@@ -47,7 +47,7 @@ public interface MediaHandler {
 	
 	VFSLeaf getThumbnail(MediaVersion media, Size size);
 	
-	boolean hasVersion();
+	MediaHandlerVersion hasVersion();
 	
 	/**
 	 * Return some informations to prefill the media/artefact creation form.
@@ -63,7 +63,7 @@ public interface MediaHandler {
 	
 	Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media);
 	
-	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media);
+	Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion);
 	
 	/**
 	 * Export the user data.
@@ -74,5 +74,9 @@ public interface MediaHandler {
 	 * @param locale The language
 	 */
 	void export(Media media, ManifestBuilder manifest, File mediaArchiveDirectory, Locale locale);
-
+	
+	public enum CreateVersion {
+		CREATE,
+		UPLOAD
+	}
 }

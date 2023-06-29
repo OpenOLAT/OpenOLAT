@@ -72,7 +72,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
@@ -83,11 +83,6 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	@Override
 	public VFSLeaf getThumbnail(MediaVersion media, Size size) {
 		return null;
-	}
-	
-	@Override
-	public boolean hasVersion() {
-		return false;
 	}
 	
 	@Override

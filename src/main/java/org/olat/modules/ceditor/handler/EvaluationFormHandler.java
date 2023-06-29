@@ -80,7 +80,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 
 	@Override

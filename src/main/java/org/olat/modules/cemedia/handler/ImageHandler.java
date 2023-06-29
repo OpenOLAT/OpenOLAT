@@ -57,11 +57,13 @@ import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.AddImageController;
 import org.olat.modules.cemedia.ui.medias.CollectImageMediaController;
 import org.olat.modules.cemedia.ui.medias.ImageMediaController;
 import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
@@ -110,8 +112,8 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public boolean hasVersion() {
-		return true;
+	public MediaHandlerVersion hasVersion() {
+		return new MediaHandlerVersion(true, true, "o_icon_refresh", false, null);
 	}
 
 	@Override
@@ -209,14 +211,17 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new NewFileMediaVersionController(ureq, wControl, media, this,
-				CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);	
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+		if(createVersion == CreateVersion.UPLOAD) {
+			return new NewFileMediaVersionController(ureq, wControl, media, this,
+					CollectImageMediaController.imageMimeTypes, CollectImageMediaController.MAX_FILE_SIZE, true);
+		}
+		return null;
 	}
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectImageMediaController(ureq, wControl);
+		return new AddImageController(ureq, wControl, this);
 	}
 	
 	@Override

@@ -84,6 +84,7 @@ public class CollectFileMediaController extends FormBasicController implements P
 
 	private Media mediaReference;
 	private final boolean metadataOnly;
+	private UploadMedia uploadMedia;
 	
 	private final String businessPath;
 	private AddElementInfos userObject;
@@ -100,26 +101,37 @@ public class CollectFileMediaController extends FormBasicController implements P
 	private PortfolioV2Module portfolioModule;
 
 	public CollectFileMediaController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
-				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
-						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
-		businessPath = "[HomeSite:" + getIdentity().getKey() + "][PortfolioV2:0][MediaCenter:0]";
-		metadataOnly = false;
-		
-		relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
-		relationsCtrl.setOpenClose(false);
-		listenTo(relationsCtrl);
-		
-		initForm(ureq);
+		this(ureq, wControl, null, null, true, false);
 	}
 	
+	public CollectFileMediaController(UserRequest ureq, WindowControl wControl, UploadMedia uploadMedia) {
+		this(ureq, wControl, null, uploadMedia, true, true);
+	}
+
 	public CollectFileMediaController(UserRequest ureq, WindowControl wControl, Media media, boolean metadataOnly) {
+		this(ureq, wControl, media, null, false, metadataOnly);
+	}
+
+	private CollectFileMediaController(UserRequest ureq, WindowControl wControl, Media media, UploadMedia uploadMedia,
+			boolean withRelations, boolean metadataOnly) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale(),
 				Util.createPackageTranslator(MetaInfoController.class, ureq.getLocale(),
 						Util.createPackageTranslator(TaxonomyUIFactory.class, ureq.getLocale()))));
 		this.metadataOnly = metadataOnly;
-		mediaReference = media;
-		businessPath = media.getBusinessPath();
+		this.uploadMedia = uploadMedia;
+		this.mediaReference = media;
+		if(media != null) {
+			businessPath = media.getBusinessPath();
+		} else {
+			businessPath = "[HomeSite:" + getIdentity().getKey() + "][MediaCenter:0]";
+		}
+
+		if(withRelations) {
+			relationsCtrl = new MediaRelationsController(ureq, getWindowControl(), mainForm, null, true, true);
+			relationsCtrl.setOpenClose(false);
+			listenTo(relationsCtrl);
+		}
+		
 		initForm(ureq);
 	}
 	
@@ -144,7 +156,7 @@ public class CollectFileMediaController extends FormBasicController implements P
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_pf_collect_document_form");
+		formLayout.setElementCssClass("o_sel_ce_collect_document_form");
 		initMetadataForm(formLayout);
 		
 		if(relationsCtrl != null) {
@@ -162,7 +174,12 @@ public class CollectFileMediaController extends FormBasicController implements P
 	}
 
 	protected void initMetadataForm(FormItemContainer formLayout) {
-		String title = mediaReference == null ? null : mediaReference.getTitle();
+		String title = null;
+		if(mediaReference != null) {
+			title = mediaReference.getTitle();
+		} else if(uploadMedia != null) {
+			title = uploadMedia.getFilename();
+		}
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
 		titleEl.setElementCssClass("o_sel_pf_collect_title");
 		titleEl.setMandatory(true);
@@ -215,7 +232,8 @@ public class CollectFileMediaController extends FormBasicController implements P
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		fileEl.clearError();
-		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
+		if(fileEl.isVisible() && fileEl.getInitialFile() == null
+				&& (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
 			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
@@ -246,8 +264,15 @@ public class CollectFileMediaController extends FormBasicController implements P
 			String title = titleEl.getValue();
 			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
-			File uploadedFile = fileEl.getUploadFile();
-			String uploadedFilename = fileEl.getUploadFileName();
+			File uploadedFile;
+			String uploadedFilename;
+			if(uploadMedia != null) {
+				uploadedFile = uploadMedia.getFile();
+				uploadedFilename = uploadMedia.getFilename();
+			} else {
+				uploadedFile = fileEl.getUploadFile();
+				uploadedFilename = fileEl.getUploadFileName();
+			}
 			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath, getIdentity());
 		} else {
 			mediaReference.setTitle(titleEl.getValue());

@@ -30,9 +30,6 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ReadOnlyCommentsSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
-import org.olat.core.commons.services.doceditor.DocEditor.Mode;
-import org.olat.core.commons.services.doceditor.DocEditorService;
-import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.help.HelpLinkSPI;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.commons.services.pdf.PdfModule;
@@ -59,7 +56,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -109,7 +105,6 @@ import org.olat.modules.ceditor.ui.event.ImportEvent;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
-import org.olat.modules.cemedia.handler.CreateFileHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.portfolio.Binder;
@@ -188,8 +183,6 @@ public class PageRunController extends BasicController implements TooledControll
 	@Autowired
 	private PortfolioService portfolioService;
 	@Autowired
-	private DocEditorService docEditorService;
-	@Autowired
 	private UserManager userManager;
 	
 	public PageRunController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -239,10 +232,10 @@ public class PageRunController extends BasicController implements TooledControll
 		if(openInEditMode) {
 			PageEditorSecurityCallback editorSecCallback = FullEditorSecurityCallback.all();
 			pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
-					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), editorSecCallback,
+					new PortfolioPageEditorProvider(), editorSecCallback,
 					getTranslator());
 			listenTo(pageEditCtrl);
-			if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
+			if (page.getBody() != null && page.getBody().getUsage() > 1) {
 				showWarning("page.is.referenced");
 				mainVC.contextPut("pageIsReferenced", true);
 			}
@@ -334,9 +327,7 @@ public class PageRunController extends BasicController implements TooledControll
 			editLink.setVisible(secCallback.canEditPage(page) && page == null);
 			editLink.setUserObject(edit);
 			
-			if(pageMetaCtrl instanceof PageMetadataController metadataCtrl) {
-				metadataCtrl.updateEditLink(edit);
-			} else if(pageMetaCtrl instanceof PageMetadataCompactController metadataReducedCtrl) {
+			if(pageMetaCtrl instanceof PageMetadataCompactController metadataReducedCtrl) {
 				metadataReducedCtrl.updateEditLink(edit);
 			}
 			
@@ -733,7 +724,7 @@ public class PageRunController extends BasicController implements TooledControll
 			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "", getWindow());
 			if(lockEntry.isSuccess()) {
 				pageEditCtrl = new PageEditorV2Controller(ureq, getWindowControl(),
-						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
+						new PortfolioPageEditorProvider(),
 						FullEditorSecurityCallback.all(), getTranslator());
 				if (page != null && page.getBody() != null && page.getBody().getUsage() > 1) {
 					showWarning("page.is.referenced");
@@ -869,7 +860,7 @@ public class PageRunController extends BasicController implements TooledControll
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
 		private final List<PageLayoutHandler> creationlayoutHandlers = new ArrayList<>();
 		
-		public PortfolioPageEditorProvider(Roles roles) {
+		public PortfolioPageEditorProvider() {
 			//handler for title
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
@@ -887,11 +878,6 @@ public class PageRunController extends BasicController implements TooledControll
 			handlers.add(mathHandler);
 			creationHandlers.add(mathHandler);
 
-			// Handler only to create files
-			if (isCreateFilePossible(roles)) {
-				CreateFileHandler createFileHandler = new CreateFileHandler();
-				creationHandlers.add(createFileHandler);
-			}
 			List<MediaHandler> mediaHandlers = mediaService.getMediaHandlers();
 			for(MediaHandler mediaHandler:mediaHandlers) {
 				if(mediaHandler instanceof PageElementHandler pageHandler) {
@@ -925,16 +911,6 @@ public class PageRunController extends BasicController implements TooledControll
 			HTMLRawPageElementHandler htlmRawHandler = new HTMLRawPageElementHandler();
 			handlers.add(htlmRawHandler);
 			creationHandlers.add(htlmRawHandler);// at the end, legacy	
-		}
-
-		private boolean isCreateFilePossible(Roles roles) {
-			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getIdentity(), roles, getLocale()).getTemplates();
-			for (DocTemplate docTemplate: editableTemplates) {
-				if (docEditorService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true, false)) {
-					return true;
-				}
-			}
-			return false;
 		}
 
 		@Override
@@ -1039,7 +1015,7 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		@Override
 		public PageElementCategory getCategory() {
-			return PageElementCategory.embed;
+			return PageElementCategory.content;
 		}
 
 		@Override
@@ -1059,17 +1035,17 @@ public class PageRunController extends BasicController implements TooledControll
 		
 		@Override
 		public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-			return new OtherArtfectsChooserController(ureq, wControl);
+			return new MediaCenterChooserController(ureq, wControl);
 		}
 	}
 	
-	public static class OtherArtfectsChooserController extends BasicController implements PageElementAddController {
+	public static class MediaCenterChooserController extends BasicController implements PageElementAddController {
 		
 		private MediaPart mediaPart;
 		private AddElementInfos userObject;
 		private final MediaCenterController mediaListCtrl;
 		
-		public OtherArtfectsChooserController(UserRequest ureq, WindowControl wControl) {
+		public MediaCenterChooserController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);
 			mediaListCtrl = new MediaCenterController(ureq, getWindowControl());
 			listenTo(mediaListCtrl);

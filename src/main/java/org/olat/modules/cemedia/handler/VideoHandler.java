@@ -31,6 +31,7 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.avrecorder.AVVideoQuality;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
@@ -53,11 +54,14 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.AVVideoVersionMediaController;
+import org.olat.modules.cemedia.ui.medias.AddVideoController;
 import org.olat.modules.cemedia.ui.medias.CollectVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
@@ -78,6 +82,9 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	
 	public static final String VIDEO_TYPE = "video";
 	public static final Set<String> mimeTypes = Set.of("video/mp4");
+	
+	public static final int MAX_RECORDING_TIME_IN_MS = 600 * 1000;
+	public static final AVVideoQuality VIDEO_QUALITY = AVVideoQuality.medium;
 
 	@Autowired
 	private MediaDAO mediaDao;
@@ -97,7 +104,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 
 	@Override
@@ -106,8 +113,8 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public boolean hasVersion() {
-		return true;
+	public MediaHandlerVersion hasVersion() {
+		return new MediaHandlerVersion(true, true, "o_icon_refresh", true, "o_icon_video_record");
 	}
 
 	@Override
@@ -189,7 +196,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectVideoMediaController(ureq, wControl);
+		return new AddVideoController(ureq, wControl, this);
 	}
 	
 	@Override
@@ -201,9 +208,14 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new NewFileMediaVersionController(ureq, wControl, media, this,
-				CollectVideoMediaController.videoMimeTypes, CollectVideoMediaController.MAX_FILE_SIZE, true);	
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+		if(createVersion == CreateVersion.UPLOAD) {
+			return new NewFileMediaVersionController(ureq, wControl, media, this,
+					CollectVideoMediaController.videoMimeTypes, CollectVideoMediaController.MAX_FILE_SIZE, true);
+		} else if(createVersion == CreateVersion.CREATE) {
+			return new AVVideoVersionMediaController(ureq, wControl, media, MAX_RECORDING_TIME_IN_MS, VIDEO_QUALITY);
+		}
+		return null;
 	}
 	
 	@Override

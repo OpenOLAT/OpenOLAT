@@ -380,10 +380,6 @@ public class PageMetadataController extends FormBasicController {
 		editMetaDataLink.setIconLeftCSS("o_icon o_ico-lg o_icon_edit_metadata");
 		editMetaDataLink.setVisible(page.isEditable() && secCallback.canEditPageMetadata(page, assignments));
 	}
-
-	public void updateEditLink(boolean edit) {
-		//TODO toogle
-	}
 	
 	@Override
 	protected void formOK(UserRequest ureq) {

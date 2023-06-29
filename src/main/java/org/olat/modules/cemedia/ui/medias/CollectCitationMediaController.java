@@ -181,7 +181,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_pf_collect_citation_form");
+		formLayout.setElementCssClass("o_sel_ce_collect_citation_form");
 		initMetadataForm(formLayout, ureq);
 		
 		if(relationsCtrl != null) {

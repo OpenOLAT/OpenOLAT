@@ -29,7 +29,7 @@ import org.olat.core.gui.control.WindowControl;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface InteractiveAddPageElementHandler {
+public interface InteractiveAddPageElementHandler extends PageElementHandler {
 	
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl);
 

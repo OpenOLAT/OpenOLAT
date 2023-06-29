@@ -105,7 +105,7 @@ public class ImageUploadController extends FormBasicController implements PageEl
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_pf_collect_image_form");
+		formLayout.setElementCssClass("o_sel_ce_collect_image_form");
 		
 		String title = image == null ? null : image.getImageSettings().getTitle();
 		titleEl = uifactory.addTextElement("artefact.title", "artefact.title", 255, title, formLayout);
@@ -141,13 +141,13 @@ public class ImageUploadController extends FormBasicController implements PageEl
 		
 		fileEl.clearError();
 		if(fileEl.getInitialFile() == null && (fileEl.getUploadFile() == null || fileEl.getUploadSize() < 1)) {
-			fileEl.setErrorKey("form.legende.mandatory", null);
+			fileEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 		
 		titleEl.clearError();
 		if (titleEl.isEmpty()) {
-			titleEl.setErrorKey("form.legende.mandatory", null);
+			titleEl.setErrorKey("form.legende.mandatory");
 			allOk &= false;
 		}
 

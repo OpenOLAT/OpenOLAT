@@ -17,29 +17,15 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.ceditor;
+package org.olat.modules.cemedia;
 
 /**
  * 
- * Initial date: 20 Feb 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
+ * 
+ * Initial date: 29 juin 2023<br>
+ * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public enum PageElementCategory {
-	
-	content("category.content"),
-	questionType("category.question.type"),
-	organisational("category.organisational"),
-	layout("category.layout");
-	
-	private final String i18nKey;
-
-	private PageElementCategory(String i18nKey) {
-		this.i18nKey = i18nKey;
-	}
-
-	public String getI18nKey() {
-		return i18nKey;
-	}
-	
+public record MediaHandlerVersion(boolean hasVersion, boolean canUploadVersion, String uploadIconCssClass, boolean canCreateVersion, String createIconCssClass) {
+	//
 }

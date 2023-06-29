@@ -226,8 +226,7 @@ public class BusinessControlFactory {
 	}
 
 	public WindowControl createBusinessWindowControl(BusinessControl businessControl, WindowControl origWControl) {
-		WindowControl wc = new StackedBusinessWindowControl(origWControl, businessControl);
-		return wc;
+		return new StackedBusinessWindowControl(origWControl, businessControl);
 	}
 	
 	public WindowControl createBusinessWindowControl(WindowControl origWControl, OLATResourceable... ores) {
@@ -410,10 +409,15 @@ public class BusinessControlFactory {
 					ces = type.replace("|", "/");
 				}
 				try {
-					Long key = Long.parseLong(keyS);
+					Long key;
+					if("null".equals(keyS)) {
+						key = Long.valueOf(0l);
+					} else {
+						key = Long.parseLong(keyS);
+					}
 					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);
 				} catch (NumberFormatException e) {
-					log.warn("Cannot parse business path:" + businessControlString, e);
+					log.warn("Cannot parse business path:{}", businessControlString, e);
 					return entries;//return what we decoded
 				}
 			}
@@ -591,7 +595,7 @@ public class BusinessControlFactory {
 			  .append(busPath);
 			return sb.toString();
 		} catch(Exception e) {
-			log.error("Error with business path: " + bPathString, e);
+			log.error("Error with business path: {}", bPathString, e);
 			return null;
 		}
 	}
@@ -606,7 +610,7 @@ public class BusinessControlFactory {
 			String busPath = getBusinessPathAsURIFromCEList(ceList); 
 			return WebappHelper.getServletContextPath() + "/url/" + busPath;
 		} catch(Exception e) {
-			log.error("Error with business path: " + bPathString, e);
+			log.error("Error with business path: {}", bPathString, e);
 			return null;
 		}
 	}
@@ -695,8 +699,7 @@ class MyContextEntry implements ContextEntry, Serializable {
 	public boolean equals(Object obj) {
 		if (olatResourceable==null) {
 			return super.equals(obj);
-		} else if (obj instanceof MyContextEntry) {
-			MyContextEntry mce = (MyContextEntry)obj;
+		} else if (obj instanceof MyContextEntry mce) {
 			
 			// safe comparison including null value checks
 			Long myResId = olatResourceable.getResourceableId();

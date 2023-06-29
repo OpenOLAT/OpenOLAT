@@ -19,6 +19,8 @@
  */
 package org.olat.modules.cemedia.handler;
 
+import static org.olat.core.commons.services.doceditor.DocEditor.Mode.EDIT;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +28,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.doceditor.DocEditorService;
+import org.olat.core.commons.services.doceditor.DocTemplates;
+import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -34,6 +39,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -52,11 +58,13 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.ui.medias.AddFileController;
 import org.olat.modules.cemedia.ui.medias.CollectFileMediaController;
 import org.olat.modules.cemedia.ui.medias.FileMediaController;
 import org.olat.modules.cemedia.ui.medias.NewFileMediaVersionController;
@@ -86,14 +94,24 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	
+	public static DocTemplates getEditableTemplates(Identity identity, Roles roles, Locale locale) {
+		DocEditorService docEditorService = CoreSpringFactory.getImpl(DocEditorService.class);
+		Builder builder = DocTemplates.builder(locale);
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true, false)) {
+			builder.addDocx();
+		}
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true, false)) {
+			builder.addXlsx();
+		}
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true, false)) {
+			builder.addPptx();
+		}
+		return builder.build();
+	}
+	
 	public FileHandler() {
 		super(FILE_TYPE);
 		this.create = false;
-	}
-	
-	FileHandler(boolean create) {
-		super(FILE_TYPE);
-		this.create = create;
 	}
 	
 	@Override
@@ -103,12 +121,12 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public PageElementCategory getCategory() {
-		return PageElementCategory.embed;
+		return PageElementCategory.content;
 	}
 	
 	@Override
-	public boolean hasVersion() {
-		return true;
+	public MediaHandlerVersion hasVersion() {
+		return new MediaHandlerVersion(true, true, "o_icon_refresh", false, null);
 	}
 
 	@Override
@@ -200,12 +218,15 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CollectFileMediaController(ureq, wControl);
+		return new AddFileController(ureq, wControl, this);
 	}
 	
 	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new NewFileMediaVersionController(ureq, wControl, media, this, null, CollectFileMediaController.MAX_FILE_SIZE, true);	
+	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
+		if(CreateVersion.UPLOAD == createVersion) {
+			return new NewFileMediaVersionController(ureq, wControl, media, this, null, CollectFileMediaController.MAX_FILE_SIZE, true);
+		}
+		return null;
 	}
 	
 	@Override

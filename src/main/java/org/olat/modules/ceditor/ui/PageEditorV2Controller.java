@@ -77,6 +77,7 @@ import org.olat.modules.ceditor.ui.event.OpenAddLayoutEvent;
 import org.olat.modules.ceditor.ui.event.OpenRulesEvent;
 import org.olat.modules.ceditor.ui.event.PositionEnum;
 import org.olat.modules.ceditor.ui.event.SaveElementEvent;
+import org.olat.modules.cemedia.ui.event.AddMediaEvent;
 import org.olat.modules.forms.model.xml.Container;
 
 /**
@@ -181,13 +182,14 @@ public class PageEditorV2Controller extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT || event instanceof AddMediaEvent) {
 				PageElement element = addCtrl.getPageElement();
 				AddElementInfos uobject = addCtrl.getUserObject();
 				ContentEditorFragment fragment = doAddPageElement(ureq, element, uobject.getReferenceComponent(),
 						uobject.getTarget(), uobject.getColumn());
 				// close editor right away (file upload etc makes more sense)
-				doSaveElement(ureq, fragment);
+				boolean editMode = (event instanceof AddMediaEvent ame && ame.isEditMode());
+				doSaveElement(ureq, fragment, editMode);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -392,7 +394,7 @@ public class PageEditorV2Controller extends BasicController {
 			} else {
 				addCtrl.setUserObject(new AddElementInfos(refenceFragment, handler, target, column));
 				listenTo(addCtrl);
-				String title = translate("add." + handler.getType());
+				String title = translate("add." + handler.getType() + ".modal.title");
 				cmc = new CloseableModalController(getWindowControl(), null, addCtrl.getInitialComponent(), true, title, true);
 				listenTo(cmc);
 				cmc.activate();
@@ -486,8 +488,8 @@ public class PageEditorV2Controller extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
-	private void doSaveElement(UserRequest ureq, ContentEditorFragment fragment) {
-		fragment.setEditMode(false);
+	private void doSaveElement(UserRequest ureq, ContentEditorFragment fragment, boolean editMode) {
+		fragment.setEditMode(editMode);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
