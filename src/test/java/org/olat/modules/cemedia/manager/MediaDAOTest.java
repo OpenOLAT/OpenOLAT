@@ -39,6 +39,8 @@ import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.manager.PageReferenceDAO;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaUsage;
@@ -74,6 +76,8 @@ public class MediaDAOTest extends OlatTestCase {
 	private TagService tagService;
 	@Autowired
 	private MediaTagDAO mediaTagDao;
+	@Autowired
+	private MediaService mediaService;
 	@Autowired
 	private PageReferenceDAO pageReferenceDao;
 	@Autowired
@@ -442,6 +446,50 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(media.getKey(), mediaUsage.mediaKey());
 		Assert.assertEquals(mediaPart.getMediaVersion().getKey(), mediaUsage.mediaVersionKey());
 		Assert.assertEquals("0", mediaUsage.mediaVersionName());
+	}
+	
+	@Test
+	public void isEditableByAuthor() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-22");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-23");
+		Media media = mediaDao.createMedia("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		
+		boolean editable = mediaDao.isEditable(author, media);
+		Assert.assertTrue(editable);
+		boolean notEditable = mediaDao.isEditable(id, media);
+		Assert.assertFalse(notEditable);
+	}
+	
+	@Test
+	public void isEditableShared() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-24");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-25");
+		Media media = mediaDao.createMedia("Media 23", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		MediaToGroupRelation relation = mediaService.addRelation(media, true, id);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		
+		boolean editable = mediaDao.isEditable(author, media);
+		Assert.assertTrue(editable);
+		boolean editableToo = mediaDao.isEditable(id, media);
+		Assert.assertTrue(editableToo);
+	}
+	
+	
+	@Test
+	public void isEditableSharedNotEditable() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-26");
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-27");
+		Media media = mediaDao.createMedia("Media 24", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		MediaToGroupRelation relation = mediaService.addRelation(media, false, id);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+
+		boolean notEditable = mediaDao.isEditable(id, media);
+		Assert.assertFalse(notEditable);
 	}
 	
 }

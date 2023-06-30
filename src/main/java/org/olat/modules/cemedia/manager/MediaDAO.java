@@ -372,6 +372,24 @@ public class MediaDAO {
 		return pageKey != null && !pageKey.isEmpty() && pageKey.get(0) != null;
 	}
 	
+	public boolean isEditable(Identity identity, MediaLight media) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select media.key from mmedia as media")
+		  .append(" left join media.author as author")
+		  .append(" left join mediatogroup as mGroup on (mGroup.media.key=media.key and mGroup.editable=true)")
+		  .append(" left join mGroup.group as baseGroup")
+		  .append(" left join baseGroup.members as members")
+		  .append(" where media.key=:mediaKey and (author.key=:identityKey or members.identity.key=:identityKey)");
+		
+		List<Long> editableMediaKeys = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("mediaKey", media.getKey())
+			.setParameter("identityKey", identity.getKey()).setFirstResult(0).setMaxResults(1)
+			.getResultList();
+		return editableMediaKeys != null && !editableMediaKeys.isEmpty()
+				&& editableMediaKeys.get(0) != null && editableMediaKeys.get(0).longValue() > 0;
+	}
+	
 	public List<MediaUsageWithStatus> getPortfolioUsages(MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")

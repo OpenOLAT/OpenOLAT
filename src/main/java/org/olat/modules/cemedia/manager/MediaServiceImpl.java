@@ -141,6 +141,11 @@ public class MediaServiceImpl implements MediaService {
 		usages.addAll(portfolioUsages);
 		return usages;
 	}
+
+	@Override
+	public boolean isMediaEditable(Identity identity, MediaLight media) {
+		return mediaDao.isEditable(identity, media);
+	}
 	
 	@Override
 	public List<MediaUsage> getMediaUsage(MediaLight media) {

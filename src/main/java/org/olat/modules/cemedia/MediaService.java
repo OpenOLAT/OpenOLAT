@@ -74,6 +74,8 @@ public interface MediaService {
 	 */
 	List<MediaUsageWithStatus> getMediaUsageWithStatus(MediaLight media);
 	
+	boolean isMediaEditable(Identity identity, MediaLight media);
+	
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	
 	List<TagInfo> getTagInfos(Media media);

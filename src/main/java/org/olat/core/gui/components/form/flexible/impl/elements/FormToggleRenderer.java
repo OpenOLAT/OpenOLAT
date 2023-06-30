@@ -60,12 +60,16 @@ public class FormToggleRenderer extends DefaultComponentRenderer {
 		if(StringHelper.containsNonWhitespace(cmp.getAriaLabel())) {
 			sb.append("aria-label=\"").append(cmp.getAriaLabel()).append("\" ");
 		}
-		sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
-		if(cmp.getFormItem() != null) {
-			sb.append(FormJSHelper.getJSFnCallFor(cmp.getFormItem().getRootForm(), elementId, 1)).append(";").append("\" ");
+		if(cmp.isEnabled()) {
+			sb.append("onmousedown=\"o_info.preventOnchange=true;\" onmouseup=\"o_info.preventOnchange=false;\" onclick=\"");
+			if(cmp.getFormItem() != null) {
+				sb.append(FormJSHelper.getJSFnCallFor(cmp.getFormItem().getRootForm(), elementId, 1)).append(";").append("\" ");
+			} else {
+				ubu.buildXHREvent(sb, "", false, true, new NameValuePair(VelocityContainer.COMMAND_ID, "toggle"));
+				sb.append("\" ");
+			}
 		} else {
-			ubu.buildXHREvent(sb, "", false, true, new NameValuePair(VelocityContainer.COMMAND_ID, "toggle"));
-			sb.append("\" ");
+			sb.append("disabled=\"true\" aria-disabled=\"true\" ");
 		}
 		sb.append("onfocus=\"o_info.lastFormFocusEl='").append(elementId).append("';\" ")
 		  .append("aria-checked=\"").append("true", "false", cmp.isOn()).append("\" ")

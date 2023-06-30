@@ -120,7 +120,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		
 		MediaHandlerVersion handlerVersion = handler.hasVersion();
-		if(handlerVersion.hasVersion()) {
+		if(editable && handlerVersion.hasVersion()) {
 			if(handlerVersion.canCreateVersion()) {
 				createVersionButton = uifactory.addFormLink("create.version", "create.version." + handler.getType(), null, formLayout, Link.BUTTON);
 				String createIconCssClass = handlerVersion.createIconCssClass();
@@ -192,6 +192,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void loadVersions() {
+		if(!editable) return;
+		
 		versionDropdownItem.removeAllFormItems();
 		
 		List<MediaVersion> versions = media.getVersions();

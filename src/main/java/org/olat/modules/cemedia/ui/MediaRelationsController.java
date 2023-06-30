@@ -89,6 +89,7 @@ public class MediaRelationsController extends FormBasicController {
 	private int counter = 0;
 	private final boolean delaySave;
 	private final boolean wrapped;
+	private final boolean editable;
 	
 	@Autowired
 	private DB dbInstance;
@@ -99,9 +100,10 @@ public class MediaRelationsController extends FormBasicController {
 	@Autowired
 	private OrganisationService organisationService;
 	
-	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Media media) {
+	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Media media, boolean editable) {
 		super(ureq, wControl, "media_relations");
 		this.media = media;
+		this.editable = editable;
 		delaySave = false;
 		wrapped = false;
 		initForm(ureq);
@@ -113,6 +115,7 @@ public class MediaRelationsController extends FormBasicController {
 		this.media = media;
 		this.delaySave = delay;
 		this.wrapped = wrapped;
+		this.editable = true;
 		initForm(ureq);
 		loadModel();
 	}
@@ -124,11 +127,13 @@ public class MediaRelationsController extends FormBasicController {
 				new MediaRelationsCellRenderer(userManager)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaRelationsCols.editable));
-		DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel("delete", "", "delete", "o_icon o_icon_delete_item");
-		deleteCol.setIconHeader("o_icon o_icon_delete_item");
-		deleteCol.setAlwaysVisible(true);
-		deleteCol.setExportable(false);
-		columnsModel.addFlexiColumnModel(deleteCol);
+		if(editable) {
+			DefaultFlexiColumnModel deleteCol = new DefaultFlexiColumnModel("delete", "", "delete", "o_icon o_icon_delete_item");
+			deleteCol.setIconHeader("o_icon o_icon_delete_item");
+			deleteCol.setAlwaysVisible(true);
+			deleteCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(deleteCol);
+		}
 		
 		model = new MediaRelationsTableModel(columnsModel, getTranslator(), getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 25, false, getTranslator(), formLayout);
@@ -142,17 +147,21 @@ public class MediaRelationsController extends FormBasicController {
 		addSharesDropdown.setIconCSS("o_icon o_icon_add");
 		addSharesDropdown.setEmbbeded(true);
 		addSharesDropdown.setButton(true);
+		addSharesDropdown.setVisible(editable);
 		
 		addUserLink = uifactory.addFormLink("add.share.user", formLayout, Link.LINK);
 		addUserLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
+		addUserLink.setVisible(editable);
 		addSharesDropdown.addElement(addUserLink);
 		
 		addBusinessGroupLink = uifactory.addFormLink("add.share.business.group", formLayout, Link.LINK);
 		addBusinessGroupLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		addBusinessGroupLink.setVisible(editable);
 		addSharesDropdown.addElement(addBusinessGroupLink);
 		
 		addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
 		addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+		addOrganisationLink.setVisible(editable);
 		addSharesDropdown.addElement(addOrganisationLink);
 		
 		if(wrapped) {
@@ -253,6 +262,7 @@ public class MediaRelationsController extends FormBasicController {
 	private void forgeRow(MediaShareRow row) {
 		FormToggle editableButton = uifactory.addToggleButton("editable_" + (++counter), null, translate("on"), translate("off"), flc);
 		row.setEditableToggleButton(editableButton);
+		editableButton.setEnabled(editable);
 		udpateToggle(row);
 		editableButton.setUserObject(row);
 	}

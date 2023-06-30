@@ -33,7 +33,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -57,20 +56,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaDetailsController extends BasicController implements Activateable2 {
 	
-	private final Link editLink;
 	private final Link deleteLink;
 	private final TabbedPane tabbedPane;
 	
 	private Controller metadataCtrl;
-	private Controller mediaEditCtrl;
-	private CloseableModalController cmc;
 	private MediaUsageController usageCtrl;
 	private MediaRelationsController relationsCtrl;
 	private DialogBoxController confirmDeleteMediaCtrl;
 	private final MediaOverviewController overviewCtrl;
 
 	private Media media;
-	private boolean editable;
+	private final boolean editable;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
 	
@@ -84,11 +80,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		handler = mediaService.getMediaHandler(media.getType());
 		
 		usageList = mediaService.getMediaUsage(media);
-		for(MediaUsage mediaUsage:usageList) {
-			if(mediaUsage.getPageStatus() == PageStatus.closed || mediaUsage.getPageStatus() == PageStatus.published) {
-				editable = false;
-			}
-		}
+		editable = isEditable();
 		
 		VelocityContainer mainVC = createVelocityContainer("media_details");
 		
@@ -102,12 +94,11 @@ public class MediaDetailsController extends BasicController implements Activatea
 		commandsDropdown.setButton(true);
 		commandsDropdown.setEmbbeded(true);
 		commandsDropdown.setOrientation(DropdownOrientation.right);
+		commandsDropdown.setVisible(editable);
 		mainVC.put("commands", commandsDropdown);
 		
-		editLink = LinkFactory.createToolLink("edit", translate("edit"), this, "o_icon o_icon-lg o_icon_edit");
-		commandsDropdown.addComponent(editLink);
-		
 		deleteLink = LinkFactory.createToolLink("delete", translate("delete"), this, "o_icon o_icon-lg o_icon_delete_item");
+		deleteLink.setVisible(editable);
 		commandsDropdown.addComponent(deleteLink);
 		
 		tabbedPane = new TabbedPane("pane", getLocale());
@@ -118,12 +109,14 @@ public class MediaDetailsController extends BasicController implements Activatea
 		listenTo(overviewCtrl);
 		tabbedPane.addTab(translate("tab.overview"), "o_sel_media_overview", overviewCtrl);
 		
-		tabbedPane.addTabControllerCreator(ureq, translate("tab.metadata"), "o_sel_media_metadata", uureq -> {
-			removeAsListenerAndDispose(metadataCtrl);
-			metadataCtrl = handler.getEditMetadataController(uureq, getWindowControl(), media);
-			listenTo(metadataCtrl);
-			return metadataCtrl;
-		}, false);
+		if(editable) {
+			tabbedPane.addTabControllerCreator(ureq, translate("tab.metadata"), "o_sel_media_metadata", uureq -> {
+				removeAsListenerAndDispose(metadataCtrl);
+				metadataCtrl = handler.getEditMetadataController(uureq, getWindowControl(), media);
+				listenTo(metadataCtrl);
+				return metadataCtrl;
+			}, false);
+		}
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.usage"), "o_sel_media_metadata", uureq -> {
 			removeAsListenerAndDispose(usageCtrl);
@@ -134,13 +127,23 @@ public class MediaDetailsController extends BasicController implements Activatea
 		
 		tabbedPane.addTabControllerCreator(ureq, translate("tab.relations"), "o_sel_media_relations", uureq -> {
 			removeAsListenerAndDispose(relationsCtrl);
-			relationsCtrl = new MediaRelationsController(uureq, getWindowControl(), media);
+			relationsCtrl = new MediaRelationsController(uureq, getWindowControl(), media, editable);
 			listenTo(relationsCtrl);
 			return relationsCtrl;
 		}, false);
 		
 		
 		putInitialPanel(mainVC);
+	}
+	
+	private boolean isEditable() {
+		boolean isEditable = mediaService.isMediaEditable(getIdentity(), media);
+		for(MediaUsage mediaUsage:usageList) {
+			if(mediaUsage.getPageStatus() == PageStatus.closed || mediaUsage.getPageStatus() == PageStatus.published) {
+				isEditable &= false;
+			}
+		}
+		return isEditable;
 	}
 
 	@Override
@@ -154,36 +157,19 @@ public class MediaDetailsController extends BasicController implements Activatea
 			if(DialogBoxUIFactory.isYesEvent(event)) {
 				doDelete(ureq);
 			}	
-		} else if(mediaEditCtrl == source) {
-			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				reload();
-			}
-			cmc.deactivate();
-			cleanUp();
 		} else if(relationsCtrl == source || overviewCtrl == source || metadataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reload();
 			}
-		} else if(cmc == source) {
-			cleanUp();
 		}
 		super.event(ureq, source, event);
-	}
-	
-	private void cleanUp() {
-		removeAsListenerAndDispose(mediaEditCtrl);
-		removeAsListenerAndDispose(cmc);
-		mediaEditCtrl = null;
-		cmc = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(deleteLink == source) {
 			doConfirmDelete(ureq);
-		} else if(editLink == source) {
-			doEdit(ureq);
-		} 
+		}
 	}
 	
 	private void reload() {
@@ -203,17 +189,5 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private void doDelete(UserRequest ureq) {
 		mediaService.deleteMedia(media);
 		fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
-	}
-	
-	private void doEdit(UserRequest ureq) {
-		if(guardModalController(mediaEditCtrl)) return;
-		
-		mediaEditCtrl = handler.getEditMediaController(ureq, getWindowControl(), media);
-		listenTo(mediaEditCtrl);
-		
-		String title = translate("edit");
-		cmc = new CloseableModalController(getWindowControl(), null, mediaEditCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
 	}
 }
