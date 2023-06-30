@@ -303,7 +303,7 @@
 			}
 			
 			.o_labeled_light {
-				display: none;
+				display: block;
 				position: absolute;
 				left: 7px;
 				top: calc($o-media-browser-card-visual-height-md - 22px);
@@ -337,15 +337,6 @@
 			.o_media_card_cell>div.o_version {
 				width: $o-media-browser-card-width-sm;
 				height: $o-media-browser-card-height-sm;
-			}
-		}
-		
-		&.o_medias_select {
-			.o_labeled_light {
-				display: block;
-			}
-			.o_media_card.o_media_versioned::before, .o_media_card.o_media_versioned::after {
-				display: none;
 			}
 		}
 	}

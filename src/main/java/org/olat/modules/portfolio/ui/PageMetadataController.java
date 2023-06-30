@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -383,6 +382,11 @@ public class PageMetadataController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
+		//
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
 		//
 	}
 

@@ -72,14 +72,14 @@ public class CompetencesEditController extends FormBasicController {
 	@Autowired
 	private PortfolioV2Module portfolioModule;
 	
-	public CompetencesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, Page page) {
+	CompetencesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, Page page) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "competences_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale(), getTranslator()));
 		this.page = page;
 		
 		initForm(ureq);
 		/* we add domID to competences_edit.html to reduce DIV count */
-		this.flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
+		flc.getFormItemComponent().setDomReplacementWrapperRequired(false);
 	}
 	
 	@Override
@@ -128,6 +128,13 @@ public class CompetencesEditController extends FormBasicController {
 			editLink.setI18nKey("add");			
 		} else {
 			editLink.setI18nKey("edit");
+		}
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(competencesEl == fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
 		}
 	}
 	

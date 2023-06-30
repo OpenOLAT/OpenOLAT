@@ -61,7 +61,7 @@ public class CategoriesEditController extends FormBasicController {
 	private List<TextBoxItem> categoriesNames = new ArrayList<>();
 	private Map<String,Category> categoriesMap = new HashMap<>();
 	
-	public CategoriesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Category> categories) {
+	CategoriesEditController(UserRequest ureq, WindowControl wControl, Form mainForm, List<Category> categories) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "categories_edit", mainForm);
 		this.categories = categories;
 		for(Category category:categories) {
@@ -118,6 +118,13 @@ public class CategoriesEditController extends FormBasicController {
 		}
 		
 		flc.setDirty(true);
+	}
+	
+	@Override
+	protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent event) {
+		if(categoriesEl == fiSrc) {
+			super.propagateDirtinessToContainer(fiSrc, event);
+		}
 	}
 	
 	@Override
