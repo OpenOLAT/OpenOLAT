@@ -65,7 +65,7 @@ public class DialogPage {
 	}
 	
 	public DialogPage assertOnFileOverview(String filename) {
-		By fileBy = By.xpath("//div[contains(@class,'o_dialog_file_overview')]//div[contains(@class,'o_dialog_file_info')]//h4[contains(text(),'" + filename + "')]");
+		By fileBy = By.xpath("//div[contains(@class,'o_dialog_file_overview')]//div[contains(@class,'o_dialog_file_info')]//div[contains(@class,'o_dialog_file_name')][contains(text(),'" + filename + "')]");
 		OOGraphene.waitElement(fileBy, browser);
 		return this;
 	}
