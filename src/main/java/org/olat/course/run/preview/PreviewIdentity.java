@@ -85,11 +85,6 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	@Override
-	public String getEmailSignature() {
-		return data.get(UserConstants.EMAILSIGNATURE);
-	}
-
-	@Override
 	public String getInstitutionalEmail() {
 		return data.get(UserConstants.INSTITUTIONALEMAIL);
 	}
