@@ -92,8 +92,11 @@ public class EditJupyterHubController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_jupyterhub_configuration");
+		
 		String name = jupyterHub != null ? jupyterHub.getName() : "";
 		nameEl = uifactory.addTextElement("jupyterHub.name", "table.header.hub.name", 255, name, formLayout);
+		nameEl.setElementCssClass("o_sel_jupyterhub_name");
 		nameEl.setMandatory(true);
 
 		String cpu = jupyterHub != null ? jupyterHub.getCpu().stripTrailingZeros().toPlainString() : "1";
@@ -123,6 +126,7 @@ public class EditJupyterHubController extends FormBasicController {
 
 		String jupyterHubUrl = jupyterHub != null ? jupyterHub.getJupyterHubUrl() : "";
 		jupyterHubUrlEl = uifactory.addTextElement("jupyterHub.url", "form.hub.url", 255, jupyterHubUrl, formLayout);
+		jupyterHubUrlEl.setElementCssClass("o_sel_jupyterhub_url");
 		jupyterHubUrlEl.setMandatory(true);
 
 //		String ltiKey = jupyterHub != null && jupyterHub.getLtiKey() != null ? jupyterHub.getLtiKey() : "";

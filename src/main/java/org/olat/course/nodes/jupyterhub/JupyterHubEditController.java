@@ -84,6 +84,6 @@ public class JupyterHubEditController extends ActivateableTabbableDefaultControl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		this.tabbedPane = tabbedPane;
-		tabbedPane.addTab(translate("pane.tab.jupyterHubConfig"), jupyterHubConfig.getInitialComponent());
+		tabbedPane.addTab(translate("pane.tab.jupyterHubConfig"), "o_sel_jupyterhub_configuration", jupyterHubConfig.getInitialComponent());
 	}
 }

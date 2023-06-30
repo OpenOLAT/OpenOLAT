@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.selenium.page.course.BigBlueButtonSettingsPage;
+import org.olat.selenium.page.course.JupyterHubSettingsPage;
 import org.olat.selenium.page.course.LTI13SettingsPage;
 import org.olat.selenium.page.course.ZoomSettingsPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -259,6 +260,19 @@ public class AdministrationPage {
 		By zoomConfigBy = By.cssSelector("fieldset.o_sel_zoom_admin_configuration");
 		OOGraphene.waitElement(zoomConfigBy, browser);
 		return new ZoomSettingsPage(browser);
+	}
+	
+	public JupyterHubSettingsPage openJupyterHubSettings(boolean openExternalTools) {
+		if(openExternalTools) {
+			selectExternalTools();
+		}
+		
+		By zoomBy = By.cssSelector(".o_sel_jupyterHub span.o_tree_level_label_leaf>a");
+		OOGraphene.waitElement(zoomBy, browser);
+		browser.findElement(zoomBy).click();
+		By zoomConfigBy = By.cssSelector("fieldset.o_sel_jupyterhub_admin_configuration");
+		OOGraphene.waitElement(zoomConfigBy, browser);
+		return new JupyterHubSettingsPage(browser);
 	}
 	
 	private void openSubMenu(String liClass) {

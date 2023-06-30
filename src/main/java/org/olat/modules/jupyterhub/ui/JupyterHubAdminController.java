@@ -106,6 +106,7 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		setFormTitle("jupyterHub.title");
 		setFormInfoHelp("manual_admin/administration/JupyterHub/");
 		setFormContextHelp("manual_admin/administration/JupyterHub/");
+		formLayout.setElementCssClass("o_sel_jupyterhub_admin_configuration");
 
 		if (!lti13Module.isEnabled()) {
 			setFormWarning("jupyterHub.warning.no.lti");
@@ -113,12 +114,14 @@ public class JupyterHubAdminController extends FormBasicController implements Ac
 		}
 
 		enabledEl = uifactory.addCheckboxesHorizontal("jupyterHub.courseElement", formLayout, enabledKV.keys(), enabledKV.values());
+		enabledEl.setElementCssClass("o_sel_jupyterhub_admin_enable");
 		enabledEl.select(enabledKV.keys()[0], jupyterHubModule.isEnabled() && jupyterHubModule.isEnabledForCourseElement());
 		enabledEl.addActionListener(FormEvent.ONCHANGE);
 
 		initTable(formLayout);
 
 		addJupyterHubButton = uifactory.addFormLink("jupyterHub.add", formLayout, Link.BUTTON);
+		addJupyterHubButton.setElementCssClass("o_sel_jupyterhub_add");
 	}
 
 	private void initTable(FormItemContainer formLayout) {

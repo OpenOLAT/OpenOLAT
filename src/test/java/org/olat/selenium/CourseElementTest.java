@@ -58,6 +58,8 @@ import org.olat.selenium.page.course.DocumentConfigurationPage;
 import org.olat.selenium.page.course.DocumentPage;
 import org.olat.selenium.page.course.ForumCEPage;
 import org.olat.selenium.page.course.InfoMessageCEPage;
+import org.olat.selenium.page.course.JupyterHubConfigurationPage;
+import org.olat.selenium.page.course.JupyterHubPage;
 import org.olat.selenium.page.course.LTIConfigurationPage;
 import org.olat.selenium.page.course.LTIPage;
 import org.olat.selenium.page.course.MemberListConfigurationPage;
@@ -2617,6 +2619,65 @@ public class CourseElementTest extends Deployments {
 		
 		teams
 			.assertOnJoinDisabled();
+	}
+	
+	
+
+	/**
+	 * Minimal testing of the JupyterHub course element. An administrator
+	 * enables the feature and add in administration a new configuration.
+	 * It creates a new course with a JupyterHub course element and configure
+	 * the image name, publishes the course and check that the start button
+	 * is there.
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithJupyterLab()
+	throws IOException, URISyntaxException {
+		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		
+		String name = "OpenOlatLab " + UUID.randomUUID().toString();
+		
+		NavigationPage navBar = NavigationPage.load(browser);
+		AdministrationPage administration = navBar
+			.openAdministration();
+		administration
+			.openJupyterHubSettings(true)
+			.enableJupyterLab()
+			.addConfiguration(name, "https://www.openolat.org/lab/")
+			.assertOnConfiguration(name);
+		
+		 String courseTitle = "Course with Jupyter " + UUID.randomUUID().toString();
+		 navBar
+		 	.openAuthoringEnvironment()
+		 	.createCourse(courseTitle, true)
+		 	.assertOnInfos();
+		
+		String nodeTitle = "Jupyter Lab";
+		CoursePageFragment course = new CoursePageFragment(browser);
+		CourseEditorPageFragment courseEditor = course
+			.edit();
+		courseEditor
+			.createNode("jupyterHub")
+			.nodeTitle(nodeTitle);
+		
+		JupyterHubConfigurationPage configurationPage = new JupyterHubConfigurationPage(browser);
+		configurationPage
+			.selectConfiguration()
+			.setImageName("OpenOlatDev")
+			.saveConfiguration();
+
+		//publish the course
+		courseEditor
+			.autoPublish();
+		
+		JupyterHubPage jupyterPage = new JupyterHubPage(browser);
+		jupyterPage
+			.assertOnStartButton();
 	}
 	
 

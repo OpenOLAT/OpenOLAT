@@ -88,6 +88,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("jupyterHub.configuration.title");
+		formLayout.setElementCssClass("o_sel_jupyterhub_configuration");
 
 		SelectionValues jupyterHubKV = jupyterManager.getJupyterHubsKV();
 
@@ -114,6 +115,7 @@ public class JupyterHubConfigTabController extends FormBasicController {
 		infoTextEl.setElementCssClass("o_jupyter_info_text");
 
 		imageEl = uifactory.addTextElement("image", "form.image", 255, "", formLayout);
+		imageEl.setElementCssClass("o_sel_jupyterhub_image_name");
 		imageEl.setMandatory(true);
 		checkImageButton = uifactory.addFormLink("form.checkImage", formLayout, Link.BUTTON);
 
