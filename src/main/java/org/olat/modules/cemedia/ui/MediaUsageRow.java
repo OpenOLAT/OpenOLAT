@@ -53,7 +53,7 @@ public class MediaUsageRow {
 		row.setPage(usedIn.pageTitle());
 		row.setPageIconCssClass("o_icon o_icon-fw o_page_icon");
 		row.setVersionName(usedIn.mediaVersionName());
-		row.setRevoked(!usedIn.validGroup());
+		row.setRevoked(!usedIn.validGroup() && !usedIn.validOwnership());
 		row.setRepositoryEntryKey(usedIn.repositoryEntryKey());
 		row.setSubIdent(usedIn.subIdent());
 		row.setBinderKey(usedIn.binderKey());

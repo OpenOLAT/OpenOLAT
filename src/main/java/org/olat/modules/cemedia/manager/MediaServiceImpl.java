@@ -135,15 +135,15 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public List<MediaUsageWithStatus> getMediaUsageWithStatus(MediaLight media) {
-		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(media);
-		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(media);
+	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, MediaLight media) {
+		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(identity, media);
+		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(identity, media);
 		usages.addAll(portfolioUsages);
 		return usages;
 	}
 
 	@Override
-	public boolean isMediaEditable(Identity identity, MediaLight media) {
+	public boolean isMediaEditable(IdentityRef identity, MediaLight media) {
 		return mediaDao.isEditable(identity, media);
 	}
 	

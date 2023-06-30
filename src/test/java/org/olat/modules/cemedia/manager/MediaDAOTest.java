@@ -48,6 +48,7 @@ import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
+import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
@@ -84,6 +85,8 @@ public class MediaDAOTest extends OlatTestCase {
 	private TaxonomyDAO taxonomyDao;
 	@Autowired
 	private TaxonomyLevelDAO taxonomyLevelDao;
+	@Autowired
+	private PortfolioService portfolioService;
 	@Autowired
 	private MediaToTaxonomyLevelDAO mediaToTaxonomyLevelDao;
 	
@@ -412,7 +415,7 @@ public class MediaDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(reference);
 		
-		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPageUsages(media);
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPageUsages(author, media);
 		Assert.assertNotNull( mediaUsages);
 		Assert.assertEquals(1, mediaUsages.size());
 		
@@ -422,6 +425,35 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(media.getKey(), mediaUsage.mediaKey());
 		Assert.assertEquals(mediaPart.getMediaVersion().getKey(), mediaUsage.mediaVersionKey());
 		Assert.assertEquals("0", mediaUsage.mediaVersionName());
+		Assert.assertFalse(mediaUsage.validOwnership());
+		Assert.assertFalse(mediaUsage.validGroup());
+	}
+	
+	@Test
+	public void getPageUsagesAsOwner() {
+		// Create a course ass owner
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-20-1");
+		RepositoryEntry re = JunitTestHelper.deployBasicCourse(author);
+		Page page = pageDao.createAndPersist("New referenced page", "A brand new page but with a ref.", null, null, true, null, null);
+		PageReference reference = pageReferenceDao.createReference(page, re, "AC-546");
+		dbInstance.commit();
+		
+		// Add a media to the page
+		Media media = mediaDao.createMedia("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		MediaPart mediaPart = MediaPart.valueOf(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(reference);
+		
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPageUsages(author, media);
+		Assert.assertNotNull( mediaUsages);
+		Assert.assertEquals(1, mediaUsages.size());
+		
+		MediaUsageWithStatus mediaUsage = mediaUsages.get(0);
+		Assert.assertEquals(page.getKey(), mediaUsage.pageKey());
+		Assert.assertTrue(mediaUsage.validOwnership());
+		Assert.assertFalse(mediaUsage.validGroup());
 	}
 	
 	@Test
@@ -436,7 +468,7 @@ public class MediaDAOTest extends OlatTestCase {
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
 		
-		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(media);
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, media);
 		Assert.assertNotNull( mediaUsages);
 		Assert.assertEquals(1, mediaUsages.size());
 		
@@ -446,6 +478,29 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals(media.getKey(), mediaUsage.mediaKey());
 		Assert.assertEquals(mediaPart.getMediaVersion().getKey(), mediaUsage.mediaVersionKey());
 		Assert.assertEquals("0", mediaUsage.mediaVersionName());
+		Assert.assertFalse(mediaUsage.validOwnership());
+		Assert.assertFalse(mediaUsage.validGroup());
+	}
+	
+	@Test
+	public void getPortfolioUsagesWithOwnership() {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-21-1");
+		Page page = portfolioService.appendNewPage(author, "Page 21-1", "A page with content.", null, null, null);
+		Media media = mediaDao.createMedia("Media 21-1", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
+		dbInstance.commit();
+		
+		MediaPart mediaPart = MediaPart.valueOf(media);
+		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
+		pageDao.persistPart(reloadedBody, mediaPart);
+		dbInstance.commitAndCloseSession();
+		
+		List<MediaUsageWithStatus> mediaUsages = mediaDao.getPortfolioUsages(author, media);
+		Assert.assertEquals(1, mediaUsages.size());
+		
+		MediaUsageWithStatus mediaUsage = mediaUsages.get(0);
+		Assert.assertEquals(page.getKey(), mediaUsage.pageKey());
+		Assert.assertTrue(mediaUsage.validOwnership());
+		Assert.assertFalse(mediaUsage.validGroup());
 	}
 	
 	@Test

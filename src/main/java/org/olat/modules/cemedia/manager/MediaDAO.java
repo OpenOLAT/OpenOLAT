@@ -30,6 +30,7 @@ import java.util.UUID;
 
 import jakarta.persistence.TypedQuery;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
@@ -372,7 +373,7 @@ public class MediaDAO {
 		return pageKey != null && !pageKey.isEmpty() && pageKey.get(0) != null;
 	}
 	
-	public boolean isEditable(Identity identity, MediaLight media) {
+	public boolean isEditable(IdentityRef identity, MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select media.key from mmedia as media")
 		  .append(" left join media.author as author")
@@ -390,7 +391,7 @@ public class MediaDAO {
 				&& editableMediaKeys.get(0) != null && editableMediaKeys.get(0).longValue() > 0;
 	}
 	
-	public List<MediaUsageWithStatus> getPortfolioUsages(MediaLight media) {
+	public List<MediaUsageWithStatus> getPortfolioUsages(IdentityRef identity, MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  binder.key, binder.title,")
@@ -400,7 +401,10 @@ public class MediaDAO {
 		  .append("   inner join bgroup as mGroup on (mediaMember.group.key=mGroup.key)")
 		  .append("   inner join mediatogroup as groupToMedia on (groupToMedia.group.key=mGroup.key)")
 		  .append("   where pageMember.group.key=page.baseGroup.key and groupToMedia.media.key=media.key")
-		  .append("  ) as numOfLinkedGroups")
+		  .append("  ) as numOfLinkedGroups,")
+		  .append("  (select count(pageMember.key) from bgroupmember as pageMember")
+		  .append("   where pageMember.group.key=page.baseGroup.key and pageMember.identity.key=:identityKey")
+		  .append("  ) as numOfPageOwners")
 		  .append(" from cepage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
@@ -415,6 +419,7 @@ public class MediaDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		List<MediaUsageWithStatus> usage = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -432,14 +437,16 @@ public class MediaDAO {
 			
 			Long numOfLinkedUsers = PersistenceHelper.extractLong(object, 8);
 			boolean linkedByUser = numOfLinkedUsers != null && numOfLinkedUsers.longValue() > 0l;
+			Long numOfOwnerships = PersistenceHelper.extractLong(object, 9);
+			boolean linkedByOwnership = numOfOwnerships != null && numOfOwnerships.longValue() > 0l;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, binderKey, binderTitle,
-					null, null, null, mediaKey, mediaVersionKey, mediaVersionName, linkedByUser));
+					null, null, null, mediaKey, mediaVersionKey, mediaVersionName, linkedByUser, linkedByOwnership));
 		}
 		return usage;
 	}
 	
-	public List<MediaUsageWithStatus> getPageUsages(MediaLight media) {
+	public List<MediaUsageWithStatus> getPageUsages(IdentityRef identity, MediaLight media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  v.key, ref.subIdent, v.displayname,")
@@ -448,7 +455,13 @@ public class MediaDAO {
 		  .append("   inner join mToGroup.group as baseGroup")
 		  .append("   inner join repoentrytogroup as reToGroup on (baseGroup.key=reToGroup.group.key)")
 		  .append("   where  mToGroup.media.key=media.key and reToGroup.entry.key=v.key")
-		  .append("  ) as numOfLinkedGroups")
+		  .append("  ) as numOfLinkedGroups,")
+		  .append("  (select count(pageRe.key) from repositoryentry as pageRe")
+		  .append("   inner join pageRe.groups as pageRelGroup")
+          .append("   inner join pageRelGroup.group as pageBaseGroup")
+          .append("   inner join pageBaseGroup.members as pageMembership")
+		  .append("   where pageRe.key=v.key and pageMembership.identity.key=:identityKey and pageMembership.role").in(GroupRoles.owner.name())
+		  .append("  ) as numOfOwners")
 		  .append(" from cepage as page")
 		  .append(" inner join page.body as pageBody")
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
@@ -461,6 +474,7 @@ public class MediaDAO {
 		List<Object[]> objects = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class)
 				.setParameter("mediaKey", media.getKey())
+				.setParameter("identityKey", identity.getKey())
 				.getResultList();
 		List<MediaUsageWithStatus> usage = new ArrayList<>(objects.size());
 		for(Object[] object:objects) {
@@ -478,10 +492,12 @@ public class MediaDAO {
 			
 			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 9);
 			boolean linkedByGroup = numOfLinkedGroups != null && numOfLinkedGroups.longValue() > 0l;
+			Long numOfOwners = PersistenceHelper.extractLong(object, 10);
+			boolean linkedByOwnership = numOfOwners != null && numOfOwners.longValue() > 0l;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
 					repoKey, subIdent, repoDisplayname, mediaKey, mediaVersionKey, mediaVersionName,
-					linkedByGroup));
+					linkedByGroup, linkedByOwnership));
 		}
 		return usage;
 	}
