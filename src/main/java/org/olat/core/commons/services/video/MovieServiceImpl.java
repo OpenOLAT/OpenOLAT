@@ -36,6 +36,7 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.common.Codec;
 import org.jcodec.common.VideoCodecMeta;
 import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.logging.LogLevel;
 import org.jcodec.common.model.Picture;
 import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
@@ -53,6 +54,7 @@ import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.ims.cp.ui.VFSCPNamedItem;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,7 +64,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("movieService")
-public class MovieServiceImpl implements MovieService, ThumbnailSPI {
+public class MovieServiceImpl implements MovieService, InitializingBean, ThumbnailSPI {
 	
 	private static final Logger log = Tracing.createLoggerFor(MovieServiceImpl.class);
 
@@ -81,8 +83,19 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		supportedCodecs.add(Codec.codecByFourcc("vssh"));
 	}
 	
-	
-	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		Log4j2Sink sink = new Log4j2Sink();
+		org.jcodec.common.logging.Logger.addSink(sink);
+		LogLevel logLevel = sink.getLogLevel();
+		if(logLevel.ordinal() > LogLevel.DEBUG.ordinal()) {
+			// jcodec accepts only message greater than the specified log level
+			org.jcodec.common.logging.Logger.setLevel(LogLevel.values()[logLevel.ordinal() - 1]);
+		} else {
+			org.jcodec.common.logging.Logger.setLevel(LogLevel.DEBUG);
+		}
+	}
+
 	@Override
 	public List<String> getExtensions() {
 		return extensions;

@@ -297,10 +297,15 @@ public abstract class AbstractParticipationRemoveController extends FormBasicCon
 				.map(ParticipationRef::of)
 				.collect(Collectors.toList());
 		if (isRebook()) {
-			Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
-			ParticipationResult result = appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
-					getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
-			if (result.getStatus() != ParticipationResult.Status.ok) {
+			if (appointmentsEl.isVisible() && appointmentsEl.isOneSelected()) {
+				Long appointmentKey = Long.valueOf(appointmentsEl.getSelectedKey());
+				ParticipationResult result = appointmentsService.rebookParticipations(AppointmentRef.of(appointmentKey), participationRefs,
+						getIdentity(), currentAppointment.getTopic().isAutoConfirmation());
+				if (result.getStatus() != ParticipationResult.Status.ok) {
+					showWarning("error.rebook");
+					return;
+				}
+			} else {
 				showWarning("error.rebook");
 				return;
 			}
