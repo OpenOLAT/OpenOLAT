@@ -76,6 +76,11 @@ public class QueryUserHelper implements User {
 	}
 
 	@Override
+	public String getEmailSignature() {
+		return null;
+	}
+
+	@Override
 	public String getInstitutionalEmail() {
 		return null;
 	}

@@ -558,6 +558,9 @@ create index idx_badge_entry_config_entry_idx on o_badge_entry_config (fk_entry)
 -- Dialog element
 alter table o_dialog_element add column d_authoredby varchar(256);
 
+-- o_user
+alter table o_user add column u_emailsignature varchar(2048);
+
 
 -- Content editor
 alter table o_pf_assignment rename to o_ce_assignment;

@@ -335,6 +335,7 @@ CREATE TABLE o_user (
    u_firstname varchar2(255 char),
    u_lastname varchar2(255 char),
    u_email varchar2(255 char),
+   u_emailsignature varchar2(2048 char),
    u_nickname varchar2(255 char),
    u_birthday varchar2(255 char),
    u_graduation varchar2(255 char),

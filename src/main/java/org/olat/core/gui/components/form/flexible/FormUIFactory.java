@@ -909,6 +909,42 @@ public class FormUIFactory {
 	}
 
 	/**
+	 * Add a rich text formattable element that offers basic formatting
+	 * functionality and loads the data form the given string value. Use
+	 * item.getEditorConfiguration() to add more editor features if you need
+	 * them.
+	 * Special version, which does gets windowControl from formLayout
+	 *
+	 * @param name
+	 *            Name of the form item
+	 * @param i18nLabel
+	 *            The i18n key of the label or NULL when no label is used
+	 * @param initialHTMLValue
+	 *            The initial value or NULL if no initial value is available
+	 * @param rows
+	 *            The number of lines the editor should offer. Use -1 to
+	 *            indicate no specific height
+	 * @param cols
+	 *            The number of characters width the editor should offer. Use -1
+	 *            to indicate no specific width
+	 * @param formLayout The form item container where to add the rich
+	 *          text element
+	 * @return The rich text element instance
+	 */
+	public RichTextElement addRichTextElementForStringDataMinimalistic(String name, final String i18nLabel, String initialHTMLValue, final int rows,
+																	   final int cols, FormItemContainer formLayout) {
+		// Create rich text element with bare-bone configuration
+		RichTextElement rte = new RichTextElementImpl(name, initialHTMLValue, rows, cols, formLayout.getTranslator().getLocale());
+		setLabelIfNotNull(i18nLabel, rte);
+		// Now configure editor
+		rte.getEditorConfiguration().setConfigProfileFormEditorMinimalistic(formLayout.getRootForm().getWindowControl().getWindowBackOffice().getWindow().getGuiTheme());
+		rte.getEditorConfiguration().setPathInStatusBar(false);
+		// Add to form and finish
+		formLayout.add(rte);
+		return rte;
+	}
+
+	/**
 	 * Add a rich text formattable element that offers simple formatting
 	 * functionality and loads the data form the given string value. Use
 	 * item.getEditorConfiguration() to add more editor features if you need

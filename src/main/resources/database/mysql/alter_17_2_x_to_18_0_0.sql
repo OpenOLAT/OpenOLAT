@@ -532,6 +532,9 @@ alter table o_badge_entry_config add constraint badge_entry_config_entry_idx for
 -- Dialog element
 alter table o_dialog_element add column d_authoredby varchar(256);
 
+-- o_user
+alter table o_user add column u_emailsignature text(2048);
+
 
 -- Content editor
 rename table o_pf_assignment to o_ce_assignment;

@@ -196,6 +196,11 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getEmailSignature() {
+			return updatedProperties.get(UserConstants.EMAILSIGNATURE);
+		}
+
+		@Override
 		public String getInstitutionalEmail() {
 			return updatedProperties.get(UserConstants.INSTITUTIONALEMAIL);
 		}

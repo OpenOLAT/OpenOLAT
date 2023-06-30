@@ -19,6 +19,7 @@
 				<ref bean="userPropertyFirstName" />
 				<ref bean="userPropertyLastName" />
 				<ref bean="userPropertyEmail" />
+				<ref bean="userPropertyEmailSignature" />
 				<ref bean="userPropertyEmailChangedKey" />
 				<ref bean="userPropertyEmailDisabled" />
 				<ref bean="userPropertyBirthDay" />
@@ -107,6 +108,7 @@
 								<ref bean="userPropertyFirstName" />
 								<ref bean="userPropertyLastName" />
 								<ref bean="userPropertyEmail" />
+								<ref bean="userPropertyEmailSignature" />
 								<ref bean="userPropertyEmailDisabled" />
 								<ref bean="userPropertyBirthDay" />
 								<ref bean="userPropertyGender" />

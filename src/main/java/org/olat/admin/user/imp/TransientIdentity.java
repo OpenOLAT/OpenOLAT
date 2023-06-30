@@ -92,6 +92,11 @@ public class TransientIdentity implements Identity, User {
 	}
 
 	@Override
+	public String getEmailSignature() {
+		return properties.get(UserConstants.EMAILSIGNATURE);
+	}
+
+	@Override
 	public String getInstitutionalEmail() {
 		return properties.get(UserConstants.INSTITUTIONALEMAIL);
 	}
