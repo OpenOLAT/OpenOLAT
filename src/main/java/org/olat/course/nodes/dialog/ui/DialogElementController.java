@@ -133,7 +133,7 @@ public class DialogElementController extends BasicController implements Activate
 		editMetadataLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 
 		String extension = FileUtils.getFileSuffix(element.getFilename());
-		boolean canPreview = hasEditor(ureq, extension);
+		boolean canPreview = hasPreview(ureq, extension);
 		mainVC.contextPut("canPreview", canPreview);
 		openFileLink = LinkFactory.createLink("openFile", "openFile", getTranslator(), mainVC, this, Link.LINK | Link.NONTRANSLATED);
 		openFileLink.setCustomDisplayText(translate("dialog.open.file"));
@@ -270,8 +270,8 @@ public class DialogElementController extends BasicController implements Activate
 		cmc.activate();
 	}
 
-	private boolean hasEditor(UserRequest ureq, String extension) {
-		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, DocEditor.Mode.VIEW, true, true);
+	private boolean hasPreview(UserRequest ureq, String extension) {
+		return docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, DocEditor.Mode.VIEW, true, false);
 	}
 
 	/**

@@ -12,33 +12,52 @@
 		</div>
 
 		<div class="o_dialog_file_info">
-			<h4><i class="o_icon o_icon-fw $r.getFiletypeIconCss($filename)"> </i> $filename</h4>
-			<br>
-			<h4>$threadCount</h4>
-			<span class="text-muted small o_dialog_count">
-				#if($threadCount == 1)
-					$r.translate("table.header.thread")
-				#else
-					$r.translate("table.header.threads")
-				#end
-			</span>
-			<h4>$messageCount</h4>
-			<span class="text-muted small o_dialog_count">
-				#if($messageCount == 1)
-					$r.translate("table.header.message")
-				#else
-					$r.translate("table.header.messages")
-				#end
-			</span>
+			<div class="o_dialog_file_info_count">
+				<i class="o_icon o_icon-fw $r.getFiletypeIconCss($filename)"> </i>
+				<div class="o_nowrap o_dialog_file_name">$filename</div>
+			</div>
+			<div class="o_dialog_file_info_counts">
+				<div>
+					<div class="o_dialog_file_info_count">$threadCount</div>
+					<span class="text-muted small o_dialog_count">
+						#if($threadCount == 1)
+							$r.translate("table.header.thread")
+						#else
+							$r.translate("table.header.threads")
+						#end
+					</span>
+				</div>
+				<div>
+					<div class="o_dialog_file_info_count">
+						$messageCount
+					</div>
+					<span class="text-muted small o_dialog_count">
+						#if($messageCount == 1)
+							$r.translate("table.header.message")
+						#else
+							$r.translate("table.header.messages")
+						#end
+					</span>
+				</div>
+			</div>
 		</div>
 	</div>
 
 	<div class="o_dialog_file_metadata">
-		<div class="o_dialog_metadata_info">
-			<div><strong>$r.translate("table.header.published.by")</strong></div>$author
-			<div><strong>$r.translate("table.header.last.activity.date")</strong></div>$lastActivity
+		<div class="o_dialog_metadata_info o_form form-horizontal">
+			<div class="o_dialog_file_meta_info_cell">
+				<label class="o_dialog_meta_info_label">$r.translate("table.header.published.by")</label>
+				<div><p>$author</p></div>
+			</div>
+			<div class="o_dialog_file_meta_info_cell o_dialog_file_cell_last_activity">
+				<label class="o_dialog_meta_info_label">$r.translate("table.header.last.activity.date")</label>
+				<div><p>$lastActivity</p></div>
+			</div>
 			#if($r.isNotEmpty($authoredBy))
-				<div><strong>$r.translate("table.header.authored.by")</strong></div>$authoredBy
+				<div class="o_dialog_file_meta_info_cell o_dialog_file_cell_authored_by">
+					<label class="o_dialog_meta_info_label">$r.translate("table.header.authored.by")</label>
+					<div><p>$authoredBy</p></div>
+				</div>
 			#end
 		</div>
 		<div class="o_dialog_file_button_group">

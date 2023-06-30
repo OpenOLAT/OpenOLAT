@@ -65,6 +65,7 @@ public class DialogFileEditMetadataController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		fileNameEl = uifactory.addTextElement("filename", "dialog.metadata.filename", 256, null, formLayout);
 		fileNameEl.setValue(element.getFilename());
+		fileNameEl.setMandatory(true);
 		authoredByEl = uifactory.addTextElement("authoredby", "dialog.metadata.authored.by", 256, null, formLayout);
 		authoredByEl.setValue(element.getAuthoredBy());
 		authoredByEl.setMaxLength(256);

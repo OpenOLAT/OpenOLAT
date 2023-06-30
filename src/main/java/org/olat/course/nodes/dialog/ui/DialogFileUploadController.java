@@ -207,18 +207,18 @@ public class DialogFileUploadController extends FormBasicController {
 				filename = fileNameEl.getValue();
 			}
 		}
-		return StringHelper.escapeHtml(filename);
+		return filename;
 	}
 
 	/**
-	 * @return String value, retrieve filtered authoredBy name
+	 * @return who authored the file dialog initially
 	 */
 	public String getAuthoredByElValue() {
-		return StringHelper.escapeHtml(authoredByEl.getValue());
+		return authoredByEl.getValue();
 	}
 
 	/**
-	 * @return String value, retrieve filtered chosen filename
+	 * @return name of the file which gets copied
 	 */
 	public String getFileChooserElValue() {
 		return fileChooserEl.getValue();

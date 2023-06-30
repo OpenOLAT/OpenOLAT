@@ -2,7 +2,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  >div {
+
+  > div {
     width: calc(percentage(math.div(1, 3)) - 7px);
     @media (max-width: $screen-md-max) {
       min-width: calc(50% - 5px)
@@ -19,12 +20,13 @@
   background: #fff8e5;
   text-transform: none;
   display: inline-flex;
+  position: absolute;
   font-size: 14px;
   column-gap: 5px;
-  bottom: 20px;
+  bottom: 15px;
   border-radius: 7px;
   padding: 5px 10px;
-  border-color: $o-dialog-cn-label-new-border-color	;
+  border-color: $o-dialog-cn-label-new-border-color;
   @include o-high-contrast-color($o-dialog-cn-label-new-color);
 }
 
@@ -83,13 +85,13 @@
 }
 
 
-
 .o_dialog_card {
   background: #ffffff;
   height: 100%;
 
   &.o_dialog_card_link {
     cursor: pointer;
+
     .o_icon_actions {
       margin: 10px 15px;
     }
@@ -100,6 +102,7 @@
     flex-direction: column;
     border-radius: $o-card-border-radius;
     background: #ffffff;
+
     .o_dialog_card_title {
       margin-top: 0;
       margin-bottom: 5px;
@@ -142,13 +145,12 @@ div.panel.o_dialog_file_overview {
   .o_dialog_file {
     display: flex;
     align-items: center;
-    flex: 1;
     order: -1;
-    max-width: 395px;
     gap: 20px;
 
     .o_dialog_file_thumbnail {
       max-width: 110px;
+      min-width: 110px;
       cursor: pointer;
       height: auto;
       position: relative;
@@ -161,9 +163,9 @@ div.panel.o_dialog_file_overview {
       .o_visual_not_available {
         min-width: 110px;
         min-height: 150px;
-        background-image:url('#{$o-images-path}no_preview.png');
-        background-repeat:no-repeat;
-        background-position:50% 50%;
+        background-image: url('#{$o-images-path}no_preview.png');
+        background-repeat: no-repeat;
+        background-position: 50% 50%;
         background-size: contain;
       }
     }
@@ -175,12 +177,27 @@ div.panel.o_dialog_file_overview {
 
   .o_dialog_file_info {
     word-wrap: anywhere;
-    h4 {
-      display: inline-block;
+
+    .o_dialog_file_info_counts {
+      display: flex;
+      flex-wrap: wrap;
+      margin-left: 5px;
+      margin-top: 10px;
     }
 
-    >span {
+    > span {
       font-size: 14px;
+    }
+
+    .o_dialog_file_info_count {
+      display: inline-flex;
+      align-items: center;
+      font-size: 20px;
+      font-weight: 500;
+
+      .o_dialog_file_name {
+        max-width: 200px;
+      }
     }
 
     .o_dialog_count {
@@ -191,26 +208,52 @@ div.panel.o_dialog_file_overview {
   .o_dialog_file_metadata {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    flex-shrink: 0;
+    flex-grow: 1;
     align-items: flex-end;
 
     .o_dialog_metadata_info {
-      display: flex;
-      flex-wrap: wrap;
-      flex-grow: 1;
-      align-content: center;
-      column-gap: 35px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      padding-top: 2.5em;
+      margin-top: auto;
+      margin-bottom: auto;
+
+      .o_dialog_file_meta_info_cell {
+        display: inline-flex;
+        gap: 15px;
+
+        .o_dialog_meta_info_label {
+          text-align: right;
+          min-width: 30%;
+        }
+      }
     }
 
-    .o_dialog_file_button_group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    @media (max-width: 1100px) {
+      .o_dialog_metadata_info {
+        grid-template-columns: 1fr;
+        padding-top: 0;
 
-      @media (max-width: 700px) {
-        margin-top: 15px;
+        .o_dialog_file_cell_authored_by {
+          order: 2;
+        }
+
+        .o_dialog_file_cell_last_activity {
+          order: 3;
+        }
       }
+      align-items: center;
+    }
+  }
+
+  .o_dialog_file_button_group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    @media (max-width: 700px) {
+      margin-top: 15px;
     }
   }
 }
