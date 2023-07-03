@@ -121,7 +121,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 		}
 		
 		Date endDate = appointment != null? appointment.getEndDate(): null;
-		if (endDate == null) {
+		if (endDate == null && startDate != null) {
 			endDate = DateUtils.addHours(startDate, 1);
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);

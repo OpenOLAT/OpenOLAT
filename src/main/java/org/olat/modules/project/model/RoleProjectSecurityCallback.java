@@ -99,6 +99,11 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canDeleteProject() {
 		return manager || roles.contains(ProjectRole.owner);
 	}
+	
+	@Override
+	public boolean canSubscribe() {
+		return  !roles.isEmpty();
+	}
 
 	@Override
 	public boolean canViewMembers() {

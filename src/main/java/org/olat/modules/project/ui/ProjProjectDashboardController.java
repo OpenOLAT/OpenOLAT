@@ -198,15 +198,17 @@ public class ProjProjectDashboardController extends BasicController implements A
 		usersPortraitCmp.setAriaLabel(translate("member.list.aria"));
 		usersPortraitCmp.setUsers(portraitUsers);
 		
-		subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
-				projectService.getSubscriptionContext(project),
-				projectService.getPublisherData(project));
-		listenTo(subscriptionCtrl);
-		mainVC.put("subscription", subscriptionCtrl.getInitialComponent());
+		if (secCallback.canSubscribe()) {
+			subscriptionCtrl = new ContextualSubscriptionController(ureq, getWindowControl(),
+					projectService.getSubscriptionContext(project),
+					projectService.getPublisherData(project));
+			listenTo(subscriptionCtrl);
+			mainVC.put("subscription", subscriptionCtrl.getInitialComponent());
+		}
 		
 		//Widgets
-		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewNotes()
-				|| secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
+		if (secCallback.canViewFiles() || secCallback.canViewToDos() || secCallback.canViewDecisions()
+				|| secCallback.canViewNotes() || secCallback.canViewAppointments() || secCallback.canViewMilestones()) {
 			quickWidgetCtrl = new ProjQuickStartWidgetController(ureq, wControl, project, secCallback);
 			listenTo(quickWidgetCtrl);
 			mainVC.put("quick", quickWidgetCtrl.getInitialComponent());
@@ -626,7 +628,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ProjectBCFactory.TYPE_DECISIONS), null);
 		decisionAllCtrl = new ProjDecisionAllController(ureq, swControl, project, secCallback, lastVisitDate, avatarMapperKey);
 		listenTo(decisionAllCtrl);
-		stackPanel.pushController(translate("todo.all.title"), decisionAllCtrl);
+		stackPanel.pushController(translate("decision.all.title"), decisionAllCtrl);
 	}
 	
 	private void doOpenNotes(UserRequest ureq) {

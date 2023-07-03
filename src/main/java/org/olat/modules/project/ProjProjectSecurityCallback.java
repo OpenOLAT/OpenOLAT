@@ -42,6 +42,8 @@ public interface ProjProjectSecurityCallback extends ToDoTaskSecurityCallback {
 	
 	boolean canDeleteProject();
 	
+	boolean canSubscribe();
+	
 	boolean canViewMembers();
 	
 	boolean canViewTimeline();
