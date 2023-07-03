@@ -47,10 +47,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge01CustomizationStep extends BasicStep {
-	public CreateBadge01CustomizationStep(UserRequest ureq) {
+	public CreateBadge01CustomizationStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.customization", null);
-		setNextStep(new CreateBadge02DetailsStep(ureq));
+		setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
 	}
 
 	@Override

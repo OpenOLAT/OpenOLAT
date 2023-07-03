@@ -26,6 +26,7 @@ package org.olat.modules.openbadges.v2;
  */
 public class Constants {
 	public static final String CONTEXT_KEY = "@context";
+	public static final String LANGUAGE_KEY = "@language";
 	public static final String CONTEXT_VALUE = "https://w3id.org/openbadges/v2";
 	public static final String ID_KEY = "id";
 	public static final String TYPE_KEY = "type";
@@ -36,7 +37,7 @@ public class Constants {
 	static final String CRITERIA_KEY = "criteria";
 	static final String ISSUER_KEY = "issuer";
 	static final String VERSION_KEY = "version";
-	static final String TYPE_VALUE_ISSUER = "Issuer";
+	public static final String TYPE_VALUE_ISSUER = "Issuer";
 	static final String TYPE_VALUE_PROFILE = "Profile";
 	static final String URL_KEY = "url";
 	static final String EMAIL_KEY = "email";

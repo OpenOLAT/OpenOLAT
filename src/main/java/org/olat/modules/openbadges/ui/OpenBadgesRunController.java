@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -62,6 +63,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class OpenBadgesRunController extends FormBasicController implements Activateable2 {
+
+	private static final String CMD_DELETE = "delete";
+	private static final String CMD_EDIT = "edit";
 
 	private final RepositoryEntry entry;
 	private ClassTableModel tableModel;
@@ -101,8 +105,10 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.name.getI18n(), OpenBadgesAdminClassesController.Cols.name.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.status.getI18n(), OpenBadgesAdminClassesController.Cols.status.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.awardedCount.getI18n(), OpenBadgesAdminClassesController.Cols.awardedCount.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), CMD_DELETE));
 
 		tableModel = new ClassTableModel(columnModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "classes", tableModel, getTranslator(),
@@ -112,8 +118,8 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeClassWithSize> classesWithSizes = openBadgesManager.getBadgeClassesWithSizes(entry);
-		tableModel.setObjects(classesWithSizes);
+		List<OpenBadgesManager.BadgeClassWithSizeAndCount> classesWithSizesAndCounts = openBadgesManager.getBadgeClassesWithSizesAndCounts(entry);
+		tableModel.setObjects(classesWithSizesAndCounts);
 		tableEl.reset();
 	}
 
@@ -121,8 +127,33 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addLink) {
 			doLaunchAddWizard(ureq);
+		} else if (source == tableEl) {
+			if (event instanceof SelectionEvent selectionEvent) {
+				String command = selectionEvent.getCommand();
+				if (CMD_EDIT.equals(command)) {
+					doEdit(ureq, tableModel.getObject(selectionEvent.getIndex()));
+				}
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doEdit(UserRequest ureq, OpenBadgesManager.BadgeClassWithSizeAndCount row) {
+		BadgeClass badgeClass = openBadgesManager.getBadgeClass(row.badgeClass().getUuid());
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass);
+		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
+
+		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
+			openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
+			updateUI();
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+
+		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("form.add.new.badge"), "o_sel_add_badge_wizard");
+		listenTo(addStepsController);
+		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+
 	}
 
 	@Override
@@ -143,12 +174,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
 		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
-			BadgeClassImpl badgeClass = createBadgeClassContext.getBadgeClass();
-			String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
-					createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
-					createBadgeClassContext.getTitle(), getIdentity());
-			badgeClass.setImage(image);
-			openBadgesManager.createBadgeClass(badgeClass);
+			createBadgeClass(createBadgeClassContext);
 			updateUI();
 			return StepsMainRunController.DONE_MODIFIED;
 		};
@@ -157,6 +183,17 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 				translate("form.add.new.badge"), "o_sel_add_badge_wizard");
 		listenTo(addStepsController);
 		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+	}
+
+	private void createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
+		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
+		String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
+				createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
+				createBadgeClassContext.getTitle(), getIdentity());
+		badgeClass.setImage(image);
+		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
+			openBadgesManager.createBadgeClass(badgeClassImpl);
+		}
 	}
 
 	@Override
@@ -168,7 +205,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 
 	}
 
-	private static class ClassTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSize> {
+	private class ClassTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSizeAndCount> {
 		public ClassTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
@@ -179,6 +216,8 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 			return switch (OpenBadgesAdminClassesController.Cols.values()[col]) {
 				case image -> badgeClass.getImage();
 				case name -> badgeClass.getName();
+				case status -> translate("class.status." + badgeClass.getStatus().name());
+				case awardedCount -> getObject(row).count();
 			};
 		}
 	}

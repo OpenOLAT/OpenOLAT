@@ -36,6 +36,9 @@ public class Identity {
 	private boolean hashed = false;
 	private String salt = "";
 
+	public Identity(String serializedJson) {
+		this(new JSONObject(serializedJson));
+	}
 	public Identity(JSONObject jsonObject) throws IllegalArgumentException {
 		for (String key : jsonObject.keySet()) {
 			if (IDENTITY_KEY.equals(key)) {
@@ -62,6 +65,17 @@ public class Identity {
 				}
 			}
 		}
+	}
+
+	public JSONObject asJsonObject() {
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put(Constants.TYPE_KEY, TYPE_VALUE);
+		jsonObject.put(IDENTITY_KEY, getIdentity());
+		jsonObject.put(HASHED_KEY, isHashed());
+		jsonObject.put(SALT_KEY, getSalt());
+
+		return jsonObject;
 	}
 
 	public String getIdentity() {

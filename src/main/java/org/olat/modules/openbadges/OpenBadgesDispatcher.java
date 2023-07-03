@@ -45,6 +45,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.dispatcher.LocaleNegotiator;
 import org.olat.login.DmzBFWCParts;
 import org.olat.modules.openbadges.ui.BadgeAssertionPublicController;
+import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
 import org.olat.modules.openbadges.v2.Criteria;
 
@@ -67,13 +68,6 @@ public class OpenBadgesDispatcher implements Dispatcher {
 
 	private static final Logger log = Tracing.createLoggerFor(OpenBadgesDispatcher.class);
 
-	public static final String BADGE_PATH = "badge/";
-	public static final String ASSERTION_PATH = "assertion/";
-	public static final String CLASS_PATH = "class/";
-	public static final String IMAGE_PATH = "image/";
-	public static final String BAKED_PATH = "baked/";
-	public static final String CRITERIA_PATH = "criteria/";
-	public static final String ISSUER_PATH = "issuer/";
 	public static final String WEB_SUFFIX = "/web";
 
 	@Autowired
@@ -95,14 +89,16 @@ public class OpenBadgesDispatcher implements Dispatcher {
 
 		log.debug("Method: " + request.getMethod() + ", URI prefix: " + uriPrefix + ", request URI: " + requestUri);
 
-		if (commandUri.startsWith(ASSERTION_PATH)) {
-			handleAssertion(request, response, commandUri.substring(ASSERTION_PATH.length()));
-		} else if (commandUri.startsWith(CLASS_PATH)) {
-			handleClass(response, commandUri.substring(CLASS_PATH.length()));
-		} else if (commandUri.startsWith(IMAGE_PATH)) {
-			handleImage(response, commandUri.substring(IMAGE_PATH.length()));
-		} else if (commandUri.startsWith(CRITERIA_PATH)) {
-			handleCriteria(response, commandUri.substring(CRITERIA_PATH.length()));
+		if (commandUri.startsWith(OpenBadgesFactory.ASSERTION_PATH)) {
+			handleAssertion(request, response, commandUri.substring(OpenBadgesFactory.ASSERTION_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.CLASS_PATH)) {
+			handleClass(response, commandUri.substring(OpenBadgesFactory.CLASS_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.ISSUER_PATH)) {
+			handleClass(response, commandUri.substring(OpenBadgesFactory.ISSUER_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.IMAGE_PATH)) {
+			handleImage(response, commandUri.substring(OpenBadgesFactory.IMAGE_PATH.length()));
+		} else if (commandUri.startsWith(OpenBadgesFactory.CRITERIA_PATH)) {
+			handleCriteria(response, commandUri.substring(OpenBadgesFactory.CRITERIA_PATH.length()));
 		}
 	}
 
@@ -211,10 +207,21 @@ public class OpenBadgesDispatcher implements Dispatcher {
 	}
 
 	private void handleAssertionJson(HttpServletResponse response, String uuid) {
-		BadgeAssertion assertion = openBadgesManager.getBadgeAssertion(uuid);
-		if (assertion == null) {
+		BadgeAssertion badgeAssertion = openBadgesManager.getBadgeAssertion(uuid);
+		if (badgeAssertion == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			log.warn("Could not find assertion for UUID {}", uuid);
+			return;
+		}
+
+		try {
+			Assertion assertion = new Assertion(badgeAssertion);
+			JSONObject jsonObject = assertion.asJsonObject();
+			jsonObject.write(response.getWriter());
+			response.setContentType("application/json; charset=utf-8");
+		} catch (IOException e) {
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("Could not deliver badge assertion", e);
 		}
 	}
 

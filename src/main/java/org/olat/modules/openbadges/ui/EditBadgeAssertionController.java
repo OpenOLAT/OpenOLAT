@@ -126,7 +126,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 		} else {
 			badgeAssertion.setRecipient(recipient);
 			badgeAssertion.setBadgeClass(openBadgesManager.getBadgeClass(badgeClassDropdown.getSelectedKey()));
-			openBadgesManager.updateBadgeAssertion(badgeAssertion);
+			openBadgesManager.updateBadgeAssertion(badgeAssertion, getIdentity());
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

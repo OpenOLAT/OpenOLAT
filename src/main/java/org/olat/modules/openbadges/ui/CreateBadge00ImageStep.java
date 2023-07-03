@@ -67,7 +67,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 		super(ureq);
 		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.image", null);
-		setNextStep(new CreateBadge02DetailsStep(ureq));
+		setNextStep(new CreateBadge02DetailsStep(ureq, createBadgeClassContext));
 	}
 
 	@Override
@@ -167,9 +167,9 @@ public class CreateBadge00ImageStep extends BasicStep {
 			badgeClass.setDescription(OpenBadgesUIFactory.translateTemplateDescription(translator, template.getIdentifier()));
 
 			if (createContext.needsCustomization()) {
-				setNextStep(new CreateBadge01CustomizationStep(ureq));
+				setNextStep(new CreateBadge01CustomizationStep(ureq, createContext));
 			} else {
-				setNextStep(new CreateBadge02DetailsStep(ureq));
+				setNextStep(new CreateBadge02DetailsStep(ureq, createContext));
 			}
 			fireEvent(ureq, StepsEvent.STEPS_CHANGED);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);

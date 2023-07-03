@@ -31,6 +31,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.openbadges.manager.BadgeClassDAO;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -91,7 +92,9 @@ public interface OpenBadgesManager {
 
 	List<BadgeClass> getBadgeClasses(RepositoryEntry entry);
 
-	List<BadgeClassWithSize> getBadgeClassesWithSizes(RepositoryEntry entry);
+	List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry);
+
+	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
 
 	BadgeClass getBadgeClass(String uuid);
 
@@ -116,7 +119,7 @@ public interface OpenBadgesManager {
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 
-	void updateBadgeAssertion(BadgeAssertion badgeAssertion);
+	void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy);
 
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
 
@@ -160,7 +163,7 @@ public interface OpenBadgesManager {
 		}
 	}
 
-	record BadgeClassWithSize (BadgeClass badgeClass, Size size) {
+	record BadgeClassWithSizeAndCount(BadgeClass badgeClass, Size size, Long count) {
 		public Size fitIn(int width, int height) {
 			double sourceAspectRatio = (double) size.getWidth() / (double) size.getHeight();
 			double targetAspectRatio = (double) width / (double) height;

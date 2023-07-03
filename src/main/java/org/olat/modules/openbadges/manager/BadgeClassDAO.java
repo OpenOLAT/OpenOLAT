@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
 import jakarta.persistence.TypedQuery;
@@ -82,6 +84,30 @@ public class BadgeClassDAO {
 		return typedQuery.getResultList();
 	}
 
+	public List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select bc, ");
+		sb.append(" (select count(ba.key) from badgeassertion ba ");
+		sb.append("   where ba.badgeClass.key = bc.key ");
+		sb.append(" ) as useCount ");
+		sb.append("from badgeclass bc ");
+		if (entry != null) {
+			sb.append("where bc.entry.key = :entryKey ");
+		}
+		sb.append("order by bc.status asc, bc.name asc ");
+		TypedQuery<Object[]> typedQuery = dbInstance
+				.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if (entry != null) {
+			typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		return typedQuery
+				.getResultList()
+				.stream()
+				.map(BadgeClassWithUseCount::new)
+				.toList();
+	}
+
 	public BadgeClass getBadgeClass(String uuid) {
 		String query = "select bc from badgeclass bc where bc.uuid=:uuid";
 		List<BadgeClass> badgeClasses = dbInstance.getCurrentEntityManager()
@@ -98,5 +124,23 @@ public class BadgeClassDAO {
 
 	public void deleteBadgeClass(BadgeClass badgeClass) {
 		dbInstance.deleteObject(badgeClass);
+	}
+
+	public static class BadgeClassWithUseCount {
+		private final BadgeClass badgeClass;
+		private final Long useCount;
+
+		public BadgeClassWithUseCount(Object[] objectArray) {
+			this.badgeClass = (BadgeClass) objectArray[0];
+			this.useCount = PersistenceHelper.extractPrimitiveLong(objectArray, 1);
+		}
+
+		public BadgeClass getBadgeClass() {
+			return badgeClass;
+		}
+
+		public Long getUseCount() {
+			return useCount;
+		}
 	}
 }

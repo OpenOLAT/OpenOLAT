@@ -22,6 +22,7 @@ package org.olat.modules.openbadges.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -33,13 +34,18 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +67,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 	private class CreateBadge04SummaryForm extends StepFormBasicController {
 
+		private final String mediaUrl;
 		private CreateBadgeClassWizardContext createContext;
 
 		@Autowired
@@ -72,6 +79,8 @@ public class CreateBadge04SummaryStep extends BasicStep {
 			if (runContext.get(CreateBadgeClassWizardContext.KEY) instanceof CreateBadgeClassWizardContext createBadgeClassWizardContext) {
 				createContext = createBadgeClassWizardContext;
 			}
+
+			mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 
 			initForm(ureq);
 		}
@@ -88,7 +97,13 @@ public class CreateBadge04SummaryStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-			setSvg();
+			if (createContext.getMode() == CreateBadgeClassWizardContext.Mode.create) {
+				flc.contextPut("createMode", true);
+				setSvg();
+			} else {
+				flc.contextPut("createMode", false);
+				flc.contextPut("img", mediaUrl + "/" + createContext.getBadgeClass().getImage());
+			}
 
 			BadgeClass badgeClass = createContext.getBadgeClass();
 
@@ -153,6 +168,18 @@ public class CreateBadge04SummaryStep extends BasicStep {
 				flc.contextPut("svg", svg);
 			} else {
 				flc.contextRemove("svg");
+			}
+		}
+
+		private class BadgeClassMediaFileMapper implements Mapper {
+
+			@Override
+			public MediaResource handle(String relPath, HttpServletRequest request) {
+				VFSLeaf classFileLeaf = openBadgesManager.getBadgeClassVfsLeaf(relPath);
+				if (classFileLeaf != null) {
+					return new VFSMediaResource(classFileLeaf);
+				}
+				return new NotFoundMediaResource();
 			}
 		}
 	}

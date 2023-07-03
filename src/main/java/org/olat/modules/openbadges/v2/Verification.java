@@ -19,6 +19,8 @@
  */
 package org.olat.modules.openbadges.v2;
 
+import org.olat.core.util.StringHelper;
+
 import org.json.JSONObject;
 
 /**
@@ -32,6 +34,10 @@ public class Verification {
 
 	private String type;
 	private String url;
+
+	public Verification(String serializedJson) {
+		this(new JSONObject(serializedJson));
+	}
 
 	public Verification(JSONObject jsonObject) {
 		for (String key : jsonObject.keySet()) {
@@ -49,6 +55,17 @@ public class Verification {
 				}
 			}
 		}
+	}
+
+	public JSONObject asJsonObject() {
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put(Constants.TYPE_KEY, type);
+		if (StringHelper.containsNonWhitespace(url)) {
+			jsonObject.put(Constants.URL_KEY, url);
+		}
+
+		return jsonObject;
 	}
 
 	public String getType() {

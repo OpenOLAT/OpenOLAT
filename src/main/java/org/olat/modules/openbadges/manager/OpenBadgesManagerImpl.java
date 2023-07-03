@@ -36,6 +36,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -75,6 +77,7 @@ import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -105,6 +108,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	private static final String CLASSES_VFS_FOLDER = "classes";
 	private static final String ASSERTIONS_VFS_FOLDER = "assertions";
 	private static final String TEMPLATE_IMAGE_PREVIEW_PREFIX = "._oo_preview_";
+	private static final Pattern svgOpeningTagPattern = Pattern.compile("<svg[^>]*>");;
+	private static final String OPEN_BADGES_ASSERTION_XML_NAMESPACE = "xmlns:openbadges=\"http://openbadges.org\"";
 
 	@Autowired
 	private FolderModule folderModule;
@@ -266,14 +271,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 		if (imageLeaf != null && imageLeaf.exists()) {
 			String suffix = FileUtils.getFileSuffix(imageLeaf.getName());
-			if (!"svg".equalsIgnoreCase(suffix)) {
+			if (!OpenBadgesFactory.isSvgFileSuffix(suffix)) {
 				imageSize = imageService.getSize(imageLeaf, suffix);
 			}
 			if (imageSize == null) {
-				if (StringHelper.containsNonWhitespace(suffix)) {
-					if ("svg".equalsIgnoreCase(suffix)) {
-						suffix = "svg+xml";
-					}
+				if (OpenBadgesFactory.isSvgFileSuffix(suffix)) {
+					suffix = "svg+xml";
 				}
 				imageSize = movieService.getSize(imageLeaf, suffix);
 			}
@@ -290,8 +293,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	public Set<String> getTemplateSvgSubstitutionVariables(String image) {
 		HashSet<String> result = new HashSet<>();
 
-		String suffix = FileUtils.getFileSuffix(image);
-		if (!"svg".equalsIgnoreCase(suffix)) {
+		if (!OpenBadgesFactory.isSvgFileName(image)) {
 			return result;
 		}
 
@@ -477,13 +479,18 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
+		return badgeClassDAO.getBadgeClassesWithUseCounts(entry);
+	}
+
+	@Override
 	public BadgeClass getBadgeClass(String uuid) {
 		return badgeClassDAO.getBadgeClass(uuid);
 	}
 
 	@Override
-	public List<BadgeClassWithSize> getBadgeClassesWithSizes(RepositoryEntry entry) {
-		return getBadgeClasses(entry).stream().map((badgeClass) -> new BadgeClassWithSize(badgeClass, sizeForBadgeClass(badgeClass))).toList();
+	public List<BadgeClassWithSizeAndCount> getBadgeClassesWithSizesAndCounts(RepositoryEntry entry) {
+		return getBadgeClassesWithUseCounts(entry).stream().map((obj) -> new BadgeClassWithSizeAndCount(obj.getBadgeClass(), sizeForBadgeClass(obj.getBadgeClass()), obj.getUseCount())).toList();
 	}
 
 	private Size sizeForBadgeClass(BadgeClass badgeClass) {
@@ -553,8 +560,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (recipientObject == null) {
 			return null;
 		}
-		return badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClass, verification, issuedOn,
-				recipient, awardedBy);
+		BadgeAssertion badgeAssertion = badgeAssertionDAO.createBadgeAssertion(uuid, recipientObject, badgeClass,
+				verification, issuedOn, recipient, awardedBy);
+
+		String bakedImage = createBakedBadgeImage(badgeAssertion, awardedBy);
+		badgeAssertion.setBakedImage(bakedImage);
+
+		return badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 	}
 
 	private String createRecipientObject(Identity recipient, String salt) {
@@ -568,6 +580,67 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		jsonObject.put("salt", salt);
 		jsonObject.put("identity", "sha256$" + DigestUtils.sha256Hex(recipient.getUser().getEmail() + salt));
 		return jsonObject.toString();
+	}
+
+	private String createBakedBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
+		String badgeClassImage = badgeAssertion.getBadgeClass().getImage();
+		if (OpenBadgesFactory.isSvgFileName(badgeClassImage)) {
+			return createBakedSvgBadgeImage(badgeAssertion, savedBy);
+		}
+		if (OpenBadgesFactory.isPngFileName(badgeClassImage)) {
+			return createBakedPngBadgeImage(badgeAssertion);
+		}
+		return null;
+	}
+
+	private String createBakedSvgBadgeImage(BadgeAssertion badgeAssertion, Identity savedBy) {
+		VFSLeaf badgeClassImage = getBadgeClassVfsLeaf(badgeAssertion.getBadgeClass().getImage());
+		if (badgeClassImage instanceof LocalFileImpl localFile) {
+			try {
+				String svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
+				String jsonString = createBakedJsonString(badgeAssertion);
+				String verifyUrl = OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid());
+				svg = mergeAssertionJson(svg, jsonString, verifyUrl);
+				InputStream inputStream = new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+				VFSContainer assertionsContainer = getBadgeAssertionsRootContainer();
+				String bakedImage = badgeAssertion.getUuid() + ".svg";
+				VFSLeaf targetLeaf = assertionsContainer.createChildLeaf(bakedImage);
+				VFSManager.copyContent(inputStream, targetLeaf, savedBy);
+				return bakedImage;
+			} catch (IOException e) {
+				log.error(e);
+				return null;
+			}
+		}
+		return null;
+	}
+
+	public String createBakedJsonString(BadgeAssertion badgeAssertion) {
+		Assertion assertion = new Assertion(badgeAssertion);
+		JSONObject jsonObject = assertion.asJsonObject();
+		return jsonObject.toString(2);
+	}
+
+	public String mergeAssertionJson(String svg, String jsonString, String verifyUrl) {
+		Matcher matcher = svgOpeningTagPattern.matcher(svg);
+		if (matcher.find()) {
+			String upToSvgOpeningTag = svg.substring(0, matcher.start());
+			String svgTagKeyword = svg.substring(matcher.start(), matcher.start() + 4);
+			String restOfSvgOpeningTag = svg.substring(matcher.start() + 4, matcher.end());
+			String contentAndSvgClosingTag = svg.substring(matcher.end());
+			return upToSvgOpeningTag + svgTagKeyword + " " + OPEN_BADGES_ASSERTION_XML_NAMESPACE + restOfSvgOpeningTag + "\n" +
+					"<openbadges:assertion verify=\"" + verifyUrl + "\">\n" +
+					"<![CDATA[\n" +
+					jsonString +
+					"]]>\n" +
+					"</openbadges:assertion>" +
+					contentAndSvgClosingTag;
+		}
+		return "";
+	}
+
+	private String createBakedPngBadgeImage(BadgeAssertion badgeAssertion) {
+		return null;
 	}
 
 	@Override
@@ -601,18 +674,30 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 
 	@Override
-	public void updateBadgeAssertion(BadgeAssertion badgeAssertion) {
+	public void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy) {
 		String recipientObject = createRecipientObject(badgeAssertion.getRecipient(), badgeAssertion.getBadgeClass().getSalt());
 		if (recipientObject == null) {
 			return;
 		}
 		badgeAssertion.setRecipientObject(recipientObject);
 		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+
+		deleteBadgeAssertionImage(badgeAssertion.getBakedImage());
+		String bakedImage = createBakedBadgeImage(badgeAssertion, awardedBy);
+		badgeAssertion.setBakedImage(bakedImage);
+		badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
 	}
 
 	@Override
 	public void deleteBadgeAssertion(BadgeAssertion badgeAssertion) {
+		deleteBadgeAssertionImage(badgeAssertion.getBakedImage());
 		badgeAssertionDAO.deleteBadgeAssertion(badgeAssertion);
+	}
+
+	private void deleteBadgeAssertionImage(String bakedImage) {
+		if (getBadgeAssertionsRootContainer().resolve(bakedImage) instanceof VFSLeaf imageLeaf) {
+			imageLeaf.delete();
+		}
 	}
 
 	@Override

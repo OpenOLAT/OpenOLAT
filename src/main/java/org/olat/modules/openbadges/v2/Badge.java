@@ -21,13 +21,12 @@ package org.olat.modules.openbadges.v2;
 
 import java.io.IOException;
 
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesDispatcher;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +48,7 @@ public class Badge {
 	 */
 	private String id;
 	private String uuid;
+	private String language;
 	private String version;
 	private String name;
 	private String description;
@@ -111,9 +111,9 @@ public class Badge {
 	}
 
 	public Badge(BadgeClass badgeClass) {
-		setId(Settings.getServerContextPathURI() + "/" + OpenBadgesDispatcher.BADGE_PATH +
-				OpenBadgesDispatcher.CLASS_PATH + badgeClass.getUuid());
+		setId(OpenBadgesFactory.createBadgeClassUrl(badgeClass.getUuid()));
 		setUuid(badgeClass.getUuid());
+		setLanguage(badgeClass.getLanguage());
 		setVersion(badgeClass.getVersion());
 		setName(badgeClass.getName());
 		setDescription(badgeClass.getDescription());
@@ -127,6 +127,9 @@ public class Badge {
 
 		jsonObject.put(Constants.TYPE_KEY, TYPE_VALUE);
 		jsonObject.put(Constants.CONTEXT_KEY, Constants.CONTEXT_VALUE);
+		if (StringHelper.containsNonWhitespace(language)) {
+			jsonObject.put(Constants.LANGUAGE_KEY, language);
+		}
 		jsonObject.put(Constants.ID_KEY, getId());
 		jsonObject.put(Constants.VERSION_KEY, getVersion());
 		jsonObject.put(Constants.NAME_KEY, getName());
@@ -162,6 +165,14 @@ public class Badge {
 		this.version = version;
 	}
 
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -184,8 +195,7 @@ public class Badge {
 
 	public JSONObject getImageAsJsonObject() {
 		JSONObject jsonObject = new JSONObject();
-		String id = Settings.getServerContextPathURI() + "/" + OpenBadgesDispatcher.BADGE_PATH +
-				OpenBadgesDispatcher.IMAGE_PATH + getUuid();
+		String id = OpenBadgesFactory.createImageUrl(getUuid());
 		jsonObject.put(Constants.ID_KEY, id);
 		return jsonObject;
 	}

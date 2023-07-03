@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -248,11 +249,18 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 			boolean awardAutomatically = KEY_AUTOMATIC.equals(awardProcedureCards.getSelectedKey());
 
+			newRule.clearError();
 			if (awardAutomatically) {
 				if (conditions.isEmpty()) {
 					newRule.setErrorKey("alert");
 					allOk &= false;
 				}
+			}
+
+			descriptionEl.clearError();
+			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
+				descriptionEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
 			}
 
 			return allOk;
@@ -287,6 +295,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 					translate("form.criteria.summary.explanation"), formLayout);
 			descriptionEl = uifactory.addTextElement("form.criteria.description", 256,
 					badgeCriteria.getDescription(), formLayout);
+			descriptionEl.setMandatory(true);
 			uifactory.addStaticTextElement("form.award.procedure.description", null,
 					translate("form.award.procedure.description"), formLayout);
 

@@ -28,6 +28,8 @@ import org.json.JSONObject;
  */
 public class Image {
 
+	private static final String TYPE_VALUE = "Image";
+
 	/*
 	 * Typical value: https://instance.openolat.org/badge/image/1234
 	 * The URL returns an image file.
@@ -54,6 +56,14 @@ public class Image {
 		}
 	}
 
+	public JSONObject asJsonObject() {
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put(Constants.TYPE_KEY, TYPE_VALUE);
+		jsonObject.put(Constants.ID_KEY, id);
+
+		return jsonObject;
+	}
 	public String getId() {
 		return id;
 	}

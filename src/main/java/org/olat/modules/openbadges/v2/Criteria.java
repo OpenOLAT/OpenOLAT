@@ -19,9 +19,10 @@
  */
 package org.olat.modules.openbadges.v2;
 
-import org.olat.core.helpers.Settings;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesDispatcher;
+import org.olat.modules.openbadges.OpenBadgesFactory;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 
 import org.json.JSONObject;
 
@@ -65,9 +66,9 @@ public class Criteria {
 	}
 
 	public Criteria(BadgeClass badgeClass) {
-		setId(Settings.getServerContextPathURI() + "/" + OpenBadgesDispatcher.BADGE_PATH +
-				OpenBadgesDispatcher.CRITERIA_PATH + badgeClass.getUuid());
-		setNarrative(badgeClass.getCriteria());
+		setId(OpenBadgesFactory.createCriteriaUrl(badgeClass.getUuid()));
+		BadgeCriteria criteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		setNarrative(criteria.getDescription());
 	}
 
 	public String getId() {

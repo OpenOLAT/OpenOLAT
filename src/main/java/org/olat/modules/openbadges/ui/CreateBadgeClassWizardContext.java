@@ -27,7 +27,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -36,9 +38,13 @@ import org.olat.repository.RepositoryEntry;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadgeClassWizardContext {
+	public enum Mode {
+		create, edit
+	}
+
 	public static final String KEY = "createBadgeClassWizardContext";
 
-	private final BadgeClassImpl badgeClass;
+	private final BadgeClass badgeClass;
 	private final ICourse course;
 	private Long selectedTemplateKey;
 	private String selectedTemplateImage;
@@ -46,21 +52,36 @@ public class CreateBadgeClassWizardContext {
 	private String backgroundColorId;
 	private String title;
 	private BadgeCriteria badgeCriteria;
+	private Profile issuer;
+	private Mode mode;
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
+		mode = Mode.create;
 		course = CourseFactory.loadCourse(entry);
-		badgeClass = new BadgeClassImpl();
-		badgeClass.setUuid(OpenBadgesUIFactory.createIdentifier());
-		badgeClass.setStatus(BadgeClass.BadgeClassStatus.preparation);
-		badgeClass.setSalt("badgeClass" + Math.abs(badgeClass.getUuid().hashCode()));
-		badgeClass.setIssuer(course.getCourseTitle());
-		badgeClass.setVersion("1.0");
-		badgeClass.setLanguage("en");
-		badgeClass.setValidityEnabled(false);
-		badgeClass.setEntry(entry);
+		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
+		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
+		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
+		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
+		badgeClassImpl.setIssuer("{}");
+		badgeClassImpl.setVersion("1.0");
+		badgeClassImpl.setLanguage("en");
+		badgeClassImpl.setValidityEnabled(false);
+		badgeClassImpl.setEntry(entry);
 		backgroundColorId = "lightgray";
 		title = course.getCourseTitle();
 		initCriteria();
+		issuer = new Profile(badgeClassImpl);
+		badgeClass = badgeClassImpl;
+	}
+
+	public CreateBadgeClassWizardContext(BadgeClass badgeClass) {
+		mode = Mode.edit;
+		course = CourseFactory.loadCourse(badgeClass.getEntry());
+		backgroundColorId = null;
+		title = null;
+		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+		this.badgeClass = badgeClass;
+		issuer = new Profile(badgeClass);
 	}
 
 	private void initCriteria() {
@@ -68,7 +89,7 @@ public class CreateBadgeClassWizardContext {
 		badgeCriteria.setAwardAutomatically(false);
 	}
 
-	public BadgeClassImpl getBadgeClass() {
+	public BadgeClass getBadgeClass() {
 		return badgeClass;
 	}
 
@@ -134,5 +155,9 @@ public class CreateBadgeClassWizardContext {
 
 	public void setTemplateVariables(Set<String> templateVariables) {
 		this.templateVariables = templateVariables;
+	}
+
+	public Mode getMode() {
+		return mode;
 	}
 }

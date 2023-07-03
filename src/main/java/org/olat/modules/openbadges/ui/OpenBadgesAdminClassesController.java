@@ -95,6 +95,8 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 					sb.append("</div>");
 				}));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.getI18n(), Cols.name.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.getI18n(), Cols.status.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedCount.getI18n(), Cols.awardedCount.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
@@ -107,7 +109,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeClassWithSize> classesWithSizes = openBadgesManager.getBadgeClassesWithSizes(null);
+		List<OpenBadgesManager.BadgeClassWithSizeAndCount> classesWithSizes = openBadgesManager.getBadgeClassesWithSizesAndCounts(null);
 		tableModel.setObjects(classesWithSizes);
 		tableEl.reset();
 	}
@@ -128,7 +130,9 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		} else if (source == confirmDeleteClassCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
 				BadgeClass badgeClass = (BadgeClass) confirmDeleteClassCtrl.getUserObject();
-				doDelete(badgeClass);
+				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
+					doDelete(badgeClass);
+				}
 				updateUI();
 			}
 		} else if (source == cmc) {
@@ -152,7 +156,9 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 			if ("edit".equals(command)) {
 				doEdit(ureq, badgeClass);
 			} else if ("delete".equals(command)) {
-				doConfirmDelete(ureq, badgeClass);
+				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
+					doConfirmDelete(ureq, badgeClass);
+				}
 			}
 		}
 	}
@@ -193,7 +199,9 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 
 	enum Cols {
 		image("form.image"),
-		name("form.name");
+		name("form.name"),
+		status("form.status"),
+		awardedCount("form.awarded.to");
 
 		Cols(String i18n) {
 			this.i18n = i18n;
@@ -206,7 +214,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		}
 	}
 
-	private static class ClassTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSize> {
+	private class ClassTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSizeAndCount> {
 		public ClassTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
@@ -214,9 +222,12 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		@Override
 		public Object getValueAt(int row, int col) {
 			BadgeClass badgeClass = getObject(row).badgeClass();
+			Long awardedCount = getObject(row).count();
 			return switch (Cols.values()[col]) {
 				case image -> badgeClass.getImage();
 				case name -> badgeClass.getName();
+				case status -> translate("class.status." + badgeClass.getStatus().name());
+				case awardedCount -> awardedCount;
 			};
 		}
 	}

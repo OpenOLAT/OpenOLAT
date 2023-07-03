@@ -19,9 +19,9 @@
  */
 package org.olat.modules.openbadges.v2;
 
-import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.openbadges.BadgeClass;
-import org.olat.modules.openbadges.OpenBadgesDispatcher;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 
 import org.json.JSONObject;
 
@@ -73,8 +73,7 @@ public class Profile {
 
 	public Profile(BadgeClass badgeClass) {
 		this(new JSONObject(badgeClass.getIssuer()));
-		setId(Settings.getServerContextPathURI() + "/" + OpenBadgesDispatcher.BADGE_PATH +
-				OpenBadgesDispatcher.ISSUER_PATH + badgeClass.getUuid());
+		setId(OpenBadgesFactory.createIssuerUrl(badgeClass.getUuid()));
 	}
 
 	public String getId() {
@@ -115,9 +114,15 @@ public class Profile {
 		jsonObject.put(Constants.TYPE_KEY, type);
 		jsonObject.put(Constants.ID_KEY, getId());
 		jsonObject.put(Constants.CONTEXT_KEY, Constants.CONTEXT_VALUE);
-		jsonObject.put(Constants.NAME_KEY, getName());
-		jsonObject.put(Constants.URL_KEY, getUrl());
-		jsonObject.put(Constants.EMAIL_KEY, getEmail());
+		if (StringHelper.containsNonWhitespace(getName())) {
+			jsonObject.put(Constants.NAME_KEY, getName());
+		}
+		if (StringHelper.containsNonWhitespace(getUrl())) {
+			jsonObject.put(Constants.URL_KEY, getUrl());
+		}
+		if (StringHelper.containsNonWhitespace(getEmail())) {
+			jsonObject.put(Constants.EMAIL_KEY, getEmail());
+		}
 
 		return jsonObject;
 	}

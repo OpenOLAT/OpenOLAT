@@ -23,6 +23,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.olat.modules.openbadges.BadgeAssertion;
+import org.olat.modules.openbadges.OpenBadgesFactory;
+
 import org.json.JSONObject;
 
 /**
@@ -50,6 +53,16 @@ public class Assertion {
 	private Badge badge;
 	private Verification verification;
 	private Date issuedOn;
+	private String identifier;
+
+	public Assertion(BadgeAssertion badgeAssertion) {
+		setId(OpenBadgesFactory.createAssertionVerifyUrl(badgeAssertion.getUuid()));
+		setIdentifier(badgeAssertion.getUuid());
+		setRecipient(new Identity(badgeAssertion.getRecipientObject()));
+		setBadge(new Badge(badgeAssertion.getBadgeClass()));
+		setVerification(new Verification(badgeAssertion.getVerificationObject()));
+		setIssuedOn(badgeAssertion.getIssuedOn());
+	}
 
 	public Assertion(JSONObject jsonObject) throws IllegalArgumentException {
 		for (String key : jsonObject.keySet()) {
@@ -96,6 +109,20 @@ public class Assertion {
 		}
 	}
 
+	public JSONObject asJsonObject() {
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put(Constants.TYPE_KEY, TYPE_VALUE);
+		jsonObject.put(Constants.CONTEXT_KEY, Constants.CONTEXT_VALUE);
+		jsonObject.put(Constants.ID_KEY, id);
+		jsonObject.put(RECIPIENT_KEY, recipient.asJsonObject());
+		jsonObject.put(BADGE_KEY, badge.asJsonObject());
+		jsonObject.put(VERIFICATION_KEY, verification.asJsonObject());
+		jsonObject.put(ISSUED_ON_KEY, isoFormat.format(issuedOn));
+
+		return jsonObject;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -134,5 +161,13 @@ public class Assertion {
 
 	public void setIssuedOn(Date issuedOn) {
 		this.issuedOn = issuedOn;
+	}
+
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
 }

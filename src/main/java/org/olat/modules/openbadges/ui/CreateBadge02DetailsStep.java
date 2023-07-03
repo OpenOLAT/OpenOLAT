@@ -19,6 +19,8 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.net.URL;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -39,9 +41,13 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.mail.MailHelper;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.v2.Constants;
+import org.olat.modules.openbadges.v2.Profile;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,14 +56,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge02DetailsStep extends BasicStep {
-	public CreateBadge02DetailsStep(UserRequest ureq) {
+
+	private final CreateBadgeClassWizardContext createBadgeClassContext;
+
+	public CreateBadge02DetailsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
+		this.createBadgeClassContext = createBadgeClassContext;
 		setI18nTitleAndDescr("form.details", null);
 		setNextStep(new CreateBadge03CriteriaStep(ureq));
 	}
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		runContext.put(CreateBadgeClassWizardContext.KEY, createBadgeClassContext);
 		return new CreateBadge02DetailsForm(ureq, wControl, form, runContext, FormBasicController.LAYOUT_VERTICAL, null);
 	}
 
@@ -67,6 +78,10 @@ public class CreateBadge02DetailsStep extends BasicStep {
 		private TextElement nameEl;
 		private TextElement versionEl;
 		private TextAreaElement descriptionEl;
+		private TextElement issuerNameEl;
+		private TextElement issuerUrlEl;
+		private TextElement issuerEmailEl;
+		private Profile issuer;
 		private SingleSelection expiration;
 		private final SelectionValues expirationKV;
 		private FormLayoutContainer validityContainer;
@@ -102,6 +117,8 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.month.name(), translate("form.time.month")));
 			validityTimelapseUnitKV.add(SelectionValues.entry(TimeUnit.year.name(), translate("form.time.year")));
 
+			issuer = new Profile(new JSONObject(createContext.getBadgeClass().getIssuer()));
+
 			initForm(ureq);
 		}
 
@@ -136,19 +153,43 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			nameEl.clearError();
 			if (!StringHelper.containsNonWhitespace(nameEl.getValue())) {
 				nameEl.setErrorKey("form.legende.mandatory");
-				allOk = false;
+				allOk &= false;
 			}
 
 			versionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(versionEl.getValue())) {
 				versionEl.setErrorKey("form.legende.mandatory");
-				allOk = false;
+				allOk &= false;
 			}
 
 			descriptionEl.clearError();
 			if (!StringHelper.containsNonWhitespace(descriptionEl.getValue())) {
 				descriptionEl.setErrorKey("form.legende.mandatory");
-				allOk = false;
+				allOk &= false;
+			}
+
+			issuerNameEl.clearError();
+			if (!StringHelper.containsNonWhitespace(issuerNameEl.getValue())) {
+				issuerNameEl.setErrorKey("form.legende.mandatory");
+				allOk &= false;
+			}
+
+			issuerEmailEl.clearError();
+			if (StringHelper.containsNonWhitespace(issuerEmailEl.getValue())) {
+				if (!MailHelper.isValidEmailAddress(issuerEmailEl.getValue())) {
+					issuerEmailEl.setErrorKey("form.email.invalid");
+					allOk &= false;
+				}
+			}
+
+			issuerUrlEl.clearError();
+			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
+				try {
+					new URL(issuerUrlEl.getValue());
+				} catch (Exception e) {
+					issuerUrlEl.setErrorKey("form.url.invalid");
+					allOk &= false;
+				}
 			}
 
 			validityContainer.clearError();
@@ -171,6 +212,14 @@ public class CreateBadge02DetailsStep extends BasicStep {
 			badgeClass.setName(nameEl.getValue());
 			badgeClass.setVersion(versionEl.getValue());
 			badgeClass.setDescription(descriptionEl.getValue());
+			issuer.setName(issuerNameEl.getValue());
+			if (StringHelper.containsNonWhitespace(issuerUrlEl.getValue())) {
+				issuer.setUrl(issuerUrlEl.getValue());
+			}
+			if (StringHelper.containsNonWhitespace(issuerEmailEl.getValue())) {
+				issuer.setEmail(issuerEmailEl.getValue());
+			}
+			badgeClass.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
 			badgeClass.setValidityEnabled(Expiration.validFor.name().equals(expiration.getSelectedKey()));
 			if (badgeClass.isValidityEnabled()) {
 				badgeClass.setValidityTimelapse(validityTimelapseEl.getIntValue());
@@ -204,6 +253,16 @@ public class CreateBadge02DetailsStep extends BasicStep {
 					512, 2, 80, false, false,
 					badgeClass.getDescription(), formLayout);
 			descriptionEl.setMandatory(true);
+
+			String issuerName = issuer.getName() != null ? issuer.getName() : "";
+			issuerNameEl = uifactory.addTextElement("class.issuer", 80, issuerName, formLayout);
+			issuerNameEl.setMandatory(true);
+
+			String issuerUrl = issuer.getUrl() != null ? issuer.getUrl() : "";
+			issuerUrlEl = uifactory.addTextElement("class.issuer.url", 128, issuerUrl, formLayout);
+
+			String issuerEmail = issuer.getEmail() != null ? issuer.getEmail() : "";
+			issuerEmailEl = uifactory.addTextElement("class.issuer.email", 128, issuerEmail, formLayout);
 
 			expiration = uifactory.addRadiosVertical("form.expiration", formLayout, expirationKV.keys(),
 					expirationKV.values());
