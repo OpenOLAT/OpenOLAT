@@ -55,7 +55,7 @@ public class LearningPathProgressRenderer extends AbstractLearningProgressCellRe
 		if (cellValue instanceof LearningPathTreeNode) {
 			LearningPathTreeNode learningPathTreeNode = (LearningPathTreeNode)cellValue;
 			AssessmentEvaluation assessmentEvaluation = learningPathTreeNode.getAssessmentEvaluation();
-			if (assessmentEvaluation.getCompletion() != null) {
+			if (assessmentEvaluation != null && assessmentEvaluation.getCompletion() != null) {
 				return assessmentEvaluation;
 			}
 		}
