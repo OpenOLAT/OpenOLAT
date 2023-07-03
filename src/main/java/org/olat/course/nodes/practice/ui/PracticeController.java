@@ -603,8 +603,10 @@ public class PracticeController extends BasicController implements OutcomesAsses
 			}
 			
 			backButton = uifactory.addFormLink("back.overview", formLayout, Link.BUTTON);
+			backButton.setElementCssClass("o_sel_practice_back");
 			if(playMode == PlayMode.freeShuffle) {
-				uifactory.addFormSubmitButton("next.serie", formLayout);
+				FormSubmit nextButton = uifactory.addFormSubmitButton("next.serie", formLayout);
+				nextButton.setElementCssClass("o_sel_practice_next_serie");
 			}
 		}
 		

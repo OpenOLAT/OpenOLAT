@@ -83,7 +83,7 @@ public class PracticeEditController extends ActivateableTabbableDefaultControlle
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate("pane.tab.config.practice"), "o_sel_repo_entry", configurationCtrl.getInitialComponent());
+		tabbedPane.addTab(translate("pane.tab.config.practice"), "o_sel_practice_configuration", configurationCtrl.getInitialComponent());
 	}
 
 	@Override

@@ -182,8 +182,10 @@ public class PracticeConfigurationController extends FormBasicController {
 	
 	private void initResourcesListForm(FormItemContainer formLayout) {
 		addTestButton = uifactory.addFormLink("add.resource.test", formLayout, Link.BUTTON);
+		addTestButton.setElementCssClass("o_sel_practice_add_test");
 		addTestButton.setIconLeftCSS("o_icon o_icon_add");
 		addPoolButton = uifactory.addFormLink("add.resource.pool", formLayout, Link.BUTTON);
+		addPoolButton.setElementCssClass("o_sel_practice_add_pool");
 		addPoolButton.setIconLeftCSS("o_icon o_icon_add");
 		
 		// Table list
@@ -204,6 +206,7 @@ public class PracticeConfigurationController extends FormBasicController {
 		
 		resourcesModel = new PracticeResourceTableModel(columnsModel, getLocale());
 		resourcesTableEl = uifactory.addTableElement(getWindowControl(), "resources.list", resourcesModel, 12, false, getTranslator(), formLayout);
+		resourcesTableEl.setElementCssClass("o_sel_practice_resources_list");
 		resourcesTableEl.setCustomizeColumns(false);
 		resourcesTableEl.setNumOfRowsEnabled(false);
 	}
@@ -367,11 +370,13 @@ public class PracticeConfigurationController extends FormBasicController {
 		String seriePerChallenge = config.getStringValue(PracticeEditController.CONFIG_KEY_SERIE_PER_CHALLENGE, "2");
 		seriePerChallengeEl = uifactory.addTextElement("series.challenge", 4, seriePerChallenge, formLayout);
 		seriePerChallengeEl.setMandatory(true);
+		seriePerChallengeEl.setElementCssClass("o_sel_practice_serie_per_challenge");
 		
 		uifactory.addSpacerElement("challenges-space", formLayout, false);
 
 		String challengeToComplete = config.getStringValue(PracticeEditController.CONFIG_KEY_NUM_CHALLENGES_FOR_COMPLETION, "2");
 		challengeToCompleteEl = uifactory.addTextElement("num.challenges", 4, challengeToComplete, formLayout);
+		challengeToCompleteEl.setElementCssClass("o_sel_practice_challenge_to_complete");
 		challengeToCompleteEl.setMandatory(true);
 		
 		SelectionValues rankKeys = new SelectionValues();
@@ -482,11 +487,9 @@ public class PracticeConfigurationController extends FormBasicController {
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(testResourcesListCtrl == source) {
-			if(event instanceof AuthoringEntryRowSelectionEvent) {
-				AuthoringEntryRowSelectionEvent se = (AuthoringEntryRowSelectionEvent)event;
+			if(event instanceof AuthoringEntryRowSelectionEvent se) {
 				doAddTest(se.getRow());
-			} else if(event instanceof AuthoringEntryRowsListSelectionEvent) {
-				AuthoringEntryRowsListSelectionEvent se = (AuthoringEntryRowsListSelectionEvent)event;
+			} else if(event instanceof AuthoringEntryRowsListSelectionEvent se) {
 				doAddTest(se.getRows());
 			}
 			cmc.deactivate();
@@ -531,8 +534,7 @@ public class PracticeConfigurationController extends FormBasicController {
 			doAddRule(addRuleEl.getSelectedKey());
 			addRuleEl.select(SingleSelection.NO_SELECTION_KEY, true);
 		} else if(resourcesTableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
+			if(event instanceof SelectionEvent se) {
 				if("remove".equals(se.getCommand())) {
 					doConfirmRemoveResource(ureq, resourcesModel.getObject(se.getIndex()));
 				}
