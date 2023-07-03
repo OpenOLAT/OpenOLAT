@@ -17,25 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo;
+package org.olat.modules.todo.restapi;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
- * Initial date: 24 Mar 2023<br>
+ * Initial date: 30 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum ToDoStatus {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "toDoTaskVOes")
+public class ToDoTaskVOes {
 	
-	open,
-	inProgress,
-	done,
-	deleted;
-	
-	public static final List<ToDoStatus> OPEN_TO_DONE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
-	public static final List<String> OPEN_TO_DONE_NAMES = List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name(), ToDoStatus.done.name());
-	public static final List<ToDoStatus> STATUS_OVERDUE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.deleted);
+	@XmlElement(name="toDoTaskVO")
+	private List<ToDoTaskVO> toDoTasks = new ArrayList<>();
+
+	public List<ToDoTaskVO> getToDoTasks() {
+		return toDoTasks;
+	}
+
+	public void setToDoTasks(List<ToDoTaskVO> toDoTasks) {
+		this.toDoTasks = toDoTasks;
+	}
 
 }

@@ -269,6 +269,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			sb.and().append("toDoTask.originId in :originIds");
 		}
+		if (searchParams.getOriginDeleted() != null) {
+			sb.and().append("toDoTask.originDeleted = :originDeleted");
+		}
 		if (searchParams.getCreatedAfter() != null) {
 			sb.and().append("toDoTask.creationDate >= :createdAfter");
 		}
@@ -297,6 +300,15 @@ public class ToDoTaskDAO {
 			}
 			sb.append(")");
 		}
+		if (searchParams.getAssigneeOrDelegatee() != null) {
+			sb.and().append("toDoTask.baseGroup.key in (");
+			sb.append("select membership.group.key");
+			sb.append("  from bgroupmember as membership");
+			sb.append(" where membership.group.key = toDoTask.baseGroup.key");
+			sb.append("   and membership.identity.key = :assigneeOrDelegatee");
+			sb.append("   and membership.role").in(ToDoRole.assignee, ToDoRole.delegatee);
+			sb.append(")");
+		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().appendQuery(sb);
 		}
@@ -318,6 +330,9 @@ public class ToDoTaskDAO {
 		if (searchParams.getOriginIds() != null && !searchParams.getOriginIds().isEmpty()) {
 			query.setParameter("originIds", searchParams.getOriginIds());
 		}
+		if (searchParams.getOriginDeleted() != null) {
+			query.setParameter("originDeleted", searchParams.getOriginDeleted());
+		}
 		if (searchParams.getCreatedAfter() != null) {
 			query.setParameter("createdAfter", searchParams.getCreatedAfter());
 		}
@@ -327,6 +342,9 @@ public class ToDoTaskDAO {
 				query.setParameter("dueDateAfter" + i, dateRange.getFrom());
 				query.setParameter("dueDateBefore" + i, dateRange.getTo());
 			}
+		}
+		if (searchParams.getAssigneeOrDelegatee() != null) {
+			query.setParameter("assigneeOrDelegatee", searchParams.getAssigneeOrDelegatee().getKey());
 		}
 		if (searchParams.getCustomQuery() != null) {
 			searchParams.getCustomQuery().addParameters(query);

@@ -17,25 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.todo;
+package org.olat.modules.todo.restapi;
 
-import java.util.List;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 /**
  * 
- * Initial date: 24 Mar 2023<br>
+ * Initial date: 30 Jun 2023<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum ToDoStatus {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlRootElement(name = "toDoStatusVO")
+public class ToDoStatusVO {
 	
-	open,
-	inProgress,
-	done,
-	deleted;
-	
-	public static final List<ToDoStatus> OPEN_TO_DONE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done);
-	public static final List<String> OPEN_TO_DONE_NAMES = List.of(ToDoStatus.open.name(), ToDoStatus.inProgress.name(), ToDoStatus.done.name());
-	public static final List<ToDoStatus> STATUS_OVERDUE = List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.deleted);
+	private String status;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
 }

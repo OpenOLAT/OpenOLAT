@@ -304,6 +304,25 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void shouldLoad_filter_originDeleted() {
+		String type = random();
+		ToDoTask toDoTask1 = createRandomToDoTask(type, Long.valueOf(1));
+		sut.save(type, Long.valueOf(1), null, true, null, null);
+		ToDoTask toDoTask2 = createRandomToDoTask(type, Long.valueOf(2));
+		dbInstance.commitAndCloseSession();
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTask1, toDoTask2);
+		
+		searchParams.setOriginDeleted(Boolean.TRUE);
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTask1);
+		
+		searchParams.setOriginDeleted(Boolean.FALSE);
+		assertThat(sut.loadToDoTasks(searchParams)).containsExactlyInAnyOrder(toDoTask2);
+	}
+	
+	@Test
 	public void shouldLoad_filter_createdAfter() {
 		ToDoTask toDoTask = createRandomToDoTask();
 		
@@ -380,6 +399,26 @@ public class ToDoTaskDAOTest extends OlatTestCase {
 		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open))).isEqualTo(2);
 		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.open, ToDoStatus.inProgress, ToDoStatus.done))).isEqualTo(3);
 		assertThat(statusStats.getToDoTaskCount(List.of(ToDoStatus.done, ToDoStatus.deleted))).isEqualTo(0);
+	}
+	
+	@Test
+	public void shouldLoad_filter_assigneeOrDelegatee() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsAuthor(random());
+		String type = random();
+		ToDoTask toDoTask1 = createRandomToDoTask(type, null);
+		toDoService.updateMember(identity1, toDoTask1, List.of(identity1, identity2), List.of());
+		ToDoTask toDoTask2 = createRandomToDoTask(type, null);
+		toDoService.updateMember(identity1, toDoTask2, List.of(), List.of(identity1));
+		ToDoTask toDoTask3 = createRandomToDoTask(type, null);
+		toDoService.updateMember(identity1, toDoTask3, List.of(), List.of(identity2));
+		
+		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
+		searchParams.setTypes(List.of(type));
+		searchParams.setAssigneeOrDelegatee(identity1);
+		List<ToDoTask> toToTasks = sut.loadToDoTasks(searchParams);
+		
+		assertThat(toToTasks).containsExactlyInAnyOrder(toDoTask1, toDoTask2);
 	}
 	
 	@Test
