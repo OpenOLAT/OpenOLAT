@@ -1250,6 +1250,9 @@ $o-color-cobalt-blue : #2422DB;
 $o-color-dark-blue   : #18188F;
 $o-color-light-green : #407303;
 $o-color-sea-green   : #00644F;
+$o-color-gold        : #FFD82A;
+$o-color-silver      : #C0C0C0;
+$o-color-bronze      : #FFA080;
 
 $o-darker-color-light-gray  : darken($o-color-light-gray,  15);
 $o-darker-color-yellow      : darken($o-color-yellow,      15);
@@ -1263,8 +1266,12 @@ $o-darker-color-cobalt-blue : darken($o-color-cobalt-blue, 15);
 $o-darker-color-dark-blue   : darken($o-color-dark-blue,   15);
 $o-darker-color-light-green : darken($o-color-light-green, 15);
 $o-darker-color-sea-green   : darken($o-color-sea-green,   15);
+$o-darker-color-gold        : darken($o-color-gold,        15);
+$o-darker-color-silver      : darken($o-color-silver,      15);
+$o-darker-color-bronze      : darken($o-color-bronze,      15);
 
 $o-bright-text-and-border : #FCFCFC;
+$o-dark-text-and-border   : #555555;
 
 /* Video Colors */
 $o-video-color             : #FCFCFC;

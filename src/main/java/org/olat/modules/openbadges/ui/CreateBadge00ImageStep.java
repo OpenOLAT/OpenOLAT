@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -84,6 +86,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 	private class CreateBadge00ImageForm extends StepFormBasicController {
 
 		private CreateBadgeClassWizardContext createContext;
+		private List<TagInfo> tagInfos;
 		private List<Card> cards;
 		private SingleSelection templateLanguageDropdown;
 		private SelectionValues templateLanguageKV;
@@ -115,6 +118,20 @@ public class CreateBadge00ImageStep extends BasicStep {
 				if (templateKeyString != null) {
 					long templateKey = Long.parseLong(templateKeyString);
 					doSelectTemplate(templateKey);
+				}
+				String tagKeyString = ureq.getParameter("tagKey");
+				if (tagKeyString != null) {
+					long tagKey = Long.parseLong(tagKeyString);
+					tagInfos = tagInfos.stream().map(t -> {
+						boolean selected = t.isSelected();
+						Long key = t.getKey();
+						if (tagKey == key) {
+							selected = !selected;
+						}
+						return (TagInfo) new TagInfoImpl(key, t.getCreationDate(), t.getDisplayName(), t.getCount(),
+								selected);
+					}).toList();
+					flc.contextPut("tagInfos", tagInfos);
 				}
 			}
 			super.event(ureq, source, event);
@@ -190,8 +207,15 @@ public class CreateBadge00ImageStep extends BasicStep {
 			templateLanguageDropdown.select(templateLanguageKV.keys()[0], true);
 			doSelectLanguage();
 
+			initCategories();
+
 			mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 			initCards();
+		}
+
+		private void initCategories() {
+			tagInfos = openBadgesManager.readBadgeCategoryTags();
+			flc.contextPut("tagInfos", tagInfos);
 		}
 
 		private void initCards() {

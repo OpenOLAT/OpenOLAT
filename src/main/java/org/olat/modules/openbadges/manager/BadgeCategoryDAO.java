@@ -98,21 +98,20 @@ public class BadgeCategoryDAO {
 		return typedQuery.getResultList();
 	}
 
-	public List<TagInfo> readBadgeCategoryTags(BadgeClass badgeClass) {
+	public List<TagInfo> readBadgeCategoryTags() {
 		QueryBuilder qb = new QueryBuilder();
 		qb.append("select new org.olat.core.commons.services.tag.model.TagInfoImpl(");
 		qb.append("  tag.key,");
 		qb.append("  min(tag.creationDate),");
 		qb.append("  min(tag.displayName),");
-		qb.append("  count(badgeCategory.badgeClass.key),");
-		qb.append("  sum(case when (badgeCategory.badgeClass.key = :badgeClassKey) then 1 else 0 end) as selected");
+		qb.append("  count(badgeCategory.badgeTemplate.key),");
+		qb.append("  cast(0 as long) as selected");
 		qb.append(") ");
 		qb.append("from badgecategory badgeCategory inner join badgeCategory.tag tag");
 		qb.groupBy().append("tag.key");
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(qb.toString(), TagInfo.class)
-				.setParameter("badgeClassKey", badgeClass.getKey())
 				.getResultList();
 	}
 

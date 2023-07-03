@@ -247,6 +247,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			case "darkblue" -> "rgb(0,0,128)";
 			case "lightgreen" -> "rgb(128,255,128)";
 			case "seagreen" -> "rgb(0,192,0)";
+			case "gold" -> "rgb(255,216,42)";
+			case "silver" -> "rgb(192,192,192)";
+			case "bronze" -> "rgb(255,160,128)";
 			default -> "rgb(255,255,255)";
 		};
 	}
@@ -481,6 +484,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
 		return badgeClassDAO.getBadgeClassesWithUseCounts(entry);
+	}
+
+	@Override
+	public Long getNumberOfBadgeClasses(RepositoryEntryRef entry) {
+		return badgeClassDAO.getNumberOfBadgeClasses(entry);
 	}
 
 	@Override
@@ -787,6 +795,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public List<TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass) {
 		return badgeCategoryDAO.readBadgeCategoryTags(badgeTemplate, badgeClass);
+	}
+
+	@Override
+	public List<TagInfo> readBadgeCategoryTags() {
+		return badgeCategoryDAO.readBadgeCategoryTags();
 	}
 
 	@Override

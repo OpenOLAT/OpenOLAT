@@ -160,6 +160,7 @@ import org.olat.modules.grading.GradingAssignment;
 import org.olat.modules.grading.GradingService;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.AwardBadgesController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryEntrySecurity;
@@ -233,6 +234,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private ContactFormController contactCtrl;
 	private StepsMainRunController gradeScaleEditCtrl;
 	private GradeScaleEditController gradeScaleViewCtrl;
+	private AwardBadgesController awardBadgesCtrl;
 	
 	@Autowired
 	protected DB dbInstance;
@@ -778,6 +780,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if (!badgeConfiguration.isAwardEnabled()) {
 			return;
 		}
+		if (openBadgesManager.getNumberOfBadgeClasses(courseEntry) == 0) {
+			return;
+		}
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
 		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) ||
 				(reSecurity.isOwner()) && badgeConfiguration.isOwnerCanAward()) {
@@ -1199,7 +1204,12 @@ public class IdentityListCourseNodeController extends FormBasicController
 				reload(ureq);
 			}
 		} else if (source == contactCtrl) {
-			if(cmc != null) {
+			if (cmc != null) {
+				cmc.deactivate();
+			}
+			cleanUp();
+		} else if (source == awardBadgesCtrl) {
+			if (cmc != null) {
 				cmc.deactivate();
 			}
 			cleanUp();
@@ -1233,12 +1243,14 @@ public class IdentityListCourseNodeController extends FormBasicController
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(contactCtrl);
+		removeAsListenerAndDispose(awardBadgesCtrl);
 		removeAsListenerAndDispose(cmc);
 		gradeScaleViewCtrl = null;
 		gradeScaleEditCtrl = null;
 		toolsCalloutCtrl = null;
 		toolsCtrl = null;
 		contactCtrl = null;
+		awardBadgesCtrl = null;
 		cmc = null;
 	}
 
@@ -1268,6 +1280,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			doSetUserVisibility(ureq, false);
 		} else if(bulkEmailButton == source) {
 			doEmail(ureq);
+		} else if(bulkAwardBadgeButton == source) {
+			doAwardBadges(ureq);
 		} else if(source instanceof FormLink link) {
 			if("tools".equals(link.getCmd())) {
 				doOpenTools(ureq, (AssessedIdentityElementRow)link.getUserObject(), link);
@@ -1438,7 +1452,31 @@ public class IdentityListCourseNodeController extends FormBasicController
 				false, Role.coach);
 		dbInstance.commitAndCloseSession();
 	}
-	
+
+	private void doAwardBadges(UserRequest ureq) {
+		Set<Integer> selections = tableEl.getMultiSelectedIndex();
+		List<Identity> identities = new ArrayList<>(selections.size());
+		for (Integer i : selections) {
+			AssessedIdentityElementRow row = usersTableModel.getObject(i.intValue());
+			if (row != null) {
+				Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
+				identities.add(identity);
+			}
+		}
+
+		if (identities.isEmpty()) {
+			showWarning("error.msg.no.badge.recipients");
+		} else {
+			awardBadgesCtrl = new AwardBadgesController(ureq, getWindowControl(), courseEntry, identities);
+			listenTo(awardBadgesCtrl);
+
+			cmc = new CloseableModalController(getWindowControl(), translate("close"),
+					awardBadgesCtrl.getInitialComponent(), true, translate("bulk.badge"));
+			cmc.activate();
+			listenTo(cmc);
+		}
+	}
+
 	private void doEmail(UserRequest ureq) {
 		Set<Integer> selections = tableEl.getMultiSelectedIndex();
 		List<Identity> identities = new ArrayList<>(selections.size());

@@ -96,6 +96,8 @@ public interface OpenBadgesManager {
 
 	List<BadgeClassDAO.BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry);
 
+	Long getNumberOfBadgeClasses(RepositoryEntryRef entry);
+
 	BadgeClass getBadgeClass(String uuid);
 
 	VFSLeaf getBadgeClassVfsLeaf(String classFile);
@@ -128,6 +130,8 @@ public interface OpenBadgesManager {
 	//
 
 	List<TagInfo> getCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass);
+
+	List<TagInfo> readBadgeCategoryTags();
 
 	void updateCategories(BadgeTemplate badgeTemplate, BadgeClass badgeClass, List<String> displayNames);
 

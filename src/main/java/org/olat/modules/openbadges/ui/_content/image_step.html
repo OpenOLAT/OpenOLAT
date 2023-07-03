@@ -1,4 +1,8 @@
 <style>
+	.o_template_tags {
+		margin-bottom: 14px;
+	}
+
 	.o_template_cards {
 		width: 100%;
 		margin-left: -8px;
@@ -63,6 +67,12 @@
 	<legend>$r.translate("form.choose.a.template")</legend>
 	<div class="o_template_language">
 		$r.render("form.template.language", "barebones", "form")
+	</div>
+	<div class="o_template_tags">
+		#foreach($tagInfo in $tagInfos)
+		<span class="o_tag o_selection_tag o_tag_clickable #if($tagInfo.isSelected()) o_tag_selected #end"
+		      onclick="$r.openJavaScriptCommand('select', false, true), 'tagKey', ${tagInfo.getKey()});">$tagInfo.getDisplayName()</span>
+		#end
 	</div>
 	<div class="o_template_cards">
 		#foreach($card in $cards)

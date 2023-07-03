@@ -67,7 +67,7 @@ public class CreateBadgeClassWizardContext {
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);
-		backgroundColorId = "lightgray";
+		backgroundColorId = "gold";
 		title = course.getCourseTitle();
 		initCriteria();
 		issuer = new Profile(badgeClassImpl);

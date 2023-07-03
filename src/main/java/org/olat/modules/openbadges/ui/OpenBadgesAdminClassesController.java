@@ -158,6 +158,8 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 			} else if ("delete".equals(command)) {
 				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
 					doConfirmDelete(ureq, badgeClass);
+				} else {
+					showInfo("info.badgeInUse");
 				}
 			}
 		}

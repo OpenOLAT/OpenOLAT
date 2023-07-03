@@ -28,4 +28,6 @@ import java.util.List;
  */
 public interface ColorService {
 	List<String> getColors();
+
+	List<String> getColorsForBadges();
 }

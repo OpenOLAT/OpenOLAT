@@ -84,6 +84,19 @@ public class BadgeClassDAO {
 		return typedQuery.getResultList();
 	}
 
+	public Long getNumberOfBadgeClasses(RepositoryEntryRef entry) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(bc.key) from badgeclass bc ");
+		if (entry != null) {
+			sb.append(" where bc.entry.key = :entryKey ");
+		}
+		TypedQuery<Long> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
+		if (entry != null) {
+			typedQuery = typedQuery.setParameter("entryKey", entry.getKey());
+		}
+		return typedQuery.getResultList().get(0);
+	}
+
 	public List<BadgeClassWithUseCount> getBadgeClassesWithUseCounts(RepositoryEntry entry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select bc, ");

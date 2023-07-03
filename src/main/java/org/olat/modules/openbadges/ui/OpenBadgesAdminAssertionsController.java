@@ -75,6 +75,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient.getI18n(), Cols.recipient.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.getI18n(), Cols.status.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
@@ -159,8 +160,9 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		String title = translate("confirm.delete.assertion.title", badgeAssertion.getRecipientObject());
-		String text = translate("confirm.delete.assertion", badgeAssertion.getRecipientObject());
+		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
+		String title = translate("confirm.delete.assertion.title", recipientDisplayName);
+		String text = translate("confirm.delete.assertion", recipientDisplayName);
 		confirmDeleteAssertionCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteAssertionCtrl);
 		confirmDeleteAssertionCtrl.setUserObject(badgeAssertion);
 	}
@@ -171,7 +173,8 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	enum Cols {
-		recipient("form.recipient");
+		recipient("form.recipient"),
+		status("form.status");
 
 		Cols(String i18n) {
 			this.i18n = i18n;
@@ -184,7 +187,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		}
 	}
 
-	private static class AssertionTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeAssertionWithSize> {
+	private class AssertionTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeAssertionWithSize> {
 		private final UserManager userManager;
 
 		public AssertionTableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
@@ -197,6 +200,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
+				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
 			};
 		}
 	}
