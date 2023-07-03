@@ -49,7 +49,7 @@ public class QTI21Page {
 	
 	private WebDriver browser;
 	
-	private QTI21Page(WebDriver browser) {
+	public QTI21Page(WebDriver browser) {
 		this.browser = browser;
 	}
 	

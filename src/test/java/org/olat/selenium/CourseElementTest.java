@@ -68,6 +68,8 @@ import org.olat.selenium.page.course.MembersPage;
 import org.olat.selenium.page.course.PageElementConfigurationPage;
 import org.olat.selenium.page.course.PageElementPage;
 import org.olat.selenium.page.course.ParticipantFolderPage;
+import org.olat.selenium.page.course.PracticeConfigurationPage;
+import org.olat.selenium.page.course.PracticePage;
 import org.olat.selenium.page.course.STConfigurationPage;
 import org.olat.selenium.page.course.STConfigurationPage.DisplayType;
 import org.olat.selenium.page.course.SinglePage;
@@ -86,7 +88,9 @@ import org.olat.selenium.page.repository.UserAccess;
 import org.olat.selenium.page.survey.SurveyEditorPage;
 import org.olat.selenium.page.survey.SurveyPage;
 import org.olat.selenium.page.user.UserToolsPage;
+import org.olat.test.ArquillianDeployments;
 import org.olat.test.JunitTestHelper;
+import org.olat.test.rest.RepositoryRestClient;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -429,6 +433,111 @@ public class CourseElementTest extends Deployments {
 		//check that the title of the start page of test is correct
 		WebElement testH2 = browser.findElement(By.cssSelector("div.o_course_run h2"));
 		Assert.assertEquals(testNodeTitle, testH2.getText().trim());
+	}
+	
+	
+	/**
+	 * An author upload a test with 15 questions, makes a course
+	 * with a practice course element and use the questions for the
+	 * element, set series and challenges to 1. A student practices,
+	 * answers all questions correctyl and the element is set to done
+	 * in the learn path.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void courseWithPractice()
+	throws IOException, URISyntaxException {
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO participant = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		//deploy the test
+		URL testUrl = ArquillianDeployments.class.getResource("file_resources/qti21/test_15_questions.zip");
+		String testTitle = "Test-15 " + UUID.randomUUID();
+		new RepositoryRestClient(deploymentUrl, author)
+			.deployResource(new File(testUrl.toURI()), "-", testTitle);
+
+		//create a course
+		String courseTitle = "Practice-1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		navBar
+			.openAuthoringEnvironment()
+			.createCourse(courseTitle, true)
+			.clickToolbarBack();
+		
+		//create a course element of type practice with the QTI 2.1 test that we upload above
+		String practiceNodeTitle = "Practice-QTI-2.1";
+		CoursePageFragment courseRuntime = CoursePageFragment.getCourse(browser);
+		CourseEditorPageFragment courseEditor = courseRuntime
+			.edit()
+			.createNode("practice")
+			.nodeTitle(practiceNodeTitle);
+		
+		PracticeConfigurationPage configurationPage = new PracticeConfigurationPage(browser);
+		configurationPage
+			.selectConfiguration()
+			.selectTest(testTitle)
+			.setNumberOfSeries(1, 1)
+			.saveConfiguration();
+
+		OOGraphene.scrollTop(browser);
+		
+		//publish the course
+		courseEditor
+			.autoPublish()
+			.changeStatus(RepositoryEntryStatusEnum.published)
+			.members()
+			.addMember()
+			.importList()
+			.setMembers(participant)
+			.nextUsers()
+			.nextOverview()
+			.nextPermissions()
+			.finish();
+		
+		//First user go to the course
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
+		participantLoginPage
+			.loginAs(participant.getLogin(), participant.getPassword());
+		
+		//open the course
+		NavigationPage participantNavBar = NavigationPage.load(browser);
+		participantNavBar
+			.openMyCourses()
+			.select(courseTitle);
+		
+		CoursePageFragment userCourse = new CoursePageFragment(browser);
+		userCourse
+			.clickTree()
+			.selectWithTitle(practiceNodeTitle);
+		
+		PracticePage practicePage = new PracticePage(browser);
+		practicePage
+			.assertOnPractice()
+			.startShuffled();
+		
+		for(int i=0; i<10; i++) {
+			practicePage
+				.answerSingleChoiceWithParagraph("Juste")
+				.saveAnswer()
+				.assertOnCorrect()
+				.nextQuestion();
+		}
+		
+		practicePage
+			.assertOnResults(100)
+			.backToOverview();
+
+		userCourse
+			.assertOnLearnPathNodeDone(practiceNodeTitle);
 	}
 	
 	/**
