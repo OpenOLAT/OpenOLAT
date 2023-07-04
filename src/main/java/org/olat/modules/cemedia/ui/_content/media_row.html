@@ -10,11 +10,13 @@
 	#end
 	<div class="o_meta">
 		<h4 class="o_title">$r.render($row.openFormItem)</h4>
+		<span class="o_tag_selection_tags">
 		#foreach($tag in $row.tags)
-			<span class='o_tag o_small o_block_inline'>$r.escapeHtml($tag)</span>
+			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
 		#end
 		#foreach($levelName in $row.taxonomyLevelsNames)
-			<span class='o_tag o_small o_block_inline'>$r.escapeHtml($levelName)</span>
+			<span class='o_tag o_selection_tag'>$r.escapeHtml($levelName)</span>
 		#end
+		</span>
 	</div>
 </div>

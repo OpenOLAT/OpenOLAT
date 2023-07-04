@@ -1,6 +1,4 @@
 /**
-
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -210,7 +208,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
-		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), version, new StandardMediaRenderingHints(editable));
+		boolean mediaEditable = editable && version != null && version.equals(currentVersion);
+		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), version, new StandardMediaRenderingHints(mediaEditable));
 		if(mediaCtrl != null) {
 			if(version.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
@@ -349,8 +348,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void doChangeVersion(UserRequest ureq, MediaVersion version) {
 		removeAsListenerAndDispose(mediaCtrl);
-		
-		System.out.println(version.getKey() + " " + version.getVersionName() + " " + version.getCollectionDate());
 		updateVersion(ureq, version);
 	}
 	

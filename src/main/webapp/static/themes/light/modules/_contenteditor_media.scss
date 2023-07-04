@@ -170,8 +170,8 @@
 			height: $o-media-browser-card-height-md;
 			
 			.o_fileElement {
-				border: 1px solid $o-media-browser-border;
-				border-radius: $o-media-browser-box-radius $o-media-browser-box-radius 0 0;
+				border: $o-card-border;
+				border-radius: $o-card-border-radius;
 				width: $o-media-browser-card-width-md;
 				height: $o-media-browser-card-height-md;
 			}
@@ -209,9 +209,9 @@
 			.o_visual {
 				width: $o-media-browser-card-width-md;
 				height: $o-media-browser-card-visual-height-md;
-				border: 1px solid $o-media-browser-border;
+				border: $o-card-border;
 				border-bottom: none;
-				border-radius: $o-media-browser-box-radius $o-media-browser-box-radius 0 0;
+				border-radius: $o-card-border-radius $o-card-border-radius 0 0;
 			
 				span.o_visual_not_available {
 					width:100%;
@@ -235,9 +235,9 @@
 				padding: 3px;
 				overflow: hidden;
 				height: $o-media-browser-card-meta-height-md;
-				border: 1px solid $o-media-browser-border;
+				border: $o-card-border;
 				border-top: none;
-				border-radius: 0 0 $o-media-browser-box-radius $o-media-browser-box-radius;
+				border-radius: 0 0 $o-card-border-radius $o-card-border-radius;
 				
 				.o_title {
 					margin: 0; /* box moves down otherwhise, replaced with padding */
@@ -249,9 +249,9 @@
 					a {
 						@extend %o_undecorated;
 						display: block;
-						color: $o-media-browser-meta-title-color;
+						color: $o-card-title-color;
 						&:hover {
-						    color: darken($o-media-browser-meta-title-color, 10%);
+						    color: darken($o-card-title-color, 10%);
 						}
 						
 						font-family: inherit;
@@ -323,9 +323,9 @@
 			width: $o-media-browser-card-width-md;
 			height: $o-media-browser-card-height-md;
 			
-			border-top: 1px solid $o-media-browser-border;
-			border-left: 1px solid $o-media-browser-border;
-			border-radius: $o-media-browser-box-radius;
+			border-top: $o-card-border;
+			border-left: $o-card-border;
+			border-radius: $o-card-border-radius;
 		}
 		
 		.o_media_card_cell>div.o_version:nth-child(2) {

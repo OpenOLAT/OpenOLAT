@@ -688,9 +688,6 @@ $o-media-version-label-color						: $alert-info-text;
 $o-media-version-label-text							: $alert-info-text;
 $o-media-version-label-bg							: $alert-info-bg;
 
-$o-media-browser-border 							: #ddd;
-$o-media-browser-meta-title-color					: $text-color;
-
 $o-media-browser-space								: $padding-large-vertical * 2 - 1 !default;
 $o-media-browser-space-sm							: $padding-large-vertical !default;
 $o-media-browser-space-xs							: 6px !default;
@@ -702,7 +699,6 @@ $o-media-browser-card-width-sm 						: 104px !default;
 $o-media-browser-card-height-sm 					: 122px !default;
 $o-media-browser-card-visual-height-sm 				: 70px !default;
 $o-media-browser-card-meta-height-sm				: 52px !default;
-$o-media-browser-box-radius							: $border-radius-small !default;
 
 /* QTI2 eAssessment */
 $o-qti-status-notPresented-color					: lighten($text-muted,40%) !default;
