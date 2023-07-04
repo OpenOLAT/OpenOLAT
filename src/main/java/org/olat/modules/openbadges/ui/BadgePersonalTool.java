@@ -25,9 +25,11 @@ import java.util.List;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -42,8 +44,10 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -105,9 +109,15 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	}
 
 	private void forgeRow(BadgeToolRow row, OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
-		String imageUrl = mediaUrl + "/" + badgeAssertionWithSize.badgeAssertion().getBakedImage();
+		BadgeAssertion badgeAssertion = badgeAssertionWithSize.badgeAssertion();
+		String imageUrl = mediaUrl + "/" + badgeAssertion.getBakedImage();
 		BadgeImageComponent badgeImage = new BadgeImageComponent("badgeImage", imageUrl, BadgeImageComponent.Size.cardSize);
 		row.setBadgeImage(badgeImage);
+		row.setIssuedOn(Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn()));
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 	}
 
 	@Override

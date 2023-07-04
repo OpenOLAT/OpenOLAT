@@ -123,12 +123,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 		private void buildConditionsFromContext(FormItemContainer formLayout) {
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 
-			if (!badgeCriteria.isAwardAutomatically()) {
-				flc.contextPut("showCriteria", false);
-				return;
-			}
-
-			flc.contextPut("showCriteria", true);
+			flc.contextPut("showConditions", badgeCriteria.isAwardAutomatically());
 
 			List<BadgeCondition> badgeConditions = badgeCriteria.getConditions();
 			List<Object> conditions = new ArrayList<>();

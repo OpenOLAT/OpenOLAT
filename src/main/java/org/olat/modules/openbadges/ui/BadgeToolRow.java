@@ -31,6 +31,7 @@ public class BadgeToolRow {
 	private Component badgeImage;
 
 	private String name;
+	private String issuedOn;
 
 	public BadgeToolRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
@@ -50,5 +51,13 @@ public class BadgeToolRow {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getIssuedOn() {
+		return issuedOn;
+	}
+
+	public void setIssuedOn(String issuedOn) {
+		this.issuedOn = issuedOn;
 	}
 }

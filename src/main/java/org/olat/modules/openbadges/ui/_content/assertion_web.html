@@ -1,4 +1,36 @@
-<div>
-	<div style="width: 50%;"><img src="${img}"></div>
-	<div><h4><b>${user}</b> earned badge <b>${name}</b></h4></div>
+<div style="padding-left: 10px;" class="row o_form form-horizontal">
+	<div class="col-xs-12 col-md-6">
+		<div style="width: 100%;"><img src="${img}"></div>
+	</div>
+	<div class="col-xs-12 col-md-6 row">
+		<legend>${badgeClass.getName()}</legend>
+		<p>${badgeClass.getDescription()}</p>
+		$r.render("class.issuer", "3_9", "form")
+		$r.render("form.recipient", "3_9", "form")
+		#if($r.available("form.language"))
+		$r.render("form.language", "3_9", "form")
+		#end
+		$r.render("form.issued.on", "3_9", "form")
+		#if($r.available("form.valid"))
+		$r.render("form.valid", "3_9", "form")
+		#end
+		<legend>Criteria</legend>
+		<p>$criteriaDescription</p>
+
+		#if($showConditions)
+		<div style="margin: 20px;">
+			#foreach($condition in $conditions)
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area #if(!$condition.first()) o_tab_left #end">#if($condition.first()) if #else and #end</span>$condition.toString()
+			</div>
+			#end
+			<div class="o_badge_condition_line">
+				<span class="o_badge_theme_area">then</span>$r.translate("badge.awarded")
+			</div>
+			#end
+		</div>
+
+		<legend>$r.translate("download")</legend>
+		<a id="download" href="${img}" download="${fileName}">${fileName}</a>
+	</div>
 </div>

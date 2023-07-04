@@ -20,3 +20,23 @@
 		}
 	}
 }
+
+.o_badge_theme_area {
+	display: inline-block;
+	min-width: 40px;
+	height: 20px;
+	line-height: 20px;
+	margin-right: 5px;
+	background-color: $brand-primary;
+	color: white;
+	border-radius: 4px;
+	text-align: center;
+
+	&.o_tab_left {
+		margin-left: 10px;
+	}
+}
+
+.o_badge_condition_line {
+	margin-bottom: 10px;
+}

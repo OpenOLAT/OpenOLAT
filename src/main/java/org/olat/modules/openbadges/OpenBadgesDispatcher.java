@@ -141,7 +141,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 			return;
 		}
 
-		if (ureq.getUserSession().isAuthenticated()) {
+		if (ureq.getUserSession().isAuthenticated() && ureq.getIdentity() == assertion.getRecipient()) {
 			redirectAssertionWeb(response, uuid, ureq.getIdentity());
 			return;
 		}
@@ -190,8 +190,7 @@ public class OpenBadgesDispatcher implements Dispatcher {
 		String redirectUrl = Settings.getServerContextPathURI()
 				.concat("/auth/HomeSite/")
 				.concat(identity.getKey().toString())
-				.concat("/badgeassertion/")
-				.concat(uuid);
+				.concat("/badges/0");
 		DispatcherModule.redirectTo(response, redirectUrl);
 	}
 
