@@ -34,6 +34,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -81,6 +83,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -158,6 +161,7 @@ public class MediaCenterController extends FormBasicController
 	private FlexiFiltersTab sharedTab;
 	
 	private int counter = 0;
+	private final Roles roles;
 	private final boolean withHelp;
 	private final boolean withSelect;
 	private final boolean withAddMedias;
@@ -207,11 +211,12 @@ public class MediaCenterController extends FormBasicController
 		this.withAddMedias = withAddMedias;
 		this.withUploadCard = withUploadCard;
 		this.preselectedType = preselectedType;
+		roles = ureq.getUserSession().getRoles();
 		taxonomyTranslator = Util.createPackageTranslator(TaxonomyUIFactory.class, getLocale());
-		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
+		editableFileTypes = FileHandler.getEditableTemplates(getIdentity(), roles, getLocale());
 		 
 		initForm(ureq);
-		loadModel();
+		loadModel(true);
 	}
 
 	@Override
@@ -334,14 +339,10 @@ public class MediaCenterController extends FormBasicController
 			filters.add(membersFilter);
 		}
 		
-		SelectionValues tagsKV = new SelectionValues();
-		List<MediaTag> tags = mediaService.getTags(getIdentity());
-		for(MediaTag tag:tags) {
-			tagsKV.add(SelectionValues.entry(tag.getTag().getDisplayName(), tag.getTag().getDisplayName()));
+		List<TagInfo> tagInfos = mediaService.getTagInfos(getIdentity());
+		if (!tagInfos.isEmpty()) {
+			filters.add(new FlexiTableTagFilter(translate("filter.tags"), FILTER_TAGS, tagInfos, true));
 		}
-		FlexiTableMultiSelectionFilter tagsFilter = new FlexiTableMultiSelectionFilter(translate("filter.tags"),
-				FILTER_TAGS, tagsKV, true);
-		filters.add(tagsFilter);
 		
 		List<Taxonomy> taxonomies = portfolioModule.getLinkedTaxonomies();
 		if(taxonomies != null && !taxonomies.isEmpty()) {
@@ -402,11 +403,11 @@ public class MediaCenterController extends FormBasicController
 			model.setObjects(new ArrayList<>());
 			tableEl.reset(true, true, true);
 		} else {
-			loadModel();
+			loadModel(true);
 		}
 	}
 	
-	private void loadModel() {
+	private void loadModel(boolean resetPage) {
 		SearchMediaParameters params = getSearchParameters();
 		List<MediaWithVersion> medias = mediaService.searchMedias(params);
 		
@@ -416,7 +417,9 @@ public class MediaCenterController extends FormBasicController
 		for(MediaWithVersion mediaWithVersion:medias) {
 			Media media = mediaWithVersion.media();
 			if(currentMap.containsKey(mediaWithVersion.getKey())) {
-				rows.add(currentMap.get(mediaWithVersion.getKey()));
+				MediaRow row = currentMap.get(mediaWithVersion.getKey());
+				row.getOpenFormItem().getComponent().setCustomDisplayText(StringHelper.escapeHtml(media.getTitle()));
+				rows.add(row);
 			} else {
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
 				MediaVersion currentVersion = mediaWithVersion.currentVersion();
@@ -425,7 +428,7 @@ public class MediaCenterController extends FormBasicController
 				String iconCssClass = handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				openLink.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
-				MediaRow row = new MediaRow(media, thumbnail, openLink, iconCssClass);
+				MediaRow row = new MediaRow(media, currentVersion.getCollectionDate(), thumbnail, openLink, iconCssClass);
 				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);
 				rows.add(row);
@@ -455,7 +458,15 @@ public class MediaCenterController extends FormBasicController
 			}
 		}
 
-		tableEl.reset(true, true, true);
+		tableEl.reset(resetPage, true, true);
+	}
+	
+	private void reloadBreadcrump() {
+		if(stackPanel == null || detailsCtrl == null || detailsCtrl.getMedia() == null) {
+			return;
+		}
+		Media media = detailsCtrl.getMedia();
+		stackPanel.changeDisplayname(media.getTitle());
 	}
 	
 	private SearchMediaParameters getSearchParameters() {
@@ -479,9 +490,11 @@ public class MediaCenterController extends FormBasicController
 		
 		FlexiTableFilter tagsFilters = FlexiTableFilter.getFilter(filters, FILTER_TAGS);
 		if (tagsFilters != null) {
-			List<String> filterValues = ((FlexiTableExtendedFilter)tagsFilters).getValues();
+			List<String> filterValues = ((FlexiTableTagFilter)tagsFilters).getValues();
 			if (filterValues != null && !filterValues.isEmpty()) {
-				params.setTags(filterValues);
+				List<Long> selectedTagKeys = filterValues.stream()
+						.map(Long::valueOf).toList();
+				params.setTags(selectedTagKeys);
 			}
 		}
 		
@@ -586,7 +599,7 @@ public class MediaCenterController extends FormBasicController
 					}
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
-				loadModel();
+				loadModel(true);
 			} else if(event instanceof FlexiTableFilterTabEvent) {
 				doSelectTab();
 			}
@@ -614,8 +627,7 @@ public class MediaCenterController extends FormBasicController
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
 				|| citationUploadCtrl == source || confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				loadModel();
-				tableEl.reloadData();
+				loadModel(false);
 			}
 			cmc.deactivate();
 			cleanUp();
@@ -643,11 +655,13 @@ public class MediaCenterController extends FormBasicController
 				doAddCitationMedia(ureq);
 			}
 		} else if(detailsCtrl == source) {
-			if(event instanceof MediaEvent me) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(false);
+				reloadBreadcrump();
+			} else if(event instanceof MediaEvent me) {
 				if(MediaEvent.DELETED.equals(me.getCommand())) {
 					stackPanel.popController(detailsCtrl);
-					loadModel();
-					tableEl.reset(false, true, true);
+					loadModel(false);
 				}
 			}
 		} else if(cmc == source) {
@@ -867,7 +881,10 @@ public class MediaCenterController extends FormBasicController
 	
 	private static class NewMediasController extends BasicController {
 
-		private final Link addFileLink, addMediaLink, addTextLink, addCitationLink;
+		private final Link addFileLink;
+		private final Link addMediaLink;
+		private final Link addTextLink;
+		private final Link addCitationLink;
 		
 		public NewMediasController(UserRequest ureq, WindowControl wControl) {
 			super(ureq, wControl);

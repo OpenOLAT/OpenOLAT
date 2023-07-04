@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.forms.model.xml.SessionInformations;
@@ -74,7 +74,7 @@ public class SessionInformationsHandler implements EvaluationFormElementHandler,
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
+			RenderingHints options) {
 		if(element instanceof SessionInformations) {
 			SessionInformations sessionInformations = (SessionInformations) element;
 			EvaluationFormResponseController ctrl = new SessionInformationsController(ureq, wControl, sessionInformations);

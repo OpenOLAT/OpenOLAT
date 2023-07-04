@@ -19,8 +19,7 @@
  */
 package org.olat.modules.ceditor.model;
 
-import org.olat.modules.ceditor.PageElementRenderingHints;
-import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 
 /**
  * 
@@ -28,7 +27,7 @@ import org.olat.modules.cemedia.MediaRenderingHints;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageElementRenderingHints {
+public class ExtendedMediaRenderingHints implements RenderingHints {
 
 	private final boolean toPdf;
 	private final boolean onePage;
@@ -55,6 +54,11 @@ public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageEle
 		return extendedMetadata;
 	}
 	
+	@Override
+	public boolean isEditable() {
+		return false;
+	}
+
 	public static ExtendedMediaRenderingHints toPdf() {
 		return new ExtendedMediaRenderingHints(true, true, true);
 	}
@@ -63,13 +67,10 @@ public class ExtendedMediaRenderingHints implements MediaRenderingHints, PageEle
 		return new ExtendedMediaRenderingHints(false, true, true);
 	}
 	
-	public static ExtendedMediaRenderingHints valueOf(MediaRenderingHints hints) {
+	public static ExtendedMediaRenderingHints valueOf(RenderingHints hints) {
 		boolean hintPdf = hints.isToPdf();
-		boolean hintPage = true;
+		boolean hintPage = hints.isOnePage();
 		boolean hintMeta = hints.isExtendedMetadata();
-		if(hints instanceof PageElementRenderingHints) {
-			hintPage = ((PageElementRenderingHints)hints).isOnePage();
-		}
 		return new ExtendedMediaRenderingHints(hintPdf, hintPage, hintMeta);
 	}
 }

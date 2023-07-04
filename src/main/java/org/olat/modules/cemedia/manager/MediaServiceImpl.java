@@ -31,6 +31,7 @@ import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.TagService;
@@ -68,6 +69,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class MediaServiceImpl implements MediaService {
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
 	@Autowired
@@ -111,8 +114,13 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public void deleteMedia(Media media) {
-		mediaDao.deleteMedia(media);
+	public int deleteMedia(Media media) {
+		int count = mediaRelationDao.deleteRelation(media);
+		count += mediaToTaxonomyLevelDao.deleteRelation(media);
+		count += mediaTagDao.deleteRelation(media);
+		count += mediaDao.deleteMedia(media);
+		dbInstance.commit();
+		return count;
 	}
 
 	@Override
@@ -135,9 +143,10 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, MediaLight media) {
-		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(identity, media);
-		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(identity, media);
+	public List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media) {
+		Identity author = media.getAuthor();
+		List<MediaUsageWithStatus> usages = mediaDao.getPageUsages(author, media);
+		List<MediaUsageWithStatus> portfolioUsages = mediaDao.getPortfolioUsages(author, media);
 		usages.addAll(portfolioUsages);
 		return usages;
 	}
@@ -148,6 +157,11 @@ public class MediaServiceImpl implements MediaService {
 	}
 	
 	@Override
+	public boolean isUsed(Media media) {
+		return mediaDao.isUsed(media);
+	}
+
+	@Override
 	public List<MediaUsage> getMediaUsage(MediaLight media) {
 		return mediaDao.getUsages(media);
 	}
@@ -157,9 +171,14 @@ public class MediaServiceImpl implements MediaService {
 		if(media == null || media.getKey() == null) {
 			return new ArrayList<>();
 		}
-		return mediaTagDao.loadMediaTagInfos(media);
+		return mediaTagDao.loadMediaTagInfos(media, null);
 	}
 	
+	@Override
+	public List<TagInfo> getTagInfos(IdentityRef owner) {
+		return mediaTagDao.loadMediaTagInfos(null, owner);
+	}
+
 	@Override
 	public List<MediaTag> getTags(IdentityRef owner) {
 		return mediaTagDao.loadMediaTags(owner);

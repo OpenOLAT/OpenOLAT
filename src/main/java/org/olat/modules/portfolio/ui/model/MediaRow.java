@@ -38,6 +38,7 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class MediaRow implements MediaLight {
 	
 	private final MediaLight media;
+	private final Date collectionDate;
 
 	private final String cssClass;
 	private final VFSLeaf thumbnail;
@@ -48,10 +49,11 @@ public class MediaRow implements MediaLight {
 	private List<String> taxonomyLevelsNames;
 	private List<TaxonomyLevel> taxonomyLevels;
 	
-	public MediaRow(MediaLight media, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
+	public MediaRow(MediaLight media, Date collectionDate, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
 		this.cssClass = cssClass;
 		this.thumbnail = thumbnail;
+		this.collectionDate = collectionDate;
 		this.openFormLink = openFormLink;
 	}
 	
@@ -72,7 +74,7 @@ public class MediaRow implements MediaLight {
 
 	@Override
 	public Date getCollectionDate() {
-		return media.getCollectionDate();
+		return collectionDate;
 	}
 
 	@Override

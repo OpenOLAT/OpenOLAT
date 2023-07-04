@@ -25,12 +25,14 @@ package org.olat.modules.ceditor;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface PageElementRenderingHints {
+public interface RenderingHints {
 	
 	public boolean isToPdf();
 	
 	public boolean isOnePage();
 
 	public boolean isExtendedMetadata();
+	
+	public boolean isEditable();
 
 }

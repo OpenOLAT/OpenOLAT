@@ -37,13 +37,13 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.AddCitationController;
@@ -112,7 +112,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, MediaRenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
 		return new CitationMediaController(ureq, wControl, mediaVersion, hints);
 	}
 

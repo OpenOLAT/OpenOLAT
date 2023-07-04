@@ -47,10 +47,10 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.ExtendedMediaRenderingHints;
 import org.olat.modules.ceditor.model.ImageElement;
@@ -60,7 +60,6 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.AddImageController;
@@ -188,7 +187,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof MediaPart mediaPart) {
 			return new ImageMediaController(ureq, wControl, dataStorage, mediaPart, options);
 		}
@@ -196,7 +195,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new ImageMediaController(ureq, wControl, dataStorage, version, ExtendedMediaRenderingHints.valueOf(hints));
 	}
 

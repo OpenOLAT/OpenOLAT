@@ -89,6 +89,15 @@ public class MediaToTaxonomyLevelDAO {
 				.getResultList();
 	}
 	
+	
+	public int deleteRelation(Media media) {
+		String query = "delete from mediatotaxonomylevel rel where rel.media.key=:mediaKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("mediaKey", media.getKey())
+			.executeUpdate();
+	}
+	
 	public void deleteRelation(MediaToTaxonomyLevel relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}

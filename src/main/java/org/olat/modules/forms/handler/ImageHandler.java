@@ -36,7 +36,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.ImageElement;
@@ -91,7 +91,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
+			RenderingHints options) {
 		if(element instanceof ImageElement imageElement) {
 			Controller ctrl = new ImageRunController(ureq, wControl, dataStorage, imageElement, options);
 			return new PageRunControllerElement(ctrl);
@@ -102,7 +102,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof ImageElement imageElement) {
-			return new ImageRunController(ureq, wControl, dataStorage, imageElement, new StandardMediaRenderingHints());
+			return new ImageRunController(ureq, wControl, dataStorage, imageElement, new StandardMediaRenderingHints(false));
 		}
 		return null;
 	}
@@ -119,7 +119,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	public EvaluationFormReportElement getReportElement(UserRequest ureq, WindowControl windowControl,
 			PageElement element, SessionFilter filter, ReportHelper reportHelper) {
 		if (element instanceof ImageElement imageElement) {
-			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, imageElement, new StandardMediaRenderingHints());
+			Controller ctrl = new ImageRunController(ureq, windowControl, dataStorage, imageElement, new StandardMediaRenderingHints(false));
 			return new EvaluationFormControllerReportElement(ctrl);
 		}
 		return null;
@@ -132,8 +132,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageElement clonePageElement(PageElement element) {
-		if (element instanceof Image) {
-			Image image = (Image)element;
+		if (element instanceof Image image) {
 			Image clone = new Image();
 			clone.setId(UUID.randomUUID().toString());
 			clone.setContent(image.getContent());
@@ -158,7 +157,7 @@ public class ImageHandler implements EvaluationFormElementHandler, PageElementSt
 	@Override
 	public EvaluationFormExecutionElement getExecutionElement(UserRequest ureq, WindowControl wControl, Form rootForm,
 			PageElement element, ExecutionIdentity executionIdentity) {
-		return new EvaluationFormComponentElement(getContent(ureq, wControl, element, new StandardMediaRenderingHints()));
+		return new EvaluationFormComponentElement(getContent(ureq, wControl, element, new StandardMediaRenderingHints(false)));
 	}
 	
 }

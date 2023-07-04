@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.CloneElementHandler;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
@@ -76,7 +76,7 @@ public class TableHandler implements EvaluationFormElementHandler, PageElementSt
 
 	@Override
 	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element,
-			PageElementRenderingHints options) {
+			RenderingHints options) {
 		if(element instanceof TableElement) {
 			Controller ctrl = new TableRunController(ureq, wControl, (TableElement)element);
 			return new PageRunControllerElement(ctrl);

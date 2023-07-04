@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jakarta.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.commons.info.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -56,6 +57,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaCenterExtension;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -103,6 +105,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_MEDIA_CONTENT = "MIGRATE MEDIA CONTENT";
 	private static final String MIGRATE_MEDIA_UUID = "MIGRATE MEDIA UUID";
 	private static final String MIGRATE_MEDIA_MISSING_CHECKSUM = "MIGRATE MEDIA MISSING CHECKSUM";
+	private static final String ENABLE_MEDIA_CENTER	 = "ENABLE MEDIA CENTER";
 	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
 	private static final String ASSESSMENT_DELETE_STRUCTURE_STATUS = "ASSESSMENT DELETE STRUCTURE STATUS";
@@ -116,6 +119,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private MediaService mediaService;
 	@Autowired
 	private ProjectModule projectModule;
+ 	@Autowired
+ 	private UserToolsModule userToolsModule;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -155,6 +160,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initMigrateMediaCategoriesToTags(upgradeManager, uhd);
 		allOk &= initMigrateMediaContent(upgradeManager, uhd);
 		allOk &= initMigrateMediaMissingChecksum(upgradeManager, uhd);
+		allOk &= enableMediaCenter(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -750,14 +756,40 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	}
 	
 	private List<MediaVersionImpl> getMediaVersionWithoutChecksum(int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select mversion from mediaversion as mversion")
-		  .append(" where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null")
-		  .append(" order by mversion.key asc");
+		String query = """
+			select mversion from mediaversion as mversion
+		 	 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null
+			 order by mversion.key asc
+			""";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), MediaVersionImpl.class)
+				.createQuery(query, MediaVersionImpl.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();
+	}
+	
+	private boolean enableMediaCenter(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(ENABLE_MEDIA_CENTER)) {
+			try {
+				log.info("Enable media center.");
+				
+				String availableTools = userToolsModule.getAvailableUserTools();
+				if(!"none".equals(availableTools) && StringHelper.containsNonWhitespace(availableTools)
+						&& !availableTools.contains(MediaCenterExtension.MEDIA_CENTER_USER_TOOL_ID)) {
+					availableTools += "," + MediaCenterExtension.MEDIA_CENTER_USER_TOOL_ID;
+				}
+				userToolsModule.setAvailableUserTools(availableTools);
+
+				log.info("Calculating missing versions checksum finished.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(ENABLE_MEDIA_CENTER, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
 	}
 }

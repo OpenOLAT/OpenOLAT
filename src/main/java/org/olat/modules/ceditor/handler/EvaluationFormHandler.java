@@ -44,7 +44,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.PageStatus;
@@ -84,7 +84,7 @@ public class EvaluationFormHandler implements PageElementHandler {
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints hints) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints hints) {
 		Controller ctrl = null;
 		if(element instanceof EvaluationFormPart eva) {
 			PageService pageService = CoreSpringFactory.getImpl(PageService.class);

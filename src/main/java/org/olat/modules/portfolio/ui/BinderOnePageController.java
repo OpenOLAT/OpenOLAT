@@ -38,7 +38,7 @@ import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.handler.ContainerHandler;
@@ -75,7 +75,7 @@ public class BinderOnePageController extends BasicController {
 	
 	private int counter = 0;
 	private List<String> components = new ArrayList<>();
-	private final PageElementRenderingHints renderingHints;
+	private final RenderingHints renderingHints;
 	
 	@Autowired
 	private PageService pageService;
@@ -88,7 +88,7 @@ public class BinderOnePageController extends BasicController {
 	private UserManager userManager;
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			BinderRef binderRef, PageElementRenderingHints renderingHints, boolean print) {
+			BinderRef binderRef, RenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
 		this.renderingHints = renderingHints;
 		
@@ -101,7 +101,7 @@ public class BinderOnePageController extends BasicController {
 	}
 	
 	public BinderOnePageController(UserRequest ureq, WindowControl wControl,
-			Page page, PageElementRenderingHints renderingHints, boolean print) {
+			Page page, RenderingHints renderingHints, boolean print) {
 		super(ureq, wControl);
 		this.renderingHints = renderingHints;
 		

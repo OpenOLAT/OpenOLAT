@@ -462,10 +462,9 @@ public class PageEditorV2Controller extends BasicController {
 	private ContentEditorFragment doAddPageElementInContainer(UserRequest ureq, ContentEditorFragment referenceFragment,
 			PageElement element, int column) {
 		ContentEditorFragment fragment = null;
-		if(referenceFragment instanceof ContentEditorContainerComponent) {
+		if(referenceFragment instanceof ContentEditorContainerComponent containerCmp) {
 			PageElement pageElement = provider.appendPageElement(element);
 			fragment = createFragmentComponent(ureq, pageElement);
-			ContentEditorContainerComponent containerCmp = (ContentEditorContainerComponent)referenceFragment;
 			containerCmp.setElementAt(ureq, fragment, column, null);
 		}
 		
@@ -572,16 +571,15 @@ public class PageEditorV2Controller extends BasicController {
 		provider.removePageElement(fragment.getElement());
 		Component parent = ancestors.get(index + 1);
 		if(parent == editorCmp) {
-			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToPreviousContainer(ureq, (ContentEditorContainerComponent)fragment);
+			if(fragment instanceof ContentEditorContainerComponent containerCmp) {
+				moveElementsToPreviousContainer(ureq, containerCmp);
 			}
 			editorCmp.removeRootComponent(fragment);
-		} else if(parent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-			if(fragment instanceof ContentEditorContainerComponent) {
-				moveElementsToContainerSlot(ureq, (ContentEditorContainerComponent)fragment, container);
+		} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+			if(fragment instanceof ContentEditorContainerComponent container) {
+				moveElementsToContainerSlot(ureq, container, parentContainer);
 			}
-			container.removeElementAt(ureq, fragment);
+			parentContainer.removeElementAt(ureq, fragment);
 		}
 		updateImportButtonVisibility();
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -638,9 +636,8 @@ public class PageEditorV2Controller extends BasicController {
 				if(editorCmp.moveUpRootComponent(fragment)) {
 					provider.moveUpPageElement(fragment.getElement());
 				}
-			} else if(parent instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveUp(ureq, fragment.getElementId());
+			} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+				parentContainer.moveUp(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -655,9 +652,8 @@ public class PageEditorV2Controller extends BasicController {
 				if(editorCmp.moveDownRootComponent(fragment)) {
 					provider.moveDownPageElement(fragment.getElement());
 				}
-			} else if(parent instanceof ContentEditorContainerComponent) {
-				ContentEditorContainerComponent container = (ContentEditorContainerComponent)parent;
-				container.moveDown(ureq, fragment.getElementId());
+			} else if(parent instanceof ContentEditorContainerComponent parentContainer) {
+				parentContainer.moveDown(ureq, fragment.getElementId());
 			}
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
@@ -675,9 +671,8 @@ public class PageEditorV2Controller extends BasicController {
 		Component sourceParent = getParent(source);
 		if(sourceParent != null && sourceParent == editorCmp) {
 			editorCmp.removeRootComponent(source);
-		} else if(sourceParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(ureq, source);
+		} else if(sourceParent instanceof ContentEditorContainerComponent sourceParentContainer) {
+			sourceParentContainer.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
@@ -722,16 +717,14 @@ public class PageEditorV2Controller extends BasicController {
 		boolean after = dropEvent.getPosition() == PositionEnum.bottom;
 		if(sourceParent != null && sourceParent == editorCmp) {
 			editorCmp.removeRootComponent(source);
-		} else if(sourceParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent container = (ContentEditorContainerComponent)sourceParent;
-			container.removeElementAt(ureq, source);
+		} else if(sourceParent instanceof ContentEditorContainerComponent sourceParentContainer) {
+			sourceParentContainer.removeElementAt(ureq, source);
 		} else {
 			editorCmp.setDirty(true);
 			return;
 		}
 		
-		if(target instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)target;
+		if(target instanceof ContentEditorContainerComponent targetContainer) {
 			// Containers are never dropped in an other container, it's forbidden
 			if(source instanceof ContentEditorContainerComponent) {
 				ok = moveContainerInEditor(target, source, after);
@@ -739,8 +732,7 @@ public class PageEditorV2Controller extends BasicController {
 				targetContainer.setElementAt(ureq, source, dropEvent.getSlot(), null);
 				ok = true;
 			}
-		} else if(targetParent instanceof ContentEditorContainerComponent) {
-			ContentEditorContainerComponent targetContainer = (ContentEditorContainerComponent)targetParent;
+		} else if(targetParent instanceof ContentEditorContainerComponent targetContainer) {
 			PageElementTarget pos = after ? PageElementTarget.below : PageElementTarget.above;
 			targetContainer.addElement(ureq, source, target, pos);
 			ok = true;
@@ -775,7 +767,7 @@ public class PageEditorV2Controller extends BasicController {
 			return null;
 		}
 		
-		PageRunElement viewPart = handler.getContent(ureq, getWindowControl(), element, new StandardMediaRenderingHints());
+		PageRunElement viewPart = handler.getContent(ureq, getWindowControl(), element, new StandardMediaRenderingHints(true));
 		Controller editorPart = handler.getEditor(ureq, getWindowControl(), element);
 		if(editorPart != null) {
 			listenTo(editorPart);
@@ -784,11 +776,11 @@ public class PageEditorV2Controller extends BasicController {
 		
 		PageElementInspectorController inspectorPart = handler.getInspector(ureq, getWindowControl(), element);
 		if(inspectorPart != null) {
-			if(editorPart instanceof ControllerEventListener) {
-				inspectorPart.addControllerListener((ControllerEventListener)editorPart);
+			if(editorPart instanceof ControllerEventListener editorListener) {
+				inspectorPart.addControllerListener(editorListener);
 			}
-			if(editorPart != null && inspectorPart instanceof ControllerEventListener) {
-				editorPart.addControllerListener((ControllerEventListener)inspectorPart);
+			if(editorPart != null && inspectorPart instanceof ControllerEventListener inspectorListener) {
+				editorPart.addControllerListener(inspectorListener);
 			}
 			
 			inspectorPart = new ModalInspectorController(ureq, getWindowControl(), inspectorPart, element);
@@ -797,12 +789,12 @@ public class PageEditorV2Controller extends BasicController {
 			listenTo(inspectorPart);
 		}
 		
-		if(viewPart instanceof ControllerEventListener) {
+		if(viewPart instanceof ControllerEventListener viewListener) {
 			if(editorPart != null) {
-				editorPart.addControllerListener((ControllerEventListener)viewPart);
+				editorPart.addControllerListener(viewListener);
 			}
 			if(inspectorPart != null) {
-				inspectorPart.addControllerListener((ControllerEventListener)viewPart);
+				inspectorPart.addControllerListener(viewListener);
 			}
 		}
 		

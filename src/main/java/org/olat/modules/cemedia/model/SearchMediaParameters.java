@@ -35,7 +35,7 @@ public class SearchMediaParameters {
 	private String searchString;
 	private String checksum;
 	private List<String> types;
-	private List<String> tags;
+	private List<Long> tags;
 	private List<TaxonomyLevelRef> taxonomyLevelsRefs;
 	
 	private Identity identity;
@@ -81,11 +81,11 @@ public class SearchMediaParameters {
 		this.types = types;
 	}
 
-	public List<String> getTags() {
+	public List<Long> getTags() {
 		return tags;
 	}
 	
-	public void setTags(List<String> tags) {
+	public void setTags(List<Long> tags) {
 		this.tags = tags;
 	}
 	

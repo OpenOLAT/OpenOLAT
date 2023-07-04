@@ -89,7 +89,7 @@ public class MediaUsageController extends FormBasicController {
 	}
 	
 	private void loadModel() {
-		List<MediaUsageWithStatus> mediaUsageList = mediaService.getMediaUsageWithStatus(getIdentity(), media);
+		List<MediaUsageWithStatus> mediaUsageList = mediaService.getMediaUsageWithStatus(media);
 		List<MediaUsageRow> rows = new ArrayList<>();
 		for(MediaUsageWithStatus usedIn:mediaUsageList) {
 			rows.add(MediaUsageRow.valueOf(usedIn));

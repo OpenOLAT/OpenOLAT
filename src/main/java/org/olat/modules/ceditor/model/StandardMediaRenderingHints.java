@@ -19,8 +19,7 @@
  */
 package org.olat.modules.ceditor.model;
 
-import org.olat.modules.ceditor.PageElementRenderingHints;
-import org.olat.modules.cemedia.MediaRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 
 /**
  * 
@@ -28,7 +27,13 @@ import org.olat.modules.cemedia.MediaRenderingHints;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StandardMediaRenderingHints implements MediaRenderingHints, PageElementRenderingHints {
+public class StandardMediaRenderingHints implements RenderingHints {
+	
+	private final boolean editable;
+
+	public StandardMediaRenderingHints(boolean editable) {
+		this.editable = editable;
+	}
 
 	@Override
 	public boolean isToPdf() {
@@ -44,5 +49,9 @@ public class StandardMediaRenderingHints implements MediaRenderingHints, PageEle
 	public boolean isExtendedMetadata() {
 		return false;
 	}
-	
+
+	@Override
+	public boolean isEditable() {
+		return editable;
+	}
 }

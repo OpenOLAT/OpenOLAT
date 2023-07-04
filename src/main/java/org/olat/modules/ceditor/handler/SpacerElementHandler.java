@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.SimpleAddPageElementHandler;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
@@ -64,7 +64,7 @@ public class SpacerElementHandler implements PageElementHandler, SimpleAddPageEl
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof SpacerPart) {
 			Component cmp = new SpacerElementComponent("spacer_" + idGenerator.incrementAndGet());
 			return new PageRunComponent(cmp);

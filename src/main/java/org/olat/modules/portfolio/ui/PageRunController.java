@@ -76,7 +76,7 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageProvider;
@@ -208,7 +208,7 @@ public class PageRunController extends BasicController implements TooledControll
 		mainVC.contextPut("pageTitle", page.getTitle());
 		loadMeta(ureq);
 		
-		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(), new StandardMediaRenderingHints());
+		pageCtrl = new PageController(ureq, getWindowControl(), new PortfolioPageProvider(), new StandardMediaRenderingHints(secCallback.canEditPage(page)));
 		listenTo(pageCtrl);
 		mainVC.put("page", pageCtrl.getInitialComponent());
 		loadModel(ureq, false);
@@ -1019,7 +1019,7 @@ public class PageRunController extends BasicController implements TooledControll
 		}
 
 		@Override
-		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+		public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 			return null;
 		}
 

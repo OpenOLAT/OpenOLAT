@@ -35,13 +35,13 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -110,7 +110,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new TextMediaController(ureq, wControl, version, hints);
 	}
 

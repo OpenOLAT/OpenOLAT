@@ -78,7 +78,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(mediaTag);
-		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media);
+		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media, null);
 		assertThat(tagInfos)
 			.hasSize(1);
 	}

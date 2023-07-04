@@ -36,7 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.model.DublinCoreMetadata;
 import org.olat.modules.ceditor.model.ImageElement;
@@ -65,7 +65,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 	
 	private final DataStorage dataStorage;
 	
-	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, PageElementRenderingHints hints) {
+	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, ImageElement media, RenderingHints hints) {
 		this(ureq, wControl, dataStorage, media.getStoredData(), hints);
 		
 		ImageSettings settings = media.getImageSettings();
@@ -78,7 +78,7 @@ public class ImageRunController extends BasicController implements PageRunElemen
 		}
 	}
 
-	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, PageElementRenderingHints hints) {
+	public ImageRunController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, StoredData storedData, RenderingHints hints) {
 		super(ureq, wControl, Util.createPackageTranslator(PageEditorV2Controller.class, ureq.getLocale()));
 		velocity_root = Util.getPackageVelocityRoot(ImageRunController.class);
 		this.dataStorage = dataStorage;

@@ -135,7 +135,7 @@ public class MediaDAO {
 		
 		MediaVersionImpl newVersion = new MediaVersionImpl();
 		newVersion.setCreationDate(currentVersion.getCreationDate());
-		newVersion.setCollectionDate(collectionDate);
+		newVersion.setCollectionDate(currentVersion.getCollectionDate());
 		newVersion.setVersionName(Integer.toString(media.getVersions().size()));
 		newVersion.setVersionUuid(currentVersion.getVersionUuid());
 		newVersion.setVersionChecksum(currentVersion.getVersionChecksum());
@@ -286,12 +286,11 @@ public class MediaDAO {
 			sb.append(")");
 		}
 		
-		List<String> tagNames = parameters.getTags();
-		if(tagNames != null && !tagNames.isEmpty()) {
+		List<Long> tagKeys = parameters.getTags();
+		if(tagKeys != null && !tagKeys.isEmpty()) {
 			sb.and()
 			  .append(" exists (select rel.key from mediatag as rel")
-			  .append("  inner join rel.tag as tag")
-			  .append("  where tag.displayName in (:tagNames) and rel.media.key=media.key")
+			  .append("  where rel.tag.key in (:tagKeys) and rel.media.key=media.key")
 			  .append(" )");
 		}
 		
@@ -322,8 +321,8 @@ public class MediaDAO {
 		if(StringHelper.containsNonWhitespace(searchString)) {
 			query.setParameter("searchString", searchString.toLowerCase());
 		}
-		if(tagNames != null && !tagNames.isEmpty()) {
-			query.setParameter("tagNames", tagNames);
+		if(tagKeys != null && !tagKeys.isEmpty()) {
+			query.setParameter("tagKeys", tagKeys);
 		}
 		if(types != null && !types.isEmpty()) {
 			query.setParameter("types", types);
@@ -547,17 +546,21 @@ public class MediaDAO {
 		return usage;
 	}
 	
-	public void deleteMedia(Media media) {
+	public int deleteMedia(Media media) {
 		Media reloadedMedia = loadByKey(media.getKey());
-		if(reloadedMedia == null) return;
+		if(reloadedMedia == null) return 0;
 		
+		int count = 0;
 		List<MediaVersion> versions = reloadedMedia.getVersions();
 		if(versions != null) {
 			for(MediaVersion version:versions) {
 				deleteMedia(version);
+				count++;
 			}
 		}
 		dbInstance.getCurrentEntityManager().remove(reloadedMedia);
+		count++;
+		return count;
 	}
 	
 	private void deleteMedia(MediaVersion mediaVersion) {

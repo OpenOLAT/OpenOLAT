@@ -54,6 +54,7 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementInspectorController;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
@@ -61,7 +62,6 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.AddFileController;
@@ -84,8 +84,6 @@ import org.springframework.stereotype.Service;
 public class FileHandler extends AbstractMediaHandler implements PageElementStore<MediaPart>, InteractiveAddPageElementHandler {
 	
 	public static final String FILE_TYPE = "bc";
-	
-	private final boolean create;
 	
 	@Autowired
 	private MediaDAO mediaDao;
@@ -111,7 +109,6 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	
 	public FileHandler() {
 		super(FILE_TYPE);
-		this.create = false;
 	}
 	
 	@Override
@@ -198,12 +195,8 @@ public class FileHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
-		FileMediaController mediaCtrl = new FileMediaController(ureq, wControl, version, hints);
-		if(create) {
-			mediaCtrl.setEditable(true);
-		}
-		return mediaCtrl;
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+		return new FileMediaController(ureq, wControl, version, hints);
 	}
 
 	@Override

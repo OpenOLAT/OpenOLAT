@@ -31,7 +31,7 @@ import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageElementStore;
 import org.olat.modules.ceditor.PageLayoutHandler;
 import org.olat.modules.ceditor.PageRunElement;
@@ -84,7 +84,7 @@ public class ContainerHandler implements PageLayoutHandler, PageElementStore<Con
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		// rendering is done by the page component
 		Component dummyCmp = new Panel("");
 		return new PageRunComponent(dummyCmp);

@@ -38,7 +38,7 @@ public interface PageElementHandler {
 	
 	public PageElementCategory getCategory();
 	
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options);
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options);
 	
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element);
 	

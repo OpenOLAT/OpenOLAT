@@ -37,8 +37,8 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -56,7 +56,7 @@ public class ForumMessageMediaController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public ForumMessageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		

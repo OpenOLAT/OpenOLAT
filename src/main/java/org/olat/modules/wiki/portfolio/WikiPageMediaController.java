@@ -37,8 +37,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -58,7 +58,7 @@ public class WikiPageMediaController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public WikiPageMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		

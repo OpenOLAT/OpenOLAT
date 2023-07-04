@@ -1,5 +1,4 @@
 /**
-
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -25,6 +24,8 @@ import java.util.List;
 
 import org.olat.admin.user.SelectOrganisationController;
 import org.olat.admin.user.UserSearchController;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.persistence.DB;
@@ -50,6 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
@@ -90,6 +92,7 @@ public class MediaRelationsController extends FormBasicController {
 	private final boolean delaySave;
 	private final boolean wrapped;
 	private final boolean editable;
+	private final Roles roles;
 	
 	@Autowired
 	private DB dbInstance;
@@ -104,6 +107,7 @@ public class MediaRelationsController extends FormBasicController {
 		super(ureq, wControl, "media_relations");
 		this.media = media;
 		this.editable = editable;
+		this.roles = ureq.getUserSession().getRoles();
 		delaySave = false;
 		wrapped = false;
 		initForm(ureq);
@@ -113,6 +117,7 @@ public class MediaRelationsController extends FormBasicController {
 	public MediaRelationsController(UserRequest ureq, WindowControl wControl, Form form, Media media, boolean delay, boolean wrapped) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "media_relations", form);
 		this.media = media;
+		this.roles = ureq.getUserSession().getRoles();
 		this.delaySave = delay;
 		this.wrapped = wrapped;
 		this.editable = true;
@@ -159,10 +164,12 @@ public class MediaRelationsController extends FormBasicController {
 		addBusinessGroupLink.setVisible(editable);
 		addSharesDropdown.addElement(addBusinessGroupLink);
 		
-		addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
-		addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-		addOrganisationLink.setVisible(editable);
-		addSharesDropdown.addElement(addOrganisationLink);
+		if(roles.isAdministrator()) {
+			addOrganisationLink = uifactory.addFormLink("add.share.organisation", formLayout, Link.LINK);
+			addOrganisationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+			addOrganisationLink.setVisible(editable);
+			addSharesDropdown.addElement(addOrganisationLink);
+		}
 		
 		if(wrapped) {
 			openCloseLink = uifactory.addFormLink("open.close", formLayout, Link.LINK);
@@ -221,7 +228,7 @@ public class MediaRelationsController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addUserLink == source) {
-			doAddUser(ureq);
+			doSelectUser(ureq);
 		} else if(addBusinessGroupLink == source) {
 			doSelectGroup(ureq);
 		} else if(addOrganisationLink == source) {
@@ -294,7 +301,9 @@ public class MediaRelationsController extends FormBasicController {
 	
 	private void doSelectGroup(UserRequest ureq) {
 		removeAsListenerAndDispose(selectGroupCtrl);
-		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, null, null);
+		
+		List<GroupRoles> restrictedRoles = roles.isAdministrator() ? null : List.of(GroupRoles.coach, GroupRoles.participant);
+		selectGroupCtrl = new SelectBusinessGroupController(ureq, getWindowControl(), null, restrictedRoles, null);
 		listenTo(selectGroupCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -321,7 +330,8 @@ public class MediaRelationsController extends FormBasicController {
 	}
 	
 	private void doSelectOrganisation(UserRequest ureq) {
-		List<Organisation> organisations = organisationService.getOrganisations();
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.managersRoles());
 		selectOrganisationCtrl = new SelectOrganisationController(ureq, getWindowControl(), organisations);
 		listenTo(selectOrganisationCtrl);
 		
@@ -342,7 +352,7 @@ public class MediaRelationsController extends FormBasicController {
 		}
 	}
 	
-	private void doAddUser(UserRequest ureq) {
+	private void doSelectUser(UserRequest ureq) {
 		userSearchController = new UserSearchController(ureq, getWindowControl(), true);
 		listenTo(userSearchController);
 

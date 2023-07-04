@@ -213,6 +213,10 @@ public class CollectTextMediaController extends FormBasicController implements P
 			String description = descriptionEl.getValue();
 			String content = textEl.getValue();
 			mediaReference = fileHandler.createMedia(title, description, null, content, businessPath, getIdentity());
+		} else if(metadataOnly) {
+			mediaReference.setTitle(titleEl.getValue());
+			mediaReference.setDescription(descriptionEl.getValue());
+			mediaReference = mediaService.updateMedia(mediaReference);
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());

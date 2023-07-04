@@ -36,9 +36,9 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
 import org.olat.modules.webFeed.Item;
@@ -59,7 +59,7 @@ public class BlogEntryMediaController extends BasicController {
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 	
-	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public BlogEntryMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		VelocityContainer mainVC = createVelocityContainer("media_post");
 		

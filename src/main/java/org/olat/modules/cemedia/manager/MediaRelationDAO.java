@@ -174,6 +174,14 @@ public class MediaRelationDAO {
 		return shares;
 	}
 	
+	public int deleteRelation(Media media) {
+		String query = "delete from mediatogroup rel where rel.media.key=:mediaKey";
+		return dbInstance.getCurrentEntityManager()
+			.createQuery(query)
+			.setParameter("mediaKey", media.getKey())
+			.executeUpdate();
+	}
+	
 	public void deleteRelation(MediaToGroupRelation relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}

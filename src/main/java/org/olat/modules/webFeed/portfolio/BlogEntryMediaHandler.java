@@ -36,10 +36,10 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -119,7 +119,7 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 	
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new BlogEntryMediaController(ureq, wControl, version, hints);
 	}
 

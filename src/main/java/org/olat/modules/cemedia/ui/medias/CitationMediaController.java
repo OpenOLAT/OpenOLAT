@@ -29,12 +29,12 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Citation;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
 import org.olat.modules.cemedia.ui.MediaCenterController;
@@ -51,7 +51,7 @@ public class CitationMediaController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	
-	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, MediaRenderingHints hints) {
+	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		

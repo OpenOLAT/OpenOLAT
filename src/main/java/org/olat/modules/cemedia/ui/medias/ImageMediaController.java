@@ -24,7 +24,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.DataStorage;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageRunController;
 import org.olat.modules.ceditor.ui.PageEditorV2Controller;
@@ -41,11 +41,11 @@ import org.olat.modules.cemedia.ui.MediaMetadataController;
  */
 public class ImageMediaController extends ImageRunController {
 	
-	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart element, PageElementRenderingHints hints) {
+	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaPart element, RenderingHints hints) {
 		super(ureq, wControl, dataStorage, element, hints);
 	}
 
-	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, PageElementRenderingHints hints) {
+	public ImageMediaController(UserRequest ureq, WindowControl wControl, DataStorage dataStorage, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl, dataStorage, version, hints);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(PageEditorV2Controller.class, getLocale(), getTranslator()));

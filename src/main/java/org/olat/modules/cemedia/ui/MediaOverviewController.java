@@ -56,15 +56,15 @@ import org.olat.core.util.Util;
 import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaHandler.CreateVersion;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
-import org.olat.modules.cemedia.MediaHandler.CreateVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
+import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.ui.component.MediaRelationsCellRenderer;
-import org.olat.modules.cemedia.ui.medias.FileMediaController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
 import org.olat.user.UserManager;
@@ -112,13 +112,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(formLayout instanceof FormLayoutContainer layoutCont) {
-			layoutCont.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
-			layoutCont.contextPut("description", StringHelper.xssScan(media.getDescription()));
-			layoutCont.contextPut("iconCssClass", handler.getIconCssClass(currentVersion));
-			updateVersion(ureq, currentVersion);
-		}
-		
 		MediaHandlerVersion handlerVersion = handler.hasVersion();
 		if(editable && handlerVersion.hasVersion()) {
 			if(handlerVersion.canCreateVersion()) {
@@ -143,10 +136,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			versionDropdownItem.setButton(true);
 			loadVersions();
 		}
-
+		
 		String metaPage = velocity_root + "/media_details_metadata.html";
 		metaCont = uifactory.addCustomFormLayout("meta", null, metaPage, formLayout);
+		
 		loadModels(metaCont);
+		updateVersion(ureq, currentVersion);
 		
 		int numOfReferences = usageList.size();
 		List<FormLink> referencesLinks = new ArrayList<>(numOfReferences);
@@ -182,17 +177,18 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		return link;
 	}
 
-	public void reload() {
+	public MediaWithVersion reload() {
 		media = mediaService.getMediaByKey(media.getKey());
 		if(media.getVersions() != null && !media.getVersions().isEmpty()) {
 			currentVersion = media.getVersions().get(0);
 		}
 		loadModels(metaCont);
 		loadVersions();
+		return new MediaWithVersion(media, currentVersion, -1l);
 	}
 	
 	private void loadVersions() {
-		if(!editable) return;
+		if(!editable || versionDropdownItem == null) return;
 		
 		versionDropdownItem.removeAllFormItems();
 		
@@ -214,12 +210,13 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
-		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), version, new StandardMediaRenderingHints());
+		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), version, new StandardMediaRenderingHints(editable));
 		if(mediaCtrl != null) {
-			// Move this to the MediaHandler if even more Media types are editable inline.
-			if (mediaCtrl instanceof FileMediaController fileMediaCtrl && editable) {
-				fileMediaCtrl.setEditable(editable);
+			if(version.getCollectionDate() != null) {
+				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
+				metaCont.contextPut("collectionDate", collectionDate);
 			}
+			
 			listenTo(mediaCtrl);
 			flc.put("media", mediaCtrl.getInitialComponent());
 		}
@@ -352,6 +349,8 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void doChangeVersion(UserRequest ureq, MediaVersion version) {
 		removeAsListenerAndDispose(mediaCtrl);
+		
+		System.out.println(version.getKey() + " " + version.getVersionName() + " " + version.getCollectionDate());
 		updateVersion(ureq, version);
 	}
 	

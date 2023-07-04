@@ -28,7 +28,12 @@ import org.olat.admin.user.tools.UserToolExtension;
  *
  */
 public class MediaCenterExtension extends UserToolExtension {
-
 	
+	public static final String MEDIA_CENTER_USER_TOOL_ID = "org.olat.home.HomeMainController:org.olat.modules.cemedia.ui.MediaCenterPersonalToolController";
+
+	@Override
+	public String getUniqueExtensionID() {
+		return MEDIA_CENTER_USER_TOOL_ID;
+	}
 	
 }

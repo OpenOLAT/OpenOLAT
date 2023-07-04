@@ -33,7 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
-import org.olat.modules.ceditor.PageElementRenderingHints;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.PageProvider;
 import org.olat.modules.ceditor.PageRunElement;
 import org.olat.modules.ceditor.ui.component.PageFragmentsComponent;
@@ -50,11 +50,11 @@ public class PageController extends BasicController {
 	private int counter;
 	private final PageProvider provider;
 	private final PageFragmentsComponent fragmentsCmp;
-	private final PageElementRenderingHints renderingHints;
+	private final RenderingHints renderingHints;
 
 	private final Map<String,PageElementHandler> handlerMap = new HashMap<>();
 	
-	public PageController(UserRequest ureq, WindowControl wControl, PageProvider provider, PageElementRenderingHints renderingHints) {
+	public PageController(UserRequest ureq, WindowControl wControl, PageProvider provider, RenderingHints renderingHints) {
 		super(ureq, wControl);
 		this.provider = provider;
 		this.renderingHints = renderingHints;

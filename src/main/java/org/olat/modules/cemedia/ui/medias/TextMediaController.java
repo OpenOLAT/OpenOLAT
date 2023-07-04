@@ -32,11 +32,11 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -56,7 +56,7 @@ public class TextMediaController extends BasicController {
 	@Autowired
 	private UserManager userManager;
 	
-	public TextMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public TextMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		

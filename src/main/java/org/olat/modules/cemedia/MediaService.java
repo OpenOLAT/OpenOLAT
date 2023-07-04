@@ -57,7 +57,9 @@ public interface MediaService {
 	
 	Media updateMedia(Media media);
 	
-	void deleteMedia(Media media);
+	boolean isUsed(Media media);
+	
+	int deleteMedia(Media media);
 	
 	Media addVersion(Media media, String content);
 	
@@ -72,13 +74,15 @@ public interface MediaService {
 	 * @param media The media
 	 * @return A list of location
 	 */
-	List<MediaUsageWithStatus> getMediaUsageWithStatus(IdentityRef identity, MediaLight media);
+	List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media);
 	
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
 	
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	
 	List<TagInfo> getTagInfos(Media media);
+	
+	List<TagInfo> getTagInfos(IdentityRef owner);
 	
 	List<MediaTag> getTags(IdentityRef owner);
 	

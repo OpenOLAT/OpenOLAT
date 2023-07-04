@@ -282,7 +282,7 @@ public class MediaDAOTest extends OlatTestCase {
 		parameters.setIdentity(author);
 		parameters.setScope(Scope.ALL);
 		parameters.setSearchString("media");
-		parameters.setTags(List.of(tagName));
+		parameters.setTags(List.of(tag.getKey()));
 		parameters.setTaxonomyLevelsRefs(List.of(relation.getTaxonomyLevel()));
 		parameters.setTypes(List.of("Forum"));
 		

@@ -49,12 +49,12 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaMapper;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementEditorController;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ModalInspectorController;
 import org.olat.modules.ceditor.ui.event.ChangeVersionPartEvent;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -79,9 +79,8 @@ public class FileMediaController extends BasicController implements PageElementE
 	private final Roles roles;
 	private Media media;
 	private MediaVersion version;
-	private final MediaRenderingHints hints;
+	private final RenderingHints hints;
 	private VFSLeaf vfsLeaf;
-	private boolean editable = false;
 
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
@@ -91,7 +90,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	@Autowired
 	private DocEditorService docEditorService;
 	
-	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public FileMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		this.roles = ureq.getUserSession().getRoles();
@@ -161,22 +160,17 @@ public class FileMediaController extends BasicController implements PageElementE
 				editLink.setIconLeftCSS("o_icon o_icon-fw " + editIcon);
 				editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
 				Translator buttonTranslator = Util.createPackageTranslator(DocEditorController.class, getLocale());
-				editLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(Mode.VIEW, vfsLeaf.getName(), buttonTranslator)));
+				editLink.setCustomDisplayText(StringHelper.escapeHtml(docEditorService.getModeButtonLabel(mode, vfsLeaf.getName(), buttonTranslator)));
 				editLink.setUserObject(mode);
 				editLink.setNewWindow(true, true);
 			}
 		}
 	}
-
-	public void setEditable(boolean editable) {
-		this.editable = editable;
-		updateUI();
-	}
 	
 	private Mode getMode() {
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editable && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
+		} else if (hints.isEditable() && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.EDIT, true)) {
 			return Mode.EDIT;
 		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, Mode.VIEW, true)) {
 			return Mode.VIEW;

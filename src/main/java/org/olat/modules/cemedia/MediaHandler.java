@@ -29,6 +29,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.user.manager.ManifestBuilder;
 
 /**
@@ -57,7 +58,7 @@ public interface MediaHandler {
 	
 	Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author);
 	
-	Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints);
+	Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints);
 	
 	Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media);
 	

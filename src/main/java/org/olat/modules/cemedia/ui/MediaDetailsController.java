@@ -45,6 +45,7 @@ import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.model.MediaUsage;
+import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,6 +59,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 	
 	private final Link deleteLink;
 	private final TabbedPane tabbedPane;
+	private final VelocityContainer mainVC;
 	
 	private Controller metadataCtrl;
 	private MediaUsageController usageCtrl;
@@ -66,10 +68,11 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private final MediaOverviewController overviewCtrl;
 
 	private Media media;
+	private MediaVersion version;
 	private final boolean editable;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
-	
+
 	@Autowired
 	private MediaService mediaService;
 	
@@ -77,16 +80,14 @@ public class MediaDetailsController extends BasicController implements Activatea
 		super(ureq, wControl);
 		
 		this.media = media;
+		this.version = currentVersion;
 		handler = mediaService.getMediaHandler(media.getType());
 		
 		usageList = mediaService.getMediaUsage(media);
 		editable = isEditable();
 		
-		VelocityContainer mainVC = createVelocityContainer("media_details");
-		
-		mainVC.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
-		mainVC.contextPut("description", StringHelper.xssScan(media.getDescription()));
-		mainVC.contextPut("iconCssClass", handler.getIconCssClass(currentVersion));
+		mainVC = createVelocityContainer("media_details");
+		loadTitle();
 		
 		Dropdown commandsDropdown = new Dropdown("commands", null, false, getTranslator());
 		commandsDropdown.setDomReplaceable(false);
@@ -145,6 +146,10 @@ public class MediaDetailsController extends BasicController implements Activatea
 		}
 		return isEditable;
 	}
+	
+	public Media getMedia() {
+		return media;
+	}
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
@@ -160,6 +165,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		} else if(relationsCtrl == source || overviewCtrl == source || metadataCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				reload();
+				fireEvent(ureq, event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -173,9 +179,19 @@ public class MediaDetailsController extends BasicController implements Activatea
 	}
 	
 	private void reload() {
-		overviewCtrl.reload();
-		if(this.usageCtrl != null) {
+		MediaWithVersion mediaWithVersion = overviewCtrl.reload();
+		media = mediaWithVersion.media();
+		version = mediaWithVersion.currentVersion();
+		if(usageCtrl != null) {
 			usageCtrl.reload();
+		}
+		loadTitle();
+	}
+	
+	private void loadTitle() {
+		mainVC.contextPut("title", StringHelper.escapeHtml(media.getTitle()));
+		if(version != null) {
+			mainVC.contextPut("iconCssClass", handler.getIconCssClass(version));
 		}
 	}
 	
@@ -187,7 +203,11 @@ public class MediaDetailsController extends BasicController implements Activatea
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		mediaService.deleteMedia(media);
-		fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
+		if(mediaService.isUsed(media)) {
+			showWarning("warning.still.used");
+		} else {
+			mediaService.deleteMedia(media);
+			fireEvent(ureq, new MediaEvent(MediaEvent.DELETED));
+		}
 	}
 }

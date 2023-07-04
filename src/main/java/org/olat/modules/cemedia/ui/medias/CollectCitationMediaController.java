@@ -360,6 +360,9 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			String description = descriptionEl.getValue();
 			String content = textEl.getValue();
 			mediaReference = citationHandler.createMedia(title, description, null, content, businessPath, getIdentity());
+		} else if(metadataOnly) {
+			mediaReference.setTitle(titleEl.getValue());
+			mediaReference.setDescription(descriptionEl.getValue());
 		}
 
 		citation = new CitationXml();

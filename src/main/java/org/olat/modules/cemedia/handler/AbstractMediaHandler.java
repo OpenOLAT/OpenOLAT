@@ -52,8 +52,8 @@ import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.ceditor.PageElement;
 import org.olat.modules.ceditor.PageElementHandler;
 import org.olat.modules.ceditor.PageElementInspectorController;
-import org.olat.modules.ceditor.PageElementRenderingHints;
 import org.olat.modules.ceditor.PageRunElement;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.StoredData;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
@@ -61,7 +61,6 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaHandlerVersion;
 import org.olat.modules.cemedia.MediaInformations;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaMetadataController;
@@ -100,9 +99,9 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, PageElementRenderingHints options) {
+	public PageRunElement getContent(UserRequest ureq, WindowControl wControl, PageElement element, RenderingHints options) {
 		if(element instanceof MediaPart mediaPart) {
-			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMediaVersion(), new RenderingHints(options)));
+			return new PageRunControllerElement(getMediaController(ureq, wControl, mediaPart.getMediaVersion(), options));
 		}
 		return null;
 	}
@@ -220,11 +219,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		}
 	}
 	
-	public static class RenderingHints implements MediaRenderingHints, PageElementRenderingHints {
+	public static class MediaRenderingHints implements RenderingHints {
 		
-		private final PageElementRenderingHints options;
+		private final RenderingHints options;
 		
-		public RenderingHints(PageElementRenderingHints options) {
+		public MediaRenderingHints(RenderingHints options) {
 			this.options = options;
 		}	
 
@@ -241,6 +240,11 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 		@Override
 		public boolean isExtendedMetadata() {
 			return options.isExtendedMetadata();
+		}
+
+		@Override
+		public boolean isEditable() {
+			return options.isEditable();
 		}
 	}
 	

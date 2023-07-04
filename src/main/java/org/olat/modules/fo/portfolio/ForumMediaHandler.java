@@ -39,11 +39,11 @@ import org.olat.core.util.io.SystemFileFilter;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.PageElementCategory;
+import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaLoggingAction;
-import org.olat.modules.cemedia.MediaRenderingHints;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -141,7 +141,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, MediaRenderingHints hints) {
+	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new ForumMessageMediaController(ureq, wControl, version, hints);
 	}
 
