@@ -141,9 +141,11 @@ public class PageRunController extends BasicController implements TooledControll
 	private Link previousPageLink;
 	private Link nextPageLink;
 	private Link allPagesLink;
-	private Link editLink;
-	private Link editMetadataLink, moveToTrashLink, restoreLink, deleteLink,
-		printLink, exportPageAsPdfLink;
+	private Link moveToTrashLink;
+	private Link restoreLink;
+	private Link deleteLink;
+	private Link printLink;
+	private Link exportPageAsPdfLink;
 	private Component helpLink;
 	protected final TooledStackedPanel stackPanel;
 	
@@ -160,6 +162,7 @@ public class PageRunController extends BasicController implements TooledControll
 	private SelectPageListController selectPageController;
 	
 	private Page page;
+	private boolean edit = false;
 	private int changes = 0;
 	private LockResult lockEntry;
 	private OLATResourceable lockOres;
@@ -261,13 +264,6 @@ public class PageRunController extends BasicController implements TooledControll
 		editLink(!openInEditMode);
 		
 		if(stackPanel != null) {
-			stackPanel.addTool(editLink, Align.left);
-	
-			editMetadataLink = LinkFactory.createToolLink("edit.page.metadata", translate("edit.page.metadata"), this);
-			editMetadataLink.setIconLeftCSS("o_icon o_icon-lg o_icon_edit_metadata");
-			editMetadataLink.setVisible(secCallback.canEditPageMetadata(page, assignments) && page == null);
-			stackPanel.addTool(editMetadataLink, Align.left);
-			
 			if(secCallback.canExportBinder()) {
 				Dropdown exportTools = new Dropdown("export.page", "export.page", false, getTranslator());
 				exportTools.setElementCssClass("o_sel_pf_export_tools");
@@ -311,21 +307,9 @@ public class PageRunController extends BasicController implements TooledControll
 	 * @param edit The wanted state of the links
 	 * @return The edit link
 	 */
-	private Link editLink(boolean edit) {
+	private void editLink(boolean edit) {
 		if(page.isEditable()) {
-			if(editLink == null) {
-				editLink = LinkFactory.createToolLink("edit.page", translate("edit.page"), this);
-				editLink.setElementCssClass("o_sel_page_edit");
-			}
-			if(edit) {
-				editLink.setCustomDisplayText(translate("edit.page"));
-				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
-			} else {
-				editLink.setCustomDisplayText(translate("edit.page.close"));
-				editLink.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_on");
-			}
-			editLink.setVisible(secCallback.canEditPage(page) && page == null);
-			editLink.setUserObject(edit);
+			this.edit = edit;
 			
 			if(pageMetaCtrl instanceof PageMetadataCompactController metadataReducedCtrl) {
 				metadataReducedCtrl.updateEditLink(edit);
@@ -335,7 +319,6 @@ public class PageRunController extends BasicController implements TooledControll
 		} else {
 			mainVC.contextPut("edited", Boolean.FALSE);	
 		}
-		return editLink;
 	}
 	
 	private void loadModel(UserRequest ureq, boolean reloadComments) {
@@ -368,12 +351,6 @@ public class PageRunController extends BasicController implements TooledControll
 			commentsCtrl = null;
 		}
 		
-		if(editLink != null) {
-			editLink.setVisible(secCallback.canEditPage(page) && page == null);
-		}
-		if(editMetadataLink != null) {
-			editMetadataLink.setVisible(secCallback.canEditMetadataBinder() && page == null);
-		}
 		if(moveToTrashLink != null) {
 			moveToTrashLink.setVisible(secCallback.canDeletePage(page));
 		}
@@ -546,11 +523,7 @@ public class PageRunController extends BasicController implements TooledControll
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if(editLink == source) {
-			doEditPage(ureq);
-		} else if(editMetadataLink == source) {
-			doEditMetadata(ureq);
-		} else if(moveToTrashLink == source) {
+		if(moveToTrashLink == source) {
 			doConfirmMoveToTrash(ureq);
 		} else if(restoreLink == source) {
 			doRestorePage(ureq);
@@ -708,7 +681,7 @@ public class PageRunController extends BasicController implements TooledControll
 	
 	private void doEditPage(UserRequest ureq) {
 		removeAsListenerAndDispose(pageEditCtrl);
-		if(Boolean.FALSE.equals(editLink.getUserObject())) {
+		if(!edit) {
 			if(lockEntry != null && lockEntry.isSuccess()) {
 				doReleaseLock();
 			}
