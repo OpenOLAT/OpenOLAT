@@ -51,13 +51,13 @@ import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
-import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -96,11 +96,11 @@ public class CollectImageMediaController extends FormBasicController implements 
 	@Autowired
 	private ImageHandler fileHandler;
 	@Autowired
+	private MediaModule mediaModule;
+	@Autowired
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
-	@Autowired
-	private PortfolioV2Module portfolioModule;
 
 	public CollectImageMediaController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, null, true, false);
@@ -216,7 +216,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(mediaReference);
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(portfolioModule.getLinkedTaxonomies());
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));

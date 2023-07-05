@@ -48,9 +48,9 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
-import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.TaxonomyService;
@@ -81,9 +81,9 @@ public class MediaUploadController extends FormBasicController implements PageEl
 	
 
 	@Autowired
-	private MediaService mediaService;
+	private MediaModule mediaModule;
 	@Autowired
-	private PortfolioV2Module portfolioModule;
+	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
 
@@ -149,7 +149,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
 		
-		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(portfolioModule.getLinkedTaxonomies());
+		Set<TaxonomyLevel> availableTaxonomyLevels = taxonomyService.getTaxonomyLevelsAsSet(mediaModule.getTaxonomyRefs());
 		taxonomyLevelEl = uifactory.addTaxonomyLevelSelection("taxonomy.levels", "taxonomy.levels", formLayout,
 				getWindowControl(), availableTaxonomyLevels);
 		taxonomyLevelEl.setDisplayNameHeader(translate("table.header.taxonomy"));

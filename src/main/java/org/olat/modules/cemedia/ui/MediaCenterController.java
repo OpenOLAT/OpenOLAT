@@ -95,6 +95,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.ceditor.ui.component.CategoriesCellRenderer;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaTag;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
@@ -111,12 +112,11 @@ import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
-import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.model.MediaRow;
 import org.olat.modules.portfolio.ui.renderer.MediaTypeCellRenderer;
-import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.modules.taxonomy.ui.TaxonomyUIFactory;
@@ -184,11 +184,11 @@ public class MediaCenterController extends FormBasicController
 	private final Translator taxonomyTranslator;
 	
 	@Autowired
+	private MediaModule mediaModule;
+	@Autowired
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
-	@Autowired
-	private PortfolioV2Module portfolioModule;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, true, true, true, false, null);
@@ -344,7 +344,7 @@ public class MediaCenterController extends FormBasicController
 			filters.add(new FlexiTableTagFilter(translate("filter.tags"), FILTER_TAGS, tagInfos, true));
 		}
 		
-		List<Taxonomy> taxonomies = portfolioModule.getLinkedTaxonomies();
+		List<TaxonomyRef> taxonomies = mediaModule.getTaxonomyRefs();
 		if(taxonomies != null && !taxonomies.isEmpty()) {
 			List<TaxonomyLevel> allTaxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomies);
 			SelectionValues taxonomyValues = RepositoyUIFactory.createTaxonomyLevelKV(getTranslator(), allTaxonomyLevels);

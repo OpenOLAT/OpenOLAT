@@ -177,8 +177,8 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 	}
 	
 	public boolean isTaxonomyLinkingReady() {
-		List<Taxonomy> linkedTaxonomies = getLinkedTaxonomies();
-		return linkedTaxonomies != null && !linkedTaxonomies.isEmpty();
+		List<Taxonomy> taxonomies = getLinkedTaxonomies();
+		return taxonomies != null && !taxonomies.isEmpty();
 	}
 	
 	public List<Taxonomy> getLinkedTaxonomies() {
@@ -186,7 +186,7 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 			return null;
 		}
 		
-		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
+		String[] taxonomies = linkedTaxonomies.replace(" ", "").split(",");
 		List<Taxonomy> taxonomyList = new ArrayList<>();
 		
 		for (String taxonomyString : taxonomies) {
@@ -196,15 +196,15 @@ public class CurriculumModule extends AbstractSpringModule implements ConfigOnOf
 				
 				if (taxonomy != null) {
 					if (taxonomyList.contains(taxonomy)) {
-						log.warn("Misconfigured taxonomies detected: " + taxonomyString + " was added multiple times and should be removed from curriculum.linked.taxonomies");
+						log.warn("Misconfigured taxonomies detected: {} was added multiple times and should be removed from curriculum.linked.taxonomies", taxonomyString);
 					} else {
 						taxonomyList.add(taxonomy);
 					}
 				} else {
-					log.warn("Misconfigured taxonomies detected: " + taxonomyString + " does not exist and should be removed from curriculum.linked.taxonomies");
+					log.warn("Misconfigured taxonomies detected: {} does not exist and should be removed from curriculum.linked.taxonomies", taxonomyString);
 				}
 			} catch (Exception e) {
-				log.warn("Misconfigured taxonomies detected: " + taxonomyString + " needs to be removed from curriculum.linked.taxonomies");
+				log.warn("Misconfigured taxonomies detected: {} needs to be removed from curriculum.linked.taxonomies", taxonomyString);
 			}
 		}
 		

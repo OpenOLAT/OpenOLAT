@@ -248,6 +248,26 @@
 		</property>
 	</bean>
 	
+	<!-- Media center admin. panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
+		<property name="order" value="7250" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.modules.cemedia.ui.MediaAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="mediacenter" />
+		<property name="i18nActionKey" value="admin.menu.title"/>
+		<property name="i18nDescriptionKey" value="admin.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.modules.cemedia.ui"/>
+		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean> 
+	
 	<!-- vitero admin. panel -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension" init-method="initExtensionPoints">
 		<property name="order" value="8228" />

@@ -33,7 +33,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.modules.portfolio.handler.BinderTemplateHandler;
 import org.olat.modules.taxonomy.Taxonomy;
+import org.olat.modules.taxonomy.TaxonomyRef;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
+import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -108,6 +110,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 	@Value("${portfoliov2.linked.taxonomies}")
 	private String linkedTaxonomies;
 	
+	private List<TaxonomyRef> linkedTaxonomiesRefs;
+	
 	@Autowired
 	private TaxonomyDAO taxonomyDAO;
 	
@@ -181,6 +185,7 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		String enabledTaxonomiesObj = getStringPropertyValue(PORTFOLIO_LINKED_TAXONOMIES, true);
 		if (StringHelper.containsNonWhitespace(enabledTaxonomiesObj)) {
 			linkedTaxonomies = enabledTaxonomiesObj;
+			linkedTaxonomiesRefs = null;
 		}
 		
 		// To verify taxonomy keys are set correctly and contain no non-existing or wrong formatted values
@@ -336,8 +341,8 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			return false;
 		}
 		
-		List<Taxonomy> linkedTaxonomies = getLinkedTaxonomies();
-		return linkedTaxonomies != null && !linkedTaxonomies.isEmpty();
+		List<TaxonomyRef> taxonomies = getLinkedTaxonomies();
+		return taxonomies != null && !taxonomies.isEmpty();
 	}
 	
 	public void setTaxonomyLinkingEnabled(boolean taxonomyLinkingEnabled) {
@@ -345,34 +350,33 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 		setStringProperty(PORTFOLIO_TAXONOMY_LINKING_ENABLED, Boolean.toString(taxonomyLinkingEnabled), true);
 	}
 	
-	public List<Taxonomy> getLinkedTaxonomies() {
-		if (!StringHelper.containsNonWhitespace(linkedTaxonomies)) {
-			return null;
-		}
-		
-		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
-		List<Taxonomy> taxonomyList = new ArrayList<>();
-		
-		for (String taxonomyString : taxonomies) {
-			try {
-				Long taxonomyKey = Long.valueOf(taxonomyString);
-				Taxonomy taxonomy = taxonomyDAO.loadByKey(taxonomyKey);
-				
-				if (taxonomy != null) {
-					if (taxonomyList.contains(taxonomy)) {
-						log.warn("Misconfigured taxonomies detected: " + taxonomyString + " was added multiple times and should be removed from portfoliov2.enabled.taxonomies");
-					} else {
-						taxonomyList.add(taxonomy);
+	public synchronized List<TaxonomyRef> getLinkedTaxonomies() {
+		if(linkedTaxonomiesRefs == null) {
+			if (StringHelper.containsNonWhitespace(linkedTaxonomies)) {
+				String[] taxonomies = linkedTaxonomies.replace(" ", "").split(",");
+				List<TaxonomyRef> taxonomyList = new ArrayList<>();
+				for (String taxonomyString : taxonomies) {
+					try {
+						Long taxonomyKey = Long.valueOf(taxonomyString);
+						Taxonomy taxonomy = taxonomyDAO.loadByKey(taxonomyKey);
+						if (taxonomy != null) {
+							if (taxonomyList.contains(taxonomy)) {
+								log.warn("Misconfigured taxonomies detected: {} was added multiple times and should be removed from portfoliov2.enabled.taxonomies", taxonomyString);
+							} else {
+								taxonomyList.add(new TaxonomyRefImpl(taxonomy.getKey()));
+							}
+						} else {
+							log.warn("Misconfigured taxonomies detected: {} does not exist and should be removed from portfoliov2.enabled.taxonomies", taxonomyString);
+						}
+					} catch (Exception e) {
+						log.warn("Misconfigured taxonomies detected: {} needs to be removed from portfoliov2.enabled.taxonomies", taxonomyString);
 					}
-				} else {
-					log.warn("Misconfigured taxonomies detected: " + taxonomyString + " does not exist and should be removed from portfoliov2.enabled.taxonomies");
 				}
-			} catch (Exception e) {
-				log.warn("Misconfigured taxonomies detected: " + taxonomyString + " needs to be removed from portfoliov2.enabled.taxonomies");
-			}
+			} else {
+				linkedTaxonomiesRefs = List.of();
+			}	
 		}
-		
-		return taxonomyList;
+		return linkedTaxonomiesRefs;
 	}
 	
 	public void setLinkedTaxonomies(Collection<String> collection) {
@@ -380,10 +384,10 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			return;
 		}
 		
-		String linkedTaxonomies = collection.stream().collect(Collectors.joining(","));
-		
-		this.linkedTaxonomies = linkedTaxonomies;
-		setStringProperty(PORTFOLIO_LINKED_TAXONOMIES, linkedTaxonomies, true);
+		String joinedTaxonomies = collection.stream().collect(Collectors.joining(","));
+		this.linkedTaxonomies = joinedTaxonomies;
+		setStringProperty(PORTFOLIO_LINKED_TAXONOMIES, joinedTaxonomies, true);
+		this.linkedTaxonomiesRefs = null;
 	}
 	
 	public boolean isTaxonomyLinked(Long taxonomyKey) {
@@ -391,7 +395,7 @@ public class PortfolioV2Module extends AbstractSpringModule implements ConfigOnO
 			return false;
 		}
 		
-		String[] taxonomies = linkedTaxonomies.replaceAll(" ", "").split(",");
+		String[] taxonomies = linkedTaxonomies.replace(" ", "").split(",");
 		
 		for (String taxonomy : taxonomies) {
 			if (taxonomy.equals(taxonomyKey.toString())) {

@@ -151,7 +151,7 @@ public class TaxonomyServiceImpl implements TaxonomyService, UserDataDeletable {
 
 	@Override
 	public List<TaxonomyLevel> getTaxonomyLevels(TaxonomyRef ref) {
-		Collection<? extends TaxonomyRef> refs= ref != null? Collections.singletonList(ref): Collections.emptyList();
+		Collection<? extends TaxonomyRef> refs= ref != null? List.of(ref): List.of();
 		return taxonomyLevelDao.getLevels(refs);
 	}
 	

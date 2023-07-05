@@ -194,7 +194,7 @@ public class TaxonomyLevelDAO implements InitializingBean {
 		TypedQuery<TaxonomyLevel> query = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), TaxonomyLevel.class);
 		if(refs != null && !refs.isEmpty()) {
-			List<Long> taxonomyKeys = refs.stream().map(TaxonomyRef::getKey).collect(Collectors.toList());
+			List<Long> taxonomyKeys = refs.stream().map(TaxonomyRef::getKey).toList();
 			query.setParameter("taxonomyKeys", taxonomyKeys);
 		}
 		return query.getResultList();
