@@ -134,7 +134,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MediaCenterController extends FormBasicController
 	implements Activateable2, FlexiTableComponentDelegate {
 	
-	private static final Size THUMBNAIL_SIZE = new Size(195, 130, false);
+	private static final Size THUMBNAIL_SIZE = new Size(193, 130, false);
 	
 	public static final String ALL_TAB_ID = "All";
 	public static final String MY_TAB_ID = "My";
@@ -427,7 +427,7 @@ public class MediaCenterController extends FormBasicController
 				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
 				String iconCssClass = handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
-				openLink.setIconLeftCSS("o_icon o_icon-fw " + iconCssClass);
+				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
 				MediaRow row = new MediaRow(media, currentVersion.getCollectionDate(), thumbnail, openLink, iconCssClass);
 				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);
@@ -527,9 +527,9 @@ public class MediaCenterController extends FormBasicController
 		if(entries == null || entries.isEmpty()) {
 			if(tab == null) {
 				tableEl.setSelectedFilterTab(ureq, myTab);
-				if(stackPanel != null) {
-					addToHistory(ureq, this);
-				}
+			}
+			if(stackPanel != null) {
+				addToHistory(ureq, this);
 			}
 			return;
 		}

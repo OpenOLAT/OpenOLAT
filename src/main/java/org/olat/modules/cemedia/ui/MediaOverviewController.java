@@ -226,8 +226,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		boolean mediaEditable = editable && lastVersion;
 		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), selectedVersion, new StandardMediaRenderingHints(mediaEditable));
 		
-		setVersionButton.setVisible(editable && lastVersion);
-		restoreVersionButton.setVisible(editable && !lastVersion);
+		if(setVersionButton != null) {
+			setVersionButton.setVisible(editable && lastVersion);
+		}
+		if(restoreVersionButton != null) {
+			restoreVersionButton.setVisible(editable && !lastVersion);
+		}
 		if(createVersionButton != null) {
 			createVersionButton.setVisible(editable && lastVersion);
 		}

@@ -1,15 +1,19 @@
 #if($r.isTrue($row.versioned))
-	<div class="o_version"></div><div class="o_version"></div>
+	<div class="o_version"><div class="o_version">
 #end
-<div class="o_media_card">
-	<div class="o_visual #if($r.isNotNull($row.iconCssClass) && !${row.iconCssClass.isEmpty()} && !${row.isThumbnailAvailable()}) o_icon $row.iconCssClass #end"><a href="javascript:${f.ffXHREvent("img_select","$row.key")}">
-		<span class="o_visual_not_available" #if(${row.isThumbnailAvailable()}) style="background-image:url('$mapperThumbnailUrl/${row.key}/${row.thumbnailName}');" #end></span>
-	</a></div>
+<div class="o_card o_media_card" onclick="javascript:${f.ffXHREvent("img_select","$row.key")}">
+	<div class="o_visual">
+		#if($row.isThumbnailAvailable())
+			<img src="$mapperThumbnailUrl/${row.key}/${row.thumbnailName}">
+		#else
+			<div class="o_visual_not_available o_icon $row.iconCssClass"></div>
+		#end
+	</div>
 	#if($r.isTrue($row.versioned))
 		<div class="o_labeled_light"><i class='o_icon o_icon_version'> </i> $r.translate("media.versioned")</div>
 	#end
 	<div class="o_meta">
-		<h4 class="o_title">$r.render($row.openFormItem)</h4>
+		<h4 class="o_title o_card_title">$r.render($row.openFormItem)</h4>
 		<span class="o_tag_selection_tags">
 		#foreach($tag in $row.tags)
 			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
@@ -20,3 +24,6 @@
 		</span>
 	</div>
 </div>
+#if($r.isTrue($row.versioned))
+	</div></div>
+#end
