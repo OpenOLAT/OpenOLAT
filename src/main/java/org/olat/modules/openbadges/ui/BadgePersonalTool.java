@@ -84,7 +84,7 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("badges.mine.title");
-		setFormTitleIconCss("o_icon o_icon-fw o_icon_certificate");
+		setFormTitleIconCss("o_icon o_icon-fw o_icon_badge");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BadgeToolTableModel.AssertionCols.name, CMD_SELECT));

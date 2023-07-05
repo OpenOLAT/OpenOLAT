@@ -786,7 +786,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) || (reSecurity.isOwner())) {
 			bulkAwardBadgeButton = uifactory.addFormLink("bulk.badge", formLayout, Link.BUTTON);
 			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
-			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_certificate");
+			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_badge");
 			tableEl.addBatchButton(bulkAwardBadgeButton);
 			return true;
 		}

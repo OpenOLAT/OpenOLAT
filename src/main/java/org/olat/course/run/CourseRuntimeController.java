@@ -224,7 +224,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, noteLink, leaveLink, disclaimerLink,
+		efficiencyStatementsLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink, zoomLink,
@@ -726,7 +726,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 			if (reSecurity.isCoach() || reSecurity.isOwner()) {
 				badgesLink = LinkFactory.createToolLink("badges", translate("command.openbadges"),
-						this, "o_icon_certificate");
+						this, "o_icon_badge");
 				badgesLink.setUrl(BusinessControlFactory.getInstance()
 						.getAuthenticatedURLFromBusinessPathStrings(businessPathEntry, "[Badges:0]"));
 				badgesLink.setElementCssClass("o_sel_course_badges");
@@ -947,7 +947,24 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					CourseTool.efficiencystatement.getIconCss());
 			myCourse.addComponent(efficiencyStatementsLink);
 		}
-		
+
+		boolean badgesEnabled = openBadgesManager.isEnabled();
+		BadgeEntryConfiguration badgeEntryConfiguration = openBadgesManager.getConfiguration(getRepositoryEntry());
+
+		if (badgesEnabled && badgeEntryConfiguration.isAwardEnabled() && !isGuestOnly && !assessmentLock) {
+			if (reSecurity.isOwner() || (reSecurity.isCoach() && badgeEntryConfiguration.isCoachCanAward())) {
+				badgesLink = LinkFactory.createToolLink("badges", translate(CourseTool.badges.getI18nKey()),
+						this, CourseTool.badges.getIconCss());
+				myCourse.addComponent(badgesLink);
+			}
+
+			if (userCourseEnv.isParticipant()) {
+				myBadgesLink = LinkFactory.createToolLink("myBadges", translate(CourseTool.mybadges.getI18nKey()),
+						this, CourseTool.mybadges.getIconCss());
+				myCourse.addComponent(myBadgesLink);
+			}
+		}
+
 		if (!isGuestOnly && !assessmentLock) {
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
 			noteLink.setPopup(new LinkPopupSettings(750, 550, "notes"));
