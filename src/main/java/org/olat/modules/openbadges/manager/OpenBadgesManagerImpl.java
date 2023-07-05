@@ -656,13 +656,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeAssertion> getBadgeAssertions(Identity identity) {
-		return badgeAssertionDAO.getBadgeAssertions(identity);
+	public List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry) {
+		return badgeAssertionDAO.getBadgeAssertions(identity, courseEntry);
 	}
 
 	@Override
-	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity) {
-		return getBadgeAssertions(identity).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
+	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry) {
+		return getBadgeAssertions(identity, courseEntry).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
 	}
 
 	private Size sizeForBadgeAssertion(BadgeAssertion badgeAssertion) {

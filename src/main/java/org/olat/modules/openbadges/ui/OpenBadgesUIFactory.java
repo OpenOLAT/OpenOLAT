@@ -25,6 +25,8 @@ import java.util.UUID;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
+import org.apache.logging.log4j.Level;
+
 /**
  * Initial date: 2023-06-26<br>
  *
@@ -58,7 +60,7 @@ public class OpenBadgesUIFactory {
 
 	public static String translateTemplateName(Translator translator, String identifier) {
 		String i18nKey = getTemplateNameI18nKey(identifier);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			translation = translator.translate(getTemplateNameFallbackKey());
 		}
@@ -67,7 +69,7 @@ public class OpenBadgesUIFactory {
 
 	public static String translateTemplateDescription(Translator translator, String identifier) {
 		String i18nKey = getTemplateDescriptionI18nKey(identifier);
-		String translation = translator.translate(i18nKey);
+		String translation = translator.translate(i18nKey, null, Level.OFF);
 		if (i18nKey.equals(translation) || translation.length() > 256) {
 			translation = "";
 		}

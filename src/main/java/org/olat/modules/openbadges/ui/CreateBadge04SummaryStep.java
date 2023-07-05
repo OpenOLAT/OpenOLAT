@@ -30,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
+import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
@@ -54,10 +55,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge04SummaryStep extends BasicStep {
-	public CreateBadge04SummaryStep(UserRequest ureq) {
+	public CreateBadge04SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.summary", null);
-		setNextStep(new CreateBadge05RecipientsStep(ureq));
+		if (createBadgeClassContext.getCourse() == null) {
+			setNextStep(Step.NOSTEP);
+		} else {
+			setNextStep(new CreateBadge05RecipientsStep(ureq, createBadgeClassContext));
+		}
 	}
 
 	@Override
@@ -93,6 +98,11 @@ public class CreateBadge04SummaryStep extends BasicStep {
 		@Override
 		protected void formOK(UserRequest ureq) {
 			//
+		}
+
+		@Override
+		protected void formFinish(UserRequest ureq) {
+			fireEvent(ureq, StepsEvent.INFORM_FINISHED);
 		}
 
 		@Override

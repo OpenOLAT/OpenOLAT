@@ -28,6 +28,7 @@ import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeAssertionImpl;
+import org.olat.repository.RepositoryEntry;
 
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,15 +71,24 @@ public class BadgeAssertionDAO {
 		return badgeAssertions == null || badgeAssertions.isEmpty() ? null : badgeAssertions.get(0);
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(Identity identity) {
+	public List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
+		sb.append("inner join fetch ba.badgeClass bc ");
+		if (courseEntry != null) {
+			sb.append("where bc.entry.key = :courseEntryKey ");
+		} else {
+			sb.append("where bc.entry is null ");
+		}
 		if (identity != null) {
-			sb.append("where ba.recipient.key = :identityKey ");
+			sb.append("and ba.recipient.key = :identityKey ");
 		}
 		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
 		if (identity != null) {
 			typedQuery = typedQuery.setParameter("identityKey", identity.getKey());
+		}
+		if (courseEntry != null) {
+			typedQuery = typedQuery.setParameter("courseEntryKey", courseEntry.getKey());
 		}
 		return typedQuery.getResultList();
 	}

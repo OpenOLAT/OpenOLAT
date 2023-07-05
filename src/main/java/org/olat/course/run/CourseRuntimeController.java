@@ -172,6 +172,7 @@ import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
 import org.olat.modules.lecture.ui.TeacherOverviewController;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.ui.IssuedBadgesController;
 import org.olat.modules.openbadges.ui.OpenBadgesRunController;
 import org.olat.modules.reminder.ReminderModule;
 import org.olat.modules.teams.ui.TeamsMeetingsRunController;
@@ -224,7 +225,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
+		efficiencyStatementsLink, issuedBadgesLink, myBadgesLink, noteLink, leaveLink, disclaimerLink,
 		// course tools
 		learningPathLink, learningPathsLink, calendarLink, chatLink, participantListLink, participantInfoLink,
 		blogLink, wikiLink, forumLink, documentsLink, emailLink, searchLink, teamsLink, bigBlueButtonLink, zoomLink,
@@ -254,6 +255,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
 	private OpenBadgesRunController badgesCtrl;
+	private IssuedBadgesController myBadgesCtrl;
+	private IssuedBadgesController issuedBadgesCtrl;
 	private MembersToolRunController participatListCtrl;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
@@ -953,9 +956,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		if (badgesEnabled && badgeEntryConfiguration.isAwardEnabled() && !isGuestOnly && !assessmentLock) {
 			if (reSecurity.isOwner() || (reSecurity.isCoach() && badgeEntryConfiguration.isCoachCanAward())) {
-				badgesLink = LinkFactory.createToolLink("badges", translate(CourseTool.badges.getI18nKey()),
-						this, CourseTool.badges.getIconCss());
-				myCourse.addComponent(badgesLink);
+				issuedBadgesLink = LinkFactory.createToolLink("badges", translate(CourseTool.issuedbadges.getI18nKey()),
+						this, CourseTool.issuedbadges.getIconCss());
+				myCourse.addComponent(issuedBadgesLink);
 			}
 
 			if (userCourseEnv.isParticipant()) {
@@ -1386,6 +1389,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			launchCourseSearch(ureq);
 		} else if(efficiencyStatementsLink == source) {
 			doEfficiencyStatements(ureq);
+		} else if(myBadgesLink == source) {
+			doMyBadges(ureq);
+		} else if(issuedBadgesLink == source) {
+			doIssuedBadges(ureq);
 		} else if(noteLink == source) {
 			launchPersonalNotes(ureq);
 		} else if(disclaimerLink == source) {
@@ -1717,6 +1724,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				if (badgesLink != null && badgesLink.isVisible()) {
 					activateSubEntries(ureq, doBadges(ureq), entries);
 				}
+			} else if ("MyBadges".equalsIgnoreCase(type)) {
+				doMyBadges(ureq);
+			} else if ("IssuedBadges".equalsIgnoreCase(type)) {
+				doIssuedBadges(ureq);
 			} else if ("TestStatistics".equalsIgnoreCase(type) || "SurveyStatistics".equalsIgnoreCase(type)) {
 				//check the security before, the link is perhaps in the wrong hands
 				if(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || reSecurity.isCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT)) {
@@ -2348,7 +2359,46 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		delayedClose = Delayed.badges;
 		return null;
 	}
-	
+
+	private void doMyBadges(UserRequest ureq) {
+		if (delayedClose == Delayed.myBadges || requestForClose(ureq)) {
+			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+			if (userCourseEnv.isParticipant()) {
+				OLATResourceable ores = OresHelper.createOLATResourceableType("MyBadges");
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl swControl = addToHistory(ureq, ores, null);
+
+				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "badges.mine.title", null, getIdentity());
+				myBadgesCtrl = pushController(ureq, translate("command.mybadges"), ctrl);
+				listenTo(myBadgesCtrl);
+
+				currentToolCtr = myBadgesCtrl;
+				setActiveTool(myBadgesLink);
+			}
+		} else {
+			delayedClose = Delayed.myBadges;
+		}
+	}
+
+	private void doIssuedBadges(UserRequest ureq) {
+		if (delayedClose == Delayed.issuedBadges || requestForClose(ureq)) {
+			if (reSecurity.isCoach() || reSecurity.isOwner()) {
+				OLATResourceable ores = OresHelper.createOLATResourceableType("IssuedBadges");
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl swControl = addToHistory(ureq, ores, null);
+
+				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "issuedBadges", getRepositoryEntry(), null);
+				issuedBadgesCtrl = pushController(ureq, translate("command.issuedbadges"), ctrl);
+				listenTo(issuedBadgesCtrl);
+
+				currentToolCtr = issuedBadgesCtrl;
+				setActiveTool(issuedBadgesLink);
+			}
+		} else {
+			delayedClose = Delayed.issuedBadges;
+		}
+	}
+
 	private AssessmentToolSecurityCallback createAssessmentToolSecurityCallback() {
 		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() || hasCourseRight(CourseRights.RIGHT_ASSESSMENT);
 		boolean nonMembers = reSecurity.isEntryAdmin();
@@ -2377,7 +2427,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			delayedClose = Delayed.efficiencyStatements;
 		}
 	}
-	
+
 	private void toggleGlossary(UserRequest ureq) {
 		// enable / disable glossary highlighting according to user prefs
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
@@ -3112,6 +3162,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentTestStatistics,
 		assessmentTool,
 		badges,
+		myBadges,
+		issuedBadges,
 		reminders,
 		lecturesAdmin,
 		lectures,

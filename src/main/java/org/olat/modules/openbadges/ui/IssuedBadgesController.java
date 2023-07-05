@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
+import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -52,6 +53,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.repository.RepositoryEntry;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,9 +63,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class BadgePersonalTool extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
+public class IssuedBadgesController extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 	private final static String CMD_SELECT = "select";
 	private final String mediaUrl;
+	private final Identity identity;
+	private final RepositoryEntry courseEntry;
+	private final String titleKey;
 	private BadgeToolTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private CloseableModalController cmc;
@@ -72,9 +77,11 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	public BadgePersonalTool(UserRequest ureq, WindowControl wControl) {
+	public IssuedBadgesController(UserRequest ureq, WindowControl wControl, String titleKey, RepositoryEntry courseEntry, Identity identity) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
-
+		this.titleKey = titleKey;
+		this.courseEntry = courseEntry;
+		this.identity = identity;
 		mediaUrl = registerMapper(ureq, new BadgeImageMapper());
 
 		initForm(ureq);
@@ -83,7 +90,9 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("badges.mine.title");
+		if (titleKey != null) {
+			setFormTitle(titleKey);
+		}
 		setFormTitleIconCss("o_icon o_icon-fw o_icon_badge");
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -101,7 +110,7 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	}
 
 	private void loadModel(UserRequest ureq) {
-		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(getIdentity()).stream()
+		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(identity, courseEntry).stream()
 				.map(ba -> {
 					BadgeToolRow row = new BadgeToolRow(ba);
 					forgeRow(row, ba);

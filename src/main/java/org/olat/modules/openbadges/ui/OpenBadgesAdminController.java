@@ -49,11 +49,11 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private final Link configurationLink;
 	private final Link templatesLink;
 	private final Link globalBadgesLink;
-	private final Link badgeAssertionsLink;
+	private final Link issuedGlobalBadgesLink;
 	private OpenBadgesAdminConfigurationController configCtrl;
 	private OpenBadgesAdminTemplatesController templatesCtrl;
 	private GlobalBadgesController globalBadgesCtrl;
-	private OpenBadgesAdminAssertionsController badgeAssertionsController;
+	private IssuedGlobalBadgesController badgeAssertionsController;
 
 	public OpenBadgesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -66,8 +66,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		segmentView.addSegment(templatesLink, false);
 		globalBadgesLink = LinkFactory.createLink("form.global.badges", mainVC, this);
 		segmentView.addSegment(globalBadgesLink, false);
-		badgeAssertionsLink = LinkFactory.createLink("openbadges.assertions", mainVC, this);
-		segmentView.addSegment(badgeAssertionsLink, false);
+		issuedGlobalBadgesLink = LinkFactory.createLink("issuedGlobalBadges", mainVC, this);
+		segmentView.addSegment(issuedGlobalBadgesLink, false);
 		doOpenConfiguration(ureq);
 
 		putInitialPanel(mainVC);
@@ -85,8 +85,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 					doOpenTemplates(ureq);
 				} else if (clickedLink == globalBadgesLink) {
 					doOpenGlobalBadges(ureq);
-				} else if (clickedLink == badgeAssertionsLink) {
-					doOpenBadgeAssertions(ureq);
+				} else if (clickedLink == issuedGlobalBadgesLink) {
+					doOpenIssuedGlobalBadges(ureq);
 				}
 			}
 		}
@@ -109,8 +109,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 			doOpenGlobalBadges(ureq);
 			segmentView.select(globalBadgesLink);
 		} else if ("Assertions".equalsIgnoreCase(type)) {
-			doOpenBadgeAssertions(ureq);
-			segmentView.select(badgeAssertionsLink);
+			doOpenIssuedGlobalBadges(ureq);
+			segmentView.select(issuedGlobalBadgesLink);
 		}
 	}
 
@@ -138,10 +138,10 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		mainVC.put("segmentCmp", globalBadgesCtrl.getInitialComponent());
 	}
 
-	private void doOpenBadgeAssertions(UserRequest ureq) {
+	private void doOpenIssuedGlobalBadges(UserRequest ureq) {
 		removeAsListenerAndDispose(badgeAssertionsController);
 		WindowControl windowControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Assertions", 0L), null);
-		badgeAssertionsController = new OpenBadgesAdminAssertionsController(ureq, windowControl);
+		badgeAssertionsController = new IssuedGlobalBadgesController(ureq, windowControl);
 		listenTo(badgeAssertionsController);
 		mainVC.put("segmentCmp", badgeAssertionsController.getInitialComponent());
 	}

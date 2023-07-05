@@ -111,7 +111,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 		FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonCont.setRootForm(mainForm);
 		formLayout.add(buttonCont);
-		String submitLabelKey = badgeAssertion != null ? "save" : "assertion.add";
+		String submitLabelKey = badgeAssertion != null ? "save" : "issueGlobalBadge";
 		uifactory.addFormSubmitButton(submitLabelKey, buttonCont);
 		uifactory.addFormCancelButton("cancel", buttonCont, ureq, getWindowControl());
 	}

@@ -75,6 +75,8 @@ public class BadgeClassDAO {
 		sb.append("select class from badgeclass class ");
 		if (entry != null) {
 			sb.append(" where class.entry.key = :entryKey ");
+		} else {
+			sb.append(" where class.entry is null ");
 		}
 		sb.append("order by class.name asc ");
 		TypedQuery<BadgeClass> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeClass.class);
@@ -89,6 +91,8 @@ public class BadgeClassDAO {
 		sb.append("select count(bc.key) from badgeclass bc ");
 		if (entry != null) {
 			sb.append(" where bc.entry.key = :entryKey ");
+		} else {
+			sb.append(" where bc.entry is null ");
 		}
 		TypedQuery<Long> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class);
 		if (entry != null) {
@@ -107,7 +111,7 @@ public class BadgeClassDAO {
 		if (entry != null) {
 			sb.append("where bc.entry.key = :entryKey ");
 		} else {
-			sb.append("where bc.entry = null ");
+			sb.append("where bc.entry is null ");
 		}
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance

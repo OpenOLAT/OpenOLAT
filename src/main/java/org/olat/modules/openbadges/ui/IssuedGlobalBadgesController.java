@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class OpenBadgesAdminAssertionsController extends FormBasicController {
+public class IssuedGlobalBadgesController extends FormBasicController {
 
 	private AssertionTableModel tableModel;
 	private FlexiTableElement tableEl;
@@ -66,8 +66,10 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	protected OpenBadgesAdminAssertionsController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "assertions");
+	protected IssuedGlobalBadgesController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "issued_global_badges");
+
+		flc.contextPut("noGlobalBadgesAvailable", openBadgesManager.getNumberOfBadgeClasses(null) == 0);
 
 		initForm(ureq);
 	}
@@ -84,14 +86,13 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
 		tableModel = new AssertionTableModel(columnModel, userManager);
-		tableEl = uifactory.addTableElement(getWindowControl(), "assertions", tableModel, getTranslator(),
-				formLayout);
-		addLink = uifactory.addFormLink("add", "assertion.add", "assertion.add", formLayout, Link.BUTTON);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
+		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
 		updateUI();
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeAssertionWithSize> assertionsWithSizes = openBadgesManager.getBadgeAssertionsWithSizes(getIdentity());
+		List<OpenBadgesManager.BadgeAssertionWithSize> assertionsWithSizes = openBadgesManager.getBadgeAssertionsWithSizes(null, null);
 		tableModel.setObjects(assertionsWithSizes);
 		tableEl.reset();
 	}
@@ -145,7 +146,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		editAssertionCtrl = new EditBadgeAssertionController(ureq, getWindowControl(), null);
 		listenTo(editAssertionCtrl);
 
-		String title = translate("assertion.add");
+		String title = translate("issueGlobalBadge");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				editAssertionCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);

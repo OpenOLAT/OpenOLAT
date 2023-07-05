@@ -113,9 +113,9 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
-	List<BadgeAssertion> getBadgeAssertions(Identity identity);
+	List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry);
 
-	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity);
+	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 

@@ -54,7 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateBadge05RecipientsStep extends BasicStep {
 
-	public CreateBadge05RecipientsStep(UserRequest ureq) {
+	public CreateBadge05RecipientsStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.recipients", null);
 		setNextStep(Step.NOSTEP);

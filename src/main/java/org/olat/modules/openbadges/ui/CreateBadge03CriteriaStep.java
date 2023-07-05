@@ -53,10 +53,10 @@ import org.olat.modules.openbadges.criteria.CourseScoreCondition;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge03CriteriaStep extends BasicStep {
-	public CreateBadge03CriteriaStep(UserRequest ureq) {
+	public CreateBadge03CriteriaStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.award.criteria", null);
-		setNextStep(new CreateBadge04SummaryStep(ureq));
+		setNextStep(new CreateBadge04SummaryStep(ureq, createBadgeClassContext));
 	}
 
 	@Override

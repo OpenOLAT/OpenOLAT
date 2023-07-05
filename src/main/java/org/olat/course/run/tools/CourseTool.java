@@ -26,7 +26,7 @@ public enum CourseTool {
 	documents("command.documents", "o_bc_icon"),
 	efficiencystatement("command.efficiencystatement", "o_icon_certificate"),
 	mybadges("command.mybadges", "o_icon_badge"),
-	badges("command.badges", "o_icon_badge"),
+	issuedbadges("command.issuedbadges", "o_icon_badge"),
 	email("command.email", "o_co_icon"),
 	forum("command.forum", "o_fo_icon"),
 	participantlist("command.participant.list", "o_cmembers_icon"),
