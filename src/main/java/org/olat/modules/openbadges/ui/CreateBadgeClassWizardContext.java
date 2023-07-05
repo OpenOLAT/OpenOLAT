@@ -21,6 +21,7 @@ package org.olat.modules.openbadges.ui;
 
 import java.util.Set;
 
+import org.olat.core.helpers.Settings;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
@@ -29,8 +30,11 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.modules.openbadges.v2.Constants;
 import org.olat.modules.openbadges.v2.Profile;
 import org.olat.repository.RepositoryEntry;
+
+import org.json.JSONObject;
 
 /**
  * Initial date: 2023-06-19<br>
@@ -57,18 +61,27 @@ public class CreateBadgeClassWizardContext {
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		mode = Mode.create;
-		course = CourseFactory.loadCourse(entry);
+		course = entry != null ? CourseFactory.loadCourse(entry) : null;
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
 		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
 		badgeClassImpl.setSalt("badgeClass" + Math.abs(badgeClassImpl.getUuid().hashCode()));
-		badgeClassImpl.setIssuer("{}");
+		Profile issuer = new Profile(new JSONObject());
+		if (course != null) {
+			String url = Settings.getServerContextPathURI() + "/url/RepositoryEntry/" + entry.getKey();
+			issuer.setName(course.getCourseTitle());
+			issuer.setUrl(url);
+		} else {
+			issuer.setName(Settings.getApplicationName());
+			issuer.setUrl(Settings.getServerContextPathURI());
+		}
+		badgeClassImpl.setIssuer(issuer.asJsonObject(Constants.TYPE_VALUE_ISSUER).toString());
 		badgeClassImpl.setVersion("1.0");
 		badgeClassImpl.setLanguage("en");
 		badgeClassImpl.setValidityEnabled(false);
 		badgeClassImpl.setEntry(entry);
 		backgroundColorId = "gold";
-		title = course.getCourseTitle();
+		title = course != null ? course.getCourseTitle() : Settings.getApplicationName();
 		initCriteria();
 		issuer = new Profile(badgeClassImpl);
 		badgeClass = badgeClassImpl;

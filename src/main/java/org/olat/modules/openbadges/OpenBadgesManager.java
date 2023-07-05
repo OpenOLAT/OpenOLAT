@@ -52,9 +52,9 @@ public interface OpenBadgesManager {
 	BadgeTemplate createTemplate(String identifier, String name, File templateFile, String targetFileName,
 								 String description, Collection<String> scopes, Identity savedBy);
 
-	List<BadgeTemplate> getTemplates();
+	List<BadgeTemplate> getTemplates(BadgeTemplate.Scope scope);
 
-	List<TemplateWithSize> getTemplatesWithSizes();
+	List<TemplateWithSize> getTemplatesWithSizes(BadgeTemplate.Scope scope);
 
 	BadgeTemplate getTemplate(Long key);
 
@@ -113,9 +113,9 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
-	List<BadgeAssertion> getBadgeAssertions();
+	List<BadgeAssertion> getBadgeAssertions(Identity identity);
 
-	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes();
+	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
 

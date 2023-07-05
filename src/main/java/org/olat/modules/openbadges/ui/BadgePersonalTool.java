@@ -36,9 +36,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
@@ -61,10 +64,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class BadgePersonalTool extends FormBasicController implements FlexiTableComponentDelegate, Activateable2 {
 	private final static String CMD_SELECT = "select";
 	private final String mediaUrl;
-
 	private BadgeToolTableModel tableModel;
-
 	private FlexiTableElement tableEl;
+	private CloseableModalController cmc;
+	private BadgeAssertionPublicController badgeAssertionPublicController;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -98,7 +101,7 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	}
 
 	private void loadModel(UserRequest ureq) {
-		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes().stream()
+		List<BadgeToolRow> badgeToolRows = openBadgesManager.getBadgeAssertionsWithSizes(getIdentity()).stream()
 				.map(ba -> {
 					BadgeToolRow row = new BadgeToolRow(ba);
 					forgeRow(row, ba);
@@ -117,7 +120,39 @@ public class BadgePersonalTool extends FormBasicController implements FlexiTable
 	}
 
 	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == cmc) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(badgeAssertionPublicController);
+		removeAsListenerAndDispose(cmc);
+		badgeAssertionPublicController = null;
+		cmc = null;
+	}
+
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (event instanceof SelectionEvent selectionEvent) {
+			BadgeToolRow row = tableModel.getObject(selectionEvent.getIndex());
+			String uuid = row.getBadgeAssertion().getUuid();
+			doOpenDetails(ureq, uuid);
+		}
+	}
+
+	private void doOpenDetails(UserRequest ureq, String uuid) {
+		badgeAssertionPublicController = new BadgeAssertionPublicController(ureq, getWindowControl(), uuid);
+		listenTo(badgeAssertionPublicController);
+
+		String title = translate("form.badge");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				badgeAssertionPublicController.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	@Override

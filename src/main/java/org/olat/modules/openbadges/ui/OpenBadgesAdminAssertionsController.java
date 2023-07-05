@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.util.Formatter;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.user.UserManager;
@@ -74,7 +75,10 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.getI18n(), Cols.name.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.recipient.getI18n(), Cols.recipient.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy.getI18n(), Cols.awardedBy.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn.getI18n(), Cols.issuedOn.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.getI18n(), Cols.status.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
@@ -87,7 +91,7 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeAssertionWithSize> assertionsWithSizes = openBadgesManager.getBadgeAssertionsWithSizes();
+		List<OpenBadgesManager.BadgeAssertionWithSize> assertionsWithSizes = openBadgesManager.getBadgeAssertionsWithSizes(getIdentity());
 		tableModel.setObjects(assertionsWithSizes);
 		tableEl.reset();
 	}
@@ -173,7 +177,10 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 	}
 
 	enum Cols {
+		name("form.name"),
 		recipient("form.recipient"),
+		awardedBy("form.awarded.by"),
+		issuedOn("form.issued.on"),
 		status("form.status");
 
 		Cols(String i18n) {
@@ -199,8 +206,11 @@ public class OpenBadgesAdminAssertionsController extends FormBasicController {
 		public Object getValueAt(int row, int col) {
 			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
 			return switch (Cols.values()[col]) {
+				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
+				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());
+				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
 			};
 		}
 	}

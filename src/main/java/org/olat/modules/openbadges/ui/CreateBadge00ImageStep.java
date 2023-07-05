@@ -223,7 +223,9 @@ public class CreateBadge00ImageStep extends BasicStep {
 			Locale locale = i18nManager.getLocaleOrNull(languageKey);
 			Translator translator = OpenBadgesUIFactory.getTranslator(locale);
 
-			cards = openBadgesManager.getTemplatesWithSizes().stream()
+			BadgeTemplate.Scope scope = createContext.getCourse() != null ? BadgeTemplate.Scope.course : BadgeTemplate.Scope.global;
+
+			cards = openBadgesManager.getTemplatesWithSizes(scope).stream()
 					.map(template -> {
 						Size targetSize = template.fitIn(120, 66);
 						String name = OpenBadgesUIFactory.translateTemplateName(translator, template.template().getIdentifier());

@@ -115,7 +115,7 @@ public class OpenBadgesAdminTemplatesController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.TemplateWithSize> templatesWithSizes = openBadgesManager.getTemplatesWithSizes();
+		List<OpenBadgesManager.TemplateWithSize> templatesWithSizes = openBadgesManager.getTemplatesWithSizes(null);
 		tableModel.setObjects(templatesWithSizes);
 		tableEl.reset();
 	}

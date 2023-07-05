@@ -42,12 +42,17 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.OpenBadgesManager;
+import org.olat.modules.openbadges.model.BadgeClassImpl;
+import org.olat.repository.RepositoryEntry;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,20 +62,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class OpenBadgesAdminClassesController extends FormBasicController {
+public class GlobalBadgesController extends FormBasicController {
 
-	private ClassTableModel tableModel;
+	private GlobalBadgesTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CloseableModalController cmc;
 	private EditBadgeClassController editClassCtrl;
 	private DialogBoxController confirmDeleteClassCtrl;
+	private CreateBadgeClassWizardContext createBadgeClassContext;
+	private StepsMainRunController addStepsController;
+
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
 
-	protected OpenBadgesAdminClassesController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "classes");
+	protected GlobalBadgesController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "global_badges");
 
 		initForm(ureq);
 	}
@@ -100,11 +108,11 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
 
-		tableModel = new ClassTableModel(columnModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "classes", tableModel, getTranslator(),
+		tableModel = new GlobalBadgesTableModel(columnModel);
+		tableEl = uifactory.addTableElement(getWindowControl(), "global.badges", tableModel, getTranslator(),
 				formLayout);
 
-		addLink = uifactory.addFormLink("add", "class.add", "class.add", formLayout, Link.BUTTON);
+		addLink = uifactory.addFormLink("add", "form.add.global.badge", "form.add.global.badge", formLayout, Link.BUTTON);
 		updateUI();
 	}
 
@@ -137,6 +145,11 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 			}
 		} else if (source == cmc) {
 			cleanUp();
+		} else if (source == addStepsController) {
+			if (event == Event.CANCELLED_EVENT || event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				getWindowControl().pop();
+				removeAsListenerAndDispose(addStepsController);
+			}
 		}
 	}
 
@@ -148,7 +161,7 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addLink) {
-			doUpload(ureq);
+			doAdd(ureq);
 		} else if (source == tableEl) {
 			SelectionEvent selectionEvent = (SelectionEvent)event;
 			String command = selectionEvent.getCommand();
@@ -165,15 +178,31 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		}
 	}
 
-	private void doUpload(UserRequest ureq) {
-		editClassCtrl = new EditBadgeClassController(ureq, getWindowControl(), null);
-		listenTo(editClassCtrl);
+	private void doAdd(UserRequest ureq) {
+		createBadgeClassContext = new CreateBadgeClassWizardContext((RepositoryEntry) null);
+		Step start = new CreateBadge00ImageStep(ureq, createBadgeClassContext);
 
-		String title = translate("class.add");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editClassCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
+			createBadgeClass(createBadgeClassContext);
+			updateUI();
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+
+		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("form.add.global.badge"), "o_sel_add_badge_wizard");
+		listenTo(addStepsController);
+		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
+	}
+
+	private void createBadgeClass(CreateBadgeClassWizardContext createBadgeClassContext) {
+		BadgeClass badgeClass = createBadgeClassContext.getBadgeClass();
+		String image = openBadgesManager.createBadgeClassImageFromSvgTemplate(
+				createBadgeClassContext.getSelectedTemplateKey(), createBadgeClassContext.getBackgroundColorId(),
+				createBadgeClassContext.getTitle(), getIdentity());
+		badgeClass.setImage(image);
+		if (badgeClass instanceof BadgeClassImpl badgeClassImpl) {
+			openBadgesManager.createBadgeClass(badgeClassImpl);
+		}
 	}
 
 	private void doEdit(UserRequest ureq, BadgeClass badgeClass) {
@@ -216,8 +245,8 @@ public class OpenBadgesAdminClassesController extends FormBasicController {
 		}
 	}
 
-	private class ClassTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSizeAndCount> {
-		public ClassTableModel(FlexiTableColumnModel columnModel) {
+	private class GlobalBadgesTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeClassWithSizeAndCount> {
+		public GlobalBadgesTableModel(FlexiTableColumnModel columnModel) {
 			super(columnModel);
 		}
 

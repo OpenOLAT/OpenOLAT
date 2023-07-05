@@ -107,7 +107,7 @@ public class EditBadgeClassController extends FormBasicController {
 		templateDecisionMade = badgeClass != null;
 
 		badgeTemplateKV = new SelectionValues();
-		for (BadgeTemplate badgeTemplate : openBadgesManager.getTemplates()) {
+		for (BadgeTemplate badgeTemplate : openBadgesManager.getTemplates(null)) {
 			badgeTemplateKV.add(SelectionValues.entry(badgeTemplate.getKey().toString(), badgeTemplate.getName()));
 		}
 

@@ -89,7 +89,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		String mediaUrl = registerMapper(ureq, new BadgeClassMediaFileMapper());
 
 		FlexiTableColumnModel columnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.image.getI18n(), OpenBadgesAdminClassesController.Cols.image.ordinal(),
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GlobalBadgesController.Cols.image.getI18n(), GlobalBadgesController.Cols.image.ordinal(),
 				(renderer, sb, val, row, source, ubu, translator) -> {
 					Size targetSize = tableModel.getObject(row).fitIn(60, 60);
 					int width = targetSize.getWidth();
@@ -104,9 +104,9 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 					sb.append("</div>");
 					sb.append("</div>");
 				}));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.name.getI18n(), OpenBadgesAdminClassesController.Cols.name.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.status.getI18n(), OpenBadgesAdminClassesController.Cols.status.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OpenBadgesAdminClassesController.Cols.awardedCount.getI18n(), OpenBadgesAdminClassesController.Cols.awardedCount.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GlobalBadgesController.Cols.name.getI18n(), GlobalBadgesController.Cols.name.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GlobalBadgesController.Cols.status.getI18n(), GlobalBadgesController.Cols.status.ordinal()));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(GlobalBadgesController.Cols.awardedCount.getI18n(), GlobalBadgesController.Cols.awardedCount.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), CMD_EDIT));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), CMD_DELETE));
 
@@ -213,7 +213,7 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 		@Override
 		public Object getValueAt(int row, int col) {
 			BadgeClass badgeClass = getObject(row).badgeClass();
-			return switch (OpenBadgesAdminClassesController.Cols.values()[col]) {
+			return switch (GlobalBadgesController.Cols.values()[col]) {
 				case image -> badgeClass.getImage();
 				case name -> badgeClass.getName();
 				case status -> translate("class.status." + badgeClass.getStatus().name());

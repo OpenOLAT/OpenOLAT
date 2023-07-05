@@ -23,11 +23,13 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.model.BadgeAssertionImpl;
 
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,9 +70,17 @@ public class BadgeAssertionDAO {
 		return badgeAssertions == null || badgeAssertions.isEmpty() ? null : badgeAssertions.get(0);
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions() {
-		String q = "select ba from badgeassertion ba";
-		return dbInstance.getCurrentEntityManager().createQuery(q, BadgeAssertion.class).getResultList();
+	public List<BadgeAssertion> getBadgeAssertions(Identity identity) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ba from badgeassertion ba ");
+		if (identity != null) {
+			sb.append("where ba.recipient.key = :identityKey ");
+		}
+		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
+		if (identity != null) {
+			typedQuery = typedQuery.setParameter("identityKey", identity.getKey());
+		}
+		return typedQuery.getResultList();
 	}
 
 	public BadgeAssertion updateBadgeAssertion(BadgeAssertion badgeAssertion) {

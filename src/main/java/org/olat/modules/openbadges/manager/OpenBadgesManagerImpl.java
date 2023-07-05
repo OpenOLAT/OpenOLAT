@@ -255,13 +255,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeTemplate> getTemplates() {
-		return templateDAO.getTemplates();
+	public List<BadgeTemplate> getTemplates(BadgeTemplate.Scope scope) {
+		return templateDAO.getTemplates(scope);
 	}
 
 	@Override
-	public List<TemplateWithSize> getTemplatesWithSizes() {
-		return getTemplates().stream().map((template) -> new TemplateWithSize(template, sizeForTemplate(template))).toList();
+	public List<TemplateWithSize> getTemplatesWithSizes(BadgeTemplate.Scope scope) {
+		return getTemplates(scope).stream().map((template) -> new TemplateWithSize(template, sizeForTemplate(template))).toList();
 	}
 
 	private Size sizeForTemplate(BadgeTemplate template) {
@@ -331,8 +331,12 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (templateLeaf instanceof LocalFileImpl localFile) {
 				String svg;
 				svg = new String(Files.readAllBytes(localFile.getBasefile().toPath()), "UTF8");
-				svg = svg.replace(VAR_TITLE, title);
-				svg = svg.replace(VAR_BACKGROUND, getColorAsRgb(backgroundColorId));
+				if (title != null) {
+					svg = svg.replace(VAR_TITLE, title);
+				}
+				if (backgroundColorId != null) {
+					svg = svg.replace(VAR_BACKGROUND, getColorAsRgb(backgroundColorId));
+				}
 				return svg;
 			}
 		} catch (Exception e) {
@@ -652,13 +656,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public List<BadgeAssertion> getBadgeAssertions() {
-		return badgeAssertionDAO.getBadgeAssertions();
+	public List<BadgeAssertion> getBadgeAssertions(Identity identity) {
+		return badgeAssertionDAO.getBadgeAssertions(identity);
 	}
 
 	@Override
-	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes() {
-		return getBadgeAssertions().stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
+	public List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity) {
+		return getBadgeAssertions(identity).stream().map((badgeAssertion) -> new BadgeAssertionWithSize(badgeAssertion, sizeForBadgeAssertion(badgeAssertion))).toList();
 	}
 
 	private Size sizeForBadgeAssertion(BadgeAssertion badgeAssertion) {

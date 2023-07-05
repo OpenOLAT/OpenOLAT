@@ -20,6 +20,7 @@
 package org.olat.modules.openbadges.ui;
 
 import org.olat.core.gui.components.Component;
+import org.olat.modules.openbadges.BadgeAssertion;
 import org.olat.modules.openbadges.OpenBadgesManager;
 
 /**
@@ -28,13 +29,19 @@ import org.olat.modules.openbadges.OpenBadgesManager;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class BadgeToolRow {
-	private Component badgeImage;
 
+	private final BadgeAssertion badgeAssertion;
+	private Component badgeImage;
 	private String name;
 	private String issuedOn;
 
 	public BadgeToolRow(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize) {
 		this.name = badgeAssertionWithSize.badgeAssertion().getBadgeClass().getName();
+		this.badgeAssertion = badgeAssertionWithSize.badgeAssertion();
+	}
+
+	public BadgeAssertion getBadgeAssertion() {
+		return badgeAssertion;
 	}
 
 	public Component getBadgeImage() {

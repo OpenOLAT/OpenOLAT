@@ -23,9 +23,11 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.model.BadgeTemplateImpl;
 
+import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,9 +57,19 @@ public class BadgeTemplateDAO {
 		return dbInstance.getCurrentEntityManager().find(BadgeTemplateImpl.class, key);
 	}
 
-	public List<BadgeTemplate> getTemplates() {
-		String q = "select template from badgetemplate template order by template.name asc";
-		return dbInstance.getCurrentEntityManager().createQuery(q, BadgeTemplate.class).getResultList();
+	public List<BadgeTemplate> getTemplates(BadgeTemplate.Scope scope) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select template from badgetemplate template ");
+		if (scope != null) {
+			sb.append("where template.scopes like :scopeFilterToken ");
+		}
+		sb.append("order by template.name asc");
+
+		TypedQuery<BadgeTemplate> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeTemplate.class);
+		if (scope != null) {
+			typedQuery = typedQuery.setParameter("scopeFilterToken", "%" + scope.name() + "%");
+		}
+		return typedQuery.getResultList();
 	}
 
 	public BadgeTemplate updateTemplate(BadgeTemplate template) {

@@ -106,6 +106,8 @@ public class BadgeClassDAO {
 		sb.append("from badgeclass bc ");
 		if (entry != null) {
 			sb.append("where bc.entry.key = :entryKey ");
+		} else {
+			sb.append("where bc.entry = null ");
 		}
 		sb.append("order by bc.status asc, bc.name asc ");
 		TypedQuery<Object[]> typedQuery = dbInstance
