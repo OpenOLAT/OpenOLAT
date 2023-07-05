@@ -741,9 +741,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					}
 				}
 				if (enabled && reSecurity.isOwner()) {
-					if (badgeEntryConfiguration.isOwnerCanAward()) {
-						badgesLink.setVisible(true);
-					}
+					badgesLink.setVisible(true);
 				}
 			}
 

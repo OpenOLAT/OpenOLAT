@@ -92,8 +92,9 @@ public class OpenBadgesAssessmentSettingsController extends FormBasicController 
 
 		awardBadgesManuallyEl = uifactory.addCheckboxesVertical("award.badges.manually", formLayout,
 				awardBadgesManuallyKV.keys(), awardBadgesManuallyKV.values(), 1);
-		awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.courseOwners.name(), configuration.isOwnerCanAward());
+		awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.courseOwners.name(), true);
 		awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.coaches.name(), configuration.isCoachCanAward());
+		awardBadgesManuallyEl.setEnabled(AwardBadgesManuallyGroup.courseOwners.name(), false);
 
 		if (editable) {
 			FormLayoutContainer buttonCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -110,8 +111,9 @@ public class OpenBadgesAssessmentSettingsController extends FormBasicController 
 
 		if (awardBadgesEl.isOn()) {
 			awardBadgesManuallyEl.setVisible(true);
-			awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.courseOwners.name(), configuration.isOwnerCanAward());
+			awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.courseOwners.name(), true);
 			awardBadgesManuallyEl.select(AwardBadgesManuallyGroup.coaches.name(), configuration.isCoachCanAward());
+			awardBadgesManuallyEl.setEnabled(AwardBadgesManuallyGroup.courseOwners.name(), false);
 		} else {
 			awardBadgesManuallyEl.setVisible(false);
 		}
