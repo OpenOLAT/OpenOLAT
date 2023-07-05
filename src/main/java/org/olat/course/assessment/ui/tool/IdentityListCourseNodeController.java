@@ -712,7 +712,6 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		initBulkStatusTools(ureq, formLayout);
 		initBulkEmailTool(ureq, formLayout);
-		initBulkAwardBadgeTool(ureq, formLayout);
 	}
 
 	protected void initBulkStatusTools(@SuppressWarnings("unused") UserRequest ureq, FormLayoutContainer formLayout) {
@@ -772,16 +771,16 @@ public class IdentityListCourseNodeController extends FormBasicController
 		}
 	}
 
-	protected void initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
+	protected boolean initBulkAwardBadgeTool(UserRequest ureq, FormLayoutContainer formLayout) {
 		if (!openBadgesManager.isEnabled()) {
-			return;
+			return false;
 		}
 		BadgeEntryConfiguration badgeConfiguration = openBadgesManager.getConfiguration(courseEntry);
 		if (!badgeConfiguration.isAwardEnabled()) {
-			return;
+			return false;
 		}
 		if (openBadgesManager.getNumberOfBadgeClasses(courseEntry) == 0) {
-			return;
+			return false;
 		}
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
 		if ((coachCourseEnv.isCoach() && badgeConfiguration.isCoachCanAward()) ||
@@ -790,7 +789,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 			bulkAwardBadgeButton.setElementCssClass("o_sel_assessment_bulk_badge");
 			bulkAwardBadgeButton.setIconLeftCSS("o_icon o_icon_certificate");
 			tableEl.addBatchButton(bulkAwardBadgeButton);
+			return true;
 		}
+		return false;
 	}
 	
 	@Override

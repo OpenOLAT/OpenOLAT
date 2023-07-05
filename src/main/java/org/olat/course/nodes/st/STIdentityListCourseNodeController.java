@@ -138,7 +138,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		super.initGradeScaleEditButton(formLayout);
 		super.initBulkApplyGradeTool(formLayout);
-		
+
 		if(courseNode.getParent() == null && pdfModule.isEnabled()) {
 			pdfButton = uifactory.addFormLink("bulk.pdf", formLayout, Link.BUTTON); 
 			pdfButton.setIconLeftCSS("o_icon o_icon_tool_pdf");
@@ -156,6 +156,10 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			resetDataBulkButton.setIconLeftCSS("o_icon o_icon-fw o_icon_reset_data");
 			tableEl.addBatchButton(resetDataBulkButton);
 		}
+
+		boolean awardBadges = initBulkAwardBadgeTool(ureq, formLayout);
+		tableEl.setMultiSelect(awardBadges);
+		tableEl.setSelectAllEnable(awardBadges);
 	}
 
 	@Override

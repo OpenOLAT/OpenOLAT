@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
@@ -117,6 +118,13 @@ public class AwardBadgesController extends FormBasicController {
 		}
 
 		informationEl.setValue(sb.toString());
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == badgeDropdown) {
+			updateUI();
+		}
 	}
 
 	@Override
