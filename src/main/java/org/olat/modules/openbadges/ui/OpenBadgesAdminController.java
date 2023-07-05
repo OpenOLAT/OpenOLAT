@@ -29,6 +29,7 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -36,6 +37,9 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.openbadges.OpenBadgesModule;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial date: 2023-05-08<br>
@@ -55,6 +59,9 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 	private GlobalBadgesController globalBadgesCtrl;
 	private IssuedGlobalBadgesController badgeAssertionsController;
 
+	@Autowired
+	private OpenBadgesModule openBadgesModule;
+
 	public OpenBadgesAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 
@@ -69,6 +76,8 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 		issuedGlobalBadgesLink = LinkFactory.createLink("issuedGlobalBadges", mainVC, this);
 		segmentView.addSegment(issuedGlobalBadgesLink, false);
 		doOpenConfiguration(ureq);
+
+		updateUI();
 
 		putInitialPanel(mainVC);
 	}
@@ -90,6 +99,22 @@ public class OpenBadgesAdminController extends BasicController implements Activa
 				}
 			}
 		}
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == configCtrl) {
+			if (event == Event.CHANGED_EVENT) {
+				updateUI();
+			}
+		}
+	}
+
+	private void updateUI() {
+		boolean enabled = openBadgesModule.isEnabled();
+
+		globalBadgesLink.setEnabled(enabled);
+		issuedGlobalBadgesLink.setEnabled(enabled);
 	}
 
 	@Override

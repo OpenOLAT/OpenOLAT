@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
-public class EditBadgeAssertionController extends FormBasicController {
+public class IssuedGlobalBadgeController extends FormBasicController {
 
 	private BadgeAssertion badgeAssertion;
 	private StaticTextElement uuidEl;
@@ -69,7 +69,7 @@ public class EditBadgeAssertionController extends FormBasicController {
 	@Autowired
 	private UserManager userManager;
 
-	public EditBadgeAssertionController(UserRequest ureq, WindowControl wControl, BadgeAssertion badgeAssertion) {
+	public IssuedGlobalBadgeController(UserRequest ureq, WindowControl wControl, BadgeAssertion badgeAssertion) {
 		super(ureq, wControl);
 		this.badgeAssertion = badgeAssertion;
 		if (this.badgeAssertion != null) {

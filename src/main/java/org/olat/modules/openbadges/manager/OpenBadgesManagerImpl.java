@@ -701,6 +701,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
+	public void revokeBadgeAssertion(Long key) {
+		badgeAssertionDAO.revokeBadgeAssertion(key);
+	}
+
+	@Override
 	public void deleteBadgeAssertion(BadgeAssertion badgeAssertion) {
 		deleteBadgeAssertionImage(badgeAssertion.getBakedImage());
 		badgeAssertionDAO.deleteBadgeAssertion(badgeAssertion);

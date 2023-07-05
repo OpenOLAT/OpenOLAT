@@ -27,6 +27,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.openbadges.OpenBadgesModule;
 
@@ -65,6 +66,7 @@ public class OpenBadgesAdminConfigurationController extends FormBasicController 
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (enabledEl == source) {
 			doSetEnabled();
+			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

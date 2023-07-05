@@ -51,7 +51,7 @@ public class BadgeAssertionDAO {
 		badgeAssertion.setCreationDate(new Date());
 		badgeAssertion.setLastModified(badgeAssertion.getCreationDate());
 		badgeAssertion.setUuid(uuid);
-		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.editing);
+		badgeAssertion.setStatus(BadgeAssertion.BadgeAssertionStatus.issued);
 		badgeAssertion.setRecipientObject(recipientObject);
 		badgeAssertion.setVerificationObject(verification);
 		badgeAssertion.setIssuedOn(issuedOn);
@@ -83,6 +83,7 @@ public class BadgeAssertionDAO {
 		if (identity != null) {
 			sb.append("and ba.recipient.key = :identityKey ");
 		}
+		sb.append("order by ba.status asc, ba.issuedOn desc ");
 		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
 		if (identity != null) {
 			typedQuery = typedQuery.setParameter("identityKey", identity.getKey());
@@ -96,6 +97,15 @@ public class BadgeAssertionDAO {
 	public BadgeAssertion updateBadgeAssertion(BadgeAssertion badgeAssertion) {
 		badgeAssertion.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(badgeAssertion);
+	}
+
+	public void revokeBadgeAssertion(Long key) {
+		String updateQuery = "update badgeassertion set status = :status where key = :key";
+		dbInstance.getCurrentEntityManager()
+				.createQuery(updateQuery)
+				.setParameter("status", BadgeAssertion.BadgeAssertionStatus.revoked)
+				.setParameter("key", key)
+				.executeUpdate();
 	}
 
 	public void deleteBadgeAssertion(BadgeAssertion badgeAssertion) {

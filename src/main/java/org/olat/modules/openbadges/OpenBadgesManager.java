@@ -123,6 +123,8 @@ public interface OpenBadgesManager {
 
 	void updateBadgeAssertion(BadgeAssertion badgeAssertion, Identity awardedBy);
 
+	void revokeBadgeAssertion(Long key);
+
 	void deleteBadgeAssertion(BadgeAssertion badgeAssertion);
 
 	//

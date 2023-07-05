@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -54,12 +53,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IssuedGlobalBadgesController extends FormBasicController {
 
-	private AssertionTableModel tableModel;
+	private TableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink addLink;
 	private CloseableModalController cmc;
-	private EditBadgeAssertionController editAssertionCtrl;
-	private DialogBoxController confirmDeleteAssertionCtrl;
+	private IssuedGlobalBadgeController issuedGlobalBadgeCtrl;
+	private DialogBoxController confirmRevokeCtrl;
 
 	@Autowired
 	private OpenBadgesManager openBadgesManager;
@@ -82,38 +81,48 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.awardedBy.getI18n(), Cols.awardedBy.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.issuedOn.getI18n(), Cols.issuedOn.ordinal()));
 		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.getI18n(), Cols.status.ordinal()));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("edit", translate("edit"), "edit"));
-		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("delete", translate("delete"), "delete"));
+		columnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.revoke.getI18n(), Cols.revoke.ordinal()));
 
-		tableModel = new AssertionTableModel(columnModel, userManager);
+		tableModel = new TableModel(columnModel, userManager);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, getTranslator(), formLayout);
 		addLink = uifactory.addFormLink("add", "issueGlobalBadge", "issueGlobalBadge", formLayout, Link.BUTTON);
 		updateUI();
 	}
 
 	private void updateUI() {
-		List<OpenBadgesManager.BadgeAssertionWithSize> assertionsWithSizes = openBadgesManager.getBadgeAssertionsWithSizes(null, null);
-		tableModel.setObjects(assertionsWithSizes);
+		List<Row> rows = openBadgesManager
+				.getBadgeAssertionsWithSizes(null, null)
+				.stream()
+				.map(baws -> {
+					FormLink revokeLink = null;
+					if (baws.badgeAssertion().getStatus() == BadgeAssertion.BadgeAssertionStatus.issued) {
+						revokeLink = uifactory.addFormLink("revoke_" + baws.badgeAssertion().getKey(),
+								"revoke", Cols.revoke.getI18n(), null, flc, Link.LINK);
+						revokeLink.setUserObject(baws.badgeAssertion());
+					}
+					return new Row(baws, revokeLink);
+				}).toList();
+		tableModel.setObjects(rows);
 		tableEl.reset();
 	}
 
 	private void cleanUp() {
 		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(editAssertionCtrl);
+		removeAsListenerAndDispose(issuedGlobalBadgeCtrl);
 		cmc = null;
-		editAssertionCtrl = null;
+		issuedGlobalBadgeCtrl = null;
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == editAssertionCtrl) {
+		if (source == issuedGlobalBadgeCtrl) {
 			cmc.deactivate();
 			cleanUp();
 			updateUI();
-		} else if (source == confirmDeleteAssertionCtrl) {
+		} else if (source == confirmRevokeCtrl) {
 			if (DialogBoxUIFactory.isOkEvent(event)) {
-				BadgeAssertion badgeAssertion = (BadgeAssertion) confirmDeleteAssertionCtrl.getUserObject();
-				doDelete(badgeAssertion);
+				BadgeAssertion badgeAssertion = (BadgeAssertion) confirmRevokeCtrl.getUserObject();
+				doRevoke(badgeAssertion);
 				updateUI();
 			}
 		} else if (source == cmc) {
@@ -130,50 +139,35 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == addLink) {
 			doUpload(ureq);
-		} else if (source == tableEl) {
-			SelectionEvent selectionEvent = (SelectionEvent)event;
-			String command = selectionEvent.getCommand();
-			BadgeAssertion badgeAssertion = tableModel.getObject(selectionEvent.getIndex()).badgeAssertion();
-			if ("edit".equals(command)) {
-				doEdit(ureq, badgeAssertion);
-			} else if ("delete".equals(command)) {
-				doConfirmDelete(ureq, badgeAssertion);
+		} else if (source instanceof FormLink formLink) {
+			if ("revoke".equals(formLink.getCmd())) {
+				BadgeAssertion badgeAssertion = (BadgeAssertion) formLink.getUserObject();
+				doConfirmRevoke(ureq, badgeAssertion);
 			}
 		}
 	}
 
 	private void doUpload(UserRequest ureq) {
-		editAssertionCtrl = new EditBadgeAssertionController(ureq, getWindowControl(), null);
-		listenTo(editAssertionCtrl);
+		issuedGlobalBadgeCtrl = new IssuedGlobalBadgeController(ureq, getWindowControl(), null);
+		listenTo(issuedGlobalBadgeCtrl);
 
 		String title = translate("issueGlobalBadge");
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editAssertionCtrl.getInitialComponent(), true, title);
+				issuedGlobalBadgeCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private void doEdit(UserRequest ureq, BadgeAssertion badgeAssertion) {
-		editAssertionCtrl = new EditBadgeAssertionController(ureq, getWindowControl(), badgeAssertion);
-		listenTo(editAssertionCtrl);
-
-		String title = translate("assertion.edit");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editAssertionCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
-	}
-
-	private void doConfirmDelete(UserRequest ureq, BadgeAssertion badgeAssertion) {
+	private void doConfirmRevoke(UserRequest ureq, BadgeAssertion badgeAssertion) {
 		String recipientDisplayName = userManager.getUserDisplayName(badgeAssertion.getRecipient());
-		String title = translate("confirm.delete.assertion.title", recipientDisplayName);
-		String text = translate("confirm.delete.assertion", recipientDisplayName);
-		confirmDeleteAssertionCtrl = activateOkCancelDialog(ureq, title, text, confirmDeleteAssertionCtrl);
-		confirmDeleteAssertionCtrl.setUserObject(badgeAssertion);
+		String title = translate("confirm.revoke.issued.badge.title", recipientDisplayName);
+		String text = translate("confirm.revoke.issued.badge", recipientDisplayName);
+		confirmRevokeCtrl = activateOkCancelDialog(ureq, title, text, confirmRevokeCtrl);
+		confirmRevokeCtrl.setUserObject(badgeAssertion);
 	}
 
-	private void doDelete(BadgeAssertion badgeAssertion) {
-		openBadgesManager.deleteBadgeAssertion(badgeAssertion);
+	private void doRevoke(BadgeAssertion badgeAssertion) {
+		openBadgesManager.revokeBadgeAssertion(badgeAssertion.getKey());
 		updateUI();
 	}
 
@@ -182,7 +176,8 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		recipient("form.recipient"),
 		awardedBy("form.awarded.by"),
 		issuedOn("form.issued.on"),
-		status("form.status");
+		status("form.status"),
+		revoke("table.revoke");
 
 		Cols(String i18n) {
 			this.i18n = i18n;
@@ -195,23 +190,26 @@ public class IssuedGlobalBadgesController extends FormBasicController {
 		}
 	}
 
-	private class AssertionTableModel extends DefaultFlexiTableDataModel<OpenBadgesManager.BadgeAssertionWithSize> {
+	record Row(OpenBadgesManager.BadgeAssertionWithSize badgeAssertionWithSize, FormLink revokeLink) {}
+
+	private class TableModel extends DefaultFlexiTableDataModel<Row> {
 		private final UserManager userManager;
 
-		public AssertionTableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
+		public TableModel(FlexiTableColumnModel columnModel, UserManager userManager) {
 			super(columnModel);
 			this.userManager = userManager;
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			BadgeAssertion badgeAssertion = getObject(row).badgeAssertion();
+			BadgeAssertion badgeAssertion = getObject(row).badgeAssertionWithSize.badgeAssertion();
 			return switch (Cols.values()[col]) {
 				case name -> badgeAssertion.getBadgeClass().getName();
 				case recipient -> userManager.getUserDisplayName(badgeAssertion.getRecipient());
 				case status -> translate("assertion.status." + badgeAssertion.getStatus().name());
 				case awardedBy -> userManager.getUserDisplayName(badgeAssertion.getAwardedBy());
 				case issuedOn -> Formatter.getInstance(getLocale()).formatDateAndTime(badgeAssertion.getIssuedOn());
+				case revoke -> getObject(row).revokeLink();
 			};
 		}
 	}

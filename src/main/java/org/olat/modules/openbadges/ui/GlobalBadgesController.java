@@ -172,7 +172,7 @@ public class GlobalBadgesController extends FormBasicController {
 				if (tableModel.getObjects().stream().filter(b -> b.badgeClass().getKey() == badgeClass.getKey() && b.count() > 0).findFirst().isEmpty()) {
 					doConfirmDelete(ureq, badgeClass);
 				} else {
-					showInfo("info.badgeInUse");
+					showError("warning.badge.in.use");
 				}
 			}
 		}
