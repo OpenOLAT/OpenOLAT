@@ -125,6 +125,25 @@ public class MediaDAO {
 		return dbInstance.getCurrentEntityManager().merge(media);
 	}
 	
+	public Media setVersion(Media media, Date collectionDate) {
+		List<MediaVersion> versions = media.getVersions();
+		if(versions == null || versions.isEmpty()) {
+			return media;
+		}
+		MediaVersion currentVersion = media.getVersions().get(0);
+		return addVersion(media, collectionDate, currentVersion.getContent(),
+				currentVersion.getStoragePath(), currentVersion.getRootFilename());
+	}
+	
+	public Media restoreVersion(Media media, Date collectionDate, MediaVersion mediaVersion) {
+		List<MediaVersion> versions = media.getVersions();
+		if(versions == null || versions.isEmpty()) {
+			return media;
+		}
+		return addVersion(media, collectionDate, mediaVersion.getContent(),
+				mediaVersion.getStoragePath(), mediaVersion.getRootFilename());
+	}
+	
 	public Media addVersion(Media media, Date collectionDate, String content, String storage, String rootFilename) {
 		List<MediaVersion> versions = media.getVersions();
 		if(versions == null || versions.isEmpty()) {

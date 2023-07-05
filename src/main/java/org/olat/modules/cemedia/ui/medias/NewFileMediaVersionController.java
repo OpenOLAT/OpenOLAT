@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -105,6 +106,17 @@ public class NewFileMediaVersionController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(fileEl == source) {
+			fileEl.clearWarning();
+			if(mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+				fileEl.setWarningKey("warning.checksum.file");
+			}
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

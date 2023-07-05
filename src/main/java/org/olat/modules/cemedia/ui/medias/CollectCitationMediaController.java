@@ -363,6 +363,13 @@ public class CollectCitationMediaController extends FormBasicController implemen
 		} else if(metadataOnly) {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());
+		} else {
+			mediaReference.setTitle(titleEl.getValue());
+			mediaReference.setDescription(descriptionEl.getValue());
+			
+			MediaVersion version = mediaReference.getVersions().get(0);
+			version.setContent(textEl.getValue());
+			mediaService.updateMediaVersion(version);
 		}
 
 		citation = new CitationXml();

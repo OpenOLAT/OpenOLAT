@@ -183,11 +183,6 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new VideoMediaController(ureq, wControl, dataStorage, version, hints);
 	}
-	
-	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectVideoMediaController(ureq, wControl, media, false);
-	}
 
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {

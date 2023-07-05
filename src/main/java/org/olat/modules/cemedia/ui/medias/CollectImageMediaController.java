@@ -42,7 +42,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.JavaIOItem;
@@ -55,9 +54,6 @@ import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
-import org.olat.modules.cemedia.model.MediaWithVersion;
-import org.olat.modules.cemedia.model.SearchMediaParameters;
-import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.cemedia.ui.MediaRelationsController;
 import org.olat.modules.cemedia.ui.MediaUIHelper;
@@ -269,7 +265,7 @@ public class CollectImageMediaController extends FormBasicController implements 
 			}
 			
 			titleEl.clearWarning();
-			if(searchByChecksum()) {
+			if(mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
 				titleEl.setWarningKey("warning.checksum.file");
 			}
 		}
@@ -316,17 +312,5 @@ public class CollectImageMediaController extends FormBasicController implements 
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
-	}
-	
-	private boolean searchByChecksum() {
-		String checksum = FileUtils.checksumSha256(fileEl.getUploadFile());
-		
-		SearchMediaParameters params = new SearchMediaParameters();
-		params.setChecksum(checksum);
-		params.setIdentity(getIdentity());
-		params.setScope(Scope.ALL);
-		
-		List<MediaWithVersion> versions = mediaService.searchMedias(params);
-		return !versions.isEmpty();
 	}
 }

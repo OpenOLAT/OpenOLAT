@@ -46,7 +46,6 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
-import org.olat.modules.cemedia.ui.medias.NewTextVersionController;
 import org.olat.modules.cemedia.ui.medias.TextMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -88,7 +87,7 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Override
 	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(true, false, null, true, "o_icon_refresh");
+		return new MediaHandlerVersion(true, false, null, false, null);
 	}
 
 	@Override
@@ -113,11 +112,6 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new TextMediaController(ureq, wControl, version, hints);
 	}
-
-	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectTextMediaController(ureq, wControl, media, false);
-	}
 	
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
@@ -126,9 +120,6 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 
 	@Override
 	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
-		if(createVersion == CreateVersion.CREATE) {
-			return new NewTextVersionController(ureq, wControl, media, this);
-		}
 		return null;
 	}
 

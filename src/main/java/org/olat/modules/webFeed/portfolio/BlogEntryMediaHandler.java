@@ -122,11 +122,6 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new BlogEntryMediaController(ureq, wControl, version, hints);
 	}
-
-	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new StandardEditMediaController(ureq, wControl, media);
-	}
 	
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {

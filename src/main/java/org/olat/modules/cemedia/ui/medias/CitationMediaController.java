@@ -21,11 +21,14 @@ package org.olat.modules.cemedia.ui.medias;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
@@ -50,11 +53,18 @@ import org.olat.modules.cemedia.ui.component.CitationComponent;
 public class CitationMediaController extends BasicController {
 	
 	private final VelocityContainer mainVC;
+	private final Link editLink;
+
+	private MediaVersion mediaVersion;
+
+	private CloseableModalController cmc;
+	private UpdateTextVersionController citationCtrl;
 	
 	public CitationMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
+		this.mediaVersion = mediaVersion;
 		Media media = mediaVersion.getMedia();
 		
 		mainVC = createVelocityContainer("media_citation");
@@ -62,7 +72,12 @@ public class CitationMediaController extends BasicController {
 		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
 		String title = media.getTitle();
 		mainVC.contextPut("title", StringHelper.containsNonWhitespace(title) ? title : null);
-		mainVC.contextPut("citation", mediaVersion.getContent());		
+		mainVC.contextPut("citation", mediaVersion.getContent());
+		
+		editLink = LinkFactory.createCustomLink("edit", "edit", "edit", Link.LINK, mainVC, this);
+		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+		editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage());
 		
 		putInitialPanel(mainVC);
 		
@@ -84,7 +99,9 @@ public class CitationMediaController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(editLink == source) {
+			doEdit(ureq);
+		}
 	}
 	
 	@Override
@@ -94,7 +111,34 @@ public class CitationMediaController extends BasicController {
 			if(element instanceof MediaPart mediaPart) {
 				mainVC.contextPut("citation", mediaPart.getMediaVersion().getContent());
 			}
+		} else if(citationCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				mediaVersion = citationCtrl.getMediaVersion();
+				mainVC.contextPut("citation", mediaVersion.getContent());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(citationCtrl);
+		removeAsListenerAndDispose(cmc);
+		citationCtrl = null;
+		cmc = null;
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		citationCtrl = new UpdateTextVersionController(ureq, getWindowControl(), mediaVersion);
+		listenTo(citationCtrl);
+
+		String modalTitle = translate("artefact.citation");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), citationCtrl.getInitialComponent(), true, modalTitle, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

@@ -49,7 +49,6 @@ import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.ui.medias.AddCitationController;
 import org.olat.modules.cemedia.ui.medias.CitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
-import org.olat.modules.cemedia.ui.medias.NewTextVersionController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +84,7 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	
 	@Override
 	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(true, false, null, true, "o_icon_refresh");
+		return new MediaHandlerVersion(true, false, null, false, null);
 	}
 	
 	@Override
@@ -117,11 +116,6 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	}
 
 	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectCitationMediaController(ureq, wControl, media, false);
-	}
-
-	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new CollectCitationMediaController(ureq, wControl, media, true);
 	}
@@ -129,14 +123,6 @@ public class CitationHandler extends AbstractMediaHandler implements PageElement
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
 		return new AddCitationController(ureq, wControl, this);
-	}
-
-	@Override
-	public Controller getNewVersionController(UserRequest ureq, WindowControl wControl, Media media, CreateVersion createVersion) {
-		if(createVersion == CreateVersion.CREATE) {
-			return new NewTextVersionController(ureq, wControl, media, this);
-		}
-		return null;
 	}
 	
 	@Override

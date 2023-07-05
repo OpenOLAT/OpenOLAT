@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -29,9 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
-import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -41,34 +41,36 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NewTextVersionController extends FormBasicController {
+public class UpdateTextVersionController extends FormBasicController {
 	
 	private TextElement contentEl;
 	
-	private Media media;
-	private final MediaHandler handler;
+	private MediaVersion mediaVersion;
 	
 	@Autowired
 	private DB dbInstance;
 	@Autowired
 	private MediaService mediaService;
 	
-	public NewTextVersionController(UserRequest ureq, WindowControl wControl, Media media,
-			MediaHandler handler) {
+	public UpdateTextVersionController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion) {
 		super(ureq, wControl, Util.createPackageTranslator(MediaCenterController.class, ureq.getLocale()));
-		this.media = media;
-		this.handler = handler;
+		this.mediaVersion = mediaVersion;
 		
 		initForm(ureq);
+	}
+	
+	public MediaVersion getMediaVersion() {
+		return mediaVersion;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentEl = uifactory.addRichTextElementForStringData("content", "content", null, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		String content = mediaVersion.getContent();
+		contentEl = uifactory.addRichTextElementForStringData("content", "content", content, 10, 6, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		contentEl.setElementCssClass("o_sel_media_content");
 
 		FormLayoutContainer buttonsCont = uifactory.addButtonsFormLayout("buttons", null, formLayout);
-		uifactory.addFormSubmitButton("create.version." + handler.getType(), buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 	}
 
@@ -80,8 +82,8 @@ public class NewTextVersionController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String content = contentEl.getValue();
-		media = mediaService.getMediaByKey(media.getKey());
-		mediaService.addVersion(media, content);
+		mediaVersion.setContent(content);
+		mediaVersion = mediaService.updateMediaVersion(mediaVersion);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

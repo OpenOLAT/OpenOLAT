@@ -2,7 +2,8 @@
 	#if($title)
 	<h5>
 		$title
-		<small>$r.translate("document.by",$author)</small>	
+		<small>$r.translate("document.by",$author)</small>
+		$r.render("edit")	
 	</h5>
 	#end
 	$r.render("text")

@@ -61,9 +61,22 @@ public interface MediaService {
 	
 	int deleteMedia(Media media);
 	
+	/**
+	 * Copy the current content to a new version.
+	 * 
+	 * @param media The media
+	 * @return The updated media
+	 */
+	Media setVersion(Media media);
+	
+	Media restoreVersion(Media media, MediaVersion version);
+	
 	Media addVersion(Media media, String content);
 	
 	Media addVersion(Media media, File file, String filename);
+	
+	
+	MediaVersion updateMediaVersion(MediaVersion mediaVersion);
 	
 	List<MediaVersion> getVersions(Media media);
 	
@@ -77,6 +90,8 @@ public interface MediaService {
 	List<MediaUsageWithStatus> getMediaUsageWithStatus(Media media);
 	
 	boolean isMediaEditable(IdentityRef identity, MediaLight media);
+	
+	boolean isInMediaCenter(IdentityRef identity, File file);
 	
 	List<MediaUsage> getMediaUsage(MediaLight media);
 	

@@ -216,6 +216,10 @@ public class MediaUploadController extends FormBasicController implements PageEl
 				titleEl.setValue(fileEl.getUploadFileName());
 				titleEl.getComponent().setDirty(true);
 			}
+			titleEl.clearWarning();
+			if(mediaService.isInMediaCenter(getIdentity(), fileEl.getUploadFile())) {
+				titleEl.setWarningKey("warning.checksum.file");
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

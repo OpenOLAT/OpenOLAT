@@ -112,11 +112,6 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new StandardEditMediaController(ureq, wControl, media);
-	}
-
-	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {
 		return new StandardEditMediaController(ureq, wControl, media);
 	}

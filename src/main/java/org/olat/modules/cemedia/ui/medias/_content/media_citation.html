@@ -1,6 +1,6 @@
 <div class="o_cit">
 	#if($title)
-	<h5><i class="o_icon o_icon-fw o_icon_citation"> </i> $r.xssScan($title)</h5>
+	<h5><i class="o_icon o_icon-fw o_icon_citation"> </i> $r.xssScan($title) $r.render("edit")</h5>
 	#end
 	<blockquote class="o_quote">
 		<div class="">$r.xssScan($citation)</div>

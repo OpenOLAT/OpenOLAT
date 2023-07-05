@@ -21,7 +21,7 @@ package org.olat.modules.cemedia.model;
 
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 
 /**
@@ -38,7 +38,7 @@ public class SearchMediaParameters {
 	private List<Long> tags;
 	private List<TaxonomyLevelRef> taxonomyLevelsRefs;
 	
-	private Identity identity;
+	private IdentityRef identity;
 	private Scope scope;
 	
 	public String getSearchString() {
@@ -57,11 +57,11 @@ public class SearchMediaParameters {
 		this.checksum = checksum;
 	}
 
-	public Identity getIdentity() {
+	public IdentityRef getIdentity() {
 		return identity;
 	}
 
-	public void setIdentity(Identity identity) {
+	public void setIdentity(IdentityRef identity) {
 		this.identity = identity;
 	}
 

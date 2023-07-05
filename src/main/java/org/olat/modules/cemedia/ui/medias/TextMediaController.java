@@ -22,6 +22,8 @@ package org.olat.modules.cemedia.ui.medias;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.text.TextComponent;
 import org.olat.core.gui.components.text.TextFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -29,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.ceditor.PageElement;
@@ -51,20 +54,32 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TextMediaController extends BasicController {
 	
+	private Link editLink;
 	private final TextComponent textCmp;
 	
+	private MediaVersion mediaVersion;
+	
+	private CloseableModalController cmc;
+	private UpdateTextVersionController textCtrl;
+
 	@Autowired
 	private UserManager userManager;
 	
-	public TextMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
+	public TextMediaController(UserRequest ureq, WindowControl wControl, MediaVersion mediaVersion, RenderingHints hints) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(MediaCenterController.class, getLocale(), getTranslator()));
 		
-		Media media = version.getMedia();
+		this.mediaVersion = mediaVersion; 
+		Media media = mediaVersion.getMedia();
 
 		VelocityContainer mainVC = createVelocityContainer("media_text");
-		textCmp = TextFactory.createTextComponentFromString("text", version.getContent(), null, false, null);
+		textCmp = TextFactory.createTextComponentFromString("text", mediaVersion.getContent(), null, false, null);
 		mainVC.put("text", textCmp);
+		
+		editLink = LinkFactory.createCustomLink("edit", "edit", "edit", Link.LINK, mainVC, this);
+		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
+		editLink.setElementCssClass("btn btn-default btn-xs o_button_ghost");
+		editLink.setVisible(hints.isEditable() && !hints.isToPdf() && !hints.isOnePage());
 		
 		String desc = media.getDescription();
 		mainVC.contextPut("description", StringHelper.containsNonWhitespace(desc) ? desc : null);
@@ -85,7 +100,9 @@ public class TextMediaController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		//
+		if(editLink == source) {
+			doEdit(ureq);
+		}
 	}
 	
 	@Override
@@ -95,7 +112,34 @@ public class TextMediaController extends BasicController {
 			if(element instanceof MediaPart mediaPart) {
 				textCmp.setText( mediaPart.getMediaVersion().getContent());
 			}
+		} else if(textCtrl == source) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				mediaVersion = textCtrl.getMediaVersion();
+				textCmp.setText(mediaVersion.getContent());
+				fireEvent(ureq, Event.CHANGED_EVENT);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
 		}
 		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(textCtrl);
+		removeAsListenerAndDispose(cmc);
+		textCtrl = null;
+		cmc = null;
+	}
+	
+	private void doEdit(UserRequest ureq) {
+		textCtrl = new UpdateTextVersionController(ureq, getWindowControl(), mediaVersion);
+		listenTo(textCtrl);
+
+		String modalTitle = translate("artefact.citation");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), textCtrl.getInitialComponent(), true, modalTitle, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

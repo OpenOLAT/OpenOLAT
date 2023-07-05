@@ -76,8 +76,10 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaOverviewController extends FormBasicController implements Activateable2 {
 
+	private FormLink setVersionButton;
 	private FormLink createVersionButton;
 	private FormLink uploadVersionButton;
+	private FormLink restoreVersionButton;
 	private DropdownItem versionDropdownItem;
 	private Link gotoOriginalLink;
 	private FormLayoutContainer metaCont;
@@ -89,6 +91,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	private int counter;
 	private Media media;
 	private MediaVersion currentVersion;
+	private MediaVersion selectedVersion;
 	private boolean editable = true;
 	private final MediaHandler handler;
 	private final List<MediaUsage> usageList;
@@ -104,6 +107,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		this.editable = editable;
 		this.usageList = usageList;
 		this.currentVersion = currentVersion;
+		this.selectedVersion = currentVersion;
 		handler = mediaService.getMediaHandler(media.getType());
 		initForm(ureq);
 	}
@@ -112,6 +116,12 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		MediaHandlerVersion handlerVersion = handler.hasVersion();
 		if(editable && handlerVersion.hasVersion()) {
+			
+			setVersionButton = uifactory.addFormLink("set.version", "set.version", null, formLayout, Link.BUTTON);
+			setVersionButton.setIconLeftCSS("o_icon o_icon_add");
+			restoreVersionButton = uifactory.addFormLink("restore.version", "restore.version", null, formLayout, Link.BUTTON);
+			restoreVersionButton.setIconLeftCSS("o_icon o_icon_refresh");
+			
 			if(handlerVersion.canCreateVersion()) {
 				createVersionButton = uifactory.addFormLink("create.version", "create.version." + handler.getType(), null, formLayout, Link.BUTTON);
 				String createIconCssClass = handlerVersion.createIconCssClass();
@@ -128,7 +138,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				}
 				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
 			}
-			versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.list", null, formLayout, getTranslator());
+			versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.current", null, formLayout, getTranslator());
 			versionDropdownItem.setIconCSS("o_icon o_icon_version");
 			versionDropdownItem.setOrientation(DropdownOrientation.right);
 			versionDropdownItem.setButton(true);
@@ -139,7 +149,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		metaCont = uifactory.addCustomFormLayout("meta", null, metaPage, formLayout);
 		
 		loadModels(metaCont);
-		updateVersion(ureq, currentVersion);
+		updateVersion(ureq, selectedVersion);
 		
 		int numOfReferences = usageList.size();
 		List<FormLink> referencesLinks = new ArrayList<>(numOfReferences);
@@ -208,14 +218,38 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
-		boolean mediaEditable = editable && version != null && version.equals(currentVersion);
-		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), version, new StandardMediaRenderingHints(mediaEditable));
+		if(version == null) return;
+		
+		selectedVersion = version;
+
+		boolean lastVersion = selectedVersion.equals(currentVersion);
+		boolean mediaEditable = editable && lastVersion;
+		mediaCtrl = handler.getMediaController(ureq, getWindowControl(), selectedVersion, new StandardMediaRenderingHints(mediaEditable));
+		
+		setVersionButton.setVisible(editable && lastVersion);
+		restoreVersionButton.setVisible(editable && !lastVersion);
+		if(createVersionButton != null) {
+			createVersionButton.setVisible(editable && lastVersion);
+		}
+		if(uploadVersionButton != null) {
+			uploadVersionButton.setVisible(editable && lastVersion);
+		}
+		
 		if(mediaCtrl != null) {
 			if(version.getCollectionDate() != null) {
 				String collectionDate = Formatter.getInstance(getLocale()).formatDate(version.getCollectionDate());
 				metaCont.contextPut("collectionDate", collectionDate);
+				if(lastVersion) {
+					versionDropdownItem.setTranslatedLabel(translate("versions.current"));
+				} else {
+					versionDropdownItem.setTranslatedLabel(translate("versions.selected", version.getVersionName(), collectionDate));
+				}
+			} else if(lastVersion) {
+				versionDropdownItem.setTranslatedLabel(translate("versions.current"));
+			} else {
+				versionDropdownItem.setTranslatedLabel(translate("versions.selected.nodate", version.getVersionName()));
 			}
-			
+
 			listenTo(mediaCtrl);
 			flc.put("media", mediaCtrl.getInitialComponent());
 		}
@@ -315,6 +349,10 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			doCreateVersion(ureq);
 		} else if(uploadVersionButton == source) {
 			doUploadVersion(ureq);
+		} else if(setVersionButton == source) {
+			doSetVersion(ureq);
+		} else if(restoreVersionButton == source) {
+			doRestoreVersion(ureq);
 		} else if(source instanceof FormLink link) {
 			String cmd = link.getCmd();
 			Object uobject = link.getUserObject();
@@ -325,6 +363,20 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void doSetVersion(UserRequest ureq) {
+		media = mediaService.getMediaByKey(media.getKey());
+		media = mediaService.setVersion(media);
+		reload();
+		updateVersion(ureq, currentVersion);
+	}
+	
+	private void doRestoreVersion(UserRequest ureq) {
+		media = mediaService.getMediaByKey(media.getKey());
+		media = mediaService.restoreVersion(media, selectedVersion);
+		reload();
+		updateVersion(ureq, currentVersion);
 	}
 	
 	private void doCreateVersion(UserRequest ureq) {

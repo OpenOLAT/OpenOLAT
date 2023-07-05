@@ -138,14 +138,8 @@ public class FileMediaController extends BasicController implements PageElementE
 				cssClass = "o_filetype_file";
 			}
 			mainVC.contextPut("cssClass", cssClass);
-
-			updateUI();
+			updateOpenLink();
 		}
-		
-	}
-
-	private void updateUI() {
-		updateOpenLink();
 	}
 
 	private void updateOpenLink() {

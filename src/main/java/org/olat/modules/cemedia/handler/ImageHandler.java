@@ -198,11 +198,6 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	public Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints) {
 		return new ImageMediaController(ureq, wControl, dataStorage, version, ExtendedMediaRenderingHints.valueOf(hints));
 	}
-
-	@Override
-	public Controller getEditMediaController(UserRequest ureq, WindowControl wControl, Media media) {
-		return new CollectImageMediaController(ureq, wControl, media, false);
-	}
 	
 	@Override
 	public Controller getEditMetadataController(UserRequest ureq, WindowControl wControl, Media media) {

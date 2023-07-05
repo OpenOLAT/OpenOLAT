@@ -54,6 +54,7 @@ import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
+import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
@@ -124,6 +125,16 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
+	public Media setVersion(Media media) {
+		return mediaDao.setVersion(media, new Date());
+	}
+
+	@Override
+	public Media restoreVersion(Media media, MediaVersion version) {
+		return mediaDao.restoreVersion(media, new Date(), version);
+	}
+
+	@Override
 	public Media addVersion(Media media, String content) {
 		return mediaDao.addVersion(media, new Date(), content, null, null);
 	}
@@ -137,6 +148,11 @@ public class MediaServiceImpl implements MediaService {
 		return mediaDao.addVersion(media, new Date(), filename, storagePath, filename);
 	}
 	
+	@Override
+	public MediaVersion updateMediaVersion(MediaVersion mediaVersion) {
+		return mediaDao.update(mediaVersion);
+	}
+
 	@Override
 	public List<MediaVersion> getVersions(Media media) {
 		return mediaDao.getVersions(media);
@@ -156,6 +172,19 @@ public class MediaServiceImpl implements MediaService {
 		return mediaDao.isEditable(identity, media);
 	}
 	
+	@Override
+	public boolean isInMediaCenter(IdentityRef identity, File file) {
+		String checksum = FileUtils.checksumSha256(file);
+		
+		SearchMediaParameters params = new SearchMediaParameters();
+		params.setChecksum(checksum);
+		params.setIdentity(identity);
+		params.setScope(Scope.ALL);
+		
+		List<MediaWithVersion> versions = searchMedias(params);
+		return !versions.isEmpty();
+	}
+
 	@Override
 	public boolean isUsed(Media media) {
 		return mediaDao.isUsed(media);
