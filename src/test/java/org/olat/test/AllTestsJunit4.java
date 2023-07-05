@@ -600,7 +600,7 @@ import org.junit.runners.Suite;
 	org.olat.restapi.RegistrationTest.class,
 	org.olat.restapi.DocumentPoolModuleWebServiceTest.class,
 	org.olat.restapi.TaxonomyWebServiceTest.class,
-	org.olat.restapi.UserToDoTaskWebServiceTest.class,
+	org.olat.restapi.ToDoTaskWebServiceTest.class,
 	org.olat.restapi.security.RestSecurityBeanTest.class,
 	de.bps.olat.portal.institution.InstitutionPortletTest.class,
 	de.bps.olat.portal.links.LinksPortletTest.class,

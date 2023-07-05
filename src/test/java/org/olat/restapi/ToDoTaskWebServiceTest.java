@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UserToDoTaskWebServiceTest extends OlatRestTestCase {
+public class ToDoTaskWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
@@ -63,7 +63,7 @@ public class UserToDoTaskWebServiceTest extends OlatRestTestCase {
 	private ToDoService toDoService;
 	
 	@Test
-	public void getToDoTasks() throws IOException, URISyntaxException {
+	public void getMyToDoTasks() throws IOException, URISyntaxException {
 		String assigneeName = random();
 		String assigneePw = random();
 		Identity assignee = JunitTestHelper.createAndPersistIdentityAsUser(assigneeName, assigneePw);
@@ -81,9 +81,8 @@ public class UserToDoTaskWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login(assigneeName, assigneePw));
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
-				.path("users")
-				.path(assignee.getKey().toString())
 				.path("todotasks")
+				.path("my")
 				.build();
 		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
@@ -113,8 +112,6 @@ public class UserToDoTaskWebServiceTest extends OlatRestTestCase {
 		Assert.assertTrue(conn.login(assigneeName, assigneePw));
 		
 		URI uri = UriBuilder.fromUri(getContextURI())
-				.path("users")
-				.path(assignee.getKey().toString())
 				.path("todotasks")
 				.path(toDoTask.getKey().toString())
 				.path("status")

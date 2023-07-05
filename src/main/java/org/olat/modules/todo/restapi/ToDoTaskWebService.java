@@ -33,10 +33,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.time.DateUtils;
-import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
 import org.olat.core.util.DateRange;
 import org.olat.core.util.StringHelper;
@@ -46,6 +44,7 @@ import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -64,18 +63,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "ToDoTask")
 @Component
-@Path("users/{identityKey}/todotasks")
-public class UserToDoTaskWebService {
+@Path("todotasks")
+public class ToDoTaskWebService {
 	
-	@Autowired
-	private BaseSecurity securityManager;
 	@Autowired
 	private ToDoService toDoService;
 
 	/**
 	 * Get the to-do tasks of the user.
 	 * 
-	 * @param identityKey The key of the assignee / delegatee of the to-do
 	 * @param status 
 	 * @param dueDateFrom 
 	 * @param dueDateTo 
@@ -83,26 +79,20 @@ public class UserToDoTaskWebService {
 	 * @return The to-to tasks
 	 */
 	@GET
-	@Path("")
-	@Operation(summary = "Get the to-do tasks of the user", description = "Get the to-do tasks of the user")
+	@Path("my")
+	@Operation(summary = "Get the to-do tasks of the authenticated user", description = "Get the to-do tasks of the authenticated user")
 	@ApiResponse(responseCode = "200", description = "The to-dos of the user", content = {
 			@Content(mediaType = "application/json", schema = @Schema(implementation = ToDoTaskVOes.class)),
 			@Content(mediaType = "application/xml", schema = @Schema(implementation = ToDoTaskVOes.class)) })
-	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The user cannot be found")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getToDos(
-			@PathParam("identityKey") Long identityKey,
 			@QueryParam("status") @Parameter(description = "Filter by status") String status,
-			@QueryParam("dueDateFrom") @Parameter(description = "Filter by due date after") Date dueDateFrom,
-			@QueryParam("dueDateTo") @Parameter(description = "Filter by due date before") Date dueDateTo,
+			@QueryParam("dueDateFrom") @Parameter(description = "Filter to-do tasks whose due date is after this date. Format: yyyy-MM-ddThh:mm:ss") String dueDateFromStr,
+			@QueryParam("dueDateTo") @Parameter(description = "Filter to-do tasks whose due date is before this date. Format: yyyy-MM-ddThh:mm:ss") String dueDateToStr,
 			@Context HttpServletRequest request) {
-		if (!RestSecurityHelper.itself(identityKey, request)) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		Identity identity = RestSecurityHelper.getIdentity(request);
 		if (identity == null) {
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+			return Response.serverError().status(Response.Status.UNAUTHORIZED).build();
 		}
 		
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
@@ -113,6 +103,12 @@ public class UserToDoTaskWebService {
 			searchParams.setStatus(ToDoStatus.OPEN_TO_DONE);
 		}
 		
+		Date dueDateFrom = StringHelper.containsNonWhitespace(dueDateFromStr)
+				? ObjectFactory.parseDate(dueDateFromStr)
+				: null;
+		Date dueDateTo = StringHelper.containsNonWhitespace(dueDateToStr)
+				? ObjectFactory.parseDate(dueDateToStr)
+				: null;
 		if (dueDateFrom != null || dueDateTo != null) {
 			DateRange dueDateRange = new DateRange(
 					dueDateFrom != null? dueDateFrom: DateUtils.addYears(new Date(), -10),
@@ -133,28 +129,23 @@ public class UserToDoTaskWebService {
 	/**
 	 * Change the status of a to-do task.
 	 * 
-	 * @param identityKey The key of the assignee / delegatee of the to-do task
 	 * @param toDoTaskKey The key of the to-do task
 	 * @return
 	 */
 	@POST
 	@Path("{toDoTaskKey}/status")
-	@Operation(summary = "Change the status of a to-do", description = "Change the status of a to-do")
+	@Operation(summary = "Change the status of a to-do", description = "Change the status of a to-do. Available status: open, inProgress, done. Only the status of my to-dos can be changed.")
+	@ApiResponse(responseCode = "200", description = "The status was successfully changed")
 	@ApiResponse(responseCode = "400", description = "The status is not available")
 	@ApiResponse(responseCode = "403", description = "The roles of the authenticated user are not sufficient")
-	@ApiResponse(responseCode = "404", description = "The user or the to-do can not be found")
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postToDoTaskStatus(
-			@PathParam("identityKey") Long identityKey,
 			@PathParam("toDoTaskKey") Long toDoTaskKey,
 			ToDoStatusVO statusVO,
 			@Context HttpServletRequest request) {
-		if (!RestSecurityHelper.itself(identityKey, request)) {
-			return Response.serverError().status(Status.FORBIDDEN).build();
-		}
-		Identity identity = securityManager.loadIdentityByKey(identityKey);
+		Identity identity = RestSecurityHelper.getIdentity(request);
 		if (identity == null) {
-			return Response.serverError().status(Response.Status.NOT_FOUND).build();
+			return Response.serverError().status(Response.Status.UNAUTHORIZED).build();
 		}
 		
 		String requestedStatusStr = statusVO.getStatus();
@@ -163,6 +154,8 @@ public class UserToDoTaskWebService {
 		}
 		ToDoStatus status = ToDoStatus.valueOf(requestedStatusStr);
 		
+		// Currently only the status of MY to-dos can be changed.
+		// My be have to extended in future e.g. managers
 		ToDoTaskSearchParams searchParams = new ToDoTaskSearchParams();
 		searchParams.setStatus(ToDoStatus.OPEN_TO_DONE);
 		searchParams.setOriginDeleted(Boolean.FALSE);
