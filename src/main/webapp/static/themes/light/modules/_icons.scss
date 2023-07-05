@@ -53,6 +53,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_audio:before { content: $fa-var-volume-up; }
 .o_icon_audio_record:before { content: $fa-var-microphone; }
 .o_icon_back:before { content: $fa-var-chevron-left; }
+.o_icon_badge:before { content: $fa-var-star; }
 .o_icon_banned:before { content: $fa-var-flask; color: $brand-danger; }
 .o_icon_bold:before { content: $fa-var-bold; }
 .o_icon_booking:before { content: $fa-var-shopping-cart; }
