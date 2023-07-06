@@ -74,6 +74,8 @@ public interface PageService {
 	Page importPage(Identity owner, Page page, ZipFile storage);
 	
 	PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
+
+	boolean hasReference(Page page);
 	
 	boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent);
 	

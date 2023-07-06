@@ -54,6 +54,19 @@ public class PageReferenceDAO {
 		return reference;
 	}
 	
+	public boolean hasReference(Page page) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ref.key from cepagereference ref")
+		  .append(" where ref.page.key=:pageKey");
+
+		List<Long> refs = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+			.setParameter("pageKey", page.getKey())
+			.setFirstResult(0)
+			.setMaxResults(1)
+			.getResultList();
+		return refs != null && !refs.isEmpty() && refs.get(0) != null && refs.get(0).longValue() > 0l;
+	}
+	
 	public boolean hasReference(Page page, RepositoryEntry repositoryEntry, 
 			String subIdent) {
 		QueryBuilder sb = new QueryBuilder();
@@ -75,6 +88,13 @@ public class PageReferenceDAO {
 		return dbInstance.getCurrentEntityManager().createQuery(query)
 				.setParameter("entryKey", repositoryEntry.getKey())
 				.setParameter("subIdent", subIdent)
+				.executeUpdate();
+	}
+	
+	public int deleteReferences(Page page) {
+		String query = "delete from cepagereference ref where ref.page.key=:pageKey";
+		return dbInstance.getCurrentEntityManager().createQuery(query)
+				.setParameter("pageKey", page.getKey())
 				.executeUpdate();
 	}
 }

@@ -126,6 +126,11 @@ public class PageServiceImpl implements PageService {
 	public PageReference addReference(Page page, RepositoryEntry repositoryEntry, String subIdent) {
 		return pageReferenceDao.createReference(page, repositoryEntry, subIdent);
 	}
+	
+	@Override
+	public boolean hasReference(Page page) {
+		return pageReferenceDao.hasReference(page);
+	}
 
 	@Override
 	public boolean hasReference(Page page, RepositoryEntry repositoryEntry, String subIdent) {
@@ -271,6 +276,7 @@ public class PageServiceImpl implements PageService {
 	public void deletePage(Long pageKey) {
 		Page reloadedPage = pageDao.loadByKey(pageKey);
 		if(reloadedPage != null) {
+			pageReferenceDao.deleteReferences(reloadedPage);
 			pageDao.deletePage(reloadedPage);
 			pageUserInfosDao.delete(reloadedPage);
 		}

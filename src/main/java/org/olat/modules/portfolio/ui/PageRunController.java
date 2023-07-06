@@ -554,14 +554,22 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doConfirmDelete(UserRequest ureq) {
-		String title = translate("delete.def.page.confirm.title");
-		String text = translate("delete.def.page.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
-		confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
+		if(pageService.hasReference(page)) {
+			showWarning("warning.delete.page");
+		} else {
+			String title = translate("delete.def.page.confirm.title");
+			String text = translate("delete.def.page.confirm.descr", StringHelper.escapeHtml(page.getTitle()));
+			confirmDeleteCtrl = activateYesNoDialog(ureq, title, text, confirmDeleteCtrl);
+		}
 	}
 	
 	private void doDelete(UserRequest ureq) {
-		pageService.deletePage(page.getKey());
-		fireEvent(ureq, new PageDeletedEvent());
+		if(pageService.hasReference(page)) {
+			showWarning("warning.delete.page");
+		} else {
+			pageService.deletePage(page.getKey());
+			fireEvent(ureq, new PageDeletedEvent());
+		}
 	}
 	
 	private void doConfirmPublish(UserRequest ureq) {

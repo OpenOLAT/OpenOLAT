@@ -206,9 +206,17 @@ public class DeletedPageListController extends AbstractPageListController {
 	}
 	
 	private void doDelete(UserRequest ureq, List<PortfolioElementRow> rows) {
+		boolean referenced = false;
 		for(PortfolioElementRow row:rows) {
-			pageService.deletePage(row.getPage().getKey());
+			if(pageService.hasReference(row.getPage())) {
+				referenced |= true;
+			} else {
+				pageService.deletePage(row.getPage().getKey());
+			}
 		}
 		loadModel(ureq, null);
+		if(referenced) {
+			showWarning("warning.delete.page");
+		}
 	}
 }
