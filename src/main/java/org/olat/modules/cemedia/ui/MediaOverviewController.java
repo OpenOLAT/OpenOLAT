@@ -114,7 +114,15 @@ public class MediaOverviewController extends FormBasicController implements Acti
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
 		MediaHandlerVersion handlerVersion = handler.hasVersion();
+		
+		versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.current", null, formLayout, getTranslator());
+		versionDropdownItem.setIconCSS("o_icon o_icon_version");
+		versionDropdownItem.setOrientation(DropdownOrientation.right);
+		versionDropdownItem.setButton(true);
+		versionDropdownItem.setVisible(handlerVersion.hasVersion());
+		
 		if(editable && handlerVersion.hasVersion()) {
 			
 			setVersionButton = uifactory.addFormLink("set.version", "set.version", null, formLayout, Link.BUTTON);
@@ -138,10 +146,6 @@ public class MediaOverviewController extends FormBasicController implements Acti
 				}
 				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
 			}
-			versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.current", null, formLayout, getTranslator());
-			versionDropdownItem.setIconCSS("o_icon o_icon_version");
-			versionDropdownItem.setOrientation(DropdownOrientation.right);
-			versionDropdownItem.setButton(true);
 			loadVersions();
 		}
 		
