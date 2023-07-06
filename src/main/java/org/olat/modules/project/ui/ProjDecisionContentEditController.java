@@ -58,6 +58,7 @@ public class ProjDecisionContentEditController extends FormBasicController {
 	private TextAreaElement detailsEl;
 	
 	private final ProjProject project;
+	private final boolean template;
 	private ProjDecision decision;
 	private final List<TagInfo> projectTags;
 	private final boolean readOnly;
@@ -69,11 +70,12 @@ public class ProjDecisionContentEditController extends FormBasicController {
 	public ProjDecisionContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
 			ProjProject project, ProjDecision decision, boolean readOnly) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "decision_edit", mainForm);
-		this.readOnly = readOnly;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.project = project;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.decision = decision;
 		this.projectTags = projectService.getTagInfos(project, decision != null? decision.getArtefact(): null);
+		this.readOnly = readOnly;
 		
 		initForm(ureq);
 	}
@@ -97,7 +99,7 @@ public class ProjDecisionContentEditController extends FormBasicController {
 				formLayout);
 		detailsEl.setEnabled(!readOnly);
 
-		Date decisionDate = decision != null? decision.getDecisionDate(): new Date();
+		Date decisionDate = decision != null? decision.getDecisionDate(): !template? new Date(): null;
 		decisionDateEl = uifactory.addDateChooser("decision.date", "decision.edit.decision.date", decisionDate, formLayout);
 		decisionDateEl.setDateChooserTimeEnabled(true);
 		decisionDateEl.setEnabled(!readOnly);

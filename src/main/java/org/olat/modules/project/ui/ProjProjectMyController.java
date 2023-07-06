@@ -38,6 +38,16 @@ public class ProjProjectMyController extends ProjProjectListController {
 		initForm(ureq);
 		loadModel(ureq);
 	}
+
+	@Override
+	protected boolean isCreateProjectEnabled() {
+		return true;
+	}
+
+	@Override
+	protected boolean isCreateTemplateEnabled() {
+		return false;
+	}
 	
 	@Override
 	protected boolean isCreateFromTemplateEnabled() {

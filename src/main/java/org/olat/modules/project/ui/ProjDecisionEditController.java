@@ -55,6 +55,7 @@ public class ProjDecisionEditController extends FormBasicController {
 	private ProjArtefactMetadataController metadataCtrl;
 
 	private final ProjProject project;
+	private final boolean template;
 	private final ProjDecision decision;
 	private final Set<Identity> members;
 	private final boolean readOnly;
@@ -71,6 +72,7 @@ public class ProjDecisionEditController extends FormBasicController {
 			Set<Identity> members, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
 		this.project = project;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.decision = null;
 		this.members = members;
 		this.readOnly = false;
@@ -83,6 +85,7 @@ public class ProjDecisionEditController extends FormBasicController {
 			Set<Identity> members, boolean readOnly, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
 		this.project = decision.getArtefact().getProject();
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.decision = decision;
 		this.members = members;
 		this.readOnly = readOnly;
@@ -107,7 +110,7 @@ public class ProjDecisionEditController extends FormBasicController {
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		if (readOnly) {
+		if (readOnly || template) {
 			memberViewCtrl = new UsersAvatarController(ureq, getWindowControl(), mainForm, members);
 			listenTo(memberViewCtrl);
 			formLayout.add("member", memberViewCtrl.getInitialFormItem());
@@ -185,7 +188,9 @@ public class ProjDecisionEditController extends FormBasicController {
 		contentCtrl.formOK(ureq);
 		ProjDecision decision = contentCtrl.getDecision();
 		referenceCtrl.save(decision.getArtefact());
-		memberCtrl.save(decision.getArtefact());
+		if (memberCtrl != null) {
+			memberCtrl.save(decision.getArtefact());
+		}
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}
 

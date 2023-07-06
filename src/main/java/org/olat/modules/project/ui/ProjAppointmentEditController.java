@@ -39,6 +39,7 @@ import org.olat.modules.project.ProjArtefact;
 import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.user.UsersAvatarController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,10 +52,12 @@ public class ProjAppointmentEditController extends FormBasicController {
 
 	private ProjAppointmentContentEditController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
-	private ProjArtefactMembersEditController memberCtrl;
+	private UsersAvatarController memberViewCtrl;
+	private ProjArtefactMembersEditController memberEditCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
 	private final ProjProject project;
+	private final boolean template;
 	private final ProjAppointment appointment;
 	private final Set<Identity> members;
 	private final boolean withOpenInSameWindow;
@@ -70,6 +73,7 @@ public class ProjAppointmentEditController extends FormBasicController {
 			Set<Identity> members, boolean withOpenInSameWindow, Date initialStartDate) {
 		super(ureq, wControl, "edit");
 		this.project = project;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.appointment = null;
 		this.members = members;
 		this.withOpenInSameWindow = withOpenInSameWindow;
@@ -82,6 +86,7 @@ public class ProjAppointmentEditController extends FormBasicController {
 			Set<Identity> members, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
 		this.project = appointment.getArtefact().getProject();
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.appointment = appointment;
 		this.members = members;
 		this.withOpenInSameWindow = withOpenInSameWindow;
@@ -96,7 +101,7 @@ public class ProjAppointmentEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		contentCtrl = new ProjAppointmentContentEditController(ureq, getWindowControl(), mainForm, project, appointment, initialStartDate);
+		contentCtrl = new ProjAppointmentContentEditController(ureq, getWindowControl(), mainForm, project, template, appointment, initialStartDate);
 		listenTo(contentCtrl);
 		formLayout.add("content", contentCtrl.getInitialFormItem());
 		
@@ -106,11 +111,18 @@ public class ProjAppointmentEditController extends FormBasicController {
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
-		memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, null);
-		listenTo(memberCtrl);
-		formLayout.add("member", memberCtrl.getInitialFormItem());
-		flc.contextPut("memberOpen", memberOpen);
+		if (template) {
+			memberViewCtrl = new UsersAvatarController(ureq, getWindowControl(), mainForm, members);
+			listenTo(memberViewCtrl);
+			formLayout.add("member", memberViewCtrl.getInitialFormItem());
+			flc.contextPut("memberOpen", memberOpen);
+		} else {
+			List<Identity> projectMembers = projectService.getMembers(project, ProjectRole.PROJECT_ROLES);
+			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, null);
+			listenTo(memberEditCtrl);
+			formLayout.add("member", memberEditCtrl.getInitialFormItem());
+			flc.contextPut("memberOpen", memberOpen);
+		}
 		
 		if (artefact != null) {
 			metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, artefact);
@@ -149,8 +161,8 @@ public class ProjAppointmentEditController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(memberOpenVal)) {
 				memberOpen = Boolean.valueOf(memberOpenVal);
 				flc.contextPut("memberOpen", memberOpen);
-				if (memberOpen.booleanValue()) {
-					memberCtrl.initSelection();
+				if (memberOpen.booleanValue() && memberEditCtrl != null) {
+					memberEditCtrl.initSelection();
 				}
 			}
 			String metadataOpenVal = ureq.getParameter("metadataOpen");
@@ -172,7 +184,9 @@ public class ProjAppointmentEditController extends FormBasicController {
 		contentCtrl.formOK(ureq);
 		ProjAppointment appointment = contentCtrl.getAppointment();
 		referenceCtrl.save(appointment.getArtefact());
-		memberCtrl.save(appointment.getArtefact());
+		if (memberEditCtrl != null) {
+			memberEditCtrl.save(appointment.getArtefact());
+		}
 		fireEvent(ureq, FormEvent.DONE_EVENT);
 	}
 

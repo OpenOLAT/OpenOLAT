@@ -49,6 +49,7 @@ public class ProjProjectRow implements ProjProjectRef {
 	private Date lastActivityDate;
 	private String modified;
 	private Set<Long> memberKeys;
+	private Set<Long> ownerKeys;
 	private String ownersNames;
 	private String url;
 	private boolean template;
@@ -136,6 +137,14 @@ public class ProjProjectRow implements ProjProjectRef {
 
 	public void setMemberKeys(Set<Long> memberKeys) {
 		this.memberKeys = memberKeys;
+	}
+
+	public Set<Long> getOwnerKeys() {
+		return ownerKeys;
+	}
+
+	public void setOwnerKeys(Set<Long> ownerKeys) {
+		this.ownerKeys = ownerKeys;
 	}
 
 	public String getOwnersNames() {

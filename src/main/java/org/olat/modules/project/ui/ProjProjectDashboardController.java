@@ -258,6 +258,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 	
 	public void reload(UserRequest ureq, Controller exceptCtrl) {
 		if (exceptCtrl != this) {
+			project = projectService.getProject(project);
 			putProjectToVC();
 		}
 		if (exceptCtrl != quickWidgetCtrl) {

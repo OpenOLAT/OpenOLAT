@@ -164,11 +164,11 @@ public class ProjProjectEditController extends FormBasicController {
 	private ProjProjectEditController(UserRequest ureq, WindowControl wControl, ProjProject initialProject, boolean createForEnabled, boolean template) {
 		super(ureq, wControl, LAYOUT_VERTICAL);
 		this.initialProject = initialProject;
-		this.initialTitle = translate("project.title.copy", StringHelper.blankIfNull(initialProject.getTitle()));
+		this.initialTitle = initialProject != null? translate("project.title.copy", StringHelper.blankIfNull(initialProject.getTitle())): null;
 		this.readOnly = false;
 		this.createForEnabled = createForEnabled;
 		this.template = template;
-		this.copyArtefacts = true;
+		this.copyArtefacts = initialProject != null;
 		this.owner = getIdentity();
 		initForm(ureq);
 	}
@@ -194,8 +194,10 @@ public class ProjProjectEditController extends FormBasicController {
 				templateEl = uifactory.addRadiosHorizontal("project.template.visibility", formLayout, templateSV.keys(), templateSV.values());
 				templateEl.setEnabled(!readOnly);
 				templateEl.addActionListener(FormEvent.ONCHANGE);
-				templateEl.select(TEMPLATE_KEY, initialProject.isTemplatePrivate());
-				templateEl.select(TEMPLATE_PUBLIC_KEY, initialProject.isTemplatePublic());
+				if (initialProject != null) {
+					templateEl.select(TEMPLATE_KEY, initialProject.isTemplatePrivate());
+					templateEl.select(TEMPLATE_PUBLIC_KEY, initialProject.isTemplatePublic());
+				}
 				if (!templateEl.isOneSelected()) {
 					templateEl.select(TEMPLATE_KEY, true);
 				}

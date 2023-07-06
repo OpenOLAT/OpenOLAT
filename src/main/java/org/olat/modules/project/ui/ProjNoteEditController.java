@@ -44,6 +44,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.project.ProjNote;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectService;
+import org.olat.user.UsersAvatarController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,9 +60,11 @@ public class ProjNoteEditController extends FormBasicController {
 
 	private ProjNoteContentEditController contentCtrl;
 	private ProjArtefactReferencesController referenceCtrl;
-	private ProjArtefactMembersEditController memberCtrl;
+	private UsersAvatarController memberViewCtrl;
+	private ProjArtefactMembersEditController memberEditCtrl;
 	private ProjArtefactMetadataController metadataCtrl;
 
+	private final boolean template;
 	private final ProjNote note;
 	private final Set<Identity> members;
 	private final boolean firstEdit;
@@ -76,6 +79,7 @@ public class ProjNoteEditController extends FormBasicController {
 
 	public ProjNoteEditController(UserRequest ureq, WindowControl wControl, ProjNote note, Set<Identity> members, boolean firstEdit, boolean withOpenInSameWindow) {
 		super(ureq, wControl, "edit");
+		this.template = note.getArtefact().getProject().isTemplatePrivate() || note.getArtefact().getProject().isTemplatePublic();
 		this.note = note;
 		this.members = members;
 		this.firstEdit = firstEdit;
@@ -108,11 +112,18 @@ public class ProjNoteEditController extends FormBasicController {
 		formLayout.add("reference", referenceCtrl.getInitialFormItem());
 		flc.contextPut("referenceOpen", referenceOpen);
 		
-		List<Identity> projectMembers = projectService.getMembers(note.getArtefact().getProject(), ProjectRole.PROJECT_ROLES);
-		memberCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, note.getArtefact());
-		listenTo(memberCtrl);
-		formLayout.add("member", memberCtrl.getInitialFormItem());
-		flc.contextPut("memberOpen", memberOpen);
+		if (template) {
+			memberViewCtrl = new UsersAvatarController(ureq, getWindowControl(), mainForm, members);
+			listenTo(memberViewCtrl);
+			formLayout.add("member", memberViewCtrl.getInitialFormItem());
+			flc.contextPut("memberOpen", memberOpen);
+		} else {
+			List<Identity> projectMembers = projectService.getMembers(note.getArtefact().getProject(), ProjectRole.PROJECT_ROLES);
+			memberEditCtrl = new ProjArtefactMembersEditController(ureq, getWindowControl(), mainForm, projectMembers, members, note.getArtefact());
+			listenTo(memberEditCtrl);
+			formLayout.add("member", memberEditCtrl.getInitialFormItem());
+			flc.contextPut("memberOpen", memberOpen);
+		}
 		
 		metadataCtrl = new ProjArtefactMetadataController(ureq, getWindowControl(), mainForm, note.getArtefact());
 		listenTo(metadataCtrl);
@@ -150,8 +161,8 @@ public class ProjNoteEditController extends FormBasicController {
 			if (StringHelper.containsNonWhitespace(memberOpenVal)) {
 				memberOpen = Boolean.valueOf(memberOpenVal);
 				flc.contextPut("memberOpen", memberOpen);
-				if (memberOpen.booleanValue()) {
-					memberCtrl.initSelection();
+				if (memberOpen.booleanValue() && memberEditCtrl != null) {
+					memberEditCtrl.initSelection();
 				}
 			}
 			String metadataOpenVal = ureq.getParameter("metadataOpen");

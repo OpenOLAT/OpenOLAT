@@ -51,6 +51,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 	private ToDoTaskEditForm toDoTaskEditForm;
 
 	private final ProjProject project;
+	private final boolean template;
 	private ProjToDo toDo;
 	
 	@Autowired
@@ -61,6 +62,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 	public ProjToDoContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm, ProjProject project, ProjToDo toDo) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.project = project;
+		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
 		this.toDo = toDo;
 		
 		initForm(ureq);
@@ -87,7 +89,7 @@ public class ProjToDoContentEditController extends FormBasicController {
 		
 		toDoTaskEditForm = new ToDoTaskEditForm(ureq, getWindowControl(), mainForm,
 				toDo != null ? toDo.getToDoTask() : null, false, null, null, projectMembers, false, assignees,
-				delegatees, tagInfos);
+				delegatees, !template, tagInfos, !template);
 		listenTo(toDoTaskEditForm);
 		formLayout.add(toDoTaskEditForm.getInitialFormItem());
 	}

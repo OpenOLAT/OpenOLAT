@@ -35,6 +35,16 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 			BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, stackPanel);
 	}
+
+	@Override
+	protected boolean isCreateProjectEnabled() {
+		return false;
+	}
+
+	@Override
+	protected boolean isCreateTemplateEnabled() {
+		return true;
+	}
 	
 	@Override
 	protected boolean isColumnCreateFromTemplateEnabled() {

@@ -78,6 +78,7 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private TextAreaElement descriptionEl;
 	
 	private final ProjAppointment appointment;
+	private final boolean template;
 	private final List<? extends TagInfo> projectTags;
 	private Date startDate;
 
@@ -85,12 +86,13 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 	private CalendarManager calendarManager;
 
 	public ProjAppointmentContentEditForm(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjAppointment appointment, List<? extends TagInfo> projectTags, Date initialStartDate) {
+			ProjAppointment appointment, boolean template, List<? extends TagInfo> projectTags, Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "appointment_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.appointment = appointment;
+		this.template = template;
 		this.projectTags = projectTags;
-		this.startDate = initialStartDate;
+		this.startDate = !template? initialStartDate: null;
 		
 		initForm(ureq);
 		updateAllDayUI();
@@ -125,9 +127,11 @@ public class ProjAppointmentContentEditForm extends FormBasicController {
 			endDate = DateUtils.addHours(startDate, 1);
 		}
 		startEl = uifactory.addDateChooser("start", "appointment.edit.start", startDate, formLayout);
+		startEl.setEnabled(!template);
 		startEl.addActionListener(FormEvent.ONCHANGE);
 		
 		endEl = uifactory.addDateChooser("end", "appointment.edit.end", endDate, formLayout);
+		endEl.setEnabled(!template);
 		
 		SelectionValues recurrenceSV = new SelectionValues();
 		recurrenceSV.add(entry(RECURRENCE_NONE, translate("cal.form.recurrence.none")));

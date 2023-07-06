@@ -68,6 +68,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 	private TextAreaElement descriptionEl;
 	
 	private final ProjProject project;
+	private final boolean template;
 	private ProjMilestone milestone;
 	private final List<TagInfo> projectTags;
 	private ProjMilestoneStatus status;
@@ -81,6 +82,9 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		super(ureq, wControl, LAYOUT_CUSTOM, "milestone_edit", mainForm);
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		this.project = project;
+		this.template = project != null
+				? project.isTemplatePrivate() || project.isTemplatePublic()
+				: false;
 		this.milestone = milestone;
 		this.status = milestone != null? milestone.getStatus(): ProjMilestoneStatus.open;
 		this.projectTags = projectService.getTagInfos(project, milestone != null? milestone.getArtefact(): null);
@@ -98,6 +102,7 @@ public class ProjMilestoneContentEditController extends FormBasicController {
 		
 		Date dueDate = milestone != null? milestone.getDueDate(): null;
 		dueEl = uifactory.addDateChooser("due", "milestone.edit.due", dueDate, formLayout);
+		dueEl.setEnabled(!template);
 		
 		statusEl = uifactory.addDropdownMenu("status", "", "milestone.edit.status", formLayout, getTranslator());
 		statusEl.addActionListener(FormEvent.ONCHANGE);

@@ -62,11 +62,13 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	private final Set<ProjectRole> roles;
 	private final boolean manager;
 	private final boolean template;
+	private final boolean templateManager;
 
 	public RoleProjectSecurityCallback(ProjProject project, Set<ProjectRole> roles, boolean manager) {
 		this.manager = manager;
 		this.template = project.isTemplatePrivate() || project.isTemplatePublic();
-		this.projectReadOnly = project.getStatus() == ProjectStatus.deleted || template;
+		this.templateManager = manager && template;
+		this.projectReadOnly = project.getStatus() == ProjectStatus.deleted || (template && !manager && !roles.contains(ProjectRole.owner));
 		this.roles = roles;
 	}
 
@@ -107,7 +109,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 
 	@Override
 	public boolean canViewMembers() {
-		return  true;
+		return true;
 	}
 
 	@Override
@@ -117,7 +119,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	
 	@Override
 	public boolean canViewTimeline() {
-		return !roles.isEmpty();
+		return templateManager || !roles.isEmpty();
 	}
 
 	@Override
@@ -174,7 +176,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canEdit(ToDoTask toDoTask, boolean assignee, boolean delegatee) {
 		return !projectReadOnly
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
-				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee);
+				&& (hasRole(ARTEFACT_UPDATE) || assignee || delegatee || templateManager);
 	}
 
 	@Override
@@ -186,7 +188,7 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	public boolean canDelete(ToDoTask toDoTask, boolean creator, boolean assignee, boolean delegatee) {
 		return !projectReadOnly 
 				&& ToDoStatus.deleted != toDoTask.getStatus() 
-				&& (hasRole(PROJECT_ADMIN) || creator);
+				&& (hasRole(PROJECT_ADMIN) || creator || templateManager);
 	}
 	
 	@Override
@@ -290,27 +292,27 @@ public class RoleProjectSecurityCallback implements ProjProjectSecurityCallback 
 	}
 	
 	private boolean canViewArtefacts() {
-		return !roles.isEmpty();
+		return templateManager || !roles.isEmpty();
 	}
 	
 	private boolean canCreateArtefacts() {
-		return !projectReadOnly && hasRole(ARTEFACT_UPDATE);
+		return !projectReadOnly && (templateManager || hasRole(ARTEFACT_UPDATE));
 	}
 
 	private boolean canEditArtefacts() {
-		return !projectReadOnly && hasRole(ARTEFACT_UPDATE);
+		return !projectReadOnly && (templateManager || hasRole(ARTEFACT_UPDATE));
 	}
 
 	private boolean canEditArtefact(ProjArtefact artefact) {
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != artefact.getStatus()
-				&& hasRole(ARTEFACT_UPDATE);
+				&& (templateManager || hasRole(ARTEFACT_UPDATE));
 	}
 
 	private boolean canDeleteArtefact(ProjArtefact artefact, IdentityRef identity) {
 		return !projectReadOnly 
 				&& ProjectStatus.deleted != artefact.getStatus()
-				&& (hasRole(PROJECT_ADMIN) || identity.getKey().equals(artefact.getCreator().getKey()));
+				&& (templateManager || hasRole(PROJECT_ADMIN) || identity.getKey().equals(artefact.getCreator().getKey()));
 	}
 
 	private boolean hasRole(Collection<ProjectRole> targetRoles) {

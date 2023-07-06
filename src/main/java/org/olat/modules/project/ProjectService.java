@@ -67,6 +67,8 @@ public interface ProjectService {
 
 	public List<Organisation> getOrganisations(ProjProjectRef project);
 	
+	public Map<Long, Set<Long>> getProjectKeyToOrganisationKey(List<? extends ProjProjectRef> projects);
+	
 	public void updateTemplateOrganisations(Identity doer, ProjProject project, Collection<Organisation> organisations);
 
 	public List<Organisation> getTemplateOrganisations(ProjProjectRef project);

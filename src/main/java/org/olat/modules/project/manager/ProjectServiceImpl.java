@@ -423,6 +423,11 @@ public class ProjectServiceImpl implements ProjectService, GenericEventListener 
 	}
 	
 	@Override
+	public Map<Long, Set<Long>> getProjectKeyToOrganisationKey(List<? extends ProjProjectRef> projects) {
+		return projectToOrganisationDao.getProjectKeyToOrganisationKeys(projects);
+	}
+	
+	@Override
 	public boolean isInOrganisation(ProjProjectRef project, Collection<OrganisationRef> organisations) {
 		List<Long> projectOrganisationKeys = getOrganisations(project).stream().map(Organisation::getKey).toList();
 		List<Long> organisationKeys = organisations.stream().map(OrganisationRef::getKey).toList();

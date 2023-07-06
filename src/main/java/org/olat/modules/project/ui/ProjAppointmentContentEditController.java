@@ -45,6 +45,7 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 	private ProjAppointmentContentEditForm appointmentContentEditForm;
 
 	private final ProjProject project;
+	private final boolean template;
 	private ProjAppointment appointment;
 	private final Date initialStartDate;
 	
@@ -52,9 +53,10 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 	private ProjectService projectService;
 
 	public ProjAppointmentContentEditController(UserRequest ureq, WindowControl wControl, Form mainForm,
-			ProjProject project, ProjAppointment appointment, Date initialStartDate) {
+			ProjProject project,  boolean template, ProjAppointment appointment, Date initialStartDate) {
 		super(ureq, wControl, LAYOUT_VERTICAL, null, mainForm);
 		this.project = project;
+		this.template = template;
 		this.appointment = appointment;
 		this.initialStartDate = initialStartDate;
 		
@@ -70,7 +72,7 @@ public class ProjAppointmentContentEditController extends FormBasicController {
 		List<TagInfo> tagInfos = projectService.getTagInfos(project, appointment != null? appointment.getArtefact(): null);
 		
 		Date startDate = appointment != null? appointment.getStartDate(): initialStartDate;
-		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, tagInfos, startDate);
+		appointmentContentEditForm = new ProjAppointmentContentEditForm(ureq, getWindowControl(), mainForm, appointment, template, tagInfos, startDate);
 		listenTo(appointmentContentEditForm);
 		formLayout.add(appointmentContentEditForm.getInitialFormItem());
 	}

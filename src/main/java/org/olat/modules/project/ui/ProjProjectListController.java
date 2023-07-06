@@ -83,6 +83,7 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Formatter;
@@ -143,6 +144,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	private final BreadcrumbedStackedPanel stackPanel;
 	private FormLink createLink;
+	private FormLink createTemplateLink;
 	private FormLink bulkDoneButton;
 	private FormLink bulkReopenButton;
 	private FormLink bulkDeletedButton;
@@ -169,6 +171,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private final boolean canCreateProject;
+	private final boolean canCreateTemplate;
 	private final MapperKey avatarMapperKey;
 	private final Formatter formatter;
 	private final ProjProjectImageMapper projectImageMapper;
@@ -191,13 +194,19 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		super(ureq, wControl, "project_list");
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
-		this.canCreateProject = projectModule.canCreateProject(ureq.getUserSession().getRoles());
+		this.canCreateProject = isCreateProjectEnabled() && projectModule.canCreateProject(ureq.getUserSession().getRoles());
+		this.canCreateTemplate = isCreateTemplateEnabled() && 
+				(ureq.getUserSession().getRoles().isProjectManager() || ureq.getUserSession().getRoles().isAdministrator());
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.formatter = Formatter.getInstance(getLocale());
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
 		this.projectMapperUrl = registerCacheableMapper(ureq, ProjProjectImageMapper.DEFAULT_ID, projectImageMapper,
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 	}
+	
+	protected abstract boolean isCreateProjectEnabled();
+	
+	protected abstract boolean isCreateTemplateEnabled();
 	
 	protected abstract boolean isCreateFromTemplateEnabled();
 	
@@ -230,6 +239,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		if (canCreateProject) {
 			createLink = uifactory.addFormLink("project.create", formLayout, Link.BUTTON);
 			createLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
+		} else if (canCreateTemplate) {
+			createTemplateLink = uifactory.addFormLink("project.create", "project.template.create", "project.template.create", formLayout, Link.BUTTON);
+			createTemplateLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
 		if (isCreateFromTemplateEnabled()) {
@@ -418,6 +430,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private void doSelectFilterTab(FlexiFiltersTab tab) {
 		if (canCreateProject && !(tabNoActivity == tab || tabToDelete == tab || tabDone == tab || tabDeleted == tab)) {
 			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project", "project.create", "o_icon_add", false);
+		} else if (canCreateTemplate && !(tabNoActivity == tab || tabToDelete == tab || tabDone == tab || tabDeleted == tab)) {
+			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project", "project.template.create", "o_icon_add", false);
 		} else {
 			tableEl.setEmptyTableSettings("project.list.empty.message", null, "o_icon_proj_project");
 		}
@@ -456,17 +470,13 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	protected void loadModel(UserRequest ureq) {
 		ProjProjectSearchParams searchParams = createSearchParams();
-		if (getSearchTemplates() != null) {
-			if (getSearchTemplates()) {
-				searchParams.setTemplate(Boolean.TRUE);
-				searchParams.setTemplateOrganisations(ureq.getUserSession().getRoles().getOrganisations());
-			} else {
-				searchParams.setTemplate(Boolean.FALSE);
-			}
-		}
-		
+		applyTemplateFilter(ureq, searchParams);
 		applyFilters(searchParams);
 		List<ProjProject> projects = projectService.getProjects(searchParams);
+		
+		Map<Long, Set<Long>> projectKeyToOrganisationKey = getSearchTemplates() != null
+				? projectService.getProjectKeyToOrganisationKey(projects)
+				: Map.of();
 		
 		Map<Long, List<Identity>> projectKeyToOwners = projectService.getProjectGroupKeyToMembers(projects, List.of(ProjectRole.owner));
 		Map<Long, List<Identity>> projectKeyToMembers = projectService.getProjectGroupKeyToMembers(projects, ProjectRole.PROJECT_ROLES);
@@ -486,11 +496,14 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			
 			List<Identity> owners = projectKeyToOwners.get(project.getBaseGroup().getKey());
 			if (owners != null && !owners.isEmpty()) {
+				row.setOwnerKeys(owners.stream().map(Identity::getKey).collect(Collectors.toSet()));
 				String ownersNames = owners.stream()
 						.map(userManager::getUserDisplayName)
 						.sorted()
 						.collect(Collectors.joining(" / "));
 				row.setOwnersNames(ownersNames);
+			} else {
+				row.setOwnerKeys(Set.of());
 			}
 			
 			ProjActivity activity = projectKeyToLastActivity.get(project.getKey());
@@ -515,8 +528,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			row.setMemberKeys(members.stream().map(Identity::getKey).collect(Collectors.toSet()));
 			forgeProjAvatar(row, project);
 			forgeUsersPortraits(ureq, row, members);
-			forgeSelectLink(row);
-			forgeCreateFormTemplateLink(row, project);
+			forgeSelectLink(ureq, row, projectKeyToOrganisationKey.getOrDefault(project.getKey(), Set.of()));
+			forgeCreateFormTemplateLink(row);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -526,6 +539,17 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		dataModel.setObjects(rows);
 		tableEl.sort(new SortKey(ProjectCols.lastAcitivityDate.name(), false));
 		tableEl.reset(true, true, true);
+	}
+
+	private void applyTemplateFilter(UserRequest ureq, ProjProjectSearchParams searchParams) {
+		if (getSearchTemplates() != null) {
+			if (getSearchTemplates()) {
+				searchParams.setTemplate(Boolean.TRUE);
+				searchParams.setTemplateOrganisations(ureq.getUserSession().getRoles().getOrganisations());
+			} else {
+				searchParams.setTemplate(Boolean.FALSE);
+			}
+		}
 	}
 
 	private void applyFilters(ProjProjectSearchParams searchParams) {
@@ -604,16 +628,26 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		row.setUserPortraits(usersPortraitCmp);
 	}
 
-	private void forgeSelectLink(ProjProjectRow row) {
-		FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "project.open", null, flc, Link.LINK);
-		link.setIconRightCSS("o_icon o_icon_start");
-		link.setUrl(row.getUrl());
-		link.setUserObject(row);
-		row.setSelectLink(link);
+	private void forgeSelectLink(UserRequest ureq, ProjProjectRow row, Set<Long> organisationKeys) {
+		if (!row.isTemplate() || isOwnerOrManager(ureq, row, organisationKeys)) {
+			FormLink link = uifactory.addFormLink("select_" + row.getKey(), CMD_SELECT, "project.open", null, flc, Link.LINK);
+			link.setIconRightCSS("o_icon o_icon_start");
+			link.setUrl(row.getUrl());
+			link.setUserObject(row);
+			row.setSelectLink(link);
+		}
 	}
 	
-	private void forgeCreateFormTemplateLink(ProjProjectRow row, ProjProject project) {
-		if (project.isTemplatePrivate() || project.isTemplatePublic()) {
+	private boolean isOwnerOrManager(UserRequest ureq, ProjProjectRow row, Set<Long> organisationKeys) {
+		return row.getOwnerKeys().contains(getIdentity().getKey())
+				|| ureq.getUserSession().getRoles()
+					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager)
+					.stream().map(OrganisationRef::getKey)
+					.anyMatch(key -> organisationKeys.contains(key));
+	}
+
+	private void forgeCreateFormTemplateLink(ProjProjectRow row) {
+		if (row.isTemplate()) {
 			FormLink link = uifactory.addFormLink("ctemp_" + row.getKey(), CMD_CREATE_FROM_TEMPLATE, "project.create.from.template", null, flc, Link.LINK);
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setUserObject(row);
@@ -666,6 +700,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == createLink){
 			doCreateProject(ureq);
+		} else if (createTemplateLink == source) {
+			doCreateTemplate(ureq);
 		} else if (bulkDoneButton == source) {
 			doConfirmBulkStatusDone(ureq);
 		} else if (bulkReopenButton == source) {
@@ -688,7 +724,11 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				doSelectFilterTab(((FlexiTableFilterTabEvent)event).getTab());
 				loadModel(ureq);
 			} else if (event instanceof FlexiTableEmptyNextPrimaryActionEvent) {
-				doCreateProject(ureq);
+				if (canCreateProject) {
+					doCreateProject(ureq);
+				} else if (canCreateTemplate) {
+					doCreateTemplate(ureq);
+				}
 			}
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
@@ -828,6 +868,18 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		listenTo(cmc);
 		cmc.activate();
 	}
+
+	private void doCreateTemplate(UserRequest ureq) {
+		if (guardModalController(editCtrl)) return;
+		
+		editCtrl = ProjProjectEditController.createTemplateCtrl(ureq, getWindowControl(), null);
+		listenTo(editCtrl);
+		
+		String title = translate("project.template.create");
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
 	
 	private void doEditProject(UserRequest ureq, ProjProjectRef projectRef) {
 		if (guardModalController(editCtrl)) return;
@@ -854,6 +906,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		stackPanel.popUpToRootController(ureq);
 		
 		ProjProjectSearchParams searchParams = createSearchParams();
+		applyTemplateFilter(ureq, searchParams);
 		searchParams.setProjectKeys(List.of(() -> projectKey));
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		if (projects != null && !projects.isEmpty()) {

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.TypedQuery;
@@ -111,11 +112,11 @@ public class ProjProjectToOrganisationDAO {
 				.getResultList();
 	}
 	
-	public Map<Long, List<Long>> getProjProjectKeyToOrganisations(Collection<? extends ProjProjectRef> projects) {
+	public Map<Long, Set<Long>> getProjectKeyToOrganisationKeys(Collection<? extends ProjProjectRef> projects) {
 		return loadRelations(projects).stream()
 				.collect(Collectors.groupingBy(
 						oto -> oto.getProject().getKey(),
-						Collectors.mapping(oto -> oto.getOrganisation().getKey(), Collectors.toList())));
+						Collectors.mapping(oto -> oto.getOrganisation().getKey(), Collectors.toSet())));
 	}
 	
 	public List<Organisation> loadOrganisations(ProjProjectRef project) {
