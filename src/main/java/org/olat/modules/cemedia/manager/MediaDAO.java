@@ -526,11 +526,11 @@ public class MediaDAO {
 			Long mediaVersionKey = (Long)object[7];
 			String mediaVersionName = (String)object[8];
 			
-			String userFullName = toFullName((String)object[8], (String)object[9]);
+			String userFullName = toFullName((String)object[9], (String)object[10]);
 
-			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 10);
+			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 11);
 			boolean linkedByGroup = numOfLinkedGroups != null && numOfLinkedGroups.longValue() > 0l;
-			Long numOfOwners = PersistenceHelper.extractLong(object, 11);
+			Long numOfOwners = PersistenceHelper.extractLong(object, 12);
 			boolean linkedByOwnership = numOfOwners != null && numOfOwners.longValue() > 0l;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
