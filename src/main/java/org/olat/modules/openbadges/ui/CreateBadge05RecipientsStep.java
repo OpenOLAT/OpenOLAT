@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.user.UserManager;
@@ -108,7 +109,8 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 			uifactory.addStaticTextElement("form.recipients.preview.description", null,
 					translate("form.recipients.preview.description"), formLayout);
 
-			CourseEnvironment courseEnv = CourseFactory.loadCourse(createContext.getCourse()).getCourseEnvironment();
+			ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
+			CourseEnvironment courseEnv = course.getCourseEnvironment();
 			List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
 
 			boolean isAdministrator = baseSecurityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());

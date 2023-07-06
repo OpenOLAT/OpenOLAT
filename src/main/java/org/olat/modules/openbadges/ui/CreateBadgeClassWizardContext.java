@@ -49,7 +49,7 @@ public class CreateBadgeClassWizardContext {
 	public static final String KEY = "createBadgeClassWizardContext";
 
 	private final BadgeClass badgeClass;
-	private final ICourse course;
+	private final Long courseResourcableId;
 	private Long selectedTemplateKey;
 	private String selectedTemplateImage;
 	private Set<String> templateVariables;
@@ -61,7 +61,8 @@ public class CreateBadgeClassWizardContext {
 
 	public CreateBadgeClassWizardContext(RepositoryEntry entry) {
 		mode = Mode.create;
-		course = entry != null ? CourseFactory.loadCourse(entry) : null;
+		ICourse course = entry != null ? CourseFactory.loadCourse(entry) : null;
+		courseResourcableId = course != null ? course.getResourceableId() : null;
 		BadgeClassImpl badgeClassImpl = new BadgeClassImpl();
 		badgeClassImpl.setUuid(OpenBadgesUIFactory.createIdentifier());
 		badgeClassImpl.setStatus(BadgeClass.BadgeClassStatus.preparation);
@@ -89,7 +90,8 @@ public class CreateBadgeClassWizardContext {
 
 	public CreateBadgeClassWizardContext(BadgeClass badgeClass) {
 		mode = Mode.edit;
-		course = CourseFactory.loadCourse(badgeClass.getEntry());
+		ICourse course = badgeClass.getEntry() != null ? CourseFactory.loadCourse(badgeClass.getEntry()) : null;
+		courseResourcableId = course != null ? course.getResourceableId() : null;
 		backgroundColorId = null;
 		title = null;
 		badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
@@ -122,8 +124,8 @@ public class CreateBadgeClassWizardContext {
 		this.selectedTemplateImage = selectedTemplateImage;
 	}
 
-	public ICourse getCourse() {
-		return course;
+	public Long getCourseResourcableId() {
+		return courseResourcableId;
 	}
 
 	public String getBackgroundColorId() {

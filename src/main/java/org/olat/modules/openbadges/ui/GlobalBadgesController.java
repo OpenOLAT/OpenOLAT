@@ -206,14 +206,19 @@ public class GlobalBadgesController extends FormBasicController {
 	}
 
 	private void doEdit(UserRequest ureq, BadgeClass badgeClass) {
-		editClassCtrl = new EditBadgeClassController(ureq, getWindowControl(), badgeClass);
-		listenTo(editClassCtrl);
+		createBadgeClassContext = new CreateBadgeClassWizardContext(badgeClass);
+		Step start = new CreateBadge02DetailsStep(ureq, createBadgeClassContext);
 
-		String title = translate("class.edit");
-		cmc = new CloseableModalController(getWindowControl(), translate("close"),
-				editClassCtrl.getInitialComponent(), true, title);
-		listenTo(cmc);
-		cmc.activate();
+		StepRunnerCallback finish = (innerUreq, innerWControl, innerRunContext) -> {
+			openBadgesManager.updateBadgeClass(createBadgeClassContext.getBadgeClass());
+			updateUI();
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+
+		addStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("form.add.global.badge"), "o_sel_add_badge_wizard");
+		listenTo(addStepsController);
+		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
 	}
 
 	private void doConfirmDelete(UserRequest ureq, BadgeClass badgeClass) {

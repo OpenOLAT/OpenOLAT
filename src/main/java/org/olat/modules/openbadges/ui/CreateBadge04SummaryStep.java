@@ -58,7 +58,7 @@ public class CreateBadge04SummaryStep extends BasicStep {
 	public CreateBadge04SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.summary", null);
-		if (createBadgeClassContext.getCourse() == null) {
+		if (createBadgeClassContext.getCourseResourcableId() == null) {
 			setNextStep(Step.NOSTEP);
 		} else {
 			setNextStep(new CreateBadge05RecipientsStep(ureq, createBadgeClassContext));

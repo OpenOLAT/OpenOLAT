@@ -153,7 +153,6 @@ public class OpenBadgesRunController extends FormBasicController implements Acti
 				translate("form.add.new.badge"), "o_sel_add_badge_wizard");
 		listenTo(addStepsController);
 		getWindowControl().pushAsModalDialog(addStepsController.getInitialComponent());
-
 	}
 
 	@Override

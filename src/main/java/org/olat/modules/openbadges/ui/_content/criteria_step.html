@@ -2,6 +2,9 @@
 	<legend>$r.translate("form.award.criteria")</legend>
 	$r.render("form.criteria.summary.explanation", "horizontal", "form")
 	$r.render("form.criteria.description", "3_9", "form")
+
+	#if($showAwardProcedure)
+
 	<legend>$r.translate("form.award.procedure")</legend>
 	$r.render("form.award.procedure.description", "horizontal", "form")
 	$r.render("form.award.procedure", "3_9", "form")
@@ -19,25 +22,32 @@
 			$r.render($condition.getAndTextEl().getComponent().getComponentName(), "horizontal", "form")
 		#end
 		<div class="row">
-			<div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+			<div class="col-xs-12 col-sm-6 col-md-4 col-lg-3">
 				#if($r.visible($condition.getConditionDropdown().getName()))
 					$r.render($condition.getConditionDropdown().getName(), "horizontal", "form")
 				#end
 			</div>
-			<div class="col-xs-2 col-sm-2 col-md-2 col-lg-1">
-				#if($r.visible($condition.getSymbolDropdown().getName()))
-					$r.render($condition.getSymbolDropdown().getName(), "horizontal", "form")
-				#end
+			<div class="col-xs-offset-1 col-xs-10 col-sm-offset-0 col-sm-5 col-md-4 col-lg-2">
+				<div class="row">
+					<div class="col-xs-5">
+						#if($r.visible($condition.getSymbolDropdown().getName()))
+						$r.render($condition.getSymbolDropdown().getName(), "horizontal", "form")
+						#end
+					</div>
+					<div class="col-xs-5">
+						#if($r.visible($condition.getValueEl().getComponent().getComponentName()))
+						$r.render($condition.getValueEl().getComponent().getComponentName(), "horizontal", "form")
+						#end
+					</div>
+					<div class="col-xs-2">
+						#if($r.visible($condition.getUnitEl().getComponent().getComponentName()))
+						$r.render($condition.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
+						#end
+					</div>
+				</div>
 			</div>
-			<div class="col-xs-3 col-sm-3 col-md-2 col-lg-1">
-				#if($r.visible($condition.getValueEl().getComponent().getComponentName()))
-				$r.render($condition.getValueEl().getComponent().getComponentName(), "horizontal", "form")
-				#end
-			</div>
-			<div class="col-xs-1" style="padding-left: 0;">
-				#if($r.visible($condition.getUnitEl().getComponent().getComponentName()))
-				$r.render($condition.getUnitEl().getComponent().getComponentName(), "horizontal", "form")
-				#end
+			<div class="col-xs-1">
+				$r.render($condition.getDeleteLink().getComponent().getComponentName())
 			</div>
 		</div>
 	#end
@@ -48,5 +58,6 @@
 		</div>
 	</div>
 
-	#end
+	#end <!-- if awardAutomatically -->
+	#end <!-- if showAwardProcedure -->
 </div>

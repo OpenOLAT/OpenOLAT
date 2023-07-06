@@ -26,12 +26,14 @@ import java.util.stream.Collectors;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.SelectionValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -77,6 +79,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			private final SingleSelection symbolDropdown;
 			private final TextElement valueEl;
 			private final StaticTextElement unitEl;
+			private final FormLink deleteLink;
 
 			Condition(String id, BadgeCondition badgeCondition, FormItemContainer formLayout, boolean showAndLabel) {
 				this.id = id;
@@ -102,6 +105,11 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 				unitEl = uifactory.addStaticTextElement("form.condition.unit." + id, null,
 						"", formLayout);
+
+				deleteLink = uifactory.addFormLink("delete." + id, "delete." + id, "", "",
+						formLayout, Link.BUTTON | Link.NONTRANSLATED);
+				deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
+				deleteLink.setUserObject(this);
 
 				if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
 					symbolDropdown.setVisible(true);
@@ -159,12 +167,16 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				return unitEl;
 			}
 
+			public FormLink getDeleteLink() {
+				return deleteLink;
+			}
+
 			public BadgeCondition asBadgeCondition() {
 				return switch (conditionDropdown.getSelectedKey()) {
 					case CoursePassedCondition.KEY -> new CoursePassedCondition();
 					case CourseScoreCondition.KEY -> new CourseScoreCondition(
-							CourseScoreCondition.Symbol.valueOf(symbolDropdown.getSelectedKey()),
-							Double.valueOf(valueEl.getValue())
+							CourseScoreCondition.Symbol.valueOf(symbolDropdown.isOneSelected() ? symbolDropdown.getSelectedKey() : symbolDropdown.getKeys()[0]),
+							StringHelper.containsNonWhitespace(valueEl.getValue()) ? Double.valueOf(valueEl.getValue()) : 0
 					);
 					default -> null;
 				};
@@ -220,11 +232,28 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 			} else if (source.getUserObject() instanceof Condition condition) {
 				if (source == condition.getConditionDropdown()) {
 					condition.updateVisibilities();
+					setVelocityConditions();
+				} else if (source == condition.getDeleteLink()) {
+					conditions.remove(condition);
+					setVelocityConditions();
 				}
 			} else if (source == newRule) {
 				doAddCondition();
 			}
 			super.formInnerEvent(ureq, source, event);
+		}
+
+		private void setVelocityConditions() {
+			flc.contextPut("conditions", conditions);
+
+			SelectionValues newConditionsKV = new SelectionValues();
+			newConditionsKV.addAll(conditionsKV);
+
+			for (Condition condition : conditions) {
+				newConditionsKV.remove(condition.asBadgeCondition().getKey());
+			}
+			newRule.setVisible(!newConditionsKV.isEmpty());
+			newRule.setKeysAndValues(newConditionsKV.keys(), newConditionsKV.values(), null);
 		}
 
 		private void doAddCondition() {
@@ -237,10 +266,12 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				case CourseScoreCondition.KEY -> new CourseScoreCondition(CourseScoreCondition.Symbol.greaterThan, 1);
 				default -> null;
 			};
-			String id = Long.toString(conditions.size());
-			Condition condition = new Condition(id, newBadgeCondition, flc, !conditions.isEmpty());
-			conditions.add(condition);
-			flc.contextPut("conditions", conditions);
+			if (newBadgeCondition != null) {
+				String id = Long.toString(conditions.size());
+				Condition condition = new Condition(id, newBadgeCondition, flc, !conditions.isEmpty());
+				conditions.add(condition);
+				setVelocityConditions();
+			}
 		}
 
 		@Override
@@ -287,6 +318,9 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+			boolean showAwardProcedure = createContext.getCourseResourcableId() != null;
+			flc.contextPut("showAwardProcedure", showAwardProcedure);
+
 			BadgeCriteria badgeCriteria = createContext.getBadgeCriteria();
 			boolean awardAutomatically = badgeCriteria.isAwardAutomatically();
 			flc.contextPut("awardAutomatically", awardAutomatically);
@@ -313,12 +347,12 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 						translate("form.criteria.condition.met"), formLayout);
 			}
 
-			buildConditionsFromContext(formLayout);
-
 			newRule = uifactory.addDropdownSingleselect("form.condition.new", null,
 					formLayout, conditionsKV.keys(), conditionsKV.values());
 			newRule.enableNoneSelection(translate("form.criteria.new.rule"));
 			newRule.addActionListener(FormEvent.ONCHANGE);
+
+			buildConditionsFromContext(formLayout);
 		}
 
 		private void buildConditionsFromContext(FormItemContainer formLayout) {
@@ -331,7 +365,7 @@ public class CreateBadge03CriteriaStep extends BasicStep {
 				Condition condition = new Condition(Integer.toString(i), badgeCondition, formLayout, i > 0);
 				conditions.add(condition);
 			}
-			flc.contextPut("conditions", conditions);
+			setVelocityConditions();
 		}
 	}
 }
