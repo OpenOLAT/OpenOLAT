@@ -43,7 +43,7 @@ public class MediaRow implements MediaLight {
 	private final String cssClass;
 	private final FormLink openFormLink;
 	private boolean versioned;
-	private final boolean hasThumbnail;
+	private boolean hasThumbnail;
 	private final String thumbnailName;
 	
 	private List<String> tags;
@@ -164,6 +164,10 @@ public class MediaRow implements MediaLight {
 	
 	public boolean isThumbnailAvailable() {
 		return version != null && hasThumbnail;
+	}
+	
+	public void setThumbnailAvailable(boolean available) {
+		this.hasThumbnail = available;
 	}
 	
 	public String getThumbnailName() {

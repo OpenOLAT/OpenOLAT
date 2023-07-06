@@ -103,6 +103,7 @@ import org.olat.modules.cemedia.MediaTag;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.FileHandler;
+import org.olat.modules.cemedia.handler.VideoHandler;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
@@ -110,6 +111,7 @@ import org.olat.modules.cemedia.ui.MediaDataModel.MediaCols;
 import org.olat.modules.cemedia.ui.event.MediaEvent;
 import org.olat.modules.cemedia.ui.event.MediaSelectionEvent;
 import org.olat.modules.cemedia.ui.event.UploadMediaEvent;
+import org.olat.modules.cemedia.ui.medias.AVVideoMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectCitationMediaController;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.CreateFileMediaController;
@@ -156,6 +158,7 @@ public class MediaCenterController extends FormBasicController
 	private FormLink addMediaLink;
 	private FormLink addTextLink;
 	private FormLink addCitationLink;
+	private FormLink recordVideoLink;
 	private FileElement uploadEl;
 	
 	private FlexiFiltersTab myTab;
@@ -175,6 +178,7 @@ public class MediaCenterController extends FormBasicController
 	private CloseableModalController cmc;
 	private MediaDetailsController detailsCtrl;
 	private MediaUploadController mediaUploadCtrl;
+	private AVVideoMediaController recordVideoCtrl;
 	private CreateFileMediaController createFileCtrl;
 	private CollectTextMediaController textUploadCtrl;
 	private CollectCitationMediaController citationUploadCtrl;
@@ -300,6 +304,10 @@ public class MediaCenterController extends FormBasicController
 		addCitationLink = uifactory.addFormLink("add.citation", formLayout, Link.LINK);
 		addCitationLink.setIconLeftCSS("o_icon o_icon-fw o_icon_citation");
 		addDropdown.addElement(addCitationLink);
+		
+		recordVideoLink = uifactory.addFormLink("create.version.video", formLayout, Link.LINK);
+		recordVideoLink.setIconLeftCSS("o_icon o_icon-fw o_icon_video_record");
+		addDropdown.addElement(recordVideoLink);
 		
 		if (editableFileTypes.isEmpty()) {
 			addFileLink = uifactory.addFormLink("add.file", formLayout, Link.LINK);
@@ -582,6 +590,8 @@ public class MediaCenterController extends FormBasicController
 			doAddTextMedia(ureq);
 		} else if(addCitationLink == source) {
 			doAddCitationMedia(ureq);
+		} else if(recordVideoLink == source) {
+			doRecordVideo(ureq);
 		} else if(bulkDeleteButton == source) {
 			doConfirmDelete(ureq);
 		} else if(uploadEl == source) {
@@ -629,24 +639,25 @@ public class MediaCenterController extends FormBasicController
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (createFileCtrl == source || mediaUploadCtrl == source || textUploadCtrl == source
-				|| citationUploadCtrl == source || confirmDeleteMediaCtrl == source) {
+				|| citationUploadCtrl == source || recordVideoCtrl == source || confirmDeleteMediaCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(false);
 			}
 			cmc.deactivate();
-			cleanUp();
-			
 			if(withSelect || event == Event.DONE_EVENT) {
 				if(createFileCtrl == source) {
-					doSelect(ureq, createFileCtrl.getMediaReference().getKey());
+					doOpenOrSelectNew(ureq, createFileCtrl.getMediaReference());
 				} else if(mediaUploadCtrl == source) {
-					doSelect(ureq, mediaUploadCtrl.getMediaReference().getKey());
+					doOpenOrSelectNew(ureq, mediaUploadCtrl.getMediaReference());
 				} else if(textUploadCtrl == source) {
-					doSelect(ureq, textUploadCtrl.getMediaReference().getKey());
+					doOpenOrSelectNew(ureq, textUploadCtrl.getMediaReference());
 				} else if(citationUploadCtrl == source) {
-					doSelect(ureq, citationUploadCtrl.getMediaReference().getKey());
+					doOpenOrSelectNew(ureq, citationUploadCtrl.getMediaReference());
+				} else if(recordVideoCtrl == source) {
+					doOpenOrSelectNew(ureq, recordVideoCtrl.getMediaReference());
 				}
 			}
+			cleanUp();
 		} else if(newMediasCtrl == source) {
 			newMediasCalloutCtrl.deactivate();
 			if("add.file".equals(event.getCommand())) {
@@ -678,12 +689,14 @@ public class MediaCenterController extends FormBasicController
 		removeAsListenerAndDispose(confirmDeleteMediaCtrl);
 		removeAsListenerAndDispose(citationUploadCtrl);
 		removeAsListenerAndDispose(mediaUploadCtrl);
+		removeAsListenerAndDispose(recordVideoCtrl);
 		removeAsListenerAndDispose(createFileCtrl);
 		removeAsListenerAndDispose(textUploadCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteMediaCtrl = null;
 		citationUploadCtrl = null;
 		mediaUploadCtrl = null;
+		recordVideoCtrl = null;
 		createFileCtrl = null;
 		textUploadCtrl = null;
 		cmc = null;
@@ -776,6 +789,34 @@ public class MediaCenterController extends FormBasicController
 		cmc.activate();
 	}
 
+	private void doRecordVideo(UserRequest ureq) {
+		if(guardModalController(recordVideoCtrl)) return;
+		
+		String businessPath = getWindowControl().getBusinessControl().getAsString();
+		recordVideoCtrl = new AVVideoMediaController(ureq, getWindowControl(), businessPath,
+				VideoHandler.MAX_RECORDING_TIME_IN_MS, VideoHandler.VIDEO_QUALITY);
+		listenTo(recordVideoCtrl);
+		
+		String title = translate("record.video");
+		cmc = new CloseableModalController(getWindowControl(), null, recordVideoCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doOpenOrSelectNew(UserRequest ureq, Media media) {
+		media = mediaService.getMediaByKey(media.getKey());
+		MediaHandler handler = mediaService.getMediaHandler(media.getType());
+		MediaVersion currentVersion = media.getVersions().get(0);
+		VFSLeaf thumbnail = handler.getThumbnail(currentVersion, THUMBNAIL_SIZE);
+		MediaRow mediaRow = model.getObjectByMediaKey(media.getKey());
+		mediaRow.setThumbnailAvailable(thumbnail != null);
+		if(withSelect) {
+			fireEvent(ureq, new MediaSelectionEvent(media));
+		} else {
+			doOpenMedia(ureq, media, currentVersion);
+		}
+	}
+
 	private void doSelect(UserRequest ureq, Long mediaKey) {
 		Media media = mediaService.getMediaByKey(mediaKey);
 		fireEvent(ureq, new MediaSelectionEvent(media));
@@ -795,13 +836,17 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private Activateable2 doOpenMedia(UserRequest ureq, Long mediaKey) {
-		stackPanel.popUpToController(this);
-		
-		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Media", mediaKey);
-		WindowControl swControl = addToHistory(ureq, bindersOres, null);
 		Media media = mediaService.getMediaByKey(mediaKey);
 		MediaVersion currentVersion = media.getVersions().get(0);
-		detailsCtrl = new MediaDetailsController(ureq, swControl, media, currentVersion);
+		return doOpenMedia(ureq, media, currentVersion);
+	}
+		
+	private Activateable2 doOpenMedia(UserRequest ureq, Media media, MediaVersion version) {
+		stackPanel.popUpToController(this);
+		
+		OLATResourceable bindersOres = OresHelper.createOLATResourceableInstance("Media", media.getKey());
+		WindowControl swControl = addToHistory(ureq, bindersOres, null);
+		detailsCtrl = new MediaDetailsController(ureq, swControl, media, version);
 		listenTo(detailsCtrl);
 		
 		stackPanel.pushController(media.getTitle(), detailsCtrl);
@@ -852,11 +897,11 @@ public class MediaCenterController extends FormBasicController
 	
 	private static class ThumbnailMapper implements Mapper {
 		
-		private final MediaDataModel binderModel;
+		private final MediaDataModel mediaModel;
 		private final MediaService mediaService;
 		
 		public ThumbnailMapper(MediaDataModel model, MediaService mediaService) {
-			this.binderModel = model;
+			this.mediaModel = model;
 			this.mediaService = mediaService;
 		}
 
@@ -871,15 +916,12 @@ public class MediaCenterController extends FormBasicController
 			int index = row.indexOf("/");
 			if(index > 0) {
 				row = row.substring(0, index);
-				Long key = Long.valueOf(row); 
-				List<MediaRow> rows = binderModel.getObjects();
-				for(MediaRow prow:rows) {
-					if(key.equals(prow.getKey())) {
-						MediaHandler handler = mediaService.getMediaHandler(prow.getType());
-						VFSLeaf thumbnail = handler.getThumbnail(prow.getVersion(), THUMBNAIL_SIZE);
-						if(thumbnail != null) {
-							mr = new VFSMediaResource(thumbnail);
-						}
+				MediaRow mediaRow = mediaModel.getObjectByMediaKey(Long.valueOf(row)); 
+				if(mediaRow != null) {
+					MediaHandler handler = mediaService.getMediaHandler(mediaRow.getType());
+					VFSLeaf thumbnail = handler.getThumbnail(mediaRow.getVersion(), THUMBNAIL_SIZE);
+					if(thumbnail != null) {
+						mr = new VFSMediaResource(thumbnail);
 					}
 				}
 			}

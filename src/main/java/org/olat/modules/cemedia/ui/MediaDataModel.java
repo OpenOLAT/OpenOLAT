@@ -90,6 +90,16 @@ public class MediaDataModel extends DefaultFlexiTableDataModel<MediaRow>
 		backups = objects;
 		super.setObjects(objects);
 	}
+	
+	public MediaRow getObjectByMediaKey(Long mediaKey) {
+		List<MediaRow> rows = getObjects();
+		for(MediaRow prow:rows) {
+			if(mediaKey.equals(prow.getKey())) {
+				return prow;
+			}
+		}
+		return null;
+	}
 		
 	public enum MediaCols implements FlexiSortableColumnDef {
 		key("table.header.key", true),
