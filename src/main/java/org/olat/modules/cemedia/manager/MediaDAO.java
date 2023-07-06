@@ -164,11 +164,6 @@ public class MediaDAO {
 		newVersion.setRootFilename(currentVersion.getRootFilename());
 		newVersion.setMetadata(currentVersion.getMetadata());
 		newVersion.setMedia(media);
-		if(media.getVersions().size() == 1) {
-			media.getVersions().add(newVersion);
-		} else {
-			media.getVersions().add(1, newVersion);
-		}
 		
 		currentVersion.setCollectionDate(collectionDate);
 		currentVersion.setVersionUuid(UUID.randomUUID().toString());
@@ -176,8 +171,9 @@ public class MediaDAO {
 		currentVersion.setStoragePath(storage);
 		currentVersion.setRootFilename(rootFilename);
 		checksumAndMetadata(currentVersion);
-		dbInstance.getCurrentEntityManager().merge(currentVersion);
 		dbInstance.getCurrentEntityManager().persist(newVersion);
+		dbInstance.getCurrentEntityManager().merge(currentVersion);
+		media.getVersions().add(1, newVersion);
 		return dbInstance.getCurrentEntityManager().merge(media);
 	}
 	

@@ -23,6 +23,9 @@ package org.olat.modules.cemedia.manager;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 
@@ -43,8 +46,10 @@ import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
+import org.olat.modules.cemedia.model.MediaVersionImpl;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
@@ -79,6 +84,8 @@ public class MediaDAOTest extends OlatTestCase {
 	private MediaTagDAO mediaTagDao;
 	@Autowired
 	private MediaService mediaService;
+	@Autowired
+	private ImageHandler imageHandler;
 	@Autowired
 	private PageReferenceDAO pageReferenceDao;
 	@Autowired
@@ -165,6 +172,30 @@ public class MediaDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createImageMedia() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-14");
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		dbInstance.commitAndCloseSession();
+		
+		Media realodedMedia = mediaDao.loadByKey(media.getKey());
+		Assert.assertNotNull(realodedMedia);
+		List<MediaVersion> mediaVersions = realodedMedia.getVersions();
+		Assert.assertNotNull(mediaVersions);
+		Assert.assertEquals(1, mediaVersions.size());
+		
+		MediaVersion mediaVersion = mediaVersions.get(0);
+		Assert.assertNotNull(mediaVersion);
+		Assert.assertNotNull(mediaVersion.getRootFilename());
+		Assert.assertNotNull(mediaVersion.getStoragePath());
+		Assert.assertNotNull(mediaVersion.getVersionChecksum());
+		Assert.assertNotNull(mediaVersion.getVersionUuid());
+		Assert.assertNotNull(mediaVersion.getMetadata());
+		Assert.assertEquals(media, mediaVersion.getMedia());
+	}
+	
+	@Test
 	public void addVersion() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-4");
 		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
@@ -182,6 +213,40 @@ public class MediaDAOTest extends OlatTestCase {
 		Assert.assertEquals("World", versions.get(0).getContent());
 		Assert.assertEquals("Hello", versions.get(1).getContent());
 	}
+	
+	@Test
+	public void addVersions() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-4");
+		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
+		media = mediaDao.createVersion(media, new Date(), "Hello", "/fx/", "root.xml");
+		dbInstance.commitAndCloseSession();
+		
+		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
+		mediaDao.addVersion(reloadedMedia, new Date(), "World", null, null);
+		dbInstance.commitAndCloseSession();
+		
+		reloadedMedia = mediaDao.loadByKey(media.getKey());
+		mediaDao.addVersion(reloadedMedia, new Date(), "!", null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Media versionedMedia = mediaDao.loadByKey(media.getKey());
+		List<MediaVersion> versions = versionedMedia.getVersions();
+		Assert.assertNotNull(versions);
+		Assert.assertEquals(3, versions.size());
+		//Check content
+		Assert.assertEquals("!", versions.get(0).getContent());
+		Assert.assertEquals("World", versions.get(1).getContent());
+		Assert.assertEquals("Hello", versions.get(2).getContent());
+		//Check position
+		Assert.assertEquals(0l, ((MediaVersionImpl)versions.get(0)).getPos());
+		Assert.assertEquals(1l, ((MediaVersionImpl)versions.get(1)).getPos());
+		Assert.assertEquals(2l, ((MediaVersionImpl)versions.get(2)).getPos());
+		//Check versio name
+		Assert.assertEquals("0", versions.get(0).getVersionName());
+		Assert.assertEquals("2", versions.get(1).getVersionName());
+		Assert.assertEquals("1", versions.get(2).getVersionName());
+	}
+	
 	
 	@Test
 	public void getVersions() {

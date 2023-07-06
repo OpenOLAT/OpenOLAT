@@ -1304,7 +1304,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		((PortfolioServiceImpl)portfolioService).versionedMedias(reloadedPage);
 		dbInstance.commitAndCloseSession();
 		
-		Media reloadedMedia = this.mediaService.getMediaByKey(media.getKey());
+		Media reloadedMedia = mediaService.getMediaByKey(media.getKey());
 		List<MediaVersion> reloadedMediaVersions = reloadedMedia.getVersions();
 		Assert.assertEquals(2, reloadedMediaVersions.size());
 		
