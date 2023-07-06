@@ -107,7 +107,7 @@ public class AddFileController extends BasicController implements PageElementAdd
 	
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

@@ -641,3 +641,7 @@ alter table o_ce_page_part add column fk_media_version_id bigint;
 
 alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
 
+alter table o_ce_page_part add column fk_identity_id bigint;
+
+alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+

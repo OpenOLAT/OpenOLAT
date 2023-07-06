@@ -75,7 +75,7 @@ public class AddCitationController extends BasicController implements PageElemen
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

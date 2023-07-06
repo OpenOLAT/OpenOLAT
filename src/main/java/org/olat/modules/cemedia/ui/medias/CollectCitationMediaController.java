@@ -176,7 +176,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

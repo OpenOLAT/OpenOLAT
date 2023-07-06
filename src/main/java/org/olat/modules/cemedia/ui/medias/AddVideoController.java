@@ -82,7 +82,7 @@ public class AddVideoController extends BasicController implements PageElementAd
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

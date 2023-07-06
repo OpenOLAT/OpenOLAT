@@ -55,7 +55,7 @@ public class MediaUsageController extends FormBasicController {
 	private MediaUsageTableModel model;
 	
 	private Media media;
-	
+
 	@Autowired
 	private MediaService mediaService;
 	
@@ -73,6 +73,7 @@ public class MediaUsageController extends FormBasicController {
 				new MediaUseCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.resource, "select-resource",
 				new MediaResourceCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.usedBy));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.version));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MediaUsageCols.status,
 				new MediaStatusCellRenderer(getTranslator())));

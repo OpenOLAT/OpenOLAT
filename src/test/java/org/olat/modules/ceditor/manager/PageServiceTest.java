@@ -19,6 +19,9 @@
  */
 package org.olat.modules.ceditor.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 
 import org.junit.Assert;
@@ -35,6 +38,7 @@ import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.portfolio.handler.TextHandler;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -56,6 +60,8 @@ public class PageServiceTest extends OlatTestCase {
 	private PageService pageService;
 	@Autowired
 	private TextHandler textHandler;
+	@Autowired
+	private ImageHandler imageHandler;
 	
 	@Test
 	public void appendNewPagePart() {
@@ -203,7 +209,7 @@ public class PageServiceTest extends OlatTestCase {
 		paragraphPart = pageService.appendNewPagePartAt(page, paragraphPart, 0);
 		
 		Media media = textHandler.createMedia("Text", "Some text", "Alternative", "The real content", "[Text:0]", id);
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(id, media);
 		mediaPart = pageService.appendNewPagePartAt(page, mediaPart, 1);
 		dbInstance.commitAndCloseSession();
 		
@@ -222,6 +228,30 @@ public class PageServiceTest extends OlatTestCase {
 		Assert.assertEquals("The real content", mediaVersion.getContent());
 	}
 	
-	
+	@Test
+	public void mediaPartValueOf() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("page-1");
+		Page page = pageDao.createAndPersist("Remove part", "Remove some part", null, null, true, null, null);
+		
+		// Create an image media
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		// Create and ad the media part
+		MediaPart mediaPart = MediaPart.valueOf(id, media);
+		mediaPart = pageService.appendNewPagePartAt(page, mediaPart, 1);
+		dbInstance.commitAndCloseSession();
+		
+		Page fullPage = pageService.getFullPageByKey(page.getKey());
+		PageBody body = fullPage.getBody();
+		List<PagePart> parts = body.getParts();
+		Assert.assertEquals(mediaPart, parts.get(0));
+		Assert.assertTrue(parts.get(0) instanceof MediaPart);
+		
+		MediaPart reloadedMediaPart = (MediaPart)parts.get(0);
+		Assert.assertEquals(id, reloadedMediaPart.getIdentity());
+		Assert.assertEquals(media, reloadedMediaPart.getMedia());
+		Assert.assertNotNull(reloadedMediaPart.getMediaVersion());
+	}
 
 }

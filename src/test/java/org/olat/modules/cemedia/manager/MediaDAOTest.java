@@ -415,7 +415,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -433,7 +433,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media", "Binder", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commitAndCloseSession();
 
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -450,7 +450,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commit();
@@ -470,7 +470,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -505,7 +505,7 @@ public class MediaDAOTest extends OlatTestCase {
 		
 		// Add a media to the page
 		Media media = mediaDao.createMedia("Media 20", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -528,7 +528,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media 21", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -554,7 +554,7 @@ public class MediaDAOTest extends OlatTestCase {
 		Media media = mediaDao.createMedia("Media 21-1", "Alone", null, "Une citation sur les classeurs", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, author);
 		dbInstance.commit();
 		
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(author, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();

@@ -671,3 +671,8 @@ alter table o_ce_page_part add column fk_media_version_id int8;
 alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
 create index idx_media_part_version_idx on o_ce_page_part (fk_media_version_id);
 
+alter table o_ce_page_part add column fk_identity_id int8;
+
+alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+create index idx_media_part_ident_idx on o_ce_page_part (fk_identity_id);
+

@@ -25,6 +25,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Transient;
 
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.ceditor.ContentEditorXStream;
 import org.olat.modules.ceditor.model.ImageElement;
@@ -55,13 +57,18 @@ public class MediaPart extends AbstractPart implements ImageElement {
 	@JoinColumn(name="fk_media_version_id", nullable=true, insertable=true, updatable=true)
 	private MediaVersion mediaVersion;
 	
+	@ManyToOne(targetEntity=IdentityImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_identity_id", nullable=true, insertable=true, updatable=true)
+	private Identity identity;
+	
 	private MediaPart() {
 		//
 	}
 	
-	public static MediaPart valueOf(Media mediaReference) {
+	public static MediaPart valueOf(Identity identity, Media mediaReference) {
 		MediaPart part = new MediaPart();
 		part.setMedia(mediaReference);
+		part.setIdentity(identity);
 		if(mediaReference.getVersions() != null && !mediaReference.getVersions().isEmpty()) {
 			part.setMediaVersion(mediaReference.getVersions().get(0));
 		}
@@ -84,6 +91,14 @@ public class MediaPart extends AbstractPart implements ImageElement {
 		this.mediaVersion = version;
 	}
 	
+	public Identity getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(Identity identity) {
+		this.identity = identity;
+	}
+
 	@Override
 	public StoredData getStoredData() {
 		return getMediaVersion();

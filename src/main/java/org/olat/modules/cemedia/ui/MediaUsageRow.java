@@ -41,6 +41,8 @@ public class MediaUsageRow {
 	private String subIdent;
 	private Long pageKey;
 	
+	private String userFullName;
+	
 	private String versionName;
 	private boolean revoked;
 	
@@ -58,6 +60,7 @@ public class MediaUsageRow {
 		row.setSubIdent(usedIn.subIdent());
 		row.setBinderKey(usedIn.binderKey());
 		row.setPageKey(usedIn.pageKey());
+		row.setUserFullName(usedIn.userFullName());
 		
 		if(usedIn.binderKey() != null) {
 			row.setResourceName(usedIn.binderTitle());
@@ -147,6 +150,14 @@ public class MediaUsageRow {
 
 	public void setPageKey(Long pageKey) {
 		this.pageKey = pageKey;
+	}
+
+	public String getUserFullName() {
+		return userFullName;
+	}
+
+	public void setUserFullName(String userFullName) {
+		this.userFullName = userFullName;
 	}
 
 	public boolean isRevoked() {

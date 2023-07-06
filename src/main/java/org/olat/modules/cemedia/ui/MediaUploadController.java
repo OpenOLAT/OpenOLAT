@@ -114,7 +114,7 @@ public class MediaUploadController extends FormBasicController implements PageEl
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

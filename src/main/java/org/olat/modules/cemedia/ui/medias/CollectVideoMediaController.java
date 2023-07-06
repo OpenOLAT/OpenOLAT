@@ -152,7 +152,7 @@ public class CollectVideoMediaController extends FormBasicController implements 
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override

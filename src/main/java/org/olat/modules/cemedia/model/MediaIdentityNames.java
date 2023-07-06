@@ -19,22 +19,33 @@
  */
 package org.olat.modules.cemedia.model;
 
-import org.olat.modules.ceditor.PageStatus;
+import org.olat.basesecurity.IdentityNames;
 
 /**
  * 
- * Initial date: 22 juin 2023<br>
+ * Initial date: 6 juil. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MediaUsageWithStatus(Long pageKey, String pageTitle, String pageStatus, Long binderKey, String binderTitle,
-		Long repositoryEntryKey, String subIdent, String repositoryEntryDisplayname,
-		Long mediaKey, Long mediaVersionKey, String mediaVersionName, String userFullName,
-		boolean validGroup, boolean validOwnership) {
-	
+public record MediaIdentityNames(String firstName, String lastName) implements IdentityNames {
 
-	public PageStatus getPageStatus() {
-		return pageStatus != null ? PageStatus.valueOf(pageStatus) : null;
+	@Override
+	public Long getKey() {
+		return null;
 	}
 
+	@Override
+	public String getName() {
+		return null;
+	}
+
+	@Override
+	public String getFirstName() {
+		return firstName();
+	}
+
+	@Override
+	public String getLastName() {
+		return lastName();
+	}
 }

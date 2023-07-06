@@ -46,6 +46,7 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLight;
 import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.model.MediaIdentityNames;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -54,6 +55,7 @@ import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.cemedia.model.SearchMediaParameters;
 import org.olat.modules.cemedia.model.SearchMediaParameters.Scope;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +70,8 @@ public class MediaDAO {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private ContentEditorFileStorage fileStorage;
 	
@@ -419,6 +423,7 @@ public class MediaDAO {
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  binder.key, binder.title,")
 		  .append("  media.key, mediaVersion.key, mediaVersion.versionName,")
+		  .append("  identUser.firstName, identUser.lastName,")
 		  .append("  (select count(pageMember.key) from bgroupmember as pageMember")
 		  .append("   inner join bgroupmember as mediaMember on (pageMember.identity.key=mediaMember.identity.key)")
 		  .append("   inner join bgroup as mGroup on (mediaMember.group.key=mGroup.key)")
@@ -433,6 +438,8 @@ public class MediaDAO {
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
 		  .append(" inner join mediaPart.media as media")
 		  .append(" left join mediaPart.mediaVersion as mediaVersion")
+		  .append(" left join mediaPart.identity as ident")
+		  .append(" left join ident.user as identUser")
 		  .append(" left join page.section as section")
 		  .append(" left join section.binder as binder")
 		  .append(" where media.key=:mediaKey and not exists (")
@@ -458,13 +465,16 @@ public class MediaDAO {
 			Long mediaVersionKey = (Long)object[6];
 			String mediaVersionName = (String)object[7];
 			
-			Long numOfLinkedUsers = PersistenceHelper.extractLong(object, 8);
+			String userFullName = toFullName((String)object[8], (String)object[9]);
+
+			Long numOfLinkedUsers = PersistenceHelper.extractLong(object, 10);
 			boolean linkedByUser = numOfLinkedUsers != null && numOfLinkedUsers.longValue() > 0l;
-			Long numOfOwnerships = PersistenceHelper.extractLong(object, 9);
+			Long numOfOwnerships = PersistenceHelper.extractLong(object, 11);
 			boolean linkedByOwnership = numOfOwnerships != null && numOfOwnerships.longValue() > 0l;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, binderKey, binderTitle,
-					null, null, null, mediaKey, mediaVersionKey, mediaVersionName, linkedByUser, linkedByOwnership));
+					null, null, null, mediaKey, mediaVersionKey, mediaVersionName, userFullName,
+					linkedByUser, linkedByOwnership));
 		}
 		return usage;
 	}
@@ -474,6 +484,7 @@ public class MediaDAO {
 		sb.append("select page.key, page.title, page.status, ")
 		  .append("  v.key, ref.subIdent, v.displayname,")
 		  .append("  media.key, mediaVersion.key, mediaVersion.versionName,")
+		  .append("  identUser.firstName, identUser.lastName,")
 		  .append("  (select count(mToGroup.key) from mediatogroup as mToGroup")
 		  .append("   inner join mToGroup.group as baseGroup")
 		  .append("   inner join repoentrytogroup as reToGroup on (baseGroup.key=reToGroup.group.key)")
@@ -490,6 +501,8 @@ public class MediaDAO {
 		  .append(" inner join treat(pageBody.parts as cemediapart) mediaPart")
 		  .append(" inner join mediaPart.media as media")
 		  .append(" left join mediaPart.mediaVersion as mediaVersion")
+		  .append(" left join mediaPart.identity as ident")
+		  .append(" left join ident.user as identUser")
 		  .append(" inner join cepagereference ref on (ref.page.key=page.key)")
 		  .append(" inner join ref.repositoryEntry as v")
 		  .append(" where media.key=:mediaKey");
@@ -513,16 +526,26 @@ public class MediaDAO {
 			Long mediaVersionKey = (Long)object[7];
 			String mediaVersionName = (String)object[8];
 			
-			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 9);
+			String userFullName = toFullName((String)object[8], (String)object[9]);
+
+			Long numOfLinkedGroups = PersistenceHelper.extractLong(object, 10);
 			boolean linkedByGroup = numOfLinkedGroups != null && numOfLinkedGroups.longValue() > 0l;
-			Long numOfOwners = PersistenceHelper.extractLong(object, 10);
+			Long numOfOwners = PersistenceHelper.extractLong(object, 11);
 			boolean linkedByOwnership = numOfOwners != null && numOfOwners.longValue() > 0l;
 
 			usage.add(new MediaUsageWithStatus(pageKey, pageTitle, pageStatus, null, null,
 					repoKey, subIdent, repoDisplayname, mediaKey, mediaVersionKey, mediaVersionName,
-					linkedByGroup, linkedByOwnership));
+					userFullName, linkedByGroup, linkedByOwnership));
 		}
 		return usage;
+	}
+	
+	private String toFullName(String firstName, String lastName) {
+		if(StringHelper.containsNonWhitespace(firstName) && StringHelper.containsNonWhitespace(lastName)) {
+			MediaIdentityNames names = new MediaIdentityNames(firstName, lastName);
+			return userManager.getUserDisplayName(names);
+		}
+		return null;
 	}
 	
 	public List<MediaUsage> getUsages(MediaLight media) {

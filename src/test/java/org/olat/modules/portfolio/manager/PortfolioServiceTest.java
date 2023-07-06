@@ -1192,7 +1192,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Page page = pageDao.createAndPersist("Page 1", "A page with content.", null, null, true, reloadedSection, null);
 		Media media = mediaDao.createMedia("To delete", "Binder", null, "A media to delete promptly", TextHandler.TEXT_MEDIA, "[Media:0]", null, 10, owner);
 		dbInstance.commitAndCloseSession();
-		MediaPart mediaPart = MediaPart.valueOf(media);
+		MediaPart mediaPart = MediaPart.valueOf(owner, media);
 		PageBody reloadedBody = pageDao.loadPageBodyByKey(page.getBody().getKey());
 		pageDao.persistPart(reloadedBody, mediaPart);
 		dbInstance.commitAndCloseSession();
@@ -1287,7 +1287,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
 		File imageFile = new File(imageUrl.toURI());
 		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
-		MediaPart imagePart = MediaPart.valueOf(media);
+		MediaPart imagePart = MediaPart.valueOf(id, media);
 		imagePart = pageService.appendNewPagePart(page, imagePart);
 		MediaVersion savedVersion = imagePart.getMediaVersion();
 		HTMLPart hPart = new HTMLPart();

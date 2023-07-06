@@ -70,6 +70,7 @@ implements SortableFlexiTableDataModel<MediaUsageRow> {
 			case use: return row;
 			case resource: return row;
 			case version: return getVersion(row);
+			case usedBy: return row.getUserFullName();
 			case status: return Boolean.valueOf(row.isRevoked());
 			default: return "ERROR";
 		}
@@ -87,6 +88,7 @@ implements SortableFlexiTableDataModel<MediaUsageRow> {
 		use("table.header.use"),
 		resource("table.header.resource"),
 		version("table.header.version"),
+		usedBy("table.header.used.by"),
 		status("table.header.status");
 
 		private final String i18nKey;

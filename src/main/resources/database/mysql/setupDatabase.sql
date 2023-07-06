@@ -2539,6 +2539,7 @@ create table o_ce_page_part (
    fk_page_body_id bigint,
    fk_form_entry_id bigint default null,
    fk_media_version_id bigint default null,
+   fk_identity_id bigint,
    primary key (id)
 );
 
@@ -5139,6 +5140,7 @@ alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk
 alter table o_ce_page_part add constraint pf_page_page_body_idx foreign key (fk_page_body_id) references o_ce_page_body (id);
 alter table o_ce_page_part add constraint pf_page_media_idx foreign key (fk_media_id) references o_media (id);
 alter table o_ce_page_part add constraint pf_part_form_idx foreign key (fk_form_entry_id) references o_repositoryentry (repositoryentry_id);
+alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 

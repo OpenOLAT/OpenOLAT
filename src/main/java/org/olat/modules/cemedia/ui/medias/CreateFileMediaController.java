@@ -136,7 +136,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 
 	@Override
 	public PageElement getPageElement() {
-		return MediaPart.valueOf(mediaReference);
+		return MediaPart.valueOf(getIdentity(), mediaReference);
 	}
 
 	@Override
