@@ -19,13 +19,17 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.helpers.Settings;
+import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
@@ -42,6 +46,24 @@ import org.json.JSONObject;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadgeClassWizardContext {
+
+	public boolean showRecipientsStep() {
+		if (courseResourcableId == null) {
+			return false;
+		}
+		if (!badgeCriteria.isAwardAutomatically()) {
+			return false;
+		}
+		ICourse course = CourseFactory.loadCourse(courseResourcableId);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
+		if (identities.isEmpty()) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public enum Mode {
 		create, edit
 	}

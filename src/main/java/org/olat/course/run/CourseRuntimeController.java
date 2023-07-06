@@ -2368,7 +2368,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl swControl = addToHistory(ureq, ores, null);
 
-				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "badges.mine.title", null, getIdentity());
+				IssuedBadgesController ctrl = new IssuedBadgesController(ureq, swControl, "badges.mine.title", getRepositoryEntry(), getIdentity());
 				myBadgesCtrl = pushController(ureq, translate("command.mybadges"), ctrl);
 				listenTo(myBadgesCtrl);
 

@@ -55,13 +55,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author cpfranger, christoph.pfranger@frentix.com, <a href="https://www.frentix.com">https://www.frentix.com</a>
  */
 public class CreateBadge04SummaryStep extends BasicStep {
-	public CreateBadge04SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createBadgeClassContext) {
+	public CreateBadge04SummaryStep(UserRequest ureq, CreateBadgeClassWizardContext createContext) {
 		super(ureq);
 		setI18nTitleAndDescr("form.summary", null);
-		if (createBadgeClassContext.getCourseResourcableId() == null) {
-			setNextStep(Step.NOSTEP);
+		if (createContext.showRecipientsStep()) {
+			setNextStep(new CreateBadge05RecipientsStep(ureq, createContext));
 		} else {
-			setNextStep(new CreateBadge05RecipientsStep(ureq, createBadgeClassContext));
+			setNextStep(Step.NOSTEP);
 		}
 	}
 

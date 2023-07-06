@@ -280,4 +280,26 @@ public class BadgeAssertionImpl implements Persistable, BadgeAssertion {
 		}
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return "BadgeAssertionImpl{" +
+				"key=" + key +
+				", creationDate=" + creationDate +
+				", lastModified=" + lastModified +
+				", uuid='" + uuid + '\'' +
+				", status=" + status +
+				", recipientObject='" + recipientObject + '\'' +
+				", verificationObject='" + verificationObject + '\'' +
+				", issuedOn=" + issuedOn +
+				", bakedImage='" + bakedImage + '\'' +
+				", evidence='" + evidence + '\'' +
+				", narrative='" + narrative + '\'' +
+				", expires=" + expires +
+				", revocationReason='" + revocationReason + '\'' +
+				", badgeClass=" + badgeClass +
+				", recipient=" + recipient +
+				", awardedBy=" + awardedBy +
+				'}';
+	}
 }

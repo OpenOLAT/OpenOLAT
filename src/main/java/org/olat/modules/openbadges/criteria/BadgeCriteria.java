@@ -60,4 +60,22 @@ public class BadgeCriteria {
 	public void setConditions(List<BadgeCondition> conditions) {
 		this.conditions = conditions;
 	}
+
+	public boolean allConditionsMet(boolean passed, double score) {
+		boolean allConditionsMet = true;
+		for (BadgeCondition badgeCondition : getConditions()) {
+			if (badgeCondition instanceof CoursePassedCondition) {
+				if (!passed) {
+					allConditionsMet = false;
+					break;
+				}
+			} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
+				if (!courseScoreCondition.satisfiesCondition(score)) {
+					allConditionsMet = false;
+					break;
+				}
+			}
+		}
+		return allConditionsMet;
+	}
 }

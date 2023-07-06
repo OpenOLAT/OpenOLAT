@@ -74,15 +74,12 @@ import org.olat.modules.openbadges.BadgeClass;
 import org.olat.modules.openbadges.BadgeEntryConfiguration;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
+import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
-import org.olat.modules.openbadges.criteria.BadgeCondition;
 import org.olat.modules.openbadges.criteria.BadgeCriteria;
 import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
-import org.olat.modules.openbadges.criteria.CoursePassedCondition;
-import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
-import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
 import org.olat.modules.openbadges.v2.Assertion;
 import org.olat.modules.openbadges.v2.Badge;
@@ -588,7 +585,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		String bakedImage = createBakedBadgeImage(badgeAssertion, awardedBy);
 		badgeAssertion.setBakedImage(bakedImage);
 
-		return badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+		badgeAssertion = badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Created badge assertion " + badgeAssertion.toString());
+		}
+
+		return badgeAssertion;
 	}
 
 	@Override
@@ -599,21 +602,7 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			if (!badgeCriteria.isAwardAutomatically()) {
 				continue;
 			}
-			boolean issueBadge = true;
-			for (BadgeCondition badgeCondition : badgeCriteria.getConditions()) {
-				if (badgeCondition instanceof CoursePassedCondition coursePassedCondition) {
-					if (!passed) {
-						issueBadge = false;
-						break;
-					}
-				} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
-					if (!courseScoreCondition.satisfiesCondition(score)) {
-						issueBadge = false;
-						break;
-					}
-				}
-			}
-			if (issueBadge) {
+			if (badgeCriteria.allConditionsMet(passed, score)) {
 				String uuid = OpenBadgesUIFactory.createIdentifier();
 				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
 			}
@@ -700,6 +689,9 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 
 	@Override
 	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry) {
+		if (log.isDebugEnabled()) {
+			log.debug("Read badge assertions for recipient " + recipient + " and course " + courseEntry);
+		}
 		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry);
 	}
 

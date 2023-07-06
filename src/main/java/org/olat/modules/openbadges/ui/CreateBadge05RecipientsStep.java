@@ -19,8 +19,10 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -41,8 +43,11 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.model.SearchAssessedIdentityParams;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -73,6 +78,8 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 		private UserManager userManager;
 		@Autowired
 		private BaseSecurityModule baseSecurityModule;
+		@Autowired
+		private AssessmentToolManager assessmentToolManager;
 		private List<UserPropertyHandler> userPropertyHandlers;
 		private BadgeEarnersTableModel tableModel;
 		private FlexiTableElement tableEl;
@@ -110,8 +117,18 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 					translate("form.recipients.preview.description"), formLayout);
 
 			ICourse course = CourseFactory.loadCourse(createContext.getCourseResourcableId());
-			CourseEnvironment courseEnv = course.getCourseEnvironment();
-			List<Identity> identities = ScoreAccountingHelper.loadParticipants(courseEnv);
+			String rootIdent = course.getRunStructure().getRootNode().getIdent();
+			RepositoryEntry courseEntry = createContext.getBadgeClass().getEntry();
+			AssessmentToolSecurityCallback secCallback = new AssessmentToolSecurityCallback(true, false, false, true, true, true, null, null);
+			SearchAssessedIdentityParams params = new SearchAssessedIdentityParams(
+					courseEntry, rootIdent, null, secCallback);
+
+			Map<Long, AssessmentEntry> identityKeyToAssessmentEntry = new HashMap<>();
+			assessmentToolManager.getAssessmentEntries(getIdentity(), params, null)
+					.stream()
+					.filter(entry -> entry.getIdentity() != null)
+					.forEach(entry -> identityKeyToAssessmentEntry.put(entry.getIdentity().getKey(), entry));
+			List<Identity> assessedIdentities = assessmentToolManager.getAssessedIdentities(getIdentity(), params);
 
 			boolean isAdministrator = baseSecurityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 			userPropertyHandlers = userManager.getUserPropertyHandlersFor(BadgeEarnersTableModel.usageIdentifier, isAdministrator);
@@ -127,7 +144,20 @@ public class CreateBadge05RecipientsStep extends BasicStep {
 				));
 				colIndex++;
 			}
-			List<BadgeEarnerRow> rows = identities.stream().map(i -> new BadgeEarnerRow(i, userPropertyHandlers, getLocale())).collect(Collectors.toList());
+			List<BadgeEarnerRow> rows = new ArrayList<>();
+			for (Identity assessedIdentity : assessedIdentities) {
+				AssessmentEntry assessmentEntry = identityKeyToAssessmentEntry.get(assessedIdentity.getKey());
+				if (assessmentEntry == null) {
+					continue;
+				}
+				boolean passed = assessmentEntry.getPassed() != null ? assessmentEntry.getPassed() : false;
+				double score = assessmentEntry.getScore() != null ? assessmentEntry.getScore().doubleValue() : 0;
+				if (createContext.getBadgeCriteria().allConditionsMet(passed, score)) {
+					BadgeEarnerRow row = new BadgeEarnerRow(assessedIdentity, userPropertyHandlers, getLocale());
+					rows.add(row);
+				}
+			}
+
 			tableModel = new BadgeEarnersTableModel(columnsModel, getLocale());
 			tableModel.setObjects(rows);
 			tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20,
