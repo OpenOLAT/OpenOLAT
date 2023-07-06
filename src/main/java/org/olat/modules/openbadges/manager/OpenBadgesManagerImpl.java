@@ -76,6 +76,11 @@ import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesBakeContext;
 import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.modules.openbadges.OpenBadgesModule;
+import org.olat.modules.openbadges.criteria.BadgeCondition;
+import org.olat.modules.openbadges.criteria.BadgeCriteria;
+import org.olat.modules.openbadges.criteria.BadgeCriteriaXStream;
+import org.olat.modules.openbadges.criteria.CoursePassedCondition;
+import org.olat.modules.openbadges.criteria.CourseScoreCondition;
 import org.olat.modules.openbadges.model.BadgeClassImpl;
 import org.olat.modules.openbadges.OpenBadgesFactory;
 import org.olat.modules.openbadges.ui.OpenBadgesUIFactory;
@@ -579,6 +584,35 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		badgeAssertion.setBakedImage(bakedImage);
 
 		return badgeAssertionDAO.updateBadgeAssertion(badgeAssertion);
+	}
+
+	@Override
+	public void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score) {
+		Date issuedOn = new Date();
+		for (BadgeClass badgeClass : getBadgeClasses(courseEntry)) {
+			BadgeCriteria badgeCriteria = BadgeCriteriaXStream.fromXml(badgeClass.getCriteria());
+			if (!badgeCriteria.isAwardAutomatically()) {
+				continue;
+			}
+			boolean issueBadge = true;
+			for (BadgeCondition badgeCondition : badgeCriteria.getConditions()) {
+				if (badgeCondition instanceof CoursePassedCondition coursePassedCondition) {
+					if (!passed) {
+						issueBadge = false;
+						break;
+					}
+				} else if (badgeCondition instanceof CourseScoreCondition courseScoreCondition) {
+					if (!courseScoreCondition.satisfiesCondition(score)) {
+						issueBadge = false;
+						break;
+					}
+				}
+			}
+			if (issueBadge) {
+				String uuid = OpenBadgesUIFactory.createIdentifier();
+				createBadgeAssertion(uuid, badgeClass, issuedOn, recipient, awardedBy);
+			}
+		}
 	}
 
 	private String createRecipientObject(Identity recipient, String salt) {

@@ -78,6 +78,8 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryImpl;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.openbadges.BadgeEntryConfiguration;
+import org.olat.modules.openbadges.OpenBadgesManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +114,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private NodeAccessService nodeAccessService;
+	@Autowired
+	private OpenBadgesManager openBadgesManager;
 	
 	public CourseAssessmentManagerImpl(CourseGroupManager cgm) {
 		this.cgm = cgm;
@@ -463,6 +467,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
+		awardBadge(userCourseEnvironment, nodeAssessment.getCoach());
 	}
 
 	@Override
@@ -588,6 +593,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnv);
 		generateCertificate(userCourseEnv);
+		awardBadge(userCourseEnv, assessmentEntry.getCoach());
 	}
 	
 	@Override
@@ -635,7 +641,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
-		
+		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+
 		return assessmentEntry.getPassedOverridable();
 	}
 
@@ -674,7 +681,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		updateUserEfficiencyStatement(userCourseEnvironment);
 		generateCertificate(userCourseEnvironment);
-		
+		awardBadge(userCourseEnvironment, assessmentEntry.getCoach());
+
 		return assessmentEntry.getPassedOverridable();
 	}
 
@@ -718,6 +726,26 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 					true, data, lastModifications);
 			efficiencyStatementManager.updateUserEfficiencyStatement(assessedIdentity, courseEnv, data, lastModifications, cgm.getCourseEntry());
 		}
+	}
+
+	private void awardBadge(UserCourseEnvironment userCourseEnvironment, Identity awardedBy) {
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+
+		if (!openBadgesManager.isEnabled()) {
+			return;
+		}
+
+		BadgeEntryConfiguration configuration = openBadgesManager.getConfiguration(courseEntry);
+		if (!configuration.isAwardEnabled()) {
+			return;
+		}
+
+		Identity recipient = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		CourseNode rootNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode();
+		AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(rootNode);
+		openBadgesManager.issueBadgesAutomatically(recipient, awardedBy, courseEntry, assessmentEvaluation.getPassed(),
+				assessmentEvaluation.getScore());
 	}
 
 	private void generateCertificate(UserCourseEnvironment userCourseEnvironment) {

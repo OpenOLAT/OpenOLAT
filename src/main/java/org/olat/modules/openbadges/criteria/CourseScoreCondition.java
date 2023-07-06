@@ -39,6 +39,17 @@ public class CourseScoreCondition implements BadgeCondition {
 		return translator.translate("badgeCondition." + KEY, getSymbol().getSymbolString(), Double.toString(getValue()));
 	}
 
+	public boolean satisfiesCondition(double score) {
+		return switch (symbol) {
+			case greaterThan -> score > value;
+			case greaterThanOrEqual -> score >= value;
+			case lessThan -> score < value;
+			case lessThanOrEqual -> score <= value;
+			case notEqual -> score != value;
+			case equals -> score == value;
+		};
+	}
+
 	public enum Symbol {
 		greaterThan(">"),
 		greaterThanOrEqual("≥"),
