@@ -25,8 +25,8 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
 /**
@@ -38,23 +38,29 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 public class MediaRow implements MediaLight {
 	
 	private final MediaLight media;
-	private final Date collectionDate;
+	private final MediaVersion version;
 
 	private final String cssClass;
-	private final VFSLeaf thumbnail;
 	private final FormLink openFormLink;
 	private boolean versioned;
+	private final boolean hasThumbnail;
+	private final String thumbnailName;
 	
 	private List<String> tags;
 	private List<String> taxonomyLevelsNames;
 	private List<TaxonomyLevel> taxonomyLevels;
 	
-	public MediaRow(MediaLight media, Date collectionDate, VFSLeaf thumbnail, FormLink openFormLink, String cssClass) {
+	public MediaRow(MediaLight media, MediaVersion version, boolean hasThumbnail, FormLink openFormLink, String cssClass) {
 		this.media = media;
+		this.version = version;
 		this.cssClass = cssClass;
-		this.thumbnail = thumbnail;
-		this.collectionDate = collectionDate;
+		this.hasThumbnail = hasThumbnail;
 		this.openFormLink = openFormLink;
+		if(version == null) {
+			thumbnailName = "";
+		} else {
+			thumbnailName = (version.getCollectionDate() == null ? 0l : version.getCollectionDate().getTime()) + "/" + version.getRootFilename();
+		}
 	}
 	
 	@Override
@@ -74,7 +80,7 @@ public class MediaRow implements MediaLight {
 
 	@Override
 	public Date getCollectionDate() {
-		return collectionDate;
+		return version == null ? null : version.getCollectionDate();
 	}
 
 	@Override
@@ -102,6 +108,10 @@ public class MediaRow implements MediaLight {
 
 	public void setVersioned(boolean versioned) {
 		this.versioned = versioned;
+	}
+	
+	public MediaVersion getVersion() {
+		return version;
 	}
 
 	public List<String> getTags() {
@@ -153,15 +163,10 @@ public class MediaRow implements MediaLight {
 	}
 	
 	public boolean isThumbnailAvailable() {
-		return thumbnail != null;
-	}
-	
-	public VFSLeaf getThumbnail() {
-		return thumbnail;
+		return version != null && hasThumbnail;
 	}
 	
 	public String getThumbnailName() {
-		return thumbnail == null ? null : thumbnail.getName();
+		return thumbnailName;
 	}
-
 }

@@ -36,6 +36,7 @@ import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.FlexiTableTagFilter;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -81,6 +82,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
@@ -189,6 +191,8 @@ public class MediaCenterController extends FormBasicController
 	private MediaService mediaService;
 	@Autowired
 	private TaxonomyService taxonomyService;
+	@Autowired
+	private VFSRepositoryService vfsRepositoryService;
 	 
 	public MediaCenterController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, null, true, true, true, false, null);
@@ -258,7 +262,7 @@ public class MediaCenterController extends FormBasicController
 		tableEl.setSelectedFilterTab(ureq, allTab);
 		tableEl.setAndLoadPersistedPreferences(ureq, "media-list-v3");
 
-		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model));
+		String mapperThumbnailUrl = registerCacheableMapper(ureq, "media-thumbnail", new ThumbnailMapper(model, mediaService));
 		row.contextPut("mapperThumbnailUrl", mapperThumbnailUrl);
 		
 		bulkDeleteButton = uifactory.addFormLink("delete", formLayout, Link.BUTTON);
@@ -422,13 +426,13 @@ public class MediaCenterController extends FormBasicController
 				rows.add(row);
 			} else {
 				MediaHandler handler = mediaService.getMediaHandler(media.getType());
-				MediaVersion currentVersion = mediaWithVersion.currentVersion();
-				VFSLeaf thumbnail = handler.getThumbnail(currentVersion, THUMBNAIL_SIZE);
+				MediaVersion currentVersion = mediaWithVersion.version();
+				boolean hasThumbnail = vfsRepositoryService.isThumbnailAvailable(mediaWithVersion.metadata());
 				String mediaTitle = StringHelper.escapeHtml(media.getTitle());
 				String iconCssClass = handler.getIconCssClass(currentVersion);
 				FormLink openLink =  uifactory.addFormLink("select_" + (++counter), "select", mediaTitle, null, flc, Link.NONTRANSLATED);
 				openLink.setIconLeftCSS("o_icon ".concat(iconCssClass));
-				MediaRow row = new MediaRow(media, currentVersion.getCollectionDate(), thumbnail, openLink, iconCssClass);
+				MediaRow row = new MediaRow(media, currentVersion, hasThumbnail, openLink, iconCssClass);
 				row.setVersioned(mediaWithVersion.numOfVersions() > 1l);
 				openLink.setUserObject(row);
 				rows.add(row);
@@ -849,9 +853,11 @@ public class MediaCenterController extends FormBasicController
 	private static class ThumbnailMapper implements Mapper {
 		
 		private final MediaDataModel binderModel;
+		private final MediaService mediaService;
 		
-		public ThumbnailMapper(MediaDataModel model) {
+		public ThumbnailMapper(MediaDataModel model, MediaService mediaService) {
 			this.binderModel = model;
+			this.mediaService = mediaService;
 		}
 
 		@Override
@@ -869,13 +875,16 @@ public class MediaCenterController extends FormBasicController
 				List<MediaRow> rows = binderModel.getObjects();
 				for(MediaRow prow:rows) {
 					if(key.equals(prow.getKey())) {
-						VFSLeaf thumbnail = prow.getThumbnail();
-						mr = new VFSMediaResource(thumbnail);
+						MediaHandler handler = mediaService.getMediaHandler(prow.getType());
+						VFSLeaf thumbnail = handler.getThumbnail(prow.getVersion(), THUMBNAIL_SIZE);
+						if(thumbnail != null) {
+							mr = new VFSMediaResource(thumbnail);
+						}
 					}
 				}
 			}
 			
-			return mr;
+			return mr == null ? new NotFoundMediaResource() : mr;
 		}
 	}
 	

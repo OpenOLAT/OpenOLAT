@@ -77,11 +77,13 @@ public class MediaToTaxonomyLevelDAO {
 	
 	public List<MediaToTaxonomyLevel> loadRelations(IdentityRef author) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rel from mmedia as media")
-		  .append(" inner join mediatotaxonomylevel rel on (rel.media.key=media.key)")
-		  .append(" inner join media.author as author")
+		sb.append("select rel from mediatotaxonomylevel rel")
 		  .append(" inner join fetch rel.taxonomyLevel level")
-		  .append(" where author.key=:authorKey");
+		  .append(" left join fetch level.parent as parent")
+		  .append(" left join fetch level.type as type")
+		  .append(" inner join fetch level.taxonomy as taxonomy")
+		  .append(" inner join fetch rel.media as media")
+		  .append(" where media.author.key=:authorKey");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), MediaToTaxonomyLevel.class)

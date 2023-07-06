@@ -26,9 +26,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.modules.ceditor.Assignment;
 import org.olat.modules.ceditor.model.StoredData;
@@ -185,6 +188,20 @@ public class ContentEditorFileStorage implements InitializingBean {
 		return VFSManager.olatRootContainer("/" + data.getStoragePath(), null);
 	}
 	
+	public VFSItem getMediaRootItem(StoredData data) {
+		VFSContainer storageContainer = getMediaContainer(data);
+		return storageContainer.resolve(data.getRootFilename());
+	}
+	
+	public VFSMetadata getMediaRootItemMetadata(StoredData data) {
+		VFSContainer storageContainer = getMediaContainer(data);
+		VFSItem item = storageContainer.resolve(data.getRootFilename());
+		if(item != null && item.canMeta() == VFSConstants.YES) {
+			return item.getMetaInfo();
+		}
+		return null;
+	}
+
 	public File generateMediaSubDirectory(Media media) {
 		File subDirectory = generateMediaSubDirectory();
 		return new File(subDirectory, media.getKey().toString());

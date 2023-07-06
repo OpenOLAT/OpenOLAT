@@ -652,10 +652,13 @@ create table o_media_version (
    p_root_filename varchar(255),
    p_content CLOB,
    fk_media number(20) not null,
+   fk_metadata number(20),
    primary key (id)
 );
 alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
 create index idx_media_version_media_idx on o_media_version (fk_media);
+alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
+create index idx_media_version_meta_idx on o_media_version (fk_metadata);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
 

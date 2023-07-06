@@ -165,6 +165,8 @@ public interface VFSRepositoryService {
 	
 	public boolean isThumbnailAvailable(VFSItem item);
 	
+	public boolean isThumbnailAvailable(VFSMetadata metadata);
+	
 	/**
 	 * Use this if you have already collected the metadata has it is
 	 * database query free.

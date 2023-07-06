@@ -840,6 +840,20 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		}
 		return thumbnailService.isThumbnailPossible((VFSLeaf)item);
 	}
+	
+	@Override
+	public boolean isThumbnailAvailable(VFSMetadata metadata) {
+		if(metadata == null) return false;
+		
+		if(metadata.isDirectory() || (metadata.getCannotGenerateThumbnails() != null && metadata.getCannotGenerateThumbnails().booleanValue())) { 
+			return false;
+		}
+		VFSItem item = getItemFor(metadata);
+		if(item instanceof VFSLeaf leaf) {
+			return thumbnailService.isThumbnailPossible(leaf);
+		}
+		return false;
+	}
 
 	@Override
 	public boolean isThumbnailAvailable(VFSItem item) {

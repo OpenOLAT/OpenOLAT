@@ -35,6 +35,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -269,13 +270,14 @@ public class MediaDAO {
 	
 	public List<MediaWithVersion> searchBy(SearchMediaParameters parameters) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select media, mversion,")
+		sb.append("select media, mversion, metadata,")
 		  .append(" (select count(cVersion.key) from mediaversion as cVersion")
 		  .append("  where cVersion.media.key=media.key")
 		  .append(" ) as numOfVersions")
 		  .append(" from mmedia as media")
 		  .append(" left join fetch media.author as author")
-		  .append(" left join fetch mediaversion as mversion on (mversion.media.key=media.key and mversion.pos=0)");
+		  .append(" left join fetch mediaversion as mversion on (mversion.media.key=media.key and mversion.pos=0)")
+		  .append(" left join fetch mversion.metadata as metadata");
 		
 		if(parameters.getIdentity() != null) {
 			if(parameters.getScope() == Scope.MY) {
@@ -360,8 +362,9 @@ public class MediaDAO {
 		for(Object[] object:objects) {
 			Media media = (Media)object[0];
 			MediaVersion mediaVersion = (MediaVersion)object[1];
-			long numOfVersions = PersistenceHelper.extractPrimitiveLong(object, 2);
-			medias.add(new MediaWithVersion(media, mediaVersion, numOfVersions));
+			VFSMetadata metadata = (VFSMetadata)object[2];
+			long numOfVersions = PersistenceHelper.extractPrimitiveLong(object, 3);
+			medias.add(new MediaWithVersion(media, mediaVersion, metadata, numOfVersions));
 		}
 		return medias;
 	}

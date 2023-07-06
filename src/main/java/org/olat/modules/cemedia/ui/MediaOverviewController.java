@@ -196,7 +196,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		loadModels(metaCont);
 		loadVersions();
-		return new MediaWithVersion(media, currentVersion, -1l);
+		return new MediaWithVersion(media, currentVersion, null, -1l);
 	}
 	
 	private void loadVersions() {

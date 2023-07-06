@@ -92,7 +92,7 @@ public class MediaTagDAO {
 	public List<MediaTag> loadMediaTags(Media media) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select mTag from mediatag mTag")
-		  .append(" inner join mTag.tag tag")
+		  .append(" inner join fetch mTag.tag tag")
 		  .append(" where mTag.media.key=:mediaKey");
 
 		return dbInstance.getCurrentEntityManager()
@@ -103,10 +103,10 @@ public class MediaTagDAO {
 	
 	public List<MediaTag> loadMediaTags(IdentityRef author) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select mTag from mmedia as media")
-		  .append(" inner join mediatag mTag on (mTag.media.key=media.key)")
-		  .append(" inner join media.author as author")
-		  .append(" where author.key=:authorKey");
+		sb.append("select mTag from mediatag as mTag")
+		  .append(" inner join fetch mTag.tag tag")
+		  .append(" inner join fetch mTag.media as media")
+		  .append(" where media.author.key=:authorKey");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), MediaTag.class)

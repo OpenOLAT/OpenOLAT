@@ -181,7 +181,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 	private void reload() {
 		MediaWithVersion mediaWithVersion = overviewCtrl.reload();
 		media = mediaWithVersion.media();
-		version = mediaWithVersion.currentVersion();
+		version = mediaWithVersion.version();
 		if(usageCtrl != null) {
 			usageCtrl.reload();
 		}

@@ -21,6 +21,7 @@ package org.olat.modules.cemedia;
 
 import java.util.Date;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.CreateInfo;
 import org.olat.modules.ceditor.model.StoredData;
 
@@ -47,5 +48,7 @@ public interface MediaVersion extends CreateInfo, StoredData {
 	void setContent(String content);
 	
 	Media getMedia();
+	
+	VFSMetadata getMetadata();
 
 }

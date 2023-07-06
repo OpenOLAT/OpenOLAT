@@ -224,6 +224,7 @@
 				display: flex;
 				flex-direction: column;
 				height: $o-media-browser-card-height-md;
+				cursor: pointer;
 				
 				.o_meta {
 					display: flex;
@@ -269,6 +270,8 @@
 				
 			}
 		}
+		
+		
 		
 		@media (max-width: $screen-sm-max) { 
 			.o_media_card_cell {

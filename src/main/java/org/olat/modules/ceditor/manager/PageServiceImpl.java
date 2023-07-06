@@ -177,7 +177,7 @@ public class PageServiceImpl implements PageService {
 			if(newPart instanceof MediaPart mediaPart && mediaPart.getMedia() != null) {
 				MediaWithVersion importedMedia = importMedia(mediaPart.getMedia(), mediaPart.getMediaVersion(), owner, storage);
 				mediaPart.setMedia(importedMedia.media());
-				mediaPart.setMediaVersion(importedMedia.currentVersion());
+				mediaPart.setMediaVersion(importedMedia.version());
 			}
 			copyBody = pageDao.persistPart(copyBody, newPart);
 			mapKeys.put(part.getKey().toString(), newPart.getKey().toString());
@@ -197,16 +197,16 @@ public class PageServiceImpl implements PageService {
 					if(mediaVersion != null) {
 						for(MediaVersion version:versions) {
 							if(Objects.equals(mediaVersion.getVersionUuid(), version.getVersionUuid())) {
-								return new MediaWithVersion(media, version, 1l);
+								return new MediaWithVersion(media, version, null, 1l);
 							}
 						}
 					}
 					
 					if(!versions.isEmpty()) {
-						return new MediaWithVersion(media, versions.get(0), 1l);
+						return new MediaWithVersion(media, versions.get(0), null, 1l);
 					}
 				}
-				return new MediaWithVersion(media, null, 0l);
+				return new MediaWithVersion(media, null, null, 0l);
 			}
 		}
 
@@ -240,7 +240,7 @@ public class PageServiceImpl implements PageService {
 		if(!importedMedia.getVersions().isEmpty()) {
 			importedVersionMedia = importedMedia.getVersions().get(0);
 		}
-		return new MediaWithVersion(importedMedia, importedVersionMedia, importedMedia.getVersions().size());
+		return new MediaWithVersion(importedMedia, importedVersionMedia, null, importedMedia.getVersions().size());
 	}
 	
 	private File unzip(String mediaZipPath, ZipEntry entry, ZipFile storage, File mediaDir) {

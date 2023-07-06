@@ -36,6 +36,7 @@ import org.olat.admin.user.tools.UserToolsModule;
 import org.olat.commons.info.InfoMessage;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -55,6 +56,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaCenterExtension;
@@ -105,6 +107,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_MEDIA_CONTENT = "MIGRATE MEDIA CONTENT";
 	private static final String MIGRATE_MEDIA_UUID = "MIGRATE MEDIA UUID";
 	private static final String MIGRATE_MEDIA_MISSING_CHECKSUM = "MIGRATE MEDIA MISSING CHECKSUM";
+	private static final String MIGRATE_MEDIA_VERSION_METADATA = "MIGRATE MEDIA VERSION METADATA";
 	private static final String ENABLE_MEDIA_CENTER	 = "ENABLE MEDIA CENTER";
 	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
@@ -125,6 +128,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 	@Autowired
@@ -160,6 +165,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initMigrateMediaCategoriesToTags(upgradeManager, uhd);
 		allOk &= initMigrateMediaContent(upgradeManager, uhd);
 		allOk &= initMigrateMediaMissingChecksum(upgradeManager, uhd);
+		allOk &= initMigrateMediaMissingMetadata(upgradeManager, uhd);
 		allOk &= enableMediaCenter(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -737,7 +743,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 						mediaDao.update(mediaVersion);
 					}
 					counter += mediaVersions.size();
-					log.info(Tracing.M_AUDIT, "Updated media categories: {} total processed ({})", mediaVersions.size(), counter);
+					log.info(Tracing.M_AUDIT, "Updated media version checksum: {} total processed ({})", mediaVersions.size(), counter);
 					dbInstance.commitAndCloseSession();
 				} while (counter == BATCH_SIZE);
 
@@ -755,10 +761,59 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
+	private boolean initMigrateMediaMissingMetadata(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_MEDIA_VERSION_METADATA)) {
+			try {
+				log.info("Start linking metadata to version.");
+				
+				int counter = 0;
+				List<MediaVersionImpl> mediaVersions;
+				do {
+					mediaVersions = getMediaVersionWithoutMetadata(counter, BATCH_SIZE);
+					for (MediaVersionImpl mediaVersion : mediaVersions) {
+						VFSMetadata metadata = fileStorage.getMediaRootItemMetadata(mediaVersion);
+						if(mediaVersion.getMetadata() == null && metadata != null) {
+							mediaVersion.setMetadata(metadata);
+							mediaService.updateMediaVersion(mediaVersion);
+						}	
+					}
+					counter += mediaVersions.size();
+					log.info(Tracing.M_AUDIT, "Updated media version metadata: {} total processed ({})", mediaVersions.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("End linking metadata to version.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_MEDIA_VERSION_METADATA, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
 	private List<MediaVersionImpl> getMediaVersionWithoutChecksum(int firstResult, int maxResults) {
 		String query = """
 			select mversion from mediaversion as mversion
 		 	 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null
+			 order by mversion.key asc
+			""";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, MediaVersionImpl.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private List<MediaVersionImpl> getMediaVersionWithoutMetadata(int firstResult, int maxResults) {
+		String query = """
+			select mversion from mediaversion as mversion
+		 	 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.metadata.key is null
 			 order by mversion.key asc
 			""";
 		return dbInstance.getCurrentEntityManager()

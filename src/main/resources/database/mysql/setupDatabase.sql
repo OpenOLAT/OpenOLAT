@@ -2513,6 +2513,7 @@ create table o_media_version (
    p_root_filename varchar(255),
    p_content mediumtext,
    fk_media bigint not null,
+   fk_metadata bigint,
    primary key (id)
 );
 
@@ -5127,6 +5128,7 @@ alter table o_media_to_group add constraint med_to_group_media_idx foreign key (
 alter table o_media_to_group add constraint med_to_group_group_idx foreign key (fk_group) references o_bs_group (id);
 
 alter table o_media_version add constraint media_version_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
 

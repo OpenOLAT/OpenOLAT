@@ -33,6 +33,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
 import org.olat.core.id.Persistable;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
@@ -84,6 +86,10 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 	@ManyToOne(targetEntity=MediaImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_media", nullable=false, insertable=true, updatable=false)
 	private Media media;
+	
+	@ManyToOne(targetEntity=VFSMetadataImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_metadata", nullable=true, insertable=true, updatable=true)
+	private VFSMetadata metadata;
 	
 	@Override
 	public Long getKey() {
@@ -184,6 +190,15 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 
 	public void setMedia(Media media) {
 		this.media = media;
+	}
+	
+	@Override
+	public VFSMetadata getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(VFSMetadata metadata) {
+		this.metadata = metadata;
 	}
 
 	@Override

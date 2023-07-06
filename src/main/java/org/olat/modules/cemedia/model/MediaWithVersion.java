@@ -19,6 +19,7 @@
  */
 package org.olat.modules.cemedia.model;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaVersion;
 
@@ -28,7 +29,7 @@ import org.olat.modules.cemedia.MediaVersion;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MediaWithVersion (Media media, MediaVersion currentVersion, long numOfVersions) {
+public record MediaWithVersion (Media media, MediaVersion version, VFSMetadata metadata, long numOfVersions) {
 	//
 	
 	public Long getKey() {
