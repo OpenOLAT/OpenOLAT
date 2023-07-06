@@ -50,5 +50,11 @@ public interface MediaVersion extends CreateInfo, StoredData {
 	Media getMedia();
 	
 	VFSMetadata getMetadata();
+	
+	/**
+	 * @param version a version to compare
+	 * @return true if the content or the storage is the same
+	 */
+	boolean sameAs(MediaVersion version);
 
 }

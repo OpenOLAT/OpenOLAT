@@ -20,6 +20,7 @@
 package org.olat.modules.cemedia.model;
 
 import java.util.Date;
+import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -199,6 +200,13 @@ public class MediaVersionImpl implements Persistable, MediaVersion {
 
 	public void setMetadata(VFSMetadata metadata) {
 		this.metadata = metadata;
+	}
+
+	@Override
+	public boolean sameAs(MediaVersion version) {
+		return Objects.equals(content, version.getContent())
+				&& Objects.equals(storagePath, version.getStoragePath())
+				&& Objects.equals(rootFilename, version.getRootFilename());
 	}
 
 	@Override

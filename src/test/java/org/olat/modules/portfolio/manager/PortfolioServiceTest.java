@@ -19,6 +19,9 @@
  */
 package org.olat.modules.portfolio.manager;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,13 +44,18 @@ import org.olat.modules.ceditor.Category;
 import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
+import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.manager.AssignmentDAO;
 import org.olat.modules.ceditor.manager.CategoryDAO;
 import org.olat.modules.ceditor.manager.PageDAO;
+import org.olat.modules.ceditor.model.jpa.HTMLPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaService;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.PortfolioService;
@@ -85,7 +93,11 @@ public class PortfolioServiceTest extends OlatTestCase {
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
+	private PageService pageService;
+	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private ImageHandler imageHandler;
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
@@ -1266,6 +1278,43 @@ public class PortfolioServiceTest extends OlatTestCase {
 		Assert.assertEquals(Long.valueOf(2), categoryUsageSection2.get(category1));
 		Assert.assertEquals(Long.valueOf(1), categoryUsageSection2.get(category2));
 	}
+
+	@Test
+	public void versionedMediasImage() throws URISyntaxException {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("media-1");
+		Page page = pageDao.createAndPersist("Add part", "Add some part", null, null, true, null, null);
+		
+		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
+		File imageFile = new File(imageUrl.toURI());
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		MediaPart imagePart = MediaPart.valueOf(media);
+		imagePart = pageService.appendNewPagePart(page, imagePart);
+		MediaVersion savedVersion = imagePart.getMediaVersion();
+		HTMLPart hPart = new HTMLPart();
+		hPart = pageService.appendNewPagePart(page, hPart);
+		dbInstance.commitAndCloseSession();
+
+		List<PagePart> parts = pageService.getPageParts(page);
+		Assert.assertNotNull(parts);
+		Assert.assertEquals(2, parts.size());
+		Assert.assertTrue(parts.get(0) instanceof MediaPart);
+		Assert.assertEquals(savedVersion, media.getVersions().get(0));
+		
+		Page reloadedPage = pageService.getFullPageByKey(page.getKey());
+		((PortfolioServiceImpl)portfolioService).versionedMedias(reloadedPage);
+		dbInstance.commitAndCloseSession();
+		
+		Media reloadedMedia = this.mediaService.getMediaByKey(media.getKey());
+		List<MediaVersion> reloadedMediaVersions = reloadedMedia.getVersions();
+		Assert.assertEquals(2, reloadedMediaVersions.size());
+		
+		List<PagePart> versionedParts = pageService.getPageParts(page);
+		Assert.assertNotNull(versionedParts);
+		Assert.assertEquals(2, versionedParts.size());
+		Assert.assertTrue(versionedParts.get(0) instanceof MediaPart);
+		Assert.assertEquals(reloadedMediaVersions.get(1), ((MediaPart)versionedParts.get(0)).getMediaVersion());
+	}
+	
 	
 	private RepositoryEntry createTemplate(Identity initialAuthor,  String displayname, String description) {
 		return createTemplate(initialAuthor, RepositoryEntryStatusEnum.preparation, displayname, description);

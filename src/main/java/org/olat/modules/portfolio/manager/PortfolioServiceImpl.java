@@ -76,6 +76,7 @@ import org.olat.modules.ceditor.ContentRoles;
 import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PageBody;
 import org.olat.modules.ceditor.PageImageAlign;
+import org.olat.modules.ceditor.PagePart;
 import org.olat.modules.ceditor.PageService;
 import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.manager.AssignmentDAO;
@@ -85,8 +86,12 @@ import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.manager.PageSearchOptions;
 import org.olat.modules.ceditor.manager.PageToTaxonomyCompetenceDAO;
 import org.olat.modules.ceditor.model.jpa.AssignmentImpl;
+import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
+import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaVersion;
+import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
@@ -167,6 +172,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private PageDAO pageDao;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private MediaDAO mediaDao;
 	@Autowired
 	private BinderDAO binderDao;
 	@Autowired
@@ -1164,6 +1171,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				((PageImpl)reloadedPage).setInitialPublicationDate(now);
 			}
 			((PageImpl)reloadedPage).setLastPublicationDate(now);
+			versionedMedias(reloadedPage);
 			Section section = reloadedPage.getSection();
 			if(section != null) {
 				SectionStatus sectionStatus = section.getSectionStatus();
@@ -1206,6 +1214,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 		} else if(status == PageStatus.closed) {
 			//set user informations to done
 			pageUserInfosDao.updateStatus(reloadedPage, PageUserStatus.done);
+			versionedMedias(reloadedPage);
 		}
 		if(reloadedPage.getSection() != null && reloadedPage.getSection().getBinder() != null) {
 			Binder binder = reloadedPage.getSection().getBinder();
@@ -1217,6 +1226,47 @@ public class PortfolioServiceImpl implements PortfolioService {
 			pageDao.updateSharedStatus(reloadedPage, sharedStatus);
 		}
 		return pageDao.updatePage(reloadedPage);
+	}
+	
+	public void versionedMedias(Page page) {
+		List<PagePart> parts = page.getBody().getParts();
+		for(PagePart part:parts) {
+			if(part instanceof MediaPart mediaPart) {
+				if(mediaPart.getMedia() == null || mediaPart.getMediaVersion() == null) {
+					continue;
+				}
+				versionedMedia(mediaPart);
+			}
+		}
+	}
+	
+	private void versionedMedia(MediaPart mediaPart) {
+		Media media = mediaPart.getMedia();
+		List<MediaVersion> versions = media.getVersions();
+		if(versions.isEmpty()) {
+			return;
+		}
+		
+		MediaVersion currentVersion = versions.get(0);
+		if(currentVersion.equals(mediaPart.getMediaVersion())) {
+			MediaVersion version = null;
+			// The latest version is always position 0, the latest freezed version is position 1
+			if(versions.size() >= 2 && currentVersion.sameAs(versions.get(1))) {
+				version = versions.get(1);
+			} else {
+				// Freeze a version
+				media = mediaDao.setVersion(media, new Date());
+				versions = media.getVersions();
+				if(versions.size() >= 2) {
+					version = versions.get(1);
+				}
+			}
+			
+			if(version != null) {
+				mediaPart.setMediaVersion(version);
+				pageDao.merge(mediaPart);
+			}
+		}
 	}
 	
 	private PageStatus calculateSharedStatus(Page page) {

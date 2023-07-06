@@ -55,7 +55,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentObligation;
+import org.olat.modules.ceditor.Page;
 import org.olat.modules.ceditor.PagePart;
+import org.olat.modules.ceditor.PageService;
+import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
@@ -65,6 +68,8 @@ import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
 import org.olat.modules.cemedia.model.MediaImpl;
 import org.olat.modules.cemedia.model.MediaVersionImpl;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.manager.PortfolioServiceImpl;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.manager.QualityServiceImpl;
@@ -108,6 +113,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private static final String MIGRATE_MEDIA_UUID = "MIGRATE MEDIA UUID";
 	private static final String MIGRATE_MEDIA_MISSING_CHECKSUM = "MIGRATE MEDIA MISSING CHECKSUM";
 	private static final String MIGRATE_MEDIA_VERSION_METADATA = "MIGRATE MEDIA VERSION METADATA";
+	private static final String MIGRATE_PUBLISHED_PAGE = "MIGRATE PUBISHED PAGE";
 	private static final String ENABLE_MEDIA_CENTER	 = "ENABLE MEDIA CENTER";
 	
 	private static final String INIT_QM_QUALITATIVE_FEEDBACK = "INIT QM QUALITATIVE FEEDBACK";
@@ -118,6 +124,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private DB dbInstance;
  	@Autowired
 	private MediaDAO mediaDao;
+ 	@Autowired
+ 	private PageService pageService;
 	@Autowired
 	private MediaService mediaService;
 	@Autowired
@@ -134,6 +142,8 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private RepositoryEntryCertificateConfigurationDAO certificateConfigurationDao;
 	@Autowired
 	private QualityServiceImpl qualityService;
+	@Autowired
+	private PortfolioService portfolioService;
 
 	public OLATUpgrade_18_0_0() {
 		super();
@@ -166,6 +176,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 		allOk &= initMigrateMediaContent(upgradeManager, uhd);
 		allOk &= initMigrateMediaMissingChecksum(upgradeManager, uhd);
 		allOk &= initMigrateMediaMissingMetadata(upgradeManager, uhd);
+		allOk &= initMigratePublishedPage(upgradeManager, uhd);
 		allOk &= enableMediaCenter(upgradeManager, uhd);
 
 		uhd.setInstallationComplete(allOk);
@@ -739,7 +750,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 				do {
 					mediaVersions = getMediaVersionWithoutChecksum(counter, BATCH_SIZE);
 					for (MediaVersionImpl mediaVersion : mediaVersions) {
-						mediaDao.checksum(mediaVersion);
+						mediaDao.checksumAndMetadata(mediaVersion);
 						mediaDao.update(mediaVersion);
 					}
 					counter += mediaVersions.size();
@@ -818,6 +829,61 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 			""";
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(query, MediaVersionImpl.class)
+				.setFirstResult(firstResult)
+				.setMaxResults(maxResults)
+				.getResultList();
+	}
+	
+	private boolean initMigratePublishedPage(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_PUBLISHED_PAGE)) {
+			try {
+				log.info("Start versioning of published pages.");
+				
+				int counter = 0;
+				List<Page> publishedPages;
+				do {
+					publishedPages = getPublishedPage(counter, BATCH_SIZE);
+					for (Page publishedPage : publishedPages) {
+						versionedPublishedPage(publishedPage);
+					}
+					counter += publishedPages.size();
+					log.info(Tracing.M_AUDIT, "Versioning of pages: {} total processed ({})", publishedPages.size(), counter);
+					dbInstance.commitAndCloseSession();
+				} while (counter == BATCH_SIZE);
+
+				dbInstance.commitAndCloseSession();
+
+				log.info("End versioning of published pages.");
+			} catch (Exception e) {
+				log.error("", e);
+				return false;
+			}
+
+			uhd.setBooleanDataValue(MIGRATE_PUBLISHED_PAGE, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void versionedPublishedPage(Page page) {
+		try {
+			page = pageService.getFullPageByKey(page.getKey());
+			((PortfolioServiceImpl)portfolioService).versionedMedias(page);
+			dbInstance.commitAndCloseSession();
+		} catch (Exception e) {
+			log.error("Error versioning medias of page: {}", page.getKey(), e);
+			dbInstance.rollbackAndCloseSession();
+		}
+	}
+	
+	private List<Page> getPublishedPage(int firstResult, int maxResults) {
+		QueryBuilder query = new QueryBuilder();
+		query.append("select page from cepage as page")
+			 .append(" where page.status").in(PageStatus.published, PageStatus.closed)
+			 .append(" order by page.key asc");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query.toString(), Page.class)
 				.setFirstResult(firstResult)
 				.setMaxResults(maxResults)
 				.getResultList();

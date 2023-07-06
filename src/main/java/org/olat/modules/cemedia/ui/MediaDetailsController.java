@@ -39,7 +39,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
-import org.olat.modules.ceditor.PageStatus;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaService;
@@ -84,7 +83,7 @@ public class MediaDetailsController extends BasicController implements Activatea
 		handler = mediaService.getMediaHandler(media.getType());
 		
 		usageList = mediaService.getMediaUsage(media);
-		editable = isEditable();
+		editable = mediaService.isMediaEditable(getIdentity(), media);
 		
 		mainVC = createVelocityContainer("media_details");
 		loadTitle();
@@ -135,16 +134,6 @@ public class MediaDetailsController extends BasicController implements Activatea
 		
 		
 		putInitialPanel(mainVC);
-	}
-	
-	private boolean isEditable() {
-		boolean isEditable = mediaService.isMediaEditable(getIdentity(), media);
-		for(MediaUsage mediaUsage:usageList) {
-			if(mediaUsage.getPageStatus() == PageStatus.closed || mediaUsage.getPageStatus() == PageStatus.published) {
-				isEditable &= false;
-			}
-		}
-		return isEditable;
 	}
 	
 	public Media getMedia() {

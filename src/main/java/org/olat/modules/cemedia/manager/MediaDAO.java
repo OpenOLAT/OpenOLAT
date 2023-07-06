@@ -119,7 +119,7 @@ public class MediaDAO {
 		version.setContent(content);
 		version.setStoragePath(storage);
 		version.setRootFilename(rootFilename);
-		checksum(version);
+		checksumAndMetadata(version);
 		version.setMedia(media);
 		dbInstance.getCurrentEntityManager().persist(version);
 		media.getVersions().add(version);
@@ -162,6 +162,7 @@ public class MediaDAO {
 		newVersion.setContent(currentVersion.getContent());
 		newVersion.setStoragePath(currentVersion.getStoragePath());
 		newVersion.setRootFilename(currentVersion.getRootFilename());
+		newVersion.setMetadata(currentVersion.getMetadata());
 		newVersion.setMedia(media);
 		if(media.getVersions().size() == 1) {
 			media.getVersions().add(newVersion);
@@ -174,17 +175,22 @@ public class MediaDAO {
 		currentVersion.setContent(content);
 		currentVersion.setStoragePath(storage);
 		currentVersion.setRootFilename(rootFilename);
-		checksum(currentVersion);
+		checksumAndMetadata(currentVersion);
 		dbInstance.getCurrentEntityManager().merge(currentVersion);
 		dbInstance.getCurrentEntityManager().persist(newVersion);
 		return dbInstance.getCurrentEntityManager().merge(media);
 	}
 	
-	public void checksum(MediaVersionImpl version) {
+	public void checksumAndMetadata(MediaVersionImpl version) {
 		if(StringHelper.containsNonWhitespace(version.getRootFilename())) {
 			File rootFile = fileStorage.getMediaRootFile(version);
 			if(rootFile != null && rootFile.exists()) {
 				version.setVersionChecksum(FileUtils.checksumSha256(rootFile));
+			}
+			
+			VFSMetadata metadata = fileStorage.getMediaRootItemMetadata(version);
+			if(metadata != null) {
+				version.setMetadata(metadata);
 			}
 		}
 	}
