@@ -76,11 +76,13 @@
 	</div>
 	<div class="o_template_cards">
 		#foreach($card in $cards)
-		<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
-			 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
-			<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
-			<div class="o_template_title">${card.name()}</div>
-		</div>
+			#if($card.isVisible())
+		  	<div class="o_template_card o_selectable #if($card.key() == $selectedTemplateKey) o_selected #end"
+				 onclick="$r.openJavaScriptCommand('select', false, true), 'templateKey', ${card.key()});">
+				<img class="o_template_image" src="${card.imageSrc()}" width="${card.width()}" height="${card.height()}">
+				<div class="o_template_title">${card.name()}</div>
+			</div>
+			#end
 		#end
 	</div>
 	#end

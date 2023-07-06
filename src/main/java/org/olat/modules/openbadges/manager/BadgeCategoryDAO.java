@@ -105,7 +105,7 @@ public class BadgeCategoryDAO {
 		qb.append("  min(tag.creationDate),");
 		qb.append("  min(tag.displayName),");
 		qb.append("  count(badgeCategory.badgeTemplate.key),");
-		qb.append("  cast(0 as long) as selected");
+		qb.append("  cast(1 as long) as selected");
 		qb.append(") ");
 		qb.append("from badgecategory badgeCategory inner join badgeCategory.tag tag");
 		qb.groupBy().append("tag.key");

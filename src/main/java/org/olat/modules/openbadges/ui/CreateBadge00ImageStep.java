@@ -19,11 +19,16 @@
  */
 package org.olat.modules.openbadges.ui;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.commons.services.tag.Tag;
 import org.olat.core.commons.services.tag.TagInfo;
+import org.olat.core.commons.services.tag.TagRef;
 import org.olat.core.commons.services.tag.model.TagInfoImpl;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
@@ -87,6 +92,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 
 		private CreateBadgeClassWizardContext createContext;
 		private List<TagInfo> tagInfos;
+		private Set<Long> selectedTagKeys;
 		private List<Card> cards;
 		private SingleSelection templateLanguageDropdown;
 		private SelectionValues templateLanguageKV;
@@ -131,6 +137,7 @@ public class CreateBadge00ImageStep extends BasicStep {
 						return (TagInfo) new TagInfoImpl(key, t.getCreationDate(), t.getDisplayName(), t.getCount(),
 								selected);
 					}).toList();
+					selectedTagKeys = tagInfos.stream().filter(TagInfo::isSelected).map(TagRef::getKey).collect(Collectors.toSet());
 					flc.contextPut("tagInfos", tagInfos);
 				}
 			}
@@ -207,15 +214,10 @@ public class CreateBadge00ImageStep extends BasicStep {
 			templateLanguageDropdown.select(templateLanguageKV.keys()[0], true);
 			doSelectLanguage();
 
-			initCategories();
-
 			mediaUrl = registerMapper(ureq, new BadgeImageMapper());
-			initCards();
-		}
 
-		private void initCategories() {
-			tagInfos = openBadgesManager.readBadgeCategoryTags();
-			flc.contextPut("tagInfos", tagInfos);
+			initCards();
+			initCategories();
 		}
 
 		private void initCards() {
@@ -231,18 +233,48 @@ public class CreateBadge00ImageStep extends BasicStep {
 						String name = OpenBadgesUIFactory.translateTemplateName(translator, template.template().getIdentifier());
 						String image = template.template().getImage();
 						String previewImage = openBadgesManager.getTemplateSvgPreviewImage(template.template().getImage());
+						List<Tag> tags = openBadgesManager
+								.getCategories(template.template(), null)
+								.stream()
+								.filter(TagInfo::isSelected)
+								.map(ti -> (Tag)ti)
+								.toList();
 						return new Card(
 								template.template().getKey(),
 								name,
 								mediaUrl + "/" + (previewImage != null ? previewImage : image),
 								targetSize.getWidth(), targetSize.getHeight(),
-								template.template().getIdentifier());
+								template.template().getIdentifier(),
+								tags,
+								this);
 					})
 					.toList();
 			flc.contextPut("cards", cards);
 		}
 
-		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier) {
+		public record Card(Long key, String name, String imageSrc, int width, int height, String identifier, List<Tag> tags,
+						   CreateBadge00ImageForm form) {
+			public boolean isVisible() {
+				for (Tag tag : tags) {
+					if (form.selectedTagKeys.contains(tag.getKey())) {
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+
+		private void initCategories() {
+			Set<Long> usedTagKeys = new HashSet<>();
+			for (Card card : cards) {
+				for (Tag tag : card.tags()) {
+					usedTagKeys.add(tag.getKey());
+				}
+			}
+			tagInfos = openBadgesManager.readBadgeCategoryTags().stream()
+					.filter(ti -> usedTagKeys.contains(ti.getKey())).collect(Collectors.toList());
+			selectedTagKeys = tagInfos.stream().filter(TagInfo::isSelected).map(TagRef::getKey).collect(Collectors.toSet());
+			flc.contextPut("tagInfos", tagInfos);
 		}
 
 		private class BadgeImageMapper implements Mapper {
