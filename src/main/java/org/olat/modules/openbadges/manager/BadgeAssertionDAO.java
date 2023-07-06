@@ -71,7 +71,7 @@ public class BadgeAssertionDAO {
 		return badgeAssertions == null || badgeAssertions.isEmpty() ? null : badgeAssertions.get(0);
 	}
 
-	public List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry) {
+	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select ba from badgeassertion ba ");
 		sb.append("inner join fetch ba.badgeClass bc ");
@@ -80,18 +80,40 @@ public class BadgeAssertionDAO {
 		} else {
 			sb.append("where bc.entry is null ");
 		}
-		if (identity != null) {
+		if (recipient != null) {
 			sb.append("and ba.recipient.key = :identityKey ");
 		}
 		sb.append("order by ba.status asc, ba.issuedOn desc ");
 		TypedQuery<BadgeAssertion> typedQuery = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class);
-		if (identity != null) {
-			typedQuery = typedQuery.setParameter("identityKey", identity.getKey());
+		if (recipient != null) {
+			typedQuery = typedQuery.setParameter("identityKey", recipient.getKey());
 		}
 		if (courseEntry != null) {
 			typedQuery = typedQuery.setParameter("courseEntryKey", courseEntry.getKey());
 		}
 		return typedQuery.getResultList();
+	}
+
+	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select ba from badgeassertion ba ");
+		sb.append("where ba.recipient.key = :recipientKey ");
+		sb.append("and ba.badgeClass.key = :badgeClassKey ");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), BadgeAssertion.class)
+				.setParameter("recipientKey", recipient.getKey())
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.getResultList();
+	}
+
+	public Long getNumberOfBadgeAssertions(Identity recipient, BadgeClass badgeClass) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select count(ba.key) from badgeassertion ba ");
+		sb.append("where ba.recipient.key = :recipientKey ");
+		sb.append("and ba.badgeClass.key = :badgeClassKey ");
+		return dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Long.class)
+				.setParameter("recipientKey", recipient.getKey())
+				.setParameter("badgeClassKey", badgeClass.getKey())
+				.getResultList().get(0);
 	}
 
 	public BadgeAssertion updateBadgeAssertion(BadgeAssertion badgeAssertion) {

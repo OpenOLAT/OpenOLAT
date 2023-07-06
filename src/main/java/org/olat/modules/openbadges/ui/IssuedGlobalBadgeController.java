@@ -123,6 +123,9 @@ public class IssuedGlobalBadgeController extends FormBasicController {
 		if (badgeAssertion == null) {
 			badgeAssertion = openBadgesManager.createBadgeAssertion(uuidEl.getValue(),  badgeClass,
 					new Date(), recipient, getIdentity());
+			if (badgeAssertion == null) {
+				badgeAssertion = openBadgesManager.getBadgeAssertion(recipient, badgeClass);
+			}
 		} else {
 			badgeAssertion.setRecipient(recipient);
 			badgeAssertion.setBadgeClass(openBadgesManager.getBadgeClass(badgeClassDropdown.getSelectedKey()));

@@ -572,6 +572,11 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	@Override
 	public BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 									 Identity recipient, Identity awardedBy) {
+		if (badgeAssertionExists(recipient, badgeClass)) {
+			log.info("Badge assertion exists for user " + recipient.toString() + " and badge " + badgeClass.getName());
+			return null;
+		}
+
 		String verification = "{\"type\":\"hosted\"}";
 		String recipientObject = createRecipientObject(recipient, badgeClass.getSalt());
 		if (recipientObject == null) {
@@ -689,9 +694,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		return null;
 	}
 
+	public boolean badgeAssertionExists(Identity recipient, BadgeClass badgeClass) {
+		return badgeAssertionDAO.getNumberOfBadgeAssertions(recipient, badgeClass) > 0;
+	}
+
 	@Override
-	public List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry) {
-		return badgeAssertionDAO.getBadgeAssertions(identity, courseEntry);
+	public List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry) {
+		return badgeAssertionDAO.getBadgeAssertions(recipient, courseEntry);
 	}
 
 	@Override
@@ -776,6 +785,15 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		} catch (Exception e) {
 			log.error("", e);
 		}
+	}
+
+	@Override
+	public BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass) {
+		List<BadgeAssertion> badgeAssertions = badgeAssertionDAO.getBadgeAssertions(recipient, badgeClass);
+		if (badgeAssertions.isEmpty()) {
+			return null;
+		}
+		return badgeAssertions.get(0);
 	}
 
 	private File getBadgeAssertionsRoot() {

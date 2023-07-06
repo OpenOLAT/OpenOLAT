@@ -113,13 +113,15 @@ public interface OpenBadgesManager {
 	BadgeAssertion createBadgeAssertion(String uuid, BadgeClass badgeClass, Date issuedOn,
 										Identity recipient, Identity savedBy);
 
-	void issueBadgesAutomatically(Identity identity, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
+	void issueBadgesAutomatically(Identity recipient, Identity awardedBy, RepositoryEntry courseEntry, Boolean passed, Float score);
 
-	List<BadgeAssertion> getBadgeAssertions(Identity identity, RepositoryEntry courseEntry);
+	List<BadgeAssertion> getBadgeAssertions(Identity recipient, RepositoryEntry courseEntry);
 
 	List<BadgeAssertionWithSize> getBadgeAssertionsWithSizes(Identity identity, RepositoryEntry courseEntry);
 
 	BadgeAssertion getBadgeAssertion(String uuid);
+
+	BadgeAssertion getBadgeAssertion(Identity recipient, BadgeClass badgeClass);
 
 	VFSLeaf getBadgeAssertionVfsLeaf(String relPath);
 
