@@ -84,14 +84,22 @@
 		<td aria-labelledby="oo-media-last-visit">$r.formatDate($metadata.lastVisit)</td></tr>
 	#end
 	
-	#if($r.available("tags"))
+	#if($r.isNotEmpty("tags"))
 	<tr><th id="oo-media-tags">$r.translate("tags")</th>
-		<td aria-labelledby="oo-media-tags">$r.render("tags")</td></tr>
+		<td aria-labelledby="oo-media-tags"><span class="o_tag_selection_tags">
+		#foreach($tag in $tags)
+			<span class='o_tag o_selection_tag'>$r.escapeHtml($tag)</span>
+		#end
+		</span></td></tr>
 	#end
 	
-	#if($r.available("taxonomy.level"))
+	#if($r.isNotEmpty("taxonomyLevels"))
 	<tr><th id="oo-media-levels">$r.translate("taxonomy.levels")</th>
-		<td aria-labelledby="oo-media-levels">$r.render("taxonomy.level")</td></tr>
+		<td aria-labelledby="oo-media-levels" class="o_tax_ls_button"><span class="o_taxonomy_tags o_tax_ls_tags">
+		#foreach($taxonomyLevel in $taxonomyLevels)
+			<span class='o_tax_ls_tag o_tag'>$r.escapeHtml($taxonomyLevel)</span>
+		#end
+		</span></td></tr>
 	#end
 	
 	#if($r.isNotEmpty($referencesLinks))

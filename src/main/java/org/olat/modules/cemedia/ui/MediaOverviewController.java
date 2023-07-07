@@ -21,7 +21,6 @@ package org.olat.modules.cemedia.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.services.tag.TagInfo;
@@ -33,14 +32,11 @@ import org.olat.core.gui.components.dropdown.DropdownOrientation;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.elements.TextBoxListElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -296,28 +292,17 @@ public class MediaOverviewController extends FormBasicController implements Acti
 			metaCont.contextPut("metadata", metadata);
 		}
 		
-		List<TagInfo> tagInfos = mediaService.getTagInfos(media);
-		if(tagInfos != null && !tagInfos.isEmpty()) {
-			List<TextBoxItem> tagsMap = tagInfos.stream()
-					.map(cat -> new TextBoxItemImpl(cat.getDisplayName(), cat.getDisplayName()))
-					.collect(Collectors.toList());
-			TextBoxListElement tagsEl = uifactory.addTextBoxListElement("tags", "tags", "categories.hint", tagsMap, container, getTranslator());
-			tagsEl.setHelpText(translate("categories.hint"));
-			tagsEl.setElementCssClass("o_sel_ep_tagsinput");
-			tagsEl.setEnabled(false);
-		}
+		List<TagInfo> tagInfos = mediaService.getTagInfos(media, true);
+		List<String> tags = tagInfos.stream()
+				.map(TagInfo::getDisplayName)
+				.toList();
+		metaCont.contextPut("tags", tags);
 		
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(media);
-		if(levels != null && !levels.isEmpty()) {
-			List<TextBoxItem> levelsMap = levels.stream()
-					.map(level -> {
-						String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
-						return new TextBoxItemImpl(displayName, displayName);
-					})
-					.collect(Collectors.toList());
-			TextBoxListElement taxonomylevelsEl = uifactory.addTextBoxListElement("taxonomy.level", "taxonomy.level", null, levelsMap, container, getTranslator());
-			taxonomylevelsEl.setEnabled(false);
-		}
+		List<String> levelsNames = levels.stream()
+				.map(level ->  TaxonomyUIFactory.translateDisplayName(getTranslator(), level))
+				.toList();
+		metaCont.contextPut("taxonomyLevels", levelsNames);
 		
 		List<MediaShare> shares = mediaService.getMediaShares(media);
 		final MediaRelationsCellRenderer shareRenderer = new MediaRelationsCellRenderer(userManager);

@@ -20,14 +20,10 @@
 package org.olat.modules.cemedia.ui;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.form.flexible.impl.elements.TextBoxListElementComponent;
-import org.olat.core.gui.components.textboxlist.TextBoxItem;
-import org.olat.core.gui.components.textboxlist.TextBoxItemImpl;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -96,27 +92,16 @@ public class MediaMetadataController extends BasicController {
 		}
 
 		List<TaxonomyLevel> levels = mediaService.getTaxonomyLevels(media);
-		if(levels != null && !levels.isEmpty()) {
-			List<TextBoxItem> levelsMap = levels.stream()
-					.map(level -> {
-						String displayName = TaxonomyUIFactory.translateDisplayName(getTranslator(), level);
-						return new TextBoxItemImpl(displayName, displayName);
-					})
-					.collect(Collectors.toList());
-			TextBoxListElementComponent taxonomyLevelsCmp = new TextBoxListElementComponent(null, "taxonomy.level", null, levelsMap, getTranslator());
-			taxonomyLevelsCmp.setEnabled(false);
-		}
+		List<String> levelsNames = levels.stream()
+				.map(level ->  TaxonomyUIFactory.translateDisplayName(getTranslator(), level))
+				.toList();
+		metaVC.contextPut("taxonomyLevels", levelsNames);
 		
-		List<TagInfo> tagInfos = mediaService.getTagInfos(media);
-		if(tagInfos != null && !tagInfos.isEmpty()) {
-			List<TextBoxItem> tagsMap = tagInfos.stream()
-					.map(cat -> new TextBoxItemImpl(cat.getDisplayName(), cat.getDisplayName()))
-					.collect(Collectors.toList());
-			TextBoxListElementComponent tagsCmp = new TextBoxListElementComponent(null, "tags", "categories.hint", tagsMap, getTranslator());
-			tagsCmp.setElementCssClass("o_sel_ep_tagsinput");
-			tagsCmp.setEnabled(false);
-			metaVC.put("tags", tagsCmp);
-		}
+		List<TagInfo> tagInfos = mediaService.getTagInfos(media, false);
+		List<String> tags = tagInfos.stream()
+				.map(TagInfo::getDisplayName)
+				.toList();
+		metaVC.contextPut("tags", tags);
 	}
 
 	@Override

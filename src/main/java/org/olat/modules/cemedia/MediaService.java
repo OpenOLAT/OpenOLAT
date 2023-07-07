@@ -106,7 +106,7 @@ public interface MediaService {
 	
 	MediaLog addMediaLog(Action action, Media media, Identity doer);
 	
-	List<TagInfo> getTagInfos(Media media);
+	List<TagInfo> getTagInfos(Media media, boolean selectedOnly);
 	
 	List<TagInfo> getTagInfos(IdentityRef owner);
 	

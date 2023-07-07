@@ -22,8 +22,6 @@ package org.olat.modules.cemedia.manager;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.TypedQuery;
-
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
@@ -57,36 +55,69 @@ public class MediaTagDAO {
 		return mediaTag;
 	}
 	
-	public List<TagInfo> loadMediaTagInfos(Media media, IdentityRef author) {
-		QueryBuilder sb = new QueryBuilder();
-		sb.append("select new org.olat.core.commons.services.tag.model.TagInfoImpl(");
-		sb.append("       tag.key");
-		sb.append("     , min(tag.creationDate)");
-		sb.append("     , min(tag.displayName)");
-		sb.append("     , count(media.key)");
-		sb.append("     , cast(0 as long) as selected");
-		sb.append(")");
-		sb.append(" from mediatag mTag");
-		sb.append(" inner join mTag.tag tag")
-		  .append(" inner join mTag.media as media");
+	public List<TagInfo> loadMediaTagInfos(IdentityRef author) {
+		String query = """
+				select new org.olat.core.commons.services.tag.model.TagInfoImpl(
+				       tag.key
+				     , min(tag.creationDate)
+				     , min(tag.displayName)
+				     , count(media.key)
+				     , cast(0 as long) as selected
+				)
+				from mediatag mTag
+				inner join mTag.tag tag
+				inner join mTag.media as media
+				where media.author.key=:authorKey
+				group by tag.key
+				""";
 		
-		if(media != null) {
-			sb.and().append("media.key=:mediaKey");
-		}
-		if(author != null) {
-			sb.and().append("media.author.key=:authorKey");
-		}
-		sb.groupBy().append("tag.key");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TagInfo.class)
+				.setParameter("authorKey", author.getKey())
+				.getResultList();
+	}
+	
+	public List<TagInfo> loadMediaTagInfos(Media media) {
+		String query = """
+				select new org.olat.core.commons.services.tag.model.TagInfoImpl(
+				       tag.key
+				     , min(tag.creationDate)
+				     , min(tag.displayName)
+				     , count(media.key)
+				     , sum(case when (mTag.media.key=:mediaKey) then 1 else 0 end) as selected
+				)
+				from mediatag mTag
+				inner join mTag.tag tag
+				inner join mTag.media as media
+				group by tag.key
+				""";
 		
-		TypedQuery<TagInfo> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), TagInfo.class);
-		if(media != null) {
-			query.setParameter("mediaKey", media.getKey());
-		}
-		if(author != null) {
-			query.setParameter("authorKey", author.getKey());
-		}
-		return query.getResultList();
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TagInfo.class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList();
+	}
+	
+	public List<TagInfo> loadSelectedMediaTagInfos(Media media) {
+		String query = """
+				select new org.olat.core.commons.services.tag.model.TagInfoImpl(
+				       tag.key
+				     , min(tag.creationDate)
+				     , min(tag.displayName)
+				     , count(media.key)
+				     , cast(1 as long) as selected
+				)
+				from mediatag mTag
+				inner join mTag.tag tag
+				inner join mTag.media as media
+				where media.key=:mediaKey
+				group by tag.key
+				""";
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(query, TagInfo.class)
+				.setParameter("mediaKey", media.getKey())
+				.getResultList();
 	}
 
 	public List<MediaTag> loadMediaTags(Media media) {

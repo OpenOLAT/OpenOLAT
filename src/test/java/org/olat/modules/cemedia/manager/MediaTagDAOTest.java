@@ -70,7 +70,7 @@ public class MediaTagDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void loadMediaTagInfos() {
+	public void loadMediaTagInfosByMedia() {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-2");
 		Media media = mediaDao.createMedia("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
 		Tag tag = tagService.getOrCreateTag(random());
@@ -78,9 +78,50 @@ public class MediaTagDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		Assert.assertNotNull(mediaTag);
-		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media, null);
-		assertThat(tagInfos)
-			.hasSize(1);
+		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(media);
+		Assert.assertNotNull(tagInfos);
+		Assert.assertFalse(tagInfos.isEmpty());
+
+		boolean selected = tagInfos.stream()
+				.filter(tagInfo -> tag.getKey().equals(tagInfo.getKey()))
+				.findFirst().orElse(null)
+				.isSelected();
+		Assert.assertTrue(selected);
+	}
+	
+	@Test
+	public void loadMediaTagInfosByMediaSelected() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-3");
+		Media media = mediaDao.createMedia("Media tag 2 to selecr", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Tag tag = tagService.getOrCreateTag(random());
+		MediaTag mediaTag = mediaTagDao.create(media, tag);
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(mediaTag);
+		List<TagInfo> tagInfos = mediaTagDao.loadSelectedMediaTagInfos(media);
+		Assert.assertNotNull(tagInfos);
+		Assert.assertEquals(1, tagInfos.size());
+		Assert.assertEquals(tag.getKey(), tagInfos.get(0).getKey());
+	}
+	
+	@Test
+	public void loadMediaTagInfosByAuthor() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-tag-2");
+		Media media = mediaDao.createMedia("Media tag 2", "Media description", null, "Media content", "Forum", "[Media:0]", null, 10, id);
+		Tag tag = tagService.getOrCreateTag(random());
+		MediaTag mediaTag = mediaTagDao.create(media, tag);
+		dbInstance.commitAndCloseSession();
+
+		Assert.assertNotNull(mediaTag);
+		List<TagInfo> tagInfos = mediaTagDao.loadMediaTagInfos(id);
+		Assert.assertNotNull(tagInfos);
+		Assert.assertFalse(tagInfos.isEmpty());
+
+		TagInfo testTagInfo = tagInfos.stream()
+				.filter(tagInfo -> tag.getKey().equals(tagInfo.getKey()))
+				.findFirst().orElse(null);
+		Assert.assertNotNull(testTagInfo);
+		Assert.assertEquals(Long.valueOf(1l), testTagInfo.getCount());
 	}
 	
 	@Test

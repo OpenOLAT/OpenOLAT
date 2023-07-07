@@ -220,16 +220,19 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public List<TagInfo> getTagInfos(Media media) {
+	public List<TagInfo> getTagInfos(Media media, boolean selectedOnly) {
 		if(media == null || media.getKey() == null) {
 			return new ArrayList<>();
 		}
-		return mediaTagDao.loadMediaTagInfos(media, null);
+		if(selectedOnly) {
+			return mediaTagDao.loadSelectedMediaTagInfos(media);
+		}
+		return mediaTagDao.loadMediaTagInfos(media);
 	}
 	
 	@Override
 	public List<TagInfo> getTagInfos(IdentityRef owner) {
-		return mediaTagDao.loadMediaTagInfos(null, owner);
+		return mediaTagDao.loadMediaTagInfos(owner);
 	}
 
 	@Override

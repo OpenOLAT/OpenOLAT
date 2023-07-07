@@ -185,7 +185,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		fileNameEl.setDisplaySize(100);
 		fileNameEl.setMandatory(true);
 
-		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference);
+		List<TagInfo> tagsInfos = mediaService.getTagInfos(mediaReference, false);
 		tagsEl = uifactory.addTagSelection("tags", "tags", formLayout, getWindowControl(), tagsInfos);
 		tagsEl.setHelpText(translate("categories.hint"));
 		tagsEl.setElementCssClass("o_sel_ep_tagsinput");
