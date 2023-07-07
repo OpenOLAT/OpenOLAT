@@ -19,8 +19,8 @@
 		#end
 		
 		<div class="o_proj_project_owners">
-			#if($row.ownersNames)
-				$r.translate("project.of", $row.ownersNames)
+			#if($row.getProjectOf())
+				$row.getProjectOf()
 			#end
 		</div>
 		<div class="o_proj_project_modified">

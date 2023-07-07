@@ -1,6 +1,6 @@
 <div class="o_proj_dashboard">
-	#if($deleted)
-		<div class="o_toolbar_message o_warning">$r.translate("project.message.deleted")</div>
+	#if($deletedMessageI18nKey)
+		<div class="o_toolbar_message o_warning">$r.translate($deletedMessageI18nKey)</div>
 	#elseif($template)
 		<div class="o_toolbar_message o_warning">$r.translate("project.message.template")</div>
 	#end

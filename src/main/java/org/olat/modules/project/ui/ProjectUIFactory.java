@@ -44,6 +44,7 @@ import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjMilestoneStatus;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjectRole;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.model.ProjFormattedDateRange;
@@ -246,6 +247,12 @@ public class ProjectUIFactory {
 		resource.setEncoding("UTF-8");
 		
 		return resource;
+	}
+	
+	public static String templateSuffix(String i18nKey, ProjProject project) {
+		return project.isTemplatePrivate() || project.isTemplatePublic()
+				? i18nKey + ".template"
+				: i18nKey;
 	}
 
 }

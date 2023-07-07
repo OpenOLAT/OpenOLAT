@@ -40,6 +40,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 	}
 
 	@Override
+	protected String getTitleI18n() {
+		return "segment.my";
+	}
+
+	@Override
 	protected boolean isCreateProjectEnabled() {
 		return true;
 	}
@@ -85,6 +90,16 @@ public class ProjProjectMyController extends ProjProjectListController {
 	}
 
 	@Override
+	protected boolean isTabActivityEnabled() {
+		return true;
+	}
+
+	@Override
+	protected boolean isTabsTemplateAccessEnabled() {
+		return false;
+	}
+
+	@Override
 	protected boolean isTabNoActivityEnabled() {
 		return false;
 	}
@@ -101,6 +116,11 @@ public class ProjProjectMyController extends ProjProjectListController {
 
 	@Override
 	protected boolean isFilterMemberEnabled() {
+		return false;
+	}
+	
+	@Override
+	protected boolean isFilterTemplateAccessEnabled() {
 		return false;
 	}
 	

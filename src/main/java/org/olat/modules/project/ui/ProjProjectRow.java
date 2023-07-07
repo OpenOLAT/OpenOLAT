@@ -51,6 +51,7 @@ public class ProjProjectRow implements ProjProjectRef {
 	private Set<Long> memberKeys;
 	private Set<Long> ownerKeys;
 	private String ownersNames;
+	private String projectOf;
 	private String url;
 	private boolean template;
 	private String templateName;
@@ -153,6 +154,14 @@ public class ProjProjectRow implements ProjProjectRef {
 
 	public void setOwnersNames(String ownersNames) {
 		this.ownersNames = ownersNames;
+	}
+
+	public String getProjectOf() {
+		return projectOf;
+	}
+
+	public void setProjectOf(String projectOf) {
+		this.projectOf = projectOf;
 	}
 
 	public String getUrl() {

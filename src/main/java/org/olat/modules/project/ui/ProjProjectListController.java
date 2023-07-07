@@ -20,6 +20,7 @@
 package org.olat.modules.project.ui;
 
 import static java.util.Collections.singletonList;
+import static org.olat.modules.project.ProjectSecurityCallbackFactory.createDefaultCallback;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,7 +100,6 @@ import org.olat.modules.project.ProjProjectSecurityCallback;
 import org.olat.modules.project.ProjectCopyService;
 import org.olat.modules.project.ProjectModule;
 import org.olat.modules.project.ProjectRole;
-import org.olat.modules.project.ProjectSecurityCallbackFactory;
 import org.olat.modules.project.ProjectService;
 import org.olat.modules.project.ProjectStatus;
 import org.olat.modules.project.ui.ProjProjectDataModel.ProjectCols;
@@ -124,6 +124,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	private static final String TAB_ID_ALL = "All";
 	private static final String TAB_ID_ACTIVE = "Active";
+	private static final String TAB_ID_TEMPLATE_ACCESS_PRIVATE = "MyTemplates";
+	private static final String TAB_ID_TEMPLATE_ACCESS_PUBLIC = "SharedWithMeTemplates";
 	private static final String TAB_ID_NO_ACTIVITY = "NoActivity";
 	private static final String TAB_ID_TO_DELETE = "ToDelete";
 	private static final String TAB_ID_DONE = "Done";
@@ -132,6 +134,9 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private static final String FILTER_ORPHANS = "orphans";
 	private static final String FILTER_ORPHANS_KEY = "orphans.key";
 	private static final String FILTER_MEMBER = "member";
+	private static final String FILTER_TEMPLATE_ACCESS = "templateAccess";
+	private static final String FILTER_TEMPLATE_ACCESS_PRIVATE = "templateAccessPrivate";
+	private static final String FILTER_TEMPLATE_ACCESS_PUBLIC = "templateAccessPublic";
 	private static final String CMD_SELECT = "select";
 	private static final String CMD_EDIT = "edit";
 	private static final String CMD_CREATE_FROM_TEMPLATE = "create.from.template";
@@ -150,6 +155,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	private FormLink bulkDeletedButton;
 	private FlexiFiltersTab tabAll;
 	private FlexiFiltersTab tabActive;
+	private FlexiFiltersTab tabTemplateAccessPrivate;
+	private FlexiFiltersTab tabTemplateAccessPublic;
 	private FlexiFiltersTab tabNoActivity;
 	private FlexiFiltersTab tabToDelete;
 	private FlexiFiltersTab tabDone;
@@ -194,9 +201,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		super(ureq, wControl, "project_list");
 		this.stackPanel = stackPanel;
 		stackPanel.addListener(this);
-		this.canCreateProject = isCreateProjectEnabled() && projectModule.canCreateProject(ureq.getUserSession().getRoles());
-		this.canCreateTemplate = isCreateTemplateEnabled() && 
-				(ureq.getUserSession().getRoles().isProjectManager() || ureq.getUserSession().getRoles().isAdministrator());
+		this.canCreateProject = isCreateProjectEnabled() && canCreateProject(ureq);
+		this.canCreateTemplate = isCreateTemplateEnabled() && canCreateProject(ureq);
 		this.avatarMapperKey =  mapperService.register(ureq.getUserSession(), new UserAvatarMapper(true));
 		this.formatter = Formatter.getInstance(getLocale());
 		this.projectImageMapper = new ProjProjectImageMapper(projectService);
@@ -204,6 +210,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				ProjProjectImageMapper.DEFAULT_EXPIRATION_TIME);
 	}
 	
+	protected abstract String getTitleI18n();
+
 	protected abstract boolean isCreateProjectEnabled();
 	
 	protected abstract boolean isCreateTemplateEnabled();
@@ -222,6 +230,10 @@ public abstract class ProjProjectListController extends FormBasicController impl
 	
 	protected abstract boolean isCustomRendererEnabled();
 	
+	protected abstract boolean isTabActivityEnabled();
+	
+	protected abstract boolean isTabsTemplateAccessEnabled();
+	
 	protected abstract boolean isTabNoActivityEnabled();
 	
 	protected abstract boolean isTabToDeleteEnabled();
@@ -230,12 +242,20 @@ public abstract class ProjProjectListController extends FormBasicController impl
 
 	protected abstract boolean isFilterMemberEnabled();
 	
+	protected abstract boolean isFilterTemplateAccessEnabled();
+	
 	protected abstract ProjProjectSearchParams createSearchParams();
 	
 	protected abstract Boolean getSearchTemplates();
 
+	private boolean canCreateProject(UserRequest ureq) {
+		return projectModule.canCreateProject(ureq.getUserSession().getRoles());
+	}
+
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		flc.contextPut("titleI18n", getTitleI18n());
+		
 		if (canCreateProject) {
 			createLink = uifactory.addFormLink("project.create", formLayout, Link.BUTTON);
 			createLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
@@ -244,7 +264,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			createTemplateLink.setIconLeftCSS("o_icon o_icon-lg o_icon_add");
 		}
 		
-		if (isCreateFromTemplateEnabled()) {
+		if (canCreateProject(ureq) && isCreateFromTemplateEnabled()) {
 			initCreateFromTemplateLinks(ureq, formLayout);
 		}
 		
@@ -354,12 +374,36 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				List.of());
 		tabs.add(tabAll);
 		
-		tabActive = FlexiFiltersTabFactory.tabWithImplicitFilters(
-				TAB_ID_ACTIVE,
-				translate("project.list.tab.active"),
-				TabSelectionBehavior.reloadData,
-				List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, ProjectStatus.active.name())));
-		tabs.add(tabActive);
+		if (isTabActivityEnabled()) {
+			tabActive = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_ACTIVE,
+					translate("project.list.tab.active"),
+					TabSelectionBehavior.reloadData,
+					List.of(FlexiTableFilterValue.valueOf(FILTER_STATUS, ProjectStatus.active.name())));
+			tabs.add(tabActive);
+		}
+		
+		if (isTabsTemplateAccessEnabled()) {
+			tabTemplateAccessPrivate = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_TEMPLATE_ACCESS_PRIVATE,
+					translate("project.list.tab.template.access.private"),
+					TabSelectionBehavior.reloadData,
+					List.of(
+							FlexiTableFilterValue.valueOf(FILTER_STATUS, ProjectStatus.active.name()),
+							FlexiTableFilterValue.valueOf(FILTER_TEMPLATE_ACCESS, FILTER_TEMPLATE_ACCESS_PRIVATE))
+					);
+			tabs.add(tabTemplateAccessPrivate);
+			
+			tabTemplateAccessPublic = FlexiFiltersTabFactory.tabWithImplicitFilters(
+					TAB_ID_TEMPLATE_ACCESS_PUBLIC,
+					translate("project.list.tab.template.access.public"),
+					TabSelectionBehavior.reloadData,
+					List.of(
+							FlexiTableFilterValue.valueOf(FILTER_STATUS, ProjectStatus.active.name()),
+							FlexiTableFilterValue.valueOf(FILTER_TEMPLATE_ACCESS, FILTER_TEMPLATE_ACCESS_PUBLIC))
+					);
+			tabs.add(tabTemplateAccessPublic);
+		}
 		
 		if (isTabNoActivityEnabled()) {
 			tabNoActivity = FlexiFiltersTabFactory.tabWithImplicitFilters(
@@ -394,7 +438,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		tabs.add(tabDeleted);
 		
 		tableEl.setFilterTabs(true, tabs);
-		tableEl.setSelectedFilterTab(ureq, tabActive);
+		tableEl.setSelectedFilterTab(ureq, tabActive != null? tabActive: tabAll);
 	}
 	
 	private void initFilters() {
@@ -414,6 +458,14 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		
 		if (isFilterMemberEnabled()) {
 			filters.add(new FlexiTableTextFilter(translate("filter.member"), FILTER_MEMBER, true));
+		}
+		
+		if (isFilterTemplateAccessEnabled()) {
+			SelectionValues values = new SelectionValues();
+			values.add(SelectionValues.entry(FILTER_TEMPLATE_ACCESS_PRIVATE, translate("filter.template.access.private")));
+			values.add(SelectionValues.entry(FILTER_TEMPLATE_ACCESS_PUBLIC, translate("filter.template.access.public")));
+			filters.add(new FlexiTableMultiSelectionFilter(translate("filter.template.access"), FILTER_TEMPLATE_ACCESS, values, true));
+			
 		}
 		
 		tableEl.setFilters(true, filters, false, false);
@@ -502,6 +554,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 						.sorted()
 						.collect(Collectors.joining(" / "));
 				row.setOwnersNames(ownersNames);
+				row.setProjectOf(translate(ProjectUIFactory.templateSuffix("project.of", project), ownersNames));
 			} else {
 				row.setOwnerKeys(Set.of());
 			}
@@ -529,7 +582,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			forgeProjAvatar(row, project);
 			forgeUsersPortraits(ureq, row, members);
 			forgeSelectLink(ureq, row, projectKeyToOrganisationKey.getOrDefault(project.getKey(), Set.of()));
-			forgeCreateFormTemplateLink(row);
+			forgeCreateFormTemplateLink(ureq, row);
 			forgeToolsLink(row);
 			
 			rows.add(row);
@@ -605,6 +658,16 @@ public abstract class ProjProjectListController extends FormBasicController impl
 					rows.removeIf(row -> !row.getMemberKeys().stream().anyMatch(key -> memberKeys.contains(key)));
 				}
 			}
+			if (FILTER_TEMPLATE_ACCESS.equals(filter.getFilter())) {
+				List<String> values = ((FlexiTableMultiSelectionFilter)filter).getValues();
+				if (values != null && values.size() == 1) {
+					if (FILTER_TEMPLATE_ACCESS_PRIVATE.equals(values.get(0))) {
+						rows.removeIf(row -> !row.getOwnerKeys().contains(getIdentity().getKey()));
+					} else if (FILTER_TEMPLATE_ACCESS_PUBLIC.equals(values.get(0))) {
+						rows.removeIf(row -> row.getOwnerKeys().contains(getIdentity().getKey()));
+					}
+				}
+			}
 		}
 	}
 	
@@ -646,8 +709,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 					.anyMatch(key -> organisationKeys.contains(key));
 	}
 
-	private void forgeCreateFormTemplateLink(ProjProjectRow row) {
-		if (row.isTemplate()) {
+	private void forgeCreateFormTemplateLink(UserRequest ureq, ProjProjectRow row) {
+		if (row.isTemplate() && canCreateProject(ureq)) {
 			FormLink link = uifactory.addFormLink("ctemp_" + row.getKey(), CMD_CREATE_FROM_TEMPLATE, "project.create.from.template", null, flc, Link.LINK);
 			link.setIconRightCSS("o_icon o_icon_start");
 			link.setUserObject(row);
@@ -685,14 +748,14 @@ public abstract class ProjProjectListController extends FormBasicController impl
 							tableEl.setPage(page);
 						}
 						List<ContextEntry> subEntries = entries.subList(1, entries.size());
-						Activateable2 activateable2 = doOpenProject(ureq, row.getKey(), true);
+						Activateable2 activateable2 = doOpenProject(ureq, row.getKey(), true, true);
 						activateable2.activate(ureq, subEntries, entries.get(0).getTransientState());
 					}
 				}
 			}
 		} else if (dataModel.getRowCount() == 1) {
 			ProjProjectRow row = dataModel.getObject(0);
-			doOpenProject(ureq, row.getKey(), true);
+			doOpenProject(ureq, row.getKey(), true, true);
 		}
 	}
 	
@@ -714,7 +777,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 				String cmd = se.getCommand();
 				ProjProjectRow row = dataModel.getObject(se.getIndex());
 				if (CMD_SELECT.equals(cmd)) {
-					doOpenProject(ureq, row.getKey(), true);
+					doOpenProject(ureq, row.getKey(), true, true);
 				} else if (CMD_CREATE_FROM_TEMPLATE.equals(cmd)) {
 					doCreateFromTemplate(ureq, row.getKey());
 				}
@@ -733,7 +796,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		} else if (source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if (CMD_SELECT.equals(link.getCmd()) && link.getUserObject() instanceof ProjProjectRow projectRow) {
-				doOpenProject(ureq, projectRow.getKey(), true);
+				doOpenProject(ureq, projectRow.getKey(), true, true);
 			} else if (CMD_CREATE_FROM_TEMPLATE.equals(link.getCmd()) && link.getUserObject() instanceof ProjProjectRow projectRow) {
 				doCreateFromTemplate(ureq, projectRow.getKey());
 			} else if (CMD_CREATE_FROM_TEMPLATELINK.equals(link.getCmd()) && link.getUserObject() instanceof ProjProject project) {
@@ -764,7 +827,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			if (event instanceof OpenProjectEvent) {
 				ProjProjectRef project = ((OpenProjectEvent)event).getProject();
 				loadModel(ureq);
-				doOpenProject(ureq, project.getKey(), false);
+				doOpenProject(ureq, project.getKey(), true, false);
 			} else if (event == Event.DONE_EVENT) {
 				stackPanel.popUpToRootController(ureq);
 				loadModel(ureq);
@@ -887,26 +950,32 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 		if (!secCallback.canViewProjectMetadata()) {
 			return;
 		}
 		
-		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, secCallback.canEditProjectMetadata());
+		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
-		String title = translate("project.edit");
+		String title = translate(ProjectUIFactory.templateSuffix("project.edit", project));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 
-	private Activateable2 doOpenProject(UserRequest ureq, Long projectKey, boolean readActivity) {
+	private Activateable2 doOpenProject(UserRequest ureq, Long projectKey, boolean searchParamsRestrictions, boolean readActivity) {
 		removeAsListenerAndDispose(projectCtrl);
 		stackPanel.popUpToRootController(ureq);
 		
-		ProjProjectSearchParams searchParams = createSearchParams();
-		applyTemplateFilter(ureq, searchParams);
+		ProjProjectSearchParams searchParams = null;
+		if (searchParamsRestrictions) {
+			searchParams = createSearchParams();
+			applyTemplateFilter(ureq, searchParams);
+		} else {
+			searchParams = new ProjProjectSearchParams();
+		}
 		searchParams.setProjectKeys(List.of(() -> projectKey));
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		if (projects != null && !projects.isEmpty()) {
@@ -915,7 +984,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
 			boolean manager = projectService.isInOrganisation(project, ureq.getUserSession().getRoles()
 					.getOrganisationsWithRoles(OrganisationRoles.administrator, OrganisationRoles.projectmanager));
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, roles, manager);
+			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, manager, canCreateProject(ureq));
 			projectCtrl = new ProjProjectDashboardController(ureq, swControl, stackPanel, project, secCallback, isCreateForEnabled());
 			listenTo(projectCtrl);
 			String title = Formatter.truncate(project.getTitle(), 50);
@@ -938,7 +1007,7 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		loadModel(ureq);
-		doOpenProject(ureq, projectCopy.getKey(), true);
+		doOpenProject(ureq, projectCopy.getKey(), false, true);
 	}
 	
 	private void doOpenMembersManagement(UserRequest ureq, ProjProjectRef projectRef) {
@@ -947,7 +1016,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 		if (!secCallback.canEditProjectMetadata()) {
 			return;
 		}
@@ -963,7 +1033,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
@@ -975,14 +1046,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.done.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.done.message", project), Integer.toString(numOfMembers));
 		doneConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.done.confirm", "project.set.status.done.button", false);
+				ProjectUIFactory.templateSuffix("project.set.status.done.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.done.button", project), false);
 		doneConfirmationCtrl.setUserObject(project);
 		listenTo(doneConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.done.title"), true);
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.done.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -993,7 +1065,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
@@ -1005,14 +1078,15 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.deleted.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.deleted.confirm", "project.set.status.deleted.button", true);
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project), true);
 		deleteConfirmationCtrl.setUserObject(project);
 		listenTo(deleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.deleted.title"), true);
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -1021,13 +1095,14 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		ProjProject project = projectService.getProject(projectRef);
 		if (project == null) return;
 		
-		ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+		ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 		if (!secCallback.canEditProjectStatus()) {
 			return;
 		}
 		
-		String title = translate("project.reopen.title");
-		String msg = translate("project.reopen.text");
+		String title = translate(ProjectUIFactory.templateSuffix("project.reopen.title", project));
+		String msg = translate(ProjectUIFactory.templateSuffix("project.reopen.text", project));
 		reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
 		reopenConfirmationCtrl.setUserObject(project);
 	}
@@ -1134,7 +1209,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
 		for (ProjProject project: projects) {
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+		Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 			if (secCallback.canEditProjectStatus()) {
 				projectService.setStatusDone(getIdentity(), project);
 			}
@@ -1160,7 +1236,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
 		for (ProjProject project: projects) {
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 			if (secCallback.canEditProjectStatus()) {
 				projectService.reopen(getIdentity(), project);
 			}
@@ -1185,7 +1262,8 @@ public abstract class ProjProjectListController extends FormBasicController impl
 		List<ProjProject> projects = projectService.getProjects(searchParams);
 		
 		for (ProjProject project: projects) {
-			ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+			Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+			ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 			if (secCallback.canDeleteProject()) {
 				projectService.setStatusDeleted(getIdentity(), project);
 			}
@@ -1223,34 +1301,40 @@ public abstract class ProjProjectListController extends FormBasicController impl
 			project = projectService.getProject(row);
 			if (project != null) {
 				boolean dividerDelete = false;
-				ProjProjectSecurityCallback secCallback = ProjectSecurityCallbackFactory.createDefaultCallback(project, Set.of(), true);
+				Set<ProjectRole> roles = projectService.getRoles(project, getIdentity());
+				ProjProjectSecurityCallback secCallback = createDefaultCallback(project, roles, true, canCreateProject(ureq));
 				if (secCallback.canViewProjectMetadata()) {
-					addLink("project.edit", CMD_EDIT, "o_icon o_icon_edit");
+					addLink("project.edit", ProjectUIFactory.templateSuffix("project.edit", project), CMD_EDIT, "o_icon o_icon_edit");
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditMembers()) {
-					addLink("members.management", CMD_MEMBERS, "o_icon o_icon_membersmanagement");
+					addLink("members.management", "members.management",CMD_MEMBERS, "o_icon o_icon_membersmanagement");
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.active == project.getStatus()) {
-					addLink("project.set.status.done", CMD_STATUS_DONE, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
+					addLink("project.set.status.done",
+							ProjectUIFactory.templateSuffix("project.set.status.done", project), CMD_STATUS_DONE,
+							"o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 					dividerDelete &= true;
 				}
 				if (secCallback.canEditProjectStatus() && ProjectStatus.done == project.getStatus()) {
-					addLink("project.reopen", CMD_STATUS_REOPEN, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
+					addLink("project.reopen", ProjectUIFactory.templateSuffix("project.reopen", project),
+							CMD_STATUS_REOPEN, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
 					dividerDelete &= true;
 				}
 				mainVC.contextPut("dividerDelete", dividerDelete);
 				if (secCallback.canDeleteProject() && ProjectStatus.deleted != project.getStatus()) {
-					addLink("project.set.status.deleted", CMD_STATUS_DELETED, "o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
+					addLink("project.set.status.deleted",
+							ProjectUIFactory.templateSuffix("project.set.status.deleted", project), CMD_STATUS_DELETED,
+							"o_icon " + ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 				}
 			}
 			
 			putInitialPanel(mainVC);
 		}
 		
-		private void addLink(String name, String cmd, String iconCSS) {
-			Link link = LinkFactory.createLink(name, cmd, getTranslator(), mainVC, this, Link.LINK);
+		private void addLink(String name, String i18n, String cmd, String iconCSS) {
+			Link link = LinkFactory.createLink(name, name, cmd, i18n, getTranslator(), mainVC, this, Link.LINK);
 			if(iconCSS != null) {
 				link.setIconLeftCSS(iconCSS);
 			}

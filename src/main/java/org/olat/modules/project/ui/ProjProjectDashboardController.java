@@ -167,7 +167,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		cmdsDropDown.setOrientation(DropdownOrientation.right);
 		mainVC.put("cmds", cmdsDropDown);
 		
-		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate("project.edit"), this, "o_icon_edit");
+		editProjectLink = LinkFactory.createToolLink(CMD_EDIT_PROJECT, translate(ProjectUIFactory.templateSuffix("project.edit", project)), this, "o_icon_edit");
 		cmdsDropDown.addComponent(editProjectLink);
 		
 		membersManagementLink = LinkFactory.createToolLink(CMD_EDIT_MEMBER_MANAGEMENT, translate("members.management"), this, "o_icon_membersmanagement");
@@ -179,15 +179,15 @@ public class ProjProjectDashboardController extends BasicController implements A
 		templateLink = LinkFactory.createToolLink(CMD_TEMPLATE, translate("project.save.template"), this, "o_icon_template");
 		cmdsDropDown.addComponent(templateLink);
 		
-		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate("project.set.status.done"), this,
+		statusDoneLink = LinkFactory.createToolLink(CMD_STATUS_DONE, translate(ProjectUIFactory.templateSuffix("project.set.status.done", project)), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.done));
 		cmdsDropDown.addComponent(statusDoneLink);
 		
-		reopenLink = LinkFactory.createToolLink(CMD_REOPEN, translate("project.reopen"), this,
+		reopenLink = LinkFactory.createToolLink(CMD_REOPEN, translate(ProjectUIFactory.templateSuffix("project.reopen", project)), this,
 				ProjectUIFactory.getStatusIconCss(ProjectStatus.active));
 		cmdsDropDown.addComponent(reopenLink);
 		
-		statusDeletedLink = LinkFactory.createToolLink(CMD_STATUS_DELETED, translate("project.set.status.deleted"),
+		statusDeletedLink = LinkFactory.createToolLink(CMD_STATUS_DELETED, translate(ProjectUIFactory.templateSuffix("project.set.status.deleted", project)),
 				this, ProjectUIFactory.getStatusIconCss(ProjectStatus.deleted));
 		cmdsDropDown.addComponent(statusDeletedLink);
 		updateCmdsUI();
@@ -291,7 +291,10 @@ public class ProjProjectDashboardController extends BasicController implements A
 		mainVC.contextPut("projectTitle", project.getTitle());
 		mainVC.contextPut("status", ProjectUIFactory.translateStatus(getTranslator(), project.getStatus()));
 		mainVC.contextPut("statusCssClass", "o_proj_project_status_" + project.getStatus().name());
-		mainVC.contextPut("deleted", ProjectStatus.deleted == project.getStatus());
+		Object deletedMessageI18nKey = ProjectStatus.deleted == project.getStatus()
+				? ProjectUIFactory.templateSuffix("project.message.deleted", project)
+				: null;
+		mainVC.contextPut("deletedMessageI18nKey", deletedMessageI18nKey);
 		mainVC.contextPut("template", project.isTemplatePrivate() || project.isTemplatePublic());
 		if (secCallback.canViewProjectMetadata()) {
 			mainVC.contextPut("projectTeaser", project.getTeaser());
@@ -497,7 +500,7 @@ public class ProjProjectDashboardController extends BasicController implements A
 		editCtrl = ProjProjectEditController.createEditCtrl(ureq, getWindowControl(), project, !secCallback.canEditProjectMetadata());
 		listenTo(editCtrl);
 		
-		String title = translate("project.edit");
+		String title = translate(ProjectUIFactory.templateSuffix("project.edit", project));
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), editCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
@@ -549,13 +552,14 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.done.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.done.message", project), Integer.toString(numOfMembers));
 		doneConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.done.confirm", "project.set.status.done.button", false);
+				ProjectUIFactory.templateSuffix("project.set.status.done.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.done.button", project), false);
 		listenTo(doneConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), doneConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.done.title"), true);
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.done.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
@@ -573,20 +577,21 @@ public class ProjProjectDashboardController extends BasicController implements A
 		}
 		
 		int numOfMembers = projectService.countMembers(project);
-		String message = translate("project.set.status.deleted.message", Integer.toString(numOfMembers));
+		String message = translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.message", project), Integer.toString(numOfMembers));
 		deleteConfirmationCtrl = new ProjConfirmationController(ureq, getWindowControl(), message,
-				"project.set.status.deleted.confirm", "project.set.status.deleted.button", true);
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.confirm", project),
+				ProjectUIFactory.templateSuffix("project.set.status.deleted.button", project), true);
 		listenTo(deleteConfirmationCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), deleteConfirmationCtrl.getInitialComponent(),
-				true, translate("project.set.status.deleted.title"), true);
+				true, translate(ProjectUIFactory.templateSuffix("project.set.status.deleted.title", project)), true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
 	private void doConfirmReopen(UserRequest ureq) {
-		String title = translate("project.reopen.title");
-		String msg = translate("project.reopen.text");
+		String title = translate(ProjectUIFactory.templateSuffix("project.reopen.title", project));
+		String msg = translate(ProjectUIFactory.templateSuffix("project.reopen.text", project));
 		reopenConfirmationCtrl = activateOkCancelDialog(ureq, title, msg, reopenConfirmationCtrl);
 	}
 	

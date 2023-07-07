@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project.ui;
 
+import static org.olat.modules.project.ui.ProjectUIFactory.templateSuffix;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -43,6 +45,7 @@ import org.olat.modules.project.ProjDecision;
 import org.olat.modules.project.ProjFile;
 import org.olat.modules.project.ProjMilestone;
 import org.olat.modules.project.ProjNote;
+import org.olat.modules.project.ProjProject;
 import org.olat.modules.project.ProjToDo;
 import org.olat.modules.project.manager.ProjectXStream;
 import org.olat.modules.todo.ToDoTask;
@@ -89,20 +92,21 @@ public class ProjTimelineActivityRowsFactory {
 
 	private void addActivityProjectRows(UserRequest ureq, List<ProjTimelineRow> rows, ActivityRowData activityRowData) {
 		ProjActivity activity = activityRowData.lastActivity();
+		ProjProject project = activity.getProject();
 		ProjTimelineRow row = new ProjTimelineRow(activity);
 		String message = null;
 		switch (activity.getAction()) {
-		case projectCreate: message = translator.translate("timeline.activity.project.create"); break;
-		case projectContentUpdate: message = translator.translate("timeline.activity.project.content.update"); break;
-		case projectStatusActive: message = translator.translate("timeline.activity.project.status.active"); break;
-		case projectStatusDone: message = translator.translate("timeline.activity.project.status.done"); break;
-		case projectStatusDelete: message = translator.translate("timeline.activity.project.status.deleted"); break;
-		case projectImageAvatarUpdate: message = translator.translate("timeline.activity.project.image.update.avatar"); break;
-		case projectImageBackgroundUpdate: message = translator.translate("timeline.activity.project.image.update.background"); break;
+		case projectCreate: message = translator.translate(templateSuffix("timeline.activity.project.create", project)); break;
+		case projectContentUpdate: message = translator.translate(templateSuffix("timeline.activity.project.content.update", project)); break;
+		case projectStatusActive: message = translator.translate(templateSuffix("timeline.activity.project.status.active", project)); break;
+		case projectStatusDone: message = translator.translate(templateSuffix("timeline.activity.project.status.done", project)); break;
+		case projectStatusDelete: message = translator.translate(templateSuffix("timeline.activity.project.status.deleted", project)); break;
+		case projectImageAvatarUpdate: message = translator.translate(templateSuffix("timeline.activity.project.image.update.avatar", project)); break;
+		case projectImageBackgroundUpdate: message = translator.translate(templateSuffix("timeline.activity.project.image.update.background", project)); break;
 		case projectMemberAdd: {
 			Identity member = activity.getMember();
 			if (member != null && uifactory != null) {
-				message = translator.translate("timeline.activity.project.member.add", userManager.getUserDisplayName(member.getKey()));
+				message = translator.translate(templateSuffix("timeline.activity.project.member.add", project), userManager.getUserDisplayName(member.getKey()));
 				uifactory.addAvatarIcon(ureq, row, member);
 			}
 			break;
@@ -110,7 +114,7 @@ public class ProjTimelineActivityRowsFactory {
 		case projectMemberRemove: {
 			Identity member = activity.getMember();
 			if (member != null && uifactory != null) {
-				message = translator.translate("timeline.activity.project.member.remove", userManager.getUserDisplayName(member.getKey()));
+				message = translator.translate(templateSuffix("timeline.activity.project.member.remove", project), userManager.getUserDisplayName(member.getKey()));
 				uifactory.addAvatarIcon(ureq, row, member);
 			}
 			break;

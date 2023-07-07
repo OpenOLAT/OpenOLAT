@@ -37,6 +37,11 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 	}
 
 	@Override
+	protected String getTitleI18n() {
+		return "segment.templates";
+	}
+
+	@Override
 	protected boolean isCreateProjectEnabled() {
 		return false;
 	}
@@ -48,6 +53,21 @@ public class ProjProjectTemplatesController extends ProjProjectMyController {
 	
 	@Override
 	protected boolean isColumnCreateFromTemplateEnabled() {
+		return true;
+	}
+
+	@Override
+	protected boolean isTabActivityEnabled() {
+		return false;
+	}
+
+	@Override
+	protected boolean isTabsTemplateAccessEnabled() {
+		return true;
+	}
+	
+	@Override
+	protected boolean isFilterTemplateAccessEnabled() {
 		return true;
 	}
 	

@@ -33,9 +33,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.modules.project.manager.ProjArtefactToArtefactDAO;
 import org.olat.modules.todo.ToDoPriority;
+import org.olat.modules.todo.ToDoRole;
 import org.olat.modules.todo.ToDoService;
 import org.olat.modules.todo.ToDoStatus;
 import org.olat.modules.todo.ToDoTask;
+import org.olat.modules.todo.ToDoTaskMembers;
 import org.olat.modules.todo.ToDoTaskSearchParams;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -215,6 +217,7 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		assertThat(toDoTaskCopy.getDoneDate()).isNull();
 		assertThat(toDoTaskCopy.getExpenditureOfWork()).isEqualTo(expenditureOfWork);
 		assertThat(toDoTaskCopy.getDescription()).isEqualTo(description);
+		
 		List<TagInfo> tagInfos = projectService.getTagInfos(projectCopy, toDoCopy.getArtefact());
 		assertThat(tagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
 		assertThat(tagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
@@ -223,6 +226,12 @@ public class ProjectCopyServiceTest extends OlatTestCase {
 		List<TagInfo> taskTagInfos = toDoService.getTagInfos(toDoTaskSearchParams, toDoTaskCopy);
 		assertThat(taskTagInfos).extracting(TagInfo::getDisplayName).containsExactlyInAnyOrder(tag1, tag2);
 		assertThat(taskTagInfos).extracting(TagInfo::isSelected).containsExactlyInAnyOrder(Boolean.TRUE, Boolean.TRUE);
+		
+		ToDoTaskMembers toDoTaskMembers = toDoService
+				.getToDoTaskGroupKeyToMembers(List.of(toDoTaskCopy), ToDoRole.ASSIGNEE_DELEGATEE)
+				.get(toDoTaskCopy.getBaseGroup().getKey());
+		assertThat(toDoTaskMembers.getMembers(ToDoRole.assignee)).containsExactlyInAnyOrder(doer);
+		assertThat(toDoTaskMembers.getMembers(ToDoRole.delegatee)).isEmpty();
 	}
 
 	@Test

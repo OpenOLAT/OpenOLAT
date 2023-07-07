@@ -146,7 +146,6 @@ public class ProjectsSettingsController extends FormBasicController {
 		Set<OrganisationRoles> createRoles = createRestriced
 				? createRolesEl.getSelectedKeys().stream()
 						.map(OrganisationRoles::valueOf)
-						.filter(role -> !role.equals(OrganisationRoles.administrator))
 						.collect(Collectors.toSet())
 				: null;
 		projectModule.setCreateRoles(createRoles);

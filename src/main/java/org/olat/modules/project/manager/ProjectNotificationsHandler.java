@@ -123,8 +123,8 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 					ProjTimelineActivityRowsFactory activityRowsFactory = new ProjTimelineActivityRowsFactory(translator, formatter, userManager);
 					loadActivites(rows, project, compareDate, activityRowsFactory);
 					if (!rows.isEmpty()) {
-						List<SubscriptionListItem> items = rows.stream().map(row -> toItem(translator, row)).toList();
-						String title = translator.translate("notifications.info.title", project.getTitle());
+						List<SubscriptionListItem> items = rows.stream().map(row -> toItem(translator, project, row)).toList();
+						String title = translator.translate(ProjectUIFactory.templateSuffix("notifications.info.title", project), project.getTitle());
 						TitleItem titleItem = new TitleItem(title, "o_icon_proj_project");
 						si = new SubscriptionInfo(subscriber.getKey(), p.getType(), titleItem, items);
 					}
@@ -139,8 +139,8 @@ public class ProjectNotificationsHandler implements NotificationsHandler {
 		return si;
 	}
 	
-	private SubscriptionListItem toItem(Translator translator, ProjTimelineRow row) {
-		String desc = translator.translate("notifications.info.desc", row.getDoerDisplyName(), row.getMessage());
+	private SubscriptionListItem toItem(Translator translator, ProjProject project, ProjTimelineRow row) {
+		String desc = translator.translate(ProjectUIFactory.templateSuffix("notifications.info.desc", project), row.getDoerDisplyName(), row.getMessage());
 		String url = null;
 		String businessPath = null;
 		if (row.getProject() != null) {

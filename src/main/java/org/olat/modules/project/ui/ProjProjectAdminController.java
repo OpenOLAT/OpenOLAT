@@ -48,6 +48,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	}
 
 	@Override
+	protected String getTitleI18n() {
+		return "segment.admin";
+	}
+
+	@Override
 	protected boolean isCreateProjectEnabled() {
 		return true;
 	}
@@ -93,6 +98,16 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	}
 
 	@Override
+	protected boolean isTabActivityEnabled() {
+		return true;
+	}
+
+	@Override
+	protected boolean isTabsTemplateAccessEnabled() {
+		return false;
+	}
+
+	@Override
 	protected boolean isTabNoActivityEnabled() {
 		return true;
 	}
@@ -110,6 +125,11 @@ public class ProjProjectAdminController extends ProjProjectListController {
 	@Override
 	protected boolean isFilterMemberEnabled() {
 		return true;
+	}
+	
+	@Override
+	protected boolean isFilterTemplateAccessEnabled() {
+		return false;
 	}
 	
 	@Override

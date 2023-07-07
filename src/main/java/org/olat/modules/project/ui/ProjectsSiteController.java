@@ -34,9 +34,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.project.ProjectModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -51,7 +54,7 @@ public class ProjectsSiteController extends BasicController implements Activatea
 	private final VelocityContainer mainVC;
 	private final SegmentViewComponent segmentView;
 	private final Link myLink;
-	private final Link templatesLink;
+	private Link templatesLink;
 	private Link adminLink;
 	
 	private BreadcrumbedStackedPanel myStackPanel;
@@ -60,6 +63,9 @@ public class ProjectsSiteController extends BasicController implements Activatea
 	private ProjProjectMyController myCtrl;
 	private ProjProjectTemplatesController templatesCtrl;
 	private ProjProjectAdminController adminCtrl;
+	
+	@Autowired
+	private ProjectModule projectModule;
 
 	public ProjectsSiteController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -73,10 +79,13 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		myLink = LinkFactory.createLink("segment.my", mainVC, this);
 		segmentView.addSegment(myLink, true);
 		
-		templatesLink = LinkFactory.createLink("segment.templates", mainVC, this);
-		segmentView.addSegment(templatesLink, false);
+		Roles roles = ureq.getUserSession().getRoles();
+		if (projectModule.canCreateProject(roles)) {
+			templatesLink = LinkFactory.createLink("segment.templates", mainVC, this);
+			segmentView.addSegment(templatesLink, false);
+		}
 		
-		if (ureq.getUserSession().getRoles().isProjectManager() || ureq.getUserSession().getRoles().isAdministrator()) {
+		if (roles.isProjectManager() || roles.isAdministrator()) {
 			adminLink = LinkFactory.createLink("segment.admin", mainVC, this);
 			segmentView.addSegment(adminLink, false);
 		}
@@ -123,7 +132,7 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		myStackPanel = new BreadcrumbedStackedPanel("mystack", getTranslator(), this);
 		myCtrl = new ProjProjectMyController(ureq, getWindowControl(), myStackPanel);
 		listenTo(myCtrl);
-		myStackPanel.pushController(translate("project.list.title"), myCtrl);
+		myStackPanel.pushController(translate("segment.my"), myCtrl);
 		
 		mainVC.put("segmentCmp", myStackPanel);
 		segmentView.select(myLink);
@@ -135,7 +144,7 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		templatesStackPanel = new BreadcrumbedStackedPanel("templatestack", getTranslator(), this);
 		templatesCtrl = new ProjProjectTemplatesController(ureq, getWindowControl(), templatesStackPanel);
 		listenTo(templatesCtrl);
-		templatesStackPanel.pushController(translate("project.list.title"), templatesCtrl);
+		templatesStackPanel.pushController(translate("segment.templates"), templatesCtrl);
 		
 		mainVC.put("segmentCmp", templatesStackPanel);
 		segmentView.select(templatesLink);
@@ -148,7 +157,7 @@ public class ProjectsSiteController extends BasicController implements Activatea
 		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(ORES_TYPE_ADMIN), null);
 		adminCtrl = new ProjProjectAdminController(ureq, swControl, adminStackPanel);
 		listenTo(adminCtrl);
-		adminStackPanel.pushController(translate("project.list.title"), adminCtrl);
+		adminStackPanel.pushController(translate("segment.admin"), adminCtrl);
 		
 		mainVC.put("segmentCmp", adminStackPanel);
 		segmentView.select(adminLink);

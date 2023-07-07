@@ -19,6 +19,8 @@
  */
 package org.olat.modules.project.ui;
 
+import static org.olat.modules.project.ui.ProjectUIFactory.templateSuffix;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -207,7 +209,7 @@ public class ProjTimelineController extends FormBasicController
 		List<FlexiTableExtendedFilter> filters = new ArrayList<>(2);
 		
 		SelectionValues typeValues = new SelectionValues();
-		typeValues.add(SelectionValues.entry(ActionTarget.project.name(), translate("timeline.filter.type.project")));
+		typeValues.add(SelectionValues.entry(ActionTarget.project.name(), translate(templateSuffix("timeline.filter.type.project", project))));
 		typeValues.add(SelectionValues.entry(ActionTarget.file.name(), translate("timeline.filter.type.file")));
 		typeValues.add(SelectionValues.entry(ActionTarget.toDo.name(), translate("timeline.filter.type.todo")));
 		typeValues.add(SelectionValues.entry(ActionTarget.note.name(), translate("timeline.filter.type.note")));

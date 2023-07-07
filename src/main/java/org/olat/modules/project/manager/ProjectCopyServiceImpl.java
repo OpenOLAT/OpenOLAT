@@ -194,6 +194,7 @@ public class ProjectCopyServiceImpl implements ProjectCopyService {
 		
 		ProjToDo toDoCopy = projectService.createToDo(doer, projectCopy);
 		activityDao.create(Action.toDoCopyInitialized, null, null, doer, toDoCopy.getArtefact());
+		projectService.updateMembers(doer, toDoCopy, List.of(doer), List.of());
 		ToDoTask toDoTask = toDo.getToDoTask();
 		projectService.updateToDo(doer, toDoCopy,
 				toDoTask.getTitle(),
