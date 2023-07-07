@@ -69,6 +69,7 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
 import org.olat.modules.portfolio.Binder;
@@ -756,7 +757,7 @@ public class PageMetadataEditController extends FormBasicController {
 			
 			if(handler != null) {
 				UploadMedia mObject = new UploadMedia(document.getFile(), document.getName(), mimeType);
-				Media media = handler.createMedia(document.getName(), "", "", mObject, businessPath, getIdentity());
+				Media media = handler.createMedia(document.getName(), "", "", mObject, businessPath, getIdentity(), MediaLog.Action.ASSIGNMENT);
 				MediaPart part = MediaPart.valueOf(getIdentity(), media);
 				pageService.appendNewPagePart(thePage, part);
 			} else {

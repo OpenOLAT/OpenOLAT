@@ -57,11 +57,13 @@ import org.olat.modules.ceditor.model.ImageElement;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.ImageInspectorController;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaHandlerVersion;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.AddImageController;
 import org.olat.modules.cemedia.ui.medias.CollectImageMediaController;
 import org.olat.modules.cemedia.ui.medias.ImageMediaController;
@@ -87,6 +89,8 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
+	private MediaLogDAO mediaLogDao;
+	@Autowired
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -111,8 +115,8 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(true, true, "o_icon_refresh", false, null);
+	public MediaHandlerUISettings getUISettings() {
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh", false, null, false);
 	}
 
 	@Override
@@ -158,12 +162,12 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author, MediaLog.Action action) {
 		UploadMedia mObject = (UploadMedia)mediaObject;
-		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author);
+		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author, action);
 	}
 	
-	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author, MediaLog.Action action) {
 		Media media = mediaDao.createMedia(title, description, altText, IMAGE_TYPE, businessPath, null, 60, author);
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
@@ -171,7 +175,7 @@ public class ImageHandler extends AbstractMediaHandler implements PageElementSto
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		
 		media = mediaDao.createVersion(media, new Date(), filename, storagePath, filename);
-
+		mediaLogDao.createLog(action, media, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
 		

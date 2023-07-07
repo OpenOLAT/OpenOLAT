@@ -36,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,7 +125,7 @@ public class NewFileMediaVersionController extends FormBasicController {
 		File file = fileEl.getUploadFile();
 		String filename = fileEl.getUploadFileName();
 		media = mediaService.getMediaByKey(media.getKey());
-		mediaService.addVersion(media, file, filename);
+		mediaService.addVersion(media, file, filename, getIdentity(), MediaLog.Action.UPLOAD);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

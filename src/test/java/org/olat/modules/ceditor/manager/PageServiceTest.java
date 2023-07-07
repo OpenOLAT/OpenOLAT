@@ -37,6 +37,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.ParagraphPart;
 import org.olat.modules.ceditor.model.jpa.SpacerPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
 import org.olat.modules.portfolio.handler.TextHandler;
@@ -208,7 +209,7 @@ public class PageServiceTest extends OlatTestCase {
 		ParagraphPart paragraphPart = new ParagraphPart();
 		paragraphPart = pageService.appendNewPagePartAt(page, paragraphPart, 0);
 		
-		Media media = textHandler.createMedia("Text", "Some text", "Alternative", "The real content", "[Text:0]", id);
+		Media media = textHandler.createMedia("Text", "Some text", "Alternative", "The real content", "[Text:0]", id, MediaLog.Action.CREATED);
 		MediaPart mediaPart = MediaPart.valueOf(id, media);
 		mediaPart = pageService.appendNewPagePartAt(page, mediaPart, 1);
 		dbInstance.commitAndCloseSession();
@@ -236,7 +237,7 @@ public class PageServiceTest extends OlatTestCase {
 		// Create an image media
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
 		File imageFile = new File(imageUrl.toURI());
-		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
 		// Create and ad the media part
 		MediaPart mediaPart = MediaPart.valueOf(id, media);
 		mediaPart = pageService.appendNewPagePartAt(page, mediaPart, 1);

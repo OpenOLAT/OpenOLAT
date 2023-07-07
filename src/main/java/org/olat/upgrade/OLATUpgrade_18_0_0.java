@@ -811,7 +811,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private List<MediaVersionImpl> getMediaVersionWithoutChecksum(int firstResult, int maxResults) {
 		String query = """
 			select mversion from mediaversion as mversion
-		 	 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null
+			 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.versionChecksum is null
 			 order by mversion.key asc
 			""";
 		return dbInstance.getCurrentEntityManager()
@@ -824,7 +824,7 @@ public class OLATUpgrade_18_0_0 extends OLATUpgrade {
 	private List<MediaVersionImpl> getMediaVersionWithoutMetadata(int firstResult, int maxResults) {
 		String query = """
 			select mversion from mediaversion as mversion
-		 	 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.metadata.key is null
+			 where mversion.rootFilename is not null and mversion.storagePath is not null and mversion.metadata.key is null
 			 order by mversion.key asc
 			""";
 		return dbInstance.getCurrentEntityManager()

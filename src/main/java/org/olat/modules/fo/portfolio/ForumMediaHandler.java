@@ -43,10 +43,12 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
@@ -70,6 +72,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
@@ -109,7 +113,8 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		Message message = null;
 		if(mediaObject instanceof Message msg) {
 			message = forumManager.loadMessage(msg.getKey());
@@ -137,6 +142,7 @@ public class ForumMediaHandler extends AbstractMediaHandler {
 		}
 
 		media = mediaDao.createVersion(media, new Date(), content, storagePath, null);
+		mediaLogDao.createLog(action, media, author);
 		return media;
 	}
 

@@ -36,10 +36,12 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.modules.wiki.WikiPage;
 import org.olat.user.manager.ManifestBuilder;
@@ -60,6 +62,8 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	
 	public WikiMediaHandler() {
 		super(WIKI_HANDLER);
@@ -95,7 +99,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author, MediaLog.Action action) {
 		String content = null;
 		if(mediaObject instanceof WikiPage page) {
 			content = page.getContent();
@@ -103,6 +107,7 @@ public class WikiMediaHandler extends AbstractMediaHandler {
 		Media media = mediaDao.createMedia(title, description, altText, content, WIKI_HANDLER, businessPath, null, 70, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
+		mediaLogDao.createLog(action, media, author);
 		return media;
 	}
 

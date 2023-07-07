@@ -55,11 +55,13 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaHandlerVersion;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.AVVideoVersionMediaController;
 import org.olat.modules.cemedia.ui.medias.AddVideoController;
 import org.olat.modules.cemedia.ui.medias.CollectVideoMediaController;
@@ -89,6 +91,8 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	@Autowired
 	private MediaDAO mediaDao;
 	@Autowired
+	private MediaLogDAO mediaLogDao;
+	@Autowired
 	private ContentEditorFileStorage fileStorage;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
@@ -113,8 +117,8 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 	
 	@Override
-	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(true, true, "o_icon_refresh", true, "o_icon_video_record");
+	public MediaHandlerUISettings getUISettings() {
+		return new MediaHandlerUISettings(true, true, "o_icon_refresh", true, "o_icon_video_record", false);
 	}
 
 	@Override
@@ -160,12 +164,14 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		UploadMedia mObject = (UploadMedia)mediaObject;
-		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author);
+		return createMedia(title, description, altText, mObject.getFile(), mObject.getFilename(), businessPath, author, action);
 	}
 	
-	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, File file, String filename, String businessPath,
+			Identity author, MediaLog.Action action) {
 		Media media = mediaDao.createMedia(title, description, altText, VIDEO_TYPE, businessPath, null, 60, author);
 		
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
@@ -176,6 +182,7 @@ public class VideoHandler extends AbstractMediaHandler implements PageElementSto
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
 		media = mediaDao.createVersion(media, new Date(), filename, storagePath, filename);
+		mediaLogDao.createLog(action, media, author);
 		return media;
 	}
 

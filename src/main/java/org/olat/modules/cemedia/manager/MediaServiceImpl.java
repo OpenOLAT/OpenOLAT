@@ -43,6 +43,8 @@ import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaLight;
+import org.olat.modules.cemedia.MediaLog;
+import org.olat.modules.cemedia.MediaLog.Action;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaTag;
 import org.olat.modules.cemedia.MediaToGroupRelation;
@@ -80,6 +82,8 @@ public class MediaServiceImpl implements MediaService {
 	private TagService tagService;
 	@Autowired
 	private MediaTagDAO mediaTagDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private MediaRelationDAO mediaRelationDao;
 	@Autowired
@@ -125,8 +129,10 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public Media setVersion(Media media) {
-		return mediaDao.setVersion(media, new Date());
+	public Media setVersion(Media media, Identity doer) {
+		media = mediaDao.setVersion(media, new Date());
+		mediaLogDao.createLog(MediaLog.Action.VERSIONED, media, doer);
+		return media;
 	}
 
 	@Override
@@ -135,17 +141,21 @@ public class MediaServiceImpl implements MediaService {
 	}
 
 	@Override
-	public Media addVersion(Media media, String content) {
-		return mediaDao.addVersion(media, new Date(), content, null, null);
+	public Media addVersion(Media media, String content, Identity doer, MediaLog.Action action) {
+		media = mediaDao.addVersion(media, new Date(), content, null, null);
+		mediaLogDao.createLog(action, media, doer);
+		return media;
 	}
 
 	@Override
-	public Media addVersion(Media media, File file, String filename) {
+	public Media addVersion(Media media, File file, String filename, Identity doer, MediaLog.Action action) {
 		File mediaDir = fileStorage.generateMediaSubDirectory(media);
 		File mediaFile = new File(mediaDir, filename);
 		FileUtils.copyFileToFile(file, mediaFile, false);
 		String storagePath = fileStorage.getRelativePath(mediaDir);
-		return mediaDao.addVersion(media, new Date(), filename, storagePath, filename);
+		media = mediaDao.addVersion(media, new Date(), filename, storagePath, filename);
+		mediaLogDao.createLog(action, media, doer);
+		return media;
 	}
 	
 	@Override
@@ -156,6 +166,16 @@ public class MediaServiceImpl implements MediaService {
 	@Override
 	public List<MediaVersion> getVersions(Media media) {
 		return mediaDao.getVersions(media);
+	}
+	
+	@Override
+	public List<MediaLog> getMediaLogs(MediaLight media) {
+		return mediaLogDao.getLogs(media);
+	}
+
+	@Override
+	public MediaLog addMediaLog(Action action, Media media, Identity doer) {
+		return mediaLogDao.createLog(action, media, doer);
 	}
 
 	@Override

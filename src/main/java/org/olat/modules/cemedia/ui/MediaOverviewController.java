@@ -55,7 +55,7 @@ import org.olat.modules.ceditor.model.StandardMediaRenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaHandler.CreateVersion;
-import org.olat.modules.cemedia.MediaHandlerVersion;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MetadataXStream;
@@ -86,6 +86,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private Controller mediaCtrl;
 	private Controller addVersionCtrl;
+	private MediaLogController logCtrl;
 	private CloseableModalController cmc;
 	
 	private int counter;
@@ -109,45 +110,52 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		this.currentVersion = currentVersion;
 		this.selectedVersion = currentVersion;
 		handler = mediaService.getMediaHandler(media.getType());
+		
+		logCtrl = new MediaLogController(ureq, getWindowControl(), mainForm, media);
+		listenTo(logCtrl);
+		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
-		MediaHandlerVersion handlerVersion = handler.hasVersion();
+		MediaHandlerUISettings uiSettings = handler.getUISettings();
 		
 		versionDropdownItem = uifactory.addDropdownMenu("versions.list", "versions.current", null, formLayout, getTranslator());
 		versionDropdownItem.setIconCSS("o_icon o_icon_version");
 		versionDropdownItem.setOrientation(DropdownOrientation.right);
 		versionDropdownItem.setButton(true);
-		versionDropdownItem.setVisible(handlerVersion.hasVersion());
+		versionDropdownItem.setVisible(uiSettings.hasVersion());
 		
-		if(editable && handlerVersion.hasVersion()) {
+		if(editable && uiSettings.hasVersion()) {
 			
 			setVersionButton = uifactory.addFormLink("set.version", "set.version", null, formLayout, Link.BUTTON);
 			setVersionButton.setIconLeftCSS("o_icon o_icon_add");
 			restoreVersionButton = uifactory.addFormLink("restore.version", "restore.version", null, formLayout, Link.BUTTON);
 			restoreVersionButton.setIconLeftCSS("o_icon o_icon_refresh");
 			
-			if(handlerVersion.canCreateVersion()) {
+			if(uiSettings.canCreateVersion()) {
 				createVersionButton = uifactory.addFormLink("create.version", "create.version." + handler.getType(), null, formLayout, Link.BUTTON);
-				String createIconCssClass = handlerVersion.createIconCssClass();
-				if(!StringHelper.containsNonWhitespace(handlerVersion.createIconCssClass())) {
+				String createIconCssClass = uiSettings.createIconCssClass();
+				if(!StringHelper.containsNonWhitespace(uiSettings.createIconCssClass())) {
 					createIconCssClass = "o_icon_add";
 				}
 				createVersionButton.setIconLeftCSS("o_icon " + createIconCssClass);
 			}
-			if(handlerVersion.canUploadVersion()) {
+			if(uiSettings.canUploadVersion()) {
 				uploadVersionButton = uifactory.addFormLink("upload.version", "upload.version." + handler.getType(), null, formLayout, Link.BUTTON);
-				String addIconCssClass = handlerVersion.uploadIconCssClass();
-				if(!StringHelper.containsNonWhitespace(handlerVersion.uploadIconCssClass())) {
+				String addIconCssClass = uiSettings.uploadIconCssClass();
+				if(!StringHelper.containsNonWhitespace(uiSettings.uploadIconCssClass())) {
 					addIconCssClass = "o_icon_refresh";
 				}
 				uploadVersionButton.setIconLeftCSS("o_icon " + addIconCssClass);
 			}
 			loadVersions();
 		}
+		
+		formLayout.add("logs", logCtrl.getInitialFormItem());
+		loadLogs();
 		
 		String metaPage = velocity_root + "/media_details_metadata.html";
 		metaCont = uifactory.addCustomFormLayout("meta", null, metaPage, formLayout);
@@ -196,6 +204,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		loadModels(metaCont);
 		loadVersions();
+		loadLogs();
 		return new MediaWithVersion(media, currentVersion, null, -1l);
 	}
 	
@@ -219,6 +228,11 @@ public class MediaOverviewController extends FormBasicController implements Acti
 		}
 		
 		versionDropdownItem.setVisible(versionDropdownItem.size() > 1);
+	}
+	
+	private void loadLogs() {
+		logCtrl.loadModel();
+		logCtrl.getInitialFormItem().setVisible(/* uiSettings.viewLogs() && */ logCtrl.size() > 0);
 	}
 	
 	private void updateVersion(UserRequest ureq, MediaVersion version) {
@@ -333,7 +347,11 @@ public class MediaOverviewController extends FormBasicController implements Acti
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if(addVersionCtrl == source) {
+		if(mediaCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadLogs();
+			}
+		} else if(addVersionCtrl == source) {
 			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
 				doUpdateVersions(ureq);
 			}
@@ -375,7 +393,7 @@ public class MediaOverviewController extends FormBasicController implements Acti
 	
 	private void doSetVersion(UserRequest ureq) {
 		media = mediaService.getMediaByKey(media.getKey());
-		media = mediaService.setVersion(media);
+		media = mediaService.setVersion(media, getIdentity());
 		reload();
 		updateVersion(ureq, currentVersion);
 	}

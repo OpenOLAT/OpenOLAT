@@ -52,6 +52,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.CitationSourceType;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
@@ -359,7 +360,7 @@ public class CollectCitationMediaController extends FormBasicController implemen
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
 			String content = textEl.getValue();
-			mediaReference = citationHandler.createMedia(title, description, null, content, businessPath, getIdentity());
+			mediaReference = citationHandler.createMedia(title, description, null, content, businessPath, getIdentity(), MediaLog.Action.CREATED);
 		} else if(metadataOnly) {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setDescription(descriptionEl.getValue());

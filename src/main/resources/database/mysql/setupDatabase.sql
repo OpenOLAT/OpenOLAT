@@ -2517,6 +2517,15 @@ create table o_media_version (
    primary key (id)
 );
 
+create table o_media_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_action varchar(32),
+   fk_media bigint not null,
+   fk_identity bigint,
+   primary key (id)
+);
+
 create table o_ce_page_reference  (
    id bigint not null auto_increment,
    creationdate datetime not null,
@@ -4498,6 +4507,7 @@ alter table o_media_tag ENGINE = InnoDB;
 alter table o_media_to_tax_level ENGINE = InnoDB;
 alter table o_media_to_group ENGINE = InnoDB;
 alter table o_media_version ENGINE = InnoDB;
+alter table o_media_log ENGINE = InnoDB;
 alter table o_ce_page_reference ENGINE = InnoDB;
 alter table o_ce_page_part ENGINE = InnoDB;
 alter table o_pf_section ENGINE = InnoDB;
@@ -5132,6 +5142,9 @@ alter table o_media_version add constraint media_version_media_idx foreign key (
 alter table o_media_version add constraint media_version_meta_idx foreign key (fk_metadata) references o_vfs_metadata (id);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
+
+alter table o_media_log add constraint media_log_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
 
 alter table o_ce_page_reference add constraint page_ref_to_page_idx foreign key (fk_page) references o_ce_page (id);
 alter table o_ce_page_reference add constraint page_ref_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);

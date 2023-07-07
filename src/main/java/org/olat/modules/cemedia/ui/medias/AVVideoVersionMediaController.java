@@ -34,6 +34,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,7 +99,7 @@ public class AVVideoVersionMediaController extends BasicController {
 		String fileName = creationController.getFileName();
 		File tempFile = creationController.getRecordedFile();
 		mediaReference = mediaService.getMediaByKey(mediaReference.getKey());
-		mediaService.addVersion(mediaReference, tempFile, fileName);
+		mediaService.addVersion(mediaReference, tempFile, fileName, getIdentity(), MediaLog.Action.RECORDED);
 		dbInstance.commit();
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

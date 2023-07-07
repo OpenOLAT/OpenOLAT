@@ -40,6 +40,7 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.manager.ContentEditorFileStorage;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
@@ -100,7 +101,8 @@ public class BlogEntryMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		BlogEntryMedia entry = (BlogEntryMedia)mediaObject;
 		Item item = entry.getItem();
 		

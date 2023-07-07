@@ -60,6 +60,7 @@ import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.handler.FileHandler;
@@ -263,7 +264,7 @@ public class CreateFileMediaController extends FormBasicController implements Pa
 		String description = descriptionEl.getValue();
 		String mimeType = WebappHelper.getMimeType(fileName);
 		UploadMedia mObject = new UploadMedia(tempFile, fileName, mimeType);
-		mediaReference = fileHandler.createMedia(title, description, altText, mObject, businessPath, getIdentity());
+		mediaReference = fileHandler.createMedia(title, description, altText, mObject, businessPath, getIdentity(), MediaLog.Action.CREATED);
 		FileUtils.deleteFile(tempFile);
 		FileUtils.deleteFile(tempDir);
 

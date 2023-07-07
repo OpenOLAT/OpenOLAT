@@ -332,6 +332,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.invitation.manager.InvitationDAOTest.class,
 	org.olat.modules.invitation.manager.InvitationServiceTest.class,
 	org.olat.modules.cemedia.manager.MediaDAOTest.class,
+	org.olat.modules.cemedia.manager.MediaLogDAOTest.class,
 	org.olat.modules.cemedia.manager.MediaRelationDAOTest.class,
 	org.olat.modules.cemedia.manager.MediaToTaxonomyLevelDAOTest.class,
 	org.olat.modules.cemedia.manager.MetadataXStreamTest.class,

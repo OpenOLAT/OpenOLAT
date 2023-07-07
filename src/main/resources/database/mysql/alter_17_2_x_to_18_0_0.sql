@@ -638,10 +638,23 @@ create index idx_media_version_checksum_idx on o_media_version (p_version_checks
 
 
 alter table o_ce_page_part add column fk_media_version_id bigint;
-
 alter table o_ce_page_part add constraint media_part_version_idx foreign key (fk_media_version_id) references o_media_version (id);
 
 alter table o_ce_page_part add column fk_identity_id bigint;
-
 alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
+
+
+create table o_media_log (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   p_action varchar(32),
+   fk_media bigint not null,
+   fk_identity bigint,
+   primary key (id)
+);
+alter table o_media_log ENGINE = InnoDB;
+
+alter table o_media_log add constraint media_log_media_idx foreign key (fk_media) references o_media (id);
+alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+
 

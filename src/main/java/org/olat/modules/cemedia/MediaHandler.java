@@ -48,7 +48,7 @@ public interface MediaHandler {
 	
 	VFSLeaf getThumbnail(MediaVersion media, Size size);
 	
-	MediaHandlerVersion hasVersion();
+	MediaHandlerUISettings getUISettings();
 	
 	/**
 	 * Return some informations to prefill the media/artefact creation form.
@@ -56,7 +56,8 @@ public interface MediaHandler {
 	 */
 	MediaInformations getInformations(Object mediaObject);
 	
-	Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author);
+	Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action);
 	
 	Controller getMediaController(UserRequest ureq, WindowControl wControl, MediaVersion version, RenderingHints hints);
 	

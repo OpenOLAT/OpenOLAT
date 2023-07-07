@@ -51,6 +51,7 @@ import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
@@ -286,7 +287,8 @@ public class CollectVideoMediaController extends FormBasicController implements 
 				uploadedFile = fileEl.getUploadFile();
 				uploadedFilename = fileEl.getUploadFileName();
 			}
-			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath, getIdentity());
+			mediaReference = fileHandler.createMedia(title, description, altText, uploadedFile, uploadedFilename, businessPath,
+					getIdentity(), MediaLog.Action.UPLOAD);
 		} else {
 			mediaReference.setTitle(titleEl.getValue());
 			mediaReference.setAltText(altTextEl.getValue());

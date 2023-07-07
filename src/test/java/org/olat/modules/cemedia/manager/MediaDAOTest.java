@@ -42,6 +42,7 @@ import org.olat.modules.ceditor.manager.PageDAO;
 import org.olat.modules.ceditor.manager.PageReferenceDAO;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaToGroupRelation;
 import org.olat.modules.cemedia.MediaToTaxonomyLevel;
@@ -176,7 +177,8 @@ public class MediaDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-14");
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
 		File imageFile = new File(imageUrl.toURI());
-		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]",
+				id, MediaLog.Action.UPLOAD);
 		dbInstance.commitAndCloseSession();
 		
 		Media realodedMedia = mediaDao.loadByKey(media.getKey());

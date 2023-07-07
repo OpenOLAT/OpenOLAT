@@ -676,3 +676,19 @@ alter table o_ce_page_part add column fk_identity_id int8;
 alter table o_ce_page_part add constraint media_part_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_media_part_ident_idx on o_ce_page_part (fk_identity_id);
 
+
+create table o_media_log (
+   id bigserial,
+   creationdate timestamp not null,
+   p_action varchar(32),
+   fk_media int8 not null,
+   fk_identity int8,
+   primary key (id)
+);
+
+alter table o_media_log add constraint media_log_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_log_media_idx on o_media_log (fk_media);
+alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_media_log_ident_idx on o_media_log (fk_identity);
+
+

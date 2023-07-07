@@ -59,7 +59,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.PageRunControllerElement;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
-import org.olat.modules.cemedia.MediaHandlerVersion;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaInformations;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.ui.MediaCenterController;
@@ -94,8 +94,8 @@ public abstract class AbstractMediaHandler implements MediaHandler, PageElementH
 	}
 
 	@Override
-	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(false, false, null, false, null);
+	public MediaHandlerUISettings getUISettings() {
+		return new MediaHandlerUISettings(false, false, null, false, null, false);
 	}
 
 	@Override

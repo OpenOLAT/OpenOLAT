@@ -2421,6 +2421,15 @@ create table o_media_version (
    primary key (id)
 );
 
+create table o_media_log (
+   id bigserial,
+   creationdate timestamp not null,
+   p_action varchar(32),
+   fk_media int8 not null,
+   fk_identity int8,
+   primary key (id)
+);
+
 create table o_ce_page_reference  (
    id bigserial,
    creationdate timestamp not null,
@@ -5082,6 +5091,11 @@ alter table o_media_version add constraint media_version_meta_idx foreign key (f
 create index idx_media_version_meta_idx on o_media_version (fk_metadata);
 create index idx_media_version_uuid_idx on o_media_version (p_version_uuid);
 create index idx_media_version_checksum_idx on o_media_version (p_version_checksum);
+
+alter table o_media_log add constraint media_log_media_idx foreign key (fk_media) references o_media (id);
+create index idx_media_log_media_idx on o_media_log (fk_media);
+alter table o_media_log add constraint media_log_ident_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_media_log_ident_idx on o_media_log (fk_identity);
 
 create index idx_category_name_idx on o_pf_category (p_name);
 

@@ -48,6 +48,7 @@ import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.AddElementInfos;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaModule;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.medias.UploadMedia;
@@ -193,7 +194,8 @@ public class MediaUploadController extends FormBasicController implements PageEl
 			MediaHandler mediaHandler = getHandler();
 			if(mediaHandler != null) {
 				UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, fileEl.getUploadMimeType());
-				mediaReference = mediaHandler.createMedia(title, description, altText, mObject, businessPath, getIdentity());
+				mediaReference = mediaHandler.createMedia(title, description, altText, mObject, businessPath,
+						getIdentity(), MediaLog.Action.UPLOAD);
 			}
 		}
 

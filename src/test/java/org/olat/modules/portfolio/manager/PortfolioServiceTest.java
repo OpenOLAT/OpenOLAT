@@ -53,6 +53,7 @@ import org.olat.modules.ceditor.model.jpa.HTMLPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.model.jpa.PageImpl;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.ImageHandler;
@@ -1286,7 +1287,7 @@ public class PortfolioServiceTest extends OlatTestCase {
 		
 		URL imageUrl = JunitTestHelper.class.getResource("file_resources/IMG_1483.png");
 		File imageFile = new File(imageUrl.toURI());
-		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id);
+		Media media = imageHandler.createMedia("Image", null, null, imageFile, imageFile.getName(), "[Image:0]", id, MediaLog.Action.UPLOAD);
 		MediaPart imagePart = MediaPart.valueOf(id, media);
 		imagePart = pageService.appendNewPagePart(page, imagePart);
 		MediaVersion savedVersion = imagePart.getMediaVersion();

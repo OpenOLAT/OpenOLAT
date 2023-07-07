@@ -28,6 +28,7 @@ import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.cemedia.MediaLog.Action;
 import org.olat.modules.cemedia.model.MediaShare;
 import org.olat.modules.cemedia.model.MediaUsage;
 import org.olat.modules.cemedia.model.MediaUsageWithStatus;
@@ -67,13 +68,13 @@ public interface MediaService {
 	 * @param media The media
 	 * @return The updated media
 	 */
-	Media setVersion(Media media);
+	Media setVersion(Media media, Identity doer);
 	
 	Media restoreVersion(Media media, MediaVersion version);
 	
-	Media addVersion(Media media, String content);
+	Media addVersion(Media media, String content, Identity identity, MediaLog.Action action);
 	
-	Media addVersion(Media media, File file, String filename);
+	Media addVersion(Media media, File file, String filename, Identity identity, MediaLog.Action action);
 	
 	
 	MediaVersion updateMediaVersion(MediaVersion mediaVersion);
@@ -94,6 +95,15 @@ public interface MediaService {
 	boolean isInMediaCenter(IdentityRef identity, File file);
 	
 	List<MediaUsage> getMediaUsage(MediaLight media);
+	
+	/**
+	 * Log trail of the specified media.
+	 * @param media The media
+	 * @return The log trail order by date descending
+	 */
+	List<MediaLog> getMediaLogs(MediaLight media);
+	
+	MediaLog addMediaLog(Action action, Media media, Identity doer);
 	
 	List<TagInfo> getTagInfos(Media media);
 	

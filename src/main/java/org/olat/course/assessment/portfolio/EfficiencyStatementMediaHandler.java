@@ -46,10 +46,12 @@ import org.olat.modules.ceditor.PageElementCategory;
 import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.StandardEditMediaController;
 import org.olat.user.manager.ManifestBuilder;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -71,6 +73,8 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	
 	public EfficiencyStatementMediaHandler() {
 		super(EFF_MEDIA);
@@ -106,13 +110,15 @@ public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		Media media = null;
 		if (mediaObject instanceof EfficiencyStatement statement) {
 			String xml = EfficiencyStatementManager.toXML(statement); 
 			media = mediaDao.createMedia(title, description, altText, xml, EFF_MEDIA, businessPath, null, 90, author);
 			ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 					LoggingResourceable.wrap(media));
+			mediaLogDao.createLog(action, media, author);
 		}
 		return media;
 	}

@@ -37,6 +37,7 @@ import org.olat.core.util.Util;
 import org.olat.modules.cemedia.Media;
 import org.olat.modules.cemedia.MediaHandler;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaService;
 import org.olat.modules.cemedia.ui.MediaCenterController;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
@@ -116,7 +117,7 @@ public class CollectArtefactController extends FormBasicController {
 			String title = titleEl.getValue();
 			String altText = altTextEl.getValue();
 			String description = descriptionEl.getValue();
-			mediaReference = handler.createMedia(title, description, altText, mediaObject, businessPath, getIdentity());
+			mediaReference = handler.createMedia(title, description, altText, mediaObject, businessPath, getIdentity(), MediaLog.Action.COLLECTED);
 		}
 
 		if(mediaReference != null) {

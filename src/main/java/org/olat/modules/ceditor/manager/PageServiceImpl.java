@@ -54,8 +54,10 @@ import org.olat.modules.ceditor.model.ContainerSettings;
 import org.olat.modules.ceditor.model.jpa.ContainerPart;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.cemedia.Media;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.model.MediaWithVersion;
 import org.olat.modules.portfolio.manager.PageUserInfosDAO;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -90,6 +92,8 @@ public class PageServiceImpl implements PageService {
 	private GroupDAO groupDao;
 	@Autowired
 	private CategoryDAO categoryDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 	@Autowired
 	private AssignmentDAO assignmentDao;
 	@Autowired
@@ -231,6 +235,7 @@ public class PageServiceImpl implements PageService {
 						if(mediaFile != null) {
 							importedMedia = mediaDao.createVersion(importedMedia,
 									mediaVersion.getCollectionDate(), mediaFile.getName(), storagePath, mediaFile.getName());
+							mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
 						}
 					}
 				}
@@ -238,6 +243,7 @@ public class PageServiceImpl implements PageService {
 			} else if(StringHelper.containsNonWhitespace(content)) {
 				importedMedia = mediaDao.createVersion(importedMedia,
 						mediaVersion.getCollectionDate(), content, null, null);
+				mediaLogDao.createLog(MediaLog.Action.IMPORTED, importedMedia, owner);
 			}
 		}
 		

@@ -17,15 +17,16 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.cemedia;
+package org.olat.modules.cemedia.ui;
+
+import org.olat.modules.cemedia.MediaLog;
 
 /**
  * 
- * 
- * Initial date: 29 juin 2023<br>
+ * Initial date: 7 juil. 2023<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public record MediaHandlerVersion(boolean hasVersion, boolean canUploadVersion, String uploadIconCssClass, boolean canCreateVersion, String createIconCssClass) {
+public record MediaLogRow(MediaLog mediaLog, String fullName, String action) {
 	//
 }

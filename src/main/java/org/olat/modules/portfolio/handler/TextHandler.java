@@ -39,12 +39,14 @@ import org.olat.modules.ceditor.RenderingHints;
 import org.olat.modules.ceditor.model.jpa.MediaPart;
 import org.olat.modules.ceditor.ui.MediaVersionInspectorController;
 import org.olat.modules.cemedia.Media;
-import org.olat.modules.cemedia.MediaHandlerVersion;
+import org.olat.modules.cemedia.MediaHandlerUISettings;
 import org.olat.modules.cemedia.MediaInformations;
+import org.olat.modules.cemedia.MediaLog;
 import org.olat.modules.cemedia.MediaLoggingAction;
 import org.olat.modules.cemedia.MediaVersion;
 import org.olat.modules.cemedia.handler.AbstractMediaHandler;
 import org.olat.modules.cemedia.manager.MediaDAO;
+import org.olat.modules.cemedia.manager.MediaLogDAO;
 import org.olat.modules.cemedia.ui.medias.CollectTextMediaController;
 import org.olat.modules.cemedia.ui.medias.TextMediaController;
 import org.olat.user.manager.ManifestBuilder;
@@ -65,6 +67,8 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	
 	@Autowired
 	private MediaDAO mediaDao;
+	@Autowired
+	private MediaLogDAO mediaLogDao;
 
 	public TextHandler() {
 		super(TEXT_MEDIA);
@@ -86,8 +90,8 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 	
 	@Override
-	public MediaHandlerVersion hasVersion() {
-		return new MediaHandlerVersion(true, false, null, false, null);
+	public MediaHandlerUISettings getUISettings() {
+		return new MediaHandlerUISettings(true, false, null, false, null, false);
 	}
 
 	@Override
@@ -101,10 +105,12 @@ public class TextHandler extends AbstractMediaHandler implements PageElementStor
 	}
 
 	@Override
-	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath, Identity author) {
+	public Media createMedia(String title, String description, String altText, Object mediaObject, String businessPath,
+			Identity author, MediaLog.Action action) {
 		Media media = mediaDao.createMedia(title, description, altText, (String)mediaObject, TEXT_MEDIA, businessPath, null, 60, author);
 		ThreadLocalUserActivityLogger.log(MediaLoggingAction.CE_MEDIA_ADDED, getClass(),
 				LoggingResourceable.wrap(media));
+		mediaLogDao.createLog(action, media, author);
 		return media;
 	}
 
