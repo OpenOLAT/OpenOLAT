@@ -20,7 +20,11 @@
 package org.olat.modules.openbadges.ui;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import org.olat.core.commons.services.tag.TagInfo;
 import org.olat.core.commons.services.tag.ui.component.TagSelection;
@@ -43,7 +47,9 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.openbadges.BadgeTemplate;
 import org.olat.modules.openbadges.OpenBadgesManager;
@@ -60,7 +66,9 @@ public class EditBadgeTemplateController extends FormBasicController {
 	private BadgeTemplate badgeTemplate;
 	private StaticTextElement identifierEl;
 	private ImageFormItem imageEl;
+	private StaticTextElement imageInfoEl;
 	private FileElement fileEl;
+	private File tmpImageFile;
 	private FormLayoutContainer nameCont;
 	private StaticTextElement nameEl;
 	private FormLink nameLink;
@@ -99,11 +107,20 @@ public class EditBadgeTemplateController extends FormBasicController {
 				OpenBadgesUIFactory.createIdentifier();
 		identifierEl = uifactory.addStaticTextElement("form.identifier", identifier, formLayout);
 
+		imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
+		if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
+			imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
+		}
+		imageEl.setVisible(false);
+		imageInfoEl = uifactory.addStaticTextElement("form.imageInfo", null,
+				"", formLayout);
+		imageInfoEl.setVisible(false);
+
 		if (badgeTemplate == null) {
 			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image", formLayout);
 			fileEl.setMandatory(true);
+			fileEl.addActionListener(FormEvent.ONCHANGE);
 		} else {
-			imageEl = new ImageFormItem(ureq.getUserSession(), "form.image");
 			String image = badgeTemplate.getImage();
 			String previewImage = openBadgesManager.getTemplateSvgPreviewImage(image);
 			imageEl.setMedia(openBadgesManager.getTemplateVfsLeaf(previewImage != null ? previewImage : image));
@@ -111,6 +128,22 @@ public class EditBadgeTemplateController extends FormBasicController {
 				imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
 			}
 			formLayout.add(imageEl);
+			imageEl.setVisible(true);
+
+			openBadgesManager.getTemplateSvgPreviewImage(badgeTemplate.getImage());
+			Set<String> substitutionVariables = openBadgesManager.getTemplateSvgSubstitutionVariables(badgeTemplate.getImage());
+			if (!substitutionVariables.isEmpty()) {
+				String imageInfo = badgeTemplate.getImage() + " (" +
+						translate("form.imageInfo.substitutionVariables", String.join(", ", substitutionVariables)) +
+						")";
+				imageInfoEl.setValue(imageInfo);
+			} else {
+				imageInfoEl.setValue(badgeTemplate.getImage());
+			}
+			imageInfoEl.setVisible(true);
+
+			fileEl = uifactory.addFileElement(getWindowControl(), getIdentity(), "form.image.other", formLayout);
+			fileEl.addActionListener(FormEvent.ONCHANGE);
 		}
 
 		nameCont = FormLayoutContainer.createButtonLayout("nameCont", getTranslator());
@@ -196,7 +229,13 @@ public class EditBadgeTemplateController extends FormBasicController {
 			badgeTemplate.setName(nameEl.getValue());
 			badgeTemplate.setDescription(descriptionEl.getValue());
 			badgeTemplate.setScopesAsCollection(scopeEl.getSelectedKeys());
-			openBadgesManager.updateTemplate(badgeTemplate);
+			if (fileEl.getUploadFile() != null) {
+				File templateFile = fileEl.getUploadFile();
+				String targetFileName = fileEl.getUploadFileName();
+				openBadgesManager.updateTemplate(badgeTemplate, templateFile, targetFileName, getIdentity());
+			} else {
+				openBadgesManager.updateTemplate(badgeTemplate);
+			}
 		}
 
 		openBadgesManager.updateCategories(badgeTemplate, null, categoriesEl.getDisplayNames());
@@ -212,11 +251,44 @@ public class EditBadgeTemplateController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == fileEl) {
 			validateTemplateFile();
+			updateImage();
 		} else if (source == nameLink) {
 			doTranslateName(ureq);
 		} else if (source == descriptionLink) {
 			doTranslateDescription(ureq);
 		}
+	}
+
+	private void updateImage() {
+		if (fileEl.getUploadFile() == null) {
+			return;
+		}
+
+		if (fileEl.hasError()) {
+			return;
+		}
+
+		File uploadFile = fileEl.getUploadFile();
+		String uploadFileName = fileEl.getUploadFileName();
+		String tmpFileName = UUID.randomUUID() + "." + FileUtils.getFileSuffix(uploadFileName);
+		if (tmpImageFile != null) {
+			tmpImageFile.delete();
+			tmpImageFile = null;
+		}
+		tmpImageFile = new File(WebappHelper.getTmpDir(), tmpFileName);
+		try {
+			Files.copy(uploadFile.toPath(), tmpImageFile.toPath());
+			imageEl.setMedia(tmpImageFile);
+		} catch (IOException e) {
+			logError("", e);
+		}
+
+		imageEl.setVisible(true);
+		if (imageEl.getComponent() instanceof ImageComponent imageComponent) {
+			imageComponent.setMaxWithAndHeightToFitWithin(80, 80);
+		}
+
+		imageInfoEl.setVisible(false);
 	}
 
 	private void doTranslateName(UserRequest ureq) {
@@ -287,7 +359,7 @@ public class EditBadgeTemplateController extends FormBasicController {
 	private boolean validateTemplateFile() {
 		boolean allOk = true;
 
-		if (fileEl == null) {
+		if (fileEl == null || !fileEl.isMandatory()) {
 			return allOk;
 		}
 
@@ -295,11 +367,8 @@ public class EditBadgeTemplateController extends FormBasicController {
 		fileEl.clearError();
 		if (templateFile != null && templateFile.exists()) {
 			String fileName = fileEl.getUploadFileName().toLowerCase();
-			if (fileName.toLowerCase().endsWith(".png")) {
-				allOk = validatePng(templateFile);
-			} else if (fileName.toLowerCase().endsWith(".svg")) {
-				allOk = validateSvg(templateFile);
-			} else {
+			String suffix = FileUtils.getFileSuffix(fileName);
+			if (!"png".equalsIgnoreCase(suffix) && !"svg".equalsIgnoreCase(suffix)) {
 				fileEl.setErrorKey("template.upload.unsupported");
 				allOk &= false;
 			}
@@ -308,13 +377,5 @@ public class EditBadgeTemplateController extends FormBasicController {
 		}
 
 		return allOk;
-	}
-
-	private boolean validatePng(File templateFile) {
-		return true;
-	}
-
-	private boolean validateSvg(File templateFile) {
-		return true;
 	}
 }

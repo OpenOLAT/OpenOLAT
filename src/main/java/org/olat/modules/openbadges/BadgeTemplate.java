@@ -45,6 +45,8 @@ public interface BadgeTemplate {
 
 	String getImage();
 
+	void setImage(String image);
+
 	String getName();
 
 	void setName(String name);

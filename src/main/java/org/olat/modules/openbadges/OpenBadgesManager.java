@@ -72,9 +72,11 @@ public interface OpenBadgesManager {
 
 	SelectionValues getTemplateTranslationLanguages(Locale displayLocale);
 
-	void updateTemplate(BadgeTemplate template);
+	void updateTemplate(BadgeTemplate badgeTemplate);
 
-	void deleteTemplate(BadgeTemplate template);
+	void updateTemplate(BadgeTemplate badgeTemplate, File templateFile, String targetFileName, Identity savedBy);
+
+	void deleteTemplate(BadgeTemplate badgeTemplate);
 
 
 	//

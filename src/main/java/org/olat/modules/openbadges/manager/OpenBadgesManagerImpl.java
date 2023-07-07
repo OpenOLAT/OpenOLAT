@@ -356,8 +356,8 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 			Locale locale = i18nManager.getLocaleOrNull(enabledKey);
 			if (locale != null) {
 				if (displayLocale != null) {
-					String languageDisplayName = Locale.forLanguageTag(enabledKey.substring(0,2)).getDisplayLanguage(displayLocale);
-					result.add(SelectionValues.entry(enabledKey, languageDisplayName));
+					String displayName = locale.getDisplayName(displayLocale);
+					result.add(SelectionValues.entry(enabledKey, displayName));
 				} else {
 					result.add(SelectionValues.entry(enabledKey, enabledKey));
 				}
@@ -367,8 +367,19 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 	}
 
 	@Override
-	public void updateTemplate(BadgeTemplate template) {
-		templateDAO.updateTemplate(template);
+	public void updateTemplate(BadgeTemplate badgeTemplate) {
+		templateDAO.updateTemplate(badgeTemplate);
+	}
+
+	@Override
+	public void updateTemplate(BadgeTemplate badgeTemplate, File templateFile, String targetFileName, Identity savedBy) {
+		String templateFileName = copyTemplate(templateFile, targetFileName, savedBy);
+		if (templateFileName != null) {
+			deleteTemplateImages(badgeTemplate.getImage());
+			badgeTemplate.setImage(templateFileName);
+			createPreviewImage(badgeTemplate, savedBy);
+			templateDAO.updateTemplate(badgeTemplate);
+		}
 	}
 
 	@Override
@@ -380,6 +391,13 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		}
 
 		String image = badgeTemplate.getImage();
+		deleteTemplateImages(image);
+
+		badgeCategoryDAO.delete(badgeTemplate);
+		templateDAO.deleteTemplate(badgeTemplate);
+	}
+
+	private void deleteTemplateImages(String image) {
 		if (getBadgeTemplatesRootContainer().resolve(image) instanceof VFSLeaf imageLeaf) {
 			imageLeaf.delete();
 		}
@@ -388,9 +406,6 @@ public class OpenBadgesManagerImpl implements OpenBadgesManager, InitializingBea
 		if (getBadgeTemplatesRootContainer().resolve(previewImage) instanceof VFSLeaf previewLeaf) {
 			previewLeaf.delete();
 		}
-
-		badgeCategoryDAO.delete(badgeTemplate);
-		templateDAO.deleteTemplate(badgeTemplate);
 	}
 
 	private void deleteTranslations(BadgeTemplate badgeTemplate) {

@@ -126,6 +126,7 @@ public class BadgeTemplateImpl implements Persistable, BadgeTemplate {
 		return image;
 	}
 
+	@Override
 	public void setImage(String image) {
 		this.image = image;
 	}
